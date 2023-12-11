@@ -1,0 +1,16 @@
+name: Git sync
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Sync to Gitee
+      uses: abersheeran/sync-gitee-mirror@v1-beta
+      with:
+        repository: ${{ github.repository }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITEE_PAT }}

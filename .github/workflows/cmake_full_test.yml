@@ -1,0 +1,224 @@
+name: macOS/Windows/Linux Test
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# When pushing new commits, cancel any running builds on that branch
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+  BUILD_DIR: Builds
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DISPLAY: :0 # linux pluginval needs this
+  CMAKE_BUILD_PARALLEL_LEVEL: 3 # Use up to 3 cpus to build juceaide, etc
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+# jobs are run in paralell on different machines
+# all steps run in series
+jobs:
+  build_and_test:
+    name: ${{ matrix.name }} Check Status
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-latest
+            pluginval-binary: ./pluginval
+            ccache: ccache
+          - name: macOS
+            os: macos-12
+            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+            ccache: ccache
+          - name: Windows
+            os: windows-latest
+            pluginval-binary: ./pluginval.exe
+            ccache: sccache
+
+    steps:
+
+    # This is just easier than debugging different compilers on different platforms
+    - name: Set up Clang
+      if: ${{ matrix.name != 'macOS' }}
+      uses: egor-tensin/setup-clang@v1
+
+    # This also starts up our "fake" display Xvfb, needed for pluginval
+    - name: Install JUCE's Linux Deps
+      if: runner.os == 'Linux'
+      # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
+      run: |
+        sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.0-dev libglu1-mesa-dev xvfb ninja-build
+        sudo /usr/bin/Xvfb $DISPLAY &
+
+    - name: Cache IPP (Windows)
+      if: runner.os == 'Windows'
+      id: cache-ipp
+      uses: actions/cache@v3
+      with:
+        key: ipp-v1
+        path: C:\Program Files (x86)\Intel\oneAPI\ipp
+
+    - name: Install IPP (Windows)
+      if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
+      shell: bash
+      run: |
+        curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
+        ./oneapi.exe -s -x -f oneapi
+        ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+
+    - name: Save IPP cache even on job fail
+      if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
+      uses: actions/cache/save@v3
+      with:
+        path: C:\Program Files (x86)\Intel\oneAPI\ipp
+        key: ipp-v1
+
+    # This lets us use sscache on Windows
+    # We need to install ccache here for Windows to grab the right version
+    - name: Install Ninja (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: choco install ninja ccache
+
+    - name: Install macOS Deps
+      if: ${{ matrix.name == 'macOS' }}
+      run: brew install ninja osxutils
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: true # Get JUCE populated
+
+    - name: Configure
+      shell: bash
+      run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
+
+    - name: Read in .env from CMake # see GitHubENV.cmake
+      shell: bash
+      run: |
+        cat .env # show us the config
+        cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+
+    - name: Set additional env vars
+      shell: bash
+      run: |
+        echo "ARTIFACTS_PATH=${{ env.BUILD_DIR }}/${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}" >> $GITHUB_ENV
+        echo "VST3_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/VST3/${{ env.PRODUCT_NAME }}.vst3" >> $GITHUB_ENV
+        echo "AU_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/AU/${{ env.PRODUCT_NAME }}.component" >> $GITHUB_ENV
+        echo "AUV3_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/AUv3/${{ env.PRODUCT_NAME }}.appex" >> $GITHUB_ENV          
+        echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}" >> $GITHUB_ENV
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: v3-${{ matrix.os }}-${{ matrix.type }}
+        variant: ${{ matrix.ccache }}
+
+    - name: Import certificates (macOS)
+      uses: apple-actions/import-codesign-certs@v2
+      if: ${{ matrix.name == 'macOS' }}
+      with:
+        p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+        p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
+
+    - name: Build
+      shell: bash
+      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
+
+    - name: Pluginval setup
+      working-directory: ${{ env.BUILD_DIR }}
+      shell: bash
+      run: |
+        curl -LO "https://github.com/Tracktion/pluginval/releases/download/v1.0.3/pluginval_${{ matrix.name }}.zip"
+        7z x pluginval_${{ matrix.name }}.zip
+
+    - name: Setup Pluginval random seed
+      uses: josStorer/get-current-time@v2
+      id: current-time
+      with:
+        format: YYYYMMDD
+
+    - name: Pluginval VST3 validations
+      working-directory: ${{ env.BUILD_DIR }}
+      shell: bash
+      run: |
+        ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}"
+      env:
+        STRICTNESS_LEVEL: 10
+        TIMEOUT_MS: 720000
+        REPEAT: 4
+        RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
+
+    - name: Pluginval AU validations (macOS)
+      working-directory: ${{ env.BUILD_DIR }}
+      if: ${{ matrix.name == 'macOS' }}
+      shell: bash
+      run: |
+        sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
+        sudo killall -9 AudioComponentRegistrar
+        ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component"
+      env:
+        STRICTNESS_LEVEL: 10
+        TIMEOUT_MS: 720000
+        REPEAT: 2
+        RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
+
+    - name: Codesign (macOS)
+      working-directory: ${{ env.BUILD_DIR }}
+      if: ${{ matrix.name == 'macOS' }}
+      run: |
+        # Each plugin must be code signed
+        codesign --force -s "${{ secrets.DEV_ID_APPLICATION}}" -v "${{ env.VST3_PATH }}" --deep --strict --options=runtime --timestamp
+        codesign --force -s "${{ secrets.DEV_ID_APPLICATION}}" -v "${{ env.AU_PATH }}" --deep --strict --options=runtime --timestamp
+
+    - name: Set python to 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Create DMG (macOS)
+      if: ${{ matrix.name == 'macOS' }}
+      run: |
+        npm install -g appdmg
+        mkdir -p packaging/dmg
+        
+        # Create directories for the dmg symlinks
+        sudo mkdir -m 755 -p /Library/Audio/Plug-Ins/Components && sudo mkdir -m 755 -p /Library/Audio/Plug-Ins/VST3
+        ln -s /Library/Audio/Plug-Ins/Components "packaging/dmg/Your Mac's Component folder"
+        ln -s /Library/Audio/Plug-Ins/VST3 "packaging/dmg/Your Mac's VST3 folder"
+        mv "${{ env.ARTIFACTS_PATH }}/VST3/${{ env.PRODUCT_NAME }}.vst3" packaging/dmg
+        mv "${{ env.ARTIFACTS_PATH }}/AU/${{ env.PRODUCT_NAME }}.component" packaging/dmg
+        
+        # Run appdmg to create the .dmg
+        cd packaging && appdmg dmg.json "${{ env.ARTIFACT_NAME}}.dmg"
+
+    - name: Zip
+      if: ${{ matrix.name == 'Linux' }}
+      working-directory: ${{ env.ARTIFACTS_PATH }}
+      run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" .
+
+    - name: Generate installer (Windows)
+      if: ${{ matrix.name == 'Windows' }}
+      shell: bash
+      run: |
+        iscc "packaging\installer.iss"
+        mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
+
+    - name: Delete artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+        name: |
+          ${{ env.ARTIFACT_NAME }}.zip
+          ${{ env.ARTIFACT_NAME }}.exe
+          ${{ env.ARTIFACT_NAME }}.dmg

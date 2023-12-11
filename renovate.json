@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "git-submodules": {
+    "enabled": true
+  },
+  "schedule": "after 5am on Friday"
+}

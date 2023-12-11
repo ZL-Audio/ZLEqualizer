@@ -1,0 +1,54 @@
+name: Release Sync
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+
+jobs:
+  build:
+    name: Release Sync
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} || ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+    - name: Download release repo
+      uses: actions/checkout@v4
+      with:
+        repository: "ZL-Audio/ZLRelease"
+        fetch-depth: 0
+        path: "release_repo"
+        ssh-key: ${{ secrets.SSH_RELEASE_DEPLOY_KEY }}
+    - name: Download current release assets (macOS)
+      uses: robinraju/release-downloader@v1.8
+      with:
+        latest: true
+        fileName: "*dmg"
+        out-file-path: "current_release"
+    - name: Download current release assets (macOS)
+      uses: robinraju/release-downloader@v1.8
+      with:
+        latest: true
+        fileName: "*exe"
+        out-file-path: "current_release"
+    - name: Remove old release assets
+      run: |
+        rm -rf "release_repo/${{ github.event.repository.name }}"
+        mkdir -p "release_repo/${{ github.event.repository.name }}"
+        ls "current_release/"
+    - name: Move current release assets
+      run: |
+        mv -v "current_release"/* "release_repo/${{ github.event.repository.name }}/"
+        echo "LICENSE and CODE are available at [${{ github.repository }}](https://github.com/${{ github.repository }})." >> "release_repo/${{ github.event.repository.name }}/README.md"
+    - name: Commit release repo
+      run: |
+        cd "release_repo"
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git checkout --orphan newBranch
+        git add -A
+        git commit -m "release"
+        git branch -D main
+        git branch -m main
+        git push -f origin main

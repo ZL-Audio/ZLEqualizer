@@ -1,0 +1,31 @@
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+**/.DS_Store
+VERSION
+
+# It's nice to have the Builds folder exist, to remind us where it is
+Builds/*
+!Builds/.gitkeep
+
+# This should never exist
+Install/*
+
+# Running CTest makes a bunch o junk
+Testing
+
+# IDE config
+.idea
+
+# clion cmake builds
+cmake-build-debug
+cmake-build-release
+cmake-build-relwithdebinfo
+packaging/Output/*
