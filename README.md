@@ -4,12 +4,12 @@
 </p>
 
 # ZLEqualizer
-![pluginval](<https://github.com/ZL-Audio/ZLSplit/actions/workflows/cmake_full_test.yml/badge.svg?branch=main>)
+![pluginval](<https://github.com/ZL-Audio/ZLEqualizer/actions/workflows/cmake_full_test.yml/badge.svg?branch=main>)
 
 ZLEqualizer is an equalizer plugin.
 
 <!-- <img src="Docs/screenshot.png" width=94%> -->
- 
+
 ## Usage
 
 See the wiki for details.
