@@ -14,21 +14,50 @@
 #include <array>
 #include <tuple>
 #include <numbers>
+#include <numeric>
+#include <vector>
+
+#include "analog_func.h"
 
 namespace zlIIR {
     class MartinCoeff {
     public:
-        using coeff4 = std::tuple<std::array<double, 2>, std::array<double, 2>>;
-        using coeff6 = std::tuple<std::array<double, 3>, std::array<double, 3>>;
+        static coeff22 get1LowPass(double w0);
 
-        static coeff4 get1LowPass(double w0);
+        static coeff22 get1HighPass(double w0);
 
-        static coeff4 get1HighPass(double w0);
+        static coeff22 get1LowShelf(double w0, double g);
 
-        static coeff4 get1LowShelf(double w0, double g);
+        static coeff22 get1HighShelf(double w0, double g);
 
-        static coeff4 get1HighShelf(double w0, double g);
+        static coeff33 get2LowPass(double w0, double q);
 
+        static coeff33 get2HighPass(double w0, double q);
+
+        static coeff33 get2BandPass(double w0, double q);
+
+        static coeff33 get2Notch(double w0, double q);
+
+        static coeff33 get2Peak(double w0, double g, double q);
+
+        static coeff33 get2LowShelf(double w0, double g, double q);
+
+        static coeff33 get2HighShelf(double w0, double g, double q);
+
+    private:
+        static coeff3 solve_a(double w0, double b, double c=1);
+
+        static coeff3 get_AB(coeff3 a);
+
+        static coeff3 get_ab(coeff3 A);
+
+        static coeff3 get_phi(double w);
+
+        static coeff3 linear_solve(std::array<coeff3, 3> A, coeff3 b);
+
+        static inline double dot_product(coeff3 x, coeff3 y){
+            return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
+        }
     };
 }
 
