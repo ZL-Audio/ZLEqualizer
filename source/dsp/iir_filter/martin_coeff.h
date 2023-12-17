@@ -10,11 +10,24 @@
 #ifndef ZLEQUALIZER_MARTIN_COEFFS_H
 #define ZLEQUALIZER_MARTIN_COEFFS_H
 
-#include "martin_coeff.h"
+#include <cmath>
+#include <array>
+#include <numbers>
 
-class MartinCoeff {
+namespace zlIIR {
+    class MartinCoeff {
+    public:
+        using coeffs = std::tuple<std::array<double, 3>, std::array<double, 3>>;
 
-};
+        static coeffs get1LowPass(double w0);
 
+        static coeffs get1HighPass(double w0);
+
+        static coeffs get1LowShelf(double w0, double g);
+
+        static coeffs get1HighShelf(double w0, double g);
+
+    };
+}
 
 #endif //ZLEQUALIZER_MARTIN_COEFFS_H

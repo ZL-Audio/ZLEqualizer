@@ -13,25 +13,25 @@
 #include <cmath>
 #include <array>
 
-namespace zl_iir {
+namespace zlIIR {
     class AnalogFunc {
     public:
-        static double getLowPassMagnitude2(double w0, double q, double w);
+        static double get2LowPassMagnitude2(double w0, double q, double w);
 
-        static double getHighPassMagnitude2(double w0, double q, double w);
+        static double get2HighPassMagnitude2(double w0, double q, double w);
 
-        static double getBandPassMagnitude2(double w0, double q, double w);
+        static double get2BandPassMagnitude2(double w0, double q, double w);
 
-        static double getNotchMagnitude2(double w0, double q, double w);
+        static double get2NotchMagnitude2(double w0, double q, double w);
 
-        static double getPeakMagnitude2(double w0, double g, double q, double w);
+        static double get2PeakMagnitude2(double w0, double g, double q, double w);
 
-        static double getLowShelfMagnitude2(double w0, double g, double q, double w);
+        static double get2LowShelfMagnitude2(double w0, double g, double q, double w);
 
-        static double getHighShelfMagnitude2(double w0, double g, double q, double w);
+        static double get2HighShelfMagnitude2(double w0, double g, double q, double w);
 
     private:
-        static double getMagnitude2(std::array<double, 6> coeff, double w);
+        static double get2Magnitude2(std::array<double, 6> coeff, double w);
     };
 }
 
