@@ -18,15 +18,16 @@
 namespace zlIIR {
     class MartinCoeff {
     public:
-        using coeffs = std::tuple<std::array<double, 3>, std::array<double, 3>>;
+        using coeff4 = std::tuple<std::array<double, 2>, std::array<double, 2>>;
+        using coeff6 = std::tuple<std::array<double, 3>, std::array<double, 3>>;
 
-        static coeffs get1LowPass(double w0);
+        static coeff4 get1LowPass(double w0);
 
-        static coeffs get1HighPass(double w0);
+        static coeff4 get1HighPass(double w0);
 
-        static coeffs get1LowShelf(double w0, double g);
+        static coeff4 get1LowShelf(double w0, double g);
 
-        static coeffs get1HighShelf(double w0, double g);
+        static coeff4 get1HighShelf(double w0, double g);
 
     };
 }
