@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include <array>
+#include <tuple>
 #include <numbers>
 
 namespace zlIIR {
