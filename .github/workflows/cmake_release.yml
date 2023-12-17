@@ -183,21 +183,21 @@ jobs:
 
     - name: Upload Exe (Windows)
       if: ${{ matrix.name == 'Windows' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}.exe
         path: '${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe'
 
     - name: Upload Zip (Linux)
       if: ${{ matrix.name == 'Linux' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}.zip
         path: '${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip'
 
     - name: Upload DMG (MacOS)
       if: ${{ matrix.name == 'macOS' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}.dmg
         path: packaging/${{ env.ARTIFACT_NAME }}.dmg
@@ -209,7 +209,7 @@ jobs:
 
     steps:
     - name: Get Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
