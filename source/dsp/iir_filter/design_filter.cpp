@@ -17,6 +17,35 @@ const static double pi = std::numbers::pi;
 const static double ppi = 2 * std::numbers::pi;
 
 namespace zlIIR {
+    std::vector<coeff33> DesignFilter::getCoeff(zlIIR::FilterType filterType,
+                                                double f, double fs, double gDB, double q, size_t slope) {
+        size_t n = slope / 6;
+        auto w0 = ppi * f / fs;
+        auto g = db_to_gain(gDB);
+        switch (filterType) {
+            case peak:
+                return getPeak(w0, g, q);
+            case lowShelf:
+                return getLowShelf(n, w0, g, q);
+            case lowPass:
+                return getLowPass(n, w0, q);
+            case highShelf:
+                return getHighShelf(n, w0, g, q);
+            case highPass:
+                return getHighPass(n, w0, q);
+            case bandShelf:
+                return getBandShelf(n, w0, g, q);
+            case tiltShelf:
+                return getTiltShelf(n, w0, g, q);
+            case notch:
+                return getNotch(n, w0, q);
+            case bandPass:
+                return getBandPass(n, w0, q);
+            default:
+                return {coeff33{}};
+        }
+    }
+
     std::vector<coeff33> DesignFilter::getLowPass(size_t n, double w0, double q) {
         if (n == 1) {
             auto [a, b] = MartinCoeff::get1LowPass(w0);
@@ -43,6 +72,16 @@ namespace zlIIR {
             }
             return coeff;
         }
+    }
+
+    std::vector<coeff33> DesignFilter::getTiltShelf(size_t n, double w0, double g, double q) {
+        auto qs = getQs(n, q);
+        auto _g = std::pow(g, q / static_cast<double>(qs.size()));
+        std::vector<coeff33> coeff(qs.size());
+        for (auto _q: qs) {
+            coeff.push_back(MartinCoeff::get2TiltShelf(w0, _g, _q));
+        }
+        return coeff;
     }
 
     std::vector<coeff33> DesignFilter::getLowShelf(size_t n, double w0, double g, double q) {
@@ -113,7 +152,7 @@ namespace zlIIR {
         std::vector<double> qs(number);
         for (size_t i = 0; i < number; i++) {
             auto theta = theta0 * static_cast<double>(2 * i + 1);
-            qs[i] = 1.0 / 2.0 / std::cos(theta) * q0;
+            qs[i] = 1.0 / 2.0 / std::cos(theta) * qBase;
         }
         return qs;
     }

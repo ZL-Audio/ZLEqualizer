@@ -23,7 +23,7 @@
 namespace zlIIR {
     enum FilterType {
         peak, lowShelf, lowPass, highShelf, highPass,
-        bandShelf, tiltShelf, notch, bandPass
+        notch, bandPass, bandShelf, tiltShelf
     };
 
     using coeff2 = std::array<double, 2>;
@@ -43,7 +43,7 @@ namespace zlIIR {
         return std::pow(10, db * 0.05);
     }
 
-    static std::tuple<double, double> get_bandwidth(double w0, double q) {
+    inline std::tuple<double, double> get_bandwidth(double w0, double q) {
         auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
         auto scale = std::pow(2, bw / 2);
         return {w0 / scale, w0 * scale};

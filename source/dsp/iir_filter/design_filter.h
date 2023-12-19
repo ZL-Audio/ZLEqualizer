@@ -19,10 +19,16 @@
 
 namespace zlIIR {
     class DesignFilter {
+    public:
+        static std::vector<coeff33> getCoeff(FilterType filterType,
+                                             double f, double fs, double gDB, double q, size_t slope);
+
     private:
         static std::vector<coeff33> getLowPass(size_t n, double w0, double q);
 
         static std::vector<coeff33> getHighPass(size_t n, double w0, double q);
+
+        static std::vector<coeff33> getTiltShelf(size_t n, double w0, double g, double q);
 
         static std::vector<coeff33> getLowShelf(size_t n, double w0, double g, double q);
 
