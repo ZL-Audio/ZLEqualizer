@@ -115,7 +115,7 @@ target_compile_definitions(SharedCode
         JUCE_VST3_CAN_REPLACE_VST2=0
 
         # Uncomment if you are paying for a an Indie/Pro license or releasing under GPLv3
-        # JUCE_DISPLAY_SPLASH_SCREEN=0
+        JUCE_DISPLAY_SPLASH_SCREEN=0
 
         # lets the app known if we're Debug or Release
         CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
@@ -123,6 +123,8 @@ target_compile_definitions(SharedCode
 
         # JucePlugin_Name is for some reason doesn't use the nicer PRODUCT_NAME
         PRODUCT_NAME_WITHOUT_VERSION="${PRODUCT_NAME}"
+        JUCE_COREGRAPHICS_RENDER_WITH_MULTIPLE_PAINT_CALLS=1
+        JUCE_SILENCE_XCODE_15_LINKER_WARNING=1
         )
 
 # Link to any other modules you added (with juce_add_module) here!

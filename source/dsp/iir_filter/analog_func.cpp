@@ -37,9 +37,14 @@ namespace zlIIR {
         return get2Magnitude2({1, w0 / std::sqrt(g) / q, w0 * w0, 1, w0 * std::sqrt(g) / q, w0 * w0}, w);
     }
 
+    double AnalogFunc::get2TiltShelfMagnitude2(double w0, double g, double q, double w) {
+        auto A = std::sqrt(g);
+        return get2Magnitude2({A, std::sqrt(A) * w0 / q, w0 * w0, 1, std::sqrt(A) * w0 / q, A * w0 * w0}, w);
+    }
+
     double AnalogFunc::get2LowShelfMagnitude2(double w0, double g, double q, double w) {
         auto A = std::sqrt(g);
-        return get2Magnitude2({A, std::sqrt(A) * w0 / q, w0 * w0, A, A * std::sqrt(A) * w0 / q, A * w0 * w0}, w);
+        return get2Magnitude2({A, A * std::sqrt(A) * w0 / q, A * A * w0 * w0, A, std::sqrt(A) * w0 / q, A * w0 * w0}, w);
     }
 
     double AnalogFunc::get2HighShelfMagnitude2(double w0, double g, double q, double w) {

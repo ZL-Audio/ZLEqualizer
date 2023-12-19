@@ -32,6 +32,8 @@ namespace zlIIR {
 
         static double get2PeakMagnitude2(double w0, double g, double q, double w);
 
+        static double get2TiltShelfMagnitude2(double w0, double g, double q, double w);
+
         static double get2LowShelfMagnitude2(double w0, double g, double q, double w);
 
         static double get2HighShelfMagnitude2(double w0, double g, double q, double w);

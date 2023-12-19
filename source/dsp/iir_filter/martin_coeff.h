@@ -20,6 +20,8 @@ namespace zlIIR {
 
         static coeff22 get1HighPass(double w0);
 
+        static coeff22 get1TiltShelf(double w0, double g);
+
         static coeff22 get1LowShelf(double w0, double g);
 
         static coeff22 get1HighShelf(double w0, double g);
@@ -34,6 +36,8 @@ namespace zlIIR {
 
         static coeff33 get2Peak(double w0, double g, double q);
 
+        static coeff33 get2TiltShelf(double w0, double g, double q);
+
         static coeff33 get2LowShelf(double w0, double g, double q);
 
         static coeff33 get2HighShelf(double w0, double g, double q);
@@ -42,6 +46,8 @@ namespace zlIIR {
         static coeff3 solve_a(double w0, double b, double c=1);
 
         static coeff3 get_AB(coeff3 a);
+
+        static bool check_AB(coeff3 A);
 
         static coeff3 get_ab(coeff3 A);
 
