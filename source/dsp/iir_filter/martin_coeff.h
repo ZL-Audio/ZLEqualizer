@@ -10,13 +10,7 @@
 #ifndef ZLEQUALIZER_MARTIN_COEFFS_H
 #define ZLEQUALIZER_MARTIN_COEFFS_H
 
-#include <cmath>
-#include <array>
-#include <tuple>
-#include <numbers>
-#include <numeric>
-#include <vector>
-
+#include "helpers.h"
 #include "analog_func.h"
 
 namespace zlIIR {
@@ -54,10 +48,6 @@ namespace zlIIR {
         static coeff3 get_phi(double w);
 
         static coeff3 linear_solve(std::array<coeff3, 3> A, coeff3 b);
-
-        static inline double dot_product(coeff3 x, coeff3 y){
-            return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
-        }
     };
 }
 

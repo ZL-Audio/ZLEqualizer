@@ -83,8 +83,8 @@ namespace zlIIR {
     coeff33 MartinCoeff::get2LowPass(double w0, double q) {
         auto a = solve_a(w0, 0.5 / q, 1);
         auto A = get_AB(a);
-
-        coeff3 ws{0.0, w0 * (1 - std::pow(2, -q)), w0};
+        auto w1 = w0 > pi / 2 ? w0 * 0.5 : pi;
+        coeff3 ws{0.0, w1, w0};
         std::array<coeff3, 3> phi{};
         coeff3 res{};
         for (size_t i = 0; i < 3; i++) {

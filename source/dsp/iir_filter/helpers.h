@@ -7,38 +7,42 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_ANALOG_FUNC_H
-#define ZLEQUALIZER_ANALOG_FUNC_H
+//
+// Created by Zishu Liu on 12/17/23.
+//
+
+#ifndef ZLEQUALIZER_HELPERS_H
+#define ZLEQUALIZER_HELPERS_H
 
 #include <cmath>
 #include <array>
-#include "helpers.h"
+#include <numbers>
+#include <numeric>
+#include <vector>
 
 namespace zlIIR {
+    enum FilterType {
+        lowPass, highPass,
+        bandPass, notch,
+        peak, lowShelf, highShelf, bandShelf
+    };
+
     using coeff2  = std::array<double, 2>;
     using coeff3 = std::array<double, 3>;
     using coeff22 = std::tuple<coeff2, coeff2>;
     using coeff33 = std::tuple<coeff3, coeff3>;
 
-    class AnalogFunc {
-    public:
-        static double get2LowPassMagnitude2(double w0, double q, double w);
+    static inline double dot_product(coeff3 x, coeff3 y){
+        return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
+    }
 
-        static double get2HighPassMagnitude2(double w0, double q, double w);
+    static inline double gain_to_db(double gain) {
+        return std::log10(gain) * 20;
+    }
 
-        static double get2BandPassMagnitude2(double w0, double q, double w);
-
-        static double get2NotchMagnitude2(double w0, double q, double w);
-
-        static double get2PeakMagnitude2(double w0, double g, double q, double w);
-
-        static double get2LowShelfMagnitude2(double w0, double g, double q, double w);
-
-        static double get2HighShelfMagnitude2(double w0, double g, double q, double w);
-
-    private:
-        static double get2Magnitude2(std::array<double, 6> coeff, double w);
-    };
+    static inline double db_to_gain(double db) {
+        return std::pow(10, db * 0.05);
+    }
 }
 
-#endif //ZLEQUALIZER_ANALOG_FUNC_H
+#endif //ZLEQUALIZER_HELPERS_H
