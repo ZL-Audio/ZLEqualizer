@@ -31,15 +31,15 @@ namespace zlIIR {
     using coeff22 = std::tuple<coeff2, coeff2>;
     using coeff33 = std::tuple<coeff3, coeff3>;
 
-    static inline double dot_product(coeff3 x, coeff3 y) {
+    inline double dot_product(coeff3 x, coeff3 y) {
         return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
     }
 
-    static inline double gain_to_db(double gain) {
+    inline double gain_to_db(double gain) {
         return std::log10(gain) * 20;
     }
 
-    static inline double db_to_gain(double db) {
+    inline double db_to_gain(double db) {
         return std::pow(10, db * 0.05);
     }
 
