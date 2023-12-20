@@ -43,3 +43,13 @@ JUCE framework from [JUCE](https://github.com/juce-framework/JUCE)
 JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
 Font from CMU Open Sans, Font Awesome and MiSans.
+
+## References
+
+Matched One-Pole Digital Shelving Filters, Martin Vicanek
+
+Matched Second Order Digital Filters, Martin Vicanek
+
+Cascading filters, Nigel Redmon
+
+A Simple Method of Designing Multiple Order All Pole Bandpass Filters by Cascading 2nd Order Sections, Nello Sevastopoulos and Richard Markell
