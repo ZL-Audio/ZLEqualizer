@@ -21,7 +21,7 @@ namespace zlIIR {
     class DesignFilter {
     public:
         static std::vector<coeff33> getCoeff(FilterType filterType,
-                                             double f, double fs, double gDB, double q, size_t slope);
+                                             double f, double fs, double gDB, double q, size_t n);
 
     private:
         static std::vector<coeff33> getLowPass(size_t n, double w0, double q);
