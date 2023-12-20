@@ -11,19 +11,4 @@
 // Created by Zishu Liu on 12/19/23.
 //
 
-#ifndef ZLEQUALIZER_IIR_FILTER_H
-#define ZLEQUALIZER_IIR_FILTER_H
-
-#include "single_filter.h"
-
-namespace zlIIR {
-    template<typename FloatType>
-    class IIRFilter {
-    private:
-        SingleFilter<FloatType> filter0, filter1;
-        std::atomic<bool> dynamicON = false;
-    };
-}
-
-
-#endif //ZLEQUALIZER_IIR_FILTER_H
+#include "dynamic_filter.h"
