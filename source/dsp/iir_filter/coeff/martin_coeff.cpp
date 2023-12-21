@@ -170,7 +170,6 @@ namespace zlIIR {
         if (g > 1) {
             g = 1 / g;
         }
-        q = std::sqrt(q);
         auto g_sqrt = std::sqrt(g);
         auto a = solve_a(w0, std::sqrt(g_sqrt) / 2 / q, std::sqrt(g_sqrt));
         auto A = get_AB(a);
@@ -191,7 +190,11 @@ namespace zlIIR {
             } else {
                 auto w1 = std::sqrt((-c1 + delta) / 2 / c2);
                 auto w2 = std::sqrt((-c1 - delta) / 2 / c2);
-                ws = {0, std::min(std::min(w1, w2), pi), std::min(std::max(w1, w2), pi)};
+                if (w1 < pi || w2 < pi) {
+                    ws = {0, std::min(std::min(w1, w2), pi), std::min(std::max(w1, w2), pi)};
+                } else {
+                    ws = {0, piHalf, pi};
+                }
             }
         }
         coeff3 B{-1, -1, -1};

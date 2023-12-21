@@ -25,11 +25,11 @@ namespace zlIIR {
             case peak:
                 return getPeak(w0, g, q);
             case lowShelf:
-                return getLowShelf(n, w0, g, q);
+                return getLowShelf(n, w0, g, std::sqrt(q));
             case lowPass:
                 return getLowPass(n, w0, q);
             case highShelf:
-                return getHighShelf(n, w0, g, q);
+                return getHighShelf(n, w0, g, std::sqrt(q));
             case highPass:
                 return getHighPass(n, w0, q);
             case bandShelf:
@@ -139,8 +139,12 @@ namespace zlIIR {
         auto w1 = w0 / std::pow(2, bw / 2);
         auto w2 = w0 * std::pow(2, bw / 2);
         auto coeff1 = getLowShelf(n, w1, 1 / g, std::sqrt(2) / 2);
-        auto coeff2 = getLowShelf(n, w2, g, std::sqrt(2) / 2);
-        coeff1.insert(coeff1.end(), coeff2.begin(), coeff2.end());
+        if (w2 < pi) {
+            auto coeff2 = getLowShelf(n, w2, g, std::sqrt(2) / 2);
+            coeff1.insert(coeff1.end(), coeff2.begin(), coeff2.end());
+        } else {
+            coeff1.push_back({{1, 1, 1}, {g, g, g}});
+        }
         return coeff1;
     }
 
