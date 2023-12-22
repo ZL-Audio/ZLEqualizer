@@ -110,8 +110,9 @@ namespace zlIIR {
         auto _q = std::sqrt(1 - g * g) * w * w0 / g / (w0 * w0 - w * w);
 
         std::vector<coeff33> coeff(n / 2);
+        auto singleCoeff = MartinCoeff::get2BandPass(w0, _q);
         for (size_t i = 0; i < n / 2; ++i) {
-            coeff.push_back(MartinCoeff::get2BandPass(w0, _q));
+            coeff.push_back(singleCoeff);
         }
         return coeff;
     }
@@ -123,8 +124,9 @@ namespace zlIIR {
         auto _q = g * w * w0 / std::sqrt((1 - g * g)) / (w0 * w0 - w * w);
 
         std::vector<coeff33> coeff(n / 2);
+        auto singleCoeff = MartinCoeff::get2Notch(w0, _q);
         for (size_t i = 0; i < n / 2; ++i) {
-            coeff.push_back(MartinCoeff::get2Notch(w0, _q));
+            coeff.push_back(singleCoeff);
         }
         return coeff;
     }
