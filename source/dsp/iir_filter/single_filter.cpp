@@ -17,6 +17,7 @@ namespace zlIIR {
     template<typename FloatType>
     void SingleFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         processSpec = spec;
+        updateParas();
     }
 
     template<typename FloatType>
@@ -61,6 +62,7 @@ namespace zlIIR {
             filters.reserve(num);
             for (size_t i = 0; i < num; i++) {
                 filters[i] = std::make_unique<juce::dsp::IIR::Filter<FloatType>>();
+                filters[i]->prepare(processSpec);
             }
             updateParas();
         }

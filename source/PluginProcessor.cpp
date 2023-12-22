@@ -10,10 +10,21 @@ PluginProcessor::PluginProcessor()
 #endif
                                  .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-) {
+), parameters(*this, nullptr,
+              juce::Identifier("ZLECompParameters"),
+              zlDSP::getParameterLayout()) {
+    parameters.addParameterListener("f_type00", this);
+    parameters.addParameterListener("f_slope00", this);
+    parameters.addParameterListener("freq00", this);
+    parameters.addParameterListener("gain00", this);
+    parameters.addParameterListener("Q00", this);
 }
 
 PluginProcessor::~PluginProcessor() {
+}
+
+void PluginProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
+
 }
 
 //==============================================================================
@@ -75,7 +86,11 @@ void PluginProcessor::changeProgramName(int index, const juce::String &newName) 
 void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-    juce::ignoreUnused(sampleRate, samplesPerBlock);
+    auto channels = static_cast<juce::uint32> (juce::jmin(getMainBusNumInputChannels(),
+                                                          getMainBusNumOutputChannels()));
+    juce::dsp::ProcessSpec spec{sampleRate, static_cast<juce::uint32> (samplesPerBlock),
+                                channels};
+    filter.prepare(spec);
 }
 
 void PluginProcessor::releaseResources() {

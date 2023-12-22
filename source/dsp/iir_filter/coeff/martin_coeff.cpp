@@ -165,6 +165,22 @@ namespace zlIIR {
         return {a, b};
     }
 
+    coeff33 MartinCoeff::get2Peak(double w0, double g, double q) {
+        auto a = solve_a(w0, 0.5 / std::sqrt(g) / q);
+        auto A = get_AB(a);
+        auto phi0 = get_phi(w0);
+
+        auto R1 = dot_product(A, phi0) * std::pow(g, 2);
+        auto R2 = (-A[0] + A[1] + 4 * (phi0[0] - phi0[1]) * A[2]) * std::pow(g, 2);
+
+        coeff3 B{A[0], 0, 0};
+        B[2] = (R1 - R2 * phi0[1]- B[0]) / (4 * std::pow(phi0[1], 2));
+        B[1] = R2 + B[0] + 4 * (phi0[1] - phi0[0]) * B[2];
+        auto b = get_ab(B);
+
+        return {a, b};
+    }
+
     coeff33 MartinCoeff::get2TiltShelf(double w0, double g, double q) {
         bool reverse_ab = g > 1;
         if (g > 1) {
