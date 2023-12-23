@@ -75,20 +75,18 @@ namespace zlIIR {
                 filters[i].prepare(processSpec);
             }
         }
-//        logger.logMessage("coeff size is: " + juce::String(coeff.size()));
         for (size_t i = 0; i < coeff.size(); i++) {
             auto [a, b] = coeff[i];
-            *filters[i].state = std::array<FloatType, 6>{static_cast<FloatType>(b[0]),
-                                                         static_cast<FloatType>(b[1]),
-                                                         static_cast<FloatType>(b[2]),
-                                                         static_cast<FloatType>(a[0]),
-                                                         static_cast<FloatType>(a[1]),
-                                                         static_cast<FloatType>(a[2])};
-
-//            logger.logMessage("coeff are: " + juce::String(b[0]) + " " + juce::String(b[1]) + " " + juce::String(b[2]));
-//            logger.logMessage("coeff are: " + juce::String(a[0]) + " " + juce::String(a[1]) + " " + juce::String(a[2]));
+            std::array<FloatType, 6> finalCoeff{};
+            for (size_t j = 0; j < 6; ++j) {
+                if (j < 3) {
+                    finalCoeff[j] = std::isnan(b[j]) ? 0: static_cast<FloatType>(b[j]);
+                } else {
+                    finalCoeff[j - 3] = std::isnan(a[j - 3]) ? 0: static_cast<FloatType>(a[j - 3]);
+                }
+            }
+            *filters[i].state = finalCoeff;
         }
-//        logger.logMessage("______________________");
     }
 
     template
