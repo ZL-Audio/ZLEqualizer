@@ -25,17 +25,17 @@ namespace zlIIR {
             case peak:
                 return getPeak(w0, g, q);
             case lowShelf:
-                return getLowShelf(n, w0, g, std::sqrt(q));
+                return getLowShelf(n, w0, g, std::sqrt(q * std::sqrt(2)) / std::sqrt(2));
             case lowPass:
                 return getLowPass(n, w0, q);
             case highShelf:
-                return getHighShelf(n, w0, g, std::sqrt(q));
+                return getHighShelf(n, w0, g, std::sqrt(q * std::sqrt(2)) / std::sqrt(2));
             case highPass:
                 return getHighPass(n, w0, q);
             case bandShelf:
                 return getBandShelf(n, w0, g, q);
             case tiltShelf:
-                return getTiltShelf(n, w0, g, q);
+                return getTiltShelf(n, w0, g, std::sqrt(q * std::sqrt(2)) / std::sqrt(2));
             case notch:
                 return getNotch(n, w0, q);
             case bandPass:
@@ -51,7 +51,8 @@ namespace zlIIR {
             return {{{a[0], a[1], 0.0}, {b[0], b[1], 0.0}}};
         } else {
             auto qs = getQs(n, q);
-            std::vector<coeff33> coeff(qs.size());
+            std::vector<coeff33> coeff;
+            coeff.reserve(qs.size());
             for (auto _q: qs) {
                 coeff.push_back(MartinCoeff::get2LowPass(w0, _q));
             }
@@ -65,7 +66,8 @@ namespace zlIIR {
             return {{{a[0], a[1], 0.0}, {b[0], b[1], 0.0}}};
         } else {
             auto qs = getQs(n, q);
-            std::vector<coeff33> coeff(qs.size());
+            std::vector<coeff33> coeff;
+            coeff.reserve(qs.size());
             for (auto _q: qs) {
                 coeff.push_back(MartinCoeff::get2HighPass(w0, _q));
             }
@@ -74,33 +76,51 @@ namespace zlIIR {
     }
 
     std::vector<coeff33> DesignFilter::getTiltShelf(size_t n, double w0, double g, double q) {
-        auto qs = getQs(n, q);
-        auto _g = std::pow(g, q / static_cast<double>(qs.size()));
-        std::vector<coeff33> coeff(qs.size());
-        for (auto _q: qs) {
-            coeff.push_back(MartinCoeff::get2TiltShelf(w0, _g, _q));
+        if (n == 1) {
+            auto [a, b] = MartinCoeff::get1TiltShelf(w0, g);
+            return {{{a[0], a[1], 0.0}, {b[0], b[1], 0.0}}};
+        } else {
+            auto qs = getQs(n, q);
+            auto _g = std::pow(g, 1.0 / static_cast<double>(qs.size()));
+            std::vector<coeff33> coeff;
+            coeff.reserve(qs.size());
+            for (auto _q: qs) {
+                coeff.push_back(MartinCoeff::get2TiltShelf(w0, _g, _q));
+            }
+            return coeff;
         }
-        return coeff;
     }
 
     std::vector<coeff33> DesignFilter::getLowShelf(size_t n, double w0, double g, double q) {
-        auto qs = getQs(n, q);
-        auto _g = std::pow(g, q / static_cast<double>(qs.size()));
-        std::vector<coeff33> coeff(qs.size());
-        for (auto _q: qs) {
-            coeff.push_back(MartinCoeff::get2LowShelf(w0, _g, _q));
+        if (n == 1) {
+            auto [a, b] = MartinCoeff::get1LowShelf(w0, g);
+            return {{{a[0], a[1], 0.0}, {b[0], b[1], 0.0}}};
+        } else {
+            auto qs = getQs(n, q);
+            auto _g = std::pow(g, 1.0 / static_cast<double>(qs.size()));
+            std::vector<coeff33> coeff;
+            coeff.reserve(qs.size());
+            for (auto _q: qs) {
+                coeff.push_back(MartinCoeff::get2LowShelf(w0, _g, _q));
+            }
+            return coeff;
         }
-        return coeff;
     }
 
     std::vector<coeff33> DesignFilter::getHighShelf(size_t n, double w0, double g, double q) {
-        auto qs = getQs(n, q);
-        auto _g = std::pow(g, q / static_cast<double>(qs.size()));
-        std::vector<coeff33> coeff(qs.size());
-        for (auto _q: qs) {
-            coeff.push_back(MartinCoeff::get2HighShelf(w0, _g, _q));
+        if (n == 1) {
+            auto [a, b] = MartinCoeff::get1HighShelf(w0, g);
+            return {{{a[0], a[1], 0.0}, {b[0], b[1], 0.0}}};
+        } else {
+            auto qs = getQs(n, q);
+            auto _g = std::pow(g, 1.0 / static_cast<double>(qs.size()));
+            std::vector<coeff33> coeff;
+            coeff.reserve(qs.size());
+            for (auto _q: qs) {
+                coeff.push_back(MartinCoeff::get2HighShelf(w0, _g, _q));
+            }
+            return coeff;
         }
-        return coeff;
     }
 
     std::vector<coeff33> DesignFilter::getBandPass(size_t n, double w0, double q) {
@@ -109,7 +129,8 @@ namespace zlIIR {
         auto g = db_to_gain(-6 / static_cast<double>(n));
         auto _q = std::sqrt(1 - g * g) * w * w0 / g / (w0 * w0 - w * w);
 
-        std::vector<coeff33> coeff(n / 2);
+        std::vector<coeff33> coeff;
+        coeff.reserve(n / 2);
         auto singleCoeff = MartinCoeff::get2BandPass(w0, _q);
         for (size_t i = 0; i < n / 2; ++i) {
             coeff.push_back(singleCoeff);
@@ -123,7 +144,8 @@ namespace zlIIR {
         auto g = db_to_gain(-6 / static_cast<double>(n));
         auto _q = g * w * w0 / std::sqrt((1 - g * g)) / (w0 * w0 - w * w);
 
-        std::vector<coeff33> coeff(n / 2);
+        std::vector<coeff33> coeff;
+        coeff.reserve(n / 2);
         auto singleCoeff = MartinCoeff::get2Notch(w0, _q);
         for (size_t i = 0; i < n / 2; ++i) {
             coeff.push_back(singleCoeff);
@@ -140,7 +162,12 @@ namespace zlIIR {
         auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
         auto w1 = w0 / std::pow(2, bw / 2);
         auto w2 = w0 * std::pow(2, bw / 2);
-        auto coeff1 = getLowShelf(n, w1, 1 / g, std::sqrt(2) / 2);
+        std::vector<coeff33> coeff1;
+        if (w1 < 0.0006544984694978735) {
+            coeff1.push_back({{1, 1, 1}, {1, 1, 1}});
+        } else {
+            coeff1 = getLowShelf(n, w1, 1 / g, std::sqrt(2) / 2);
+        }
         if (w2 < pi) {
             auto coeff2 = getLowShelf(n, w2, g, std::sqrt(2) / 2);
             coeff1.insert(coeff1.end(), coeff2.begin(), coeff2.end());
@@ -152,7 +179,7 @@ namespace zlIIR {
 
     std::vector<double> DesignFilter::getQs(size_t n, double q0) {
         size_t number = n / 2;
-        auto theta0 = pi * static_cast<double>(number);
+        auto theta0 = pi / static_cast<double>(number) / 4;
         auto qBase = std::pow(std::sqrt(2.0) * q0, 1 / static_cast<double>(number));
         std::vector<double> qs(number);
         for (size_t i = 0; i < number; i++) {

@@ -72,7 +72,7 @@ namespace zlDSP {
         auto static constexpr name = "Slope";
         inline auto static const choices = juce::StringArray{"6 dB/oct", "12 dB/oct", "24 dB/oct",
                                                              "36 dB/oct", "48 dB/oct", "60 dB/oct", "72 dB/oct"};
-        int static constexpr defaultI = 0;
+        int static constexpr defaultI = 1;
         enum {
             db06, db12, db24, db36, db48, db60, db72, dbNUM
         };
@@ -82,7 +82,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "freq";
         auto static constexpr name = "Freq";
-        inline auto static const range = juce::NormalisableRange<float>(10, 20000, .1f, 0.23064293761596813);
+        inline auto static const range = juce::NormalisableRange<float>(10, 20000, 1.f, 0.23064293761596813f);
         auto static constexpr defaultV = 1000.f;
     };
 
@@ -98,8 +98,8 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "Q";
         auto static constexpr name = "Q";
-        inline auto static const range = juce::NormalisableRange<float>(.03f, 25, .01f, 0.19213519025943943);
-        auto static constexpr defaultV = 1000.f;
+        inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
+        auto static constexpr defaultV = 0.707f;
     };
 
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,

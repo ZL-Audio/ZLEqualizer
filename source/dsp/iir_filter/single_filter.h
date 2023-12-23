@@ -39,10 +39,11 @@ namespace zlIIR {
         void setOrder(size_t x);
 
     private:
-        std::vector<std::unique_ptr<juce::dsp::IIR::Filter<FloatType>>> filters;
-        std::atomic<double> freq = 1000, gain = 0, q = 1;
-        std::atomic<size_t> order = 0;
-        std::atomic<FilterType> filterType;
+//        juce::FileLogger logger = juce::FileLogger(juce::File("/Volumes/Ramdisk/log.txt"), "Single Filter");
+        std::vector<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<FloatType>, juce::dsp::IIR::Coefficients<FloatType>>> filters;
+        std::atomic<double> freq = 1000, gain = 0, q = 0.707;
+        std::atomic<size_t> order = 2;
+        std::atomic<FilterType> filterType = FilterType::peak;
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
 
         void updateParas();

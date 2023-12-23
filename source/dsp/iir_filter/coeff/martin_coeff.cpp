@@ -97,7 +97,7 @@ namespace zlIIR {
         }
         std::array<coeff3, 3> phi{};
         coeff3 res{};
-        for (size_t i = 0; i < 3; i++) {
+        for (size_t i = 0; i < 3; ++i) {
             phi[i] = get_phi(ws[i]);
             res[i] = AnalogFunc::get2LowPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
         }
@@ -130,9 +130,9 @@ namespace zlIIR {
             trial += 1;
             std::array<coeff3, 3> phi{};
             coeff3 res{};
-            for (size_t i = 0; i < 3; i++) {
+            for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
-                res[i] = AnalogFunc::get2LowPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
             }
             B = linear_solve(phi, res);
             ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
@@ -155,7 +155,7 @@ namespace zlIIR {
 
         std::array<coeff3, 3> phi{};
         coeff3 res{};
-        for (size_t i = 0; i < 3; i++) {
+        for (size_t i = 0; i < 3; ++i) {
             phi[i] = get_phi(ws[i]);
             res[i] = dot_product(phi[i], B) / AnalogFunc::get2NotchMagnitude2(w0, q, ws[i]);
         }
@@ -182,7 +182,7 @@ namespace zlIIR {
     }
 
     coeff33 MartinCoeff::get2TiltShelf(double w0, double g, double q) {
-        bool reverse_ab = g > 1;
+        bool reverse_ab = (g > 1);
         if (g > 1) {
             g = 1 / g;
         }
@@ -207,7 +207,7 @@ namespace zlIIR {
                 auto w1 = std::sqrt((-c1 + delta) / 2 / c2);
                 auto w2 = std::sqrt((-c1 - delta) / 2 / c2);
                 if (w1 < pi || w2 < pi) {
-                    ws = {0, std::min(std::min(w1, w2), pi), std::min(std::max(w1, w2), pi)};
+                    ws = {0, std::min(w1, w2), std::min(std::max(w1, w2), pi)};
                 } else {
                     ws = {0, piHalf, pi};
                 }
@@ -215,13 +215,13 @@ namespace zlIIR {
         }
         coeff3 B{-1, -1, -1};
         size_t trial = 0;
-        while (!check_AB(B) && trial < 10) {
+        while (!check_AB(B) && trial < 20) {
             trial += 1;
             std::array<coeff3, 3> phi{};
             coeff3 res{};
-            for (size_t i = 0; i < 3; i++) {
+            for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
-                res[i] = AnalogFunc::get2LowPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dot_product(phi[i], A);
             }
             B = linear_solve(phi, res);
             ws[2] = 0.5 * (ws[2] + pi);
@@ -250,7 +250,7 @@ namespace zlIIR {
 
     coeff3 MartinCoeff::solve_a(double w0, double b, double c) {
         coeff3 a{};
-        a[0] = 1;
+        a[0] = 1.0;
         if (b <= c) {
             a[1] = -2 * std::exp(-b * w0) * std::cos(std::sqrt(c * c - b * b) * w0);
         } else {
@@ -290,17 +290,17 @@ namespace zlIIR {
         return phi;
     }
 
-    coeff3 MartinCoeff::linear_solve(std::array<coeff3, 3> A, zlIIR::coeff3 b) {
+    coeff3 MartinCoeff::linear_solve(std::array<coeff3, 3> A, coeff3 b) {
         coeff3 x{};
-        if (std::abs(A[0][0]) < std::abs(A[0][1])) {
-            x[0] = b[0];
+        if (std::abs(A[0][0]) > std::abs(A[0][1])) {
+            x[0] = b[0] / A[0][0];
             auto denominator = -(A[1][2] * A[2][1] - A[1][1] * A[2][2]);
             x[1] = A[2][2] * b[1] - A[1][2] * b[2] + A[1][2] * A[2][0] * x[0] - A[1][0] * A[2][2] * x[0];
             x[1] /= denominator;
             x[2] = -A[2][1] * b[1] + A[1][1] * b[2] - A[1][1] * A[2][0] * x[0] + A[1][0] * A[2][1] * x[0];
             x[2] /= denominator;
         } else {
-            x[1] = b[0];
+            x[1] = b[0] / A[0][1];
             auto denominator = -(A[1][2] * A[2][0] - A[1][0] * A[2][2]);
             x[0] = A[1][2] * A[2][1] * b[0] - A[1][1] * A[2][2] * b[0] + A[2][2] * b[1] - A[1][2] * b[2];
             x[0] /= denominator;

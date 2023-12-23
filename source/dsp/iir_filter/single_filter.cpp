@@ -17,6 +17,7 @@ namespace zlIIR {
     template<typename FloatType>
     void SingleFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         processSpec = spec;
+        setOrder(order.load());
         updateParas();
     }
 
@@ -25,7 +26,7 @@ namespace zlIIR {
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
         for (auto &f: filters) {
-            f->process(context);
+            f.process(context);
         }
     }
 
@@ -55,33 +56,39 @@ namespace zlIIR {
 
     template<typename FloatType>
     void SingleFilter<FloatType>::setOrder(size_t x) {
-        if (x != order.load()) {
-            order.store(x);
-            auto num = x > 1 ? x / 2 : 1;
-            filters.clear();
-            filters.reserve(num);
-            for (size_t i = 0; i < num; i++) {
-                filters[i] = std::make_unique<juce::dsp::IIR::Filter<FloatType>>();
-                filters[i]->prepare(processSpec);
-            }
-            updateParas();
-        }
+//        logger.logMessage("set order to " + juce::String(x));
+        order.store(x);
+        updateParas();
     }
 
     template<typename FloatType>
     void SingleFilter<FloatType>::updateParas() {
-        auto coeff = DesignFilter::getCoeff(filterType.load(), freq.load(), processSpec.sampleRate,
+//        logger.logMessage("______________________");
+//        logger.logMessage("order is: " + juce::String(order.load()));
+        auto coeff = DesignFilter::getCoeff(filterType.load(),
+                                            freq.load(), processSpec.sampleRate,
                                             gain.load(), q.load(), order.load());
+        if (coeff.size() != filters.size()) {
+            filters.clear();
+            filters.resize(coeff.size());
+            for (size_t i = 0; i < coeff.size(); i++) {
+                filters[i].prepare(processSpec);
+            }
+        }
+//        logger.logMessage("coeff size is: " + juce::String(coeff.size()));
         for (size_t i = 0; i < coeff.size(); i++) {
             auto [a, b] = coeff[i];
-            auto iirCoeff = juce::dsp::IIR::Coefficients<FloatType>(static_cast<FloatType>(b[0]),
-                                                                    static_cast<FloatType>(b[1]),
-                                                                    static_cast<FloatType>(b[2]),
-                                                                    static_cast<FloatType>(a[0]),
-                                                                    static_cast<FloatType>(a[1]),
-                                                                    static_cast<FloatType>(a[2]));
-            filters[i]->coefficients = iirCoeff;
+            *filters[i].state = std::array<FloatType, 6>{static_cast<FloatType>(b[0]),
+                                                         static_cast<FloatType>(b[1]),
+                                                         static_cast<FloatType>(b[2]),
+                                                         static_cast<FloatType>(a[0]),
+                                                         static_cast<FloatType>(a[1]),
+                                                         static_cast<FloatType>(a[2])};
+
+//            logger.logMessage("coeff are: " + juce::String(b[0]) + " " + juce::String(b[1]) + " " + juce::String(b[2]));
+//            logger.logMessage("coeff are: " + juce::String(a[0]) + " " + juce::String(a[1]) + " " + juce::String(a[2]));
         }
+//        logger.logMessage("______________________");
     }
 
     template
