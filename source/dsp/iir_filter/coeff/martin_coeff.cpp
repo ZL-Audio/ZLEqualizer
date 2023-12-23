@@ -90,7 +90,7 @@ namespace zlIIR {
         auto a = solve_a(w0, 0.5 / q, 1);
         auto A = get_AB(a);
         coeff3 ws{};
-        if (w0 > pi / 2) {
+        if (w0 > pi / 32) {
             ws = {0, 0.5 * w0, w0};
         } else {
             ws = {pi, w0, 0.5 * (pi + w0)};
@@ -122,23 +122,37 @@ namespace zlIIR {
         auto a = solve_a(w0, 0.5 / q);
         auto A = get_AB(a);
 
-        auto [w1, w2] = get_bandwidth(w0, q);
-        coeff3 ws{0, w0, w0 > piHalf ? w1 : w2};
-        coeff3 B{-1, -1, -1};
-        size_t trial = 0;
-        while (!check_AB(B) && trial < 10) {
-            trial += 1;
-            std::array<coeff3, 3> phi{};
-            coeff3 res{};
-            for (size_t i = 0; i < 3; ++i) {
-                phi[i] = get_phi(ws[i]);
-                res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+        if (w0 > pi / 32) {
+            auto phi0 = get_phi(w0);
+            auto R1 = dot_product(phi0, A);
+            auto R2 = dot_product({-1, 1, 4 * (phi0[0] - phi0[1])}, A);
+
+            coeff3 B{};
+            B[0] = 0.0;
+            B[2] = (R1 - R2 * phi0[1]) / 4 / std::pow(phi0[1], 2);
+            B[1] = R2 + 4 * (phi0[1] - phi0[0]) * B[2];
+
+            auto b = get_ab(B);
+            return {a, b};
+        } else {
+            auto [w1, w2] = get_bandwidth(w0, q);
+            coeff3 ws{0, w0, w0 > piHalf ? w1 : w2};
+            coeff3 B{-1, -1, -1};
+            size_t trial = 0;
+            while (!check_AB(B) && trial < 10) {
+                trial += 1;
+                std::array<coeff3, 3> phi{};
+                coeff3 res{};
+                for (size_t i = 0; i < 3; ++i) {
+                    phi[i] = get_phi(ws[i]);
+                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                }
+                B = linear_solve(phi, res);
+                ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
             }
-            B = linear_solve(phi, res);
-            ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
+            auto b = get_ab(B);
+            return {a, b};
         }
-        auto b = get_ab(B);
-        return {a, b};
     }
 
     coeff33 MartinCoeff::get2Notch(double w0, double q) {
@@ -174,7 +188,7 @@ namespace zlIIR {
         auto R2 = (-A[0] + A[1] + 4 * (phi0[0] - phi0[1]) * A[2]) * std::pow(g, 2);
 
         coeff3 B{A[0], 0, 0};
-        B[2] = (R1 - R2 * phi0[1]- B[0]) / (4 * std::pow(phi0[1], 2));
+        B[2] = (R1 - R2 * phi0[1] - B[0]) / (4 * std::pow(phi0[1], 2));
         B[1] = R2 + B[0] + 4 * (phi0[1] - phi0[0]) * B[2];
         auto b = get_ab(B);
 
