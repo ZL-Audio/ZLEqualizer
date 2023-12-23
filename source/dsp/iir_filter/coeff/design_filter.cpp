@@ -158,17 +158,20 @@ namespace zlIIR {
     }
 
     std::vector<coeff33> DesignFilter::getBandShelf(size_t n, double w0, double g, double q) {
+        if (n < 2) {
+            return {};
+        }
         n = n + 2;
         auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
         auto w1 = w0 / std::pow(2, bw / 2);
         auto w2 = w0 * std::pow(2, bw / 2);
         std::vector<coeff33> coeff1;
-        if (w1 < 0.0006544984694978735) {
-            coeff1.push_back({{1, 1, 1}, {1, 1, 1}});
-        } else {
+        if (w1 > 10.0 * 2 * pi / 48000) {
             coeff1 = getLowShelf(n, w1, 1 / g, std::sqrt(2) / 2);
+        } else {
+            coeff1.push_back({{1, 1, 1}, {1, 1, 1}});
         }
-        if (w2 < pi) {
+        if (w2 < 20000.0 * 2 * pi / 48000) {
             auto coeff2 = getLowShelf(n, w2, g, std::sqrt(2) / 2);
             coeff1.insert(coeff1.end(), coeff2.begin(), coeff2.end());
         } else {

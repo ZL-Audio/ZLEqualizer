@@ -259,7 +259,7 @@ namespace zlIIR {
             coeff3 res{};
             for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
-                res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dot_product(phi[i], A);
             }
             B = linear_solve(phi, res);
             ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;

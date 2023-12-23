@@ -56,15 +56,12 @@ namespace zlIIR {
 
     template<typename FloatType>
     void SingleFilter<FloatType>::setOrder(size_t x) {
-//        logger.logMessage("set order to " + juce::String(x));
         order.store(x);
         updateParas();
     }
 
     template<typename FloatType>
     void SingleFilter<FloatType>::updateParas() {
-//        logger.logMessage("______________________");
-//        logger.logMessage("order is: " + juce::String(order.load()));
         auto coeff = DesignFilter::getCoeff(filterType.load(),
                                             freq.load(), processSpec.sampleRate,
                                             gain.load(), q.load(), order.load());
@@ -80,9 +77,15 @@ namespace zlIIR {
             std::array<FloatType, 6> finalCoeff{};
             for (size_t j = 0; j < 6; ++j) {
                 if (j < 3) {
-                    finalCoeff[j] = std::isnan(b[j]) ? 0: static_cast<FloatType>(b[j]);
+//                    if (std::isnan(b[j])) {
+//                        logger.logMessage(juce::String(filterType) + " " + juce::String(order) + " " + juce::String(freq) + " " + juce::String(gain) + " " + juce::String(q));
+//                    }
+                    finalCoeff[j] = static_cast<FloatType>(b[j]);
                 } else {
-                    finalCoeff[j - 3] = std::isnan(a[j - 3]) ? 0: static_cast<FloatType>(a[j - 3]);
+//                    if (std::isnan(a[j - 3])) {
+//                        logger.logMessage(juce::String(filterType) + " " + juce::String(order) + " " + juce::String(freq) + " " + juce::String(gain) + " " + juce::String(q));
+//                    }
+                    finalCoeff[j] = static_cast<FloatType>(a[j - 3]);
                 }
             }
             *filters[i].state = finalCoeff;
