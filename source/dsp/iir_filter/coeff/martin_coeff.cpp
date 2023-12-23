@@ -137,10 +137,22 @@ namespace zlIIR {
         } else {
             auto [w1, w2] = get_bandwidth(w0, q);
             coeff3 ws{0, w0, w0 > piHalf ? w1 : w2};
+            auto _ws = ws;
             coeff3 B{-1, -1, -1};
             size_t trial = 0;
-            while (!check_AB(B) && trial < 10) {
+            while (!check_AB(B) && trial < 20) {
                 trial += 1;
+                std::array<coeff3, 3> phi{};
+                coeff3 res{};
+                for (size_t i = 0; i < 3; ++i) {
+                    phi[i] = get_phi(ws[i]);
+                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                }
+                B = linear_solve(phi, res);
+                ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
+            }
+            if (trial == 20) {
+                ws = _ws;
                 std::array<coeff3, 3> phi{};
                 coeff3 res{};
                 for (size_t i = 0; i < 3; ++i) {
@@ -229,6 +241,7 @@ namespace zlIIR {
         }
         coeff3 B{-1, -1, -1};
         size_t trial = 0;
+        auto _ws = ws;
         while (!check_AB(B) && trial < 20) {
             trial += 1;
             std::array<coeff3, 3> phi{};
@@ -239,6 +252,17 @@ namespace zlIIR {
             }
             B = linear_solve(phi, res);
             ws[2] = 0.5 * (ws[2] + pi);
+        }
+        if (trial == 20) {
+            ws = _ws;
+            std::array<coeff3, 3> phi{};
+            coeff3 res{};
+            for (size_t i = 0; i < 3; ++i) {
+                phi[i] = get_phi(ws[i]);
+                res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+            }
+            B = linear_solve(phi, res);
+            ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
         }
         auto b = get_ab(B);
         if (reverse_ab) {
@@ -288,10 +312,12 @@ namespace zlIIR {
 
     coeff3 MartinCoeff::get_ab(coeff3 A) {
         coeff3 a{};
-        auto W = 0.5 * (std::sqrt(std::max(A[0], 0.0)) + std::sqrt(std::max(A[1], 0.0)));
+        A[0] = std::sqrt(std::max(A[0], 0.0));
+        A[1] = std::sqrt(std::max(A[1], 0.0));
+        auto W = 0.5 * (A[0] + A[1]);
         auto temp = std::max(W * W + A[2], 0.0);
         a[0] = 0.5 * (W + std::sqrt(temp));
-        a[1] = 0.5 * (std::sqrt(A[0]) - std::sqrt(A[1]));
+        a[1] = 0.5 * (A[0] - A[1]);
         a[2] = -A[2] / 4 / a[0];
         return a;
     }
