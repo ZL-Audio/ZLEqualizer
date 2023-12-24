@@ -171,7 +171,7 @@ namespace zlIIR {
         } else {
             coeff1.push_back({{1, 1, 1}, {1, 1, 1}});
         }
-        if (w2 < 20000.0 * 2 * pi / 48000) {
+        if (w2 < 22000.0 * 2 * pi / 48000) {
             auto coeff2 = getLowShelf(n, w2, g, std::sqrt(2) / 2);
             coeff1.insert(coeff1.end(), coeff2.begin(), coeff2.end());
         } else {

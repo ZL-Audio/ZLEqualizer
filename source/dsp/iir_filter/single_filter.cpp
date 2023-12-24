@@ -76,17 +76,7 @@ namespace zlIIR {
             auto [a, b] = coeff[i];
             std::array<FloatType, 6> finalCoeff{};
             for (size_t j = 0; j < 6; ++j) {
-                if (j < 3) {
-//                    if (std::isnan(b[j])) {
-//                        logger.logMessage(juce::String(filterType) + " " + juce::String(order) + " " + juce::String(freq) + " " + juce::String(gain) + " " + juce::String(q));
-//                    }
-                    finalCoeff[j] = static_cast<FloatType>(b[j]);
-                } else {
-//                    if (std::isnan(a[j - 3])) {
-//                        logger.logMessage(juce::String(filterType) + " " + juce::String(order) + " " + juce::String(freq) + " " + juce::String(gain) + " " + juce::String(q));
-//                    }
-                    finalCoeff[j] = static_cast<FloatType>(a[j - 3]);
-                }
+                finalCoeff[j] = static_cast<FloatType>(j < 3 ? b[j] : a[j - 3]);
             }
             *filters[i].state = finalCoeff;
         }

@@ -19,6 +19,8 @@
 namespace zlDSP {
     inline auto static const versionHint = 1;
 
+    inline auto static const bandNUM = 1;
+
     // float
     template<class T>
     class FloatParameters {
@@ -74,7 +76,7 @@ namespace zlDSP {
                                                              "36 dB/oct", "48 dB/oct", "60 dB/oct", "72 dB/oct"};
         int static constexpr defaultI = 1;
         enum {
-            db06, db12, db24, db36, db48, db60, db72, dbNUM
+            db06, db12, db24, db36, db48, db60, db72, fSlopeNUM
         };
     };
 
@@ -102,6 +104,104 @@ namespace zlDSP {
         auto static constexpr defaultV = 0.707f;
     };
 
+    class lrType : public ChoiceParameters<lrType> {
+    public:
+        auto static constexpr ID = "lr_type";
+        auto static constexpr name = "LRType";
+        inline auto static const choices = juce::StringArray{"Stereo", "Left", "Right", "Mid", "Side"};
+        int static constexpr defaultI = 0;
+        enum {
+            stereo, left, right, mid, side, lrTypeNUM
+        };
+    };
+
+    class bypass : public BoolParameters<bypass> {
+    public:
+        auto static constexpr ID = "bypass";
+        auto static constexpr name = "Bypass";
+        auto static constexpr defaultV = true;
+    };
+
+    class dynamic : public BoolParameters<dynamic> {
+    public:
+        auto static constexpr ID = "dynamic";
+        auto static constexpr name = "dynamic";
+        auto static constexpr defaultV = false;
+    };
+
+    class targetGain : public FloatParameters<targetGain> {
+    public:
+        auto static constexpr ID = "target_gain";
+        auto static constexpr name = "Gain";
+        inline auto static const range = juce::NormalisableRange<float>(-30, 30, .1f);
+        auto static constexpr defaultV = 0.f;
+    };
+
+    class targetQ : public FloatParameters<targetQ> {
+    public:
+        auto static constexpr ID = "target_Q";
+        auto static constexpr name = "Q";
+        inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
+        auto static constexpr defaultV = 0.707f;
+    };
+
+    class lowTH : public FloatParameters<lowTH> {
+    public:
+        auto static constexpr ID = "low_th";
+        auto static constexpr name = "Low Th";
+        inline auto static const range = juce::NormalisableRange<float>(-60, 0, .1f);
+        auto static constexpr defaultV = -40.f;
+    };
+
+    class highTH : public FloatParameters<highTH> {
+    public:
+        auto static constexpr ID = "high_th";
+        auto static constexpr name = "High Th";
+        inline auto static const range = juce::NormalisableRange<float>(-60, 0, .1f);
+        auto static constexpr defaultV = -20.f;
+    };
+
+    class sideFreq : public FloatParameters<sideFreq> {
+    public:
+        auto static constexpr ID = "side_freq";
+        auto static constexpr name = "Freq";
+        inline auto static const range = juce::NormalisableRange<float>(10, 20000, 1.f, 0.23064293761596813f);
+        auto static constexpr defaultV = 1000.f;
+    };
+
+    class sideQ : public FloatParameters<sideQ> {
+    public:
+        auto static constexpr ID = "side_Q";
+        auto static constexpr name = "Q";
+        inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
+        auto static constexpr defaultV = 0.707f;
+    };
+
+    class side : public BoolParameters<side> {
+    public:
+        auto static constexpr ID = "side";
+        auto static constexpr name = "Side";
+        auto static constexpr defaultV = false;
+    };
+
+    class attack : public FloatParameters<attack> {
+    public:
+        auto static constexpr ID = "attack";
+        auto static constexpr name = "Attack (ms)";
+        inline auto static const range =
+                juce::NormalisableRange<float>(1.f, 500.f, 0.1f, 0.30103f);
+        auto static constexpr defaultV = 10.f;
+    };
+
+    class release : public FloatParameters<release> {
+    public:
+        auto static constexpr ID = "release";
+        auto static constexpr name = "Release (ms)";
+        inline auto static const range =
+                juce::NormalisableRange<float>(1.f, 5000.f, 0.1f, 0.30103f);
+        auto static constexpr defaultV = 100.f;
+    };
+
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
         layout.add(fType::get(suffix), fSlope::get(suffix),
@@ -111,7 +211,10 @@ namespace zlDSP {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        addOneBandParas(layout, "00");
+        for (int i = 0; i < bandNUM; ++i) {
+            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+            addOneBandParas(layout, suffix);
+        }
         return layout;
     }
 
