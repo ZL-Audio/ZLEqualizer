@@ -30,13 +30,23 @@ namespace zlIIR {
 
         void setFreq(FloatType x);
 
+        inline FloatType getFreq() { return static_cast<FloatType>(freq.load()); }
+
         void setGain(FloatType x);
+
+        inline FloatType getGain() { return static_cast<FloatType>(gain.load()); }
 
         void setQ(FloatType x);
 
+        inline FloatType getQ() { return static_cast<FloatType>(q.load()); }
+
         void setFilterType(FilterType x);
 
+        inline FilterType getFilterType() { return filterType.load(); }
+
         void setOrder(size_t x);
+
+        inline size_t getOrder() { return order.load(); }
 
     private:
         std::vector<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<FloatType>, juce::dsp::IIR::Coefficients<FloatType>>> filters;

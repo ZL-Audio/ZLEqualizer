@@ -32,9 +32,7 @@ namespace zlDynamicFilter {
 
         inline zlIIR::Filter<FloatType> &getSideFilter() { return sFilter; }
 
-        inline void setDynamicON(bool x) {
-            dynamicON.store(x);
-        }
+        void setDynamicON(bool x);
 
     private:
         zlIIR::Filter<FloatType> mFilter, tFilter, sFilter;

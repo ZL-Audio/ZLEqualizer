@@ -22,7 +22,8 @@ namespace zlDynamicFilter {
     }
 
     template<typename FloatType>
-    void DynamicIIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
+    void
+    DynamicIIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
         mFilter.process(mBuffer);
         if (dynamicON.load()) {
             sFilter.process(sBuffer);
@@ -33,6 +34,21 @@ namespace zlDynamicFilter {
                 tBuffer.makeCopyOf(mBuffer, true);
                 tFilter.process(tBuffer);
                 mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
+            }
+        }
+    }
+
+    template<typename FloatType>
+    void DynamicIIRFilter<FloatType>::setDynamicON(bool x) {
+        if (!dynamicON.load() && x) {
+            sFilter.setFilterType(zlIIR::FilterType::bandPass);
+            auto mFilterType = mFilter.getFilterType();
+            if (mFilterType == zlIIR::FilterType::lowShelf || mFilterType == zlIIR::FilterType::lowPass) {
+                sFilter.setFreq(FloatType(0.5) * (FloatType(10) + mFilter.getFreq()));
+            } else if (mFilterType == zlIIR::FilterType::highShelf || mFilterType == zlIIR::FilterType::highPass) {
+                sFilter.setFreq(FloatType(0.5) * (FloatType(20000) + mFilter.getFreq()));
+            } else {
+                sFilter.setFreq(mFilter.getFreq());
             }
         }
     }
