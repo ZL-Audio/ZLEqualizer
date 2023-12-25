@@ -11,13 +11,17 @@
 #ifndef ZLECOMP_COMPUTER_H
 #define ZLECOMP_COMPUTER_H
 
+#include <juce_audio_processors/juce_audio_processors.h>
+
 #include <boost/circular_buffer.hpp>
 #include <boost/math/interpolators/cubic_hermite.hpp>
+
+#include "virtual_computer.h"
 
 namespace zlCompressor {
 
     template<typename FloatType>
-    class KneeComputer {
+    class KneeComputer : VirtualComputer<FloatType> {
     public:
         KneeComputer() { interpolate(); }
 
@@ -25,7 +29,7 @@ namespace zlCompressor {
 
         FloatType eval(FloatType x);
 
-        FloatType process(FloatType x);
+        FloatType process(FloatType x) override;
 
         inline void setThreshold(FloatType v) {
             threshold.store(v);
@@ -39,40 +43,41 @@ namespace zlCompressor {
             interpolate();
         }
 
-        inline FloatType getRatio() const { return ratio.load();}
+        inline FloatType getRatio() const { return ratio.load(); }
 
         inline void setKneeW(FloatType v) {
             kneeW.store(v);
             interpolate();
         }
 
-        inline FloatType getKneeW() const {return kneeW.load();}
+        inline FloatType getKneeW() const { return kneeW.load(); }
 
         inline void setKneeD(FloatType v) {
             kneeD.store(v);
             interpolate();
         }
 
-        inline FloatType getKneeD() const {return kneeD.load();}
+        inline FloatType getKneeD() const { return kneeD.load(); }
 
         inline void setKneeS(FloatType v) {
             kneeS.store(v);
             interpolate();
         }
 
-        inline FloatType getKneeS() const {return kneeS.load();}
+        inline FloatType getKneeS() const { return kneeS.load(); }
 
         inline void setBound(FloatType v) {
             bound.store(v);
         }
 
-        inline FloatType getBound() const {return bound.load();}
+        inline FloatType getBound() const { return bound.load(); }
 
     private:
         std::atomic<FloatType> threshold = FloatType(0), ratio = FloatType(1);
         std::atomic<FloatType> kneeW = FloatType(0.0625), kneeD = FloatType(0.5), kneeS = FloatType(0.5);
         std::atomic<FloatType> bound = FloatType(0);
         std::unique_ptr<boost::math::interpolators::cubic_hermite<std::array<FloatType, 3>>> cubic;
+
         void interpolate();
     };
 

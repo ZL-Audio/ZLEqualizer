@@ -16,11 +16,11 @@
 
 namespace zlCompressor {
     template<typename FloatType>
-    class sComputer {
+    class VirtualComputer {
     public:
-        sComputer() = default;
+        VirtualComputer() = default;
 
-        virtual ~sComputer() = 0;
+        virtual ~VirtualComputer() = 0;
 
         virtual FloatType process(FloatType x) = 0;
     };
