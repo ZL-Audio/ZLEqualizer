@@ -38,6 +38,9 @@ set(FORMATS AU VST3 LV2)
 # For simplicity, the name of the CMake project is also the name of the target
 project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 
+# include boost for this project
+find_package(Boost 1.80.0 REQUIRED)
+
 # Configures universal binaries in CI
 include(PamplejuceMacOS)
 

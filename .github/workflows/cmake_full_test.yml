@@ -100,9 +100,17 @@ jobs:
       with:
         submodules: true # Get JUCE populated
 
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2.4.4
+      id: install-boost
+      with:
+        boost_version: 1.80.0
+
     - name: Configure
       shell: bash
       run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
+      env:
+        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
     - name: Read in .env from CMake # see GitHubENV.cmake
       shell: bash
