@@ -40,7 +40,7 @@ namespace zlCompressor {
 
     template<typename FloatType>
     FloatType KneeComputer<FloatType>::process(FloatType x) {
-        return juce::Decibels::decibelsToGain(eval(x) - x);
+        return eval(x) - x;
     }
 
     template<typename FloatType>

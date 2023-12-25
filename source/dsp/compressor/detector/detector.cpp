@@ -23,6 +23,13 @@ namespace zlCompressor {
     }
 
     template<typename FloatType>
+    void Detector<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+        deltaT.store(static_cast<FloatType>(spec.maximumBlockSize / spec.sampleRate));
+        setAttack(getAttack());
+        setRelease(getRelease());
+    }
+
+    template<typename FloatType>
     FloatType Detector<FloatType>::process(FloatType target) {
         bool ra = ((xC < target) == (phase.load() == Detector::gain));
         FloatType para = ra ? rPara.load() : aPara.load();
@@ -42,13 +49,6 @@ namespace zlCompressor {
     void Detector<FloatType>::reset() {
         xC = 1.0;
         xS = 1.0;
-    }
-
-    template<typename FloatType>
-    void Detector<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        deltaT.store(static_cast<FloatType>(spec.maximumBlockSize / spec.sampleRate));
-        setAttack(getAttack());
-        setRelease(getRelease());
     }
 
     template

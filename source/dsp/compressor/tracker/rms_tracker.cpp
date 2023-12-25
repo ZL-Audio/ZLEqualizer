@@ -18,26 +18,15 @@ namespace zlCompressor {
     }
 
     template<typename FloatType>
-    void RMSTracker<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        secondPerBuffer = static_cast<FloatType>(spec.maximumBlockSize) / static_cast<FloatType>(spec.sampleRate);
-        reset();
-    }
-
-    template<typename FloatType>
     void RMSTracker<FloatType>::reset() {
         loudnessBuffer.clear();
         mLoudness = 0;
-        iLoudness = 0;
-        numBuffer = 0;
     }
 
     template<typename FloatType>
-    void RMSTracker<FloatType>::setMomentarySize(size_t mSize) {
-        while (loudnessBuffer.size() > mSize) {
-            mLoudness -= loudnessBuffer.front();
-            loudnessBuffer.pop_front();
-        }
-        loudnessBuffer.set_capacity(mSize);
+    void RMSTracker<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+        secondPerBuffer = static_cast<FloatType>(spec.maximumBlockSize) / static_cast<FloatType>(spec.sampleRate);
+        reset();
     }
 
     template<typename FloatType>
@@ -58,9 +47,16 @@ namespace zlCompressor {
 
         loudnessBuffer.push_back(_ms);
         mLoudness += _ms;
+    }
 
-        iLoudness += _ms;
-        numBuffer += 1;
+    template<typename FloatType>
+    void RMSTracker<FloatType>::setMomentarySize(size_t mSize) {
+        mSize = std::max(size_t(1), mSize);
+        while (loudnessBuffer.size() > mSize) {
+            mLoudness -= loudnessBuffer.front();
+            loudnessBuffer.pop_front();
+        }
+        loudnessBuffer.set_capacity(mSize);
     }
 
     template

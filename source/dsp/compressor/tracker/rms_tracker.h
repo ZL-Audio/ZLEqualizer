@@ -24,9 +24,11 @@ namespace zlCompressor {
 
         ~RMSTracker() override;
 
+        void reset() override;
+
         void prepare(const juce::dsp::ProcessSpec &spec) override;
 
-        void reset() override;
+        void process(const juce::AudioBuffer<FloatType> &buffer) override;
 
         void setMomentarySize(size_t mSize) override;
 
@@ -34,38 +36,17 @@ namespace zlCompressor {
             return loudnessBuffer.capacity();
         }
 
-        inline FloatType getBufferPeak() override {
-            return juce::Decibels::gainToDecibels(peak);
-        }
-
         inline FloatType getMomentaryLoudness() override {
-            FloatType meanSquare = 0;
-            if (loudnessBuffer.size() > 0) {
-                meanSquare = mLoudness / static_cast<FloatType>(loudnessBuffer.size());
-            }
+            FloatType meanSquare =
+                    loudnessBuffer.size() > 0 ? mLoudness / static_cast<FloatType>(loudnessBuffer.size()) : 0;
+
             return juce::Decibels::gainToDecibels(meanSquare) * static_cast<FloatType>(0.5);
         }
 
-        inline FloatType getIntegratedLoudness() override {
-            FloatType meanSquare = 0;
-            if (numBuffer > 0) {
-                meanSquare = iLoudness / static_cast<FloatType>(numBuffer);
-            }
-            return secondPerBuffer * juce::Decibels::gainToDecibels(meanSquare) *
-                   static_cast<FloatType>(0.5);
-        }
-
-        inline FloatType getIntegratedTotalLoudness() override {
-            return getIntegratedLoudness() * static_cast<FloatType>(numBuffer);
-        }
-
-        void process(const juce::AudioBuffer<FloatType> &buffer) override;
-
     private:
-        size_t numBuffer = 0;
-        FloatType peak = 0, mLoudness = 0, iLoudness = 0;
+        FloatType mLoudness = 0;
         FloatType secondPerBuffer = FloatType(0.01);
-        boost::circular_buffer<FloatType> loudnessBuffer;
+        boost::circular_buffer<FloatType> loudnessBuffer{1};
     };
 
 } // zldetector
