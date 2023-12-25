@@ -20,9 +20,9 @@
 
 namespace zlIIR {
     template<typename FloatType>
-    class SingleFilter {
+    class Filter {
     public:
-        SingleFilter() = default;
+        Filter() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 

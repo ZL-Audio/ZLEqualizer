@@ -7,32 +7,39 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "dynamic_filter.h"
+#include "dynamic_iir_filter.h"
 
-namespace zlIIR {
+namespace zlDynamicFilter {
     template<typename FloatType>
-    void DynamicFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+    void DynamicIIRFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         mFilter.prepare(spec);
         tFilter.prepare(spec);
+        sFilter.prepare(spec);
+        compressor.prepare(spec);
         mixer.prepare(spec);
         tBuffer.setSize(static_cast<int>(spec.numChannels),
                         static_cast<int>(spec.maximumBlockSize));
     }
 
     template<typename FloatType>
-    void DynamicFilter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        mFilter.process(buffer);
+    void DynamicIIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
+        mFilter.process(mBuffer);
         if (dynamicON.load()) {
-            tBuffer.makeCopyOf(buffer, true);
-            tFilter.process(tBuffer);
-            mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(buffer));
-            mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
+            sFilter.process(sBuffer);
+            auto dryMixPortion = compressor.process(sBuffer);
+            if (dryMixPortion < 1.0) {
+                mixer.setWetMixProportion(1 - dryMixPortion);
+                mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
+                tBuffer.makeCopyOf(mBuffer, true);
+                tFilter.process(tBuffer);
+                mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
+            }
         }
     }
 
     template
-    class DynamicFilter<float>;
+    class DynamicIIRFilter<float>;
 
     template
-    class DynamicFilter<double>;
+    class DynamicIIRFilter<double>;
 }

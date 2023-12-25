@@ -15,14 +15,14 @@
 
 namespace zlIIR {
     template<typename FloatType>
-    void SingleFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+    void Filter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         processSpec = spec;
         setOrder(order.load());
         updateParas();
     }
 
     template<typename FloatType>
-    void SingleFilter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+    void Filter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
         for (auto &f: filters) {
@@ -31,37 +31,37 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void SingleFilter<FloatType>::setFreq(FloatType x) {
+    void Filter<FloatType>::setFreq(FloatType x) {
         freq.store(static_cast<double>(x));
         updateParas();
     }
 
     template<typename FloatType>
-    void SingleFilter<FloatType>::setGain(FloatType x) {
+    void Filter<FloatType>::setGain(FloatType x) {
         gain.store(static_cast<double>(x));
         updateParas();
     }
 
     template<typename FloatType>
-    void SingleFilter<FloatType>::setQ(FloatType x) {
+    void Filter<FloatType>::setQ(FloatType x) {
         q.store(static_cast<double>(x));
         updateParas();
     }
 
     template<typename FloatType>
-    void SingleFilter<FloatType>::setFilterType(zlIIR::FilterType x) {
+    void Filter<FloatType>::setFilterType(zlIIR::FilterType x) {
         filterType.store(x);
         updateParas();
     }
 
     template<typename FloatType>
-    void SingleFilter<FloatType>::setOrder(size_t x) {
+    void Filter<FloatType>::setOrder(size_t x) {
         order.store(x);
         updateParas();
     }
 
     template<typename FloatType>
-    void SingleFilter<FloatType>::updateParas() {
+    void Filter<FloatType>::updateParas() {
         auto coeff = DesignFilter::getCoeff(filterType.load(),
                                             freq.load(), processSpec.sampleRate,
                                             gain.load(), q.load(), order.load());
@@ -83,8 +83,8 @@ namespace zlIIR {
     }
 
     template
-    class SingleFilter<float>;
+    class Filter<float>;
 
     template
-    class SingleFilter<double>;
+    class Filter<double>;
 }

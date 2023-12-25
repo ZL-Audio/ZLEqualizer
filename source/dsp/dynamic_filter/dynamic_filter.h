@@ -7,13 +7,9 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-//
-// Created by Zishu Liu on 12/23/23.
-//
+#ifndef ZLEQUALIZER_DYNAMIC_FILTER_H
+#define ZLEQUALIZER_DYNAMIC_FILTER_H
 
-#ifndef ZLEQUALIZER_IIR_FILTER_H
-#define ZLEQUALIZER_IIR_FILTER_H
+#include "dynamic_iir_filter.h"
 
-#include "single_filter.h"
-
-#endif //ZLEQUALIZER_IIR_FILTER_H
+#endif //ZLEQUALIZER_DYNAMIC_FILTER_H

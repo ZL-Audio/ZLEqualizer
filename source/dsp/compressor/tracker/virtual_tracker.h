@@ -23,21 +23,15 @@ namespace zlCompressor {
 
         virtual ~VirtualTracker() = default;
 
+        virtual void reset() = 0;
+
         virtual void prepare(const juce::dsp::ProcessSpec &spec) = 0;
 
-        virtual void reset() = 0;
+        virtual void process(const juce::AudioBuffer<FloatType> &buffer) = 0;
 
         virtual void setMomentarySize(size_t mSize) = 0;
 
-        virtual inline FloatType getBufferPeak() = 0;
-
         virtual inline FloatType getMomentaryLoudness() = 0;
-
-        virtual inline FloatType getIntegratedLoudness() = 0;
-
-        virtual inline FloatType getIntegratedTotalLoudness() = 0;
-
-        virtual void process(const juce::AudioBuffer<FloatType> &buffer) = 0;
     };
 }
 

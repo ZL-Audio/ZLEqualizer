@@ -56,7 +56,7 @@ public:
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 
 private:
-    zlIIR::SingleFilter<float> filter;
+    zlIIR::Filter<float> filter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };
