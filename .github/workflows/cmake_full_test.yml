@@ -224,7 +224,7 @@ jobs:
         mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
 
     - name: Delete artifacts
-      uses: geekyeggo/delete-artifact@v2
+      uses: geekyeggo/delete-artifact@v4
       with:
         name: |
           ${{ env.ARTIFACT_NAME }}.zip
