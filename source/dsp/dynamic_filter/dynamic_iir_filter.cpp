@@ -15,6 +15,7 @@ namespace zlDynamicFilter {
         mFilter.prepare(spec);
         tFilter.prepare(spec);
         sFilter.prepare(spec);
+        sFilter.setFilterType(zlIIR::FilterType::bandPass);
         compressor.prepare(spec);
         mixer.prepare(spec);
         tBuffer.setSize(static_cast<int>(spec.numChannels),
@@ -38,17 +39,14 @@ namespace zlDynamicFilter {
     }
 
     template<typename FloatType>
-    void IIRFilter<FloatType>::setDynamicON(bool x) {
-        if (!dynamicON.load() && x) {
-            sFilter.setFilterType(zlIIR::FilterType::bandPass);
-            auto mFilterType = mFilter.getFilterType();
-            if (mFilterType == zlIIR::FilterType::lowShelf || mFilterType == zlIIR::FilterType::lowPass) {
-                sFilter.setFreq(FloatType(0.5) * (FloatType(10) + mFilter.getFreq()));
-            } else if (mFilterType == zlIIR::FilterType::highShelf || mFilterType == zlIIR::FilterType::highPass) {
-                sFilter.setFreq(FloatType(0.5) * (FloatType(20000) + mFilter.getFreq()));
-            } else {
-                sFilter.setFreq(mFilter.getFreq());
-            }
+    FloatType IIRFilter<FloatType>::getSideDefaultFreq() {
+        auto mFilterType = mFilter.getFilterType();
+        if (mFilterType == zlIIR::FilterType::lowShelf || mFilterType == zlIIR::FilterType::lowPass) {
+            return FloatType(0.5) * (FloatType(10) + mFilter.getFreq());
+        } else if (mFilterType == zlIIR::FilterType::highShelf || mFilterType == zlIIR::FilterType::highPass) {
+            return FloatType(0.5) * (FloatType(20000) + mFilter.getFreq());
+        } else {
+            return mFilter.getFreq();
         }
     }
 

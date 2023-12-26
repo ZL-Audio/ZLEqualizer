@@ -17,6 +17,12 @@
 #include "../compressor/compressor.h"
 
 namespace zlDynamicFilter {
+    /**
+     * a dynamic IIR filter which holds a main filter, a target filter and a side filter
+     * the output signal is a mix of the signal from the main filter and the signal from the target filter
+     * the mix portion is controlled by a compressor on the signal from the side filter
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class IIRFilter {
     public:
@@ -32,7 +38,9 @@ namespace zlDynamicFilter {
 
         inline zlIIR::Filter<FloatType> &getSideFilter() { return sFilter; }
 
-        void setDynamicON(bool x);
+        inline void setDynamicON(bool x) { dynamicON.store(x); }
+
+        FloatType getSideDefaultFreq();
 
         void addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x);
 
