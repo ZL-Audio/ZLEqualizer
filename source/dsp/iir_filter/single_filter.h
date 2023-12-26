@@ -19,7 +19,7 @@
 #include "coeff/design_filter.h"
 
 namespace zlIIR {
-    // sd does not support constexpr log/pow, np.logspace(1, np.log10(20000), 200)
+    /** stl does not support constexpr log/pow, np.logspace(1, np.log10(20000), 200) */
     constexpr std::array<double, 200> frequencies = {1.00000000e+01, 1.03893431e+01, 1.07938451e+01, 1.12140960e+01,
                                                      1.16507092e+01, 1.21043215e+01, 1.25755950e+01, 1.30652172e+01,
                                                      1.35739024e+01, 1.41023930e+01, 1.46514600e+01, 1.52219046e+01,
@@ -71,6 +71,10 @@ namespace zlIIR {
                                                      1.53078206e+04, 1.59038200e+04, 1.65230244e+04, 1.71663370e+04,
                                                      1.78346965e+04, 1.85290782e+04, 1.92504952e+04, 2.00000000e+04};
 
+    /**
+     * a static IIR filter
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class Filter {
     public:

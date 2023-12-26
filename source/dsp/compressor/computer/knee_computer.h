@@ -19,7 +19,10 @@
 #include "virtual_computer.h"
 
 namespace zlCompressor {
-
+    /**
+     * a computer that computes the current compression
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class KneeComputer : VirtualComputer<FloatType> {
     public:
@@ -29,6 +32,11 @@ namespace zlCompressor {
 
         FloatType eval(FloatType x);
 
+        /**
+         * computes the current compression
+         * @param x input level (in dB)
+         * @return current compression (in dB)
+         */
         FloatType process(FloatType x) override;
 
         inline void setThreshold(FloatType v) {

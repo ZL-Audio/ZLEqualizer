@@ -19,8 +19,8 @@
 namespace zlDynamicFilter {
     /**
      * a dynamic IIR filter which holds a main filter, a target filter and a side filter
-     * the output signal is a mix of the signal from the main filter and the signal from the target filter
-     * the mix portion is controlled by a compressor on the signal from the side filter
+     * the output signal is a mix of the signal from the main/target filter (on the main chain)
+     * the mix portion is controlled by a compressor on the signal from the side filter (on the side chain)
      * @tparam FloatType
      */
     template<typename FloatType>
@@ -30,6 +30,11 @@ namespace zlDynamicFilter {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        /**
+         * process the audio buffer
+         * @param mBuffer main chain audio buffer
+         * @param sBuffer side chain audio buffer
+         */
         void process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer);
 
         inline zlIIR::Filter<FloatType> &getMainFilter() { return mFilter; }
@@ -40,6 +45,10 @@ namespace zlDynamicFilter {
 
         inline void setDynamicON(bool x) { dynamicON.store(x); }
 
+        /**
+         * calculate the default frequency of the side filter
+         * @return the default frequency of the side filter
+         */
         FloatType getSideDefaultFreq();
 
         void addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x);

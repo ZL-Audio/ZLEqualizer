@@ -14,6 +14,10 @@
 #include <juce_dsp/juce_dsp.h>
 
 namespace zlSplitter {
+    /**
+     * a splitter that splits the stereo audio signal input mid signal and side signal
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class MSSplitter {
     public:
@@ -21,8 +25,16 @@ namespace zlSplitter {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        /**
+         * split the audio buffer into internal mid buffer and side buffer
+         * @param buffer
+         */
         void split(juce::AudioBuffer <FloatType> &buffer);
 
+        /**
+         * combine the internal mid buffer and side buffer into the audio buffer
+         * @param buffer
+         */
         void combine(juce::AudioBuffer <FloatType> &buffer);
 
         inline juce::AudioBuffer<FloatType> &getMBuffer() { return mBuffer; }

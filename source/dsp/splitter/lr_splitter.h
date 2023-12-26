@@ -14,6 +14,10 @@
 #include <juce_dsp/juce_dsp.h>
 
 namespace zlSplitter {
+    /**
+     * a splitter that splits the stereo audio signal input left signal and right signal
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class LRSplitter {
     public:
@@ -21,8 +25,16 @@ namespace zlSplitter {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        /**
+         * split the audio buffer into internal left buffer and right buffer
+         * @param buffer
+         */
         void split(juce::AudioBuffer<FloatType> &buffer);
 
+        /**
+         * combine the internal left buffer and right buffer into the audio buffer
+         * @param buffer
+         */
         void combine(juce::AudioBuffer<FloatType> &buffer);
 
         inline juce::AudioBuffer<FloatType> &getLBuffer() { return lBuffer; }

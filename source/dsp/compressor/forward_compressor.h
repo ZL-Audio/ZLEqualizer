@@ -18,6 +18,10 @@
 #include "tracker/tracker.h"
 
 namespace zlCompressor {
+    /**
+     * a forward compressor
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class ForwardCompressor {
     public:
@@ -25,6 +29,11 @@ namespace zlCompressor {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        /**
+         * process the audio buffer and return the compression gain (in gain)
+         * @param buffer side chain audio buffer
+         * @return gain (in gain)
+         */
         FloatType process(juce::AudioBuffer<FloatType> buffer);
 
         inline KneeComputer<FloatType> &getComputer() { return computer; }

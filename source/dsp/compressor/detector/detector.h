@@ -17,7 +17,10 @@
 #include "iter_funcs.h"
 
 namespace zlCompressor {
-
+    /**
+     * a detector that performs attack/release on the input gain
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class Detector {
     public:
@@ -33,6 +36,11 @@ namespace zlCompressor {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        /**
+         * apply attack/release on the target gain and return the current gain
+         * @param target the target gain
+         * @return the current gain
+         */
         FloatType process(FloatType target);
 
         inline void setAStyle(IterType idx) { aStyle.store(idx); }

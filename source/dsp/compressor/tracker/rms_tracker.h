@@ -16,7 +16,10 @@
 #include "virtual_tracker.h"
 
 namespace zlCompressor {
-
+    /**
+     * a tracker that tracks the momentary RMS loudness of the audio signal
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class RMSTracker : VirtualTracker<FloatType> {
     public:
