@@ -27,6 +27,8 @@ namespace zlCompressor {
     public:
         ForwardCompressor() = default;
 
+        void reset();
+
         void prepare(const juce::dsp::ProcessSpec &spec);
 
         /**

@@ -26,8 +26,8 @@ void PluginProcessor::parameterChanged(const juce::String &parameterID, float ne
     const juce::GenericScopedLock<juce::CriticalSection> processLock(this->getCallbackLock());
     if (parameterID == "f_type00") {
         filter.setFilterType(static_cast<zlIIR::FilterType>(newValue));
-    } else if (parameterID == "f_slope00") {
-        filter.setOrder(zlDSP::fSlope::orderArray[static_cast<size_t>(newValue)]);
+    } else if (parameterID == "slope00") {
+        filter.setOrder(zlDSP::slope::orderArray[static_cast<size_t>(newValue)]);
     } else if (parameterID == "freq00") {
         filter.setFreq(newValue);
     } else if (parameterID == "gain00") {

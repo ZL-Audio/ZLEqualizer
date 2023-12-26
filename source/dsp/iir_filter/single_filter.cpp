@@ -7,13 +7,16 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-//
-// Created by Zishu Liu on 12/19/23.
-//
-
 #include "single_filter.h"
 
 namespace zlIIR {
+    template<typename FloatType>
+    void Filter<FloatType>::reset() {
+        for (auto &f: filters) {
+            f.reset();
+        }
+    }
+
     template<typename FloatType>
     void Filter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         processSpec = spec;
@@ -25,6 +28,7 @@ namespace zlIIR {
     void Filter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
+        const juce::ScopedReadLock scopedLock(paraUpdateLock);
         for (auto &f: filters) {
             f.process(context);
         }
@@ -65,6 +69,7 @@ namespace zlIIR {
         auto coeff = DesignFilter::getCoeff(filterType.load(),
                                             freq.load(), processSpec.sampleRate,
                                             gain.load(), q.load(), order.load());
+        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         if (coeff.size() != filters.size()) {
             filters.clear();
             filters.resize(coeff.size());

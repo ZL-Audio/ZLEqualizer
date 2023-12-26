@@ -7,10 +7,6 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-//
-// Created by Zishu Liu on 12/19/23.
-//
-
 #ifndef ZLEQUALIZER_SINGLE_FILTER_H
 #define ZLEQUALIZER_SINGLE_FILTER_H
 
@@ -80,6 +76,8 @@ namespace zlIIR {
     public:
         Filter() = default;
 
+        void reset();
+
         void prepare(const juce::dsp::ProcessSpec &spec);
 
         void process(juce::AudioBuffer<FloatType> &buffer);
@@ -112,6 +110,7 @@ namespace zlIIR {
         std::atomic<size_t> order = 2;
         std::atomic<FilterType> filterType = FilterType::peak;
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
+        juce::ReadWriteLock paraUpdateLock;
 
         std::array<FloatType, frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;

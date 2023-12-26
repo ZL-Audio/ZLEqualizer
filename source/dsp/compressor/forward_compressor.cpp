@@ -11,6 +11,11 @@
 
 namespace zlCompressor {
     template<typename FloatType>
+    void ForwardCompressor<FloatType>::reset() {
+        detector.reset();
+        tracker.reset();
+    }
+    template<typename FloatType>
     void ForwardCompressor<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         detector.prepare(spec);
         tracker.prepare(spec);

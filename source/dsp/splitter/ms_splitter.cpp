@@ -10,6 +10,12 @@
 #include "ms_splitter.h"
 namespace zlSplitter {
     template<typename FloatType>
+    void MSSplitter<FloatType>::reset() {
+        mBuffer.clear();
+        sBuffer.clear();
+    }
+
+    template<typename FloatType>
     void MSSplitter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         mBuffer.setSize(1, static_cast<int>(spec.maximumBlockSize));
         sBuffer.setSize(1, static_cast<int>(spec.maximumBlockSize));

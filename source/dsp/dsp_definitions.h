@@ -68,9 +68,9 @@ namespace zlDSP {
         };
     };
 
-    class fSlope : public ChoiceParameters<fSlope> {
+    class slope : public ChoiceParameters<slope> {
     public:
-        auto static constexpr ID = "f_slope";
+        auto static constexpr ID = "slope";
         auto static constexpr name = "Slope";
         inline auto static const choices = juce::StringArray{"6 dB/oct", "12 dB/oct", "24 dB/oct",
                                                              "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"};
@@ -108,9 +108,10 @@ namespace zlDSP {
         auto static constexpr name = "LRType";
         inline auto static const choices = juce::StringArray{"Stereo", "Left", "Right", "Mid", "Side"};
         int static constexpr defaultI = 0;
-        enum {
-            stereo, left, right, mid, side, lrTypeNUM
-        };
+    };
+
+    enum lrTypes {
+        stereo, left, right, mid, side, lrTypeNUM
     };
 
     class bypass : public BoolParameters<bypass> {
@@ -175,13 +176,6 @@ namespace zlDSP {
         auto static constexpr defaultV = 0.707f;
     };
 
-    class side : public BoolParameters<side> {
-    public:
-        auto static constexpr ID = "side";
-        auto static constexpr name = "Side";
-        auto static constexpr defaultV = false;
-    };
-
     class attack : public FloatParameters<attack> {
     public:
         auto static constexpr ID = "attack";
@@ -202,10 +196,17 @@ namespace zlDSP {
 
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
-        layout.add(fType::get(suffix), fSlope::get(suffix),
+        layout.add(fType::get(suffix), slope::get(suffix),
                    freq::get(suffix), gain::get(suffix),
                    Q::get(suffix));
     }
+
+    class sideChain : public BoolParameters<sideChain> {
+    public:
+        auto static constexpr ID = "side_chain";
+        auto static constexpr name = "Side Chain";
+        auto static constexpr defaultV = false;
+    };
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;

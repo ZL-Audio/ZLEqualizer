@@ -28,6 +28,8 @@ namespace zlDynamicFilter {
     public:
         IIRFilter() = default;
 
+        void reset();
+
         void prepare(const juce::dsp::ProcessSpec &spec);
 
         /**
@@ -44,6 +46,8 @@ namespace zlDynamicFilter {
         inline zlIIR::Filter<FloatType> &getSideFilter() { return sFilter; }
 
         inline void setDynamicON(bool x) { dynamicON.store(x); }
+
+        inline bool getDynamicON() { return dynamicON.load(); }
 
         /**
          * calculate the default frequency of the side filter

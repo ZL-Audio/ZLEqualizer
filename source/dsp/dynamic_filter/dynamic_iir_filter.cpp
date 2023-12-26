@@ -11,6 +11,15 @@
 
 namespace zlDynamicFilter {
     template<typename FloatType>
+    void IIRFilter<FloatType>::reset() {
+        mFilter.reset();
+        tFilter.reset();
+        sFilter.reset();
+        compressor.reset();
+        mixer.reset();
+    }
+
+    template<typename FloatType>
     void IIRFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         mFilter.prepare(spec);
         tFilter.prepare(spec);
@@ -28,13 +37,13 @@ namespace zlDynamicFilter {
         if (dynamicON.load()) {
             sFilter.process(sBuffer);
             dryMixPortion.store(compressor.process(sBuffer));
-            if (dryMixPortion.load() < 1.0) {
-                mixer.setWetMixProportion(1 - dryMixPortion.load());
-                mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
-                tBuffer.makeCopyOf(mBuffer, true);
-                tFilter.process(tBuffer);
-                mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
-            }
+
+            mixer.setWetMixProportion(1 - dryMixPortion.load());
+            mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
+
+            tBuffer.makeCopyOf(mBuffer, true);
+            tFilter.process(tBuffer);
+            mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
         }
     }
 

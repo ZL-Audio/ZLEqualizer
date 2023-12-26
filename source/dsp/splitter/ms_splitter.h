@@ -23,6 +23,8 @@ namespace zlSplitter {
     public:
         MSSplitter() = default;
 
+        void reset();
+
         void prepare(const juce::dsp::ProcessSpec &spec);
 
         /**

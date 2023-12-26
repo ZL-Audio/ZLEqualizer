@@ -11,6 +11,12 @@
 
 namespace zlSplitter {
     template<typename FloatType>
+    void LRSplitter<FloatType>::reset() {
+        lBuffer.clear();
+        rBuffer.clear();
+    }
+
+    template<typename FloatType>
     void LRSplitter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         lBuffer.setSize(1, static_cast<int>(spec.maximumBlockSize));
         rBuffer.setSize(1, static_cast<int>(spec.maximumBlockSize));
