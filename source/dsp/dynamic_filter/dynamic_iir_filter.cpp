@@ -11,7 +11,7 @@
 
 namespace zlDynamicFilter {
     template<typename FloatType>
-    void DynamicIIRFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+    void IIRFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         mFilter.prepare(spec);
         tFilter.prepare(spec);
         sFilter.prepare(spec);
@@ -22,14 +22,13 @@ namespace zlDynamicFilter {
     }
 
     template<typename FloatType>
-    void
-    DynamicIIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
+    void IIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
         mFilter.process(mBuffer);
         if (dynamicON.load()) {
             sFilter.process(sBuffer);
-            auto dryMixPortion = compressor.process(sBuffer);
-            if (dryMixPortion < 1.0) {
-                mixer.setWetMixProportion(1 - dryMixPortion);
+            dryMixPortion.store(compressor.process(sBuffer));
+            if (dryMixPortion.load() < 1.0) {
+                mixer.setWetMixProportion(1 - dryMixPortion.load());
                 mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
                 tBuffer.makeCopyOf(mBuffer, true);
                 tFilter.process(tBuffer);
@@ -39,7 +38,7 @@ namespace zlDynamicFilter {
     }
 
     template<typename FloatType>
-    void DynamicIIRFilter<FloatType>::setDynamicON(bool x) {
+    void IIRFilter<FloatType>::setDynamicON(bool x) {
         if (!dynamicON.load() && x) {
             sFilter.setFilterType(zlIIR::FilterType::bandPass);
             auto mFilterType = mFilter.getFilterType();
@@ -53,9 +52,28 @@ namespace zlDynamicFilter {
         }
     }
 
-    template
-    class DynamicIIRFilter<float>;
+    template<typename FloatType>
+    void IIRFilter<FloatType>::addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x) {
+        const juce::ScopedReadLock scopedLock(magLock);
+        std::transform(x.begin(), x.end(), dBs.begin(), x.begin(), std::plus<FloatType>());
+    }
+
+    template<typename FloatType>
+    void IIRFilter<FloatType>::updateDBs() {
+        const juce::ScopedWriteLock scopedLock(magLock);
+        dBs.fill(0.0);
+        if (!dynamicON.load()) {
+            mFilter.addDBs(dBs);
+        } else {
+            auto portion = dryMixPortion.load();
+            mFilter.addDBs(dBs, portion);
+            tFilter.addDBs(dBs, 1 - portion);
+        }
+    }
 
     template
-    class DynamicIIRFilter<double>;
+    class IIRFilter<float>;
+
+    template
+    class IIRFilter<double>;
 }

@@ -73,11 +73,9 @@ namespace zlDSP {
         auto static constexpr ID = "f_slope";
         auto static constexpr name = "Slope";
         inline auto static const choices = juce::StringArray{"6 dB/oct", "12 dB/oct", "24 dB/oct",
-                                                             "36 dB/oct", "48 dB/oct", "60 dB/oct", "72 dB/oct"};
+                                                             "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"};
         int static constexpr defaultI = 1;
-        enum {
-            db06, db12, db24, db36, db48, db60, db72, fSlopeNUM
-        };
+        static constexpr std::array<size_t, 7> orderArray{1, 2, 4, 6, 8, 12, 16};
     };
 
     class freq : public FloatParameters<freq> {

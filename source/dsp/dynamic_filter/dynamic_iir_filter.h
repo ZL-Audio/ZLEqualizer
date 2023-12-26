@@ -18,9 +18,9 @@
 
 namespace zlDynamicFilter {
     template<typename FloatType>
-    class DynamicIIRFilter {
+    class IIRFilter {
     public:
-        DynamicIIRFilter() = default;
+        IIRFilter() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
@@ -34,12 +34,20 @@ namespace zlDynamicFilter {
 
         void setDynamicON(bool x);
 
+        void addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x);
+
+        void updateDBs();
+
     private:
         zlIIR::Filter<FloatType> mFilter, tFilter, sFilter;
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::dsp::DryWetMixer<FloatType> mixer;
         juce::AudioBuffer<FloatType> tBuffer;
         std::atomic<bool> dynamicON = false;
+
+        std::atomic<FloatType> dryMixPortion;
+        std::array<FloatType, zlIIR::frequencies.size()> dBs{};
+        juce::ReadWriteLock magLock;
     };
 }
 

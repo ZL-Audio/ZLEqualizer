@@ -11,7 +11,7 @@ PluginProcessor::PluginProcessor()
                                  .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
 ), parameters(*this, nullptr,
-              juce::Identifier("ZLECompParameters"),
+              juce::Identifier("ZLEqualizerParameters"),
               zlDSP::getParameterLayout()) {
     parameters.addParameterListener("f_type00", this);
     parameters.addParameterListener("f_slope00", this);
@@ -20,16 +20,14 @@ PluginProcessor::PluginProcessor()
     parameters.addParameterListener("Q00", this);
 }
 
-PluginProcessor::~PluginProcessor() {
-}
+PluginProcessor::~PluginProcessor() = default;
 
 void PluginProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
     const juce::GenericScopedLock<juce::CriticalSection> processLock(this->getCallbackLock());
     if (parameterID == "f_type00") {
         filter.setFilterType(static_cast<zlIIR::FilterType>(newValue));
     } else if (parameterID == "f_slope00") {
-        auto order = newValue < 0.5? 1: static_cast<size_t>(newValue) * 2;
-        filter.setOrder(order);
+        filter.setOrder(zlDSP::fSlope::orderArray[static_cast<size_t>(newValue)]);
     } else if (parameterID == "freq00") {
         filter.setFreq(newValue);
     } else if (parameterID == "gain00") {
@@ -97,7 +95,7 @@ void PluginProcessor::changeProgramName(int index, const juce::String &newName) 
 //==============================================================================
 void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    // initialisation that you need.
     auto channels = static_cast<juce::uint32> (juce::jmin(getMainBusNumInputChannels(),
                                                           getMainBusNumOutputChannels()));
     juce::dsp::ProcessSpec spec{sampleRate, static_cast<juce::uint32> (samplesPerBlock),

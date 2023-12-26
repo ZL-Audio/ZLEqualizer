@@ -80,6 +80,27 @@ namespace zlIIR {
             }
             *filters[i].state = finalCoeff;
         }
+        updateDBs();
+    }
+
+    template<typename FloatType>
+    void Filter<FloatType>::addDBs(std::array<FloatType, frequencies.size()> &x, FloatType scale) {
+        const juce::ScopedReadLock scopedLock(magLock);
+        std::transform(x.begin(), x.end(), dBs.begin(), x.begin(),
+                       [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
+    }
+
+    template<typename FloatType>
+    void Filter<FloatType>::updateDBs() {
+        const juce::ScopedWriteLock scopedLock(magLock);
+        dBs.fill(1.0);
+        std::array<double, frequencies.size()> singleMagnitudes{};
+        for (size_t i = 0; i < filters.size(); i++) {
+            filters[i].state->getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
+                                                            frequencies.size(), processSpec.sampleRate);
+            std::transform(dBs.begin(), dBs.end(), singleMagnitudes.begin(), dBs.begin(), std::multiplies<FloatType>());
+        }
+        std::transform(dBs.begin(), dBs.end(), dBs.begin(), [](auto &c) { return juce::Decibels::gainToDecibels(c); });
     }
 
     template
