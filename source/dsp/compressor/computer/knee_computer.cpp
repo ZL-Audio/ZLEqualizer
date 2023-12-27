@@ -22,6 +22,9 @@ namespace zlCompressor {
     }
 
     template<typename FloatType>
+    KneeComputer<FloatType>::~KneeComputer() = default;
+
+    template<typename FloatType>
     FloatType KneeComputer<FloatType>::eval(FloatType x) {
         const juce::ScopedReadLock scopedLock(paraUpdateLock);
         if (x <= threshold - kneeW) {

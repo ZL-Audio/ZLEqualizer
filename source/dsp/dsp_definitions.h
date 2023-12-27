@@ -205,9 +205,9 @@ namespace zlDSP {
 
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
-        layout.add(fType::get(suffix), slope::get(suffix),
-                   freq::get(suffix), gain::get(suffix),
-                   Q::get(suffix));
+        layout.add(bypass::get(suffix), fType::get(suffix), slope::get(suffix),
+                   freq::get(suffix), gain::get(suffix), Q::get(suffix),
+                   lrType::get(suffix));
     }
 
     class sideChain : public BoolParameters<sideChain> {

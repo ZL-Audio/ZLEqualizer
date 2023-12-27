@@ -47,6 +47,7 @@ namespace zlDSP {
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
+        juce::ReadWriteLock paraUpdateLock;
 
         std::array<std::atomic<lrTypes>, bandNUM> filterLRs;
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;

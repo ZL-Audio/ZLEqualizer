@@ -15,6 +15,7 @@ namespace zlCompressor {
         detector.reset();
         tracker.reset();
     }
+
     template<typename FloatType>
     void ForwardCompressor<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         detector.prepare(spec);
@@ -30,4 +31,10 @@ namespace zlCompressor {
         x = detector.process(x);
         return x;
     }
+
+    template
+    class ForwardCompressor<float>;
+
+    template
+    class ForwardCompressor<double>;
 }

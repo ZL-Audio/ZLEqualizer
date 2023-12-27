@@ -3,13 +3,14 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 #include "dsp/dsp_definitions.h"
-#include "dsp/iir_filter/single_filter.h"
+#include "dsp/controller.h"
+#include "dsp/filters_attach.h"
 
 #if (MSVC)
 #include "ipps.h"
 #endif
 
-class PluginProcessor : public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener {
+class PluginProcessor : public juce::AudioProcessor {
 public:
     juce::AudioProcessorValueTreeState parameters;
 
@@ -53,10 +54,9 @@ public:
 
     void setStateInformation(const void *data, int sizeInBytes) override;
 
-    void parameterChanged(const juce::String &parameterID, float newValue) override;
-
 private:
-    zlIIR::Filter<float> filter;
+    zlDSP::Controller<float> controller;
+    zlDSP::FiltersAttach<float> filtersAttach;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

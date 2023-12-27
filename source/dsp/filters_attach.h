@@ -38,6 +38,8 @@ namespace zlDSP {
         constexpr static std::array dynamicInitIDs{dynamicBypass::ID, targetGain::ID, targetQ::ID, sideFreq::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+//        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Filters Attach Log"};
     };
 }
 

@@ -21,14 +21,20 @@ namespace zlDSP {
     template<typename FloatType>
     FiltersAttach<FloatType>::~FiltersAttach() {
         for (auto &ID: IDs) {
-            parameterRef.removeParameterListener(ID, this);
+            for (int i = 0; i < bandNUM; ++i) {
+                auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+                parameterRef.removeParameterListener(ID + suffix, this);
+            }
         }
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::addListeners() {
         for (auto &ID: IDs) {
-            parameterRef.addParameterListener(ID, this);
+            for (int i = 0; i < bandNUM; ++i) {
+                auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+                parameterRef.addParameterListener(ID + suffix, this);
+            }
         }
     }
 
@@ -37,6 +43,7 @@ namespace zlDSP {
         auto id = parameterID.dropLastCharacters(2);
         auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         auto value = static_cast<FloatType>(newValue);
+//        logger.logMessage(id + " " + juce::String(idx));
         if (id == bypass::ID) {
             filtersRef[idx].setBypass(static_cast<bool>(value));
         } else if (id == fType::ID) {

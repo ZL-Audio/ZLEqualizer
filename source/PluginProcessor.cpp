@@ -12,30 +12,13 @@ PluginProcessor::PluginProcessor()
 #endif
 ), parameters(*this, nullptr,
               juce::Identifier("ZLEqualizerParameters"),
-              zlDSP::getParameterLayout()) {
-    parameters.addParameterListener("f_type00", this);
-    parameters.addParameterListener("f_slope00", this);
-    parameters.addParameterListener("freq00", this);
-    parameters.addParameterListener("gain00", this);
-    parameters.addParameterListener("Q00", this);
+              zlDSP::getParameterLayout()),
+          controller(*this),
+          filtersAttach(*this, parameters, controller) {
+    filtersAttach.addListeners();
 }
 
 PluginProcessor::~PluginProcessor() = default;
-
-void PluginProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
-//    const juce::GenericScopedLock<juce::CriticalSection> processLock(this->getCallbackLock());
-    if (parameterID == "f_type00") {
-        filter.setFilterType(static_cast<zlIIR::FilterType>(newValue));
-    } else if (parameterID == "slope00") {
-        filter.setOrder(zlDSP::slope::orderArray[static_cast<size_t>(newValue)]);
-    } else if (parameterID == "freq00") {
-        filter.setFreq(newValue);
-    } else if (parameterID == "gain00") {
-        filter.setGain(newValue);
-    } else if (parameterID == "Q00") {
-        filter.setQ(newValue);
-    }
-}
 
 //==============================================================================
 const juce::String PluginProcessor::getName() const {
@@ -100,12 +83,13 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
                                                           getMainBusNumOutputChannels()));
     juce::dsp::ProcessSpec spec{sampleRate, static_cast<juce::uint32> (samplesPerBlock),
                                 channels};
-    filter.prepare(spec);
+    controller.prepare(spec);
 }
 
 void PluginProcessor::releaseResources() {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+    controller.reset();
 }
 
 bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
@@ -132,12 +116,9 @@ bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
 void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                    juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
-
     juce::ScopedNoDenormals noDenormals;
-//    auto totalNumInputChannels = getTotalNumInputChannels();
-//    auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    filter.process(buffer);
+    controller.process(buffer);
 }
 
 //==============================================================================

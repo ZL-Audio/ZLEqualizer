@@ -20,7 +20,7 @@ namespace zlCompressor {
     public:
         VirtualComputer() = default;
 
-        virtual ~VirtualComputer() = 0;
+        virtual ~VirtualComputer() = default;
 
         virtual FloatType process(FloatType x) = 0;
     };

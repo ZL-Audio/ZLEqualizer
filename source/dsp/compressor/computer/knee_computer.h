@@ -30,6 +30,8 @@ namespace zlCompressor {
 
         KneeComputer(const KneeComputer<FloatType> &c);
 
+        ~KneeComputer() override;
+
         FloatType eval(FloatType x);
 
         /**

@@ -44,6 +44,7 @@ namespace zlDSP {
             sideBuffer.makeCopyOf(mainBuffer, true);
         }
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
+        const juce::ScopedReadLock scopedLock(paraUpdateLock);
         // ---------------- start sub buffer
         subBuffer.pushBlock(block);
         while (subBuffer.isSubReady()) {
@@ -97,6 +98,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setFilterLRs(zlDSP::lrTypes x, size_t idx) {
+        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         // prepare the filter
         filterLRs[idx].store(x);
         if (x == lrTypes::stereo) {
