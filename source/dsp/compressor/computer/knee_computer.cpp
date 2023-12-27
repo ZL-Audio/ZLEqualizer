@@ -23,18 +23,13 @@ namespace zlCompressor {
 
     template<typename FloatType>
     FloatType KneeComputer<FloatType>::eval(FloatType x) {
+        const juce::ScopedReadLock scopedLock(paraUpdateLock);
         if (x <= threshold - kneeW) {
             return x;
         } else if (x >= threshold + kneeW) {
             return juce::jlimit(x - bound.load(), x + bound.load(), x / ratio + (1 - 1 / ratio) * threshold);
         } else {
-            try {
-                return juce::jlimit(x - bound.load(), x + bound.load(), cubic->operator()(x));
-            } catch (std::domain_error &e) {
-                return x;
-            } catch (...) {
-                return x;
-            }
+            return juce::jlimit(x - bound.load(), x + bound.load(), cubic->operator()(x));
         }
     }
 

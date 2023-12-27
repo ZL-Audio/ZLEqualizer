@@ -45,9 +45,19 @@ namespace zlDynamicFilter {
 
         inline zlIIR::Filter<FloatType> &getSideFilter() { return sFilter; }
 
+        inline zlCompressor::ForwardCompressor<FloatType> &getCompressor() { return compressor; }
+
+        inline void setBypass(bool x) { bypass.store(x); }
+
+        inline bool getBypass() { return bypass.load(); }
+
         inline void setDynamicON(bool x) { dynamicON.store(x); }
 
         inline bool getDynamicON() { return dynamicON.load(); }
+
+        inline void setDynamicBypass(bool x) { dynamicBypass.store(x); }
+
+        inline bool getDynamicBypass() { return dynamicBypass.load(); }
 
         /**
          * calculate the default frequency of the side filter
@@ -64,7 +74,7 @@ namespace zlDynamicFilter {
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::dsp::DryWetMixer<FloatType> mixer;
         juce::AudioBuffer<FloatType> tBuffer;
-        std::atomic<bool> dynamicON = false;
+        std::atomic<bool> bypass = true, dynamicON = false, dynamicBypass = false;
 
         std::atomic<FloatType> dryMixPortion;
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};

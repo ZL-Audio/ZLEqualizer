@@ -20,6 +20,9 @@ namespace zlIIR {
     template<typename FloatType>
     void Filter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         processSpec = spec;
+        for (auto &f: filters) {
+            f.prepare(spec);
+        }
         setOrder(order.load());
         updateParas();
     }

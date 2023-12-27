@@ -102,7 +102,7 @@ namespace zlIIR {
 
         inline size_t getOrder() { return order.load(); }
 
-        void addDBs(std::array<FloatType, frequencies.size()> &x, FloatType scale=1.0);
+        void addDBs(std::array<FloatType, frequencies.size()> &x, FloatType scale = 1.0);
 
     private:
         std::vector<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<FloatType>, juce::dsp::IIR::Coefficients<FloatType>>> filters;

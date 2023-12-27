@@ -33,17 +33,20 @@ namespace zlDynamicFilter {
 
     template<typename FloatType>
     void IIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
-        mFilter.process(mBuffer);
-        if (dynamicON.load()) {
-            sFilter.process(sBuffer);
-            dryMixPortion.store(compressor.process(sBuffer));
+        if (!bypass.load()) {
+            mFilter.process(mBuffer);
+            if (dynamicON.load()) {
+                sFilter.process(sBuffer);
+                dryMixPortion.store(compressor.process(sBuffer));
+                mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
 
-            mixer.setWetMixProportion(1 - dryMixPortion.load());
-            mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
-
-            tBuffer.makeCopyOf(mBuffer, true);
-            tFilter.process(tBuffer);
-            mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
+                tBuffer.makeCopyOf(mBuffer, true);
+                tFilter.process(tBuffer);
+                if (dynamicBypass.load()) {
+                    mixer.setWetMixProportion(1 - dryMixPortion.load());
+                    mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
+                }
+            }
         }
     }
 

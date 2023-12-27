@@ -24,10 +24,8 @@ namespace zlDSP {
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         subBuffer.prepare(spec);
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
-        processorRef.setLatencySamples(subBuffer.getLatencySamples());
-        juce::dsp::ProcessSpec subSpec{spec.sampleRate,
-                                       subBuffer.getSubSpec().maximumBlockSize,
-                                       spec.numChannels / 2};
+        processorRef.setLatencySamples(static_cast<int>(subBuffer.getLatencySamples()));
+        juce::dsp::ProcessSpec subSpec{spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2};
         for (auto &f: filters) {
             f.prepare(subSpec);
         }
@@ -35,7 +33,6 @@ namespace zlDSP {
         lrSideSplitter.prepare(subSpec);
         msMainSplitter.prepare(subSpec);
         msSideSplitter.prepare(subSpec);
-
     }
 
     template<typename FloatType>
@@ -97,4 +94,48 @@ namespace zlDSP {
         subBuffer.popBlock(block);
         // ---------------- end sub buffer
     }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setFilterLRs(zlDSP::lrTypes x, size_t idx) {
+        // prepare the filter
+        filterLRs[idx].store(x);
+        if (x == lrTypes::stereo) {
+            filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
+        } else {
+            filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+        }
+        // update useLR and useMS
+        useLR.store(false);
+        for (auto &lr: filterLRs) {
+            if (lr.load() == lrTypes::left || lr.load() == lrTypes::right) {
+                useLR.store(true);
+                break;
+            }
+        }
+        useMS.store(false);
+        for (auto &lr: filterLRs) {
+            if (lr.load() == lrTypes::mid || lr.load() == lrTypes::side) {
+                useMS.store(true);
+                break;
+            }
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setDynamicON(bool x, size_t idx) {
+        filters[idx].setDynamicON(x);
+        useDynamic.store(false);
+        for (auto &f: filters) {
+            if (f.getDynamicON()) {
+                useDynamic.store(true);
+                break;
+            }
+        }
+    }
+
+    template
+    class Controller<float>;
+
+    template
+    class Controller<double>;
 }

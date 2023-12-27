@@ -32,6 +32,12 @@ namespace zlDSP {
 
         inline zlDynamicFilter::IIRFilter<FloatType> &getFilter(size_t idx) { return filters[idx]; }
 
+        inline std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> &getFilters() { return filters; }
+
+        void setFilterLRs(lrTypes x, size_t idx);
+
+        void setDynamicON(bool x, size_t idx);
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;

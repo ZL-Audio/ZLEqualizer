@@ -40,6 +40,7 @@ namespace zlCompressor {
         FloatType process(FloatType x) override;
 
         inline void setThreshold(FloatType v) {
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
             threshold.store(v);
             interpolate();
         }
@@ -47,6 +48,7 @@ namespace zlCompressor {
         inline FloatType getThreshold() const { return threshold.load(); }
 
         inline void setRatio(FloatType v) {
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
             ratio.store(v);
             interpolate();
         }
@@ -54,6 +56,7 @@ namespace zlCompressor {
         inline FloatType getRatio() const { return ratio.load(); }
 
         inline void setKneeW(FloatType v) {
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
             kneeW.store(v);
             interpolate();
         }
@@ -61,6 +64,7 @@ namespace zlCompressor {
         inline FloatType getKneeW() const { return kneeW.load(); }
 
         inline void setKneeD(FloatType v) {
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
             kneeD.store(v);
             interpolate();
         }
@@ -68,6 +72,7 @@ namespace zlCompressor {
         inline FloatType getKneeD() const { return kneeD.load(); }
 
         inline void setKneeS(FloatType v) {
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
             kneeS.store(v);
             interpolate();
         }
@@ -85,6 +90,7 @@ namespace zlCompressor {
         std::atomic<FloatType> kneeW = FloatType(0.0625), kneeD = FloatType(0.5), kneeS = FloatType(0.5);
         std::atomic<FloatType> bound = FloatType(0);
         std::unique_ptr<boost::math::interpolators::cubic_hermite<std::array<FloatType, 3>>> cubic;
+        juce::ReadWriteLock paraUpdateLock;
 
         void interpolate();
     };

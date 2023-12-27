@@ -121,10 +121,10 @@ namespace zlDSP {
         auto static constexpr defaultV = true;
     };
 
-    class dynamic : public BoolParameters<dynamic> {
+    class dynamicON : public BoolParameters<dynamicON> {
     public:
-        auto static constexpr ID = "dynamic";
-        auto static constexpr name = "dynamic";
+        auto static constexpr ID = "dynamic_on";
+        auto static constexpr name = "Dynamic ON";
         auto static constexpr defaultV = false;
     };
 
@@ -144,20 +144,29 @@ namespace zlDSP {
         auto static constexpr defaultV = 0.707f;
     };
 
-    class lowTH : public FloatParameters<lowTH> {
+    class dynamicBypass : public BoolParameters<dynamicBypass> {
     public:
-        auto static constexpr ID = "low_th";
-        auto static constexpr name = "Low Th";
-        inline auto static const range = juce::NormalisableRange<float>(-60, 0, .1f);
+        auto static constexpr ID = "dynamic_bypass";
+        auto static constexpr name = "Dynamic Bypass";
+        auto static constexpr defaultV = false;
+    };
+
+    class threshold : public FloatParameters<threshold> {
+    public:
+        auto static constexpr ID = "threshold";
+        auto static constexpr name = "Threshold (dB)";
+        inline auto static const range =
+                juce::NormalisableRange<float>(-80.f, 0.f, .1f);
         auto static constexpr defaultV = -40.f;
     };
 
-    class highTH : public FloatParameters<highTH> {
+    class ratio : public FloatParameters<ratio> {
     public:
-        auto static constexpr ID = "high_th";
-        auto static constexpr name = "High Th";
-        inline auto static const range = juce::NormalisableRange<float>(-60, 0, .1f);
-        auto static constexpr defaultV = -20.f;
+        auto static constexpr ID = "ratio";
+        auto static constexpr name = "Ratio";
+        auto static constexpr defaultV = 3.f;
+        inline auto static const range =
+                juce::NormalisableRange<float>(1.f, 100.f, 0.01f, 0.2160127f);
     };
 
     class sideFreq : public FloatParameters<sideFreq> {
@@ -166,14 +175,6 @@ namespace zlDSP {
         auto static constexpr name = "Freq";
         inline auto static const range = juce::NormalisableRange<float>(10, 20000, 1.f, 0.23064293761596813f);
         auto static constexpr defaultV = 1000.f;
-    };
-
-    class sideQ : public FloatParameters<sideQ> {
-    public:
-        auto static constexpr ID = "side_Q";
-        auto static constexpr name = "Q";
-        inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
-        auto static constexpr defaultV = 0.707f;
     };
 
     class attack : public FloatParameters<attack> {
@@ -192,6 +193,14 @@ namespace zlDSP {
         inline auto static const range =
                 juce::NormalisableRange<float>(1.f, 5000.f, 0.1f, 0.30103f);
         auto static constexpr defaultV = 100.f;
+    };
+
+    class sideQ : public FloatParameters<sideQ> {
+    public:
+        auto static constexpr ID = "side_Q";
+        auto static constexpr name = "Q";
+        inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
+        auto static constexpr defaultV = 0.707f;
     };
 
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
