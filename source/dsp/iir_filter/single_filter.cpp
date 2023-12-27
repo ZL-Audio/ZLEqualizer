@@ -99,16 +99,24 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
+    void Filter<FloatType>::addGains(std::array<FloatType, frequencies.size()> &x, FloatType scale) {
+        const juce::ScopedReadLock scopedLock(magLock);
+        std::transform(x.begin(), x.end(), gains.begin(), x.begin(),
+                       [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
+    }
+
+    template<typename FloatType>
     void Filter<FloatType>::updateDBs() {
         const juce::ScopedWriteLock scopedLock(magLock);
-        dBs.fill(1.0);
+        gains.fill(FloatType(1));
         std::array<double, frequencies.size()> singleMagnitudes{};
+        const juce::ScopedReadLock scopedLock2(paraUpdateLock);
         for (size_t i = 0; i < filters.size(); i++) {
             filters[i].state->getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
                                                             frequencies.size(), processSpec.sampleRate);
-            std::transform(dBs.begin(), dBs.end(), singleMagnitudes.begin(), dBs.begin(), std::multiplies<FloatType>());
+            std::transform(gains.begin(), gains.end(), singleMagnitudes.begin(), gains.begin(), std::multiplies<FloatType>());
         }
-        std::transform(dBs.begin(), dBs.end(), dBs.begin(), [](auto &c) { return juce::Decibels::gainToDecibels(c); });
+        std::transform(gains.begin(), gains.end(), dBs.begin(), [](auto &c) { return juce::Decibels::gainToDecibels(c); });
     }
 
     template

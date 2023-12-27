@@ -71,14 +71,15 @@ namespace zlDynamicFilter {
     template<typename FloatType>
     void IIRFilter<FloatType>::updateDBs() {
         const juce::ScopedWriteLock scopedLock(magLock);
-        dBs.fill(0.0);
+        gains.fill(FloatType(0));
         if (!dynamicON.load()) {
-            mFilter.addDBs(dBs);
+            mFilter.addGains(gains);
         } else {
             auto portion = dryMixPortion.load();
-            mFilter.addDBs(dBs, portion);
-            tFilter.addDBs(dBs, 1 - portion);
+            mFilter.addGains(gains, portion);
+            tFilter.addGains(gains, 1 - portion);
         }
+        std::transform(gains.begin(), gains.end(), dBs.begin(), [](auto &c) { return juce::Decibels::gainToDecibels(c); });
     }
 
     template

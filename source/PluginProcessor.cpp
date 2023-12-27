@@ -23,7 +23,7 @@ PluginProcessor::PluginProcessor()
 PluginProcessor::~PluginProcessor() = default;
 
 void PluginProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
-    const juce::GenericScopedLock<juce::CriticalSection> processLock(this->getCallbackLock());
+//    const juce::GenericScopedLock<juce::CriticalSection> processLock(this->getCallbackLock());
     if (parameterID == "f_type00") {
         filter.setFilterType(static_cast<zlIIR::FilterType>(newValue));
     } else if (parameterID == "slope00") {

@@ -104,6 +104,8 @@ namespace zlIIR {
 
         void addDBs(std::array<FloatType, frequencies.size()> &x, FloatType scale = 1.0);
 
+        void addGains(std::array<FloatType, frequencies.size()> &x, FloatType scale = 1.0);
+
     private:
         std::vector<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<FloatType>, juce::dsp::IIR::Coefficients<FloatType>>> filters;
         std::atomic<double> freq = 1000, gain = 0, q = 0.707;
@@ -112,7 +114,7 @@ namespace zlIIR {
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
         juce::ReadWriteLock paraUpdateLock;
 
-        std::array<FloatType, frequencies.size()> dBs{};
+        std::array<FloatType, frequencies.size()> dBs{}, gains{};
         juce::ReadWriteLock magLock;
 
         void updateParas();

@@ -77,7 +77,7 @@ namespace zlDynamicFilter {
         std::atomic<bool> bypass = true, dynamicON = false, dynamicBypass = false;
 
         std::atomic<FloatType> dryMixPortion;
-        std::array<FloatType, zlIIR::frequencies.size()> dBs{};
+        std::array<FloatType, zlIIR::frequencies.size()> dBs{}, gains{};
         juce::ReadWriteLock magLock;
     };
 }

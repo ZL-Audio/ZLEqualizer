@@ -36,7 +36,13 @@ namespace zlDSP {
 
         void setFilterLRs(lrTypes x, size_t idx);
 
+        inline lrTypes getFilterLRs(size_t idx) { return filterLRs[idx].load(); }
+
         void setDynamicON(bool x, size_t idx);
+
+        void addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x);
+
+        void updateDBs();
 
     private:
         juce::AudioProcessor &processorRef;
@@ -52,6 +58,9 @@ namespace zlDSP {
 
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
+
+        std::array<FloatType, zlIIR::frequencies.size()> dBs{};
+        juce::ReadWriteLock magLock;
     };
 }
 
