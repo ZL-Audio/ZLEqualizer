@@ -28,7 +28,7 @@ namespace zlDSP {
         static std::unique_ptr<juce::AudioParameterFloat> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::name);
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
-                                                               T::name, T::range, T::defaultV, attributes);
+                                                               T::name + suffix, T::range, T::defaultV, attributes);
         }
     };
 
@@ -39,7 +39,7 @@ namespace zlDSP {
         static std::unique_ptr<juce::AudioParameterBool> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::name);
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
-                                                              T::name, T::defaultV, attributes);
+                                                              T::name + suffix, T::defaultV, attributes);
         }
     };
 
@@ -50,7 +50,7 @@ namespace zlDSP {
         static std::unique_ptr<juce::AudioParameterChoice> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::name);
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
-                                                                T::name, T::choices, T::defaultI, attributes);
+                                                                T::name + suffix, T::choices, T::defaultI, attributes);
         }
     };
 
@@ -207,7 +207,7 @@ namespace zlDSP {
                                 const std::string &suffix = "") {
         layout.add(bypass::get(suffix), fType::get(suffix), slope::get(suffix),
                    freq::get(suffix), gain::get(suffix), Q::get(suffix),
-                   lrType::get(suffix), dynamicON::get(suffix), dynamicBypass::get(suffix),
+                   lrType::get(suffix), dynamicON::get(suffix, false), dynamicBypass::get(suffix),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), ratio::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
     }

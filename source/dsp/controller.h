@@ -46,6 +46,8 @@ namespace zlDSP {
 
         void handleAsyncUpdate() override;
 
+//        inline bool getInitCompleted() { return initCompleted.load(); }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -65,6 +67,8 @@ namespace zlDSP {
 
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
+
+//        std::atomic<bool> initCompleted = false;
 
 //        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Filters Attach Log"};
     };

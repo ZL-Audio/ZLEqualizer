@@ -16,6 +16,8 @@ namespace zlDSP {
                                             Controller<FloatType> &controller)
             :processorRef(processor), parameterRef(parameters),
              controllerRef(controller), filtersRef(controller.getFilters()) {
+        addListeners();
+        initDefaultValues();
     }
 
     template<typename FloatType>
@@ -36,7 +38,6 @@ namespace zlDSP {
                 parameterRef.addParameterListener(ID + suffix, this);
             }
         }
-        initDefaultValues();
     }
 
     template<typename FloatType>
@@ -63,12 +64,14 @@ namespace zlDSP {
         } else if (id == lrType::ID) {
             controllerRef.setFilterLRs(static_cast<lrTypes>(value), idx);
         } else if (id == dynamicON::ID) {
-            if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value)) {
-                std::array dynamicInitValues{targetGain::range.convertTo0to1(0),
+            if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value) && dynamicONUpdateOthers.load()) {
+                std::array dynamicInitValues{targetGain::range.convertTo0to1(
+                                                     static_cast<float>(filtersRef[idx].getMainFilter().getGain())),
                                              targetQ::range.convertTo0to1(
                                                      static_cast<float>(filtersRef[idx].getMainFilter().getQ())),
                                              sideFreq::range.convertTo0to1(
-                                                     static_cast<float>(filtersRef[idx].getSideDefaultFreq()))};
+                                                     static_cast<float>(filtersRef[idx].getSideDefaultFreq())),
+                                                     static_cast<float>(false)};
                 for (size_t i = 0; i < dynamicInitIDs.size(); ++i) {
                     auto initID = dynamicInitIDs[i] + parameterID.getLastCharacters(2);
                     parameterRef.getParameter(initID)->beginChangeGesture();
@@ -78,8 +81,10 @@ namespace zlDSP {
             }
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
         } else if (id == dynamicBypass::ID) {
+//            logger.logMessage("set dynamic bypass to " + juce::String(value));
             filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
         } else if (id == targetGain::ID) {
+//            logger.logMessage("set target gain to " + juce::String(value));
             filtersRef[idx].getTargetFilter().setGain(value);
         } else if (id == targetQ::ID) {
             filtersRef[idx].getTargetFilter().setQ(value);

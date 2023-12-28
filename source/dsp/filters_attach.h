@@ -24,6 +24,8 @@ namespace zlDSP {
 
         void addListeners();
 
+        inline void enableDynamicONUpdateOthers(bool x) { dynamicONUpdateOthers.store(x); }
+
     private:
         juce::AudioProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parameterRef;
@@ -43,11 +45,13 @@ namespace zlDSP {
                                               threshold::defaultV, ratio::defaultV,
                                               sideFreq::defaultV, attack::defaultV, release::defaultV, sideQ::defaultV};
 
-        constexpr static std::array dynamicInitIDs{targetGain::ID, targetQ::ID, sideFreq::ID};
+        constexpr static std::array dynamicInitIDs{targetGain::ID, targetQ::ID, sideFreq::ID, dynamicBypass::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void initDefaultValues();
+
+        std::atomic<bool> dynamicONUpdateOthers = true;
 
 //        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Filters Attach Log"};
     };

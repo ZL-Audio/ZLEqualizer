@@ -16,7 +16,6 @@ PluginProcessor::PluginProcessor()
               zlDSP::getParameterLayout()),
           controller(*this),
           filtersAttach(*this, parameters, controller) {
-    filtersAttach.addListeners();
 }
 
 PluginProcessor::~PluginProcessor() = default;
@@ -150,8 +149,9 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
     std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
     if (xmlState != nullptr && xmlState->hasTagName("ZLEqualizerParaState")) {
         auto tempTree = juce::ValueTree::fromXml(*xmlState);
+        filtersAttach.enableDynamicONUpdateOthers(false);
         parameters.replaceState(tempTree.getChildWithName(parameters.state.getType()));
-        parameters.replaceState(tempTree.getChildWithName(parameters.state.getType()));
+        filtersAttach.enableDynamicONUpdateOthers(true);
     }
 }
 

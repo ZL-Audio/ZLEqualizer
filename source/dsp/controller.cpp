@@ -38,6 +38,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+//        initCompleted.store(true);
         juce::AudioBuffer<FloatType> mainBuffer(processorRef.getBusBuffer(buffer, true, 0));
         juce::AudioBuffer<FloatType> sideBuffer(processorRef.getBusBuffer(buffer, true, 1));
         // if no side chain, copy the main buffer into the side buffer
