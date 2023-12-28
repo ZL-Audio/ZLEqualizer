@@ -22,9 +22,10 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        subBuffer.prepare(spec);
+        subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
-        processorRef.setLatencySamples(static_cast<int>(subBuffer.getLatencySamples()));
+        latencyInSamples.store(static_cast<int>(subBuffer.getLatencySamples()));
+        triggerAsyncUpdate();
         juce::dsp::ProcessSpec subSpec{spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2};
         for (auto &f: filters) {
             f.prepare(subSpec);
@@ -78,14 +79,11 @@ namespace zlDSP {
             // MS filters process
             if (useMS.load()) {
                 msMainSplitter.split(subMainBuffer);
-                if (useDynamic.load()) {
-                    msSideSplitter.split(subSideBuffer);
-                }
                 for (size_t i = 0; i < bandNUM; ++i) {
                     if (filterLRs[i].load() == lrTypes::mid) {
                         filters[i].process(msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
                     } else if (filterLRs[i].load() == lrTypes::side) {
-                        filters[i].process(msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
+                        filters[i].process(msMainSplitter.getSBuffer(), msSideSplitter.getMBuffer());
                     }
                 }
                 msMainSplitter.combine(subMainBuffer);
@@ -150,6 +148,11 @@ namespace zlDSP {
                 filters[i].addDBs(dBs);
             }
         }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::handleAsyncUpdate() {
+        processorRef.setLatencySamples(latencyInSamples.load());
     }
 
     template

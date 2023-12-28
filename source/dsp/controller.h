@@ -20,7 +20,7 @@
 
 namespace zlDSP {
     template<typename FloatType>
-    class Controller {
+    class Controller : public juce::AsyncUpdater {
     public:
         explicit Controller(juce::AudioProcessor &processor);
 
@@ -44,6 +44,8 @@ namespace zlDSP {
 
         void updateDBs();
 
+        void handleAsyncUpdate() override;
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -59,9 +61,12 @@ namespace zlDSP {
 
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
+        std::atomic<int> latencyInSamples;
 
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
+
+//        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Filters Attach Log"};
     };
 }
 

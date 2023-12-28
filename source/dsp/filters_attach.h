@@ -35,7 +35,7 @@ namespace zlDSP {
                                         targetGain::ID, targetQ::ID, threshold::ID, ratio::ID,
                                         sideFreq::ID, attack::ID, release::ID, sideQ::ID};
 
-        constexpr static std::array dynamicInitIDs{dynamicBypass::ID, targetGain::ID, targetQ::ID, sideFreq::ID};
+        constexpr static std::array dynamicInitIDs{targetGain::ID, targetQ::ID, sideFreq::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

@@ -62,19 +62,20 @@ namespace zlDSP {
         } else if (id == lrType::ID) {
             controllerRef.setFilterLRs(static_cast<lrTypes>(value), idx);
         } else if (id == dynamicON::ID) {
-            controllerRef.setDynamicON(static_cast<bool>(value), idx);
-            std::array dynamicInitValues{0.f,
-                                         targetGain::range.convertTo0to1(
-                                                 static_cast<float>(filtersRef[idx].getMainFilter().getGain())),
-                                         targetQ::range.convertTo0to1(
-                                                 static_cast<float>(filtersRef[idx].getMainFilter().getQ())),
-                                         sideFreq::range.convertTo0to1(
-                                                 static_cast<float>(filtersRef[idx].getSideDefaultFreq()))};
-            for (size_t i = 0; i < dynamicInitIDs.size(); ++i) {
-                parameterRef.getParameter(dynamicInitIDs[i])->beginChangeGesture();
-                parameterRef.getParameter(dynamicInitIDs[i])->setValueNotifyingHost(dynamicInitValues[i]);
-                parameterRef.getParameter(dynamicInitIDs[i])->endChangeGesture();
+            if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value)) {
+                std::array dynamicInitValues{targetGain::range.convertTo0to1(0),
+                                             targetQ::range.convertTo0to1(
+                                                     static_cast<float>(filtersRef[idx].getMainFilter().getQ())),
+                                             sideFreq::range.convertTo0to1(
+                                                     static_cast<float>(filtersRef[idx].getSideDefaultFreq()))};
+                for (size_t i = 0; i < dynamicInitIDs.size(); ++i) {
+                    auto initID = dynamicInitIDs[i] + parameterID.getLastCharacters(2);
+                    parameterRef.getParameter(initID)->beginChangeGesture();
+                    parameterRef.getParameter(initID)->setValueNotifyingHost(dynamicInitValues[i]);
+                    parameterRef.getParameter(initID)->endChangeGesture();
+                }
             }
+            controllerRef.setDynamicON(static_cast<bool>(value), idx);
         } else if (id == dynamicBypass::ID) {
             filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
         } else if (id == targetGain::ID) {

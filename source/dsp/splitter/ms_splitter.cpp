@@ -31,6 +31,8 @@ namespace zlSplitter {
             _mBuffer[i] = FloatType(0.5) * (lBuffer[i] + rBuffer[i]);
             _sBuffer[i] = FloatType(0.5) * (lBuffer[i] - rBuffer[i]);
         }
+        mBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
+        sBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
     }
 
     template<typename FloatType>

@@ -29,6 +29,8 @@ namespace zlDynamicFilter {
         mixer.prepare(spec);
         tBuffer.setSize(static_cast<int>(spec.numChannels),
                         static_cast<int>(spec.maximumBlockSize));
+        sBufferCopy.setSize(static_cast<int>(spec.numChannels),
+                            static_cast<int>(spec.maximumBlockSize));
     }
 
     template<typename FloatType>
@@ -36,8 +38,9 @@ namespace zlDynamicFilter {
         if (!bypass.load()) {
             mFilter.process(mBuffer);
             if (dynamicON.load()) {
-                sFilter.process(sBuffer);
-                dryMixPortion.store(compressor.process(sBuffer));
+                sBufferCopy.makeCopyOf(sBuffer, true);
+                sFilter.process(sBufferCopy);
+                dryMixPortion.store(compressor.process(sBufferCopy));
                 mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
 
                 tBuffer.makeCopyOf(mBuffer, true);
@@ -79,7 +82,8 @@ namespace zlDynamicFilter {
             mFilter.addGains(gains, portion);
             tFilter.addGains(gains, 1 - portion);
         }
-        std::transform(gains.begin(), gains.end(), dBs.begin(), [](auto &c) { return juce::Decibels::gainToDecibels(c); });
+        std::transform(gains.begin(), gains.end(), dBs.begin(),
+                       [](auto &c) { return juce::Decibels::gainToDecibels(c); });
     }
 
     template

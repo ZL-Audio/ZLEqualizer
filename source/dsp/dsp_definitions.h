@@ -207,7 +207,9 @@ namespace zlDSP {
                                 const std::string &suffix = "") {
         layout.add(bypass::get(suffix), fType::get(suffix), slope::get(suffix),
                    freq::get(suffix), gain::get(suffix), Q::get(suffix),
-                   lrType::get(suffix));
+                   lrType::get(suffix), dynamicON::get(suffix), dynamicBypass::get(suffix),
+                   targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), ratio::get(suffix),
+                   sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
     }
 
     class sideChain : public BoolParameters<sideChain> {

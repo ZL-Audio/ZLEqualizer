@@ -73,7 +73,7 @@ namespace zlDynamicFilter {
         zlIIR::Filter<FloatType> mFilter, tFilter, sFilter;
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::dsp::DryWetMixer<FloatType> mixer;
-        juce::AudioBuffer<FloatType> tBuffer;
+        juce::AudioBuffer<FloatType> tBuffer, sBufferCopy;
         std::atomic<bool> bypass = true, dynamicON = false, dynamicBypass = false;
 
         std::atomic<FloatType> dryMixPortion;

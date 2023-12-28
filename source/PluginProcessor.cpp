@@ -9,6 +9,7 @@ PluginProcessor::PluginProcessor()
                                  .withInput("Input", juce::AudioChannelSet::stereo(), true)
 #endif
                                  .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+                                 .withInput("Aux", juce::AudioChannelSet::stereo(), true)
 #endif
 ), parameters(*this, nullptr,
               juce::Identifier("ZLEqualizerParameters"),
@@ -99,13 +100,14 @@ bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
 #else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
     // This checks if the input layout matches the output layout
 #if !JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        return false;
+    if (layouts.getChannelSet(true, 1) != juce::AudioChannelSet::stereo())
         return false;
 #endif
 
@@ -136,13 +138,21 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    juce::ignoreUnused(destData);
+    auto tempTree = juce::ValueTree("ZLEqualizerParaState");
+    tempTree.appendChild(parameters.copyState(), nullptr);
+    std::unique_ptr<juce::XmlElement> xml(tempTree.createXml());
+    copyXmlToBinary(*xml, destData);
 }
 
 void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    juce::ignoreUnused(data, sizeInBytes);
+    std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
+    if (xmlState != nullptr && xmlState->hasTagName("ZLEqualizerParaState")) {
+        auto tempTree = juce::ValueTree::fromXml(*xmlState);
+        parameters.replaceState(tempTree.getChildWithName(parameters.state.getType()));
+        parameters.replaceState(tempTree.getChildWithName(parameters.state.getType()));
+    }
 }
 
 //==============================================================================

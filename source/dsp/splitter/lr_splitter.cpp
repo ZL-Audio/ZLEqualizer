@@ -26,6 +26,8 @@ namespace zlSplitter {
     void LRSplitter<FloatType>::split(juce::AudioBuffer<FloatType> &buffer) {
         lBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
         rBuffer.copyFrom(0, 0, buffer, 1, 0, buffer.getNumSamples());
+        lBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
+        rBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
     }
 
     template<typename FloatType>
