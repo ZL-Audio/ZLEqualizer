@@ -43,6 +43,7 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void KneeComputer<FloatType>::interpolate() {
+//        logger.logMessage(juce::String(threshold.load()) + " " + juce::String(ratio.load()));
         std::array initialX{threshold.load() - kneeW.load(),
                             threshold.load(),
                             threshold.load() + kneeW.load()};

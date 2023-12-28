@@ -76,9 +76,11 @@ namespace zlDynamicFilter {
         juce::AudioBuffer<FloatType> tBuffer, sBufferCopy;
         std::atomic<bool> bypass = true, dynamicON = false, dynamicBypass = false;
 
-        std::atomic<FloatType> dryMixPortion;
+        std::atomic<FloatType> mainPortion;
         std::array<FloatType, zlIIR::frequencies.size()> dBs{}, gains{};
         juce::ReadWriteLock magLock;
+
+//        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Dynamic IIR Log"};
     };
 }
 

@@ -35,9 +35,19 @@ namespace zlDSP {
                                         targetGain::ID, targetQ::ID, threshold::ID, ratio::ID,
                                         sideFreq::ID, attack::ID, release::ID, sideQ::ID};
 
+        constexpr static std::array defaultVs{float(bypass::defaultV), float(fType::defaultI), float(slope::defaultI),
+                                              freq::defaultV, gain::defaultV, Q::defaultV,
+                                              float(lrType::defaultI),
+                                              float(dynamicON::defaultV), float(dynamicBypass::defaultV),
+                                              targetGain::defaultV, targetQ::defaultV,
+                                              threshold::defaultV, ratio::defaultV,
+                                              sideFreq::defaultV, attack::defaultV, release::defaultV, sideQ::defaultV};
+
         constexpr static std::array dynamicInitIDs{targetGain::ID, targetQ::ID, sideFreq::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void initDefaultValues();
 
 //        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Filters Attach Log"};
     };

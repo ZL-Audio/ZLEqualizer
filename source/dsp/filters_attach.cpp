@@ -20,9 +20,9 @@ namespace zlDSP {
 
     template<typename FloatType>
     FiltersAttach<FloatType>::~FiltersAttach() {
-        for (auto &ID: IDs) {
-            for (int i = 0; i < bandNUM; ++i) {
-                auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+        for (int i = 0; i < bandNUM; ++i) {
+            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+            for (auto &ID: IDs) {
                 parameterRef.removeParameterListener(ID + suffix, this);
             }
         }
@@ -30,12 +30,13 @@ namespace zlDSP {
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::addListeners() {
-        for (auto &ID: IDs) {
-            for (int i = 0; i < bandNUM; ++i) {
-                auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+        for (int i = 0; i < bandNUM; ++i) {
+            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+            for (auto &ID: IDs) {
                 parameterRef.addParameterListener(ID + suffix, this);
             }
         }
+        initDefaultValues();
     }
 
     template<typename FloatType>
@@ -94,6 +95,16 @@ namespace zlDSP {
             filtersRef[idx].getCompressor().getDetector().setRelease(value);
         } else if (id == sideQ::ID) {
             filtersRef[idx].getSideFilter().setQ(value);
+        }
+    }
+
+    template<typename FloatType>
+    void FiltersAttach<FloatType>::initDefaultValues() {
+        for (int i = 0; i < bandNUM; ++i) {
+            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+            for (size_t j = 0; j < defaultVs.size(); ++j) {
+                parameterChanged(IDs[j] + suffix, defaultVs[j]);
+            }
         }
     }
 

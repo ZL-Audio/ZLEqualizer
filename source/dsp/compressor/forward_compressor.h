@@ -48,6 +48,8 @@ namespace zlCompressor {
         KneeComputer<FloatType> computer;
         Detector<FloatType> detector;
         RMSTracker<FloatType> tracker;
+
+//        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Forward Compressor Log"};
     };
 }
 

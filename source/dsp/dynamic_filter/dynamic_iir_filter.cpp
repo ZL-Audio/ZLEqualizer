@@ -27,6 +27,7 @@ namespace zlDynamicFilter {
         sFilter.setFilterType(zlIIR::FilterType::bandPass);
         compressor.prepare(spec);
         mixer.prepare(spec);
+        mixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
         tBuffer.setSize(static_cast<int>(spec.numChannels),
                         static_cast<int>(spec.maximumBlockSize));
         sBufferCopy.setSize(static_cast<int>(spec.numChannels),
@@ -36,19 +37,22 @@ namespace zlDynamicFilter {
     template<typename FloatType>
     void IIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
         if (!bypass.load()) {
+            if (dynamicON.load()) {
+                tBuffer.makeCopyOf(mBuffer, true);
+                tFilter.process(tBuffer);
+            }
             mFilter.process(mBuffer);
             if (dynamicON.load()) {
                 sBufferCopy.makeCopyOf(sBuffer, true);
                 sFilter.process(sBufferCopy);
-                dryMixPortion.store(compressor.process(sBufferCopy));
-                mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
-
-                tBuffer.makeCopyOf(mBuffer, true);
-                tFilter.process(tBuffer);
+                auto portion = compressor.process(sBufferCopy);
                 if (dynamicBypass.load()) {
-                    mixer.setWetMixProportion(1 - dryMixPortion.load());
-                    mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
+                    portion = 1;
                 }
+                mainPortion.store(portion);
+                mixer.setWetMixProportion(portion);
+                mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
+                mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
             }
         }
     }
@@ -78,7 +82,7 @@ namespace zlDynamicFilter {
         if (!dynamicON.load()) {
             mFilter.addGains(gains);
         } else {
-            auto portion = dryMixPortion.load();
+            auto portion = mainPortion.load();
             mFilter.addGains(gains, portion);
             tFilter.addGains(gains, 1 - portion);
         }
