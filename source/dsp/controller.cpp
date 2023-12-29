@@ -125,6 +125,8 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::setDynamicON(bool x, size_t idx) {
         filters[idx].setDynamicON(x);
+        filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
+        filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
         useDynamic.store(false);
         for (auto &f: filters) {
             if (f.getDynamicON()) {

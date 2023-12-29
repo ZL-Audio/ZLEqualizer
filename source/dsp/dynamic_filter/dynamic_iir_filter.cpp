@@ -16,20 +16,16 @@ namespace zlDynamicFilter {
         tFilter.reset();
         sFilter.reset();
         compressor.reset();
-        mixer.reset();
     }
 
     template<typename FloatType>
     void IIRFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         mFilter.prepare(spec);
+        bFilter.prepare(spec);
         tFilter.prepare(spec);
         sFilter.prepare(spec);
         sFilter.setFilterType(zlIIR::FilterType::bandPass);
         compressor.prepare(spec);
-        mixer.prepare(spec);
-        mixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
-        tBuffer.setSize(static_cast<int>(spec.numChannels),
-                        static_cast<int>(spec.maximumBlockSize));
         sBufferCopy.setSize(static_cast<int>(spec.numChannels),
                             static_cast<int>(spec.maximumBlockSize));
     }
@@ -38,56 +34,30 @@ namespace zlDynamicFilter {
     void IIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
         if (!bypass.load()) {
             if (dynamicON.load()) {
-                tBuffer.makeCopyOf(mBuffer, true);
-                tFilter.process(tBuffer);
-            }
-            mFilter.process(mBuffer);
-            if (dynamicON.load()) {
                 sBufferCopy.makeCopyOf(sBuffer, true);
                 sFilter.process(sBufferCopy);
                 auto portion = compressor.process(sBufferCopy);
                 if (dynamicBypass.load()) {
                     portion = 1;
                 }
-                mainPortion.store(portion);
-                mixer.setWetMixProportion(portion);
-                mixer.pushDrySamples(juce::dsp::AudioBlock<FloatType>(tBuffer));
-                mixer.mixWetSamples(juce::dsp::AudioBlock<FloatType>(mBuffer));
+//                mainPortion.store(portion);
+                mFilter.setGain(portion * bFilter.getGain() + (1 - portion) * tFilter.getGain(), false);
+                mFilter.setQ(portion * bFilter.getQ() + (1 - portion) * tFilter.getQ(), true);
             }
+            mFilter.process(mBuffer);
         }
     }
 
     template<typename FloatType>
     FloatType IIRFilter<FloatType>::getSideDefaultFreq() {
-        auto mFilterType = mFilter.getFilterType();
+        auto mFilterType = bFilter.getFilterType();
         if (mFilterType == zlIIR::FilterType::lowShelf || mFilterType == zlIIR::FilterType::lowPass) {
-            return FloatType(0.5) * (FloatType(10) + mFilter.getFreq());
+            return FloatType(0.5) * (FloatType(10) + bFilter.getFreq());
         } else if (mFilterType == zlIIR::FilterType::highShelf || mFilterType == zlIIR::FilterType::highPass) {
-            return FloatType(0.5) * (FloatType(20000) + mFilter.getFreq());
+            return FloatType(0.5) * (FloatType(20000) + bFilter.getFreq());
         } else {
-            return mFilter.getFreq();
+            return bFilter.getFreq();
         }
-    }
-
-    template<typename FloatType>
-    void IIRFilter<FloatType>::addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x) {
-        const juce::ScopedReadLock scopedLock(magLock);
-        std::transform(x.begin(), x.end(), dBs.begin(), x.begin(), std::plus<FloatType>());
-    }
-
-    template<typename FloatType>
-    void IIRFilter<FloatType>::updateDBs() {
-        const juce::ScopedWriteLock scopedLock(magLock);
-        gains.fill(FloatType(0));
-        if (!dynamicON.load()) {
-            mFilter.addGains(gains);
-        } else {
-            auto portion = mainPortion.load();
-            mFilter.addGains(gains, portion);
-            tFilter.addGains(gains, 1 - portion);
-        }
-        std::transform(gains.begin(), gains.end(), dBs.begin(),
-                       [](auto &c) { return juce::Decibels::gainToDecibels(c); });
     }
 
     template

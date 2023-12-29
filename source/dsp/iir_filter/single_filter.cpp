@@ -38,33 +38,33 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setFreq(FloatType x) {
+    void Filter<FloatType>::setFreq(FloatType x, bool update) {
         freq.store(static_cast<double>(x));
-        updateParas();
+        if (update) { updateParas(); }
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setGain(FloatType x) {
+    void Filter<FloatType>::setGain(FloatType x, bool update) {
         gain.store(static_cast<double>(x));
-        updateParas();
+        if (update) { updateParas(); }
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setQ(FloatType x) {
+    void Filter<FloatType>::setQ(FloatType x, bool update) {
         q.store(static_cast<double>(x));
-        updateParas();
+        if (update) { updateParas(); }
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setFilterType(zlIIR::FilterType x) {
+    void Filter<FloatType>::setFilterType(zlIIR::FilterType x, bool update) {
         filterType.store(x);
-        updateParas();
+        if (update) { updateParas(); }
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setOrder(size_t x) {
+    void Filter<FloatType>::setOrder(size_t x, bool update) {
         order.store(x);
-        updateParas();
+        if (update) { updateParas(); }
     }
 
     template<typename FloatType>
@@ -88,7 +88,6 @@ namespace zlIIR {
             }
             *filters[i].state = finalCoeff;
         }
-        updateDBs();
     }
 
     template<typename FloatType>
@@ -114,9 +113,11 @@ namespace zlIIR {
         for (size_t i = 0; i < filters.size(); i++) {
             filters[i].state->getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
                                                             frequencies.size(), processSpec.sampleRate);
-            std::transform(gains.begin(), gains.end(), singleMagnitudes.begin(), gains.begin(), std::multiplies<FloatType>());
+            std::transform(gains.begin(), gains.end(), singleMagnitudes.begin(), gains.begin(),
+                           std::multiplies<FloatType>());
         }
-        std::transform(gains.begin(), gains.end(), dBs.begin(), [](auto &c) { return juce::Decibels::gainToDecibels(c); });
+        std::transform(gains.begin(), gains.end(), dBs.begin(),
+                       [](auto &c) { return juce::Decibels::gainToDecibels(c); });
     }
 
     template

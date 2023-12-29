@@ -82,29 +82,35 @@ namespace zlIIR {
 
         void process(juce::AudioBuffer<FloatType> &buffer);
 
-        void setFreq(FloatType x);
+        void setFreq(FloatType x, bool update = true);
 
         inline FloatType getFreq() { return static_cast<FloatType>(freq.load()); }
 
-        void setGain(FloatType x);
+        void setGain(FloatType x, bool update = true);
 
         inline FloatType getGain() { return static_cast<FloatType>(gain.load()); }
 
-        void setQ(FloatType x);
+        void setQ(FloatType x, bool update = true);
 
         inline FloatType getQ() { return static_cast<FloatType>(q.load()); }
 
-        void setFilterType(FilterType x);
+        void setFilterType(FilterType x, bool update = true);
 
         inline FilterType getFilterType() { return filterType.load(); }
 
-        void setOrder(size_t x);
+        void setOrder(size_t x, bool update = true);
 
         inline size_t getOrder() { return order.load(); }
 
         void addDBs(std::array<FloatType, frequencies.size()> &x, FloatType scale = 1.0);
 
         void addGains(std::array<FloatType, frequencies.size()> &x, FloatType scale = 1.0);
+
+        inline std::array<FloatType, frequencies.size()> &getDBs() { return dBs; }
+
+        inline std::array<FloatType, frequencies.size()> &getGains() { return gains; }
+
+        inline juce::ReadWriteLock &getMagLock() { return magLock; }
 
     private:
         std::vector<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<FloatType>, juce::dsp::IIR::Coefficients<FloatType>>> filters;

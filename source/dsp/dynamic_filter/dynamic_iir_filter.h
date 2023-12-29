@@ -18,8 +18,8 @@
 
 namespace zlDynamicFilter {
     /**
-     * a dynamic IIR filter which holds a main filter, a target filter and a side filter
-     * the output signal is a mix of the signal from the main/target filter (on the main chain)
+     * a dynamic IIR filter which holds a main filter, a base filter, a target filter and a side filter
+     * the output signal is filtered by the main filter, whose gain and Q is set by the mix of base/target filters'
      * the mix portion is controlled by a compressor on the signal from the side filter (on the side chain)
      * @tparam FloatType
      */
@@ -40,6 +40,8 @@ namespace zlDynamicFilter {
         void process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer);
 
         inline zlIIR::Filter<FloatType> &getMainFilter() { return mFilter; }
+
+        inline zlIIR::Filter<FloatType> &getBaseFilter() { return bFilter; }
 
         inline zlIIR::Filter<FloatType> &getTargetFilter() { return tFilter; }
 
@@ -65,20 +67,13 @@ namespace zlDynamicFilter {
          */
         FloatType getSideDefaultFreq();
 
-        void addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x);
-
-        void updateDBs();
-
     private:
-        zlIIR::Filter<FloatType> mFilter, tFilter, sFilter;
+        zlIIR::Filter<FloatType> mFilter, bFilter, tFilter, sFilter;
         zlCompressor::ForwardCompressor<FloatType> compressor;
-        juce::dsp::DryWetMixer<FloatType> mixer;
-        juce::AudioBuffer<FloatType> tBuffer, sBufferCopy;
+        juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass = true, dynamicON = false, dynamicBypass = false;
 
-        std::atomic<FloatType> mainPortion;
-        std::array<FloatType, zlIIR::frequencies.size()> dBs{}, gains{};
-        juce::ReadWriteLock magLock;
+//        std::atomic<FloatType> mainPortion;
 
 //        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Dynamic IIR Log"};
     };

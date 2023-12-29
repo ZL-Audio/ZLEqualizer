@@ -49,26 +49,31 @@ namespace zlDSP {
         if (id == bypass::ID) {
             filtersRef[idx].setBypass(static_cast<bool>(value));
         } else if (id == fType::ID) {
+            filtersRef[idx].getBaseFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
             filtersRef[idx].getMainFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
             filtersRef[idx].getTargetFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
         } else if (id == slope::ID) {
+            filtersRef[idx].getBaseFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
             filtersRef[idx].getMainFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
             filtersRef[idx].getTargetFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
         } else if (id == freq::ID) {
+            filtersRef[idx].getBaseFilter().setFreq(value);
             filtersRef[idx].getMainFilter().setFreq(value);
             filtersRef[idx].getTargetFilter().setFreq(value);
         } else if (id == gain::ID) {
+            filtersRef[idx].getBaseFilter().setGain(value);
             filtersRef[idx].getMainFilter().setGain(value);
         } else if (id == Q::ID) {
+            filtersRef[idx].getBaseFilter().setQ(value);
             filtersRef[idx].getMainFilter().setQ(value);
         } else if (id == lrType::ID) {
             controllerRef.setFilterLRs(static_cast<lrTypes>(value), idx);
         } else if (id == dynamicON::ID) {
             if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value) && dynamicONUpdateOthers.load()) {
                 std::array dynamicInitValues{targetGain::range.convertTo0to1(
-                                                     static_cast<float>(filtersRef[idx].getMainFilter().getGain())),
+                                                     static_cast<float>(filtersRef[idx].getBaseFilter().getGain())),
                                              targetQ::range.convertTo0to1(
-                                                     static_cast<float>(filtersRef[idx].getMainFilter().getQ())),
+                                                     static_cast<float>(filtersRef[idx].getBaseFilter().getQ())),
                                              sideFreq::range.convertTo0to1(
                                                      static_cast<float>(filtersRef[idx].getSideDefaultFreq())),
                                                      static_cast<float>(false)};
@@ -105,12 +110,14 @@ namespace zlDSP {
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::initDefaultValues() {
+        enableDynamicONUpdateOthers(false);
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             for (size_t j = 0; j < defaultVs.size(); ++j) {
                 parameterChanged(IDs[j] + suffix, defaultVs[j]);
             }
         }
+        enableDynamicONUpdateOthers(true);
     }
 
     template
