@@ -11,7 +11,8 @@
 
 namespace zlDSP {
     template<typename FloatType>
-    Controller<FloatType>::Controller(juce::AudioProcessor &processor) :processorRef(processor) {}
+    Controller<FloatType>::Controller(juce::AudioProcessor &processor) : processorRef(processor) {
+    }
 
     template<typename FloatType>
     void Controller<FloatType>::reset() {
@@ -38,7 +39,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-//        initCompleted.store(true);
+        //        initCompleted.store(true);
         juce::AudioBuffer<FloatType> mainBuffer(processorRef.getBusBuffer(buffer, true, 0));
         juce::AudioBuffer<FloatType> sideBuffer(processorRef.getBusBuffer(buffer, true, 1));
         // if no side chain, copy the main buffer into the side buffer
@@ -148,7 +149,10 @@ namespace zlDSP {
         dBs.fill(FloatType(0));
         for (size_t i = 0; i < bandNUM; i++) {
             if (filterLRs[i].load() == lrTypes::stereo) {
-                filters[i].addDBs(dBs);
+                const juce::ScopedReadLock localScopedLock(filters[i].getMainFilter().getMagLock());
+                std::transform(dBs.begin(), dBs.end(),
+                               filters[i].getMainFilter().getDBs().begin(),
+                               dBs.begin(), std::plus<FloatType>());
             }
         }
     }
