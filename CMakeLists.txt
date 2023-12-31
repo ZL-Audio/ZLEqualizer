@@ -54,7 +54,7 @@ include(JUCEDefaults)
 add_subdirectory(JUCE)
 
 # Add any other modules you want modules here, before the juce_add_plugin call
-# juce_add_module(modules/my_module)
+juce_add_module("${CMAKE_CURRENT_LIST_DIR}/modules/friz/Source/friz")
 
 # See `docs/CMake API.md` in the JUCE repo for all config options
 juce_add_plugin("${PROJECT_NAME}"
@@ -146,6 +146,7 @@ target_link_libraries(SharedCode
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
+        friz
         Boost::boost)
 
 # Link the JUCE plugin targets our SharedCode target

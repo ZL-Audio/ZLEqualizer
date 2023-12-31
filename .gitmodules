@@ -2,3 +2,7 @@
 	path = JUCE
 	url = https://github.com/juce-framework/JUCE/
 	branch = master
+[submodule "modules/friz"]
+	path = modules/friz
+	url = https://github.com/ZL-Audio/animator
+	branch = fix-warnings
