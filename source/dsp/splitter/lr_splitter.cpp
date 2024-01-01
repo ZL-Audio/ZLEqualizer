@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "lr_splitter.h"
+#include "lr_splitter.hpp"
 
 namespace zlSplitter {
     template<typename FloatType>

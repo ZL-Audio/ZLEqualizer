@@ -1,4 +1,4 @@
-#include "PluginEditor.h"
+#include "PluginEditor.hpp"
 
 PluginEditor::PluginEditor(PluginProcessor &p)
         : AudioProcessorEditor(&p), processorRef(p) {

@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "dynamic_iir_filter.h"
+#include "dynamic_iir_filter.hpp"
 
 namespace zlDynamicFilter {
     template<typename FloatType>

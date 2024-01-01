@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "ms_splitter.h"
+#include "ms_splitter.hpp"
 namespace zlSplitter {
     template<typename FloatType>
     void MSSplitter<FloatType>::reset() {

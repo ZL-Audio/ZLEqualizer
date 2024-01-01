@@ -2,7 +2,7 @@
 // Created by Zishu Liu on 12/28/23.
 //
 
-#include "two_value_rotary_slider.h"
+#include "two_value_rotary_slider.hpp"
 
 namespace zlInterface {
     TwoValueRotarySlider::TwoValueRotarySlider(const juce::String &labelText, UIBase &base)

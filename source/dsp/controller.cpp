@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "controller.h"
+#include "controller.hpp"
 
 namespace zlDSP {
     template<typename FloatType>

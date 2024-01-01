@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "forward_compressor.h"
+#include "forward_compressor.hpp"
 
 namespace zlCompressor {
     template<typename FloatType>

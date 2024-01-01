@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "analog_func.h"
+#include "analog_func.hpp"
 
 namespace zlIIR {
     double AnalogFunc::get2Magnitude2(std::array<double, 6> coeff, double w) {

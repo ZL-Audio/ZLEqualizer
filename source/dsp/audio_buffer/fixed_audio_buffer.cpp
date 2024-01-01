@@ -8,7 +8,7 @@
 // You should have received a copy of the GNU General Public License along with ZLEComp. If not, see <https://www.gnu.org/licenses/>.
 // ==============================================================================
 
-#include "fixed_audio_buffer.h"
+#include "fixed_audio_buffer.hpp"
 
 namespace zlAudioBuffer {
     template<typename FloatType>

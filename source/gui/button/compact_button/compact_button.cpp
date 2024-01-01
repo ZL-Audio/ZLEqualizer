@@ -2,7 +2,7 @@
 // Created by Zishu Liu on 12/29/23.
 //
 
-#include "compact_button.h"
+#include "compact_button.hpp"
 
 namespace zlInterface {
     CompactButton::CompactButton(const juce::String &labelText, UIBase &base) : uiBase(base), lookAndFeel(uiBase),

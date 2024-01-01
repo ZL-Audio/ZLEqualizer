@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "single_filter.h"
+#include "single_filter.hpp"
 
 namespace zlIIR {
     template<typename FloatType>

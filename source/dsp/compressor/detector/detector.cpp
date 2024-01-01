@@ -8,7 +8,7 @@
 // You should have received a copy of the GNU General Public License along with ZLEComp. If not, see <https://www.gnu.org/licenses/>.
 // ==============================================================================
 
-#include "detector.h"
+#include "detector.hpp"
 
 namespace zlCompressor {
 

@@ -2,7 +2,7 @@
 // Created by Zishu Liu on 12/30/23.
 //
 
-#include "compact_linear_slider.h"
+#include "compact_linear_slider.hpp"
 
 namespace zlInterface {
     CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base) : sliderLookAndFeel(base),

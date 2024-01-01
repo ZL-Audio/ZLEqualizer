@@ -11,7 +11,7 @@
 // Cascading filters, Nigel Redmon
 // A Simple Method of Designing Multiple Order All Pole Bandpass Filters by Cascading 2nd Order Sections, Nello Sevastopoulos and Richard Markell
 
-#include "design_filter.h"
+#include "design_filter.hpp"
 
 const static double pi = std::numbers::pi;
 const static double ppi = 2 * std::numbers::pi;

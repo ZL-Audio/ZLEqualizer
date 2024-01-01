@@ -2,7 +2,7 @@
 // Created by Zishu Liu on 12/28/23.
 //
 
-#include "interface_definitions.h"
+#include "interface_definitions.hpp"
 
 namespace zlInterface {
     UIBase::UIBase() {

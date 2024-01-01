@@ -11,7 +11,7 @@
 // Matched One-Pole Digital Shelving Filters, Martin Vicanek
 // Matched Second Order Digital Filters, Martin Vicanek
 
-#include "martin_coeff.h"
+#include "martin_coeff.hpp"
 
 const static double piHalf = std::numbers::pi * 0.5;
 const static double pi = std::numbers::pi;

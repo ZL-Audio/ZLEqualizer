@@ -8,7 +8,7 @@
 // You should have received a copy of the GNU General Public License along with ZLEComp. If not, see <https://www.gnu.org/licenses/>.
 // ==============================================================================
 
-#include "rms_tracker.h"
+#include "rms_tracker.hpp"
 
 namespace zlCompressor {
 

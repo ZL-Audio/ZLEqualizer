@@ -2,7 +2,7 @@
 // Created by Zishu Liu on 12/30/23.
 //
 
-#include "compact_combobox.h"
+#include "compact_combobox.hpp"
 
 namespace zlInterface {
     CompactCombobox::CompactCombobox(const juce::String &labelText, const juce::StringArray &choices,
