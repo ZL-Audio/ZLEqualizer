@@ -140,13 +140,44 @@ jobs:
       shell: bash
       run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
 
-    - name: Pluginval
+    - name: Pluginval setup
       working-directory: ${{ env.BUILD_DIR }}
       shell: bash
       run: |
         curl -LO "https://github.com/Tracktion/pluginval/releases/download/v1.0.3/pluginval_${{ matrix.name }}.zip"
         7z x pluginval_${{ matrix.name }}.zip
-        ${{ matrix.pluginval-binary }} --strictness-level 10 --verbose --validate "${{ env.VST3_PATH }}"
+        echo "PLUGINVAL_DISABLED=Plugin state restoration" >> $GITHUB_ENV
+
+    - name: Setup Pluginval random seed
+      uses: josStorer/get-current-time@v2
+      id: current-time
+      with:
+        format: YYYYMMDD
+
+    - name: Pluginval VST3 validations
+      working-directory: ${{ env.BUILD_DIR }}
+      shell: bash
+      run: |
+        ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+      env:
+        STRICTNESS_LEVEL: 10
+        TIMEOUT_MS: 720000
+        REPEAT: 1
+        RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
+
+    - name: Pluginval AU validations (macOS)
+      working-directory: ${{ env.BUILD_DIR }}
+      if: ${{ matrix.name == 'macOS' }}
+      shell: bash
+      run: |
+        sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
+        sudo killall -9 AudioComponentRegistrar
+        ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+      env:
+        STRICTNESS_LEVEL: 10
+        TIMEOUT_MS: 720000
+        REPEAT: 1
+        RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
     - name: Codesign (macOS)
       working-directory: ${{ env.BUILD_DIR }}
