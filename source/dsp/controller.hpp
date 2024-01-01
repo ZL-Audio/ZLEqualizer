@@ -46,6 +46,8 @@ namespace zlDSP {
 
         void handleAsyncUpdate() override;
 
+        std::tuple<FloatType, FloatType> getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter);
+
 //        inline bool getInitCompleted() { return initCompleted.load(); }
 
     private:

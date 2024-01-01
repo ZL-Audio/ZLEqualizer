@@ -17,9 +17,9 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 namespace zlDSP {
-    inline auto static const versionHint = 1;
+    inline auto static constexpr versionHint = 1;
 
-    inline auto static const bandNUM = 1;
+    inline auto static constexpr bandNUM = 1;
 
     // float
     template<class T>

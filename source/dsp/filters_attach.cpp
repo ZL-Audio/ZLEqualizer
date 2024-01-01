@@ -14,8 +14,8 @@ namespace zlDSP {
     FiltersAttach<FloatType>::FiltersAttach(juce::AudioProcessor &processor,
                                             juce::AudioProcessorValueTreeState &parameters,
                                             Controller<FloatType> &controller)
-            :processorRef(processor), parameterRef(parameters),
-             controllerRef(controller), filtersRef(controller.getFilters()) {
+        : processorRef(processor), parameterRef(parameters),
+          controllerRef(controller), filtersRef(controller.getFilters()) {
         addListeners();
         initDefaultValues();
     }
@@ -45,7 +45,7 @@ namespace zlDSP {
         auto id = parameterID.dropLastCharacters(2);
         auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         auto value = static_cast<FloatType>(newValue);
-//        logger.logMessage(id + " " + juce::String(idx));
+        //        logger.logMessage(id + " " + juce::String(idx));
         if (id == bypass::ID) {
             filtersRef[idx].setBypass(static_cast<bool>(value));
         } else if (id == fType::ID) {
@@ -70,13 +70,16 @@ namespace zlDSP {
             controllerRef.setFilterLRs(static_cast<lrTypes>(value), idx);
         } else if (id == dynamicON::ID) {
             if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value) && dynamicONUpdateOthers.load()) {
-                std::array dynamicInitValues{targetGain::range.convertTo0to1(
-                                                     static_cast<float>(filtersRef[idx].getBaseFilter().getGain())),
-                                             targetQ::range.convertTo0to1(
-                                                     static_cast<float>(filtersRef[idx].getBaseFilter().getQ())),
-                                             sideFreq::range.convertTo0to1(
-                                                     static_cast<float>(filtersRef[idx].getSideDefaultFreq())),
-                                                     static_cast<float>(false)};
+                auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
+                const std::array dynamicInitValues{
+                    targetGain::range.convertTo0to1(
+                        static_cast<float>(filtersRef[idx].getBaseFilter().getGain())),
+                    targetQ::range.convertTo0to1(
+                        static_cast<float>(filtersRef[idx].getBaseFilter().getQ())),
+                    sideFreq::range.convertTo0to1(static_cast<float>(soloFreq)),
+                    sideQ::range.convertTo0to1(static_cast<float>(soloQ)),
+                    static_cast<float>(false)
+                };
                 for (size_t i = 0; i < dynamicInitIDs.size(); ++i) {
                     auto initID = dynamicInitIDs[i] + parameterID.getLastCharacters(2);
                     parameterRef.getParameter(initID)->beginChangeGesture();
@@ -86,10 +89,10 @@ namespace zlDSP {
             }
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
         } else if (id == dynamicBypass::ID) {
-//            logger.logMessage("set dynamic bypass to " + juce::String(value));
+            //            logger.logMessage("set dynamic bypass to " + juce::String(value));
             filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
         } else if (id == targetGain::ID) {
-//            logger.logMessage("set target gain to " + juce::String(value));
+            //            logger.logMessage("set target gain to " + juce::String(value));
             filtersRef[idx].getTargetFilter().setGain(value);
         } else if (id == targetQ::ID) {
             filtersRef[idx].getTargetFilter().setQ(value);

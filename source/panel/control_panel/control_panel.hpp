@@ -10,12 +10,26 @@
 #ifndef ZLEqualizer_CONTROL_PANEL_HPP
 #define ZLEqualizer_CONTROL_PANEL_HPP
 
+#include "../../dsp/dsp.hpp"
+#include "../../gui/gui.h"
+
 namespace zlPanel {
+    class ControlPanel : public juce::Component {
+    public:
+        explicit ControlPanel(juce::AudioProcessorValueTreeState &parameters,
+                              juce::AudioProcessorValueTreeState &parametersNA,
+                              zlInterface::UIBase &base);
 
-class ControlPanel {
+        ~ControlPanel() override;
 
-};
+        void resized() override;
 
+    private:
+        zlInterface::CompactButton bypassC, soloC, dynONC, dynBypassC, dynSoloC;
+        zlInterface::CompactCombobox fTypeC, slopeC, stereoC;
+        zlInterface::TwoValueRotarySlider freqC, gainC, qC, sideFreqC, sideQC;
+        zlInterface::CompactLinearSlider thresC, ratioC, attackC, releaseC;
+    };
 } // zlPanel
 
 #endif //ZLEqualizer_CONTROL_PANEL_HPP

@@ -162,6 +162,42 @@ namespace zlDSP {
         processorRef.setLatencySamples(latencyInSamples.load());
     }
 
+    template<typename FloatType>
+    std::tuple<FloatType, FloatType> Controller<FloatType>::getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter) {
+        switch (baseFilter.getFilterType()) {
+            case zlIIR::FilterType::lowPass:
+            case zlIIR::FilterType::lowShelf: {
+                auto soloFreq = std::sqrt(static_cast<FloatType>(10)) * std::sqrt(
+                                    baseFilter.getFreq());
+                auto scale = baseFilter.getFreq() / soloFreq;
+                auto bw = std::log2(scale) * 2;
+                auto soloQ = 1 / (2 * std::sinh(std::log(FloatType(2)) / 2 * bw));
+                soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
+                return {soloFreq, soloQ};
+            }
+            case zlIIR::FilterType::highPass:
+            case zlIIR::FilterType::highShelf: {
+                auto soloFreq = std::sqrt(static_cast<FloatType>(subBuffer.getMainSpec().sampleRate)) * std::sqrt(
+                                    baseFilter.getFreq());
+                auto scale = soloFreq / baseFilter.getFreq();
+                auto bw = std::log2(scale) * 2;
+                auto soloQ = 1 / (2 * std::sinh(std::log(FloatType(2)) / 2 * bw));
+                soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
+                return {soloFreq, soloQ};
+            }
+            case zlIIR::FilterType::tiltShelf: {
+                return {baseFilter.getFreq(), FloatType(0.025)};
+            }
+            case zlIIR::FilterType::peak:
+            case zlIIR::FilterType::notch:
+            case zlIIR::FilterType::bandPass:
+            case zlIIR::FilterType::bandShelf:
+            default: {
+                return {baseFilter.getFreq(), baseFilter.getQ()};
+            }
+        }
+    }
+
     template
     class Controller<float>;
 
