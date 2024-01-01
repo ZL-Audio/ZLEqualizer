@@ -42,10 +42,9 @@ namespace zlDSP {
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
-        auto id = parameterID.dropLastCharacters(2);
-        auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        auto value = static_cast<FloatType>(newValue);
-        //        logger.logMessage(id + " " + juce::String(idx));
+        const auto id = parameterID.dropLastCharacters(2);
+        const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
+        const auto value = static_cast<FloatType>(newValue);
         if (id == bypass::ID) {
             filtersRef[idx].setBypass(static_cast<bool>(value));
         } else if (id == fType::ID) {
