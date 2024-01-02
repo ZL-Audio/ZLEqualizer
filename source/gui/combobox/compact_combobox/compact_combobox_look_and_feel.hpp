@@ -16,13 +16,25 @@ namespace zlInterface {
 
         void drawComboBox(juce::Graphics &g, int width, int height, bool isButtonDown, int, int, int, int,
                           juce::ComboBox &box) override {
-            juce::ignoreUnused(isButtonDown, box);
-            auto cornerSize = uiBase->getFontSize() * 0.5f;
-            auto boxBounds = juce::Rectangle<float>(0, 0,
-                                                    static_cast<float>(width),
-                                                    static_cast<float>(height) * 1.0f);
-            boxBounds = uiBase->fillRoundedShadowRectangle(g, boxBounds, cornerSize, {});
-            uiBase->fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize, {.blurRadius = 0.45f, .flip = true});
+            juce::ignoreUnused(width, height);
+            const auto boxBounds = juce::Rectangle<float>(0, 0,
+                                                          static_cast<float>(width),
+                                                          static_cast<float>(height));
+            const auto cornerSize = uiBase->getFontSize() * 0.375f;
+            if (isButtonDown || box.isPopupActive()) {
+                g.setColour(uiBase->getTextInactiveColor());
+                g.fillRoundedRectangle(boxBounds, cornerSize);
+            } else {
+                uiBase->fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize,
+                                                        {
+                                                            .blurRadius = 0.45f, .flip = true,
+                                                            .darkShadowColor = uiBase->getDarkShadowColor().
+                                                            withMultipliedAlpha(boxAlpha.load()),
+                                                            .brightShadowColor = uiBase->getBrightShadowColor().
+                                                            withMultipliedAlpha(boxAlpha.load()),
+                                                            .changeDark = true, .changeBright = true
+                                                        });
+            }
         }
 
         void positionComboBoxText(juce::ComboBox &box, juce::Label &label) override {
@@ -40,12 +52,12 @@ namespace zlInterface {
         }
 
         void drawPopupMenuBackground(juce::Graphics &g, int width, int height) override {
-            auto cornerSize = uiBase->getFontSize() * 0.5f;
-            auto boxBounds = juce::Rectangle<float>(0, 0, static_cast<float>(width),
-                                                    static_cast<float>(height));
-            boxBounds = uiBase->fillRoundedShadowRectangle(g, boxBounds, cornerSize,
-                                                           {.curveTopLeft = true, .curveTopRight = true});
-            // uiBase->fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize, {.blurRadius = 0.45f, .flip = true});
+            const auto cornerSize = uiBase->getFontSize() * 0.375f;
+            const auto boxBounds = juce::Rectangle<float>(0, 0, static_cast<float>(width),
+                                                          static_cast<float>(height));
+            // boxBounds = uiBase->fillRoundedShadowRectangle(g, boxBounds, cornerSize,
+            //                                                {.curveTopLeft = true, .curveTopRight = true});
+            uiBase->fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize, {.blurRadius = 0.45f, .flip = true});
             // g.setColour(uiBase->getTextInactiveColor());
             // g.fillRect(boxBounds.getX(), 0.0f, boxBounds.getWidth(), cornerSize * 0.15f);
         }
@@ -82,15 +94,18 @@ namespace zlInterface {
         }
 
         int getPopupMenuBorderSize() override {
-            return juce::roundToInt(uiBase->getFontSize() * 0.5f);
+            return juce::roundToInt(uiBase->getFontSize() * 0.125f);
         }
 
-        void setEditable(const bool f) {
-            editable.store(f);
-        }
+        inline void setEditable(bool f) { editable.store(f); }
+
+        inline void setBoxAlpha(const float x) { boxAlpha.store(x); }
+
+        inline float getBoxAlpha() const { return boxAlpha.load(); }
 
     private:
         std::atomic<bool> editable = true;
+        std::atomic<float> boxAlpha;
 
         UIBase *uiBase;
     };

@@ -5,6 +5,8 @@
 #ifndef COMPACT_COMBOBOX_H
 #define COMPACT_COMBOBOX_H
 
+#include <friz/friz.h>
+
 #include "compact_combobox_look_and_feel.hpp"
 
 namespace zlInterface {
@@ -16,6 +18,18 @@ namespace zlInterface {
 
         void resized() override;
 
+        void mouseUp(const juce::MouseEvent &event) override;
+
+        void mouseDown(const juce::MouseEvent &event) override;
+
+        void mouseDrag(const juce::MouseEvent &event) override;
+
+        void mouseEnter(const juce::MouseEvent &event) override;
+
+        void mouseExit(const juce::MouseEvent &event) override;
+
+        void mouseMove(const juce::MouseEvent &event) override;
+
         inline void setEditable(const bool f) {
             boxLookAndFeel.setEditable(f);
         }
@@ -23,6 +37,9 @@ namespace zlInterface {
     private:
         CompactComboboxLookAndFeel boxLookAndFeel;
         juce::ComboBox comboBox;
+
+        friz::Animator animator;
+        static constexpr int animationId = 1;
     };
 }
 
