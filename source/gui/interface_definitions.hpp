@@ -71,10 +71,10 @@ namespace zlInterface {
         float blurRadius = 0.5f;
         bool fit = true, flip = false;
         bool drawBright = true, drawDark = true;
-        bool changeMain = false, changeDark = false, changeBright = false;
         juce::Colour mainColour = BackgroundColor;
         juce::Colour darkShadowColor = DarkShadowColor;
         juce::Colour brightShadowColor = BrightShadowColor;
+        bool changeMain = false, changeDark = false, changeBright = false;
     };
 
     inline std::string formatFloat(float x, int precision) {

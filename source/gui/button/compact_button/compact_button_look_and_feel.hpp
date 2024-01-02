@@ -28,9 +28,9 @@ namespace zlInterface {
                 uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.5f, {
                                                   .darkShadowColor = uiBase.getDarkShadowColor().
                                                   withMultipliedAlpha(buttonDepth),
-                                                  .changeDark = true,
                                                   .brightShadowColor = uiBase.getBrightShadowColor().
                                                   withMultipliedAlpha(buttonDepth),
+                                                  .changeDark = true,
                                                   .changeBright = true
                                               });
             }

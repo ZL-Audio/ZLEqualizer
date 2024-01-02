@@ -85,7 +85,7 @@ namespace zlInterface {
             return juce::roundToInt(uiBase->getFontSize() * 0.5f);
         }
 
-        void setEditable(bool f) {
+        void setEditable(const bool f) {
             editable.store(f);
         }
 
