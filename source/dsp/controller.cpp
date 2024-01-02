@@ -190,22 +190,20 @@ namespace zlDSP {
         switch (baseFilter.getFilterType()) {
             case zlIIR::FilterType::lowPass:
             case zlIIR::FilterType::lowShelf: {
-                auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(
-                                                           baseFilter.getFreq()));
+                auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(baseFilter.getFreq()));
                 auto scale = soloFreq;
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
-                auto bw = std::log2(scale) * 2;
+                auto bw = std::max(std::log2(scale) * 2, FloatType(0.01));
                 auto soloQ = 1 / (2 * std::sinh(std::log(FloatType(2)) / 2 * bw));
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
             }
             case zlIIR::FilterType::highPass:
             case zlIIR::FilterType::highShelf: {
-                auto soloFreq = static_cast<FloatType>(std::sqrt(subBuffer.getMainSpec().sampleRate) * std::sqrt(
-                                                           baseFilter.getFreq()));
+                auto soloFreq = static_cast<FloatType>(std::sqrt(20000) * std::sqrt(baseFilter.getFreq()));
                 auto scale = soloFreq / baseFilter.getFreq();
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
-                auto bw = std::log2(scale) * 2;
+                auto bw = std::max(std::log2(scale) * 2, FloatType(0.01));
                 auto soloQ = 1 / (2 * std::sinh(std::log(FloatType(2)) / 2 * bw));
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
