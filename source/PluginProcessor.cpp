@@ -3,19 +3,20 @@
 
 //==============================================================================
 PluginProcessor::PluginProcessor()
-        : AudioProcessor(BusesProperties()
+    : AudioProcessor(BusesProperties()
 #if !JucePlugin_IsMidiEffect
 #if !JucePlugin_IsSynth
-                                 .withInput("Input", juce::AudioChannelSet::stereo(), true)
+          .withInput("Input", juce::AudioChannelSet::stereo(), true)
 #endif
-                                 .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-                                 .withInput("Aux", juce::AudioChannelSet::stereo(), true)
+          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+          .withInput("Aux", juce::AudioChannelSet::stereo(), true)
 #endif
-), parameters(*this, nullptr,
-              juce::Identifier("ZLEqualizerParameters"),
-              zlDSP::getParameterLayout()),
-          controller(*this),
-          filtersAttach(*this, parameters, controller) {
+      ), parameters(*this, nullptr,
+                    juce::Identifier("ZLEqualizerParameters"),
+                    zlDSP::getParameterLayout()),
+      controller(*this),
+      filtersAttach(*this, parameters, controller),
+      soloAttach(*this, parameters, controller) {
 }
 
 PluginProcessor::~PluginProcessor() = default;
@@ -54,7 +55,7 @@ double PluginProcessor::getTailLengthSeconds() const {
 }
 
 int PluginProcessor::getNumPrograms() {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
+    return 1; // NB: some hosts don't cope very well if you tell them there are 0 programs,
     // so this should be at least 1, even if you're not really implementing programs.
 }
 
@@ -79,10 +80,12 @@ void PluginProcessor::changeProgramName(int index, const juce::String &newName) 
 void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     // Use this method as the place to do any pre-playback
     // initialisation that you need.
-    auto channels = static_cast<juce::uint32> (juce::jmin(getMainBusNumInputChannels(),
-                                                          getMainBusNumOutputChannels()));
-    juce::dsp::ProcessSpec spec{sampleRate, static_cast<juce::uint32> (samplesPerBlock),
-                                channels};
+    auto channels = static_cast<juce::uint32>(juce::jmin(getMainBusNumInputChannels(),
+                                                         getMainBusNumOutputChannels()));
+    juce::dsp::ProcessSpec spec{
+        sampleRate, static_cast<juce::uint32>(samplesPerBlock),
+        channels
+    };
     controller.prepare(spec);
 }
 
@@ -128,7 +131,7 @@ bool PluginProcessor::hasEditor() const {
 }
 
 juce::AudioProcessorEditor *PluginProcessor::createEditor() {
-//    return new PluginEditor(*this);
+    //    return new PluginEditor(*this);
     return new juce::GenericAudioProcessorEditor(*this);
 }
 

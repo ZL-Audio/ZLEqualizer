@@ -13,5 +13,6 @@
 #include "dsp_definitions.hpp"
 #include "controller.hpp"
 #include "filters_attach.hpp"
+#include "solo_attach.hpp"
 
 #endif //ZL_DSP_H

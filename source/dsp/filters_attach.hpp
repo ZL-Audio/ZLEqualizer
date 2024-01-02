@@ -24,7 +24,7 @@ namespace zlDSP {
 
         void addListeners();
 
-        inline void enableDynamicONUpdateOthers(bool x) { dynamicONUpdateOthers.store(x); }
+        inline void enableDynamicONUpdateOthers(const bool x) { dynamicONUpdateOthers.store(x); }
 
     private:
         juce::AudioProcessor &processorRef;

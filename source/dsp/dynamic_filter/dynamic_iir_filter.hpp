@@ -61,19 +61,11 @@ namespace zlDynamicFilter {
 
         inline bool getDynamicBypass() { return dynamicBypass.load(); }
 
-        /**
-         * calculate the default frequency of the side filter
-         * @return the default frequency of the side filter
-         */
-        FloatType getSideDefaultFreq();
-
     private:
         zlIIR::Filter<FloatType> mFilter, bFilter, tFilter, sFilter;
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass = true, dynamicON = false, dynamicBypass = false;
-
-//        std::atomic<FloatType> mainPortion;
 
 //        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Dynamic IIR Log"};
     };

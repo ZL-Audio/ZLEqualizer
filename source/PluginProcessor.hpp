@@ -5,6 +5,7 @@
 #include "dsp/dsp_definitions.hpp"
 #include "dsp/controller.hpp"
 #include "dsp/filters_attach.hpp"
+#include "dsp/solo_attach.hpp"
 
 #if (MSVC)
 #include "ipps.h"
@@ -57,6 +58,7 @@ public:
 private:
     zlDSP::Controller<float> controller;
     zlDSP::FiltersAttach<float> filtersAttach;
+    zlDSP::SoloAttach<float> soloAttach;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

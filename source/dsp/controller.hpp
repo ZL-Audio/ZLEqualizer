@@ -30,13 +30,13 @@ namespace zlDSP {
 
         void process(juce::AudioBuffer<FloatType> &buffer);
 
-        inline zlDynamicFilter::IIRFilter<FloatType> &getFilter(size_t idx) { return filters[idx]; }
+        inline zlDynamicFilter::IIRFilter<FloatType> &getFilter(const size_t idx) { return filters[idx]; }
 
         inline std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> &getFilters() { return filters; }
 
-        void setFilterLRs(lrTypes x, size_t idx);
+        void setFilterLRs(lrType::lrTypes x, size_t idx);
 
-        inline lrTypes getFilterLRs(size_t idx) { return filterLRs[idx].load(); }
+        inline lrType::lrTypes getFilterLRs(const size_t idx) { return filterLRs[idx].load(); }
 
         void setDynamicON(bool x, size_t idx);
 
@@ -46,22 +46,36 @@ namespace zlDSP {
 
         void handleAsyncUpdate() override;
 
-        std::tuple<FloatType, FloatType> getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter);
+        void setSolo(size_t idx, bool isSide);
 
-//        inline bool getInitCompleted() { return initCompleted.load(); }
+        inline bool getSolo() const { return useSolo.load(); }
+
+        inline void clearSolo() { useSolo.store(false); }
+
+        inline size_t getSoloIdx() const { return soloIdx.load(); }
+
+        inline bool getSoloIsSide() const { return soloSide.load(); }
+
+        inline zlIIR::Filter<FloatType> &getSoloFilter() {return soloFilter;}
+
+        std::tuple<FloatType, FloatType> getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter);
 
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
         juce::ReadWriteLock paraUpdateLock;
 
-        std::array<std::atomic<lrTypes>, bandNUM> filterLRs;
+        std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
         std::atomic<bool> useLR, useMS;
 
         std::atomic<bool> useDynamic;
         std::atomic<bool> sideChain;
+
+        zlIIR::Filter<FloatType> soloFilter;
+        std::atomic<size_t> soloIdx;
+        std::atomic<bool> useSolo, soloSide;
 
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
@@ -70,9 +84,9 @@ namespace zlDSP {
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
 
-//        std::atomic<bool> initCompleted = false;
-
-//        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Filters Attach Log"};
+        void processOneFilter(size_t i,
+                              juce::AudioBuffer<FloatType> &mainBuffer,
+                              juce::AudioBuffer<FloatType> &sideBuffer);
     };
 }
 

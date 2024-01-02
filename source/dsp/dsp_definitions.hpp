@@ -7,10 +7,6 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-//
-// Created by Zishu Liu on 12/20/23.
-//
-
 #ifndef ZLEQUALIZER_DSP_DEFINITIONS_HPP
 #define ZLEQUALIZER_DSP_DEFINITIONS_HPP
 
@@ -58,13 +54,24 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "f_type";
         auto static constexpr name = "Type";
-        inline auto static const choices = juce::StringArray{"Peak", "Low Shelf", "Low Pass",
-                                                             "High Shelf", "High Pass", "Notch",
-                                                             "Band Pass", "Band Shelf", "Tilt Shelf"};
+        inline auto static const choices = juce::StringArray{
+            "Peak", "Low Shelf", "Low Pass",
+            "High Shelf", "High Pass", "Notch",
+            "Band Pass", "Band Shelf", "Tilt Shelf"
+        };
         int static constexpr defaultI = 0;
+
         enum {
-            peak, lowShelf, lowPass, highShelf, highPass,
-            notch, bandPass, bandShelf, tiltShelf, fTypeNUM
+            peak,
+            lowShelf,
+            lowPass,
+            highShelf,
+            highPass,
+            notch,
+            bandPass,
+            bandShelf,
+            tiltShelf,
+            fTypeNUM
         };
     };
 
@@ -72,8 +79,10 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "slope";
         auto static constexpr name = "Slope";
-        inline auto static const choices = juce::StringArray{"6 dB/oct", "12 dB/oct", "24 dB/oct",
-                                                             "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"};
+        inline auto static const choices = juce::StringArray{
+            "6 dB/oct", "12 dB/oct", "24 dB/oct",
+            "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"
+        };
         int static constexpr defaultI = 1;
         static constexpr std::array<size_t, 7> orderArray{1, 2, 4, 6, 8, 12, 16};
     };
@@ -108,10 +117,15 @@ namespace zlDSP {
         auto static constexpr name = "LRType";
         inline auto static const choices = juce::StringArray{"Stereo", "Left", "Right", "Mid", "Side"};
         int static constexpr defaultI = 0;
-    };
 
-    enum lrTypes {
-        stereo, left, right, mid, side, lrTypeNUM
+        enum lrTypes {
+            stereo,
+            left,
+            right,
+            mid,
+            side,
+            lrTypeNUM
+        };
     };
 
     class bypass : public BoolParameters<bypass> {
@@ -119,6 +133,13 @@ namespace zlDSP {
         auto static constexpr ID = "bypass";
         auto static constexpr name = "Bypass";
         auto static constexpr defaultV = true;
+    };
+
+    class solo : public BoolParameters<solo> {
+    public:
+        auto static constexpr ID = "solo";
+        auto static constexpr name = "Solo";
+        auto static constexpr defaultV = false;
     };
 
     class dynamicON : public BoolParameters<dynamicON> {
@@ -203,11 +224,20 @@ namespace zlDSP {
         auto static constexpr defaultV = 0.707f;
     };
 
+    class sideSolo : public BoolParameters<sideSolo> {
+    public:
+        auto static constexpr ID = "side_solo";
+        auto static constexpr name = "Side Solo";
+        auto static constexpr defaultV = false;
+    };
+
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
-        layout.add(bypass::get(suffix), fType::get(suffix), slope::get(suffix),
+        layout.add(bypass::get(suffix), solo::get(suffix),
+                   fType::get(suffix), slope::get(suffix),
                    freq::get(suffix), gain::get(suffix), Q::get(suffix),
-                   lrType::get(suffix), dynamicON::get(suffix), dynamicBypass::get(suffix),
+                   lrType::get(suffix), dynamicON::get(suffix),
+                   dynamicBypass::get(suffix), sideSolo::get(suffix),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), ratio::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
     }
@@ -227,7 +257,6 @@ namespace zlDSP {
         }
         return layout;
     }
-
 }
 
 #endif //ZLEQUALIZER_DSP_DEFINITIONS_HPP

@@ -66,7 +66,7 @@ namespace zlDSP {
             filtersRef[idx].getBaseFilter().setQ(value);
             filtersRef[idx].getMainFilter().setQ(value);
         } else if (id == lrType::ID) {
-            controllerRef.setFilterLRs(static_cast<lrTypes>(value), idx);
+            controllerRef.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
         } else if (id == dynamicON::ID) {
             if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value) && dynamicONUpdateOthers.load()) {
                 auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
@@ -88,10 +88,8 @@ namespace zlDSP {
             }
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
         } else if (id == dynamicBypass::ID) {
-            //            logger.logMessage("set dynamic bypass to " + juce::String(value));
             filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
         } else if (id == targetGain::ID) {
-            //            logger.logMessage("set target gain to " + juce::String(value));
             filtersRef[idx].getTargetFilter().setGain(value);
         } else if (id == targetQ::ID) {
             filtersRef[idx].getTargetFilter().setQ(value);

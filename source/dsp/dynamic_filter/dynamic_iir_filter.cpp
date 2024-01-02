@@ -48,18 +48,6 @@ namespace zlDynamicFilter {
         }
     }
 
-    template<typename FloatType>
-    FloatType IIRFilter<FloatType>::getSideDefaultFreq() {
-        auto mFilterType = bFilter.getFilterType();
-        if (mFilterType == zlIIR::FilterType::lowShelf || mFilterType == zlIIR::FilterType::lowPass) {
-            return FloatType(0.5) * (FloatType(10) + bFilter.getFreq());
-        } else if (mFilterType == zlIIR::FilterType::highShelf || mFilterType == zlIIR::FilterType::highPass) {
-            return FloatType(0.5) * (FloatType(20000) + bFilter.getFreq());
-        } else {
-            return bFilter.getFreq();
-        }
-    }
-
     template
     class IIRFilter<float>;
 

@@ -19,6 +19,7 @@ namespace zlDSP {
         for (auto &f: filters) {
             f.reset();
         }
+        soloFilter.reset();
     }
 
     template<typename FloatType>
@@ -31,6 +32,7 @@ namespace zlDSP {
         for (auto &f: filters) {
             f.prepare(subSpec);
         }
+        soloFilter.prepare(subSpec);
         lrMainSplitter.prepare(subSpec);
         lrSideSplitter.prepare(subSpec);
         msMainSplitter.prepare(subSpec);
@@ -39,7 +41,6 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        //        initCompleted.store(true);
         juce::AudioBuffer<FloatType> mainBuffer(processorRef.getBusBuffer(buffer, true, 0));
         juce::AudioBuffer<FloatType> sideBuffer(processorRef.getBusBuffer(buffer, true, 1));
         // if no side chain, copy the main buffer into the side buffer
@@ -59,8 +60,8 @@ namespace zlDSP {
                                                               2, subBuffer.subBuffer.getNumSamples());
             // stereo filters process
             for (size_t i = 0; i < bandNUM; ++i) {
-                if (filterLRs[i].load() == lrTypes::stereo) {
-                    filters[i].process(subMainBuffer, subSideBuffer);
+                if (filterLRs[i].load() == lrType::stereo) {
+                    processOneFilter(i, subMainBuffer, subSideBuffer);
                 }
             }
             // LR filters process
@@ -70,10 +71,12 @@ namespace zlDSP {
                     lrSideSplitter.split(subSideBuffer);
                 }
                 for (size_t i = 0; i < bandNUM; ++i) {
-                    if (filterLRs[i].load() == lrTypes::left) {
-                        filters[i].process(lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
-                    } else if (filterLRs[i].load() == lrTypes::right) {
-                        filters[i].process(lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
+                    if (filterLRs[i].load() == lrType::left) {
+                        processOneFilter(i, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
+                        lrMainSplitter.getRBuffer().applyGain(0);
+                    } else if (filterLRs[i].load() == lrType::right) {
+                        processOneFilter(i, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
+                        lrMainSplitter.getLBuffer().applyGain(0);
                     }
                 }
                 lrMainSplitter.combine(subMainBuffer);
@@ -82,10 +85,12 @@ namespace zlDSP {
             if (useMS.load()) {
                 msMainSplitter.split(subMainBuffer);
                 for (size_t i = 0; i < bandNUM; ++i) {
-                    if (filterLRs[i].load() == lrTypes::mid) {
-                        filters[i].process(msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
-                    } else if (filterLRs[i].load() == lrTypes::side) {
-                        filters[i].process(msMainSplitter.getSBuffer(), msSideSplitter.getMBuffer());
+                    if (filterLRs[i].load() == lrType::mid) {
+                        processOneFilter(i, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
+                        msMainSplitter.getSBuffer().applyGain(0);
+                    } else if (filterLRs[i].load() == lrType::side) {
+                        processOneFilter(i, msMainSplitter.getSBuffer(), msSideSplitter.getMBuffer());
+                        msMainSplitter.getMBuffer().applyGain(0);
                     }
                 }
                 msMainSplitter.combine(subMainBuffer);
@@ -97,11 +102,28 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::setFilterLRs(zlDSP::lrTypes x, size_t idx) {
+    void Controller<FloatType>::processOneFilter(size_t i,
+                                                 juce::AudioBuffer<FloatType> &mainBuffer,
+                                                 juce::AudioBuffer<FloatType> &sideBuffer) {
+        if (useSolo.load() && soloIdx.load() == i) {
+            if (soloSide.load()) {
+                mainBuffer.makeCopyOf(sideBuffer);
+            }
+            soloFilter.process(mainBuffer);
+        }
+        if (!useSolo.load()) {
+            filters[i].process(mainBuffer, sideBuffer);
+        }
+    }
+
+
+    template<typename FloatType>
+    void Controller<FloatType>::setFilterLRs(const zlDSP::lrType::lrTypes x,
+                                             const size_t idx) {
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         // prepare the filter
         filterLRs[idx].store(x);
-        if (x == lrTypes::stereo) {
+        if (x == lrType::stereo) {
             filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
         } else {
             filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
@@ -109,14 +131,14 @@ namespace zlDSP {
         // update useLR and useMS
         useLR.store(false);
         for (auto &lr: filterLRs) {
-            if (lr.load() == lrTypes::left || lr.load() == lrTypes::right) {
+            if (lr.load() == lrType::left || lr.load() == lrType::right) {
                 useLR.store(true);
                 break;
             }
         }
         useMS.store(false);
         for (auto &lr: filterLRs) {
-            if (lr.load() == lrTypes::mid || lr.load() == lrTypes::side) {
+            if (lr.load() == lrType::mid || lr.load() == lrType::side) {
                 useMS.store(true);
                 break;
             }
@@ -124,7 +146,8 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::setDynamicON(bool x, size_t idx) {
+    void Controller<FloatType>::setDynamicON(const bool x, size_t idx) {
+        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         filters[idx].setDynamicON(x);
         filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
         filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
@@ -148,7 +171,7 @@ namespace zlDSP {
         const juce::ScopedWriteLock scopedLock(magLock);
         dBs.fill(FloatType(0));
         for (size_t i = 0; i < bandNUM; i++) {
-            if (filterLRs[i].load() == lrTypes::stereo) {
+            if (filterLRs[i].load() == lrType::stereo) {
                 const juce::ScopedReadLock localScopedLock(filters[i].getMainFilter().getMagLock());
                 std::transform(dBs.begin(), dBs.end(),
                                filters[i].getMainFilter().getDBs().begin(),
@@ -167,9 +190,10 @@ namespace zlDSP {
         switch (baseFilter.getFilterType()) {
             case zlIIR::FilterType::lowPass:
             case zlIIR::FilterType::lowShelf: {
-                auto soloFreq = std::sqrt(static_cast<FloatType>(10)) * std::sqrt(
-                                    baseFilter.getFreq());
-                auto scale = baseFilter.getFreq() / soloFreq;
+                auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(
+                                                           baseFilter.getFreq()));
+                auto scale = soloFreq;
+                soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
                 auto bw = std::log2(scale) * 2;
                 auto soloQ = 1 / (2 * std::sinh(std::log(FloatType(2)) / 2 * bw));
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
@@ -177,9 +201,10 @@ namespace zlDSP {
             }
             case zlIIR::FilterType::highPass:
             case zlIIR::FilterType::highShelf: {
-                auto soloFreq = std::sqrt(static_cast<FloatType>(subBuffer.getMainSpec().sampleRate)) * std::sqrt(
-                                    baseFilter.getFreq());
+                auto soloFreq = static_cast<FloatType>(std::sqrt(subBuffer.getMainSpec().sampleRate) * std::sqrt(
+                                                           baseFilter.getFreq()));
                 auto scale = soloFreq / baseFilter.getFreq();
+                soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
                 auto bw = std::log2(scale) * 2;
                 auto soloQ = 1 / (2 * std::sinh(std::log(FloatType(2)) / 2 * bw));
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
@@ -196,6 +221,28 @@ namespace zlDSP {
                 return {baseFilter.getFreq(), baseFilter.getQ()};
             }
         }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setSolo(const size_t idx, const bool isSide) {
+        soloFilter.setFilterType(zlIIR::FilterType::bandPass, false);
+        FloatType freq, q;
+        if (!isSide) {
+            std::tie(freq, q) = getSoloFilterParas(filters[idx].getMainFilter());
+        } else {
+            std::tie(freq, q) = getSoloFilterParas(filters[idx].getSideFilter());
+        }
+        soloFilter.setFreq(freq, false);
+        soloFilter.setQ(q, false);
+        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+        useSolo.store(true);
+        // if (filterLRs[idx] == lrType::stereo) {
+        soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
+        // } else {
+        //     soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+        // }
+        soloIdx.store(idx);
+        soloSide.store(isSide);
     }
 
     template
