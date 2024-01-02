@@ -31,16 +31,9 @@ namespace zlDSP {
         Controller<FloatType> &controllerRef;
 
         constexpr static std::array IDs{
-            fType::ID, lrType::ID,
+            fType::ID,
             freq::ID, Q::ID, sideFreq::ID, sideQ::ID,
             solo::ID, sideSolo::ID
-        };
-
-        constexpr static std::array defaultVs{
-            float(fType::defaultI), float(lrType::defaultI),
-            freq::defaultV, Q::defaultV,
-            sideFreq::defaultV, sideQ::defaultV,
-            float(solo::defaultV), float(sideSolo::defaultV)
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;

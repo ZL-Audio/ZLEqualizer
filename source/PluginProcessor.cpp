@@ -80,9 +80,9 @@ void PluginProcessor::changeProgramName(int index, const juce::String &newName) 
 void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     // Use this method as the place to do any pre-playback
     // initialisation that you need.
-    auto channels = static_cast<juce::uint32>(juce::jmin(getMainBusNumInputChannels(),
-                                                         getMainBusNumOutputChannels()));
-    juce::dsp::ProcessSpec spec{
+    const auto channels = static_cast<juce::uint32>(juce::jmin(getMainBusNumInputChannels(),
+                                                               getMainBusNumOutputChannels()));
+    const juce::dsp::ProcessSpec spec{
         sampleRate, static_cast<juce::uint32>(samplesPerBlock),
         channels
     };

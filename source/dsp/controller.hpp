@@ -36,7 +36,7 @@ namespace zlDSP {
 
         void setFilterLRs(lrType::lrTypes x, size_t idx);
 
-        inline lrType::lrTypes getFilterLRs(const size_t idx) { return filterLRs[idx].load(); }
+        inline lrType::lrTypes getFilterLRs(const size_t idx) const { return filterLRs[idx].load(); }
 
         void setDynamicON(bool x, size_t idx);
 
@@ -84,9 +84,9 @@ namespace zlDSP {
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
 
-        void processOneFilter(size_t i,
-                              juce::AudioBuffer<FloatType> &mainBuffer,
-                              juce::AudioBuffer<FloatType> &sideBuffer);
+        inline void processSolo();
+
+        inline void processDynamic();
     };
 }
 

@@ -123,8 +123,7 @@ namespace zlDSP {
             left,
             right,
             mid,
-            side,
-            lrTypeNUM
+            side
         };
     };
 
