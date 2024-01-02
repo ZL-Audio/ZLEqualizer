@@ -73,10 +73,10 @@ namespace zlDSP {
                 for (size_t i = 0; i < bandNUM; ++i) {
                     if (filterLRs[i].load() == lrType::left) {
                         processOneFilter(i, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
-                        lrMainSplitter.getRBuffer().applyGain(0);
+                        if (useSolo.load() && soloIdx.load() == i) { lrMainSplitter.getRBuffer().applyGain(0); }
                     } else if (filterLRs[i].load() == lrType::right) {
                         processOneFilter(i, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
-                        lrMainSplitter.getLBuffer().applyGain(0);
+                        if (useSolo.load() && soloIdx.load() == i) { lrMainSplitter.getLBuffer().applyGain(0); }
                     }
                 }
                 lrMainSplitter.combine(subMainBuffer);
@@ -87,10 +87,10 @@ namespace zlDSP {
                 for (size_t i = 0; i < bandNUM; ++i) {
                     if (filterLRs[i].load() == lrType::mid) {
                         processOneFilter(i, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
-                        msMainSplitter.getSBuffer().applyGain(0);
+                        if (useSolo.load() && soloIdx.load() == i) { msMainSplitter.getSBuffer().applyGain(0); }
                     } else if (filterLRs[i].load() == lrType::side) {
                         processOneFilter(i, msMainSplitter.getSBuffer(), msSideSplitter.getMBuffer());
-                        msMainSplitter.getMBuffer().applyGain(0);
+                        if (useSolo.load() && soloIdx.load() == i) { msMainSplitter.getMBuffer().applyGain(0); }
                     }
                 }
                 msMainSplitter.combine(subMainBuffer);
@@ -105,14 +105,17 @@ namespace zlDSP {
     void Controller<FloatType>::processOneFilter(size_t i,
                                                  juce::AudioBuffer<FloatType> &mainBuffer,
                                                  juce::AudioBuffer<FloatType> &sideBuffer) {
-        if (useSolo.load() && soloIdx.load() == i) {
-            if (soloSide.load()) {
-                mainBuffer.makeCopyOf(sideBuffer);
-            }
-            soloFilter.process(mainBuffer);
-        }
         if (!useSolo.load()) {
             filters[i].process(mainBuffer, sideBuffer);
+        } else if (useSolo.load() && soloIdx.load() == i) {
+            if (soloSide.load()) {
+                if (useDynamic.load()) {
+                    mainBuffer.makeCopyOf(sideBuffer);
+                } else {
+                    mainBuffer.applyGain(0);
+                }
+            }
+            soloFilter.process(mainBuffer);
         }
     }
 
