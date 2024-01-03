@@ -16,7 +16,7 @@ namespace zlInterface {
         comboBox.setLookAndFeel(&boxLookAndFeel);
         addAndMakeVisible(comboBox);
 
-        setInterceptsMouseClicks(true, false);
+        setEditable(true);
     }
 
 

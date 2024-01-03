@@ -2,10 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-#include "dsp/dsp_definitions.hpp"
-#include "dsp/controller.hpp"
-#include "dsp/filters_attach.hpp"
-#include "dsp/solo_attach.hpp"
+#include "dsp/dsp.hpp"
 
 #if (MSVC)
 #include "ipps.h"

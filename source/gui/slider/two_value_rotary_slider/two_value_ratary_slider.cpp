@@ -47,7 +47,7 @@ namespace zlInterface {
             addAndMakeVisible(l);
         }
 
-        setInterceptsMouseClicks(true, false);
+        setEditable(true);
     }
 
     TwoValueRotarySlider::~TwoValueRotarySlider() {

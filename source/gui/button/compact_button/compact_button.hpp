@@ -22,8 +22,11 @@ namespace zlInterface {
 
         void buttonDownAnimation();
 
-        inline void setEditable(const bool f) {
-            lookAndFeel.setEditable(f);
+        inline juce::ToggleButton& getButton() {return button;}
+
+        inline void setEditable(const bool x) {
+            lookAndFeel.setEditable(x);
+            button.setInterceptsMouseClicks(x, false);
         }
 
     private:

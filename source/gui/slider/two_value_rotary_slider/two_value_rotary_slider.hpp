@@ -49,6 +49,13 @@ namespace zlInterface {
             resized();
         }
 
+        inline void setEditable(const bool x) {
+            labelLookAndFeel.setEditable(x);
+            labelLookAndFeel1.setEditable(x);
+            labelLookAndFeel2.setEditable(x);
+            setInterceptsMouseClicks(x, false);
+        }
+
     private:
         UIBase &uiBase;
 
@@ -64,7 +71,7 @@ namespace zlInterface {
         friz::Animator animator;
         static constexpr int animationId = 1;
 
-        juce::String getDisplayValue(juce::Slider &s);
+        static juce::String getDisplayValue(juce::Slider &s);
     };
 }
 

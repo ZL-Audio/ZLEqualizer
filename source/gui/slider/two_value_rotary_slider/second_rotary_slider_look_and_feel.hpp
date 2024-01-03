@@ -55,13 +55,7 @@ namespace zlInterface {
             g.restoreState();
         }
 
-        void drawLabel(juce::Graphics &g, juce::Label &label) override {
-            juce::ignoreUnused(g, label);
-        }
-
-        void setEditable(bool f) {
-            editable.store(f);
-        }
+        void setEditable(const bool f) { editable.store(f); }
 
     private:
         std::atomic<bool> editable = true;

@@ -35,6 +35,14 @@ namespace zlInterface {
 
         void mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override;
 
+        inline juce::Slider& getSlider() {return slider;}
+
+        inline void setEditable(const bool x) {
+            nameLookAndFeel.setEditable(x);
+            textLookAndFeel.setEditable(x);
+            setInterceptsMouseClicks(x, false);
+        }
+
     private:
         CompactLinearSliderLookAndFeel sliderLookAndFeel;
         NameLookAndFeel nameLookAndFeel, textLookAndFeel;

@@ -12,6 +12,8 @@ namespace zlInterface {
         button.setLookAndFeel(&lookAndFeel);
         button.onClick = [this]() { this->buttonDownAnimation(); };
         addAndMakeVisible(button);
+
+        setEditable(true);
     }
 
     CompactButton::~CompactButton() {

@@ -34,7 +34,7 @@ namespace zlInterface {
         label.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(label);
 
-        setInterceptsMouseClicks(true, false);
+        setEditable(true);
     }
 
     CompactLinearSlider::~CompactLinearSlider() {

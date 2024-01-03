@@ -30,9 +30,12 @@ namespace zlInterface {
 
         void mouseMove(const juce::MouseEvent &event) override;
 
-        inline void setEditable(const bool f) {
-            boxLookAndFeel.setEditable(f);
+        inline void setEditable(const bool x) {
+            boxLookAndFeel.setEditable(x);
+            setInterceptsMouseClicks(x, false);
         }
+
+        inline juce::ComboBox& getBox() {return comboBox;}
 
     private:
         CompactComboboxLookAndFeel boxLookAndFeel;
