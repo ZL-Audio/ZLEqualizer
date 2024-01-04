@@ -7,28 +7,27 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_CONTROL_PANEL_HPP
-#define ZLEqualizer_CONTROL_PANEL_HPP
+#ifndef ZLEqualizer_MAIN_PANEL_HPP
+#define ZLEqualizer_MAIN_PANEL_HPP
 
-#include "../../dsp/dsp.hpp"
-#include "../../gui/gui.hpp"
-#include "left_control_panel.hpp"
-#include "right_control_panel.hpp"
+#include "control_panel/control_panel.hpp"
 
 namespace zlPanel {
-    class ControlPanel final : public juce::Component {
+    class MainPanel final : public juce::Component {
     public:
-        explicit ControlPanel(juce::AudioProcessorValueTreeState &parameters,
-                              juce::AudioProcessorValueTreeState &parametersNA,
-                              zlInterface::UIBase &base);
+        MainPanel(juce::AudioProcessorValueTreeState &parameters,
+                  juce::AudioProcessorValueTreeState &parametersNA);
 
-        ~ControlPanel() override = default;
+        ~MainPanel() override = default;
+
+        void paint(juce::Graphics &g) override;
 
         void resized() override;
-
     private:
-        LeftControlPanel leftControlPanel;
+        zlInterface::UIBase uiBase;
+        ControlPanel controlPanel;
     };
-} // zlPanel
+}
 
-#endif //ZLEqualizer_CONTROL_PANEL_HPP
+
+#endif //ZLEqualizer_MAIN_PANEL_HPP

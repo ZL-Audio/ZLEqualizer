@@ -27,7 +27,9 @@ namespace zlPanel {
                                                                                "36 dB/oct", "48 dB/oct", "72 dB/oct",
                                                                                "96 dB/oct"
                                                                            }, base),
-                                                                    stereoC("", {"S", "L", "R", "M", "S"}, base),
+                                                                    stereoC("", {
+                                                                                "Stereo", "Left", "Right", "Mid", "Side"
+                                                                            }, base),
                                                                     freqC("FREQ", base),
                                                                     gainC("GAIN", base),
                                                                     qC("Q", base) {
@@ -35,7 +37,13 @@ namespace zlPanel {
         attachGroup(0);
     }
 
-    LeftControlPanel::~LeftControlPanel() = default;
+    LeftControlPanel::~LeftControlPanel() {
+        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+            const std::string suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+            parametersRef.removeParameterListener(zlDSP::fType::ID + suffix, this);
+            parametersRef.removeParameterListener(zlDSP::dynamicON::ID + suffix, this);
+        }
+    }
 
     void LeftControlPanel::paint(juce::Graphics &g) {
         const auto bound = getLocalBounds().toFloat();
@@ -43,6 +51,31 @@ namespace zlPanel {
     }
 
     void LeftControlPanel::resized() {
+        juce::Grid grid;
+        using Track = juce::Grid::TrackInfo;
+        using Fr = juce::Grid::Fr;
+
+        grid.templateRows = {Track(Fr(1)), Track(Fr(1))};
+        grid.templateColumns = {
+            Track(Fr(1)), Track(Fr(2)),
+            Track(Fr(2)), Track(Fr(2)), Track(Fr(2)), Track(Fr(2))
+        };
+        grid.items = {
+            juce::GridItem(bypassC).withArea(1, 1),
+            juce::GridItem(fTypeC).withArea(1, 2),
+            juce::GridItem(freqC).withArea(1, 3, 3, 4),
+            juce::GridItem(gainC).withArea(1, 4, 3, 5),
+            juce::GridItem(qC).withArea(1, 5, 3, 6),
+            juce::GridItem(stereoC).withArea(1, 6),
+            juce::GridItem(soloC).withArea(2, 1),
+            juce::GridItem(slopeC).withArea(2, 2),
+            juce::GridItem(dynONC).withArea(2, 6),
+        };
+        grid.setGap(juce::Grid::Px(uiBase.getFontSize() * 0.5f));
+
+        auto bound = getLocalBounds().toFloat();
+        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
+        grid.performLayout(bound.toNearestInt());
     }
 
     void LeftControlPanel::attachGroup(const size_t idx) {
@@ -50,10 +83,12 @@ namespace zlPanel {
                                           ? "0" + std::to_string(bandIdx.load())
                                           : std::to_string(bandIdx.load());
         parametersRef.removeParameterListener(zlDSP::fType::ID + oldSuffix, this);
+        parametersRef.removeParameterListener(zlDSP::dynamicON::ID + oldSuffix, this);
 
         bandIdx.store(idx);
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         parametersRef.addParameterListener(zlDSP::fType::ID + suffix, this);
+        parametersRef.addParameterListener(zlDSP::dynamicON::ID + suffix, this);
 
         buttonAttachments.clear(true);
         boxAttachments.clear(true);
@@ -74,26 +109,40 @@ namespace zlPanel {
     }
 
     void LeftControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        juce::ignoreUnused(parameterID);
-        switch (const auto fType = static_cast<zlIIR::FilterType>(newValue)) {
-            case zlIIR::FilterType::peak:
-            case zlIIR::FilterType::lowShelf:
-            case zlIIR::FilterType::highShelf:
-            case zlIIR::FilterType::bandShelf:
-            case zlIIR::FilterType::tiltShelf:
-                gainC.setEditable(true);
-                break;
-            case zlIIR::FilterType::lowPass:
-            case zlIIR::FilterType::highPass:
-            case zlIIR::FilterType::bandPass:
-            case zlIIR::FilterType::notch:
-                gainC.setEditable(false);
-                break;
+        const auto id = parameterID.dropLastCharacters(2);
+        const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
+        if (id == zlDSP::fType::ID) {
+            switch (const auto fType = static_cast<zlIIR::FilterType>(newValue)) {
+                case zlIIR::FilterType::peak:
+                case zlIIR::FilterType::lowShelf:
+                case zlIIR::FilterType::highShelf:
+                case zlIIR::FilterType::bandShelf:
+                case zlIIR::FilterType::tiltShelf:
+                    gainC.setEditable(true);
+                    break;
+                case zlIIR::FilterType::lowPass:
+                case zlIIR::FilterType::highPass:
+                case zlIIR::FilterType::bandPass:
+                case zlIIR::FilterType::notch:
+                    gainC.setEditable(false);
+                    break;
+            }
+            if (idx == bandIdx.load()) {
+                triggerAsyncUpdate();
+            }
+        } else if (id == zlDSP::dynamicON::ID) {
+            const auto f = static_cast<bool> (newValue);
+            gainC.setShowSlider2(f);
+            qC.setShowSlider2(f);
+            if (idx == bandIdx.load()) {
+                triggerAsyncUpdate();
+            }
         }
-        triggerAsyncUpdate();
     }
 
     void LeftControlPanel::handleAsyncUpdate() {
         repaint();
+        // gainC.repaint();
+        // qC.repaint();
     }
 }

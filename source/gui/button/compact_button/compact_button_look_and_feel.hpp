@@ -18,7 +18,6 @@ namespace zlInterface {
         void drawToggleButton(juce::Graphics &g, juce::ToggleButton &button, bool shouldDrawButtonAsHighlighted,
                               bool shouldDrawButtonAsDown) override {
             juce::ignoreUnused(shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
-            g.fillAll(uiBase.getBackgroundColor());
 
             auto bounds = button.getLocalBounds().toFloat();
             bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.5f, {});

@@ -38,6 +38,7 @@ namespace zlInterface {
         inline juce::ComboBox& getBox() {return comboBox;}
 
     private:
+        zlInterface::UIBase &uiBase;
         CompactComboboxLookAndFeel boxLookAndFeel;
         juce::ComboBox comboBox;
 

@@ -49,25 +49,23 @@ namespace zlDynamicFilter {
 
         inline zlCompressor::ForwardCompressor<FloatType> &getCompressor() { return compressor; }
 
-        inline void setBypass(bool x) { bypass.store(x); }
+        inline void setBypass(const bool x) { bypass.store(x); }
 
-        inline bool getBypass() { return bypass.load(); }
+        inline bool getBypass() const { return bypass.load(); }
 
-        inline void setDynamicON(bool x) { dynamicON.store(x); }
+        inline void setDynamicON(const bool x) { dynamicON.store(x); }
 
-        inline bool getDynamicON() { return dynamicON.load(); }
+        inline bool getDynamicON() const { return dynamicON.load(); }
 
-        inline void setDynamicBypass(bool x) { dynamicBypass.store(x); }
+        inline void setDynamicBypass(const bool x) { dynamicBypass.store(x); }
 
-        inline bool getDynamicBypass() { return dynamicBypass.load(); }
+        inline bool getDynamicBypass() const { return dynamicBypass.load(); }
 
     private:
         zlIIR::Filter<FloatType> mFilter, bFilter, tFilter, sFilter;
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass = true, dynamicON = false, dynamicBypass = false;
-
-//        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Dynamic IIR Log"};
     };
 }
 

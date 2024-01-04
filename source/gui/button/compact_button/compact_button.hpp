@@ -36,6 +36,8 @@ namespace zlInterface {
         CompactButtonLookAndFeel lookAndFeel;
         static constexpr int animationId = 1;
 
+        std::atomic<bool> fit=false;
+
         friz::Animator animator;
     };
 }

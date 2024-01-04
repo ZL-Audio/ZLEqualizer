@@ -6,7 +6,7 @@
 
 namespace zlInterface {
     CompactCombobox::CompactCombobox(const juce::String &labelText, const juce::StringArray &choices,
-                                     UIBase &base) : boxLookAndFeel(base),
+                                     UIBase &base) : uiBase(base), boxLookAndFeel(base),
                                                      animator{std::make_unique<friz::DisplaySyncController>(this)} {
         juce::ignoreUnused(labelText);
         comboBox.addItemList(choices, 1);
@@ -25,7 +25,10 @@ namespace zlInterface {
     }
 
     void CompactCombobox::resized() {
-        comboBox.setBounds(getLocalBounds());
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), juce::jmin(bound.getHeight(),
+                                                                         uiBase.getFontSize() * 2.f));
+        comboBox.setBounds(bound.toNearestInt());
     }
 
     void CompactCombobox::mouseUp(const juce::MouseEvent &event) {
@@ -77,5 +80,4 @@ namespace zlInterface {
     void CompactCombobox::mouseMove(const juce::MouseEvent &event) {
         comboBox.mouseMove(event);
     }
-
 }

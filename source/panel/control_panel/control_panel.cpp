@@ -10,4 +10,13 @@
 #include "control_panel.hpp"
 
 namespace zlPanel {
+    ControlPanel::ControlPanel(juce::AudioProcessorValueTreeState &parameters,
+                               juce::AudioProcessorValueTreeState &parametersNA,
+                               zlInterface::UIBase &base): leftControlPanel(parameters, parametersNA, base) {
+        addAndMakeVisible(leftControlPanel);
+    }
+
+    void ControlPanel::resized() {
+        leftControlPanel.setBounds(getLocalBounds());
+    }
 } // zlPanel

@@ -90,10 +90,9 @@ namespace zlCompressor {
     private:
         std::atomic<FloatType> threshold = FloatType(0), ratio = FloatType(1);
         std::atomic<FloatType> kneeW = FloatType(0.0625), kneeD = FloatType(0.5), kneeS = FloatType(0.5);
-        std::atomic<FloatType> bound = FloatType(90);
+        std::atomic<FloatType> bound = FloatType(60);
         std::unique_ptr<boost::math::interpolators::cubic_hermite<std::array<FloatType, 3>>> cubic;
         juce::ReadWriteLock paraUpdateLock;
-//        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Filters Attach Log"};
 
         void interpolate();
     };

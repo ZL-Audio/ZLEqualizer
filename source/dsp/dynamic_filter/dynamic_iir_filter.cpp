@@ -36,11 +36,11 @@ namespace zlDynamicFilter {
             if (dynamicON.load()) {
                 sBufferCopy.makeCopyOf(sBuffer, true);
                 sFilter.process(sBufferCopy);
-                auto portion = compressor.process(sBufferCopy);
+                auto reducedLoudness = juce::Decibels::gainToDecibels(compressor.process(sBufferCopy));
+                auto portion = 1 - reducedLoudness / (compressor.getComputer().getThreshold() - compressor.getComputer().getKneeW());
                 if (dynamicBypass.load()) {
                     portion = 1;
                 }
-//                mainPortion.store(portion);
                 mFilter.setGain(portion * bFilter.getGain() + (1 - portion) * tFilter.getGain(), false);
                 mFilter.setQ(portion * bFilter.getQ() + (1 - portion) * tFilter.getQ(), true);
             }

@@ -1,34 +1,23 @@
 #include "PluginEditor.hpp"
 
 PluginEditor::PluginEditor(PluginProcessor &p)
-        : AudioProcessorEditor(&p), processorRef(p) {
+    : AudioProcessorEditor(&p), processorRef(p), mainPanel(p.parameters, p.parameters) {
     juce::ignoreUnused(processorRef);
 
-    addAndMakeVisible(inspectButton);
+    setSize(232, 53);
+    addAndMakeVisible(mainPanel);
 
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize(400, 300);
+    getConstrainer()->setFixedAspectRatio(float(232) / float(53));
+    setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
 }
 
 PluginEditor::~PluginEditor() {
 }
 
 void PluginEditor::paint(juce::Graphics &g) {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-
-    auto area = getLocalBounds();
-    g.setColour(juce::Colours::white);
-    g.setFont(16.0f);
-    auto helloWorld = juce::String("Hello from ") + PRODUCT_NAME_WITHOUT_VERSION + " v"
-    VERSION + " running in " + CMAKE_BUILD_TYPE;
-    g.drawText(helloWorld, area.removeFromTop(150), juce::Justification::centred, false);
+    juce::ignoreUnused(g);
 }
 
 void PluginEditor::resized() {
-    // layout the positions of your child components here
-    auto area = getLocalBounds();
-    area.removeFromBottom(50);
-    inspectButton.setBounds(getLocalBounds().withSizeKeepingCentre(100, 50));
+    mainPanel.setBounds(getLocalBounds());
 }

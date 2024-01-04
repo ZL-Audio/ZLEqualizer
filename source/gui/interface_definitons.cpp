@@ -98,7 +98,7 @@ namespace zlInterface {
         auto offset = static_cast<int>(cornerSize * args.blurRadius);
         auto radius = juce::jmax(juce::roundToInt(cornerSize * args.blurRadius * 1.5f), 1);
         if (!args.flip) {
-            juce::DropShadow darkShadow(args.darkShadowColor.withAlpha(0.75f), radius,
+            juce::DropShadow darkShadow(args.darkShadowColor.withMultipliedAlpha(0.75f), radius,
                                         {-offset, -offset});
             darkShadow.drawForPath(g, mask);
             juce::DropShadow brightShadow(args.brightShadowColor, radius,
@@ -108,7 +108,7 @@ namespace zlInterface {
             juce::DropShadow brightShadow(args.darkShadowColor, radius,
                                           {offset, offset});
             brightShadow.drawForPath(g, mask);
-            juce::DropShadow darkShadow(args.brightShadowColor.withAlpha(0.75f), radius,
+            juce::DropShadow darkShadow(args.brightShadowColor.withMultipliedAlpha(0.75f), radius,
                                         {-offset, -offset});
             darkShadow.drawForPath(g, mask);
         }

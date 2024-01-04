@@ -21,7 +21,14 @@ namespace zlInterface {
     }
 
     void CompactButton::resized() {
-        button.setBounds(getLocalBounds());
+        if (fit.load()) {
+            button.setBounds(getLocalBounds());
+        } else {
+            auto bound = getLocalBounds().toFloat();
+            const auto radius = juce::jmin(bound.getHeight(), bound.getWidth());
+            bound = bound.withSizeKeepingCentre(radius, radius);
+            button.setBounds(bound.toNearestInt());
+        }
     }
 
     void CompactButton::buttonDownAnimation() {

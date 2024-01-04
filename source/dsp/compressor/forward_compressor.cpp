@@ -18,7 +18,6 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void ForwardCompressor<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-//        logger.logMessage("prepare");
         detector.prepare(spec);
         tracker.prepare(spec);
     }
@@ -27,12 +26,9 @@ namespace zlCompressor {
     FloatType ForwardCompressor<FloatType>::process(juce::AudioBuffer<FloatType> buffer) {
         tracker.process(buffer);
         auto x = tracker.getMomentaryLoudness();
-//        logger.logMessage("loudness: " + juce::String(x));
         x = computer.process(x);
-//        logger.logMessage("compress: " + juce::String(x));
         x = juce::Decibels::decibelsToGain(x);
         x = detector.process(x);
-//        logger.logMessage("final: " + juce::String(x));
         return x;
     }
 
