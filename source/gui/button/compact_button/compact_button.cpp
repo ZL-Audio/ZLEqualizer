@@ -6,7 +6,7 @@
 
 namespace zlInterface {
     CompactButton::CompactButton(const juce::String &labelText, UIBase &base) : uiBase(base), lookAndFeel(uiBase),
-        animator{std::make_unique<friz::DisplaySyncController>(this)} {
+        animator{} {
         button.setClickingTogglesState(true);
         button.setButtonText(labelText);
         button.setLookAndFeel(&lookAndFeel);

@@ -8,7 +8,7 @@ namespace zlInterface {
     TwoValueRotarySlider::TwoValueRotarySlider(const juce::String &labelText, UIBase &base)
         : uiBase(base), slider1LAF(base), slider2LAF(base),
           labelLookAndFeel(base), labelLookAndFeel1(base), labelLookAndFeel2(base),
-          animator{std::make_unique<friz::DisplaySyncController>(this)} {
+          animator{} {
         juce::ignoreUnused(uiBase);
         for (auto const s: {&slider1, &slider2}) {
             s->setSliderStyle(juce::Slider::Rotary);

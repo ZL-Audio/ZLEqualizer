@@ -7,7 +7,7 @@
 namespace zlInterface {
     CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base) : uiBase(base),
         sliderLookAndFeel(base), nameLookAndFeel(base), textLookAndFeel(base),
-        animator{std::make_unique<friz::DisplaySyncController>(this)} {
+        animator{} {
         juce::ignoreUnused(uiBase);
 
         slider.setSliderStyle(juce::Slider::LinearHorizontal);

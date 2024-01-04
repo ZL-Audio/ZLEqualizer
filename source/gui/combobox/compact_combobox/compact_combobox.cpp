@@ -7,7 +7,7 @@
 namespace zlInterface {
     CompactCombobox::CompactCombobox(const juce::String &labelText, const juce::StringArray &choices,
                                      UIBase &base) : uiBase(base), boxLookAndFeel(base),
-                                                     animator{std::make_unique<friz::DisplaySyncController>(this)} {
+                                                     animator{} {
         juce::ignoreUnused(labelText);
         comboBox.addItemList(choices, 1);
         comboBox.setScrollWheelEnabled(false);
