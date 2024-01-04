@@ -44,7 +44,7 @@ namespace zlDSP {
         juce::AudioBuffer<FloatType> mainBuffer(processorRef.getBusBuffer(buffer, true, 0));
         juce::AudioBuffer<FloatType> sideBuffer(processorRef.getBusBuffer(buffer, true, 1));
         // if no side chain, copy the main buffer into the side buffer
-        if (!sideChain.load() && useDynamic.load()) {
+        if (!sideChain.load()) {
             sideBuffer.makeCopyOf(mainBuffer, true);
         }
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
@@ -127,9 +127,7 @@ namespace zlDSP {
         // LR filters process
         if (useLR.load()) {
             lrMainSplitter.split(subMainBuffer);
-            if (useDynamic.load()) {
-                lrSideSplitter.split(subSideBuffer);
-            }
+            lrSideSplitter.split(subSideBuffer);
             for (size_t i = 0; i < bandNUM; ++i) {
                 if (filterLRs[i].load() == lrType::left) {
                     filters[i].process(lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
@@ -142,6 +140,7 @@ namespace zlDSP {
         // MS filters process
         if (useMS.load()) {
             msMainSplitter.split(subMainBuffer);
+            msSideSplitter.split(subSideBuffer);
             for (size_t i = 0; i < bandNUM; ++i) {
                 if (filterLRs[i].load() == lrType::mid) {
                     filters[i].process(msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
@@ -190,14 +189,6 @@ namespace zlDSP {
         filters[idx].setDynamicON(x);
         filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
         filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
-        useDynamic.store(true);
-        // useDynamic.store(false);
-        // for (auto &f: filters) {
-        //     if (f.getDynamicON()) {
-        //         useDynamic.store(true);
-        //         break;
-        //     }
-        // }
     }
 
     template<typename FloatType>

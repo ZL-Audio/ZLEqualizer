@@ -36,7 +36,6 @@ namespace zlPanel {
     RightControlPanel::~RightControlPanel() {
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             const std::string suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
-            // parametersRef.removeParameterListener(zlDSP::fType::ID + suffix, this);
             parametersRef.removeParameterListener(zlDSP::dynamicON::ID + suffix, this);
         }
     }
@@ -96,13 +95,13 @@ namespace zlPanel {
         attach(*this, {&dynBypassC, &dynSoloC},
                {zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix},
                parametersRef, buttonAttachments);
-        attach(*this, {&thresC, &attackC, &ratioC, &releaseC},
+        attach(*this, std::vector<zlInterface::CompactLinearSlider *>{&thresC, &attackC, &ratioC, &releaseC},
                {
                    zlDSP::threshold::ID + suffix, zlDSP::attack::ID + suffix,
                    zlDSP::ratio::ID + suffix, zlDSP::release::ID + suffix
                },
                parametersRef, sliderAttachments);
-        attach(*this, {&sideFreqC, &sideQC},
+        attach(*this, std::vector<zlInterface::TwoValueRotarySlider *>{&sideFreqC, &sideQC},
                {zlDSP::sideFreq::ID + suffix, "", zlDSP::sideQ::ID + suffix, ""},
                parametersRef, sliderAttachments);
     }
@@ -123,7 +122,7 @@ namespace zlPanel {
             }
         }
     }
-    
+
     void RightControlPanel::handleAsyncUpdate() {
         repaint();
     }

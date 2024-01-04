@@ -70,7 +70,6 @@ namespace zlDSP {
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
         std::atomic<bool> useLR, useMS;
 
-        std::atomic<bool> useDynamic;
         std::atomic<bool> sideChain;
 
         zlIIR::Filter<FloatType> soloFilter;

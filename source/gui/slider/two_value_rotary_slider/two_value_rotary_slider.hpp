@@ -69,7 +69,7 @@ namespace zlInterface {
         NameLookAndFeel labelLookAndFeel, labelLookAndFeel1, labelLookAndFeel2;
 
         std::atomic<bool> showSlider2 = true, mouseOver, editable;
-        std::atomic<float> lrPad, ubPad;
+        std::atomic<float> lrPad = 0, ubPad = 0;
 
         friz::Animator animator;
         static constexpr int animationId = 1;

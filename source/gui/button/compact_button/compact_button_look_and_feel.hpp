@@ -23,8 +23,8 @@ namespace zlInterface {
             bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.5f, {});
             bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f, {.flip = true});
             if (button.getToggleState()) {
-                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.25f, {});
-                uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.5f, {
+                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
+                uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.375f, {
                                                   .darkShadowColor = uiBase.getDarkShadowColor().
                                                   withMultipliedAlpha(buttonDepth),
                                                   .brightShadowColor = uiBase.getBrightShadowColor().
