@@ -203,7 +203,7 @@ namespace zlDSP {
         auto static constexpr name = "Attack (ms)";
         inline auto static const range =
                 juce::NormalisableRange<float>(1.f, 500.f, 0.1f, 0.30103f);
-        auto static constexpr defaultV = 10.f;
+        auto static constexpr defaultV = 50.f;
     };
 
     class release : public FloatParameters<release> {
@@ -212,7 +212,7 @@ namespace zlDSP {
         auto static constexpr name = "Release (ms)";
         inline auto static const range =
                 juce::NormalisableRange<float>(1.f, 5000.f, 0.1f, 0.30103f);
-        auto static constexpr defaultV = 100.f;
+        auto static constexpr defaultV = 500.f;
     };
 
     class sideQ : public FloatParameters<sideQ> {

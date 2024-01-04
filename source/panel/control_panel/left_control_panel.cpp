@@ -71,7 +71,10 @@ namespace zlPanel {
             juce::GridItem(slopeC).withArea(2, 2),
             juce::GridItem(dynONC).withArea(2, 6),
         };
-        grid.setGap(juce::Grid::Px(uiBase.getFontSize() * 0.5f));
+        // grid.setGap(juce::Grid::Px(uiBase.getFontSize() * 0.5f));
+        for (auto &s: {&freqC, &gainC, &qC}) {
+            s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
+        }
 
         auto bound = getLocalBounds().toFloat();
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});

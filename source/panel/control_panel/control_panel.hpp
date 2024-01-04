@@ -28,6 +28,7 @@ namespace zlPanel {
 
     private:
         LeftControlPanel leftControlPanel;
+        RightControlPanel rightControlPanel;
     };
 } // zlPanel
 

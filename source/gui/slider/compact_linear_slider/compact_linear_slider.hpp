@@ -43,13 +43,20 @@ namespace zlInterface {
             setInterceptsMouseClicks(x, false);
         }
 
+        inline void setPadding(const float lr, const float ub) {
+            lrPad.store(lr);
+            ubPad.store(ub);
+        }
+
     private:
+        UIBase &uiBase;
+
         CompactLinearSliderLookAndFeel sliderLookAndFeel;
         NameLookAndFeel nameLookAndFeel, textLookAndFeel;
         juce::Slider slider;
         juce::Label label, text;
 
-        UIBase &uiBase;
+        std::atomic<float> lrPad, ubPad;
 
         friz::Animator animator;
         static constexpr int animationId = 1;

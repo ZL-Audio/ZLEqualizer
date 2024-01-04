@@ -75,9 +75,12 @@ namespace zlInterface {
     void TwoValueRotarySlider::setShowSlider2(const bool x) {
         showSlider2.store(x);
 
-        auto localBound = getLocalBounds().toFloat();
-        auto labelBound = localBound.withSizeKeepingCentre(localBound.getWidth() * 0.6f,
-                                                           localBound.getHeight() * 0.6f);
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth() - lrPad.load(),
+                                            bound.getHeight() - ubPad.load());
+
+        auto labelBound = bound.withSizeKeepingCentre(bound.getWidth() * 0.7f,
+                                                      bound.getHeight() * 0.6f);
         if (showSlider2.load()) {
             slider2LAF.setEditable(true);
             const auto valueBound1 = labelBound.removeFromTop(labelBound.getHeight() * 0.5f);
@@ -188,12 +191,14 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::resized() {
-        slider1.setBounds(getLocalBounds());
-        slider2.setBounds(getLocalBounds());
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth() - lrPad.load(),
+                                            bound.getHeight() - ubPad.load());
+        slider1.setBounds(bound.toNearestInt());
+        slider2.setBounds(bound.toNearestInt());
 
-        auto localBound = getLocalBounds().toFloat();
-        auto labelBound = localBound.withSizeKeepingCentre(localBound.getWidth() * 0.7f,
-                                                           localBound.getHeight() * 0.6f);
+        auto labelBound = bound.withSizeKeepingCentre(bound.getWidth() * 0.7f,
+                                                      bound.getHeight() * 0.6f);
         label.setBounds(labelBound.toNearestInt());
 
         setShowSlider2(showSlider2.load());

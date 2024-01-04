@@ -190,13 +190,14 @@ namespace zlDSP {
         filters[idx].setDynamicON(x);
         filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
         filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
-        useDynamic.store(false);
-        for (auto &f: filters) {
-            if (f.getDynamicON()) {
-                useDynamic.store(true);
-                break;
-            }
-        }
+        useDynamic.store(true);
+        // useDynamic.store(false);
+        // for (auto &f: filters) {
+        //     if (f.getDynamicON()) {
+        //         useDynamic.store(true);
+        //         break;
+        //     }
+        // }
     }
 
     template<typename FloatType>

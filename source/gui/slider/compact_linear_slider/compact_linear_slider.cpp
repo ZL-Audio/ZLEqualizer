@@ -5,8 +5,8 @@
 #include "compact_linear_slider.hpp"
 
 namespace zlInterface {
-    CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base) : sliderLookAndFeel(base),
-        nameLookAndFeel(base), textLookAndFeel(base), uiBase(base),
+    CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base) : uiBase(base),
+        sliderLookAndFeel(base), nameLookAndFeel(base), textLookAndFeel(base),
         animator{std::make_unique<friz::DisplaySyncController>(this)} {
         juce::ignoreUnused(uiBase);
 
@@ -23,7 +23,7 @@ namespace zlInterface {
 
         text.setText(getDisplayValue(slider), juce::dontSendNotification);
         textLookAndFeel.setAlpha(0.f);
-        textLookAndFeel.setFontScale(FontNormal);
+        textLookAndFeel.setFontScale(FontLarge);
         text.setLookAndFeel(&textLookAndFeel);
         text.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(text);
@@ -31,6 +31,7 @@ namespace zlInterface {
         // setup label
         label.setText(labelText, juce::dontSendNotification);
         label.setLookAndFeel(&nameLookAndFeel);
+        nameLookAndFeel.setFontScale(FontLarge);
         label.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(label);
 
@@ -44,9 +45,12 @@ namespace zlInterface {
     }
 
     void CompactLinearSlider::resized() {
-        slider.setBounds(getLocalBounds());
-        text.setBounds(getLocalBounds());
-        label.setBounds(getLocalBounds());
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth() - lrPad.load(),
+                                            uiBase.getFontSize() * FontLarge * 1.75f - ubPad.load());
+        slider.setBounds(bound.toNearestInt());
+        text.setBounds(bound.toNearestInt());
+        label.setBounds(bound.toNearestInt());
     }
 
     void CompactLinearSlider::mouseUp(const juce::MouseEvent &event) {
@@ -68,6 +72,7 @@ namespace zlInterface {
         textLookAndFeel.setAlpha(1.f);
         nameLookAndFeel.setAlpha(0.f);
         slider.mouseEnter(event);
+        text.setText(getDisplayValue(slider), juce::dontSendNotification);
         animator.cancelAnimation(animationId, false);
         text.repaint();
         label.repaint();
@@ -119,5 +124,4 @@ namespace zlInterface {
         }
         return labelToDisplay;
     }
-
 }

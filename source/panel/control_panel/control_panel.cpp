@@ -12,11 +12,16 @@
 namespace zlPanel {
     ControlPanel::ControlPanel(juce::AudioProcessorValueTreeState &parameters,
                                juce::AudioProcessorValueTreeState &parametersNA,
-                               zlInterface::UIBase &base): leftControlPanel(parameters, parametersNA, base) {
+                               zlInterface::UIBase &base): leftControlPanel(parameters, parametersNA, base),
+                                                           rightControlPanel(parameters, parametersNA, base) {
         addAndMakeVisible(leftControlPanel);
+        addAndMakeVisible(rightControlPanel);
     }
 
     void ControlPanel::resized() {
-        leftControlPanel.setBounds(getLocalBounds());
+        auto rightBound = getLocalBounds().toFloat();
+        const auto leftBound = rightBound.removeFromLeft(rightBound.getWidth() * (33.f / 61.f));
+        leftControlPanel.setBounds(leftBound.toNearestInt());
+        rightControlPanel.setBounds(rightBound.toNearestInt());
     }
 } // zlPanel

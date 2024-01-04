@@ -40,6 +40,19 @@ namespace zlPanel {
     }
 
     inline void attach(juce::Component &mainComponent,
+                       const std::vector<zlInterface::CompactLinearSlider *> &sliders,
+                       const std::vector<std::string> &ids,
+                       juce::AudioProcessorValueTreeState &parameters,
+                       juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> &attachments) {
+        for (size_t i = 0; i < sliders.size(); ++i) {
+            attachments.add(
+                std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                    parameters, ids[i], sliders[i]->getSlider()));
+            mainComponent.addAndMakeVisible(sliders[i]);
+        }
+    }
+
+    inline void attach(juce::Component &mainComponent,
                        const std::vector<zlInterface::TwoValueRotarySlider *> &sliders,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,

@@ -12,25 +12,41 @@
 
 #include "../../dsp/dsp.hpp"
 #include "../../gui/gui.hpp"
+#include "../panel_definitons.hpp"
 
 namespace zlPanel {
-    class RightControlPanel final : public juce::Component {
+    class RightControlPanel final : public juce::Component,
+                                    private juce::AudioProcessorValueTreeState::Listener,
+                                    private juce::AsyncUpdater {
     public:
         explicit RightControlPanel(juce::AudioProcessorValueTreeState &parameters,
-                                  juce::AudioProcessorValueTreeState &parametersNA,
-                                  zlInterface::UIBase &base);
+                                   juce::AudioProcessorValueTreeState &parametersNA,
+                                   zlInterface::UIBase &base);
 
         ~RightControlPanel() override;
+
+        void paint(juce::Graphics &g) override;
 
         void resized() override;
 
     private:
+        zlInterface::UIBase &uiBase;
+        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+
         zlInterface::CompactButton dynBypassC, dynSoloC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
 
         zlInterface::TwoValueRotarySlider sideFreqC, sideQC;
         zlInterface::CompactLinearSlider thresC, ratioC, attackC, releaseC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
+
+        std::atomic<size_t> bandIdx;
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void handleAsyncUpdate() override;
+
+        void attachGroup(size_t idx);
     };
 }
 

@@ -31,7 +31,7 @@ namespace zlPanel {
 
     private:
         zlInterface::UIBase &uiBase;
-        juce::AudioProcessorValueTreeState &parametersRef,&parametersNARef;
+        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
 
         zlInterface::CompactButton bypassC, soloC, dynONC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;

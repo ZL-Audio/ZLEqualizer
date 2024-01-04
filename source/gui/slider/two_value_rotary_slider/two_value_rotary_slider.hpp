@@ -46,6 +46,11 @@ namespace zlInterface {
 
         void setShowSlider2(bool x);
 
+        inline void setPadding(const float lr, const float ub) {
+            lrPad.store(lr);
+            ubPad.store(ub);
+        }
+
         inline void setEditable(const bool x) {
             labelLookAndFeel.setEditable(x);
             labelLookAndFeel1.setEditable(x);
@@ -63,7 +68,8 @@ namespace zlInterface {
         juce::Label label, label1, label2;
         NameLookAndFeel labelLookAndFeel, labelLookAndFeel1, labelLookAndFeel2;
 
-        std::atomic<bool> showSlider2=true, mouseOver, editable;
+        std::atomic<bool> showSlider2 = true, mouseOver, editable;
+        std::atomic<float> lrPad, ubPad;
 
         friz::Animator animator;
         static constexpr int animationId = 1;
