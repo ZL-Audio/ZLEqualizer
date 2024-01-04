@@ -57,8 +57,8 @@ namespace zlPanel {
 
         grid.templateRows = {Track(Fr(1)), Track(Fr(1))};
         grid.templateColumns = {
-            Track(Fr(1)), Track(Fr(2)),
-            Track(Fr(2)), Track(Fr(2)), Track(Fr(2)), Track(Fr(2))
+            Track(Fr(4)), Track(Fr(6)),
+            Track(Fr(6)), Track(Fr(6)), Track(Fr(6)), Track(Fr(5))
         };
         grid.items = {
             juce::GridItem(bypassC).withArea(1, 1),
@@ -142,7 +142,5 @@ namespace zlPanel {
 
     void LeftControlPanel::handleAsyncUpdate() {
         repaint();
-        // gainC.repaint();
-        // qC.repaint();
     }
 }
