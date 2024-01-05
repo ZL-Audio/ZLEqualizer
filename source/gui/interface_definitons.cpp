@@ -26,7 +26,7 @@ namespace zlInterface {
     juce::Rectangle<float> UIBase::fillRoundedShadowRectangle(juce::Graphics &g,
                                                               juce::Rectangle<float> boxBounds,
                                                               float cornerSize,
-                                                              const fillRoundedShadowRectangleArgs &margs) {
+                                                              const fillRoundedShadowRectangleArgs &margs) const {
         auto args = margs;
         if (!args.changeMain)
             args.mainColour = getBackgroundColor().withAlpha(args.mainColour.getAlpha());
@@ -75,7 +75,7 @@ namespace zlInterface {
     juce::Rectangle<float> UIBase::fillRoundedInnerShadowRectangle(juce::Graphics &g,
                                                                    juce::Rectangle<float> boxBounds,
                                                                    float cornerSize,
-                                                                   const fillRoundedShadowRectangleArgs &margs) {
+                                                                   const fillRoundedShadowRectangleArgs &margs) const {
         auto args = margs;
         if (!args.changeMain)
             args.mainColour = getBackgroundColor().withAlpha(args.mainColour.getAlpha());
@@ -144,7 +144,7 @@ namespace zlInterface {
     juce::Rectangle<float> UIBase::drawShadowEllipse(juce::Graphics &g,
                                                      juce::Rectangle<float> boxBounds,
                                                      float cornerSize,
-                                                     const fillShadowEllipseArgs &margs) {
+                                                     const fillShadowEllipseArgs &margs) const {
         auto args = margs;
         if (!args.changeMain)
             args.mainColour = getBackgroundColor().withAlpha(args.mainColour.getAlpha());
@@ -211,7 +211,7 @@ namespace zlInterface {
     juce::Rectangle<float> UIBase::drawInnerShadowEllipse(juce::Graphics &g,
                                                           juce::Rectangle<float> boxBounds,
                                                           float cornerSize,
-                                                          const fillShadowEllipseArgs &margs) {
+                                                          const fillShadowEllipseArgs &margs) const {
         auto args = margs;
         if (!args.changeMain)
             args.mainColour = getBackgroundColor().withAlpha(args.mainColour.getAlpha());

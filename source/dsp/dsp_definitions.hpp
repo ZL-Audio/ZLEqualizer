@@ -57,7 +57,7 @@ namespace zlDSP {
         inline auto static const choices = juce::StringArray{
             "Peak", "Low Shelf", "Low Pass",
             "High Shelf", "High Pass", "Notch",
-            "Band Pass", "Band Shelf", "Tilt Shelf"
+            "Band Pass", "Tilt Shelf"
         };
         int static constexpr defaultI = 0;
 
@@ -69,7 +69,7 @@ namespace zlDSP {
             highPass,
             notch,
             bandPass,
-            bandShelf,
+            // bandShelf,
             tiltShelf,
             fTypeNUM
         };

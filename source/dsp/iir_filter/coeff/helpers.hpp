@@ -23,7 +23,7 @@
 namespace zlIIR {
     enum FilterType {
         peak, lowShelf, lowPass, highShelf, highPass,
-        notch, bandPass, bandShelf, tiltShelf
+        notch, bandPass, tiltShelf, bandShelf,
     };
 
     using coeff2 = std::array<double, 2>;

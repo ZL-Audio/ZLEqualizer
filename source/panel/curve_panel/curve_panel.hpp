@@ -7,29 +7,32 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_MAIN_PANEL_HPP
-#define ZLEqualizer_MAIN_PANEL_HPP
+#ifndef ZLEqualizer_CURVE_PANEL_HPP
+#define ZLEqualizer_CURVE_PANEL_HPP
 
-#include "../PluginProcessor.hpp"
-#include "control_panel/control_panel.hpp"
-#include "curve_panel/curve_panel.hpp"
+#include "../../dsp/dsp.hpp"
+#include "background_panel/background_panel.hpp"
+#include "sum_panel/sum_panel.hpp"
 
 namespace zlPanel {
-    class MainPanel final : public juce::Component {
+    class CurvePanel final : public juce::Component {
     public:
-        MainPanel(PluginProcessor &p);
+        explicit CurvePanel(juce::AudioProcessorValueTreeState &parameters,
+                            juce::AudioProcessorValueTreeState &parametersNA,
+                            zlInterface::UIBase &base,
+                            zlDSP::Controller<float> &c);
 
-        ~MainPanel() override = default;
+        ~CurvePanel() override;
 
         void paint(juce::Graphics &g) override;
 
         void resized() override;
     private:
-        zlInterface::UIBase uiBase;
-        ControlPanel controlPanel;
-        CurvePanel curvePanel;
+        zlInterface::UIBase &uiBase;
+        BackgroundPanel backgroundPanel;
+        SumPanel sumPanel;
     };
 }
 
 
-#endif //ZLEqualizer_MAIN_PANEL_HPP
+#endif //ZLEqualizer_CURVE_PANEL_HPP

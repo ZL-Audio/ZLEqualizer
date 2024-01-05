@@ -12,8 +12,9 @@
 namespace zlPanel {
     ControlPanel::ControlPanel(juce::AudioProcessorValueTreeState &parameters,
                                juce::AudioProcessorValueTreeState &parametersNA,
-                               zlInterface::UIBase &base): leftControlPanel(parameters, parametersNA, base),
-                                                           rightControlPanel(parameters, parametersNA, base) {
+                               zlInterface::UIBase &base)
+        : leftControlPanel(parameters, parametersNA, base),
+          rightControlPanel(parameters, parametersNA, base) {
         addAndMakeVisible(leftControlPanel);
         addAndMakeVisible(rightControlPanel);
     }

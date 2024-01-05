@@ -52,6 +52,8 @@ public:
 
     void setStateInformation(const void *data, int sizeInBytes) override;
 
+    inline zlDSP::Controller<float>& getController() {return controller;}
+
 private:
     zlDSP::Controller<float> controller;
     zlDSP::FiltersAttach<float> filtersAttach;

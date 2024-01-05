@@ -192,9 +192,10 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x) {
+    void Controller<FloatType>::setDBs(std::array<FloatType, zlIIR::frequencies.size()> &x) {
         const juce::ScopedReadLock scopedLock(magLock);
-        std::transform(x.begin(), x.end(), dBs.begin(), x.begin(), std::plus<FloatType>());
+        x = dBs;
+        // std::transform(x.begin(), x.end(), dBs.begin(), x.begin(), std::plus<FloatType>());
     }
 
     template<typename FloatType>
@@ -203,6 +204,7 @@ namespace zlDSP {
         dBs.fill(FloatType(0));
         for (size_t i = 0; i < bandNUM; i++) {
             if (filterLRs[i].load() == lrType::stereo) {
+                filters[i].getMainFilter().updateDBs();
                 const juce::ScopedReadLock localScopedLock(filters[i].getMainFilter().getMagLock());
                 std::transform(dBs.begin(), dBs.end(),
                                filters[i].getMainFilter().getDBs().begin(),

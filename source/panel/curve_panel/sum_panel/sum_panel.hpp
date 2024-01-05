@@ -7,29 +7,30 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_MAIN_PANEL_HPP
-#define ZLEqualizer_MAIN_PANEL_HPP
+#ifndef ZLEqualizer_SUM_PANEL_HPP
+#define ZLEqualizer_SUM_PANEL_HPP
 
-#include "../PluginProcessor.hpp"
-#include "control_panel/control_panel.hpp"
-#include "curve_panel/curve_panel.hpp"
+#include "../../../dsp/dsp.hpp"
+#include "../../../gui/gui.hpp"
+#include <juce_gui_basics/juce_gui_basics.h>
 
 namespace zlPanel {
-    class MainPanel final : public juce::Component {
+    class SumPanel final : public juce::Component, private juce::Timer {
     public:
-        MainPanel(PluginProcessor &p);
+        explicit SumPanel(zlInterface::UIBase &base, zlDSP::Controller<float> &controller);
 
-        ~MainPanel() override = default;
+        ~SumPanel() override;
 
         void paint(juce::Graphics &g) override;
 
-        void resized() override;
     private:
-        zlInterface::UIBase uiBase;
-        ControlPanel controlPanel;
-        CurvePanel curvePanel;
+        juce::Path path;
+        zlInterface::UIBase &uiBase;
+        zlDSP::Controller<float> &c;
+        std::array<float, zlIIR::frequencies.size()> dBs;
+
+        void timerCallback() override;
     };
-}
+} // zlPanel
 
-
-#endif //ZLEqualizer_MAIN_PANEL_HPP
+#endif //ZLEqualizer_SUM_PANEL_HPP

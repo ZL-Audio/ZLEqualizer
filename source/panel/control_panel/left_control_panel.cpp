@@ -12,27 +12,18 @@
 namespace zlPanel {
     LeftControlPanel::LeftControlPanel(juce::AudioProcessorValueTreeState &parameters,
                                        juce::AudioProcessorValueTreeState &parametersNA,
-                                       zlInterface::UIBase &base) : uiBase(base),
-                                                                    parametersRef(parameters),
-                                                                    parametersNARef(parametersNA),
-                                                                    bypassC("B", base),
-                                                                    soloC("S", base), dynONC("D", base),
-                                                                    fTypeC("", {
-                                                                               "Bell", "Low Shelf", "Low Pass",
-                                                                               "High Self", "High Pass", "Notch",
-                                                                               "Band Pass", "Band Shelf", "Tilt"
-                                                                           }, base),
-                                                                    slopeC("", {
-                                                                               "6 dB/oct", "12 dB/oct", "24 dB/oct",
-                                                                               "36 dB/oct", "48 dB/oct", "72 dB/oct",
-                                                                               "96 dB/oct"
-                                                                           }, base),
-                                                                    stereoC("", {
-                                                                                "Stereo", "Left", "Right", "Mid", "Side"
-                                                                            }, base),
-                                                                    freqC("FREQ", base),
-                                                                    gainC("GAIN", base),
-                                                                    qC("Q", base) {
+                                       zlInterface::UIBase &base)
+        : uiBase(base),
+          parametersRef(parameters),
+          parametersNARef(parametersNA),
+          bypassC("B", base),
+          soloC("S", base), dynONC("D", base),
+          fTypeC("", zlDSP::fType::choices, base),
+          slopeC("", zlDSP::slope::choices, base),
+          stereoC("", zlDSP::lrType::choices, base),
+          freqC("FREQ", base),
+          gainC("GAIN", base),
+          qC("Q", base) {
         juce::ignoreUnused(parametersNA, parametersNARef);
         attachGroup(0);
     }
@@ -71,7 +62,6 @@ namespace zlPanel {
             juce::GridItem(slopeC).withArea(2, 2),
             juce::GridItem(dynONC).withArea(2, 6),
         };
-        // grid.setGap(juce::Grid::Px(uiBase.getFontSize() * 0.5f));
         for (auto &s: {&freqC, &gainC, &qC}) {
             s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
         }
@@ -134,7 +124,7 @@ namespace zlPanel {
                 triggerAsyncUpdate();
             }
         } else if (id == zlDSP::dynamicON::ID) {
-            const auto f = static_cast<bool> (newValue);
+            const auto f = static_cast<bool>(newValue);
             gainC.setShowSlider2(f);
             qC.setShowSlider2(f);
             if (idx == bandIdx.load()) {

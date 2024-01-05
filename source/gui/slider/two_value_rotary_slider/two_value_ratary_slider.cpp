@@ -20,7 +20,6 @@ namespace zlInterface {
         slider1.setBufferedToImage(true);
         slider1.setLookAndFeel(&slider1LAF);
         slider2LAF.setEditable(showSlider2.load());
-        // slider2.setBufferedToImage(true);
         slider2.setLookAndFeel(&slider2LAF);
 
         addAndMakeVisible(slider1);

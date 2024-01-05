@@ -12,17 +12,18 @@
 namespace zlPanel {
     RightControlPanel::RightControlPanel(juce::AudioProcessorValueTreeState &parameters,
                                          juce::AudioProcessorValueTreeState &parametersNA,
-                                         zlInterface::UIBase &base) : uiBase(base),
-                                                                      parametersRef(parameters),
-                                                                      parametersNARef(parametersNA),
-                                                                      dynBypassC("B", base),
-                                                                      dynSoloC("S", base),
-                                                                      sideFreqC("FREQ", base),
-                                                                      sideQC("Q", base),
-                                                                      thresC("Threshold", base),
-                                                                      ratioC("Ratio", base),
-                                                                      attackC("Attack", base),
-                                                                      releaseC("Release", base) {
+                                         zlInterface::UIBase &base)
+        : uiBase(base),
+          parametersRef(parameters),
+          parametersNARef(parametersNA),
+          dynBypassC("B", base),
+          dynSoloC("S", base),
+          sideFreqC("FREQ", base),
+          sideQC("Q", base),
+          thresC("Threshold", base),
+          ratioC("Ratio", base),
+          attackC("Attack", base),
+          releaseC("Release", base) {
         juce::ignoreUnused(parametersNA, parametersNARef);
         attachGroup(0);
         thresC.setEditable(false);

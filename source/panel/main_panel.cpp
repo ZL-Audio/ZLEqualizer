@@ -10,24 +10,26 @@
 #include "main_panel.hpp"
 
 namespace zlPanel {
-    MainPanel::MainPanel(juce::AudioProcessorValueTreeState &parameters,
-                         juce::AudioProcessorValueTreeState &parametersNA) : controlPanel(
-        parameters, parametersNA, uiBase) {
+    MainPanel::MainPanel(PluginProcessor &p)
+        : controlPanel(p.parameters, p.parameters, uiBase),
+          curvePanel(p.parameters, p.parameters, uiBase, p.getController()) {
+        addAndMakeVisible(curvePanel);
         addAndMakeVisible(controlPanel);
     }
 
     void MainPanel::paint(juce::Graphics &g) {
         g.fillAll(uiBase.getBackgroundColor());
-        const auto bound = getLocalBounds().toFloat();
-        uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+        // const auto bound = getLocalBounds().toFloat();
+        // uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
     }
-
 
     void MainPanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
-        const auto fontSize = bound.getHeight() * 0.0514f * 0.45f * 5;
-        uiBase.setFontSize(fontSize);
-        controlPanel.setBounds(bound.toNearestInt());
+        uiBase.setFontSize(bound.getWidth() * 0.014287762237762238f);
+        // bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
+
+        const auto controlBound = bound.removeFromBottom(bound.getWidth() * 0.12354312354312354f);
+        controlPanel.setBounds(controlBound.toNearestInt());
+        curvePanel.setBounds(bound.toNearestInt());
     }
 }

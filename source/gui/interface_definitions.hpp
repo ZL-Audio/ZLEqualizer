@@ -16,6 +16,7 @@ namespace zlInterface {
     struct UIColors {
         juce::Colour TextColor = juce::Colour(87, 96, 110);
         juce::Colour BackgroundColor = juce::Colour(214, 223, 236);
+        juce::Colour TextLightColor = juce::Colour(191, 200, 216);
         juce::Colour DarkShadowColor = juce::Colour(168, 172, 178);
         juce::Colour BrightShadowColor = juce::Colour(237, 246, 255);
         juce::Colour ExtraColor1 = juce::Colour(139, 0, 0);
@@ -27,6 +28,7 @@ namespace zlInterface {
             {
                 .TextColor = juce::Colour(255 - 8, 255 - 9, 255 - 11),
                 .BackgroundColor = juce::Colour(255 - 214, 255 - 223, 255 - 236),
+                .TextLightColor = juce::Colour(137, 125, 109),
                 .DarkShadowColor = juce::Colour(0, 0, 0),
                 .BrightShadowColor = juce::Colour(255 - 168, 255 - 172, 255 - 178),
                 .ExtraColor1 = juce::Colour(255 - 139, 255, 255)
@@ -105,27 +107,29 @@ namespace zlInterface {
 
         void setFontSize(const float fSize) { fontSize.store(fSize); }
 
-        inline float getFontSize() { return fontSize.load(); }
+        inline float getFontSize() const { return fontSize.load(); }
 
         void setStyle(const size_t idx) { styleID.store(idx); }
 
-        inline juce::Colour getTextColor() { return styleColors[styleID.load()].TextColor; }
+        inline juce::Colour getTextColor() const { return styleColors[styleID.load()].TextColor; }
 
-        inline juce::Colour getTextInactiveColor() { return getTextColor().withAlpha(0.5f); }
+        inline juce::Colour getTextInactiveColor() const { return getTextColor().withAlpha(0.5f); }
 
-        inline juce::Colour getTextHideColor() { return getTextColor().withAlpha(0.25f); }
+        inline juce::Colour getTextHideColor() const { return getTextColor().withAlpha(0.25f); }
 
-        inline juce::Colour getBackgroundColor() { return styleColors[styleID.load()].BackgroundColor; }
+        inline juce::Colour getBackgroundColor() const { return styleColors[styleID.load()].BackgroundColor; }
 
-        inline juce::Colour getBackgroundInactiveColor() { return getBackgroundColor().withAlpha(0.8f); }
+        inline juce::Colour getTextLightColor() const { return styleColors[styleID.load()].TextLightColor; }
 
-        inline juce::Colour getBackgroundHideColor() { return getBackgroundColor().withAlpha(0.5f); }
+        inline juce::Colour getBackgroundInactiveColor() const { return getBackgroundColor().withAlpha(0.8f); }
 
-        inline juce::Colour getDarkShadowColor() { return styleColors[styleID.load()].DarkShadowColor; }
+        inline juce::Colour getBackgroundHideColor() const { return getBackgroundColor().withAlpha(0.5f); }
 
-        inline juce::Colour getBrightShadowColor() { return styleColors[styleID.load()].BrightShadowColor; }
+        inline juce::Colour getDarkShadowColor() const { return styleColors[styleID.load()].DarkShadowColor; }
 
-        inline juce::Colour getExtraColor1() { return styleColors[styleID.load()].ExtraColor1; }
+        inline juce::Colour getBrightShadowColor() const { return styleColors[styleID.load()].BrightShadowColor; }
+
+        inline juce::Colour getExtraColor1() const { return styleColors[styleID.load()].ExtraColor1; }
 
         static juce::Rectangle<float> getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds,
                                                                     float cornerSize,
@@ -134,12 +138,12 @@ namespace zlInterface {
         juce::Rectangle<float> fillRoundedShadowRectangle(juce::Graphics &g,
                                                           juce::Rectangle<float> boxBounds,
                                                           float cornerSize,
-                                                          const fillRoundedShadowRectangleArgs &margs);
+                                                          const fillRoundedShadowRectangleArgs &margs) const;
 
         juce::Rectangle<float> fillRoundedInnerShadowRectangle(juce::Graphics &g,
                                                                juce::Rectangle<float> boxBounds,
                                                                float cornerSize,
-                                                               const fillRoundedShadowRectangleArgs &margs);
+                                                               const fillRoundedShadowRectangleArgs &margs) const;
 
         static juce::Rectangle<float> getShadowEllipseArea(juce::Rectangle<float> boxBounds,
                                                            float cornerSize,
@@ -148,7 +152,7 @@ namespace zlInterface {
         juce::Rectangle<float> drawShadowEllipse(juce::Graphics &g,
                                                  juce::Rectangle<float> boxBounds,
                                                  float cornerSize,
-                                                 const fillShadowEllipseArgs &margs);
+                                                 const fillShadowEllipseArgs &margs) const;
 
         static juce::Rectangle<float> getInnerShadowEllipseArea(juce::Rectangle<float> boxBounds,
                                                                 float cornerSize,
@@ -157,7 +161,7 @@ namespace zlInterface {
         juce::Rectangle<float> drawInnerShadowEllipse(juce::Graphics &g,
                                                       juce::Rectangle<float> boxBounds,
                                                       float cornerSize,
-                                                      const fillShadowEllipseArgs &margs);
+                                                      const fillShadowEllipseArgs &margs) const;
 
     private:
         std::atomic<float> fontSize;

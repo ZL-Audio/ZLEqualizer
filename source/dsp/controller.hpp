@@ -40,7 +40,7 @@ namespace zlDSP {
 
         void setDynamicON(bool x, size_t idx);
 
-        void addDBs(std::array<FloatType, zlIIR::frequencies.size()> &x);
+        void setDBs(std::array<FloatType, zlIIR::frequencies.size()> &x);
 
         void updateDBs();
 

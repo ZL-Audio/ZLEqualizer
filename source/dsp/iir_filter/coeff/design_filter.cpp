@@ -23,7 +23,12 @@ namespace zlIIR {
         auto g = db_to_gain(gDB);
         switch (filterType) {
             case peak:
-                return getPeak(w0, g, q);
+                switch (n) {
+                    case 0:
+                    case 1: return {coeff33{{1, 1 ,1}, {1, 1 ,1}}};
+                    case 2: return getPeak(w0, g, q);
+                    default: return getBandShelf(n, w0, g, q);
+                }
             case lowShelf:
                 return getLowShelf(n, w0, g, std::sqrt(q * std::sqrt(2)) / std::sqrt(2));
             case lowPass:
@@ -41,7 +46,7 @@ namespace zlIIR {
             case bandPass:
                 return getBandPass(n, w0, q);
             default:
-                return {coeff33{}};
+                return {coeff33{{1, 1 ,1}, {1, 1 ,1}}};
         }
     }
 
@@ -158,10 +163,10 @@ namespace zlIIR {
     }
 
     std::vector<coeff33> DesignFilter::getBandShelf(size_t n, double w0, double g, double q) {
-        if (n < 2) {
+        if (n <= 2) {
             return {};
         }
-        n = n + 2;
+        // n = n + 2;
         auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
         auto w1 = w0 / std::pow(2, bw / 2);
         auto w2 = w0 * std::pow(2, bw / 2);
