@@ -26,6 +26,7 @@ namespace zlDynamicFilter {
         sFilter.prepare(spec);
         sFilter.setFilterType(zlIIR::FilterType::bandPass);
         compressor.prepare(spec);
+        compressor.getComputer().setRatio(100);
         sBufferCopy.setSize(static_cast<int>(spec.numChannels),
                             static_cast<int>(spec.maximumBlockSize));
     }
@@ -37,12 +38,13 @@ namespace zlDynamicFilter {
                 sBufferCopy.makeCopyOf(sBuffer, true);
                 sFilter.process(sBufferCopy);
                 auto reducedLoudness = juce::Decibels::gainToDecibels(compressor.process(sBufferCopy));
-                auto portion = 1 - reducedLoudness / (compressor.getComputer().getThreshold() - compressor.getComputer().getKneeW());
+                auto maximumReduction = compressor.getComputer().process(compressor.getComputer().getThreshold() + compressor.getComputer().getKneeW());
+                auto portion = std::min(reducedLoudness / maximumReduction, FloatType(1));
                 if (dynamicBypass.load()) {
-                    portion = 1;
+                    portion = 0;
                 }
-                mFilter.setGain(portion * bFilter.getGain() + (1 - portion) * tFilter.getGain(), false);
-                mFilter.setQ(portion * bFilter.getQ() + (1 - portion) * tFilter.getQ(), true);
+                mFilter.setGain((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(), false);
+                mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
             }
             mFilter.process(mBuffer);
         }

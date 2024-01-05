@@ -21,13 +21,13 @@ namespace zlPanel {
           sideFreqC("FREQ", base),
           sideQC("Q", base),
           thresC("Threshold", base),
-          ratioC("Ratio", base),
+          kneeC("Knee", base),
           attackC("Attack", base),
           releaseC("Release", base) {
         juce::ignoreUnused(parametersNA, parametersNARef);
         attachGroup(0);
         thresC.setEditable(false);
-        ratioC.setEditable(false);
+        kneeC.setEditable(false);
         attackC.setEditable(false);
         releaseC.setEditable(false);
         sideFreqC.setEditable(false);
@@ -63,7 +63,7 @@ namespace zlPanel {
             juce::GridItem(sideFreqC).withArea(1, 4, 3, 5),
             juce::GridItem(sideQC).withArea(1, 5, 3, 6),
             juce::GridItem(dynSoloC).withArea(2, 1),
-            juce::GridItem(ratioC).withArea(2, 2),
+            juce::GridItem(kneeC).withArea(2, 2),
             juce::GridItem(releaseC).withArea(2, 3),
         };
 
@@ -71,7 +71,7 @@ namespace zlPanel {
             s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
         }
 
-        for (auto &s: {&thresC, &ratioC, &attackC, &releaseC}) {
+        for (auto &s: {&thresC, &kneeC, &attackC, &releaseC}) {
             s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
         }
 
@@ -96,10 +96,10 @@ namespace zlPanel {
         attach(*this, {&dynBypassC, &dynSoloC},
                {zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix},
                parametersRef, buttonAttachments);
-        attach(*this, std::vector<zlInterface::CompactLinearSlider *>{&thresC, &attackC, &ratioC, &releaseC},
+        attach(*this, std::vector<zlInterface::CompactLinearSlider *>{&thresC, &attackC, &kneeC, &releaseC},
                {
                    zlDSP::threshold::ID + suffix, zlDSP::attack::ID + suffix,
-                   zlDSP::ratio::ID + suffix, zlDSP::release::ID + suffix
+                   zlDSP::kneeW::ID + suffix, zlDSP::release::ID + suffix
                },
                parametersRef, sliderAttachments);
         attach(*this, std::vector<zlInterface::TwoValueRotarySlider *>{&sideFreqC, &sideQC},
@@ -114,7 +114,7 @@ namespace zlPanel {
             const auto f = static_cast<bool>(newValue);
             thresC.setEditable(f);
             attackC.setEditable(f);
-            ratioC.setEditable(f);
+            kneeC.setEditable(f);
             releaseC.setEditable(f);
             sideFreqC.setEditable(f);
             sideQC.setEditable(f);

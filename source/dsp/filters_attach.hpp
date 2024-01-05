@@ -34,7 +34,7 @@ namespace zlDSP {
 
         constexpr static std::array IDs{bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,
                                         lrType::ID, dynamicON::ID, dynamicBypass::ID,
-                                        targetGain::ID, targetQ::ID, threshold::ID, ratio::ID,
+                                        targetGain::ID, targetQ::ID, threshold::ID, kneeW::ID,
                                         sideFreq::ID, attack::ID, release::ID, sideQ::ID};
 
         constexpr static std::array defaultVs{float(bypass::defaultV), float(fType::defaultI), float(slope::defaultI),
@@ -42,7 +42,7 @@ namespace zlDSP {
                                               float(lrType::defaultI),
                                               float(dynamicON::defaultV), float(dynamicBypass::defaultV),
                                               targetGain::defaultV, targetQ::defaultV,
-                                              threshold::defaultV, ratio::defaultV,
+                                              threshold::defaultV, kneeW::defaultV,
                                               sideFreq::defaultV, attack::defaultV, release::defaultV, sideQ::defaultV};
 
         constexpr static std::array dynamicInitIDs{targetGain::ID, targetQ::ID, sideFreq::ID, sideQ::ID, dynamicBypass::ID};

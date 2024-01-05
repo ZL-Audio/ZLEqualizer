@@ -95,8 +95,8 @@ namespace zlDSP {
             filtersRef[idx].getTargetFilter().setQ(value);
         } else if (id == threshold::ID) {
             filtersRef[idx].getCompressor().getComputer().setThreshold(value);
-        } else if (id == ratio::ID) {
-            filtersRef[idx].getCompressor().getComputer().setRatio(value);
+        } else if (id == kneeW::ID) {
+            filtersRef[idx].getCompressor().getComputer().setKneeW(kneeW::formatV(value));
         } else if (id == sideFreq::ID) {
             filtersRef[idx].getSideFilter().setFreq(value);
         } else if (id == attack::ID) {

@@ -37,7 +37,7 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
 
         zlInterface::TwoValueRotarySlider sideFreqC, sideQC;
-        zlInterface::CompactLinearSlider thresC, ratioC, attackC, releaseC;
+        zlInterface::CompactLinearSlider thresC, kneeC, attackC, releaseC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
 
         std::atomic<size_t> bandIdx;

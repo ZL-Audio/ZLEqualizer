@@ -180,14 +180,27 @@ namespace zlDSP {
         auto static constexpr defaultV = -40.f;
     };
 
-    class ratio : public FloatParameters<ratio> {
+    class kneeW : public FloatParameters<kneeW> {
     public:
-        auto static constexpr ID = "ratio";
-        auto static constexpr name = "Ratio";
-        auto static constexpr defaultV = 3.f;
+        auto static constexpr ID = "knee_width";
+        auto static constexpr name = "Knee Width";
         inline auto static const range =
-                juce::NormalisableRange<float>(1.f, 100.f, 0.01f, 0.2160127f);
+                juce::NormalisableRange<float>(0.f, 1.f, .01f, .5f);
+        auto static constexpr defaultV = 0.25f;
+
+        inline static float formatV(const float x) { return std::max(x * 60, 0.0625f); }
+
+        inline static double formatV(const double x) { return std::max(x * 60, 0.0625); }
     };
+
+    // class ratio : public FloatParameters<ratio> {
+    // public:
+    //     auto static constexpr ID = "ratio";
+    //     auto static constexpr name = "Ratio";
+    //     auto static constexpr defaultV = 3.f;
+    //     inline auto static const range =
+    //             juce::NormalisableRange<float>(1.f, 100.f, 0.01f, 0.2160127f);
+    // };
 
     class sideFreq : public FloatParameters<sideFreq> {
     public:
@@ -237,7 +250,7 @@ namespace zlDSP {
                    freq::get(suffix), gain::get(suffix), Q::get(suffix),
                    lrType::get(suffix), dynamicON::get(suffix),
                    dynamicBypass::get(suffix), sideSolo::get(suffix),
-                   targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), ratio::get(suffix),
+                   targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), kneeW::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
     }
 
