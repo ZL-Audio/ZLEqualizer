@@ -27,7 +27,6 @@ namespace zlPanel {
         juce::Path path;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<float> &c;
-        std::array<float, zlIIR::frequencies.size()> dBs;
 
         void timerCallback() override;
     };

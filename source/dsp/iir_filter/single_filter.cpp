@@ -19,10 +19,13 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        processSpec = spec;
-        for (auto &f: filters) {
-            f.prepare(spec);
+        processSpec = spec; {
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+            for (auto &f: filters) {
+                f.prepare(spec);
+            }
         }
+        numChannels.store(spec.numChannels);
         setOrder(order.load());
         updateParas();
     }
@@ -39,6 +42,11 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::setFreq(FloatType x, bool update) {
+        const auto diff = std::max(static_cast<double>(x), freq.load()) / std::min(static_cast<double>(x), freq.load());
+        if (std::log10(diff) >= 2) {
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+            reset();
+        }
         freq.store(static_cast<double>(x));
         if (update) { updateParas(); }
     }
@@ -56,7 +64,10 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setFilterType(zlIIR::FilterType x, bool update) {
+    void Filter<FloatType>::setFilterType(zlIIR::FilterType x, bool update) { {
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+            reset();
+        }
         filterType.store(x);
         if (update) { updateParas(); }
     }
@@ -124,7 +135,7 @@ namespace zlIIR {
                        [](auto &c) { return juce::Decibels::gainToDecibels(c); });
         if (filterType.load() == FilterType::notch) {
             auto freqIdx = static_cast<size_t>(std::floor(std::log(freq.load() / 10) / std::log(2000) *
-                                               static_cast<double>(frequencies.size())));
+                                                          static_cast<double>(frequencies.size())));
             if (freqIdx < frequencies.size()) {
                 dBs[freqIdx] = -90;
                 freqIdx += 1;

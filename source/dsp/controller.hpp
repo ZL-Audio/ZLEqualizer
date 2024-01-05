@@ -40,9 +40,9 @@ namespace zlDSP {
 
         void setDynamicON(bool x, size_t idx);
 
-        void setDBs(std::array<FloatType, zlIIR::frequencies.size()> &x);
+        inline std::array<FloatType, zlIIR::frequencies.size()> &getDBs() { return dBs; }
 
-        void updateDBs();
+        void updateDBs(lrType::lrTypes lr);
 
         void handleAsyncUpdate() override;
 
@@ -56,7 +56,7 @@ namespace zlDSP {
 
         inline bool getSoloIsSide() const { return soloSide.load(); }
 
-        inline zlIIR::Filter<FloatType> &getSoloFilter() {return soloFilter;}
+        inline zlIIR::Filter<FloatType> &getSoloFilter() { return soloFilter; }
 
         std::tuple<FloatType, FloatType> getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter);
 

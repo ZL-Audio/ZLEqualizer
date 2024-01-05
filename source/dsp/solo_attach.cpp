@@ -60,7 +60,7 @@ namespace zlDSP {
             } else {
                 controllerRef.clearSolo();
             }
-        } else if (controllerRef.getSolo() && idx == controllerRef.getSoloIdx()) {
+        } else {
             triggerAsyncUpdate();
         }
     }

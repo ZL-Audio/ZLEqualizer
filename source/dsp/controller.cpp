@@ -32,6 +32,7 @@ namespace zlDSP {
         for (auto &f: filters) {
             f.prepare(subSpec);
         }
+        soloFilter.setFilterType(zlIIR::FilterType::bandPass, false);
         soloFilter.prepare(subSpec);
         lrMainSplitter.prepare(subSpec);
         lrSideSplitter.prepare(subSpec);
@@ -192,18 +193,10 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::setDBs(std::array<FloatType, zlIIR::frequencies.size()> &x) {
-        const juce::ScopedReadLock scopedLock(magLock);
-        x = dBs;
-        // std::transform(x.begin(), x.end(), dBs.begin(), x.begin(), std::plus<FloatType>());
-    }
-
-    template<typename FloatType>
-    void Controller<FloatType>::updateDBs() {
-        const juce::ScopedWriteLock scopedLock(magLock);
+    void Controller<FloatType>::updateDBs(const lrType::lrTypes lr) {
         dBs.fill(FloatType(0));
         for (size_t i = 0; i < bandNUM; i++) {
-            if (filterLRs[i].load() == lrType::stereo) {
+            if (filterLRs[i].load() == lr && !filters[i].getBypass()) {
                 filters[i].getMainFilter().updateDBs();
                 const juce::ScopedReadLock localScopedLock(filters[i].getMainFilter().getMagLock());
                 std::transform(dBs.begin(), dBs.end(),
@@ -256,7 +249,6 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setSolo(const size_t idx, const bool isSide) {
-        soloFilter.setFilterType(zlIIR::FilterType::bandPass, false);
         FloatType freq, q;
         if (!isSide) {
             std::tie(freq, q) = getSoloFilterParas(filters[idx].getMainFilter());
@@ -267,10 +259,18 @@ namespace zlDSP {
         soloFilter.setQ(q, false);
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         useSolo.store(true);
-        if (filterLRs[idx] == lrType::stereo) {
-            soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
+        if (filterLRs[idx].load() == lrType::stereo) {
+            if (soloFilter.getNumChannels()!= 2) {
+                soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
+            } else {
+                soloFilter.updateParas();
+            }
         } else {
-            soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+            if (soloFilter.getNumChannels()!= 1) {
+                soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+            } else {
+                soloFilter.updateParas();
+            }
         }
         soloIdx.store(idx);
         soloSide.store(isSide);
