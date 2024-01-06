@@ -61,7 +61,9 @@ namespace zlDSP {
                 controllerRef.clearSolo();
             }
         } else {
-            triggerAsyncUpdate();
+            if (controllerRef.getSolo()) {
+                triggerAsyncUpdate();
+            }
         }
     }
 

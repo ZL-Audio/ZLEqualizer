@@ -11,9 +11,13 @@ PluginProcessor::PluginProcessor()
           .withOutput("Output", juce::AudioChannelSet::stereo(), true)
           .withInput("Aux", juce::AudioChannelSet::stereo(), true)
 #endif
-      ), parameters(*this, nullptr,
+      ), dummyProcessor(),
+parameters(*this, nullptr,
                     juce::Identifier("ZLEqualizerParameters"),
                     zlDSP::getParameterLayout()),
+parametersNA(dummyProcessor, nullptr,
+                       juce::Identifier("ZLEqualizerParametersNA"),
+                       zlState::getNAParameterLayout()),
       controller(*this),
       filtersAttach(*this, parameters, controller),
       soloAttach(*this, parameters, controller) {
@@ -142,6 +146,7 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
     // as intermediaries to make it easy to save and load complex data.
     auto tempTree = juce::ValueTree("ZLEqualizerParaState");
     tempTree.appendChild(parameters.copyState(), nullptr);
+    tempTree.appendChild(parametersNA.copyState(), nullptr);
     std::unique_ptr<juce::XmlElement> xml(tempTree.createXml());
     copyXmlToBinary(*xml, destData);
 }
@@ -154,6 +159,7 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
         auto tempTree = juce::ValueTree::fromXml(*xmlState);
         filtersAttach.enableDynamicONUpdateOthers(false);
         parameters.replaceState(tempTree.getChildWithName(parameters.state.getType()));
+        parametersNA.replaceState(tempTree.getChildWithName(parametersNA.state.getType()));
         filtersAttach.enableDynamicONUpdateOthers(true);
     }
 }

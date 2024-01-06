@@ -38,7 +38,7 @@ namespace zlDynamicFilter {
                 sBufferCopy.makeCopyOf(sBuffer, true);
                 sFilter.process(sBufferCopy);
                 auto reducedLoudness = juce::Decibels::gainToDecibels(compressor.process(sBufferCopy));
-                auto maximumReduction = compressor.getComputer().process(compressor.getComputer().getThreshold() + compressor.getComputer().getKneeW());
+                auto maximumReduction = compressor.getComputer().getReductionAtKnee();
                 auto portion = std::min(reducedLoudness / maximumReduction, FloatType(1));
                 if (dynamicBypass.load()) {
                     portion = 0;

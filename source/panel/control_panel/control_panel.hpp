@@ -16,19 +16,23 @@
 #include "right_control_panel.hpp"
 
 namespace zlPanel {
-    class ControlPanel final : public juce::Component {
+    class ControlPanel final : public juce::Component,
+                               private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit ControlPanel(juce::AudioProcessorValueTreeState &parameters,
                               juce::AudioProcessorValueTreeState &parametersNA,
                               zlInterface::UIBase &base);
 
-        ~ControlPanel() override = default;
+        ~ControlPanel() override;
 
         void resized() override;
 
     private:
+        juce::AudioProcessorValueTreeState &parametersNARef;
         LeftControlPanel leftControlPanel;
         RightControlPanel rightControlPanel;
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
 

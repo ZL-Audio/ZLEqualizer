@@ -74,7 +74,7 @@ namespace zlDSP {
 
         zlIIR::Filter<FloatType> soloFilter;
         std::atomic<size_t> soloIdx;
-        std::atomic<bool> useSolo, soloSide;
+        std::atomic<bool> useSolo=false, soloSide=false;
 
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;

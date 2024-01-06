@@ -29,6 +29,8 @@ namespace zlPanel {
 
         void resized() override;
 
+        void attachGroup(size_t idx);
+
     private:
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -37,6 +39,7 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
 
         zlInterface::CompactCombobox fTypeC, slopeC, stereoC;
+        zlInterface::LeftRightCombobox lrBox;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
 
         zlInterface::TwoValueRotarySlider freqC, gainC, qC;
@@ -47,8 +50,6 @@ namespace zlPanel {
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void handleAsyncUpdate() override;
-
-        void attachGroup(size_t idx);
     };
 }
 

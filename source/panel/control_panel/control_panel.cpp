@@ -9,20 +9,38 @@
 
 #include "control_panel.hpp"
 
+#include "../../state/state_definitions.hpp"
+
 namespace zlPanel {
     ControlPanel::ControlPanel(juce::AudioProcessorValueTreeState &parameters,
                                juce::AudioProcessorValueTreeState &parametersNA,
                                zlInterface::UIBase &base)
-        : leftControlPanel(parameters, parametersNA, base),
+        : parametersNARef(parametersNA),
+          leftControlPanel(parameters, parametersNA, base),
           rightControlPanel(parameters, parametersNA, base) {
+        parameterChanged(zlState::selectedBandIdx::ID, static_cast<float>(zlState::selectedBandIdx::defaultI));
         addAndMakeVisible(leftControlPanel);
         addAndMakeVisible(rightControlPanel);
+        parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
     }
+
+    ControlPanel::~ControlPanel() {
+        parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
+    }
+
 
     void ControlPanel::resized() {
         auto rightBound = getLocalBounds().toFloat();
         const auto leftBound = rightBound.removeFromLeft(rightBound.getWidth() * (33.f / 61.f));
         leftControlPanel.setBounds(leftBound.toNearestInt());
         rightControlPanel.setBounds(rightBound.toNearestInt());
+    }
+
+    void ControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
+        if (parameterID == zlState::selectedBandIdx::ID) {
+            const auto bandIdx = static_cast<size_t> (newValue);
+            leftControlPanel.attachGroup(bandIdx);
+            rightControlPanel.attachGroup(bandIdx);
+        }
     }
 } // zlPanel

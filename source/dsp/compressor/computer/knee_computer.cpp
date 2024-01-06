@@ -58,6 +58,7 @@ namespace zlCompressor {
                 std::move(initialX),
                 std::move(initialY),
                 std::move(initialYX));
+        reductionAtKnee.store(process(threshold.load() + kneeW.load()));
     }
 
     template

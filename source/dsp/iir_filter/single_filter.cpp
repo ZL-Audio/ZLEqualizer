@@ -42,8 +42,7 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::setFreq(FloatType x, bool update) {
-        const auto diff = std::max(static_cast<double>(x), freq.load()) / std::min(static_cast<double>(x), freq.load());
-        if (std::log10(diff) >= 2) {
+        if (const auto diff = std::max(static_cast<double>(x), freq.load()) / std::min(static_cast<double>(x), freq.load()); std::log10(diff) >= 2) {
             const juce::ScopedWriteLock scopedLock(paraUpdateLock);
             reset();
         }

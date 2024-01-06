@@ -25,13 +25,23 @@ namespace zlPanel {
           attackC("Attack", base),
           releaseC("Release", base) {
         juce::ignoreUnused(parametersNA, parametersNARef);
-        attachGroup(0);
-        thresC.setEditable(false);
-        kneeC.setEditable(false);
-        attackC.setEditable(false);
-        releaseC.setEditable(false);
-        sideFreqC.setEditable(false);
-        sideQC.setEditable(false);
+        // attachGroup(0);
+        // thresC.setEditable(false);
+        // kneeC.setEditable(false);
+        // attackC.setEditable(false);
+        // releaseC.setEditable(false);
+        // sideFreqC.setEditable(false);
+        // sideQC.setEditable(false);
+
+        for (auto &c : {&dynBypassC, &dynSoloC}) {
+            addAndMakeVisible(c);
+        }
+        for (auto &c : {&sideFreqC, &sideQC}) {
+            addAndMakeVisible(c);
+        }
+        for (auto &c : {&thresC, &kneeC, &attackC, &releaseC}) {
+            addAndMakeVisible(c);
+        }
     }
 
     RightControlPanel::~RightControlPanel() {
@@ -93,18 +103,20 @@ namespace zlPanel {
         buttonAttachments.clear(true);
         sliderAttachments.clear(true);
 
-        attach(*this, {&dynBypassC, &dynSoloC},
+        attach({&dynBypassC.getButton(), &dynSoloC.getButton()},
                {zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix},
                parametersRef, buttonAttachments);
-        attach(*this, std::vector<zlInterface::CompactLinearSlider *>{&thresC, &attackC, &kneeC, &releaseC},
+        attach({&thresC.getSlider(), &attackC.getSlider(), &kneeC.getSlider(), &releaseC.getSlider()},
                {
                    zlDSP::threshold::ID + suffix, zlDSP::attack::ID + suffix,
                    zlDSP::kneeW::ID + suffix, zlDSP::release::ID + suffix
                },
                parametersRef, sliderAttachments);
-        attach(*this, std::vector<zlInterface::TwoValueRotarySlider *>{&sideFreqC, &sideQC},
-               {zlDSP::sideFreq::ID + suffix, "", zlDSP::sideQ::ID + suffix, ""},
+        attach({&sideFreqC.getSlider1(), &sideQC.getSlider1()},
+               {zlDSP::sideFreq::ID + suffix, zlDSP::sideQ::ID + suffix},
                parametersRef, sliderAttachments);
+        // parameterChanged(zlDSP::fType::ID, parametersRef.getRawParameterValue(zlDSP::fType::ID)->load());
+        parameterChanged(zlDSP::dynamicON::ID + suffix, parametersRef.getRawParameterValue(zlDSP::dynamicON::ID+ suffix)->load());
     }
 
     void RightControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {

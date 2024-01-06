@@ -13,60 +13,36 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace zlPanel {
-    inline void attach(juce::Component &mainComponent,
-                       const std::vector<zlInterface::CompactButton *> &buttons,
+    inline void attach(const std::vector<juce::Button *> &buttons,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,
                        juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> &attachments) {
         for (size_t i = 0; i < buttons.size(); ++i) {
             attachments.add(
                 std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
-                    parameters, ids[i], buttons[i]->getButton()));
-            mainComponent.addAndMakeVisible(buttons[i]);
+                    parameters, ids[i], *buttons[i]));
         }
     }
 
-    inline void attach(juce::Component &mainComponent,
-                       const std::vector<zlInterface::CompactCombobox *> &boxes,
+    inline void attach(const std::vector<juce::ComboBox *> &boxes,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,
                        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> &attachments) {
         for (size_t i = 0; i < boxes.size(); ++i) {
             attachments.add(
                 std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-                    parameters, ids[i], boxes[i]->getBox()));
-            mainComponent.addAndMakeVisible(boxes[i]);
+                    parameters, ids[i], *boxes[i]));
         }
     }
 
-    inline void attach(juce::Component &mainComponent,
-                       const std::vector<zlInterface::CompactLinearSlider *> &sliders,
+    inline void attach(const std::vector<juce::Slider *> &sliders,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,
                        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> &attachments) {
         for (size_t i = 0; i < sliders.size(); ++i) {
             attachments.add(
                 std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                    parameters, ids[i], sliders[i]->getSlider()));
-            mainComponent.addAndMakeVisible(sliders[i]);
-        }
-    }
-
-    inline void attach(juce::Component &mainComponent,
-                       const std::vector<zlInterface::TwoValueRotarySlider *> &sliders,
-                       const std::vector<std::string> &ids,
-                       juce::AudioProcessorValueTreeState &parameters,
-                       juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> &attachments) {
-        for (size_t i = 0; i < sliders.size(); ++i) {
-            attachments.add(
-                std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                    parameters, ids[i * 2], sliders[i]->getSlider1()));
-            if (!ids[i * 2 + 1].empty()) {
-                attachments.add(
-                    std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                        parameters, ids[i * 2 + 1], sliders[i]->getSlider2()));
-            }
-            mainComponent.addAndMakeVisible(sliders[i]);
+                    parameters, ids[i], *sliders[i]));
         }
     }
 }

@@ -9,6 +9,8 @@
 
 #include "left_control_panel.hpp"
 
+#include "../../state/state_definitions.hpp"
+
 namespace zlPanel {
     LeftControlPanel::LeftControlPanel(juce::AudioProcessorValueTreeState &parameters,
                                        juce::AudioProcessorValueTreeState &parametersNA,
@@ -21,11 +23,22 @@ namespace zlPanel {
           fTypeC("", zlDSP::fType::choices, base),
           slopeC("", zlDSP::slope::choices, base),
           stereoC("", zlDSP::lrType::choices, base),
+          lrBox(zlState::selectedBandIdx::choices, base),
           freqC("FREQ", base),
           gainC("GAIN", base),
           qC("Q", base) {
         juce::ignoreUnused(parametersNA, parametersNARef);
-        attachGroup(0);
+        // attachGroup(0);
+        for (auto &c: {&bypassC, &soloC, &dynONC}) {
+            addAndMakeVisible(c);
+        }
+        for (auto &c: {&fTypeC, &slopeC, &stereoC}) {
+            addAndMakeVisible(c);
+        }
+        for (auto &c: {&freqC, &gainC, &qC}) {
+            addAndMakeVisible(c);
+        }
+        addAndMakeVisible(lrBox);
     }
 
     LeftControlPanel::~LeftControlPanel() {
@@ -46,25 +59,28 @@ namespace zlPanel {
         using Track = juce::Grid::TrackInfo;
         using Fr = juce::Grid::Fr;
 
-        grid.templateRows = {Track(Fr(1)), Track(Fr(1))};
+        grid.templateRows = {Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1))};
         grid.templateColumns = {
             Track(Fr(4)), Track(Fr(6)),
             Track(Fr(6)), Track(Fr(6)), Track(Fr(6)), Track(Fr(5))
         };
         grid.items = {
-            juce::GridItem(bypassC).withArea(1, 1),
-            juce::GridItem(fTypeC).withArea(1, 2),
-            juce::GridItem(freqC).withArea(1, 3, 3, 4),
-            juce::GridItem(gainC).withArea(1, 4, 3, 5),
-            juce::GridItem(qC).withArea(1, 5, 3, 6),
-            juce::GridItem(stereoC).withArea(1, 6),
-            juce::GridItem(soloC).withArea(2, 1),
-            juce::GridItem(slopeC).withArea(2, 2),
-            juce::GridItem(dynONC).withArea(2, 6),
+            juce::GridItem(bypassC).withArea(1, 1, 4, 2),
+            juce::GridItem(fTypeC).withArea(1, 2, 3, 3),
+            juce::GridItem(freqC).withArea(1, 3, 7, 4),
+            juce::GridItem(gainC).withArea(1, 4, 7, 5),
+            juce::GridItem(qC).withArea(1, 5, 7, 6),
+            juce::GridItem(soloC).withArea(4, 1, 7, 2),
+            juce::GridItem(slopeC).withArea(3, 2, 5, 3),
+            juce::GridItem(stereoC).withArea(5, 2, 7, 3),
+            juce::GridItem(lrBox).withArea(2, 6, 4, 7),
+            juce::GridItem(dynONC).withArea(4, 6, 7, 7),
         };
+
         for (auto &s: {&freqC, &gainC, &qC}) {
             s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
         }
+        lrBox.setPadding(uiBase.getFontSize(), 0.f);
 
         auto bound = getLocalBounds().toFloat();
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
@@ -87,25 +103,30 @@ namespace zlPanel {
         boxAttachments.clear(true);
         sliderAttachments.clear(true);
 
-        attach(*this, {&bypassC, &soloC, &dynONC},
+        attach({&bypassC.getButton(), &soloC.getButton(), &dynONC.getButton()},
                {zlDSP::bypass::ID + suffix, zlDSP::solo::ID + suffix, zlDSP::dynamicON::ID + suffix},
                parametersRef, buttonAttachments);
-        attach(*this, {&fTypeC, &slopeC, &stereoC},
+        attach({&fTypeC.getBox(), &slopeC.getBox(), &stereoC.getBox()},
                {zlDSP::fType::ID + suffix, zlDSP::slope::ID + suffix, zlDSP::lrType::ID + suffix},
                parametersRef, boxAttachments);
-        attach(*this, {&freqC, &gainC, &qC},
+        attach({&lrBox.getBox()},
+               {zlState::selectedBandIdx::ID},
+               parametersNARef, boxAttachments);
+        attach({&freqC.getSlider1(), &gainC.getSlider1(), &gainC.getSlider2(), &qC.getSlider1(), &qC.getSlider2()},
                {
-                   zlDSP::freq::ID + suffix, "", zlDSP::gain::ID + suffix, zlDSP::targetGain::ID + suffix,
+                   zlDSP::freq::ID + suffix, zlDSP::gain::ID + suffix, zlDSP::targetGain::ID + suffix,
                    zlDSP::Q::ID + suffix, zlDSP::targetQ::ID + suffix
                },
                parametersRef, sliderAttachments);
+        parameterChanged(zlDSP::fType::ID + suffix, parametersRef.getRawParameterValue(zlDSP::fType::ID+ suffix)->load());
+        parameterChanged(zlDSP::dynamicON::ID + suffix, parametersRef.getRawParameterValue(zlDSP::dynamicON::ID+ suffix)->load());
     }
 
     void LeftControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         const auto id = parameterID.dropLastCharacters(2);
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         if (id == zlDSP::fType::ID) {
-            switch (const auto fType = static_cast<zlIIR::FilterType>(newValue)) {
+            switch (static_cast<zlIIR::FilterType>(newValue)) {
                 case zlIIR::FilterType::peak:
                 case zlIIR::FilterType::lowShelf:
                 case zlIIR::FilterType::highShelf:

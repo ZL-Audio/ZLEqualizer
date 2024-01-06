@@ -98,9 +98,19 @@ namespace zlState {
         }
     };
 
+    class selectedBandIdx : public ChoiceParameters<selectedBandIdx> {
+    public:
+        auto static constexpr ID = "selected_band_idx";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "1", "2", "3", "4", "5", "6", "7", "8", "9"
+        };
+        int static constexpr defaultI = 0;
+    };
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add();
+        layout.add(selectedBandIdx::get());
         return layout;
     }
 
