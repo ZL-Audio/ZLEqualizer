@@ -42,6 +42,12 @@ JUCE framework from [JUCE](https://github.com/juce-framework/JUCE)
 
 JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
+[Equalize It](https://github.com/suroge/equalize_it) by [suroge](https://github.com/suroge)
+
+[Friz](https://github.com/bgporter/animator) by [bgporter](https://github.com/bgporter)
+
+[fontaudio](https://github.com/fefanto/fontaudio) by [fefanto](https://github.com/fefanto)
+
 Font from CMU Open Sans, Font Awesome and MiSans.
 
 ## References

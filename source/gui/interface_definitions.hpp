@@ -20,6 +20,26 @@ namespace zlInterface {
         juce::Colour DarkShadowColor = juce::Colour(168, 172, 178);
         juce::Colour BrightShadowColor = juce::Colour(237, 246, 255);
         juce::Colour ExtraColor1 = juce::Colour(139, 0, 0);
+        std::array<juce::Colour, 10> ColorMap1 = {
+            juce::Colour(31, 119, 180),
+            juce::Colour(255, 127, 14),
+            juce::Colour(44, 160, 44),
+            juce::Colour(214, 39, 40),
+            juce::Colour(148, 103, 189),
+            juce::Colour(140, 86, 75),
+            juce::Colour(227, 119, 194),
+            juce::Colour(127, 127, 127),
+            juce::Colour(188, 189, 34),
+            juce::Colour(23, 190, 207)
+        };
+        std::array<juce::Colour, 6> ColorMap2 = {
+            juce::Colour(0, 63, 255),
+            juce::Colour(3, 237, 58),
+            juce::Colour(232, 0, 11),
+            juce::Colour(138, 43, 226),
+            juce::Colour(255, 196, 0),
+            juce::Colour(0, 215, 255)
+        };
     };
 
     inline const std::array<UIColors, 2> styleColors{
@@ -31,7 +51,27 @@ namespace zlInterface {
                 .TextLightColor = juce::Colour(137, 125, 109),
                 .DarkShadowColor = juce::Colour(0, 0, 0),
                 .BrightShadowColor = juce::Colour(255 - 168, 255 - 172, 255 - 178),
-                .ExtraColor1 = juce::Colour(255 - 139, 255, 255)
+                .ExtraColor1 = juce::Colour(255 - 139, 255, 255),
+                .ColorMap1 = {
+                    juce::Colour(224, 136, 75),
+                    juce::Colour(0, 128, 241),
+                    juce::Colour(211, 95, 211),
+                    juce::Colour(41, 216, 215),
+                    juce::Colour(107, 152, 66),
+                    juce::Colour(115, 169, 180),
+                    juce::Colour(28, 136, 61),
+                    juce::Colour(128, 128, 128),
+                    juce::Colour(67, 66, 221),
+                    juce::Colour(232, 65, 48),
+                },
+                .ColorMap2 = {
+                    juce::Colour(255, 192, 0),
+                    juce::Colour(252, 18, 197),
+                    juce::Colour(23, 255, 244),
+                    juce::Colour(117, 212, 29),
+                    juce::Colour(0, 59, 255),
+                    juce::Colour(255, 40, 0),
+                }
             }
         }
     };
