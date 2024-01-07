@@ -10,6 +10,8 @@
 #ifndef ZLEqualizer_RIGHT_CONTROL_PANEL_HPP
 #define ZLEqualizer_RIGHT_CONTROL_PANEL_HPP
 
+#include "BinaryData.h"
+
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
@@ -41,6 +43,8 @@ namespace zlPanel {
         zlInterface::TwoValueRotarySlider sideFreqC, sideQC;
         zlInterface::CompactLinearSlider thresC, kneeC, attackC, releaseC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
+
+        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable;
 
         std::atomic<size_t> bandIdx;
 

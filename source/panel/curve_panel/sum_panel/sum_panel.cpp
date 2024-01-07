@@ -52,7 +52,7 @@ namespace zlPanel {
                 }
             }
 
-            g.setColour(uiBase.getExtraColor1());
+            g.setColour(uiBase.getColorMap2(j));
             g.strokePath(path, juce::PathStrokeType(uiBase.getFontSize() * 0.2f,
                                                     juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }

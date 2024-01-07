@@ -23,23 +23,20 @@ namespace zlPanel {
           thresC("Threshold", base),
           kneeC("Knee", base),
           attackC("Attack", base),
-          releaseC("Release", base) {
+          releaseC("Release", base),
+          bypassDrawable(
+              juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
+          soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)) {
         juce::ignoreUnused(parametersNA, parametersNARef);
-        // attachGroup(0);
-        // thresC.setEditable(false);
-        // kneeC.setEditable(false);
-        // attackC.setEditable(false);
-        // releaseC.setEditable(false);
-        // sideFreqC.setEditable(false);
-        // sideQC.setEditable(false);
-
-        for (auto &c : {&dynBypassC, &dynSoloC}) {
+        dynBypassC.setDrawable(bypassDrawable.get());
+        dynSoloC.setDrawable(soloDrawable.get());
+        for (auto &c: {&dynBypassC, &dynSoloC}) {
             addAndMakeVisible(c);
         }
-        for (auto &c : {&sideFreqC, &sideQC}) {
+        for (auto &c: {&sideFreqC, &sideQC}) {
             addAndMakeVisible(c);
         }
-        for (auto &c : {&thresC, &kneeC, &attackC, &releaseC}) {
+        for (auto &c: {&thresC, &kneeC, &attackC, &releaseC}) {
             addAndMakeVisible(c);
         }
     }
@@ -116,7 +113,8 @@ namespace zlPanel {
                {zlDSP::sideFreq::ID + suffix, zlDSP::sideQ::ID + suffix},
                parametersRef, sliderAttachments);
         // parameterChanged(zlDSP::fType::ID, parametersRef.getRawParameterValue(zlDSP::fType::ID)->load());
-        parameterChanged(zlDSP::dynamicON::ID + suffix, parametersRef.getRawParameterValue(zlDSP::dynamicON::ID+ suffix)->load());
+        parameterChanged(zlDSP::dynamicON::ID + suffix,
+                         parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
     }
 
     void RightControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -139,6 +137,8 @@ namespace zlPanel {
     }
 
     void RightControlPanel::handleAsyncUpdate() {
+        dynBypassC.repaint();
+        dynSoloC.repaint();
         repaint();
     }
 }

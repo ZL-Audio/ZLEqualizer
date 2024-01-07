@@ -18,6 +18,7 @@ namespace zlInterface {
     class ClickButtonLookAndFeel : public juce::LookAndFeel_V4 {
     public:
         explicit ClickButtonLookAndFeel(juce::Drawable *image, UIBase &base) : drawable(image), uiBase(base) {
+            drawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
         }
 
         // void drawButtonBackground(juce::Graphics &g, juce::Button &button, const juce::Colour &backgroundColour,
@@ -39,19 +40,16 @@ namespace zlInterface {
             bound = bound.withSizeKeepingCentre(bound.getWidth() - padding.load(),
                                                 bound.getHeight() - padding.load());
             if (drawable != nullptr) {
-                drawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
-                drawable->setTransform(
-                    juce::AffineTransform::scale(bound.getHeight() / static_cast<float>(drawable->getHeight())));
                 if (editable.load()) {
                     if (shouldDrawButtonAsDown) {
-                        drawable->drawAt(g, bound.getX(), bound.getY(), 1.f);
+                        drawable->drawWithin(g, bound, juce::RectanglePlacement::centred, 1.f);
                     } else if (shouldDrawButtonAsHighlighted) {
-                        drawable->drawAt(g, bound.getX(), bound.getY(), .75f);
+                        drawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .75f);
                     } else {
-                        drawable->drawAt(g, bound.getX(), bound.getY(), .5f);
+                        drawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .5f);
                     }
                 } else {
-                    drawable->drawAt(g, bound.getX(), bound.getY(), .25f);
+                    drawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .25f);
                 }
             }
         }

@@ -10,6 +10,8 @@
 #ifndef ZLEqualizer_LEFT_CONTROL_PANEL_HPP
 #define ZLEqualizer_LEFT_CONTROL_PANEL_HPP
 
+#include "BinaryData.h"
+
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
@@ -48,6 +50,8 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
 
         ResetComponent resetComponent;
+
+        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable, dynONDrawable;
 
         std::atomic<size_t> bandIdx;
 

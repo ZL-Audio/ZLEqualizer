@@ -49,7 +49,7 @@ namespace zlInterface {
             uiBase->drawShadowEllipse(g, arrowBound, uiBase->getFontSize() * 0.5f,
                                       {
                                           .fit = false, .drawBright = false, .drawDark = true,
-                                          .mainColour = uiBase->getExtraColor1().withBrightness(uiBase->getBackgroundColor().getBrightness()).withAlpha(0.75f),
+                                          .mainColour = uiBase->getColorMap2(0),
                                           .changeMain = true
                                       });
             g.restoreState();

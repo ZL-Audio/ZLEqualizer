@@ -39,26 +39,44 @@ namespace zlInterface {
                                               });
             }
             if (editable.load()) {
-                auto textBound = button.getLocalBounds().toFloat();
-                if (button.getToggleState()) {
-                    g.setColour(uiBase.getTextColor().withAlpha(0.5f + buttonDepth * 0.5f));
+                if (drawable == nullptr) {
+                    const auto textBound = button.getLocalBounds().toFloat();
+                    if (button.getToggleState()) {
+                        g.setColour(uiBase.getTextColor().withAlpha(1.f));
+                    } else {
+                        g.setColour(uiBase.getTextColor().withAlpha(0.5f));
+                    }
+                    g.setFont(uiBase.getFontSize() * FontLarge);
+                    g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
-                    g.setColour(uiBase.getTextColor().withAlpha(0.5f));
+                    const auto drawBonud = button.getLocalBounds().toFloat().withSizeKeepingCentre(
+                        uiBase.getFontSize() * FontLarge, uiBase.getFontSize() * FontLarge);
+                    // g.setColour(uiBase.getTextInactiveColor());
+                    // g.fillRect(drawBonud);
+                    if (button.getToggleState()) {
+                        drawable->drawWithin(g, drawBonud, juce::RectanglePlacement::Flags::centred, 1.f);
+                    } else {
+                        drawable->drawWithin(g, drawBonud, juce::RectanglePlacement::Flags::centred, .5f);
+                    }
                 }
-                g.setFont(uiBase.getFontSize() * FontLarge);
-                g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
             }
         }
 
         inline void setEditable(const bool f) { editable.store(f); }
 
-        inline float getDepth() { return buttonDepth.load(); }
+        inline float getDepth() const { return buttonDepth.load(); }
 
         inline void setDepth(const float x) { buttonDepth = x; }
+
+        inline void setDrawable(juce::Drawable *x) {
+            drawable = x;
+            drawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
+        }
 
     private:
         std::atomic<bool> editable = true;
         std::atomic<float> buttonDepth = 0.f;
+        juce::Drawable *drawable = nullptr;
 
         UIBase &uiBase;
     };

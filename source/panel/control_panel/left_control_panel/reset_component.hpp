@@ -37,6 +37,7 @@ namespace zlPanel {
         const std::unique_ptr<juce::Drawable> drawable;
         zlInterface::ClickButton button;
         std::atomic<size_t> bandIdx;
+
         constexpr static std::array resetIDs{
             zlDSP::dynamicON::ID, zlDSP::threshold::ID, zlDSP::kneeW::ID, zlDSP::attack::ID, zlDSP::release::ID,
             zlDSP::bypass::ID, zlDSP::fType::ID, zlDSP::slope::ID, zlDSP::freq::ID,

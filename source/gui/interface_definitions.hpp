@@ -13,6 +13,9 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace zlInterface {
+    static constexpr size_t ColorMap1Size = 10;
+    static constexpr size_t ColorMap2Size = 6;
+
     struct UIColors {
         juce::Colour TextColor = juce::Colour(87, 96, 110);
         juce::Colour BackgroundColor = juce::Colour(214, 223, 236);
@@ -20,7 +23,7 @@ namespace zlInterface {
         juce::Colour DarkShadowColor = juce::Colour(168, 172, 178);
         juce::Colour BrightShadowColor = juce::Colour(237, 246, 255);
         juce::Colour ExtraColor1 = juce::Colour(139, 0, 0);
-        std::array<juce::Colour, 10> ColorMap1 = {
+        std::array<juce::Colour, ColorMap1Size> ColorMap1 = {
             juce::Colour(31, 119, 180),
             juce::Colour(255, 127, 14),
             juce::Colour(44, 160, 44),
@@ -32,13 +35,13 @@ namespace zlInterface {
             juce::Colour(188, 189, 34),
             juce::Colour(23, 190, 207)
         };
-        std::array<juce::Colour, 6> ColorMap2 = {
-            juce::Colour(0, 63, 255),
-            juce::Colour(3, 237, 58),
-            juce::Colour(232, 0, 11),
-            juce::Colour(138, 43, 226),
-            juce::Colour(255, 196, 0),
-            juce::Colour(0, 215, 255)
+        std::array<juce::Colour, ColorMap2Size> ColorMap2 = {
+            juce::Colour(76, 114, 176),
+            juce::Colour(85, 168, 104),
+            juce::Colour(196, 78, 82),
+            juce::Colour(129, 114, 178),
+            juce::Colour(204, 185, 116),
+            juce::Colour(100, 181, 205),
         };
     };
 
@@ -170,6 +173,14 @@ namespace zlInterface {
         inline juce::Colour getBrightShadowColor() const { return styleColors[styleID.load()].BrightShadowColor; }
 
         inline juce::Colour getExtraColor1() const { return styleColors[styleID.load()].ExtraColor1; }
+
+        inline juce::Colour getColorMap1(const size_t idx) const {
+            return styleColors[styleID.load()].ColorMap1[idx % ColorMap1Size];
+        }
+
+        inline juce::Colour getColorMap2(const size_t idx) const {
+            return styleColors[styleID.load()].ColorMap2[idx % ColorMap2Size];
+        }
 
         static juce::Rectangle<float> getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds,
                                                                     float cornerSize,

@@ -25,9 +25,17 @@ namespace zlPanel {
           freqC("FREQ", base),
           gainC("GAIN", base),
           qC("Q", base),
-          resetComponent(parameters, parametersNA, base) {
+          resetComponent(parameters, parametersNA, base),
+          bypassDrawable(
+              juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
+          soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
+          dynONDrawable(
+              juce::Drawable::createFromImageData(BinaryData::fadmodsine_svg, BinaryData::fadmodsine_svgSize)) {
         juce::ignoreUnused(parametersNA, parametersNARef);
         // attachGroup(0);
+        bypassC.setDrawable(bypassDrawable.get());
+        soloC.setDrawable(soloDrawable.get());
+        dynONC.setDrawable(dynONDrawable.get());
         for (auto &c: {&bypassC, &soloC, &dynONC}) {
             addAndMakeVisible(c);
         }

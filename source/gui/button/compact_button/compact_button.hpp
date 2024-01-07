@@ -27,12 +27,14 @@ namespace zlInterface {
 
         void buttonDownAnimation();
 
-        inline juce::ToggleButton& getButton() {return button;}
+        inline juce::ToggleButton &getButton() { return button; }
 
         inline void setEditable(const bool x) {
             lookAndFeel.setEditable(x);
             button.setInterceptsMouseClicks(x, false);
         }
+
+        inline void setDrawable(juce::Drawable *x) { lookAndFeel.setDrawable(x); }
 
     private:
         UIBase &uiBase;
@@ -42,7 +44,7 @@ namespace zlInterface {
         static constexpr int animationId = 1;
         static constexpr float animationDuration = 200.f;
 
-        std::atomic<bool> fit=false;
+        std::atomic<bool> fit = false;
 
         friz::Animator animator;
     };

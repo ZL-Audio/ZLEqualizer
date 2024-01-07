@@ -12,6 +12,7 @@
 namespace zlInterface {
     CompactButton::CompactButton(const juce::String &labelText, UIBase &base) : uiBase(base), lookAndFeel(uiBase),
         animator{} {
+        setBufferedToImage(true);
         button.setClickingTogglesState(true);
         button.setButtonText(labelText);
         button.setLookAndFeel(&lookAndFeel);
