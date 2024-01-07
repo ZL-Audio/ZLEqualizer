@@ -36,9 +36,19 @@ namespace zlDSP {
             solo::ID, sideSolo::ID
         };
 
+        constexpr static std::array initIDs {
+            solo::ID, sideSolo::ID
+        };
+
+        constexpr static std::array defaultVs{
+            float(solo::defaultV), float(sideSolo::defaultV)
+        };
+
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void handleAsyncUpdate() override;
+
+        void initDefaultValues();
     };
 }
 

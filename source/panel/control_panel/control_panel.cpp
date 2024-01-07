@@ -18,7 +18,9 @@ namespace zlPanel {
         : parametersNARef(parametersNA),
           leftControlPanel(parameters, parametersNA, base),
           rightControlPanel(parameters, parametersNA, base) {
-        parameterChanged(zlState::selectedBandIdx::ID, static_cast<float>(zlState::selectedBandIdx::defaultI));
+        parameterChanged(zlState::selectedBandIdx::ID,
+                         static_cast<float>(parametersNARef.getRawParameterValue(
+                             zlState::selectedBandIdx::ID)->load()));
         addAndMakeVisible(leftControlPanel);
         addAndMakeVisible(rightControlPanel);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
@@ -38,7 +40,7 @@ namespace zlPanel {
 
     void ControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
-            const auto bandIdx = static_cast<size_t> (newValue);
+            const auto bandIdx = static_cast<size_t>(newValue);
             leftControlPanel.attachGroup(bandIdx);
             rightControlPanel.attachGroup(bandIdx);
         }

@@ -15,19 +15,20 @@
 #include <BinaryData.h>
 
 namespace zlState {
-    // int
-    inline static constexpr auto versionHint = 1;
+    inline auto static constexpr versionHint = 1;
 
+    inline auto static constexpr bandNUM = 9;
+
+    // float
     template<class T>
     class FloatParameters {
     public:
-        static std::unique_ptr<juce::AudioParameterFloat> get(bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterFloat> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID, versionHint), T::name,
-                                                             T::range, T::defaultV, attributes);
+            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
+                                                               T::name + suffix, T::range, T::defaultV, attributes);
         }
-
-        inline static float convertTo01(float x) {
+        inline static float convertTo01(const float x) {
             return T::range.convertTo0to1(x);
         }
     };
@@ -68,16 +69,13 @@ namespace zlState {
     template<class T>
     class BoolParameters {
     public:
-        static std::unique_ptr<juce::AudioParameterBool> get(bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterBool> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID, versionHint), T::name,
-                                                              T::defaultV, attributes);
+            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
+                                                              T::name + suffix, T::defaultV, attributes);
         }
-
-        static std::unique_ptr<juce::AudioParameterBool> get(juce::String label, bool automate = true) {
-            auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(label);
-            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID, versionHint), T::name,
-                                                              T::defaultV, attributes);
+        inline static float convertTo01(const bool x) {
+            return x ? 1.f : 0.f;
         }
     };
 
@@ -85,16 +83,13 @@ namespace zlState {
     template<class T>
     class ChoiceParameters {
     public:
-        static std::unique_ptr<juce::AudioParameterChoice> get(bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterChoice> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterChoice>(
-                    juce::ParameterID(T::ID, versionHint), T::name, T::choices, T::defaultI, attributes);
+            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
+                                                                T::name + suffix, T::choices, T::defaultI, attributes);
         }
-
-        static std::unique_ptr<juce::AudioParameterChoice> get(juce::String label, bool automate = true) {
-            auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(label);
-            return std::make_unique<juce::AudioParameterChoice>(
-                    juce::ParameterID(T::ID, versionHint), T::name, T::choices, T::defaultI, attributes);
+        inline static float convertTo01(const int x) {
+            return static_cast<float>(x) / static_cast<float>(T::choices.size());
         }
     };
 
@@ -108,16 +103,32 @@ namespace zlState {
         int static constexpr defaultI = 0;
     };
 
+    class active : public BoolParameters<active> {
+    public:
+        auto static constexpr ID = "active";
+        auto static constexpr name = "Active";
+        auto static constexpr defaultV = false;
+    };
+
+    inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
+                                const std::string &suffix = "") {
+        layout.add(active::get(suffix));
+    }
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(selectedBandIdx::get());
+        for (int i = 0; i < bandNUM; ++i) {
+            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+            addOneBandParas(layout, suffix);
+        }
         return layout;
     }
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(uiStyle::get(false),
-                   windowW::get(false), windowH::get(false));
+        layout.add(uiStyle::get(),
+                   windowW::get(), windowH::get());
         return layout;
     }
 }

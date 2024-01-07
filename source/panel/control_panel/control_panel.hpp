@@ -12,8 +12,8 @@
 
 #include "../../dsp/dsp.hpp"
 #include "../../gui/gui.hpp"
-#include "left_control_panel.hpp"
-#include "right_control_panel.hpp"
+#include "left_control_panel/left_control_panel.hpp"
+#include "right_control_panel/right_control_panel.hpp"
 
 namespace zlPanel {
     class ControlPanel final : public juce::Component,

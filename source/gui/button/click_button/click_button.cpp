@@ -7,11 +7,24 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLINTERFACE_BUTTON_H
-#define ZLINTERFACE_BUTTON_H
+#include "click_button.hpp"
+#include "click_button_look_and_feel.hpp"
 
-#include "compact_button/compact_button.hpp"
-#include "regular_button/regular_button.hpp"
-#include "click_button/click_button.hpp"
+namespace zlInterface {
+    ClickButton::ClickButton(juce::Drawable *image, UIBase &base)
+        : button("", juce::DrawableButton::ButtonStyle::ImageFitted), lookAndFeel(image, base) {
+        button.setLookAndFeel(&lookAndFeel);
+        setBufferedToImage(true);
+        addAndMakeVisible(button);
+    }
 
-#endif //ZLINTERFACE_BUTTON_H
+    ClickButton::~ClickButton() {
+        button.setLookAndFeel(nullptr);
+    }
+
+    void ClickButton::resized() {
+        button.setBounds(getLocalBounds());
+    }
+
+
+} // zlInterface

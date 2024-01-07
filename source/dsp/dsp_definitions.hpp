@@ -26,6 +26,9 @@ namespace zlDSP {
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
                                                                T::name + suffix, T::range, T::defaultV, attributes);
         }
+        inline static float convertTo01(const float x) {
+            return T::range.convertTo0to1(x);
+        }
     };
 
     // bool
@@ -37,6 +40,9 @@ namespace zlDSP {
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
                                                               T::name + suffix, T::defaultV, attributes);
         }
+        inline static float convertTo01(const bool x) {
+            return x ? 1.f : 0.f;
+        }
     };
 
     // choice
@@ -47,6 +53,9 @@ namespace zlDSP {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::name);
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
                                                                 T::name + suffix, T::choices, T::defaultI, attributes);
+        }
+        inline static float convertTo01(const int x) {
+            return static_cast<float>(x) / static_cast<float>(T::choices.size());
         }
     };
 

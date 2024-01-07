@@ -9,8 +9,6 @@
 
 #include "left_control_panel.hpp"
 
-#include "../../state/state_definitions.hpp"
-
 namespace zlPanel {
     LeftControlPanel::LeftControlPanel(juce::AudioProcessorValueTreeState &parameters,
                                        juce::AudioProcessorValueTreeState &parametersNA,
@@ -26,7 +24,8 @@ namespace zlPanel {
           lrBox(zlState::selectedBandIdx::choices, base),
           freqC("FREQ", base),
           gainC("GAIN", base),
-          qC("Q", base) {
+          qC("Q", base),
+          resetComponent(parameters, parametersNA, base) {
         juce::ignoreUnused(parametersNA, parametersNARef);
         // attachGroup(0);
         for (auto &c: {&bypassC, &soloC, &dynONC}) {
@@ -39,6 +38,7 @@ namespace zlPanel {
             addAndMakeVisible(c);
         }
         addAndMakeVisible(lrBox);
+        addAndMakeVisible(resetComponent);
     }
 
     LeftControlPanel::~LeftControlPanel() {
@@ -85,6 +85,11 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
         grid.performLayout(bound.toNearestInt());
+
+        const auto resetBound = juce::Rectangle<float>(bound.getTopRight().getX() - 1.25f * uiBase.getFontSize(),
+                                                       bound.getTopRight().getY(),
+                                                       1.25f * uiBase.getFontSize(), 1.25f * uiBase.getFontSize());
+        resetComponent.setBounds(resetBound.toNearestInt());
     }
 
     void LeftControlPanel::attachGroup(const size_t idx) {
@@ -95,6 +100,7 @@ namespace zlPanel {
         parametersRef.removeParameterListener(zlDSP::dynamicON::ID + oldSuffix, this);
 
         bandIdx.store(idx);
+        resetComponent.attachGroup(idx);
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         parametersRef.addParameterListener(zlDSP::fType::ID + suffix, this);
         parametersRef.addParameterListener(zlDSP::dynamicON::ID + suffix, this);
@@ -118,8 +124,10 @@ namespace zlPanel {
                    zlDSP::Q::ID + suffix, zlDSP::targetQ::ID + suffix
                },
                parametersRef, sliderAttachments);
-        parameterChanged(zlDSP::fType::ID + suffix, parametersRef.getRawParameterValue(zlDSP::fType::ID+ suffix)->load());
-        parameterChanged(zlDSP::dynamicON::ID + suffix, parametersRef.getRawParameterValue(zlDSP::dynamicON::ID+ suffix)->load());
+        parameterChanged(zlDSP::fType::ID + suffix,
+                         parametersRef.getRawParameterValue(zlDSP::fType::ID + suffix)->load());
+        parameterChanged(zlDSP::dynamicON::ID + suffix,
+                         parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
     }
 
     void LeftControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {

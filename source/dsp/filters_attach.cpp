@@ -71,13 +71,13 @@ namespace zlDSP {
             if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value) && dynamicONUpdateOthers.load()) {
                 auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
                 const std::array dynamicInitValues{
-                    targetGain::range.convertTo0to1(
+                    targetGain::convertTo01(
                         static_cast<float>(filtersRef[idx].getBaseFilter().getGain())),
-                    targetQ::range.convertTo0to1(
+                    targetQ::convertTo01(
                         static_cast<float>(filtersRef[idx].getBaseFilter().getQ())),
-                    sideFreq::range.convertTo0to1(static_cast<float>(soloFreq)),
-                    sideQ::range.convertTo0to1(static_cast<float>(soloQ)),
-                    static_cast<float>(false)
+                    sideFreq::convertTo01(static_cast<float>(soloFreq)),
+                    sideQ::convertTo01(static_cast<float>(soloQ)),
+                    dynamicBypass::convertTo01(false)
                 };
                 for (size_t i = 0; i < dynamicInitIDs.size(); ++i) {
                     auto initID = dynamicInitIDs[i] + parameterID.getLastCharacters(2);
@@ -85,6 +85,18 @@ namespace zlDSP {
                     parameterRef.getParameter(initID)->setValueNotifyingHost(dynamicInitValues[i]);
                     parameterRef.getParameter(initID)->endChangeGesture();
                 }
+            } else if (!static_cast<bool>(value)) {
+                const std::array dynamicResetValues{
+                    dynamicBypass::convertTo01(dynamicBypass::defaultV),
+                    sideSolo::convertTo01((sideSolo::defaultV))
+                };
+                for (size_t i = 0; i < dynamicResetIDs.size(); ++i) {
+                    auto initID = dynamicResetIDs[i] + parameterID.getLastCharacters(2);
+                    parameterRef.getParameter(initID)->beginChangeGesture();
+                    parameterRef.getParameter(initID)->setValueNotifyingHost(dynamicResetValues[i]);
+                    parameterRef.getParameter(initID)->endChangeGesture();
+                }
+                controllerRef.clearSolo();
             }
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
         } else if (id == dynamicBypass::ID) {

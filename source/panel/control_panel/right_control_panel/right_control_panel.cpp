@@ -124,6 +124,8 @@ namespace zlPanel {
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         if (id == zlDSP::dynamicON::ID) {
             const auto f = static_cast<bool>(newValue);
+            dynBypassC.setEditable(f);
+            dynSoloC.setEditable(f);
             thresC.setEditable(f);
             attackC.setEditable(f);
             kneeC.setEditable(f);

@@ -10,9 +10,9 @@
 #ifndef ZLEqualizer_RIGHT_CONTROL_PANEL_HPP
 #define ZLEqualizer_RIGHT_CONTROL_PANEL_HPP
 
-#include "../../dsp/dsp.hpp"
-#include "../../gui/gui.hpp"
-#include "../panel_definitons.hpp"
+#include "../../../dsp/dsp.hpp"
+#include "../../../gui/gui.hpp"
+#include "../../panel_definitons.hpp"
 
 namespace zlPanel {
     class RightControlPanel final : public juce::Component,

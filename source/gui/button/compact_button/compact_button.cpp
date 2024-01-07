@@ -43,7 +43,7 @@ namespace zlInterface {
             auto effect{
                 friz::makeAnimation<friz::Parametric, 1>(
                     // ID of the animation
-                    animationId, {0.f}, {1.f}, 250, friz::Parametric::kLinear)
+                    animationId, {0.f}, {1.f}, animationDuration, friz::Parametric::kLinear)
             };
             effect->updateFn = [this](int id, const auto &vals) {
                 juce::ignoreUnused(id);

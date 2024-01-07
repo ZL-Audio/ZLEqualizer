@@ -17,6 +17,7 @@ namespace zlDSP {
                                                                            parameterRef(parameters),
                                                                            controllerRef(controller) {
         addListeners();
+        initDefaultValues();
     }
 
     template<typename FloatType>
@@ -71,6 +72,17 @@ namespace zlDSP {
     void SoloAttach<FloatType>::handleAsyncUpdate() {
         controllerRef.setSolo(controllerRef.getSoloIdx(), controllerRef.getSoloIsSide());
     }
+
+    template<typename FloatType>
+    void SoloAttach<FloatType>::initDefaultValues() {
+        for (int i = 0; i < bandNUM; ++i) {
+            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+            for (size_t j = 0; j < defaultVs.size(); ++j) {
+                parameterChanged(initIDs[j] + suffix, defaultVs[j]);
+            }
+        }
+    }
+
 
     template
     class SoloAttach<float>;

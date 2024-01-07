@@ -10,9 +10,11 @@
 #ifndef ZLEqualizer_LEFT_CONTROL_PANEL_HPP
 #define ZLEqualizer_LEFT_CONTROL_PANEL_HPP
 
-#include "../../dsp/dsp.hpp"
-#include "../../gui/gui.hpp"
-#include "../panel_definitons.hpp"
+#include "../../../dsp/dsp.hpp"
+#include "../../../gui/gui.hpp"
+#include "../../panel_definitons.hpp"
+#include "../../../state/state_definitions.hpp"
+#include "reset_component.hpp"
 
 namespace zlPanel {
     class LeftControlPanel final : public juce::Component,
@@ -44,6 +46,8 @@ namespace zlPanel {
 
         zlInterface::TwoValueRotarySlider freqC, gainC, qC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
+
+        ResetComponent resetComponent;
 
         std::atomic<size_t> bandIdx;
 
