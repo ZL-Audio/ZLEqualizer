@@ -23,6 +23,12 @@ namespace zlPanel {
         button.getButton().onClick = [this]() { resetBand(); };
         button.getLookAndFeel().setCurve(false, true, false, false);
         addAndMakeVisible(button);
+        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+            const std::string suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+            ResetComponent::parameterChanged(zlDSP::bypass::ID + suffix,
+                                             parametersRef.getRawParameterValue(zlDSP::bypass::ID + suffix)->load());
+            parametersRef.addParameterListener(zlDSP::bypass::ID + suffix, this);
+        }
     }
 
     ResetComponent::~ResetComponent() {
@@ -38,8 +44,8 @@ namespace zlPanel {
     }
 
     void ResetComponent::parameterChanged(const juce::String &parameterID, float newValue) {
-        const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        if (idx == bandIdx.load() && !static_cast<bool>(newValue)) {
+        // const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
+        if (!static_cast<bool>(newValue)) {
             const auto activeID = zlState::active::ID + parameterID.getLastCharacters(2);
             parametersNARef.getParameter(activeID)->beginChangeGesture();
             parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(true));
@@ -48,12 +54,6 @@ namespace zlPanel {
     }
 
     void ResetComponent::attachGroup(const size_t idx) {
-        const std::string oldSuffix = bandIdx.load() < 10
-                                          ? "0" + std::to_string(bandIdx.load())
-                                          : std::to_string(bandIdx.load());
-        parametersRef.removeParameterListener(zlDSP::bypass::ID + oldSuffix, this);
-        const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
-        parametersRef.addParameterListener(zlDSP::bypass::ID + suffix, this);
         bandIdx.store(idx);
     }
 
@@ -66,6 +66,10 @@ namespace zlPanel {
             parametersRef.getParameter(resetID)->setValueNotifyingHost(resetDefaultVs[j]);
             parametersRef.getParameter(resetID)->endChangeGesture();
         }
+        const auto activeID = zlState::active::ID + suffix;
+        parametersNARef.getParameter(activeID)->beginChangeGesture();
+        parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
+        parametersNARef.getParameter(activeID)->endChangeGesture();
     }
 
 } // zlPanel

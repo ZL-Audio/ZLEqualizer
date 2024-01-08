@@ -13,6 +13,7 @@
 #include "../../dsp/dsp.hpp"
 #include "background_panel/background_panel.hpp"
 #include "sum_panel/sum_panel.hpp"
+#include "single_panel/single_panel.hpp"
 
 namespace zlPanel {
     class CurvePanel final : public juce::Component {
@@ -31,6 +32,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         BackgroundPanel backgroundPanel;
         SumPanel sumPanel;
+        std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
     };
 }
 

@@ -16,10 +16,14 @@ namespace zlPanel {
                            zlDSP::Controller<float> &c)
         : uiBase(base),
           backgroundPanel(base),
-          sumPanel(base, c) {
+          sumPanel(base, c){
+
         addAndMakeVisible(backgroundPanel);
+        for (size_t i = 0; i < zlState::bandNUM; ++i) {
+            singlePanels[i] = std::make_unique<SinglePanel>(i, parameters, parametersNA, base, c);
+            addAndMakeVisible(*singlePanels[i]);
+        }
         addAndMakeVisible(sumPanel);
-        juce::ignoreUnused(parameters, parametersNA);
     }
 
     CurvePanel::~CurvePanel() = default;
@@ -33,6 +37,9 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        for (size_t i = 0; i < zlState::bandNUM; ++i) {
+            singlePanels[i]->setBounds(bound.toNearestInt());
+        }
         sumPanel.setBounds(bound.toNearestInt());
     }
 }
