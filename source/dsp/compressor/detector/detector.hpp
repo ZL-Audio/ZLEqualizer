@@ -52,16 +52,16 @@ namespace zlCompressor {
         inline IterType getRStyle() const { return static_cast<IterType>(rStyle.load()); }
 
         inline void setAttack(FloatType v) {
-            v = juce::jmax(FloatType(0.001) * v, FloatType(0.0001));
             attack.store(v);
+            v = juce::jmax(FloatType(0.001) * v, FloatType(0.0001));
             aPara.store(juce::jmin(getScale(smooth.load(), aStyle.load()) / v * deltaT.load(), FloatType(0.9)));
         }
 
         inline FloatType getAttack() const { return attack.load(); }
 
         inline void setRelease(FloatType v) {
-            v = juce::jmax(FloatType(0.001) * v, FloatType(0.0001));
             release.store(v);
+            v = juce::jmax(FloatType(0.001) * v, FloatType(0.0001));
             rPara.store(juce::jmin(getScale(smooth.load(), rStyle.load()) / v * deltaT.load(), FloatType(0.9)));
         }
 
