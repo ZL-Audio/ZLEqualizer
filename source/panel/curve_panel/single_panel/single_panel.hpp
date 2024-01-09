@@ -31,6 +31,8 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void setMaximumDB(const float x) { maximumDB.store(x); triggerAsyncUpdate();}
+
     private:
         juce::Path path;
 
@@ -41,6 +43,7 @@ namespace zlPanel {
         zlDSP::Controller<float> &controllerRef;
         zlDynamicFilter::IIRFilter<float> &filter;
         zlIIR::Filter<float> &baseF, &targetF;
+        std::atomic<float> maximumDB;
 
         static constexpr std::array changeIDs{
             zlDSP::fType::ID, zlDSP::slope::ID,

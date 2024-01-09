@@ -40,7 +40,9 @@ namespace zlInterface {
             setInterceptsMouseClicks(x, false);
         }
 
-        inline juce::ComboBox& getBox() {return comboBox;}
+        inline juce::ComboBox &getBox() { return comboBox; }
+
+        inline CompactComboboxLookAndFeel &getLAF() { return boxLookAndFeel; }
 
     private:
         zlInterface::UIBase &uiBase;

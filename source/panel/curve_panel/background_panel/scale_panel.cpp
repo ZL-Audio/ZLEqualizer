@@ -15,33 +15,40 @@ namespace zlPanel {
     ScalePanel::ScalePanel(juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
         : parametersNARef(parametersNA), uiBase(base),
           scaleBox("", zlState::maximumDB::choices, base) {
+        juce::ignoreUnused(uiBase);
+        scaleBox.getLAF().setFontScale(zlInterface::FontLarge);
         attach({&scaleBox.getBox()}, {zlState::maximumDB::ID}, parametersNARef, boxAttachments);
         addAndMakeVisible(scaleBox);
         setBufferedToImage(true);
-        parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
     }
 
-    ScalePanel::~ScalePanel() {
-        parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
-    }
+    ScalePanel::~ScalePanel() = default;
 
     void ScalePanel::paint(juce::Graphics &g) {
-        juce::ignoreUnused(g);
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+
+        g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
+        for (auto &d:scaleDBs) {
+            const auto y = d * bound.getHeight() + bound.getY() - uiBase.getFontSize() * .75f;
+            const auto lTextBound = juce::Rectangle<float>(bound.getX(), y, bound.getWidth() * .4f, uiBase.getFontSize() * 1.5f);
+            const auto leftDB = static_cast<int>(-2 * d * maximumDB.load() + maximumDB.load());
+            g.setColour(uiBase.getTextColor());
+            g.drawText(juce::String(leftDB), lTextBound, juce::Justification::centredRight);
+            const auto rTextBound = juce::Rectangle<float>(bound.getCentreX(), y, bound.getWidth() * .4f, uiBase.getFontSize() * 1.5f);
+            const auto reftDB = static_cast<int>(-60.f * d);
+            g.setColour(uiBase.getTextInactiveColor());
+            g.drawText(juce::String(reftDB), rTextBound, juce::Justification::centredRight);
+        }
     }
 
     void ScalePanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
-        auto boxBound = juce::Rectangle<float>(uiBase.getFontSize() * 2.f, uiBase.getFontSize() * 1.1f);
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        auto boxBound = juce::Rectangle<float>(uiBase.getFontSize() * 4.f, uiBase.getFontSize() * 1.5f);
         boxBound = boxBound.withCentre({bound.getCentreX(), bound.getY()});
+        boxBound.removeFromRight(uiBase.getFontSize());
         scaleBox.setBounds(boxBound.toNearestInt());
-    }
-
-    void ScalePanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        if (parameterID == zlState::maximumDB::ID) {
-            maximumDB.store(newValue);
-            triggerAsyncUpdate();
-        }
     }
 
     void ScalePanel::handleAsyncUpdate() {

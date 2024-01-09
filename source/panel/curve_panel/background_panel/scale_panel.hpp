@@ -17,7 +17,6 @@
 
 namespace zlPanel {
     class ScalePanel final : public juce::Component,
-                             private juce::AudioProcessorValueTreeState::Listener,
                              private juce::AsyncUpdater {
     public:
         ScalePanel(juce::AudioProcessorValueTreeState &parametersNA,
@@ -29,6 +28,8 @@ namespace zlPanel {
 
         void resized() override;
 
+        void setMaximumDB(const float x) { maximumDB.store(x); triggerAsyncUpdate();}
+
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase &uiBase;
@@ -37,7 +38,10 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
         std::atomic<float> maximumDB;
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        static constexpr std::array<float, 5> scaleDBs = {
+            1.f / 6.f, 2.f / 6.f, 0.5, 4.f / 6.f, 5.f / 6.f
+        };
+
 
         void handleAsyncUpdate() override;
     };

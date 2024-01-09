@@ -103,12 +103,13 @@ namespace zlPanel {
 
     void SinglePanel::drawCurve(const std::array<float, zlIIR::frequencies.size()> &dBs, bool reverse, bool startPath) {
         const auto bound = getLocalBounds().toFloat();
+        const auto maxDB = maximumDB.load();
         if (reverse) {
             for (size_t j = zlIIR::frequencies.size(); j > 0; --j) {
                 const auto i = j - 1;
                 const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
                                getWidth();
-                const auto y = (dBs[i] / (-60) + 0.5f) * bound.getHeight();
+                const auto y = (dBs[i] / (-maxDB * 2) + 0.5f) * bound.getHeight();
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                 } else {
@@ -119,7 +120,7 @@ namespace zlPanel {
             for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
                 const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1)
                                * bound.getWidth();
-                const auto y = (dBs[i] / (-60) + 0.5f) * bound.getHeight();
+                const auto y = (dBs[i] / (-maxDB * 2) + 0.5f) * bound.getHeight();
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                 } else {

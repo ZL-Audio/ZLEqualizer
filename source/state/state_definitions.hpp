@@ -111,6 +111,7 @@ namespace zlState {
             "6 dB", "12 dB", "30 dB"
         };
         static constexpr std::array<float, 3> dBs = {6.f, 12.f, 30.f};
+        int static constexpr defaultI = 1;
     };
 
     class active : public BoolParameters<active> {
@@ -127,7 +128,7 @@ namespace zlState {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(selectedBandIdx::get());
+        layout.add(selectedBandIdx::get(), maximumDB::get());
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);

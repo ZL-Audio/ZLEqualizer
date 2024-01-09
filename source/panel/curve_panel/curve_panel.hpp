@@ -16,7 +16,8 @@
 #include "single_panel/single_panel.hpp"
 
 namespace zlPanel {
-    class CurvePanel final : public juce::Component {
+    class CurvePanel final : public juce::Component,
+    private juce::AudioProcessorValueTreeState::Listener{
     public:
         explicit CurvePanel(juce::AudioProcessorValueTreeState &parameters,
                             juce::AudioProcessorValueTreeState &parametersNA,
@@ -29,10 +30,13 @@ namespace zlPanel {
 
         void resized() override;
     private:
+        juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase &uiBase;
         BackgroundPanel backgroundPanel;
         SumPanel sumPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 }
 

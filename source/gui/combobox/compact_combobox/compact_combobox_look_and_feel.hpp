@@ -106,16 +106,17 @@ namespace zlInterface {
             return juce::roundToInt(uiBase->getFontSize() * 0.125f);
         }
 
-        inline void setEditable(bool f) { editable.store(f); }
+        inline void setEditable(const bool f) { editable.store(f); }
 
         inline void setBoxAlpha(const float x) { boxAlpha.store(x); }
+
+        inline void setFontScale(const float x) { fontScale.store(x); }
 
         inline float getBoxAlpha() const { return boxAlpha.load(); }
 
     private:
         std::atomic<bool> editable = true;
-        std::atomic<float> boxAlpha;
-        static constexpr float fontScale = 1.5f;
+        std::atomic<float> boxAlpha, fontScale = 1.5f;
 
         UIBase *uiBase;
     };

@@ -23,10 +23,13 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void setMaximumDB(const float x) { maximumDB.store(x);}
+
     private:
         juce::Path path;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<float> &c;
+        std::atomic<float> maximumDB;
 
         void timerCallback() override;
     };

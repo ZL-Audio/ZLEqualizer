@@ -10,7 +10,15 @@
 #include "background_panel.hpp"
 
 namespace zlPanel {
-    BackgroundPanel::BackgroundPanel(zlInterface::UIBase &base) : uiBase(base) {
+    BackgroundPanel::BackgroundPanel(juce::AudioProcessorValueTreeState &parameters,
+                                 juce::AudioProcessorValueTreeState &parametersNA,
+                                 zlInterface::UIBase &base)
+        : uiBase(base),
+          gridPanel(base),
+    scalePanel(parametersNA, base){
+        juce::ignoreUnused(parameters);
+        addAndMakeVisible(gridPanel);
+        addAndMakeVisible(scalePanel);
         setBufferedToImage(true);
     }
 
@@ -18,31 +26,14 @@ namespace zlPanel {
 
     void BackgroundPanel::paint(juce::Graphics &g) {
         auto bound = getLocalBounds().toFloat();
-        bound = uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
-
-        const auto thickness = uiBase.getFontSize() * 0.1f;
-        for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
-            const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
-            g.setColour(uiBase.getTextLightColor());
-            g.drawLine(x, bound.getY(), x, bound.getBottom(), thickness);
-
-            const auto textBound = juce::Rectangle<float>(x - uiBase.getFontSize() * 3 - uiBase.getFontSize() * 0.125f,
-                                                          bound.getBottom() - uiBase.getFontSize() * 2,
-                                                          uiBase.getFontSize() * 3, uiBase.getFontSize() * 2);
-            g.setColour(uiBase.getTextInactiveColor());
-            g.drawText(backgroundFreqsNames[i], textBound, juce::Justification::bottomRight);
-        }
-
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-        g.setColour(uiBase.getTextLightColor());
-        for (auto &d:backgroundDBs) {
-            const auto y = d * bound.getHeight() + bound.getY();
-            g.drawLine(bound.getX(), y, bound.getRight(), y, thickness);
-        }
+        uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
     }
 
-    //
-    // void BackgroundPanel::resized() {
-    //
-    // }
+    void BackgroundPanel::resized() {
+        auto bound = getLocalBounds().toFloat();
+        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+        const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4);
+        gridPanel.setBounds(bound.toNearestInt());
+        scalePanel.setBounds(scaleBound.toNearestInt());
+    }
 }
