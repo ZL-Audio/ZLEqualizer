@@ -36,12 +36,12 @@ namespace zlInterface {
             juce::Colour(23, 190, 207)
         };
         std::array<juce::Colour, ColorMap2Size> ColorMap2 = {
-            juce::Colour(0, 63, 255),
-            juce::Colour(3, 237, 58),
-            juce::Colour(232, 0, 11),
-            juce::Colour(138, 43, 226),
-            juce::Colour(255, 196, 0),
-            juce::Colour(0, 215, 255),
+            juce::Colour(76, 114, 176),
+            juce::Colour(85, 168, 104),
+            juce::Colour(196, 78, 82),
+            juce::Colour(129, 114, 178),
+            juce::Colour(204, 185, 116),
+            juce::Colour(100, 181, 205),
         };
     };
 

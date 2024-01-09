@@ -29,11 +29,11 @@ namespace zlInterface {
         label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
 
-        labelLookAndFeel.setFontScale(FontHuge);
-        labelLookAndFeel1.setFontScale(FontLarge);
+        labelLookAndFeel.setFontScale(1.75f);
+        labelLookAndFeel1.setFontScale(FontHuge);
         labelLookAndFeel1.setJustification(juce::Justification::centredBottom);
         labelLookAndFeel1.setAlpha(0.f);
-        labelLookAndFeel2.setFontScale(FontLarge);
+        labelLookAndFeel2.setFontScale(FontHuge);
         labelLookAndFeel2.setJustification(juce::Justification::centredTop);
         labelLookAndFeel2.setAlpha(0.f);
 

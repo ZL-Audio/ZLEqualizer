@@ -117,8 +117,8 @@ namespace zlPanel {
             }
         } else {
             for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
-                const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
-                               getWidth();
+                const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1)
+                               * bound.getWidth();
                 const auto y = (dBs[i] / (-60) + 0.5f) * bound.getHeight();
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);

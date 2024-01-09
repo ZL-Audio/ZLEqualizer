@@ -10,25 +10,27 @@
 #ifndef ZLEqualizer_BACKGROUND_PANEL_HPP
 #define ZLEqualizer_BACKGROUND_PANEL_HPP
 
-#include "../../../gui/gui.hpp"
 #include <juce_gui_basics/juce_gui_basics.h>
+
+#include "../../../gui/gui.hpp"
+#include "scale_panel.hpp"
 
 namespace zlPanel {
     class BackgroundPanel final : public juce::Component {
     public:
         /** stl does not support constexpr log/pow,
          * (np.log([20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]) - np.log(10)) / (np.log(20000) - np.log(10)) */
-        static constexpr std::array<float, 9> backgroundFreqs = {
-            0.09119275f, 0.211743f, 0.30293575f, 0.3941285f, 0.51467875f,
-            0.6058715f, 0.69706425f, 0.8176145f, 0.90880725f
+        static constexpr std::array<float, 10> backgroundFreqs = {
+            0.09006341f, 0.20912077f, 0.29918418f, 0.3892476f, 0.50830495f,
+            0.59836837f, 0.68843178f, 0.80748914f, 0.89755255f, 0.98761596f
         };
 
-        inline static const std::array<juce::String, 9> backgroundFreqsNames = {
-            "20", "50", "100", "200", "500", "1k", "2k", "5k", "10k"
+        inline static const std::array<juce::String, 10> backgroundFreqsNames = {
+            "20", "50", "100", "200", "500", "1k", "2k", "5k", "10k", "20k"
         };
 
-        static constexpr std::array<float, 4> backgroundDBs = {
-            0.f, 0.25f, 0.5, 0.75f
+        static constexpr std::array<float, 6> backgroundDBs = {
+            0.f, 1.f / 6.f, 2.f / 6.f, 0.5, 4.f / 6.f, 5.f / 6.f
         };
 
         explicit BackgroundPanel(zlInterface::UIBase &base);

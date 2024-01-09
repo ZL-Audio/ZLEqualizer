@@ -38,15 +38,8 @@ namespace zlInterface {
             } else {
                 g.setColour(uiBase->getTextInactiveColor());
             }
-            g.setFont(uiBase->getFontSize() * FontLarge);
+            g.setFont(uiBase->getFontSize() * fontScale);
             g.drawText(label.getText(), label.getLocalBounds(), juce::Justification::centred);
-        }
-
-        void getIdealPopupMenuItemSize(const juce::String &text, const bool isSeparator, int standardMenuItemHeight,
-                                       int &idealWidth, int &idealHeight) override {
-            juce::ignoreUnused(text, isSeparator, standardMenuItemHeight);
-            idealWidth = static_cast<int>(0);
-            idealHeight = static_cast<int>(uiBase->getFontSize() * FontLarge * 1.2f);
         }
 
         int getMenuWindowFlags() override {
@@ -62,6 +55,7 @@ namespace zlInterface {
     private:
         std::atomic<bool> editable = true;
         std::atomic<float> boxAlpha;
+        static constexpr float fontScale = 1.5f;
 
         UIBase *uiBase;
     };

@@ -28,7 +28,7 @@ namespace zlInterface {
 
         text.setText(getDisplayValue(slider), juce::dontSendNotification);
         textLookAndFeel.setAlpha(0.f);
-        textLookAndFeel.setFontScale(FontLarge);
+        textLookAndFeel.setFontScale(FontHuge);
         text.setLookAndFeel(&textLookAndFeel);
         text.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(text);
@@ -36,7 +36,7 @@ namespace zlInterface {
         // setup label
         label.setText(labelText, juce::dontSendNotification);
         label.setLookAndFeel(&nameLookAndFeel);
-        nameLookAndFeel.setFontScale(FontLarge);
+        nameLookAndFeel.setFontScale(FontHuge);
         label.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(label);
 

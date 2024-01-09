@@ -4,7 +4,12 @@ PluginEditor::PluginEditor(PluginProcessor &p)
     : AudioProcessorEditor(&p), processorRef(p), mainPanel(p) {
     juce::ignoreUnused(processorRef);
 
-    constexpr auto width=800, height=500;
+    auto sourceCodePro = juce::Typeface::createSystemTypefaceFor(
+        BinaryData::MiSansLatinMedium_ttf,
+        BinaryData::MiSansLatinMedium_ttfSize);
+    juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(sourceCodePro);
+
+    constexpr auto width = 800, height = 500;
     setSize(width, height);
     addAndMakeVisible(mainPanel);
 

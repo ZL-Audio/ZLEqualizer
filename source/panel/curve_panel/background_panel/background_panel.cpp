@@ -26,11 +26,11 @@ namespace zlPanel {
             g.setColour(uiBase.getTextLightColor());
             g.drawLine(x, bound.getY(), x, bound.getBottom(), thickness);
 
-            const auto textBound = juce::Rectangle<float>(x + uiBase.getFontSize() * 0.25f,
+            const auto textBound = juce::Rectangle<float>(x - uiBase.getFontSize() * 3 - uiBase.getFontSize() * 0.125f,
                                                           bound.getBottom() - uiBase.getFontSize() * 2,
                                                           uiBase.getFontSize() * 3, uiBase.getFontSize() * 2);
             g.setColour(uiBase.getTextInactiveColor());
-            g.drawText(backgroundFreqsNames[i], textBound, juce::Justification::bottomLeft);
+            g.drawText(backgroundFreqsNames[i], textBound, juce::Justification::bottomRight);
         }
 
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());

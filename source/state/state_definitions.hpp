@@ -103,6 +103,16 @@ namespace zlState {
         int static constexpr defaultI = 0;
     };
 
+    class maximumDB : public ChoiceParameters<maximumDB> {
+    public:
+        auto static constexpr ID = "maximum_db";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "6 dB", "12 dB", "30 dB"
+        };
+        static constexpr std::array<float, 3> dBs = {6.f, 12.f, 30.f};
+    };
+
     class active : public BoolParameters<active> {
     public:
         auto static constexpr ID = "active";
