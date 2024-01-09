@@ -50,16 +50,21 @@ namespace zlDSP {
             if (static_cast<bool>(value)) {
                 if (controllerRef.getSolo() && (idx != controllerRef.getSoloIdx() ||
                                                 isSide != controllerRef.getSoloIsSide())) {
+                    const auto oldIdx = controllerRef.getSoloIdx();
+                    const auto oldSuffix = oldIdx < 10 ? "0" + std::to_string(oldIdx) : std::to_string(oldIdx);
                     auto initID = controllerRef.getSoloIsSide()
-                                      ? sideSolo::ID + parameterID.getLastCharacters(2)
-                                      : solo::ID + parameterID.getLastCharacters(2);
+                                      ? sideSolo::ID + oldSuffix
+                                      : solo::ID + oldSuffix;
                     parameterRef.getParameter(initID)->beginChangeGesture();
                     parameterRef.getParameter(initID)->setValueNotifyingHost(static_cast<float>(false));
                     parameterRef.getParameter(initID)->endChangeGesture();
                 }
                 controllerRef.setSolo(idx, isSide);
             } else {
-                controllerRef.clearSolo();
+                if (idx == controllerRef.getSoloIdx() && isSide == controllerRef.getSoloIsSide()) {
+                    // logger.logMessage(std::to_string(idx) + " " + std::to_string(isSide));
+                    controllerRef.clearSolo();
+                }
             }
         } else {
             if (controllerRef.getSolo()) {
@@ -82,7 +87,6 @@ namespace zlDSP {
             }
         }
     }
-
 
     template
     class SoloAttach<float>;

@@ -13,6 +13,7 @@
 #include "../../dsp/dsp.hpp"
 #include "background_panel/background_panel.hpp"
 #include "sum_panel/sum_panel.hpp"
+#include "sum_panel/solo_panel.hpp"
 #include "single_panel/single_panel.hpp"
 
 namespace zlPanel {
@@ -34,6 +35,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         BackgroundPanel backgroundPanel;
         SumPanel sumPanel;
+        SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;

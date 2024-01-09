@@ -96,7 +96,6 @@ namespace zlDSP {
                     parameterRef.getParameter(initID)->setValueNotifyingHost(dynamicResetValues[i]);
                     parameterRef.getParameter(initID)->endChangeGesture();
                 }
-                controllerRef.clearSolo();
             }
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
         } else if (id == dynamicBypass::ID) {

@@ -16,13 +16,15 @@ namespace zlPanel {
                            zlDSP::Controller<float> &c)
         : parametersNARef(parametersNA), uiBase(base),
           backgroundPanel(parameters, parametersNA, base),
-          sumPanel(base, c) {
+          sumPanel(base, c),
+          soloPanel(parameters, parametersNA, base, c) {
         addAndMakeVisible(backgroundPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i] = std::make_unique<SinglePanel>(i, parameters, parametersNA, base, c);
             addAndMakeVisible(*singlePanels[i]);
         }
         addAndMakeVisible(sumPanel);
+        addAndMakeVisible(soloPanel);
         parameterChanged(zlState::maximumDB::ID, parametersNA.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
     }
@@ -45,6 +47,7 @@ namespace zlPanel {
             singlePanels[i]->setBounds(bound.toNearestInt());
         }
         sumPanel.setBounds(bound.toNearestInt());
+        soloPanel.setBounds(bound.toNearestInt());
     }
 
     void CurvePanel::parameterChanged(const juce::String &parameterID, float newValue) {

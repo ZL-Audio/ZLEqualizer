@@ -10,12 +10,39 @@
 #ifndef ZLEqualizer_SOLO_PANEL_HPP
 #define ZLEqualizer_SOLO_PANEL_HPP
 
+#include "../../../dsp/dsp.hpp"
+#include "../../../gui/gui.hpp"
+
 namespace zlPanel {
+    class SoloPanel final : public juce::Component,
+                            private juce::AudioProcessorValueTreeState::Listener,
+                            private juce::AsyncUpdater {
+    public:
+        SoloPanel(juce::AudioProcessorValueTreeState &parameters,
+                  juce::AudioProcessorValueTreeState &parametersNA,
+                  zlInterface::UIBase &base,
+                  zlDSP::Controller<float> &controller);
 
-class SoloPanel {
+        ~SoloPanel() override;
 
-};
+        void paint(juce::Graphics &g) override;
 
+    private:
+        juce::AudioProcessorValueTreeState &parametersRef;
+        zlInterface::UIBase &uiBase;
+        zlIIR::Filter<float> &soloF;
+        zlDSP::Controller<float> &controllerRef;
+
+        static constexpr std::array changeIDs{
+            zlDSP::fType::ID, zlDSP::freq::ID, zlDSP::Q::ID,
+            zlDSP::sideFreq::ID, zlDSP::sideQ::ID,
+            zlDSP::solo::ID, zlDSP::sideSolo::ID
+        };
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void handleAsyncUpdate() override;
+    };
 } // zlPanel
 
 #endif //ZLEqualizer_SOLO_PANEL_HPP

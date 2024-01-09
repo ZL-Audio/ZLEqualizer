@@ -209,20 +209,6 @@ namespace zlIIR {
 
     coeff33 MartinCoeff::get2TiltShelf(double w0, double g, double q) {
         bool reverse_ab = (g > 1);
-        // if (w0 < 100.0 / 24000 * pi) {
-        //     auto A = std::sqrt(g);
-        //     auto alpha = std::sin(w0) / (2 * q);
-        //     auto cosw0 = std::cos(w0);
-        //     return {
-        //         {
-        //             (A + 1) - (A - 1) * cosw0 + 2 * std::sqrt(A)* alpha,
-        //             2 * ((A - 1) - (A + 1)* cosw0),
-        //             (A + 1) - (A - 1) * cosw0 - 2 * std::sqrt(A)* alpha
-        //         },
-        //         {(A + 1) + (A - 1) * cosw0 + 2 * std::sqrt(A)* alpha,
-        //             -2 * ((A - 1) + (A + 1)* cosw0),
-        //         (A + 1) + (A - 1) * cosw0 - 2 * std::sqrt(A)* alpha}};
-        // }
         if (g > 1) {
             g = 1 / g;
         }

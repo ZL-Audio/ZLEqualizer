@@ -14,7 +14,6 @@
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
-#include "solo_panel.hpp"
 
 namespace zlPanel {
     class SumPanel final : public juce::Component, private juce::Timer {

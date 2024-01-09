@@ -20,6 +20,7 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
 
         const auto thickness = uiBase.getFontSize() * 0.1f;
+        g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
             const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
             g.setColour(uiBase.getTextLightColor());

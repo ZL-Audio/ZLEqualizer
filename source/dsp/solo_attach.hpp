@@ -49,6 +49,8 @@ namespace zlDSP {
         void handleAsyncUpdate() override;
 
         void initDefaultValues();
+
+        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "solo log"};
     };
 }
 
