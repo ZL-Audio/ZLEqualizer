@@ -66,7 +66,7 @@ namespace zlInterface {
 
     void CompactCombobox::mouseExit(const juce::MouseEvent &event) {
         comboBox.mouseExit(event);
-        if (!comboBox.isPopupActive()) {
+        // if (!comboBox.isPopupActive()) {
             animator.cancelAnimation(animationId, false);
             if (animator.getAnimation(animationId) != nullptr)
                 return;
@@ -79,7 +79,7 @@ namespace zlInterface {
                 comboBox.repaint();
             };
             animator.addAnimation(std::move(effect));
-        }
+        // }
     }
 
     void CompactCombobox::mouseMove(const juce::MouseEvent &event) {

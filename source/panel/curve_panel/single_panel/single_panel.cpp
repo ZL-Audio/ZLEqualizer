@@ -55,12 +55,41 @@ namespace zlPanel {
             return;
         }
         path.clear();
-        const auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.1f;
+        const auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
         baseF.updateDBs();
         drawCurve(baseF.getDBs());
         g.setColour(colour);
         g.strokePath(path, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
                                                 juce::PathStrokeType::rounded));
+        if (selected.load()) {
+            switch (baseF.getFilterType()) {
+                case zlIIR::FilterType::peak:
+                case zlIIR::FilterType::lowShelf:
+                case zlIIR::FilterType::highShelf:
+                case zlIIR::FilterType::notch:
+                case zlIIR::FilterType::bandShelf:
+                case zlIIR::FilterType::tiltShelf: {
+                    const auto bound = getLocalBounds().toFloat();
+                    path.lineTo(bound.getRight(), bound.getCentreY());
+                    path.lineTo(bound.getX(), bound.getCentreY());
+                    path.closeSubPath();
+                    break;
+                }
+                case zlIIR::FilterType::lowPass:
+                case zlIIR::FilterType::highPass:
+                case zlIIR::FilterType::bandPass: {
+                    const auto bound = getLocalBounds().toFloat();
+                    path.lineTo(bound.getBottomRight());
+                    path.lineTo(bound.getBottomLeft());
+                    path.closeSubPath();
+                    break;
+                }
+            }
+            g.setColour(colour.withMultipliedAlpha(0.125f));
+            g.fillPath(path);
+            path.clear();
+            drawCurve(baseF.getDBs());
+        }
         if (dynON.load()) {
             targetF.updateDBs();
             drawCurve(targetF.getDBs(), true, false);
