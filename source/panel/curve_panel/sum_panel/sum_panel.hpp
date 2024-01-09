@@ -10,9 +10,11 @@
 #ifndef ZLEqualizer_SUM_PANEL_HPP
 #define ZLEqualizer_SUM_PANEL_HPP
 
+#include <juce_gui_basics/juce_gui_basics.h>
+
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
-#include <juce_gui_basics/juce_gui_basics.h>
+#include "solo_panel.hpp"
 
 namespace zlPanel {
     class SumPanel final : public juce::Component, private juce::Timer {

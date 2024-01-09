@@ -15,6 +15,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "../../../state/state_definitions.hpp"
+#include "side_panel.hpp"
 
 namespace zlPanel {
     class SinglePanel final : public juce::Component,
@@ -31,7 +32,12 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void setMaximumDB(const float x) { maximumDB.store(x); triggerAsyncUpdate();}
+        void resized() override;
+
+        void setMaximumDB(const float x) {
+            maximumDB.store(x);
+            triggerAsyncUpdate();
+        }
 
     private:
         juce::Path path;
@@ -49,8 +55,7 @@ namespace zlPanel {
             zlDSP::fType::ID, zlDSP::slope::ID,
             zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID,
             zlDSP::lrType::ID, zlDSP::dynamicON::ID,
-            zlDSP::targetGain::ID, zlDSP::targetQ::ID,
-            zlDSP::sideFreq::ID, zlDSP::sideQ::ID
+            zlDSP::targetGain::ID, zlDSP::targetQ::ID
         };
 
         juce::Colour colour;
@@ -59,7 +64,10 @@ namespace zlPanel {
 
         void handleAsyncUpdate() override;
 
-        void drawCurve(const std::array<float, zlIIR::frequencies.size()> &dBs, bool reverse = false, bool startPath=true);
+        void drawCurve(const std::array<float, zlIIR::frequencies.size()> &dBs, bool reverse = false,
+                       bool startPath = true);
+
+        SidePanel sidePanel;
     };
 } // zlPanel
 

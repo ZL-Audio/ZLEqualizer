@@ -12,13 +12,15 @@
 namespace zlPanel {
     SinglePanel::SinglePanel(const size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base,
+                             juce::AudioProcessorValueTreeState &parametersNA,
+                             zlInterface::UIBase &base,
                              zlDSP::Controller<float> &controller)
         : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), controllerRef(controller),
           filter(controller.getFilter(idx)),
           baseF(controller.getFilter(idx).getBaseFilter()),
-          targetF(controller.getFilter(idx).getTargetFilter()) {
+          targetF(controller.getFilter(idx).getTargetFilter()),
+          sidePanel(bandIdx, parameters, parametersNA, base, controller) {
         path.preallocateSpace(zlIIR::frequencies.size() * 6);
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
@@ -37,6 +39,7 @@ namespace zlPanel {
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
 
         setBufferedToImage(true);
+        addAndMakeVisible(sidePanel);
         colour = uiBase.getColorMap1(idx);
     }
 
@@ -94,11 +97,17 @@ namespace zlPanel {
             targetF.updateDBs();
             drawCurve(targetF.getDBs(), true, false);
             path.closeSubPath();
-            g.setColour(colour.withMultipliedAlpha(0.25f));
-            // g.strokePath(path, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
-            //                                         juce::PathStrokeType::rounded));
+            if (selected.load()) {
+                g.setColour(colour.withMultipliedAlpha(0.25f));
+            } else {
+                g.setColour(colour.withMultipliedAlpha(0.125f));
+            }
             g.fillPath(path);
         }
+    }
+
+    void SinglePanel::resized() {
+        sidePanel.setBounds(getLocalBounds());
     }
 
     void SinglePanel::drawCurve(const std::array<float, zlIIR::frequencies.size()> &dBs, bool reverse, bool startPath) {
@@ -136,7 +145,6 @@ namespace zlPanel {
             selected.store(static_cast<size_t>(newValue) == idx);
         } else {
             const auto id = parameterID.dropLastCharacters(2);
-            // const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
             if (id == zlState::active::ID) {
                 actived.store(static_cast<bool>(newValue));
             } else if (id == zlDSP::dynamicON::ID) {

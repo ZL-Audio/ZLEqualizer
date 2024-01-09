@@ -40,7 +40,7 @@ namespace zlInterface {
             juce::Colour(85, 168, 104),
             juce::Colour(196, 78, 82),
             juce::Colour(129, 114, 178),
-            juce::Colour(204, 185, 116),
+            juce::Colour(255, 196, 0),
             juce::Colour(100, 181, 205),
         };
     };
