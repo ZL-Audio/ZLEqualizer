@@ -40,12 +40,14 @@ namespace zlPanel {
             c.updateDBs(lrTypes[j]);
             const auto dBs = c.getDBs();
 
-            const auto bound = getLocalBounds().toFloat();
-            const auto maxdB = maximumDB.load();
+            auto bound = getLocalBounds().toFloat();
+            bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+
+            const auto maxDB = maximumDB.load();
             for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
                 const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
                                getWidth();
-                const auto y = (dBs[i] / (-maxdB * 2) + 0.5f) * bound.getHeight();
+                const auto y = -dBs[i] / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
                 if (i == 0) {
                     path.startNewSubPath(x, y);
                 } else {

@@ -52,11 +52,14 @@ namespace zlInterface {
         }
 
         inline void setEditable(const bool x) {
+            editable.store(x);
             labelLookAndFeel.setEditable(x);
             labelLookAndFeel1.setEditable(x);
             labelLookAndFeel2.setEditable(x);
             setInterceptsMouseClicks(x, false);
         }
+
+        inline bool getEditable() const { return editable.load(); }
 
     private:
         UIBase &uiBase;

@@ -40,7 +40,7 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
         bound.removeFromRight(uiBase.getFontSize() * 4);
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        // bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound.toNearestInt());
         }

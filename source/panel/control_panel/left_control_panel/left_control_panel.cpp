@@ -162,7 +162,7 @@ namespace zlPanel {
             }
         } else if (id == zlDSP::dynamicON::ID) {
             const auto f = static_cast<bool>(newValue);
-            gainC.setShowSlider2(f);
+            gainC.setShowSlider2(gainC.getEditable() && f);
             qC.setShowSlider2(f);
             if (idx == bandIdx.load()) {
                 triggerAsyncUpdate();
