@@ -226,7 +226,7 @@ namespace zlDSP {
             }
             case zlIIR::FilterType::highPass:
             case zlIIR::FilterType::highShelf: {
-                auto soloFreq = static_cast<FloatType>(std::sqrt(20000) * std::sqrt(baseFilter.getFreq()));
+                auto soloFreq = static_cast<FloatType>(std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(baseFilter.getFreq()));
                 auto scale = soloFreq / baseFilter.getFreq();
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
                 auto bw = std::max(std::log2(scale) * 2, FloatType(0.01));

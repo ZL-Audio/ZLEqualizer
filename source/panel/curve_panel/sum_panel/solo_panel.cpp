@@ -55,8 +55,17 @@ namespace zlPanel {
         const auto width = bound.getWidth();
         const auto leftArea = bound.removeFromLeft(x1);
         const auto rightArea = bound.removeFromRight(width - x2);
+
+        juce::Path mask;
+        bound = getLocalBounds().toFloat();
+        mask.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
+                                 uiBase.getFontSize() * 0.5f, uiBase.getFontSize() * 0.5f,
+                                 true, false, true, false);
+        g.saveState();
+        g.reduceClipRegion(mask);
         g.fillRect(leftArea);
         g.fillRect(rightArea);
+        g.restoreState();
     }
 
 
@@ -68,6 +77,4 @@ namespace zlPanel {
     void SoloPanel::handleAsyncUpdate() {
         repaint();
     }
-
-
 } // zlPanel
