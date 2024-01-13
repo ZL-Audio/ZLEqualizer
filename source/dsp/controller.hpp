@@ -17,6 +17,7 @@
 #include "audio_buffer/audio_buffer.hpp"
 #include "dynamic_filter/dynamic_filter.hpp"
 #include "splitter/splitter.hpp"
+#include "fft_analyzer/fft_analyzer.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -65,6 +66,8 @@ namespace zlDSP {
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
         juce::ReadWriteLock paraUpdateLock;
 
+        zlFFT::FFTAnalyzer<FloatType> preFFT, postFFT;
+
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
@@ -74,7 +77,7 @@ namespace zlDSP {
 
         zlIIR::Filter<FloatType> soloFilter;
         std::atomic<size_t> soloIdx;
-        std::atomic<bool> useSolo=false, soloSide=false;
+        std::atomic<bool> useSolo = false, soloSide = false;
 
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
@@ -83,9 +86,9 @@ namespace zlDSP {
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
 
-        inline void processSolo();
+        void processSolo();
 
-        inline void processDynamic();
+        void processDynamic();
     };
 }
 

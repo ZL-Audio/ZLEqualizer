@@ -48,6 +48,8 @@ JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
 [fontaudio](https://github.com/fefanto/fontaudio) by [fefanto](https://github.com/fefanto)
 
+[Frequalizer](https://github.com/ffAudio/Frequalizer) by [ffAudio](https://github.com/ffAudio)
+
 Font from CMU Open Sans, Font Awesome and MiSans.
 
 ## References

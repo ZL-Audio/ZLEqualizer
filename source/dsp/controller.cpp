@@ -11,7 +11,8 @@
 
 namespace zlDSP {
     template<typename FloatType>
-    Controller<FloatType>::Controller(juce::AudioProcessor &processor) : processorRef(processor) {
+    Controller<FloatType>::Controller(juce::AudioProcessor &processor)
+        : processorRef(processor), preFFT("pre_fft"), postFFT("post_fft") {
     }
 
     template<typename FloatType>
@@ -24,6 +25,9 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+        preFFT.prepare(spec);
+        postFFT.prepare(spec);
+
         subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
         latencyInSamples.store(static_cast<int>(subBuffer.getLatencySamples()));
@@ -44,6 +48,7 @@ namespace zlDSP {
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         juce::AudioBuffer<FloatType> mainBuffer(processorRef.getBusBuffer(buffer, true, 0));
         juce::AudioBuffer<FloatType> sideBuffer(processorRef.getBusBuffer(buffer, true, 1));
+        preFFT.process(mainBuffer);
         // if no side chain, copy the main buffer into the side buffer
         if (!sideChain.load()) {
             sideBuffer.makeCopyOf(mainBuffer, true);
@@ -63,6 +68,7 @@ namespace zlDSP {
         }
         subBuffer.popBlock(block);
         // ---------------- end sub buffer
+        postFFT.process(mainBuffer);
     }
 
     template<typename FloatType>
@@ -226,7 +232,8 @@ namespace zlDSP {
             }
             case zlIIR::FilterType::highPass:
             case zlIIR::FilterType::highShelf: {
-                auto soloFreq = static_cast<FloatType>(std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(baseFilter.getFreq()));
+                auto soloFreq = static_cast<FloatType>(std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(
+                                                           baseFilter.getFreq()));
                 auto scale = soloFreq / baseFilter.getFreq();
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
                 auto bw = std::max(std::log2(scale) * 2, FloatType(0.01));
@@ -260,13 +267,13 @@ namespace zlDSP {
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         useSolo.store(true);
         if (filterLRs[idx].load() == lrType::stereo) {
-            if (soloFilter.getNumChannels()!= 2) {
+            if (soloFilter.getNumChannels() != 2) {
                 soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
             } else {
                 soloFilter.updateParas();
             }
         } else {
-            if (soloFilter.getNumChannels()!= 1) {
+            if (soloFilter.getNumChannels() != 1) {
                 soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
             } else {
                 soloFilter.updateParas();
