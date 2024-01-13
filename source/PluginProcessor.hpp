@@ -56,12 +56,13 @@ public:
 
     void setStateInformation(const void *data, int sizeInBytes) override;
 
-    inline zlDSP::Controller<float>& getController() {return controller;}
+    inline zlDSP::Controller<double>& getController() {return controller;}
 
 private:
-    zlDSP::Controller<float> controller;
-    zlDSP::FiltersAttach<float> filtersAttach;
-    zlDSP::SoloAttach<float> soloAttach;
+    zlDSP::Controller<double> controller;
+    zlDSP::FiltersAttach<double> filtersAttach;
+    zlDSP::SoloAttach<double> soloAttach;
+    juce::AudioBuffer<double> doubleBuffer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

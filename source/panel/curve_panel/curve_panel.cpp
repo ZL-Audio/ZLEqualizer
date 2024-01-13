@@ -13,7 +13,7 @@ namespace zlPanel {
     CurvePanel::CurvePanel(juce::AudioProcessorValueTreeState &parameters,
                            juce::AudioProcessorValueTreeState &parametersNA,
                            zlInterface::UIBase &base,
-                           zlDSP::Controller<float> &c)
+                           zlDSP::Controller<double> &c)
         : parametersNARef(parametersNA), uiBase(base),
           backgroundPanel(parameters, parametersNA, base),
           sumPanel(base, c),

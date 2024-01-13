@@ -10,7 +10,7 @@
 #include "sum_panel.hpp"
 
 namespace zlPanel {
-    SumPanel::SumPanel(zlInterface::UIBase &base, zlDSP::Controller<float> &controller)
+    SumPanel::SumPanel(zlInterface::UIBase &base, zlDSP::Controller<double> &controller)
         : uiBase(base), c(controller) {
         path.preallocateSpace(zlIIR::frequencies.size() * 3);
         startTimerHz(60);
@@ -47,7 +47,7 @@ namespace zlPanel {
             for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
                 const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
                                getWidth();
-                const auto y = -dBs[i] / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
+                const auto y = static_cast<float>(-dBs[i]) / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
                 if (i == 0) {
                     path.startNewSubPath(x, y);
                 } else {

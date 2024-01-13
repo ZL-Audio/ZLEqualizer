@@ -90,6 +90,7 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
         sampleRate, static_cast<juce::uint32>(samplesPerBlock),
         channels
     };
+    doubleBuffer.setSize(4, samplesPerBlock);
     controller.prepare(spec);
 }
 
@@ -125,8 +126,9 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                    juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
-
-    controller.process(buffer);
+    doubleBuffer.makeCopyOf(buffer, true);
+    controller.process(doubleBuffer);
+    buffer.makeCopyOf(doubleBuffer, true);
 }
 
 //==============================================================================

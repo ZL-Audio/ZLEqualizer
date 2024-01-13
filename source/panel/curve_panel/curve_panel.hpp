@@ -23,7 +23,7 @@ namespace zlPanel {
         explicit CurvePanel(juce::AudioProcessorValueTreeState &parameters,
                             juce::AudioProcessorValueTreeState &parametersNA,
                             zlInterface::UIBase &base,
-                            zlDSP::Controller<float> &c);
+                            zlDSP::Controller<double> &c);
 
         ~CurvePanel() override;
 

@@ -26,7 +26,7 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
                              zlInterface::UIBase &base,
-                             zlDSP::Controller<float> &controller);
+                             zlDSP::Controller<double> &controller);
 
         ~SinglePanel() override;
 
@@ -46,9 +46,9 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         std::atomic<bool> dynON, selected, actived;
-        zlDSP::Controller<float> &controllerRef;
-        zlDynamicFilter::IIRFilter<float> &filter;
-        zlIIR::Filter<float> &baseF, &targetF;
+        zlDSP::Controller<double> &controllerRef;
+        zlDynamicFilter::IIRFilter<double> &filter;
+        zlIIR::Filter<double> &baseF, &targetF;
         std::atomic<float> maximumDB;
 
         static constexpr std::array changeIDs{
@@ -64,7 +64,7 @@ namespace zlPanel {
 
         void handleAsyncUpdate() override;
 
-        void drawCurve(const std::array<float, zlIIR::frequencies.size()> &dBs, bool reverse = false,
+        void drawCurve(const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse = false,
                        bool startPath = true);
 
         SidePanel sidePanel;

@@ -18,7 +18,7 @@
 namespace zlPanel {
     class SumPanel final : public juce::Component, private juce::Timer {
     public:
-        explicit SumPanel(zlInterface::UIBase &base, zlDSP::Controller<float> &controller);
+        explicit SumPanel(zlInterface::UIBase &base, zlDSP::Controller<double> &controller);
 
         ~SumPanel() override;
 
@@ -29,7 +29,7 @@ namespace zlPanel {
     private:
         juce::Path path;
         zlInterface::UIBase &uiBase;
-        zlDSP::Controller<float> &c;
+        zlDSP::Controller<double> &c;
         std::atomic<float> maximumDB;
 
         void timerCallback() override;

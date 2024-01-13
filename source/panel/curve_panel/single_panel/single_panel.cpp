@@ -14,7 +14,7 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
                              zlInterface::UIBase &base,
-                             zlDSP::Controller<float> &controller)
+                             zlDSP::Controller<double> &controller)
         : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), controllerRef(controller),
           filter(controller.getFilter(idx)),
@@ -110,7 +110,7 @@ namespace zlPanel {
         sidePanel.setBounds(getLocalBounds());
     }
 
-    void SinglePanel::drawCurve(const std::array<float, zlIIR::frequencies.size()> &dBs, bool reverse, bool startPath) {
+    void SinglePanel::drawCurve(const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse, bool startPath) {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         const auto maxDB = maximumDB.load();
@@ -119,7 +119,7 @@ namespace zlPanel {
                 const auto i = j - 1;
                 const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
                                getWidth();
-                const auto y = -dBs[i] / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
+                const auto y = static_cast<float>(-dBs[i]) / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                 } else {
@@ -130,7 +130,7 @@ namespace zlPanel {
             for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
                 const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1)
                                * bound.getWidth();
-                const auto y = -dBs[i] / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
+                const auto y = static_cast<float>(-dBs[i]) / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                 } else {

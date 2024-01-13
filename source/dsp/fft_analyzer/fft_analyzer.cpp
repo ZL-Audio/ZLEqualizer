@@ -90,7 +90,7 @@ namespace zlFFT {
         path.clear();
         juce::ScopedLock lock(ampUpdatedLock);
         path.startNewSubPath(indexToX(0, bounds), binToY(smoothedDBs[0].getNextValue(), bounds));
-        for (size_t i = 1; i < smoothedDBs.size(); ++i) {
+        for (size_t i = 1; i < static_cast<size_t>(fft->getSize()); ++i) {
             path.lineTo(indexToX(i, bounds), binToY(smoothedDBs[i].getNextValue(), bounds));
         }
     }

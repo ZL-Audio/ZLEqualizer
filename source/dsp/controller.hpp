@@ -61,6 +61,10 @@ namespace zlDSP {
 
         std::tuple<FloatType, FloatType> getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter);
 
+        zlFFT::FFTAnalyzer<FloatType> &getPreFFT() {return preFFT;}
+
+        zlFFT::FFTAnalyzer<FloatType> &getPostFFT() {return postFFT;}
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;

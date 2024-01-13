@@ -14,7 +14,7 @@
 namespace zlPanel {
     SoloPanel::SoloPanel(juce::AudioProcessorValueTreeState &parameters,
                          juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base,
-                         zlDSP::Controller<float> &controller)
+                         zlDSP::Controller<double> &controller)
         : parametersRef(parameters), uiBase(base),
           soloF(controller.getSoloFilter()),
           controllerRef(controller) {
@@ -53,8 +53,8 @@ namespace zlPanel {
 
         g.setColour(uiBase.getTextInactiveColor());
         const auto width = bound.getWidth();
-        const auto leftArea = bound.removeFromLeft(x1);
-        const auto rightArea = bound.removeFromRight(width - x2);
+        const auto leftArea = bound.removeFromLeft(static_cast<float>(x1));
+        const auto rightArea = bound.removeFromRight(width - static_cast<float>(x2));
 
         juce::Path mask;
         bound = getLocalBounds().toFloat();

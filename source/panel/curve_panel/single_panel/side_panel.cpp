@@ -12,7 +12,7 @@
 namespace zlPanel {
     SidePanel::SidePanel(size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
                          juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base,
-                         zlDSP::Controller<float> &controller)
+                         zlDSP::Controller<double> &controller)
         : idx(bandIdx),
           parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
@@ -60,7 +60,7 @@ namespace zlPanel {
 
         const auto thickness = uiBase.getFontSize() * 0.15f;
         g.setColour(colour);
-        g.drawLine(x1, bound.getBottom(), x2, bound.getBottom(), thickness);
+        g.drawLine(static_cast<float>(x1), bound.getBottom(), static_cast<float>(x2), bound.getBottom(), thickness);
     }
 
     void SidePanel::parameterChanged(const juce::String &parameterID, float newValue) {

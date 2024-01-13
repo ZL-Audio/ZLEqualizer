@@ -21,7 +21,7 @@ namespace zlPanel {
         SoloPanel(juce::AudioProcessorValueTreeState &parameters,
                   juce::AudioProcessorValueTreeState &parametersNA,
                   zlInterface::UIBase &base,
-                  zlDSP::Controller<float> &controller);
+                  zlDSP::Controller<double> &controller);
 
         ~SoloPanel() override;
 
@@ -30,8 +30,8 @@ namespace zlPanel {
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
-        zlIIR::Filter<float> &soloF;
-        zlDSP::Controller<float> &controllerRef;
+        zlIIR::Filter<double> &soloF;
+        zlDSP::Controller<double> &controllerRef;
 
         static constexpr std::array changeIDs{
             zlDSP::fType::ID, zlDSP::freq::ID, zlDSP::Q::ID,

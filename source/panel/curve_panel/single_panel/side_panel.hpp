@@ -25,7 +25,7 @@ namespace zlPanel {
                            juce::AudioProcessorValueTreeState &parameters,
                            juce::AudioProcessorValueTreeState &parametersNA,
                            zlInterface::UIBase &base,
-                           zlDSP::Controller<float> &controller);
+                           zlDSP::Controller<double> &controller);
 
         ~SidePanel() override;
 
@@ -35,7 +35,7 @@ namespace zlPanel {
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        zlIIR::Filter<float> &sideF;
+        zlIIR::Filter<double> &sideF;
         std::atomic<bool> dynON, selected, actived;
 
         static constexpr std::array changeIDs{
