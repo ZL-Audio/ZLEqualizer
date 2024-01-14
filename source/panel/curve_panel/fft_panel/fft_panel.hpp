@@ -7,31 +7,27 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_SUM_PANEL_HPP
-#define ZLEqualizer_SUM_PANEL_HPP
-
-#include <juce_gui_basics/juce_gui_basics.h>
+#ifndef ZLEqualizer_FFT_PANEL_HPP
+#define ZLEqualizer_FFT_PANEL_HPP
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 
 namespace zlPanel {
-    class SumPanel final : public juce::Component {
+    class FFTPanel final : public juce::Component {
     public:
-        explicit SumPanel(zlInterface::UIBase &base, zlDSP::Controller<double> &controller);
+        explicit FFTPanel(zlFFT::PrePostFFTAnalyzer<double> &analyzer,
+                          zlInterface::UIBase &base);
 
-        ~SumPanel() override;
+        ~FFTPanel() override;
 
         void paint(juce::Graphics &g) override;
 
-        void setMaximumDB(const float x) { maximumDB.store(x);}
-
     private:
-        juce::Path path;
+        zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
         zlInterface::UIBase &uiBase;
-        zlDSP::Controller<double> &c;
-        std::atomic<float> maximumDB;
+        juce::Path path;
     };
 } // zlPanel
 
-#endif //ZLEqualizer_SUM_PANEL_HPP
+#endif //ZLEqualizer_FFT_PANEL_HPP

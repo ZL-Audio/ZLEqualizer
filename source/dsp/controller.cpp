@@ -12,7 +12,7 @@
 namespace zlDSP {
     template<typename FloatType>
     Controller<FloatType>::Controller(juce::AudioProcessor &processor)
-        : processorRef(processor), preFFT("pre_fft"), postFFT("post_fft") {
+        : processorRef(processor) {
     }
 
     template<typename FloatType>
@@ -25,12 +25,12 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        preFFT.prepare(spec);
-        postFFT.prepare(spec);
+        fftAnalyzezr.prepare(spec);
 
         subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
         latencyInSamples.store(static_cast<int>(subBuffer.getLatencySamples()));
+        fftAnalyzezr.setPreDelay(subBuffer.getLatencySamples());
         triggerAsyncUpdate();
         juce::dsp::ProcessSpec subSpec{spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2};
         for (auto &f: filters) {
@@ -47,8 +47,9 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         juce::AudioBuffer<FloatType> mainBuffer(processorRef.getBusBuffer(buffer, true, 0));
+        fftAnalyzezr.pushPreFFTBuffer(mainBuffer);
         juce::AudioBuffer<FloatType> sideBuffer(processorRef.getBusBuffer(buffer, true, 1));
-        preFFT.process(mainBuffer);
+        // preFFT.process(mainBuffer);
         // if no side chain, copy the main buffer into the side buffer
         if (!sideChain.load()) {
             sideBuffer.makeCopyOf(mainBuffer, true);
@@ -68,7 +69,7 @@ namespace zlDSP {
         }
         subBuffer.popBlock(block);
         // ---------------- end sub buffer
-        postFFT.process(mainBuffer);
+        fftAnalyzezr.pushPostFFTBuffer(mainBuffer);
     }
 
     template<typename FloatType>
@@ -262,6 +263,7 @@ namespace zlDSP {
         } else {
             std::tie(freq, q) = getSoloFilterParas(filters[idx].getSideFilter());
         }
+        soloFilter.setOrder(4, false);
         soloFilter.setFreq(freq, false);
         soloFilter.setQ(q, false);
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);

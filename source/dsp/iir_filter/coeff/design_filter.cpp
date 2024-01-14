@@ -136,6 +136,7 @@ namespace zlIIR {
 
         std::vector<coeff33> coeff;
         coeff.reserve(n / 2);
+        _q = std::max(_q, 0.025);
         auto singleCoeff = MartinCoeff::get2BandPass(w0, _q);
         for (size_t i = 0; i < n / 2; ++i) {
             coeff.push_back(singleCoeff);

@@ -39,12 +39,14 @@ namespace zlPanel {
         std::atomic<size_t> bandIdx;
 
         constexpr static std::array resetIDs{
+            zlDSP::solo::ID,
             zlDSP::dynamicON::ID, zlDSP::threshold::ID, zlDSP::kneeW::ID, zlDSP::attack::ID, zlDSP::release::ID,
             zlDSP::bypass::ID, zlDSP::fType::ID, zlDSP::slope::ID, zlDSP::freq::ID,
             zlDSP::gain::ID, zlDSP::Q::ID, zlDSP::lrType::ID
         };
 
         inline const static std::array resetDefaultVs{
+            zlDSP::solo::convertTo01(zlDSP::solo::defaultV),
             zlDSP::dynamicON::convertTo01(zlDSP::dynamicON::defaultV),
             zlDSP::threshold::convertTo01(zlDSP::threshold::defaultV),
             zlDSP::kneeW::convertTo01(zlDSP::kneeW::defaultV),
@@ -56,7 +58,7 @@ namespace zlPanel {
             zlDSP::freq::convertTo01(zlDSP::freq::defaultV),
             zlDSP::gain::convertTo01(zlDSP::gain::defaultV),
             zlDSP::Q::convertTo01(zlDSP::Q::defaultV),
-            zlDSP::lrType::convertTo01(zlDSP::lrType::defaultI)
+            zlDSP::lrType::convertTo01(zlDSP::lrType::defaultI),
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;

@@ -16,9 +16,11 @@ namespace zlPanel {
                            zlDSP::Controller<double> &c)
         : parametersNARef(parametersNA), uiBase(base),
           backgroundPanel(parameters, parametersNA, base),
+          fftPanel(c.getAnalyzer(), base),
           sumPanel(base, c),
           soloPanel(parameters, parametersNA, base, c) {
         addAndMakeVisible(backgroundPanel);
+        addAndMakeVisible(fftPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i] = std::make_unique<SinglePanel>(i, parameters, parametersNA, base, c);
             addAndMakeVisible(*singlePanels[i]);
@@ -27,9 +29,12 @@ namespace zlPanel {
         addAndMakeVisible(soloPanel);
         parameterChanged(zlState::maximumDB::ID, parametersNA.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
+
+        startTimerHz(60);
     }
 
     CurvePanel::~CurvePanel() {
+        stopTimer();
         parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
     }
 
@@ -43,6 +48,7 @@ namespace zlPanel {
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
         bound.removeFromRight(uiBase.getFontSize() * 4);
         // bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        fftPanel.setBounds(bound.toNearestInt());
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound.toNearestInt());
         }
@@ -53,12 +59,17 @@ namespace zlPanel {
     void CurvePanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::maximumDB::ID) {
             const auto idx = static_cast<size_t>(newValue);
-            auto maxDB = zlState::maximumDB::dBs[idx];
+            const auto maxDB = zlState::maximumDB::dBs[idx];
             backgroundPanel.setMaximumDB(maxDB);
             sumPanel.setMaximumDB(maxDB);
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 singlePanels[i]->setMaximumDB(maxDB);
             }
         }
+    }
+
+    void CurvePanel::timerCallback() {
+        // sumPanel.repaint();
+        fftPanel.repaint();
     }
 }

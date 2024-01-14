@@ -12,13 +12,15 @@
 
 #include "../../dsp/dsp.hpp"
 #include "background_panel/background_panel.hpp"
+#include "fft_panel/fft_panel.hpp"
 #include "sum_panel/sum_panel.hpp"
 #include "sum_panel/solo_panel.hpp"
 #include "single_panel/single_panel.hpp"
 
 namespace zlPanel {
     class CurvePanel final : public juce::Component,
-    private juce::AudioProcessorValueTreeState::Listener{
+                             private juce::AudioProcessorValueTreeState::Listener,
+                             private juce::Timer {
     public:
         explicit CurvePanel(juce::AudioProcessorValueTreeState &parameters,
                             juce::AudioProcessorValueTreeState &parametersNA,
@@ -30,15 +32,19 @@ namespace zlPanel {
         void paint(juce::Graphics &g) override;
 
         void resized() override;
+
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase &uiBase;
         BackgroundPanel backgroundPanel;
+        FFTPanel fftPanel;
         SumPanel sumPanel;
         SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void timerCallback() override;
     };
 }
 

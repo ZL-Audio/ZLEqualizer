@@ -13,12 +13,10 @@ namespace zlPanel {
     SumPanel::SumPanel(zlInterface::UIBase &base, zlDSP::Controller<double> &controller)
         : uiBase(base), c(controller) {
         path.preallocateSpace(zlIIR::frequencies.size() * 3);
-        startTimerHz(60);
     }
 
     SumPanel::~SumPanel() {
         path.clear();
-        stopTimer();
     }
 
     void SumPanel::paint(juce::Graphics &g) {
@@ -59,9 +57,5 @@ namespace zlPanel {
             g.strokePath(path, juce::PathStrokeType(uiBase.getFontSize() * 0.2f,
                                                     juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
-    }
-
-    void SumPanel::timerCallback() {
-        repaint();
     }
 } // zlPanel

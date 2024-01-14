@@ -61,16 +61,14 @@ namespace zlDSP {
 
         std::tuple<FloatType, FloatType> getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter);
 
-        zlFFT::FFTAnalyzer<FloatType> &getPreFFT() {return preFFT;}
-
-        zlFFT::FFTAnalyzer<FloatType> &getPostFFT() {return postFFT;}
+        zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzezr; }
 
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
         juce::ReadWriteLock paraUpdateLock;
 
-        zlFFT::FFTAnalyzer<FloatType> preFFT, postFFT;
+        zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzezr;
 
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;

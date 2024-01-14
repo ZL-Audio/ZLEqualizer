@@ -23,8 +23,9 @@ namespace zlDynamicFilter {
         mFilter.prepare(spec);
         bFilter.prepare(spec);
         tFilter.prepare(spec);
+        sFilter.setOrder(2, false);
+        sFilter.setFilterType(zlIIR::FilterType::bandPass, false);
         sFilter.prepare(spec);
-        sFilter.setFilterType(zlIIR::FilterType::bandPass);
         compressor.prepare(spec);
         compressor.getComputer().setRatio(100);
         sBufferCopy.setSize(static_cast<int>(spec.numChannels),

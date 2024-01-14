@@ -36,7 +36,7 @@ namespace zlPanel {
             g.setColour(uiBase.getTextColor());
             g.drawText(juce::String(leftDB), lTextBound, juce::Justification::centredRight);
             const auto rTextBound = juce::Rectangle<float>(bound.getCentreX(), y, bound.getWidth() * .4f, uiBase.getFontSize() * 1.5f);
-            const auto reftDB = static_cast<int>(-60.f * d);
+            const auto reftDB = static_cast<int>(maximumFFTDB.load() * d);
             g.setColour(uiBase.getTextInactiveColor());
             g.drawText(juce::String(reftDB), rTextBound, juce::Justification::centredRight);
         }

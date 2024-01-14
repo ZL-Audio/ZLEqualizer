@@ -44,7 +44,6 @@ namespace zlPanel {
     }
 
     void ResetComponent::parameterChanged(const juce::String &parameterID, float newValue) {
-        // const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         if (!static_cast<bool>(newValue)) {
             const auto activeID = zlState::active::ID + parameterID.getLastCharacters(2);
             parametersNARef.getParameter(activeID)->beginChangeGesture();
