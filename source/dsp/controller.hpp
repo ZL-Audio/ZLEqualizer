@@ -63,6 +63,8 @@ namespace zlDSP {
 
         zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzezr; }
 
+        inline void setSideChain(const bool x) { sideChain.store(x); }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;

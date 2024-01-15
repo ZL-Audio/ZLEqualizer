@@ -28,8 +28,8 @@ namespace zlInterface {
             bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.5f, {});
             bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f, {.flip = true});
             if (button.getToggleState()) {
-                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
-                uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.375f, {
+                const auto innerBound = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
+                uiBase.drawInnerShadowEllipse(g, innerBound, uiBase.getFontSize() * 0.375f, {
                                                   .darkShadowColor = uiBase.getDarkShadowColor().
                                                   withMultipliedAlpha(buttonDepth),
                                                   .brightShadowColor = uiBase.getBrightShadowColor().
@@ -49,14 +49,14 @@ namespace zlInterface {
                     g.setFont(uiBase.getFontSize() * FontLarge);
                     g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
-                    const auto drawBonud = button.getLocalBounds().toFloat().withSizeKeepingCentre(
-                        uiBase.getFontSize() * FontLarge, uiBase.getFontSize() * FontLarge);
+                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) - uiBase.getFontSize();
+                    const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
                     // g.setColour(uiBase.getTextInactiveColor());
                     // g.fillRect(drawBonud);
                     if (button.getToggleState()) {
-                        drawable->drawWithin(g, drawBonud, juce::RectanglePlacement::Flags::centred, 1.f);
+                        drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
                     } else {
-                        drawable->drawWithin(g, drawBonud, juce::RectanglePlacement::Flags::centred, .5f);
+                        drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
                     }
                 }
             }

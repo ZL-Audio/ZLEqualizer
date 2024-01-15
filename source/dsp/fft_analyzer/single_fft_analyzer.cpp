@@ -43,7 +43,7 @@ namespace zlFFT {
         smoothedDBs.resize(fftSize.load() / 2 + 2);
         smoothedDBs.front() = minDB;
         smoothedDBs.back() = minDB;
-        
+
         deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
     }
 

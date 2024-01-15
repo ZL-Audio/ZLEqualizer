@@ -62,6 +62,7 @@ private:
     zlDSP::Controller<double> controller;
     zlDSP::FiltersAttach<double> filtersAttach;
     zlDSP::SoloAttach<double> soloAttach;
+    zlDSP::ChoreAttach<double> choreAttach;
     juce::AudioBuffer<double> doubleBuffer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)

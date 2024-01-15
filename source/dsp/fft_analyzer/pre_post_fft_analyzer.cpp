@@ -15,6 +15,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+
         preFFT.prepare(spec);
         postFFT.prepare(spec);
         preBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
@@ -30,6 +31,7 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
         if (isON.load() && !preFFT.getIsAudioReady() && !postFFT.getIsAudioReady()) {
+            // logger.logMessage(juce::String(preBuffer.getNumChannels()));
             juce::dsp::AudioBlock<FloatType> preBLock(preBuffer);
             preDelay.process(juce::dsp::ProcessContextReplacing<FloatType>(preBLock));
             preFFT.process(preBuffer);

@@ -37,14 +37,14 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
 
-        zlInterface::CompactButton dynBypassC, dynSoloC;
+        zlInterface::CompactButton dynBypassC, dynSoloC, dynRelativeC, sideChainC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
 
         zlInterface::TwoValueRotarySlider sideFreqC, sideQC;
         zlInterface::CompactLinearSlider thresC, kneeC, attackC, releaseC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
 
-        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable;
+        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable, relativeDrawable, sideDrawable;
 
         std::atomic<size_t> bandIdx;
 

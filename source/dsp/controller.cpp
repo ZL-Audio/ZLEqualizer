@@ -25,7 +25,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        fftAnalyzezr.prepare(spec);
+        fftAnalyzezr.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
 
         subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
@@ -46,10 +46,9 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        juce::AudioBuffer<FloatType> mainBuffer(processorRef.getBusBuffer(buffer, true, 0));
+        juce::AudioBuffer<FloatType> mainBuffer {buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
         fftAnalyzezr.pushPreFFTBuffer(mainBuffer);
-        juce::AudioBuffer<FloatType> sideBuffer(processorRef.getBusBuffer(buffer, true, 1));
-        // preFFT.process(mainBuffer);
+        juce::AudioBuffer<FloatType> sideBuffer {buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
         // if no side chain, copy the main buffer into the side buffer
         if (!sideChain.load()) {
             sideBuffer.makeCopyOf(mainBuffer, true);

@@ -4,23 +4,20 @@
 //==============================================================================
 PluginProcessor::PluginProcessor()
     : AudioProcessor(BusesProperties()
-#if !JucePlugin_IsMidiEffect
-#if !JucePlugin_IsSynth
           .withInput("Input", juce::AudioChannelSet::stereo(), true)
-#endif
           .withOutput("Output", juce::AudioChannelSet::stereo(), true)
           .withInput("Aux", juce::AudioChannelSet::stereo(), true)
-#endif
       ), dummyProcessor(),
-parameters(*this, nullptr,
-                    juce::Identifier("ZLEqualizerParameters"),
-                    zlDSP::getParameterLayout()),
-parametersNA(dummyProcessor, nullptr,
-                       juce::Identifier("ZLEqualizerParametersNA"),
-                       zlState::getNAParameterLayout()),
+      parameters(*this, nullptr,
+                 juce::Identifier("ZLEqualizerParameters"),
+                 zlDSP::getParameterLayout()),
+      parametersNA(dummyProcessor, nullptr,
+                   juce::Identifier("ZLEqualizerParametersNA"),
+                   zlState::getNAParameterLayout()),
       controller(*this),
       filtersAttach(*this, parameters, controller),
-      soloAttach(*this, parameters, controller) {
+      soloAttach(*this, parameters, controller),
+      choreAttach(*this, parameters, controller) {
 }
 
 PluginProcessor::~PluginProcessor() = default;
@@ -101,25 +98,16 @@ void PluginProcessor::releaseResources() {
 }
 
 bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
-#if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo()) {
+        return false;
+    }
+    if (layouts.getChannelSet(true, 0) != layouts.getChannelSet(true, 1)) {
+        return false;
+    }
+    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet()) {
+        return false;
+    }
     return true;
-#else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-
-    // This checks if the input layout matches the output layout
-#if !JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-    if (layouts.getChannelSet(true, 1) != juce::AudioChannelSet::stereo())
-        return false;
-#endif
-
-    return true;
-#endif
 }
 
 void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,

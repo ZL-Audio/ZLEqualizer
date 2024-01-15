@@ -276,6 +276,7 @@ namespace zlDSP {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
         }
+        layout.add(sideChain::get());
         return layout;
     }
 }

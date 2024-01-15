@@ -37,6 +37,7 @@ namespace zlFFT {
         juce::AudioBuffer<FloatType> preBuffer, postBuffer;
         juce::dsp::DelayLine<FloatType> preDelay;
         std::atomic<bool> isON = false;
+        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "prepostlog"};
     };
 } // zlFFT
 

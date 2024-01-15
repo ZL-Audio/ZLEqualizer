@@ -7,12 +7,13 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_DSP_H
-#define ZL_DSP_H
+#ifndef ZLEqualizer_DSP_H
+#define ZLEqualizer_DSP_H
 
 #include "dsp_definitions.hpp"
 #include "controller.hpp"
 #include "filters_attach.hpp"
 #include "solo_attach.hpp"
+#include "chore_attach.hpp"
 
-#endif //ZL_DSP_H
+#endif //ZLEqualizer_DSP_H

@@ -33,7 +33,7 @@ namespace zlPanel {
 
     void ControlPanel::resized() {
         auto rightBound = getLocalBounds().toFloat();
-        const auto leftBound = rightBound.removeFromLeft(rightBound.getWidth() * (33.f / 61.f));
+        const auto leftBound = rightBound.removeFromLeft(rightBound.getWidth() * (32.f / 62.f));
         leftControlPanel.setBounds(leftBound.toNearestInt());
         rightControlPanel.setBounds(rightBound.toNearestInt());
     }

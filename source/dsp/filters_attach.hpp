@@ -53,8 +53,6 @@ namespace zlDSP {
         void initDefaultValues();
 
         std::atomic<bool> dynamicONUpdateOthers = true;
-
-//        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "Filters Attach Log"};
     };
 }
 

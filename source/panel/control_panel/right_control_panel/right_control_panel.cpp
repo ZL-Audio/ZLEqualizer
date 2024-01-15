@@ -18,6 +18,8 @@ namespace zlPanel {
           parametersNARef(parametersNA),
           dynBypassC("B", base),
           dynSoloC("S", base),
+          dynRelativeC("R", base),
+          sideChainC("S", base),
           sideFreqC("FREQ", base),
           sideQC("Q", base),
           thresC("Threshold", base),
@@ -26,11 +28,16 @@ namespace zlPanel {
           releaseC("Release", base),
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
-          soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)) {
+          soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
+          relativeDrawable(juce::Drawable::createFromImageData(BinaryData::righttobracketsolid_svg,
+                                                               BinaryData::righttobracketsolid_svgSize)),
+          sideDrawable(juce::Drawable::createFromImageData(BinaryData::fadside_svg, BinaryData::fadside_svgSize)) {
         juce::ignoreUnused(parametersNA, parametersNARef);
         dynBypassC.setDrawable(bypassDrawable.get());
         dynSoloC.setDrawable(soloDrawable.get());
-        for (auto &c: {&dynBypassC, &dynSoloC}) {
+        dynRelativeC.setDrawable(relativeDrawable.get());
+        sideChainC.setDrawable(sideDrawable.get());
+        for (auto &c: {&dynBypassC, &dynSoloC, &dynRelativeC, &sideChainC}) {
             addAndMakeVisible(c);
         }
         for (auto &c: {&sideFreqC, &sideQC}) {
@@ -60,18 +67,21 @@ namespace zlPanel {
 
         grid.templateRows = {Track(Fr(1)), Track(Fr(1))};
         grid.templateColumns = {
-            Track(Fr(4)), Track(Fr(6)),
+            Track(Fr(3)),
+            Track(Fr(3)), Track(Fr(6)),
             Track(Fr(6)), Track(Fr(6)), Track(Fr(6))
         };
         grid.items = {
             juce::GridItem(dynBypassC).withArea(1, 1),
-            juce::GridItem(thresC).withArea(1, 2),
-            juce::GridItem(attackC).withArea(1, 3),
-            juce::GridItem(sideFreqC).withArea(1, 4, 3, 5),
-            juce::GridItem(sideQC).withArea(1, 5, 3, 6),
+            juce::GridItem(dynRelativeC).withArea(1, 2),
+            juce::GridItem(thresC).withArea(1, 3),
+            juce::GridItem(attackC).withArea(1, 4),
+            juce::GridItem(sideFreqC).withArea(1, 5, 3, 6),
+            juce::GridItem(sideQC).withArea(1, 6, 3, 7),
             juce::GridItem(dynSoloC).withArea(2, 1),
-            juce::GridItem(kneeC).withArea(2, 2),
-            juce::GridItem(releaseC).withArea(2, 3),
+            juce::GridItem(sideChainC).withArea(2, 2),
+            juce::GridItem(kneeC).withArea(2, 3),
+            juce::GridItem(releaseC).withArea(2, 4),
         };
 
         for (auto &s: {&sideFreqC, &sideQC}) {
@@ -100,8 +110,8 @@ namespace zlPanel {
         buttonAttachments.clear(true);
         sliderAttachments.clear(true);
 
-        attach({&dynBypassC.getButton(), &dynSoloC.getButton()},
-               {zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix},
+        attach({&dynBypassC.getButton(), &dynSoloC.getButton(), &sideChainC.getButton()},
+               {zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix, zlDSP::sideChain::ID},
                parametersRef, buttonAttachments);
         attach({&thresC.getSlider(), &attackC.getSlider(), &kneeC.getSlider(), &releaseC.getSlider()},
                {
@@ -112,7 +122,6 @@ namespace zlPanel {
         attach({&sideFreqC.getSlider1(), &sideQC.getSlider1()},
                {zlDSP::sideFreq::ID + suffix, zlDSP::sideQ::ID + suffix},
                parametersRef, sliderAttachments);
-        // parameterChanged(zlDSP::fType::ID, parametersRef.getRawParameterValue(zlDSP::fType::ID)->load());
         parameterChanged(zlDSP::dynamicON::ID + suffix,
                          parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
     }
@@ -124,6 +133,8 @@ namespace zlPanel {
             const auto f = static_cast<bool>(newValue);
             dynBypassC.setEditable(f);
             dynSoloC.setEditable(f);
+            dynRelativeC.setEditable(f);
+            // sideChainC.setEditable(f);
             thresC.setEditable(f);
             attackC.setEditable(f);
             kneeC.setEditable(f);
@@ -139,6 +150,8 @@ namespace zlPanel {
     void RightControlPanel::handleAsyncUpdate() {
         dynBypassC.repaint();
         dynSoloC.repaint();
+        dynRelativeC.repaint();
+        // sideChainC.repaint();
         repaint();
     }
 }

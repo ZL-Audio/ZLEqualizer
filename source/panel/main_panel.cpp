@@ -28,7 +28,8 @@ namespace zlPanel {
         uiBase.setFontSize(bound.getWidth() * 0.014287762237762238f);
         // bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
 
-        const auto controlBound = bound.removeFromBottom(bound.getWidth() * 0.12354312354312354f);
+        // const auto controlBound = bound.removeFromBottom(bound.getWidth() * 0.12354312354312354f);
+        const auto controlBound = bound.removeFromBottom(bound.getWidth() * 0.11f);
         controlPanel.setBounds(controlBound.toNearestInt());
         curvePanel.setBounds(bound.toNearestInt());
     }
