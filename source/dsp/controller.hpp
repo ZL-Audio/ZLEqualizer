@@ -63,7 +63,9 @@ namespace zlDSP {
 
         zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzezr; }
 
-        inline void setSideChain(const bool x) { sideChain.store(x); }
+        inline void setSideChain(const bool x) {sideChain.store(x);}
+
+        void setRelative(size_t idx, bool isRelative);
 
     private:
         juce::AudioProcessor &processorRef;
@@ -76,6 +78,10 @@ namespace zlDSP {
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
         std::atomic<bool> useLR, useMS;
+
+        std::array<std::atomic<bool>, bandNUM> dynRelatives;
+        zlCompressor::RMSTracker<FloatType> tracker, lTracker, rTracker, mTracker, sTracker;
+        std::array<std::atomic<bool>, 5> useTrackers;
 
         std::atomic<bool> sideChain;
 
@@ -90,9 +96,13 @@ namespace zlDSP {
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
 
+        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "controller"};
+
         void processSolo();
 
         void processDynamic();
+
+        void updateTrackersON();
     };
 }
 

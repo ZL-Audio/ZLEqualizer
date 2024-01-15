@@ -88,7 +88,8 @@ namespace zlDSP {
             } else if (!static_cast<bool>(value)) {
                 const std::array dynamicResetValues{
                     dynamicBypass::convertTo01(dynamicBypass::defaultV),
-                    sideSolo::convertTo01((sideSolo::defaultV))
+                    sideSolo::convertTo01(sideSolo::defaultV),
+                    dynamicRelative::convertTo01(dynamicRelative::defaultV)
                 };
                 for (size_t i = 0; i < dynamicResetIDs.size(); ++i) {
                     auto initID = dynamicResetIDs[i] + parameterID.getLastCharacters(2);
@@ -100,6 +101,8 @@ namespace zlDSP {
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
         } else if (id == dynamicBypass::ID) {
             filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
+        } else if (id == dynamicRelative::ID) {
+            controllerRef.setRelative(idx, static_cast<bool>(value));
         } else if (id == targetGain::ID) {
             filtersRef[idx].getTargetFilter().setGain(value);
         } else if (id == targetQ::ID) {

@@ -40,6 +40,13 @@ namespace zlDSP {
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
                                                               T::name + suffix, T::defaultV, attributes);
         }
+
+        static std::unique_ptr<juce::AudioParameterBool> get(bool meta, const std::string &suffix = "",  bool automate = true) {
+            auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::name).withMeta(meta);
+            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
+                                                              T::name + suffix, T::defaultV, attributes);
+        }
+
         inline static float convertTo01(const bool x) {
             return x ? 1.f : 0.f;
         }
@@ -180,6 +187,13 @@ namespace zlDSP {
         auto static constexpr defaultV = false;
     };
 
+    class dynamicRelative : public BoolParameters<dynamicRelative> {
+    public:
+        auto static constexpr ID = "dynamic_relative";
+        auto static constexpr name = "Dynamic Relative";
+        auto static constexpr defaultV = false;
+    };
+
     class threshold : public FloatParameters<threshold> {
     public:
         auto static constexpr ID = "threshold";
@@ -201,15 +215,6 @@ namespace zlDSP {
 
         inline static double formatV(const double x) { return std::max(x * 60, 0.0625); }
     };
-
-    // class ratio : public FloatParameters<ratio> {
-    // public:
-    //     auto static constexpr ID = "ratio";
-    //     auto static constexpr name = "Ratio";
-    //     auto static constexpr defaultV = 3.f;
-    //     inline auto static const range =
-    //             juce::NormalisableRange<float>(1.f, 100.f, 0.01f, 0.2160127f);
-    // };
 
     class sideFreq : public FloatParameters<sideFreq> {
     public:
@@ -254,11 +259,13 @@ namespace zlDSP {
 
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
-        layout.add(bypass::get(suffix), solo::get(suffix),
+        layout.add(bypass::get(suffix), solo::get(true, suffix),
                    fType::get(suffix), slope::get(suffix),
                    freq::get(suffix), gain::get(suffix), Q::get(suffix),
-                   lrType::get(suffix), dynamicON::get(suffix),
-                   dynamicBypass::get(suffix), sideSolo::get(suffix),
+                   lrType::get(suffix), dynamicON::get(true, suffix),
+                   dynamicBypass::get(suffix),
+                   sideSolo::get(true, suffix),
+                   dynamicRelative::get(suffix),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), kneeW::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
     }

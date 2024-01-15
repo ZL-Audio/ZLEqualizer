@@ -32,21 +32,28 @@ namespace zlDSP {
         Controller<FloatType> &controllerRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> &filtersRef;
 
-        constexpr static std::array IDs{bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,
-                                        lrType::ID, dynamicON::ID, dynamicBypass::ID,
-                                        targetGain::ID, targetQ::ID, threshold::ID, kneeW::ID,
-                                        sideFreq::ID, attack::ID, release::ID, sideQ::ID};
+        constexpr static std::array IDs{
+            bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,
+            lrType::ID, dynamicON::ID, dynamicBypass::ID, dynamicRelative::ID,
+            targetGain::ID, targetQ::ID, threshold::ID, kneeW::ID,
+            sideFreq::ID, attack::ID, release::ID, sideQ::ID
+        };
 
-        constexpr static std::array defaultVs{float(bypass::defaultV), float(fType::defaultI), float(slope::defaultI),
-                                              freq::defaultV, gain::defaultV, Q::defaultV,
-                                              float(lrType::defaultI),
-                                              float(dynamicON::defaultV), float(dynamicBypass::defaultV),
-                                              targetGain::defaultV, targetQ::defaultV,
-                                              threshold::defaultV, kneeW::defaultV,
-                                              sideFreq::defaultV, attack::defaultV, release::defaultV, sideQ::defaultV};
+        constexpr static std::array defaultVs{
+            float(bypass::defaultV), float(fType::defaultI), float(slope::defaultI),
+            freq::defaultV, gain::defaultV, Q::defaultV,
+            float(lrType::defaultI), float(dynamicON::defaultV),
+            float(dynamicBypass::defaultV), float(dynamicRelative::defaultV),
+            targetGain::defaultV, targetQ::defaultV,
+            threshold::defaultV, kneeW::defaultV,
+            sideFreq::defaultV, attack::defaultV, release::defaultV, sideQ::defaultV
+        };
 
-        constexpr static std::array dynamicInitIDs{targetGain::ID, targetQ::ID, sideFreq::ID, sideQ::ID, dynamicBypass::ID};
-        constexpr static std::array dynamicResetIDs {dynamicBypass::ID, sideSolo::ID};
+        constexpr static std::array dynamicInitIDs{
+            targetGain::ID, targetQ::ID, sideFreq::ID, sideQ::ID,
+            dynamicBypass::ID
+        };
+        constexpr static std::array dynamicResetIDs{dynamicBypass::ID, sideSolo::ID, dynamicRelative::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

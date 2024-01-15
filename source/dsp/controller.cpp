@@ -42,6 +42,10 @@ namespace zlDSP {
         lrSideSplitter.prepare(subSpec);
         msMainSplitter.prepare(subSpec);
         msSideSplitter.prepare(subSpec);
+        tracker.prepare(subSpec);
+        for (auto &t : {&lTracker, &rTracker, &mTracker, &sTracker}) {
+            t->prepare({spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+        }
     }
 
     template<typename FloatType>
@@ -126,19 +130,49 @@ namespace zlDSP {
         auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
                                                           2, subBuffer.subBuffer.getNumSamples());
         // stereo filters process
+        FloatType baseLine = 0;
+        if (useTrackers[0].load()) {
+            tracker.process(subSideBuffer);
+            baseLine = tracker.getMomentaryLoudness();
+        }
         for (size_t i = 0; i < bandNUM; ++i) {
+           if (dynRelatives[i].load()) {
+               filters[i].getCompressor().setBaseLine(baseLine);
+               // logger.logMessage(juce::String(baseLine));
+            } else {
+                filters[i].getCompressor().setBaseLine(0);
+            }
             if (filterLRs[i].load() == lrType::stereo) {
                 filters[i].process(subMainBuffer, subSideBuffer);
             }
         }
         // LR filters process
         if (useLR.load()) {
+            FloatType lBaseLine = 0, rBaseLine = 0;
             lrMainSplitter.split(subMainBuffer);
             lrSideSplitter.split(subSideBuffer);
+            if (useTrackers[1].load()) {
+                lTracker.process(lrSideSplitter.getLBuffer());
+                lBaseLine = lTracker.getMomentaryLoudness();
+            }
+            if (useTrackers[2].load()) {
+                rTracker.process(lrSideSplitter.getRBuffer());
+                rBaseLine = rTracker.getMomentaryLoudness();
+            }
             for (size_t i = 0; i < bandNUM; ++i) {
                 if (filterLRs[i].load() == lrType::left) {
+                    if (dynRelatives[i].load()) {
+                        filters[i].getCompressor().setBaseLine(lBaseLine);
+                    } else {
+                        filters[i].getCompressor().setBaseLine(0);
+                    }
                     filters[i].process(lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
                 } else if (filterLRs[i].load() == lrType::right) {
+                    if (dynRelatives[i].load()) {
+                        filters[i].getCompressor().setBaseLine(rBaseLine);
+                    } else {
+                        filters[i].getCompressor().setBaseLine(0);
+                    }
                     filters[i].process(lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
                 }
             }
@@ -146,19 +180,37 @@ namespace zlDSP {
         }
         // MS filters process
         if (useMS.load()) {
+            FloatType mBaseLine = 0, sBaseLine = 0;
             msMainSplitter.split(subMainBuffer);
             msSideSplitter.split(subSideBuffer);
+            if (useTrackers[3].load()) {
+                mTracker.process(msSideSplitter.getMBuffer());
+                mBaseLine = mTracker.getMomentaryLoudness();
+            }
+            if (useTrackers[4].load()) {
+                sTracker.process(msSideSplitter.getSBuffer());
+                sBaseLine = sTracker.getMomentaryLoudness();
+            }
             for (size_t i = 0; i < bandNUM; ++i) {
                 if (filterLRs[i].load() == lrType::mid) {
+                    if (dynRelatives[i].load()) {
+                        filters[i].getCompressor().setBaseLine(mBaseLine);
+                    } else {
+                        filters[i].getCompressor().setBaseLine(0);
+                    }
                     filters[i].process(msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
                 } else if (filterLRs[i].load() == lrType::side) {
+                    if (dynRelatives[i].load()) {
+                        filters[i].getCompressor().setBaseLine(sBaseLine);
+                    } else {
+                        filters[i].getCompressor().setBaseLine(0);
+                    }
                     filters[i].process(msMainSplitter.getSBuffer(), msSideSplitter.getMBuffer());
                 }
             }
             msMainSplitter.combine(subMainBuffer);
         }
     }
-
 
     template<typename FloatType>
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
@@ -188,6 +240,7 @@ namespace zlDSP {
         if (useSolo.load()) {
             setSolo(soloIdx.load(), soloSide.load());
         }
+        updateTrackersON();
     }
 
     template<typename FloatType>
@@ -282,6 +335,26 @@ namespace zlDSP {
         }
         soloIdx.store(idx);
         soloSide.store(isSide);
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setRelative(const size_t idx, const bool isRelative) {
+        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+        dynRelatives[idx].store(isRelative);
+        updateTrackersON();
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateTrackersON() {
+        for (auto &f : useTrackers) {
+            f.store(false);
+        }
+        for (size_t i = 0; i < filterLRs.size(); ++i) {
+            if (dynRelatives[i].load()) {
+                const auto idx = static_cast<size_t>(filterLRs[i].load());
+                useTrackers[idx].store(true);
+            }
+        }
     }
 
     template

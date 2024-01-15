@@ -44,10 +44,13 @@ namespace zlCompressor {
 
         inline RMSTracker<FloatType> &getTracker() { return tracker; }
 
+        inline void setBaseLine(const FloatType x) { baseLine = x; }
+
     private:
         KneeComputer<FloatType> computer;
         Detector<FloatType> detector;
         RMSTracker<FloatType> tracker;
+        FloatType baseLine {0};
     };
 }
 

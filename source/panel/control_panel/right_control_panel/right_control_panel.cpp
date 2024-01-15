@@ -110,8 +110,11 @@ namespace zlPanel {
         buttonAttachments.clear(true);
         sliderAttachments.clear(true);
 
-        attach({&dynBypassC.getButton(), &dynSoloC.getButton(), &sideChainC.getButton()},
-               {zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix, zlDSP::sideChain::ID},
+        attach({&dynBypassC.getButton(), &dynSoloC.getButton(), &dynRelativeC.getButton(), &sideChainC.getButton()},
+               {
+                   zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix,
+                   zlDSP::dynamicRelative::ID + suffix, zlDSP::sideChain::ID
+               },
                parametersRef, buttonAttachments);
         attach({&thresC.getSlider(), &attackC.getSlider(), &kneeC.getSlider(), &releaseC.getSlider()},
                {
