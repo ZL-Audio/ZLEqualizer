@@ -38,7 +38,7 @@ namespace zlHistogram {
         for (size_t i = 0; i < hits.size(); ++i) {
             currentHits += hits[i];
             if (currentHits >= targetHits) {
-                return static_cast<FloatType>(i) + (currentHits - targetHits) / hits[i];
+                return static_cast<FloatType>(i) + (currentHits - targetHits) / std::max(hits[i], FloatType(1));
             }
         }
         return FloatType(1);

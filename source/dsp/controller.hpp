@@ -106,7 +106,7 @@ namespace zlDSP {
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
 
-        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "controller"};
+        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "controller"};
 
         void processSolo();
 

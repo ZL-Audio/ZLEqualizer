@@ -106,14 +106,14 @@ namespace zlDSP {
             if (!f && controllerRef.getLearningHistON(idx)) {
                 controllerRef.setLearningHist(idx, f);
                 const auto &hist = controllerRef.getLearningHist(idx);
-                const auto thresholdV = -hist.getPercentile(FloatType(0.5));
-                const auto kneeV = (hist.getPercentile(FloatType(0.95)) - hist.getPercentile(FloatType(0.05))) /
-                                   FloatType(120);
-                logger.logMessage(juce::String(thresholdV));
-                logger.logMessage(juce::String(kneeV));
+                const auto thresholdV = static_cast<float>(-hist.getPercentile(FloatType(0.5)));
+                const auto kneeV = static_cast<float>(hist.getPercentile(FloatType(0.95)) -
+                                                      hist.getPercentile(FloatType(0.05))) / 120.f;
+                // logger.logMessage(juce::String(thresholdV));
+                // logger.logMessage(juce::String(kneeV));
                 const std::array dynamicLearnValues{
-                    threshold::convertTo01(static_cast<float>(thresholdV)),
-                    kneeW::convertTo01(static_cast<float>(kneeV))
+                    threshold::convertTo01(thresholdV),
+                    kneeW::convertTo01(kneeV)
                 };
                 for (size_t i = 0; i < dynamicLearnIDs.size(); ++i) {
                     auto initID = dynamicLearnIDs[i] + parameterID.getLastCharacters(2);

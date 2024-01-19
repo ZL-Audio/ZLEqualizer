@@ -218,9 +218,9 @@ namespace zlDSP {
                 juce::NormalisableRange<float>(0.f, 1.f, .01f, .5f);
         auto static constexpr defaultV = 0.25f;
 
-        inline static float formatV(const float x) { return std::max(x * 60, 0.0625f); }
+        inline static float formatV(const float x) { return std::max(x * 60, .1f); }
 
-        inline static double formatV(const double x) { return std::max(x * 60, 0.0625); }
+        inline static double formatV(const double x) { return std::max(x * 60, 0.1); }
     };
 
     class sideFreq : public FloatParameters<sideFreq> {
