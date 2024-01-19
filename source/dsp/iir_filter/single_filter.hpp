@@ -257,6 +257,8 @@ namespace zlIIR {
 
         inline std::array<FloatType, frequencies.size()> &getDBs() { return dBs; }
 
+        FloatType getDB(FloatType f);
+
         inline std::array<FloatType, frequencies.size()> &getGains() { return gains; }
 
         inline juce::ReadWriteLock &getMagLock() { return magLock; }

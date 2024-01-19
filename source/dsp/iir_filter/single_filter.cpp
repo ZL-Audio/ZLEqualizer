@@ -147,6 +147,16 @@ namespace zlIIR {
         magOutdated.store(false);
     }
 
+    template<typename FloatType>
+    FloatType Filter<FloatType>::getDB(FloatType f) {
+        const juce::ScopedReadLock scopedLock(paraUpdateLock);
+        double g {FloatType(1)};
+        for (size_t i = 0; i < filters.size(); i++) {
+            g *= filters[i].state->getMagnitudeForFrequency(static_cast<double>(f), processSpec.sampleRate);
+        }
+        return juce::Decibels::gainToDecibels(static_cast<FloatType>(g));
+    }
+
     template
     class Filter<float>;
 

@@ -68,6 +68,19 @@ namespace zlPanel {
                        bool startPath = true);
 
         SidePanel sidePanel;
+
+        inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
+            return static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.getWidth() + bound.getX();
+        }
+
+        inline static float freqToX(const double freq, const juce::Rectangle<float> bound) {
+            const auto portion = std::log(freq/zlIIR::frequencies.front()) / std::log(zlIIR::frequencies.back()/zlIIR::frequencies.front());
+            return static_cast<float>(portion) * bound.getWidth() + bound.getX();
+        }
+
+        inline static float dbToY(const float db, const float maxDB, const juce::Rectangle<float> bound) {
+            return -db / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
+        }
     };
 } // zlPanel
 

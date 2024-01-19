@@ -64,6 +64,7 @@ namespace zlPanel {
         g.setColour(colour);
         g.strokePath(path, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
                                                 juce::PathStrokeType::rounded));
+        // draw shadow
         if (selected.load()) {
             switch (baseF.getFilterType()) {
                 case zlIIR::FilterType::peak:
@@ -93,6 +94,7 @@ namespace zlPanel {
             path.clear();
             drawCurve(baseF.getDBs());
         }
+        // draw dynamic shadow
         if (dynON.load()) {
             targetF.updateDBs();
             drawCurve(targetF.getDBs(), true, false);
@@ -103,6 +105,36 @@ namespace zlPanel {
                 g.setColour(colour.withMultipliedAlpha(0.125f));
             }
             g.fillPath(path);
+            path.clear();
+        }
+        // draw the line between the curve and the button
+        {
+            auto bound = getLocalBounds().toFloat();
+            bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+            g.setColour(colour);
+            switch (baseF.getFilterType()) {
+                case zlIIR::FilterType::peak:
+                case zlIIR::FilterType::lowShelf:
+                case zlIIR::FilterType::highShelf:
+                case zlIIR::FilterType::bandShelf:
+                case zlIIR::FilterType::tiltShelf: {
+                    const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
+                    const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(baseF.getGain()), maximumDB.load(), bound);
+                    g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
+                    break;
+                }
+                case zlIIR::FilterType::notch:
+                case zlIIR::FilterType::lowPass:
+                case zlIIR::FilterType::highPass:
+                case zlIIR::FilterType::bandPass: {
+                    const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
+                    const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);
+                    g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
+                    break;
+                }
+            }
         }
     }
 
@@ -117,9 +149,8 @@ namespace zlPanel {
         if (reverse) {
             for (size_t j = zlIIR::frequencies.size(); j > 0; --j) {
                 const auto i = j - 1;
-                const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
-                               getWidth();
-                const auto y = static_cast<float>(-dBs[i]) / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
+                const auto x = indexToX(i, bound);
+                const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                 } else {
@@ -128,9 +159,8 @@ namespace zlPanel {
             }
         } else {
             for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
-                const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1)
-                               * bound.getWidth();
-                const auto y = static_cast<float>(-dBs[i]) / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
+                const auto x = indexToX(i, bound);
+                const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                 } else {
