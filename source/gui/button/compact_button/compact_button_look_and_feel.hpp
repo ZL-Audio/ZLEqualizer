@@ -25,7 +25,7 @@ namespace zlInterface {
             juce::ignoreUnused(shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
 
             auto bounds = button.getLocalBounds().toFloat();
-            bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.5f, {});
+            bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f, {});
             bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f, {.flip = true});
             if (button.getToggleState()) {
                 const auto innerBound = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});

@@ -10,7 +10,6 @@
 #ifndef ZLEQUALIZER_SINGLE_FILTER_HPP
 #define ZLEQUALIZER_SINGLE_FILTER_HPP
 
-#include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 #include "coeff/design_filter.hpp"
 

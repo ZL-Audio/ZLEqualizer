@@ -67,8 +67,7 @@ namespace zlPanel {
 
         grid.templateRows = {Track(Fr(1)), Track(Fr(1))};
         grid.templateColumns = {
-            Track(Fr(3)),
-            Track(Fr(3)), Track(Fr(6)),
+            Track(Fr(3)), Track(Fr(3)), Track(Fr(6)),
             Track(Fr(6)), Track(Fr(6)), Track(Fr(6))
         };
         grid.items = {

@@ -107,7 +107,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "freq";
         auto static constexpr name = "Freq";
-        inline auto static const range = juce::NormalisableRange<float>(10, 20000, 1.f, 0.23064293761596813f);
+        inline auto static const range = juce::NormalisableRange<float>(10, 20000, .1f, 0.23064293761596813f);
         auto static constexpr defaultV = 1000.f;
     };
 
@@ -161,6 +161,13 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "dynamic_on";
         auto static constexpr name = "Dynamic ON";
+        auto static constexpr defaultV = false;
+    };
+
+    class dynamicLearn : public BoolParameters<dynamicLearn> {
+    public:
+        auto static constexpr ID = "dynamic_learn";
+        auto static constexpr name = "Dynamic Learn";
         auto static constexpr defaultV = false;
     };
 
@@ -262,9 +269,9 @@ namespace zlDSP {
         layout.add(bypass::get(suffix), solo::get(true, suffix),
                    fType::get(suffix), slope::get(suffix),
                    freq::get(suffix), gain::get(suffix), Q::get(suffix),
-                   lrType::get(suffix), dynamicON::get(true, suffix),
-                   dynamicBypass::get(suffix),
-                   sideSolo::get(true, suffix),
+                   lrType::get(suffix),
+                   dynamicON::get(true, suffix), dynamicLearn::get(true, suffix),
+                   dynamicBypass::get(suffix), sideSolo::get(true, suffix),
                    dynamicRelative::get(suffix),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), kneeW::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));

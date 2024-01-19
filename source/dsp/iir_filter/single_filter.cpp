@@ -132,7 +132,7 @@ namespace zlIIR {
         }
         std::transform(gains.begin(), gains.end(), dBs.begin(),
                        [](auto &c) { return juce::Decibels::gainToDecibels(c); });
-        if (filterType.load() == FilterType::notch) {
+        if (filterType.load() == FilterType::notch && order.load() >= 2) {
             auto freqIdx = static_cast<size_t>(std::floor(std::log(freq.load() / 10) / std::log(2200) *
                                                           static_cast<double>(frequencies.size())));
             if (freqIdx < frequencies.size()) {

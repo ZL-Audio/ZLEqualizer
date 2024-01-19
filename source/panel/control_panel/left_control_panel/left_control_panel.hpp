@@ -39,7 +39,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
 
-        zlInterface::CompactButton bypassC, soloC, dynONC;
+        zlInterface::CompactButton bypassC, soloC, dynONC, dynLC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
 
         zlInterface::CompactCombobox fTypeC, slopeC, stereoC;
@@ -51,7 +51,7 @@ namespace zlPanel {
 
         ResetComponent resetComponent;
 
-        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable, dynONDrawable;
+        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable, dynONDrawable, dynLeDrawable;
 
         std::atomic<size_t> bandIdx;
 

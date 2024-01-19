@@ -10,7 +10,6 @@
 #ifndef ZLEQUALIZER_FORWARD_COMPRESSOR_HPP
 #define ZLEQUALIZER_FORWARD_COMPRESSOR_HPP
 
-#include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
 #include "computer/computer.hpp"
@@ -46,11 +45,13 @@ namespace zlCompressor {
 
         inline void setBaseLine(const FloatType x) { baseLine = x; }
 
+        inline FloatType getBaseLine() const { return baseLine; }
+
     private:
         KneeComputer<FloatType> computer;
         Detector<FloatType> detector;
         RMSTracker<FloatType> tracker;
-        FloatType baseLine {0};
+        FloatType baseLine{0};
     };
 }
 

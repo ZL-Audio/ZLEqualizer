@@ -18,6 +18,7 @@
 #include "dynamic_filter/dynamic_filter.hpp"
 #include "splitter/splitter.hpp"
 #include "fft_analyzer/fft_analyzer.hpp"
+#include "histogram//histogram.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -63,9 +64,15 @@ namespace zlDSP {
 
         zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzezr; }
 
-        inline void setSideChain(const bool x) {sideChain.store(x);}
+        inline void setSideChain(const bool x) { sideChain.store(x); }
 
         void setRelative(size_t idx, bool isRelative);
+
+        void setLearningHist(size_t idx, bool isLearning);
+
+        bool getLearningHistON(size_t idx) const { return isHistON[idx].load(); }
+
+        zlHistogram::Histogram<FloatType> &getLearningHist(const size_t idx) { return histograms[idx]; }
 
     private:
         juce::AudioProcessor &processorRef;
@@ -88,6 +95,9 @@ namespace zlDSP {
         zlIIR::Filter<FloatType> soloFilter;
         std::atomic<size_t> soloIdx;
         std::atomic<bool> useSolo = false, soloSide = false;
+
+        std::array<zlHistogram::Histogram<FloatType>, bandNUM> histograms;
+        std::array<std::atomic<bool>, bandNUM> isHistON;
 
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;

@@ -15,7 +15,7 @@ namespace zlPanel {
     ControlPanel::ControlPanel(juce::AudioProcessorValueTreeState &parameters,
                                juce::AudioProcessorValueTreeState &parametersNA,
                                zlInterface::UIBase &base)
-        : parametersNARef(parametersNA),
+        : parametersNARef(parametersNA), uiBase(base),
           leftControlPanel(parameters, parametersNA, base),
           rightControlPanel(parameters, parametersNA, base) {
         parameterChanged(zlState::selectedBandIdx::ID,
@@ -32,8 +32,11 @@ namespace zlPanel {
 
 
     void ControlPanel::resized() {
+        const auto bound = getLocalBounds().toFloat();
+        const auto actualBound = uiBase.getRoundedShadowRectangleArea(bound, uiBase.getFontSize(), {});
+        const auto leftWidth = actualBound.getWidth() * (33.f / 63.f) + (bound.getWidth() - actualBound.getWidth()) * .5f;
         auto rightBound = getLocalBounds().toFloat();
-        const auto leftBound = rightBound.removeFromLeft(rightBound.getWidth() * (32.f / 62.f));
+        const auto leftBound = rightBound.removeFromLeft(leftWidth);
         leftControlPanel.setBounds(leftBound.toNearestInt());
         rightControlPanel.setBounds(rightBound.toNearestInt());
     }

@@ -17,7 +17,7 @@ namespace zlPanel {
           parametersRef(parameters),
           parametersNARef(parametersNA),
           bypassC("B", base),
-          soloC("S", base), dynONC("D", base),
+          soloC("S", base), dynONC("D", base), dynLC("L", base),
           fTypeC("", zlDSP::fType::choices, base),
           slopeC("", zlDSP::slope::choices, base),
           stereoC("", zlDSP::lrType::choices, base),
@@ -30,13 +30,15 @@ namespace zlPanel {
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
           dynONDrawable(
-              juce::Drawable::createFromImageData(BinaryData::fadmodsine_svg, BinaryData::fadmodsine_svgSize)) {
+              juce::Drawable::createFromImageData(BinaryData::fadmodsine_svg, BinaryData::fadmodsine_svgSize)),
+    dynLeDrawable(juce::Drawable::createFromImageData(BinaryData::fadpreseta_svg, BinaryData::fadpreseta_svgSize)){
         juce::ignoreUnused(parametersNA, parametersNARef);
         // attachGroup(0);
         bypassC.setDrawable(bypassDrawable.get());
         soloC.setDrawable(soloDrawable.get());
         dynONC.setDrawable(dynONDrawable.get());
-        for (auto &c: {&bypassC, &soloC, &dynONC}) {
+        dynLC.setDrawable(dynLeDrawable.get());
+        for (auto &c: {&bypassC, &soloC, &dynONC, &dynLC}) {
             addAndMakeVisible(c);
         }
         for (auto &c: {&fTypeC, &slopeC, &stereoC}) {
@@ -69,8 +71,8 @@ namespace zlPanel {
 
         grid.templateRows = {Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1))};
         grid.templateColumns = {
-            Track(Fr(3)), Track(Fr(6)),
-            Track(Fr(6)), Track(Fr(6)), Track(Fr(6)), Track(Fr(5))
+            Track(Fr(30)), Track(Fr(60)),
+            Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(30)), Track(Fr(30))
         };
         grid.items = {
             juce::GridItem(bypassC).withArea(1, 1, 4, 2),
@@ -81,8 +83,9 @@ namespace zlPanel {
             juce::GridItem(soloC).withArea(4, 1, 7, 2),
             juce::GridItem(slopeC).withArea(3, 2, 5, 3),
             juce::GridItem(stereoC).withArea(5, 2, 7, 3),
-            juce::GridItem(lrBox).withArea(2, 6, 4, 7),
+            juce::GridItem(lrBox).withArea(2, 6, 4, 8),
             juce::GridItem(dynONC).withArea(4, 6, 7, 7),
+            juce::GridItem(dynLC).withArea(4, 7, 7, 8),
         };
 
         for (auto &s: {&freqC, &gainC, &qC}) {
@@ -117,8 +120,9 @@ namespace zlPanel {
         boxAttachments.clear(true);
         sliderAttachments.clear(true);
 
-        attach({&bypassC.getButton(), &soloC.getButton(), &dynONC.getButton()},
-               {zlDSP::bypass::ID + suffix, zlDSP::solo::ID + suffix, zlDSP::dynamicON::ID + suffix},
+        attach({&bypassC.getButton(), &soloC.getButton(), &dynONC.getButton(), &dynLC.getButton()},
+               {zlDSP::bypass::ID + suffix, zlDSP::solo::ID + suffix,
+                   zlDSP::dynamicON::ID + suffix, zlDSP::dynamicLearn::ID + suffix},
                parametersRef, buttonAttachments);
         attach({&fTypeC.getBox(), &slopeC.getBox(), &stereoC.getBox()},
                {zlDSP::fType::ID + suffix, zlDSP::slope::ID + suffix, zlDSP::lrType::ID + suffix},

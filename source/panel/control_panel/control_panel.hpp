@@ -29,6 +29,7 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
+        zlInterface::UIBase &uiBase;
         LeftControlPanel leftControlPanel;
         RightControlPanel rightControlPanel;
 

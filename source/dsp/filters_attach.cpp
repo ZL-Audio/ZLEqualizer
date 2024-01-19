@@ -87,6 +87,7 @@ namespace zlDSP {
                 }
             } else if (!static_cast<bool>(value)) {
                 const std::array dynamicResetValues{
+                    dynamicLearn::convertTo01(dynamicLearn::defaultV),
                     dynamicBypass::convertTo01(dynamicBypass::defaultV),
                     sideSolo::convertTo01(sideSolo::defaultV),
                     dynamicRelative::convertTo01(dynamicRelative::defaultV)
@@ -99,6 +100,29 @@ namespace zlDSP {
                 }
             }
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
+        } else if (id == dynamicLearn::ID) {
+            // logger.logMessage(juce::String(newValue));
+            const auto f = static_cast<bool>(newValue);
+            if (!f && controllerRef.getLearningHistON(idx)) {
+                controllerRef.setLearningHist(idx, f);
+                const auto &hist = controllerRef.getLearningHist(idx);
+                const auto thresholdV = -hist.getPercentile(FloatType(0.5));
+                const auto kneeV = (hist.getPercentile(FloatType(0.95)) - hist.getPercentile(FloatType(0.05))) /
+                                   FloatType(120);
+                logger.logMessage(juce::String(thresholdV));
+                logger.logMessage(juce::String(kneeV));
+                const std::array dynamicLearnValues{
+                    threshold::convertTo01(static_cast<float>(thresholdV)),
+                    kneeW::convertTo01(static_cast<float>(kneeV))
+                };
+                for (size_t i = 0; i < dynamicLearnIDs.size(); ++i) {
+                    auto initID = dynamicLearnIDs[i] + parameterID.getLastCharacters(2);
+                    parameterRef.getParameter(initID)->beginChangeGesture();
+                    parameterRef.getParameter(initID)->setValueNotifyingHost(dynamicLearnValues[i]);
+                    parameterRef.getParameter(initID)->endChangeGesture();
+                }
+            }
+            controllerRef.setLearningHist(idx, f);
         } else if (id == dynamicBypass::ID) {
             filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
         } else if (id == dynamicRelative::ID) {

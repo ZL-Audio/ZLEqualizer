@@ -34,7 +34,8 @@ namespace zlDSP {
 
         constexpr static std::array IDs{
             bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,
-            lrType::ID, dynamicON::ID, dynamicBypass::ID, dynamicRelative::ID,
+            lrType::ID, dynamicON::ID, dynamicLearn::ID,
+            dynamicBypass::ID, dynamicRelative::ID,
             targetGain::ID, targetQ::ID, threshold::ID, kneeW::ID,
             sideFreq::ID, attack::ID, release::ID, sideQ::ID
         };
@@ -42,7 +43,7 @@ namespace zlDSP {
         constexpr static std::array defaultVs{
             float(bypass::defaultV), float(fType::defaultI), float(slope::defaultI),
             freq::defaultV, gain::defaultV, Q::defaultV,
-            float(lrType::defaultI), float(dynamicON::defaultV),
+            float(lrType::defaultI), float(dynamicON::defaultV), float(dynamicLearn::defaultV),
             float(dynamicBypass::defaultV), float(dynamicRelative::defaultV),
             targetGain::defaultV, targetQ::defaultV,
             threshold::defaultV, kneeW::defaultV,
@@ -53,13 +54,17 @@ namespace zlDSP {
             targetGain::ID, targetQ::ID, sideFreq::ID, sideQ::ID,
             dynamicBypass::ID
         };
-        constexpr static std::array dynamicResetIDs{dynamicBypass::ID, sideSolo::ID, dynamicRelative::ID};
+        constexpr static std::array dynamicResetIDs{dynamicLearn::ID, dynamicBypass::ID,
+            sideSolo::ID, dynamicRelative::ID};
+
+        constexpr static std::array dynamicLearnIDs {threshold::ID, kneeW::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void initDefaultValues();
 
         std::atomic<bool> dynamicONUpdateOthers = true;
+        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "ftlog"};
     };
 }
 

@@ -13,6 +13,9 @@ namespace zlDSP {
     template<typename FloatType>
     Controller<FloatType>::Controller(juce::AudioProcessor &processor)
         : processorRef(processor) {
+        for (auto &h: histograms) {
+            h.setSize(80);
+        }
     }
 
     template<typename FloatType>
@@ -138,7 +141,6 @@ namespace zlDSP {
         for (size_t i = 0; i < bandNUM; ++i) {
            if (dynRelatives[i].load()) {
                filters[i].getCompressor().setBaseLine(baseLine);
-               // logger.logMessage(juce::String(baseLine));
             } else {
                 filters[i].getCompressor().setBaseLine(0);
             }
@@ -209,6 +211,14 @@ namespace zlDSP {
                 }
             }
             msMainSplitter.combine(subMainBuffer);
+        }
+        for (size_t i = 0; i < bandNUM; ++i) {
+            if (filters[i].getDynamicON() && isHistON[i].load()) {
+                auto &compressor = filters[i].getCompressor();
+                const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
+                const auto histIdx = juce::jlimit(0, 80, juce::roundToInt(diff));
+                histograms[i].push(static_cast<size_t>(histIdx));
+            }
         }
     }
 
@@ -355,6 +365,14 @@ namespace zlDSP {
                 useTrackers[idx].store(true);
             }
         }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setLearningHist(const size_t idx, const bool isLearning) {
+        if (isLearning) {
+            histograms[idx].reset();
+        }
+        isHistON[idx].store(isLearning);
     }
 
     template
