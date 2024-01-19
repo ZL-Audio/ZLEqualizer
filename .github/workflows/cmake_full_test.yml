@@ -64,7 +64,7 @@ jobs:
     - name: Cache IPP (Windows)
       if: runner.os == 'Windows'
       id: cache-ipp
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: ipp-v1
         path: C:\Program Files (x86)\Intel\oneAPI\ipp
@@ -79,7 +79,7 @@ jobs:
 
     - name: Save IPP cache even on job fail
       if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         path: C:\Program Files (x86)\Intel\oneAPI\ipp
         key: ipp-v1
