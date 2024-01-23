@@ -14,6 +14,7 @@ namespace zlPanel {
                        zlInterface::UIBase &base)
         : analyzerRef(analyzer), uiBase(base) {
         path.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
+        setInterceptsMouseClicks(false, false);
         analyzerRef.setON(true);
     }
 

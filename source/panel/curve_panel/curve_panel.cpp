@@ -18,7 +18,8 @@ namespace zlPanel {
           backgroundPanel(parameters, parametersNA, base),
           fftPanel(c.getAnalyzer(), base),
           sumPanel(base, c),
-          soloPanel(parameters, parametersNA, base, c) {
+          soloPanel(parameters, parametersNA, base, c),
+          buttonPanel(parameters, parametersNA, base) {
         addAndMakeVisible(backgroundPanel);
         addAndMakeVisible(fftPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
@@ -27,6 +28,7 @@ namespace zlPanel {
         }
         addAndMakeVisible(sumPanel);
         addAndMakeVisible(soloPanel);
+        addAndMakeVisible(buttonPanel);
         parameterChanged(zlState::maximumDB::ID, parametersNA.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
 
@@ -54,6 +56,7 @@ namespace zlPanel {
         }
         sumPanel.setBounds(bound.toNearestInt());
         soloPanel.setBounds(bound.toNearestInt());
+        buttonPanel.setBounds(bound.toNearestInt());
     }
 
     void CurvePanel::parameterChanged(const juce::String &parameterID, float newValue) {

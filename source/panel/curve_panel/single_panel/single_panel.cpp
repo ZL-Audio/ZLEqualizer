@@ -38,6 +38,7 @@ namespace zlPanel {
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
 
+        setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
         addAndMakeVisible(sidePanel);
         colour = uiBase.getColorMap1(idx);
@@ -114,13 +115,19 @@ namespace zlPanel {
             g.setColour(colour);
             switch (baseF.getFilterType()) {
                 case zlIIR::FilterType::peak:
-                case zlIIR::FilterType::lowShelf:
-                case zlIIR::FilterType::highShelf:
-                case zlIIR::FilterType::bandShelf:
-                case zlIIR::FilterType::tiltShelf: {
+                case zlIIR::FilterType::bandShelf: {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
                     const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(baseF.getGain()), maximumDB.load(), bound);
+                    g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
+                    break;
+                }
+                case zlIIR::FilterType::lowShelf:
+                case zlIIR::FilterType::highShelf:
+                case zlIIR::FilterType::tiltShelf: {
+                    const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
+                    const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(baseF.getGain() / 2), maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
                     break;
                 }
@@ -142,7 +149,8 @@ namespace zlPanel {
         sidePanel.setBounds(getLocalBounds());
     }
 
-    void SinglePanel::drawCurve(const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse, bool startPath) {
+    void SinglePanel::drawCurve(const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse,
+                                bool startPath) {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         const auto maxDB = maximumDB.load();

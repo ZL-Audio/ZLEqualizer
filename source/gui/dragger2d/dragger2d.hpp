@@ -7,13 +7,10 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_GUI_H
-#define ZL_GUI_H
+#ifndef ZLTest_DRAGGER2D_HPP
+#define ZLTest_DRAGGER2D_HPP
 
-#include "interface_definitions.hpp"
-#include "button/button.hpp"
-#include "combobox/combobox.hpp"
-#include "slider/slider.hpp"
-#include "dragger2d/dragger2d.hpp"
+#include "dragger_component.hpp"
+#include "dragger_parameter_attach.hpp"
 
-#endif //ZL_GUI_H
+#endif //ZLTest_DRAGGER2D_HPP

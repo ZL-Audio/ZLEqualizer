@@ -47,9 +47,9 @@ namespace zlState {
     public:
         auto static constexpr ID = "window_w";
         auto static constexpr name = "NA";
-        inline static const int minV = 476;
-        inline static const int maxV = 1428;
-        inline static const int defaultV = 476;
+        inline static constexpr int minV = 476;
+        inline static constexpr int maxV = 1428;
+        inline static constexpr int defaultV = 476;
         inline auto static const range =
                 juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
@@ -58,9 +58,9 @@ namespace zlState {
     public:
         auto static constexpr ID = "window_h";
         auto static constexpr name = "NA";
-        inline static const int minV = 443;
-        inline static const int maxV = 1329;
-        inline static const int defaultV = 443;
+        inline static constexpr int minV = 443;
+        inline static constexpr int maxV = 1329;
+        inline static constexpr int defaultV = 443;
         inline auto static const range =
                 juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
@@ -141,6 +141,11 @@ namespace zlState {
         layout.add(uiStyle::get(),
                    windowW::get(), windowH::get());
         return layout;
+    }
+
+    inline std::string appendSuffix(std::string s, size_t i) {
+        const auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+        return s + suffix;
     }
 }
 

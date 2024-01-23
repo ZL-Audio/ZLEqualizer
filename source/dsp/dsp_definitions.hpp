@@ -115,7 +115,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "gain";
         auto static constexpr name = "Gain";
-        inline auto static const range = juce::NormalisableRange<float>(-30, 30, .1f);
+        inline auto static const range = juce::NormalisableRange<float>(-30, 30, .01f);
         auto static constexpr defaultV = 0.f;
     };
 
@@ -292,6 +292,11 @@ namespace zlDSP {
         }
         layout.add(sideChain::get());
         return layout;
+    }
+
+    inline std::string appendSuffix(std::string s, size_t i) {
+        const auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+        return s + suffix;
     }
 }
 

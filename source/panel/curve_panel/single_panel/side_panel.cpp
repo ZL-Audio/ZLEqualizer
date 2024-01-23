@@ -17,6 +17,7 @@ namespace zlPanel {
           parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
           sideF(controller.getFilter(bandIdx).getSideFilter()) {
+        setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
         colour = uiBase.getColorMap1(idx);
 

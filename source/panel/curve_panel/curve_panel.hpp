@@ -16,6 +16,7 @@
 #include "sum_panel/sum_panel.hpp"
 #include "sum_panel/solo_panel.hpp"
 #include "single_panel/single_panel.hpp"
+#include "button_panel/button_panel.hpp"
 
 namespace zlPanel {
     class CurvePanel final : public juce::Component,
@@ -40,6 +41,7 @@ namespace zlPanel {
         FFTPanel fftPanel;
         SumPanel sumPanel;
         SoloPanel soloPanel;
+        ButtonPanel buttonPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;

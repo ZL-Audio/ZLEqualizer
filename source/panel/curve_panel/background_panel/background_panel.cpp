@@ -19,6 +19,7 @@ namespace zlPanel {
         juce::ignoreUnused(parameters);
         addAndMakeVisible(gridPanel);
         addAndMakeVisible(scalePanel);
+        setInterceptsMouseClicks(false, true);
         setBufferedToImage(true);
     }
 
