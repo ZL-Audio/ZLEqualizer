@@ -64,7 +64,7 @@ namespace zlPanel {
 
         size_t findAvailableBand() const;
 
-        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "button"};
+        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "button"};
     };
 } // zlPanel
 

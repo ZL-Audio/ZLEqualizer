@@ -127,6 +127,7 @@ namespace zlPanel {
             parametersRef.getParameter(paraID)->endChangeGesture();
         }
 
+        logger.logMessage(juce::String(idx));
         auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
         para->beginChangeGesture();
         para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(idx)));
@@ -139,6 +140,7 @@ namespace zlPanel {
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 panels[i]->setSelected(i == idx);
             }
+            wheelAttachment.reset();
             wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
                     parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
         } else if (parameterID == zlState::maximumDB::ID) {

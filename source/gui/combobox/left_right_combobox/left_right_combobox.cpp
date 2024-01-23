@@ -27,6 +27,8 @@ namespace zlInterface {
         leftButton.onClick = [this]() { selectLeft(); };
         rightButton.onClick = [this]() { selectRight(); };
 
+        setInterceptsMouseClicks(false, true);
+
         addAndMakeVisible(box);
         addAndMakeVisible(leftButton);
         addAndMakeVisible(rightButton);

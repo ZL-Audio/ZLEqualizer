@@ -91,7 +91,7 @@ namespace zlPanel {
         for (auto &s: {&freqC, &gainC, &qC}) {
             s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
         }
-        lrBox.setPadding(uiBase.getFontSize(), 0.f);
+        lrBox.setPadding(uiBase.getFontSize() * 2.f, 0.f);
 
         auto bound = getLocalBounds().toFloat();
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
