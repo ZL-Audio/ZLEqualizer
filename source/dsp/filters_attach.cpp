@@ -101,16 +101,13 @@ namespace zlDSP {
             }
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
         } else if (id == dynamicLearn::ID) {
-            // logger.logMessage(juce::String(newValue));
             const auto f = static_cast<bool>(newValue);
             if (!f && controllerRef.getLearningHistON(idx)) {
-                controllerRef.setLearningHist(idx, f);
+                controllerRef.setLearningHist(idx, false);
                 const auto &hist = controllerRef.getLearningHist(idx);
                 const auto thresholdV = static_cast<float>(-hist.getPercentile(FloatType(0.5)));
                 const auto kneeV = static_cast<float>(hist.getPercentile(FloatType(0.95)) -
                                                       hist.getPercentile(FloatType(0.05))) / 120.f;
-                // logger.logMessage(juce::String(thresholdV));
-                // logger.logMessage(juce::String(kneeV));
                 const std::array dynamicLearnValues{
                     threshold::convertTo01(thresholdV),
                     kneeW::convertTo01(kneeV)
@@ -121,8 +118,9 @@ namespace zlDSP {
                     parameterRef.getParameter(initID)->setValueNotifyingHost(dynamicLearnValues[i]);
                     parameterRef.getParameter(initID)->endChangeGesture();
                 }
+            } else {
+                controllerRef.setLearningHist(idx, f);
             }
-            controllerRef.setLearningHist(idx, f);
         } else if (id == dynamicBypass::ID) {
             filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
         } else if (id == dynamicRelative::ID) {

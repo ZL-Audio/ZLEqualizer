@@ -25,7 +25,7 @@ namespace zlCompressor {
     template<typename FloatType>
     FloatType ForwardCompressor<FloatType>::process(juce::AudioBuffer<FloatType> buffer) {
         tracker.process(buffer);
-        auto x = tracker.getMomentaryLoudness() - baseLine;
+        auto x = tracker.getMomentaryLoudness() - baseLine.load();
         x = computer.process(x);
         x = juce::Decibels::decibelsToGain(x);
         x = detector.process(x);

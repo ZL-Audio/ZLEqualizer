@@ -25,8 +25,8 @@ namespace zlHistogram {
     template<typename FloatType>
     void Histogram<FloatType>::setSize(size_t x) {
         juce::ScopedWriteLock lock(histLock);
-        std::fill(hits.begin(), hits.end(), FloatType(0));
         hits.resize(x);
+        std::fill(hits.begin(), hits.end(), FloatType(0));
     }
 
     template<typename FloatType>

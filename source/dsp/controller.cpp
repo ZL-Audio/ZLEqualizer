@@ -124,7 +124,6 @@ namespace zlDSP {
         }
     }
 
-
     template<typename FloatType>
     void Controller<FloatType>::processDynamic() {
         // create main sub buffer and side sub buffer
@@ -369,7 +368,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setLearningHist(const size_t idx, const bool isLearning) {
-        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         if (isLearning) {
             histograms[idx].reset();
         }
