@@ -13,7 +13,9 @@ namespace zlPanel {
     FilterButtonPanel::FilterButtonPanel(size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
                                          juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
         : parametersRef(parameters), parametersNARef(parametersNA),
-          uiBase(base), dragger(base), band{bandIdx} {
+          uiBase(base), dragger(base),
+          buttonPopUp(bandIdx, parameters, parametersNA, base),
+          band{bandIdx} {
         dragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
         for (const auto &idx: IDs) {
             const auto idxD = zlDSP::appendSuffix(idx, band.load());
@@ -26,17 +28,29 @@ namespace zlPanel {
             parameterChanged(idxS, parametersNARef.getRawParameterValue(idxS)->load());
         }
         dragger.setScale(scale);
-        dragger.getButton().onClick = [this]() {
+        addAndMakeVisible(dragger);
+
+        buttonPopUp.setAlwaysOnTop(true);
+        dragger.getButton().onStateChange = [this]() {
             if (dragger.getButton().getToggleState()) {
                 auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
                 para->beginChangeGesture();
                 para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(band.load())));
                 para->endChangeGesture();
+
+                addAndMakeVisible(buttonPopUp);
+                buttonPopUp.componentMovedOrResized(dragger.getButton(), true, true);
+            } else {
+                buttonPopUp.setVisible(false);
+                buttonPopUp.repaint();
+
+                removeChildComponent(&buttonPopUp);
             }
         };
         dragger.setBufferedToImage(true);
         setInterceptsMouseClicks(false, true);
-        addAndMakeVisible(dragger);
+
+        dragger.getButton().addComponentListener(&buttonPopUp);
     }
 
     FilterButtonPanel::~FilterButtonPanel() {
@@ -61,6 +75,7 @@ namespace zlPanel {
         const auto parameter = parameterID.dropLastCharacters(2);
         if (parameter == zlDSP::fType::ID) {
             fType.store(static_cast<zlIIR::FilterType>(newValue));
+            buttonPopUp.setFType(fType.load());
             updateAttachment();
             updateBounds();
             triggerAsyncUpdate();
@@ -68,22 +83,29 @@ namespace zlPanel {
             const auto f = static_cast<bool>(newValue);
             dragger.setActive(f);
             dragger.setInterceptsMouseClicks(false, f);
+            if (!f) {
+                removeChildComponent(&buttonPopUp);
+            }
             triggerAsyncUpdate();
         }
     }
 
     void FilterButtonPanel::handleAsyncUpdate() {
         dragger.repaint();
+        buttonPopUp.componentMovedOrResized(dragger.getButton(), true, true);
+        buttonPopUp.repaint();
     }
 
     void FilterButtonPanel::updateAttachment() {
         const auto freqRange = juce::NormalisableRange<float>(10.f, 20000.f,
-                    [](float rangeStart, float rangeEnd, float valueToRemap) {
-                        return std::exp(valueToRemap * std::log(rangeEnd / rangeStart)) * rangeStart;
-                    },
-                    [](float rangeStart, float rangeEnd, float valueToRemap) {
-                        return std::log(valueToRemap / rangeStart) / std::log(rangeEnd / rangeStart);
-                    });
+                                                              [](float rangeStart, float rangeEnd, float valueToRemap) {
+                                                                  return std::exp(valueToRemap * std::log(
+                                                                                 rangeEnd / rangeStart)) * rangeStart;
+                                                              },
+                                                              [](float rangeStart, float rangeEnd, float valueToRemap) {
+                                                                  return std::log(valueToRemap / rangeStart) / std::log(
+                                                                             rangeEnd / rangeStart);
+                                                              });
         const auto maxDB = maximumDB.load();
         const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
         switch (fType.load()) {

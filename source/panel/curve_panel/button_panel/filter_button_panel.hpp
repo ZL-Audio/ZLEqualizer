@@ -14,6 +14,8 @@
 #include "../../../gui/gui.hpp"
 #include "../../../state/state.hpp"
 
+#include "button_pop_up.hpp"
+
 namespace zlPanel {
     class FilterButtonPanel final : public juce::Component,
                                     private juce::AudioProcessorValueTreeState::Listener,
@@ -34,6 +36,11 @@ namespace zlPanel {
 
         void setSelected(const bool f) {
             dragger.getButton().setToggleState(f, juce::NotificationType::dontSendNotification);
+            if (!f) {
+                removeChildComponent(&buttonPopUp);
+            } else {
+                // dragger.addAndMakeVisible(buttonPopUp);
+            }
         }
 
         void setMaximumDB(float db);
@@ -44,10 +51,13 @@ namespace zlPanel {
 
         void mouseDrag(const juce::MouseEvent &event) override;
 
+
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlInterface::Dragger dragger;
+        ButtonPopUp buttonPopUp;
         std::unique_ptr<zlInterface::DraggerParameterAttach> attachment;
         std::atomic<float> maximumDB;
         std::atomic<zlIIR::FilterType> fType;

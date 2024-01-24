@@ -127,7 +127,7 @@ namespace zlPanel {
             parametersRef.getParameter(paraID)->endChangeGesture();
         }
 
-        logger.logMessage(juce::String(idx));
+        // logger.logMessage(juce::String(idx));
         auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
         para->beginChangeGesture();
         para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(idx)));

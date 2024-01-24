@@ -49,10 +49,8 @@ namespace zlInterface {
                     g.setFont(uiBase.getFontSize() * FontLarge);
                     g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
-                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) - uiBase.getFontSize();
+                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .6f;
                     const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
-                    // g.setColour(uiBase.getTextInactiveColor());
-                    // g.fillRect(drawBonud);
                     if (button.getToggleState()) {
                         drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
                     } else {
