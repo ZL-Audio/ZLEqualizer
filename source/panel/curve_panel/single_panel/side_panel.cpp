@@ -49,6 +49,7 @@ namespace zlPanel {
         if (!selected.load() || !actived.load() || !dynON.load()) {
             return;
         }
+        colour = uiBase.getColorMap1(idx);
         const auto q = sideF.getQ(), freq = sideF.getFreq();
         const auto bw = 2 * std::asinh(0.5f / q) / std::log(2.f);
         const auto scale = std::pow(2.f, bw / 2.f);
