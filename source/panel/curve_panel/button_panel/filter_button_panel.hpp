@@ -57,7 +57,7 @@ namespace zlPanel {
         zlInterface::Dragger dragger;
         ButtonPopUp buttonPopUp;
         std::unique_ptr<zlInterface::DraggerParameterAttach> attachment;
-        std::atomic<float> maximumDB;
+        std::atomic<float> maximumDB {zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         std::atomic<zlIIR::FilterType> fType;
         std::atomic<size_t> band;
 

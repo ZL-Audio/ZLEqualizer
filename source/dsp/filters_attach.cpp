@@ -109,8 +109,8 @@ namespace zlDSP {
                 const auto kneeV = static_cast<float>(hist.getPercentile(FloatType(0.95)) -
                                                       hist.getPercentile(FloatType(0.05))) / 120.f;
                 const std::array dynamicLearnValues{
-                    threshold::convertTo01(thresholdV),
-                    kneeW::convertTo01(kneeV)
+                    threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)),
+                    kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV))
                 };
                 for (size_t i = 0; i < dynamicLearnIDs.size(); ++i) {
                     auto initID = dynamicLearnIDs[i] + parameterID.getLastCharacters(2);

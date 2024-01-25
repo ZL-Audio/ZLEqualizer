@@ -107,11 +107,15 @@ namespace zlPanel {
         const auto freqRange = juce::NormalisableRange<float>(10.f, 20000.f,
                                                               [](float rangeStart, float rangeEnd, float valueToRemap) {
                                                                   return std::exp(valueToRemap * std::log(
-                                                                                 rangeEnd / rangeStart)) * rangeStart;
+                                                                             rangeEnd / rangeStart)) * rangeStart;
                                                               },
                                                               [](float rangeStart, float rangeEnd, float valueToRemap) {
                                                                   return std::log(valueToRemap / rangeStart) / std::log(
                                                                              rangeEnd / rangeStart);
+                                                              },
+                                                              [](float rangeStart, float rangeEnd, float valueToRemap) {
+                                                                  return juce::jlimit(
+                                                                      rangeStart, rangeEnd, valueToRemap);
                                                               });
         const auto maxDB = maximumDB.load();
         const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
@@ -143,8 +147,10 @@ namespace zlPanel {
                     *para2, gainRange,
                     dragger);
                 attachment->enableX(true);
-                attachment->enableY(false);
-                attachment->setY(0.5f);
+                attachment->enableY(false); {
+                    const juce::MessageManagerLock mmLock;
+                    attachment->setY(0.5f);
+                }
                 attachment->sendInitialUpdate();
                 break;
             }
@@ -152,6 +158,7 @@ namespace zlPanel {
     }
 
     void FilterButtonPanel::updateBounds() {
+        const juce::MessageManagerLock mmLock;
         auto bound = getLocalBounds().toFloat();
         bound.removeFromRight((1 - 0.98761596f) * bound.getWidth() - uiBase.getFontSize() * scale * .5f);
         dragger.setPadding(0.f, uiBase.getFontSize() * scale * .5f, uiBase.getFontSize() * scale * .5f,

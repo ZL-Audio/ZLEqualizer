@@ -32,13 +32,12 @@ namespace zlInterface {
         attachmentY.sendInitialUpdate();
     }
 
-
     void DraggerParameterAttach::setX(const float newValue) const {
-        dragger.setXPortion(rangeX.convertTo0to1(newValue));
+        dragger.setXPortion(rangeX.convertTo0to1(rangeX.snapToLegalValue(newValue)));
     }
 
     void DraggerParameterAttach::setY(const float newValue) const {
-        dragger.setYPortion(rangeY.convertTo0to1(newValue));
+        dragger.setYPortion(rangeY.convertTo0to1(rangeY.snapToLegalValue(newValue)));
     }
 
     void DraggerParameterAttach::dragStarted(Dragger *) {

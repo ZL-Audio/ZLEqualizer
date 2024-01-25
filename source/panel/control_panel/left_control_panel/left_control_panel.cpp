@@ -31,7 +31,8 @@ namespace zlPanel {
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
           dynONDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadmodsine_svg, BinaryData::fadmodsine_svgSize)),
-    dynLeDrawable(juce::Drawable::createFromImageData(BinaryData::fadpreseta_svg, BinaryData::fadpreseta_svgSize)){
+          dynLeDrawable(
+              juce::Drawable::createFromImageData(BinaryData::fadpreseta_svg, BinaryData::fadpreseta_svgSize)) {
         juce::ignoreUnused(parametersNA, parametersNARef);
         // attachGroup(0);
         bypassC.setDrawable(bypassDrawable.get());
@@ -121,8 +122,10 @@ namespace zlPanel {
         sliderAttachments.clear(true);
 
         attach({&bypassC.getButton(), &soloC.getButton(), &dynONC.getButton(), &dynLC.getButton()},
-               {zlDSP::bypass::ID + suffix, zlDSP::solo::ID + suffix,
-                   zlDSP::dynamicON::ID + suffix, zlDSP::dynamicLearn::ID + suffix},
+               {
+                   zlDSP::bypass::ID + suffix, zlDSP::solo::ID + suffix,
+                   zlDSP::dynamicON::ID + suffix, zlDSP::dynamicLearn::ID + suffix
+               },
                parametersRef, buttonAttachments);
         attach({&fTypeC.getBox(), &slopeC.getBox(), &stereoC.getBox()},
                {zlDSP::fType::ID + suffix, zlDSP::slope::ID + suffix, zlDSP::lrType::ID + suffix},
@@ -151,23 +154,29 @@ namespace zlPanel {
                 case zlIIR::FilterType::lowShelf:
                 case zlIIR::FilterType::highShelf:
                 case zlIIR::FilterType::bandShelf:
-                case zlIIR::FilterType::tiltShelf:
+                case zlIIR::FilterType::tiltShelf: {
+                    const juce::MessageManagerLock mmLock;
                     gainC.setEditable(true);
                     break;
+                }
                 case zlIIR::FilterType::lowPass:
                 case zlIIR::FilterType::highPass:
                 case zlIIR::FilterType::bandPass:
-                case zlIIR::FilterType::notch:
+                case zlIIR::FilterType::notch: {
+                    const juce::MessageManagerLock mmLock;
                     gainC.setEditable(false);
                     break;
+                }
             }
             if (idx == bandIdx.load()) {
                 triggerAsyncUpdate();
             }
         } else if (id == zlDSP::dynamicON::ID) {
-            const auto f = static_cast<bool>(newValue);
-            gainC.setShowSlider2(gainC.getEditable() && f);
-            qC.setShowSlider2(f);
+            const auto f = static_cast<bool>(newValue); {
+                const juce::MessageManagerLock mmLock;
+                gainC.setShowSlider2(gainC.getEditable() && f);
+                qC.setShowSlider2(f);
+            }
             if (idx == bandIdx.load()) {
                 triggerAsyncUpdate();
             }
