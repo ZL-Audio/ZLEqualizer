@@ -18,6 +18,7 @@ namespace zlPanel {
           uiBase(base), logoPanel(state, base) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         juce::ignoreUnused(stateRef, uiBase);
+        setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
     }
 

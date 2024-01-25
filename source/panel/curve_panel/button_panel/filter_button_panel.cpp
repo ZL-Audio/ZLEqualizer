@@ -63,6 +63,12 @@ namespace zlPanel {
         }
     }
 
+    void FilterButtonPanel::paint(juce::Graphics &g) {
+        juce::ignoreUnused(g);
+        dragger.getLAF().setColour(uiBase.getColorMap1(band.load()));
+    }
+
+
     void FilterButtonPanel::resized() {
         updateBounds();
     }

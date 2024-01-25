@@ -15,16 +15,14 @@ namespace zlState {
         if (!path.isDirectory()) {
             path.createDirectory();
         }
-        uiFile = std::make_unique<juce::PropertiesFile>(
-                uiPath, juce::PropertiesFile::Options());
+        uiFile = std::make_unique<juce::PropertiesFile>(uiPath, juce::PropertiesFile::Options());
     }
 
     Property::Property(juce::AudioProcessorValueTreeState &apvts) {
         if (!path.isDirectory()) {
             path.createDirectory();
         }
-        uiFile = std::make_unique<juce::PropertiesFile>(
-                uiPath, juce::PropertiesFile::Options());
+        uiFile = std::make_unique<juce::PropertiesFile>(uiPath, juce::PropertiesFile::Options());
         loadAPVTS(apvts);
     }
 
@@ -38,8 +36,8 @@ namespace zlState {
 
     void Property::saveAPVTS(juce::AudioProcessorValueTreeState &apvts) {
         const juce::ScopedWriteLock myScopedLock(readWriteLock);
-        auto file = uiFile->getFile();
-        if (auto xml = apvts.copyState().createXml()) {
+        const auto file = uiFile->getFile();
+        if (const auto xml = apvts.copyState().createXml()) {
             xml->writeTo(file);
         }
     }

@@ -24,9 +24,10 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     PluginProcessor &processorRef;
+    zlState::Property property;
+
     zlPanel::MainPanel mainPanel;
 
-    zlState::Property property;
     juce::Value lastUIWidth, lastUIHeight;
     constexpr const static std::array IDs{
         zlState::uiStyle::ID,

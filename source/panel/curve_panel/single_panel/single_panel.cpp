@@ -58,6 +58,7 @@ namespace zlPanel {
         if (!actived.load()) {
             return;
         }
+        colour = uiBase.getColorMap1(idx);
         path.clear();
         const auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
         baseF.updateDBs();

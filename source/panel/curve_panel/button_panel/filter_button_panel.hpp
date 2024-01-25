@@ -28,6 +28,8 @@ namespace zlPanel {
 
         ~FilterButtonPanel() override;
 
+        void paint(juce::Graphics &g) override;
+
         void resized() override;
 
         zlInterface::Dragger &getDragger() { return dragger; }

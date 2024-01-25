@@ -1,8 +1,8 @@
 #include "PluginEditor.hpp"
 
 PluginEditor::PluginEditor(PluginProcessor &p)
-    : AudioProcessorEditor(&p), processorRef(p), mainPanel(p),
-      property(p.state) {
+    : AudioProcessorEditor(&p), processorRef(p), property(p.state),
+      mainPanel(p) {
     for (auto &ID: IDs) {
         processorRef.state.addParameterListener(ID, this);
     }
@@ -13,9 +13,9 @@ PluginEditor::PluginEditor(PluginProcessor &p)
 
     // set size & size listener
     setResizeLimits(zlState::windowW::minV, zlState::windowH::minV,
-        zlState::windowW::maxV, zlState::windowH::maxV);
+                    zlState::windowW::maxV, zlState::windowH::maxV);
     getConstrainer()->setFixedAspectRatio(
-            static_cast<float>(zlState::windowW::defaultV) / static_cast<float>(zlState::windowH::defaultV));
+        static_cast<float>(zlState::windowW::defaultV) / static_cast<float>(zlState::windowH::defaultV));
     setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
     lastUIWidth.referTo(p.state.getParameterAsValue(zlState::windowW::ID));
     lastUIHeight.referTo(p.state.getParameterAsValue(zlState::windowH::ID));
