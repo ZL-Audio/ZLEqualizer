@@ -17,21 +17,7 @@
 namespace zlInterface {
     class ClickButtonLookAndFeel : public juce::LookAndFeel_V4 {
     public:
-        explicit ClickButtonLookAndFeel(juce::Drawable *image, UIBase &base) : drawable(image), uiBase(base) {
-            drawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
-        }
-
-        // void drawButtonBackground(juce::Graphics &g, juce::Button &button, const juce::Colour &backgroundColour,
-        //                           bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override {
-        //     juce::ignoreUnused(backgroundColour, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
-        //     juce::Path path;
-        //     const auto bound = button.getLocalBounds().toFloat();
-        //     path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-        //                              cornerSize.load(), cornerSize.load(),
-        //                              curveTL.load(), curveTR.load(), curveBL.load(), curveBR.load());
-        //     g.setColour(uiBase.getTextInactiveColor());
-        //     g.fillPath(path);
-        // }
+        explicit ClickButtonLookAndFeel(juce::Drawable *image, UIBase &base) : drawable(image), uiBase(base) {}
 
         void drawDrawableButton(juce::Graphics &g, juce::DrawableButton &button, bool shouldDrawButtonAsHighlighted,
                                 bool shouldDrawButtonAsDown) override {
@@ -40,16 +26,18 @@ namespace zlInterface {
             bound = bound.withSizeKeepingCentre(bound.getWidth() - padding.load(),
                                                 bound.getHeight() - padding.load());
             if (drawable != nullptr) {
+                const auto tempDrawable = drawable->createCopy();
+                tempDrawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
                 if (editable.load()) {
                     if (shouldDrawButtonAsDown) {
-                        drawable->drawWithin(g, bound, juce::RectanglePlacement::centred, 1.f);
+                        tempDrawable->drawWithin(g, bound, juce::RectanglePlacement::centred, 1.f);
                     } else if (shouldDrawButtonAsHighlighted) {
-                        drawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .75f);
+                        tempDrawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .75f);
                     } else {
-                        drawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .5f);
+                        tempDrawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .5f);
                     }
                 } else {
-                    drawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .25f);
+                    tempDrawable->drawWithin(g, bound, juce::RectanglePlacement::centred, .25f);
                 }
             }
         }
