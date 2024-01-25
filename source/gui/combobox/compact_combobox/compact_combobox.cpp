@@ -66,20 +66,18 @@ namespace zlInterface {
 
     void CompactCombobox::mouseExit(const juce::MouseEvent &event) {
         comboBox.mouseExit(event);
-        // if (!comboBox.isPopupActive()) {
-            animator.cancelAnimation(animationId, false);
-            if (animator.getAnimation(animationId) != nullptr)
-                return;
-            auto effect{
-                friz::makeAnimation<friz::Parametric, 1>(
-                    animationId, {boxLookAndFeel.getBoxAlpha()}, {0.f}, 1000, friz::Parametric::kEaseOutQuad)
-            };
-            effect->updateFn = [this](int, const auto &vals) {
-                boxLookAndFeel.setBoxAlpha(vals[0]);
-                comboBox.repaint();
-            };
-            animator.addAnimation(std::move(effect));
-        // }
+        animator.cancelAnimation(animationId, false);
+        if (animator.getAnimation(animationId) != nullptr)
+            return;
+        auto effect{
+            friz::makeAnimation<friz::Parametric, 1>(
+                animationId, {boxLookAndFeel.getBoxAlpha()}, {0.f}, 1000, friz::Parametric::kEaseOutQuad)
+        };
+        effect->updateFn = [this](int, const auto &vals) {
+            boxLookAndFeel.setBoxAlpha(vals[0]);
+            comboBox.repaint();
+        };
+        animator.addAnimation(std::move(effect));
     }
 
     void CompactCombobox::mouseMove(const juce::MouseEvent &event) {

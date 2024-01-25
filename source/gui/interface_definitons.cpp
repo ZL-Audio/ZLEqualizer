@@ -10,9 +10,7 @@
 #include "interface_definitions.hpp"
 
 namespace zlInterface {
-    UIBase::UIBase() {
-        fontSize.store(0.0f);
-        styleID.store(0);
+    UIBase::UIBase() : fontSize{0.f}, styleID{0} {
     }
 
     juce::Rectangle<float> UIBase::getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds, float cornerSize,

@@ -40,12 +40,15 @@ namespace zlPanel {
         std::atomic<size_t> band;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        std::atomic<float> width {5.f}, height {2.5f};
+        std::atomic<float> width {5.5f}, height {4.16667f};
         std::atomic<zlIIR::FilterType> fType;
 
         zlInterface::CompactButton bypassC, soloC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
         const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable;
+
+        zlInterface::CompactCombobox fTypeC;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
     };
 } // zlPanel
 

@@ -18,25 +18,38 @@ namespace zlPanel {
           soloC("S", base),
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
-          soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)) {
+          soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
+          fTypeC("", zlDSP::fType::choices, base) {
         juce::ignoreUnused(parametersNARef);
 
+        bypassC.getLAF().enableShadow(false);
+        soloC.getLAF().enableShadow(false);
         bypassC.setDrawable(bypassDrawable.get());
         soloC.setDrawable(soloDrawable.get());
         for (auto &c: {&bypassC, &soloC}) {
             addAndMakeVisible(c);
         }
-
         attach({&bypassC.getButton(), &soloC.getButton()},
                {
                    zlDSP::appendSuffix(zlDSP::bypass::ID, bandIdx),
                    zlDSP::appendSuffix(zlDSP::solo::ID, bandIdx)
                },
                parametersRef, buttonAttachments);
+
+        fTypeC.getLAF().setFontScale(1.25f);
+        for (auto &c: {&fTypeC}) {
+            addAndMakeVisible(c);
+        }
+        attach({&fTypeC.getBox()},
+               {zlDSP::appendSuffix(zlDSP::fType::ID, bandIdx)},
+               parametersRef, boxAttachments);
+
     }
 
     void ButtonPopUp::paint(juce::Graphics &g) {
-        g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.5f));
+        g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
+        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
+        g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
         g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
     }
 
@@ -45,13 +58,14 @@ namespace zlPanel {
         using Track = juce::Grid::TrackInfo;
         using Fr = juce::Grid::Fr;
 
-        grid.templateRows = {Track(Fr(1))};
+        grid.templateRows = {Track(Fr(60)), Track(Fr(40))};
         grid.templateColumns = {
             Track(Fr(30)), Track(Fr(30))
         };
         grid.items = {
             juce::GridItem(bypassC).withArea(1, 1),
             juce::GridItem(soloC).withArea(1, 2),
+            juce::GridItem(fTypeC).withArea(2, 1, 3, 3)
         };
 
         auto bound = getLocalBounds().toFloat();

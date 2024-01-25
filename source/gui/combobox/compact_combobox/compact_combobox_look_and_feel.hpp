@@ -37,11 +37,14 @@ namespace zlInterface {
                 uiBase->fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize,
                                                         {
                                                             .blurRadius = 0.45f, .flip = true,
+                                                            .mainColour = uiBase->getBackgroundColor().
+                                                            withMultipliedAlpha(
+                                                                juce::jlimit(.25f, .5f, boxAlpha.load())),
                                                             .darkShadowColor = uiBase->getDarkShadowColor().
                                                             withMultipliedAlpha(boxAlpha.load()),
                                                             .brightShadowColor = uiBase->getBrightShadowColor().
                                                             withMultipliedAlpha(boxAlpha.load()),
-                                                            .changeDark = true, .changeBright = true
+                                                            .changeMain = true, .changeDark = true, .changeBright = true
                                                         });
             }
         }
@@ -64,11 +67,7 @@ namespace zlInterface {
             const auto cornerSize = uiBase->getFontSize() * 0.375f;
             const auto boxBounds = juce::Rectangle<float>(0, 0, static_cast<float>(width),
                                                           static_cast<float>(height));
-            // boxBounds = uiBase->fillRoundedShadowRectangle(g, boxBounds, cornerSize,
-            //                                                {.curveTopLeft = true, .curveTopRight = true});
             uiBase->fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize, {.blurRadius = 0.45f, .flip = true});
-            // g.setColour(uiBase->getTextInactiveColor());
-            // g.fillRect(boxBounds.getX(), 0.0f, boxBounds.getWidth(), cornerSize * 0.15f);
         }
 
         void getIdealPopupMenuItemSize(const juce::String &text, const bool isSeparator, int standardMenuItemHeight,

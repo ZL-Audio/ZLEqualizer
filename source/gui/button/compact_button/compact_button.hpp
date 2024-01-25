@@ -36,6 +36,8 @@ namespace zlInterface {
 
         inline void setDrawable(juce::Drawable *x) { lookAndFeel.setDrawable(x); }
 
+        CompactButtonLookAndFeel &getLAF() {return lookAndFeel;}
+
     private:
         UIBase &uiBase;
 

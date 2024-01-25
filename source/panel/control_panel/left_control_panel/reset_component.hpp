@@ -40,7 +40,8 @@ namespace zlPanel {
 
         constexpr static std::array resetIDs{
             zlDSP::solo::ID,
-            zlDSP::dynamicON::ID, zlDSP::threshold::ID, zlDSP::kneeW::ID, zlDSP::attack::ID, zlDSP::release::ID,
+            zlDSP::dynamicON::ID, zlDSP::dynamicLearn::ID,
+            zlDSP::threshold::ID, zlDSP::kneeW::ID, zlDSP::attack::ID, zlDSP::release::ID,
             zlDSP::bypass::ID, zlDSP::fType::ID, zlDSP::slope::ID, zlDSP::freq::ID,
             zlDSP::gain::ID, zlDSP::Q::ID, zlDSP::lrType::ID
         };
@@ -48,6 +49,7 @@ namespace zlPanel {
         inline const static std::array resetDefaultVs{
             zlDSP::solo::convertTo01(zlDSP::solo::defaultV),
             zlDSP::dynamicON::convertTo01(zlDSP::dynamicON::defaultV),
+            zlDSP::dynamicLearn::convertTo01(zlDSP::dynamicLearn::defaultV),
             zlDSP::threshold::convertTo01(zlDSP::threshold::defaultV),
             zlDSP::kneeW::convertTo01(zlDSP::kneeW::defaultV),
             zlDSP::attack::convertTo01(zlDSP::attack::defaultV),

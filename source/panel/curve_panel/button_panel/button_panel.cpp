@@ -96,12 +96,12 @@ namespace zlPanel {
         if (freq < 20.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::highPass));
-        } else if (freq < 30.f) {
+        } else if (freq < 50.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::lowShelf));
             initIDs.emplace_back(zlDSP::gain::ID);
             initValues.emplace_back(zlDSP::gain::convertTo01(db));
-        } else if (freq < 10000.f) {
+        } else if (freq < 5000.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::peak));
             initIDs.emplace_back(zlDSP::gain::ID);

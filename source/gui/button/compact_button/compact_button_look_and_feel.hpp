@@ -25,8 +25,14 @@ namespace zlInterface {
             juce::ignoreUnused(shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
 
             auto bounds = button.getLocalBounds().toFloat();
-            bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f, {});
-            bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f, {.flip = true});
+            if (withShadow.load()) {
+                bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f, {});
+                bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f, {.flip = true});
+            } else {
+                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.4f, {});
+                g.setColour(uiBase.getBackgroundColor());
+                g.fillEllipse(bounds);
+            }
             if (button.getToggleState()) {
                 const auto innerBound = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
                 uiBase.drawInnerShadowEllipse(g, innerBound, uiBase.getFontSize() * 0.375f, {
@@ -49,7 +55,7 @@ namespace zlInterface {
                     g.setFont(uiBase.getFontSize() * FontLarge);
                     g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
-                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .6f;
+                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f;
                     const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
                     if (button.getToggleState()) {
                         drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
@@ -71,8 +77,10 @@ namespace zlInterface {
             drawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
         }
 
+        void enableShadow(const bool f) { withShadow.store(f); }
+
     private:
-        std::atomic<bool> editable = true;
+        std::atomic<bool> editable = true, withShadow = true;
         std::atomic<float> buttonDepth = 0.f;
         juce::Drawable *drawable = nullptr;
 
