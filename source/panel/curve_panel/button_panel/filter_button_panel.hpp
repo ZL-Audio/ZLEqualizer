@@ -38,8 +38,6 @@ namespace zlPanel {
             dragger.getButton().setToggleState(f, juce::NotificationType::dontSendNotification);
             if (!f) {
                 removeChildComponent(&buttonPopUp);
-            } else {
-                // dragger.addAndMakeVisible(buttonPopUp);
             }
         }
 
@@ -50,8 +48,6 @@ namespace zlPanel {
         void mouseUp(const juce::MouseEvent &event) override;
 
         void mouseDrag(const juce::MouseEvent &event) override;
-
-
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -66,7 +62,6 @@ namespace zlPanel {
         static constexpr std::array IDs{zlDSP::fType::ID};
         static constexpr std::array NAIDs{zlState::active::ID};
         static constexpr auto scale = 1.5f;
-
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

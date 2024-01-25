@@ -10,7 +10,7 @@
 #include "filter_button_panel.hpp"
 
 namespace zlPanel {
-    FilterButtonPanel::FilterButtonPanel(size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
+    FilterButtonPanel::FilterButtonPanel(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
                                          juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
         : parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), dragger(base),
@@ -39,6 +39,7 @@ namespace zlPanel {
                 para->endChangeGesture();
 
                 addAndMakeVisible(buttonPopUp);
+                buttonPopUp.toFront(false);
                 buttonPopUp.componentMovedOrResized(dragger.getButton(), true, true);
             } else {
                 buttonPopUp.setVisible(false);

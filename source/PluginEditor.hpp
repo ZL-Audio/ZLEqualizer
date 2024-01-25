@@ -3,9 +3,13 @@
 #include "PluginProcessor.hpp"
 #include "BinaryData.h"
 #include "panel/main_panel.hpp"
+#include "state/state.hpp"
 
 //==============================================================================
-class PluginEditor : public juce::AudioProcessorEditor {
+class PluginEditor : public juce::AudioProcessorEditor,
+                     private juce::Value::Listener,
+                     private juce::AudioProcessorValueTreeState::Listener,
+                     private juce::AsyncUpdater  {
 public:
     explicit PluginEditor(PluginProcessor &);
 
@@ -21,5 +25,19 @@ private:
     // access the processor object that created it.
     PluginProcessor &processorRef;
     zlPanel::MainPanel mainPanel;
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
+
+    zlState::Property property;
+    juce::Value lastUIWidth, lastUIHeight;
+    constexpr const static std::array IDs{
+        zlState::uiStyle::ID,
+        zlState::windowW::ID,
+        zlState::windowH::ID
+    };
+
+    void valueChanged(juce::Value &) override;
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+    void handleAsyncUpdate() override;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };

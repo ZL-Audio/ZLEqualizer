@@ -50,10 +50,11 @@ namespace zlInterface {
             {},
             {
                 .TextColor = juce::Colour(255 - 8, 255 - 9, 255 - 11),
-                .BackgroundColor = juce::Colour(255 - 214, 255 - 223, 255 - 236),
+                // .BackgroundColor = juce::Colour(255 - 214, 255 - 223, 255 - 236),
+                .BackgroundColor = juce::Colour((255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2),
                 .TextLightColor = juce::Colour(137, 125, 109),
                 .DarkShadowColor = juce::Colour(0, 0, 0),
-                .BrightShadowColor = juce::Colour(255 - 168, 255 - 172, 255 - 178),
+                .BrightShadowColor = juce::Colour(255 - 168, 255 - 172, 255 - 178).withMultipliedBrightness(.8f),
                 .ExtraColor1 = juce::Colour(255 - 139, 255, 255),
                 .ColorMap1 = {
                     juce::Colour(224, 136, 75),

@@ -64,10 +64,10 @@ namespace zlInterface {
         button.setBounds(buttonBound.toNearestInt());
         // set constrainer
         const auto minimumOffset = uiBase.getFontSize() * scale.load() * .5f;
-        constrainer.setMinimumOnscreenAmounts(juce::roundToInt(minimumOffset + uPadding + .5f),
-                                              juce::roundToInt(minimumOffset + lPadding + .5f),
-                                              juce::roundToInt(minimumOffset + bPadding + .5f),
-                                              juce::roundToInt(minimumOffset + rPadding + .5f));
+        constrainer.setMinimumOnscreenAmounts(static_cast<int>(std::floor(minimumOffset + uPadding + .5f)),
+                                              static_cast<int>(std::floor(minimumOffset + lPadding + .5f)),
+                                              static_cast<int>(std::floor(minimumOffset + bPadding + .5f)),
+                                              static_cast<int>(std::floor(minimumOffset + rPadding + .5f)));
     }
 
     void Dragger::addListener(Listener *listener) {

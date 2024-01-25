@@ -29,7 +29,7 @@ namespace zlInterface {
                 bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f, {});
                 bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f, {.flip = true});
             } else {
-                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.4f, {});
+                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.3f, {});
                 g.setColour(uiBase.getBackgroundColor());
                 g.fillEllipse(bounds);
             }
@@ -55,12 +55,14 @@ namespace zlInterface {
                     g.setFont(uiBase.getFontSize() * FontLarge);
                     g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
+                    const auto tempDrawable = drawable->createCopy();
+                    tempDrawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
                     const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f;
                     const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
                     if (button.getToggleState()) {
-                        drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
+                        tempDrawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
                     } else {
-                        drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
+                        tempDrawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
                     }
                 }
             }
@@ -74,7 +76,6 @@ namespace zlInterface {
 
         inline void setDrawable(juce::Drawable *x) {
             drawable = x;
-            drawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
         }
 
         void enableShadow(const bool f) { withShadow.store(f); }

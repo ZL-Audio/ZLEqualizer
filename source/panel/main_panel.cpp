@@ -11,26 +11,44 @@
 
 namespace zlPanel {
     MainPanel::MainPanel(PluginProcessor &p)
-        : controlPanel(p.parameters, p.parametersNA, uiBase),
-          curvePanel(p.parameters, p.parametersNA, uiBase, p.getController()) {
+        : state(p.state),
+          controlPanel(p.parameters, p.parametersNA, uiBase),
+          curvePanel(p.parameters, p.parametersNA, uiBase, p.getController()),
+          statePanel(p.parameters, p.parametersNA, p.state, uiBase) {
+        uiBase.setStyle(static_cast<size_t>(p.state.getRawParameterValue(zlState::uiStyle::ID)->load()));
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(controlPanel);
+        addAndMakeVisible(statePanel);
+        state.addParameterListener(zlState::uiStyle::ID, this);
+    }
+
+    MainPanel::~MainPanel() {
+        state.removeParameterListener(zlState::uiStyle::ID, this);
     }
 
     void MainPanel::paint(juce::Graphics &g) {
         g.fillAll(uiBase.getBackgroundColor());
-        // const auto bound = getLocalBounds().toFloat();
-        // uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
     }
 
     void MainPanel::resized() {
         auto bound = getLocalBounds().toFloat();
         uiBase.setFontSize(bound.getWidth() * 0.014287762237762238f);
-        // bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
 
-        // const auto controlBound = bound.removeFromBottom(bound.getWidth() * 0.12354312354312354f);
+        const auto stateBound = bound.removeFromTop(bound.getHeight() * .06f);
+        statePanel.setBounds(stateBound.toNearestInt());
+
         const auto controlBound = bound.removeFromBottom(bound.getWidth() * 0.105f);
         controlPanel.setBounds(controlBound.toNearestInt());
+
         curvePanel.setBounds(bound.toNearestInt());
+    }
+
+    void MainPanel::parameterChanged(const juce::String &parameterID, float newValue) {
+        juce::ignoreUnused(parameterID, newValue);
+        triggerAsyncUpdate();
+    }
+
+    void MainPanel::handleAsyncUpdate() {
+        sendLookAndFeelChange();
     }
 }

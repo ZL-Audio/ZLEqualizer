@@ -26,13 +26,15 @@ namespace zlPanel {
     BackgroundPanel::~BackgroundPanel() = default;
 
     void BackgroundPanel::paint(juce::Graphics &g) {
-        auto bound = getLocalBounds().toFloat();
-        uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+        juce::ignoreUnused(g);
+        g.fillAll(uiBase.getBackgroundColor());
+        // auto bound = getLocalBounds().toFloat();
+        // uiBase.fillRoundedShadowRectangle(g, bound, 0.05f * uiBase.getFontSize(), {.blurRadius = 0.25f});
     }
 
     void BackgroundPanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+        // bound = uiBase.getRoundedShadowRectangleArea(bound, 0.05f * uiBase.getFontSize(), {.blurRadius = 0.25f});
         const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4);
         gridPanel.setBounds(bound.toNearestInt());
         scalePanel.setBounds(scaleBound.toNearestInt());

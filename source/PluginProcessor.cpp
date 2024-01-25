@@ -14,6 +14,9 @@ PluginProcessor::PluginProcessor()
       parametersNA(dummyProcessor, nullptr,
                    juce::Identifier("ZLEqualizerParametersNA"),
                    zlState::getNAParameterLayout()),
+      state(dummyProcessor, nullptr,
+            juce::Identifier("ZLEqualizerState"),
+            zlState::getStateParameterLayout()),
       controller(*this),
       filtersAttach(*this, parameters, controller),
       soloAttach(*this, parameters, controller),
@@ -137,7 +140,7 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
     auto tempTree = juce::ValueTree("ZLEqualizerParaState");
     tempTree.appendChild(parameters.copyState(), nullptr);
     tempTree.appendChild(parametersNA.copyState(), nullptr);
-    std::unique_ptr<juce::XmlElement> xml(tempTree.createXml());
+    const std::unique_ptr<juce::XmlElement> xml(tempTree.createXml());
     copyXmlToBinary(*xml, destData);
 }
 

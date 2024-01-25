@@ -36,20 +36,19 @@ namespace zlState {
     class uiStyle : public FloatParameters<uiStyle> {public:
         auto static constexpr ID = "ui_style";
         auto static constexpr name = "NA";
-        inline static const int minV = 0;
-        inline static const int maxV = 1;
-        inline static const int defaultV = 1;
-        inline auto static const range =
-                juce::NormalisableRange<float>(minV, maxV, 1.f);
+        inline static constexpr int minV = 0;
+        inline static constexpr int maxV = 1;
+        inline static constexpr int defaultV = 1;
+        inline auto static const range = juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
 
     class windowW : public FloatParameters<windowW> {
     public:
         auto static constexpr ID = "window_w";
         auto static constexpr name = "NA";
-        inline static constexpr int minV = 476;
-        inline static constexpr int maxV = 1428;
-        inline static constexpr int defaultV = 476;
+        inline static constexpr int minV = 600;
+        inline static constexpr int maxV = 6000;
+        inline static constexpr int defaultV = 704;
         inline auto static const range =
                 juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
@@ -58,9 +57,9 @@ namespace zlState {
     public:
         auto static constexpr ID = "window_h";
         auto static constexpr name = "NA";
-        inline static constexpr int minV = 443;
-        inline static constexpr int maxV = 1329;
-        inline static constexpr int defaultV = 443;
+        inline static constexpr int minV = 375;
+        inline static constexpr int maxV = 3750;
+        inline static constexpr int defaultV = 440;
         inline auto static const range =
                 juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
@@ -146,6 +145,13 @@ namespace zlState {
     inline std::string appendSuffix(std::string s, size_t i) {
         const auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
         return s + suffix;
+    }
+
+    inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
+        juce::AudioProcessorValueTreeState::ParameterLayout layout;
+        layout.add(uiStyle::get(),
+                   windowW::get(), windowH::get());
+        return layout;
     }
 }
 
