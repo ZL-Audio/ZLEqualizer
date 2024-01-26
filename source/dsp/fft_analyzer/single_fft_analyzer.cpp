@@ -12,7 +12,7 @@
 namespace zlFFT {
     template<typename FloatType>
     SingleFFTAnalyzer<FloatType>::SingleFFTAnalyzer(const std::string &name) : Thread(name) {
-        startThread(juce::Thread::Priority::low);
+        startThread(juce::Thread::Priority::background);
     }
 
     template<typename FloatType>
