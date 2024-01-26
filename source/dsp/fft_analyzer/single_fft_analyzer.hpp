@@ -37,6 +37,8 @@ namespace zlFFT {
 
         inline bool getIsAudioReady() const { return isAudioReady.load(); }
 
+        inline bool getIsFFTReady() const { return isFFTReady.load(); }
+
     private:
         std::atomic<size_t> delay = 0;
         std::atomic<bool> isAudioReady = false, isFFTReady = false;
@@ -45,8 +47,8 @@ namespace zlFFT {
 
         std::vector<float> smoothedDBs;
         static constexpr size_t preScale = 3;
-        std::array<float, zlIIR::frequencies.size() / preScale + 2> preInterplotDBs {};
-        std::array<float, zlIIR::frequencies.size()> interplotDBs {};
+        std::array<float, zlIIR::frequencies.size() / preScale + 2> preInterplotDBs{};
+        std::array<float, zlIIR::frequencies.size()> interplotDBs{};
         std::atomic<float> deltaT;
 
         std::unique_ptr<juce::dsp::FFT> fft;

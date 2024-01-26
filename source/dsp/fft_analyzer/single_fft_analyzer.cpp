@@ -12,7 +12,7 @@
 namespace zlFFT {
     template<typename FloatType>
     SingleFFTAnalyzer<FloatType>::SingleFFTAnalyzer(const std::string &name) : Thread(name) {
-        startThread(juce::Thread::Priority::background);
+        startThread(juce::Thread::Priority::low);
     }
 
     template<typename FloatType>
@@ -61,7 +61,9 @@ namespace zlFFT {
             } else {
                 isAudioReady.store(true);
                 audioIndex = 0;
-                notify();
+                // if (!isFFTReady.load()) {
+                //     notify();
+                // }
                 break;
             }
         }
@@ -70,7 +72,7 @@ namespace zlFFT {
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::run() {
         while (!threadShouldExit()) {
-            if (isAudioReady.load()) {
+            if (isAudioReady.load() && !isFFTReady.load()) {
                 juce::ScopedReadLock lock1(fftParaLock);
                 fftBuffer.copyFrom(0, 0, audioBuffer, 0, 0, audioBuffer.getNumSamples());
 
@@ -106,6 +108,7 @@ namespace zlFFT {
                 }
 
                 isAudioReady.store(false);
+                isFFTReady.store(true);
             } else {
                 const auto flag = wait(-1);
                 juce::ignoreUnused(flag);
@@ -117,9 +120,7 @@ namespace zlFFT {
     void SingleFFTAnalyzer<FloatType>::createPath(juce::Path &path, const juce::Rectangle<float> bound) {
         path.clear();
         juce::ScopedLock lock(ampUpdatedLock);
-
         path.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
-
         size_t i = 0;
         while (i < zlIIR::frequencies.size()) {
             const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
@@ -132,6 +133,8 @@ namespace zlFFT {
             }
             i += 1;
         }
+        isFFTReady.store(false);
+        notify();
     }
 
     template
