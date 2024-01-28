@@ -13,7 +13,8 @@ namespace zlPanel {
     FFTPanel::FFTPanel(zlFFT::PrePostFFTAnalyzer<double> &analyzer,
                        zlInterface::UIBase &base)
         : analyzerRef(analyzer), uiBase(base) {
-        path.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
+        path1.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
+        path2.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
         setInterceptsMouseClicks(false, false);
         analyzerRef.setON(true);
     }
@@ -25,24 +26,30 @@ namespace zlPanel {
     void FFTPanel::paint(juce::Graphics &g) {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-        path.clear();
-        analyzerRef.getPreFFT().createPath(path, bound);
-        path.lineTo(getLocalBounds().getBottomRight().toFloat());
-        path.lineTo(getLocalBounds().getBottomLeft().toFloat());
-        path.closeSubPath();
+        if (analyzerRef.getPreFFT().getIsFFTReady() && analyzerRef.getPostFFT().getIsFFTReady()) {
+            path1.clear();
+            analyzerRef.getPreFFT().createPath(path1, bound);
+            analyzerRef.getPreFFT().resetDecay();
+            path1.lineTo(getLocalBounds().getBottomRight().toFloat());
+            path1.lineTo(getLocalBounds().getBottomLeft().toFloat());
+            path1.closeSubPath();
+            path2.clear();
+            analyzerRef.getPostFFT().createPath(path2, bound);
+            analyzerRef.getPostFFT().resetDecay();
+            path2.lineTo(getLocalBounds().getBottomRight().toFloat());
+            path2.lineTo(getLocalBounds().getBottomLeft().toFloat());
+            path2.closeSubPath();
+        }
+        analyzerRef.getPreFFT().nextDecay();
+        analyzerRef.getPostFFT().nextDecay();
         g.setColour(uiBase.getTextColor().withAlpha(0.1f));
-        g.fillPath(path);
+        g.fillPath(path1);
 
-        path.clear();
-        analyzerRef.getPostFFT().createPath(path, bound);
         g.setColour(uiBase.getTextColor().withAlpha(0.5f));
         const auto thickness = uiBase.getFontSize() * 0.1f;
-        g.strokePath(path, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
+        g.strokePath(path2, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
                                                 juce::PathStrokeType::rounded));
-        path.lineTo(getLocalBounds().getBottomRight().toFloat());
-        path.lineTo(getLocalBounds().getBottomLeft().toFloat());
-        path.closeSubPath();
         g.setColour(uiBase.getTextColor().withAlpha(0.1f));
-        g.fillPath(path);
+        g.fillPath(path2);
     }
 } // zlPanel

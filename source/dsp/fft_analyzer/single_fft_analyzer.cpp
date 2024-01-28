@@ -25,7 +25,7 @@ namespace zlFFT {
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         sampleRate.store(static_cast<float>(spec.sampleRate));
-        setOrder(12);
+        setOrder(11);
     }
 
     template<typename FloatType>
@@ -41,10 +41,10 @@ namespace zlFFT {
         fftBuffer.setSize(1, static_cast<int>(fftSize.load()) * 2);
 
         smoothedDBs.resize(fftSize.load() / 2 + 2);
-        smoothedDBs.front() = minDB;
-        smoothedDBs.back() = minDB;
+        std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB);
 
         deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
+        decayRate.store(0.95f);
     }
 
     template<typename FloatType>
@@ -61,9 +61,9 @@ namespace zlFFT {
             } else {
                 isAudioReady.store(true);
                 audioIndex = 0;
-                // if (!isFFTReady.load()) {
-                //     notify();
-                // }
+                if (!isFFTReady.load()) {
+                    notify();
+                }
                 break;
             }
         }
@@ -80,12 +80,13 @@ namespace zlFFT {
                 fft->performFrequencyOnlyForwardTransform(fftBuffer.getWritePointer(0));
                 const auto mBuffer = fftBuffer.getReadPointer(0);
 
+                const auto decay = currentDecay.load();
                 juce::ScopedLock lock2(ampUpdatedLock);
                 for (size_t i = 0; i < fftSize.load() / 2; ++i) {
                     const auto currentDB = juce::Decibels::gainToDecibels(
                         2 * mBuffer[i] / static_cast<float>(fftSize.load()));
                     smoothedDBs[i + 1] = currentDB < smoothedDBs[i + 1]
-                                             ? smoothedDBs[i + 1] * 0.875f + currentDB * 0.125f
+                                             ? smoothedDBs[i + 1] * decay + currentDB * (1 - decay)
                                              : currentDB;
                 }
 
