@@ -257,6 +257,14 @@ namespace zlInterface {
     void TwoValueRotarySlider::editorShown(juce::Label *l, juce::TextEditor &editor) {
         juce::ignoreUnused(l);
         editor.setInputRestrictions(0, "-0123456789.kK");
+
+        labelLookAndFeel.setAlpha(0);
+        labelLookAndFeel1.setAlpha(1);
+        labelLookAndFeel2.setAlpha(1);
+
+        for (auto &ll: {&label, &label1, &label2}) {
+            ll->repaint();
+        }
     }
 
     void TwoValueRotarySlider::editorHidden(juce::Label *l, juce::TextEditor &editor) {
