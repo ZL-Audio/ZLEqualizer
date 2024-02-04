@@ -39,6 +39,8 @@ namespace zlFFT {
 
         inline bool getIsFFTReady() const { return isFFTReady.load(); }
 
+        void setDecayRate(const float x) { decayRate.store(x); }
+
         void resetDecay() { currentDecay.store(1.f); }
 
         void nextDecay() { currentDecay.store(currentDecay.load() * decayRate.load()); }

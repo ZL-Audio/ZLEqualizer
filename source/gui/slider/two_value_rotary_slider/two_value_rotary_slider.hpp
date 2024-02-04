@@ -14,7 +14,8 @@
 #include "../../label/name_look_and_feel.hpp"
 
 namespace zlInterface {
-    class TwoValueRotarySlider : public juce::Component {
+    class TwoValueRotarySlider : public juce::Component,
+    private juce::Label::Listener, private juce::Slider::Listener {
     public:
         explicit TwoValueRotarySlider(const juce::String &labelText, UIBase &base);
 
@@ -71,6 +72,8 @@ namespace zlInterface {
         juce::Label label, label1, label2;
         NameLookAndFeel labelLookAndFeel, labelLookAndFeel1, labelLookAndFeel2;
 
+        NameLookAndFeel textBoxLAF;
+
         std::atomic<bool> showSlider2 = true, mouseOver, editable;
         std::atomic<float> lrPad = 0, ubPad = 0;
 
@@ -78,6 +81,14 @@ namespace zlInterface {
         static constexpr int animationId = 1;
 
         static juce::String getDisplayValue(juce::Slider &s);
+
+        void labelTextChanged(juce::Label *labelThatHasChanged) override;
+
+        void editorShown(juce::Label *l, juce::TextEditor &editor) override;
+
+        void editorHidden(juce::Label *l, juce::TextEditor &editor) override;
+
+        void sliderValueChanged(juce::Slider *slider) override;
     };
 }
 

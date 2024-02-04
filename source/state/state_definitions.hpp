@@ -113,6 +113,28 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
+    class ffTOrder : public ChoiceParameters<ffTOrder> {
+    public:
+        auto static constexpr ID = "fft_order";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Low", "Medium", "High"
+        };
+        static constexpr std::array<int, 3> orders {10, 11, 12};
+        int static constexpr defaultI = 1;
+    };
+
+    class ffTSpeed : public ChoiceParameters<ffTSpeed> {
+    public:
+        auto static constexpr ID = "fft_speed";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Fast", "Medium", "Slow", "Frozen"
+        };
+        static constexpr std::array<float, 4> speeds {0.93f, 0.95f, 0.975f, 1.0f};
+        int static constexpr defaultI = 1;
+    };
+
     class active : public BoolParameters<active> {
     public:
         auto static constexpr ID = "active";

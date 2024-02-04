@@ -23,6 +23,9 @@ namespace zlInterface {
         }
 
         void drawLabel(juce::Graphics &g, juce::Label &label) override {
+            if (label.isBeingEdited()) {
+                return;
+            }
             if (editable) {
                 g.setColour(uiBase->getTextColor().withMultipliedAlpha(alpha.load()));
             } else {

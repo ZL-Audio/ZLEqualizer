@@ -9,6 +9,8 @@
 
 #include "single_fft_analyzer.hpp"
 
+#include "../../state/state_definitions.hpp"
+
 namespace zlFFT {
     template<typename FloatType>
     SingleFFTAnalyzer<FloatType>::SingleFFTAnalyzer(const std::string &name) : Thread(name) {
@@ -25,7 +27,7 @@ namespace zlFFT {
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         sampleRate.store(static_cast<float>(spec.sampleRate));
-        setOrder(11);
+        setOrder(zlState::ffTOrder::orders[static_cast<size_t>(zlState::ffTOrder::defaultI)]);
     }
 
     template<typename FloatType>
@@ -44,7 +46,7 @@ namespace zlFFT {
         std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB);
 
         deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
-        decayRate.store(0.95f);
+        decayRate.store(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]);
     }
 
     template<typename FloatType>
