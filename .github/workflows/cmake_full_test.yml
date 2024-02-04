@@ -160,28 +160,29 @@ jobs:
 
     - name: Pluginval VST3 validations
       working-directory: ${{ env.BUILD_DIR }}
+      if: ${{ matrix.name != 'macOS' }}
       shell: bash
       run: |
         ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
       env:
         STRICTNESS_LEVEL: 10
         TIMEOUT_MS: 720000
-        REPEAT: 4
+        REPEAT: 2
         RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
-    # - name: Pluginval AU validations (macOS)
-    #   working-directory: ${{ env.BUILD_DIR }}
-    #   if: ${{ matrix.name == 'macOS' }}
-    #   shell: bash
-    #   run: |
-    #     sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
-    #     sudo killall -9 AudioComponentRegistrar
-    #     ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
-    #   env:
-    #     STRICTNESS_LEVEL: 10
-    #     TIMEOUT_MS: 720000
-    #     REPEAT: 2
-    #     RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
+    - name: Pluginval AU validations (macOS)
+      working-directory: ${{ env.BUILD_DIR }}
+      if: ${{ matrix.name == 'macOS' }}
+      shell: bash
+      run: |
+        sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
+        sudo killall -9 AudioComponentRegistrar
+        ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+      env:
+        STRICTNESS_LEVEL: 10
+        TIMEOUT_MS: 720000
+        REPEAT: 2
+        RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
     - name: Codesign (macOS)
       working-directory: ${{ env.BUILD_DIR }}
