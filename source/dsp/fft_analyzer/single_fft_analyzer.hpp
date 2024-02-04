@@ -41,6 +41,8 @@ namespace zlFFT {
 
         void setDecayRate(const float x) { decayRate.store(x); }
 
+        void setTiltSlope(const float x) { tiltSlope.store(x); }
+
         void resetDecay() { currentDecay.store(1.f); }
 
         void nextDecay() { currentDecay.store(currentDecay.load() * decayRate.load()); }
@@ -55,7 +57,7 @@ namespace zlFFT {
         static constexpr size_t preScale = 3;
         std::array<float, zlIIR::frequencies.size() / preScale + 2> preInterplotDBs{};
         std::array<float, zlIIR::frequencies.size()> interplotDBs{};
-        std::atomic<float> deltaT, decayRate, currentDecay;
+        std::atomic<float> deltaT, decayRate, currentDecay, tiltSlope;
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;

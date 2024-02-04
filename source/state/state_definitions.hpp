@@ -135,6 +135,17 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
+    class ffTTilt : public ChoiceParameters<ffTTilt> {
+    public:
+        auto static constexpr ID = "fft_tilt";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "0 dB/oct", "1.5 dB/oct", "3 dB/oct", "4.5 dB/oct", "6 dB/oct"
+        };
+        static constexpr std::array<float, 5> slopes {0.f, 1.5f, 3.f, 4.5f, 6.f};
+        int static constexpr defaultI = 3;
+    };
+
     class active : public BoolParameters<active> {
     public:
         auto static constexpr ID = "active";

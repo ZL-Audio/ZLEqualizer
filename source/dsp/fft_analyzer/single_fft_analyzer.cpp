@@ -15,6 +15,7 @@ namespace zlFFT {
     template<typename FloatType>
     SingleFFTAnalyzer<FloatType>::SingleFFTAnalyzer(const std::string &name) : Thread(name) {
         startThread(juce::Thread::Priority::low);
+        tiltSlope.store(zlState::ffTTilt::slopes[static_cast<size_t>(zlState::ffTTilt::defaultI)]);
     }
 
     template<typename FloatType>
@@ -106,8 +107,9 @@ namespace zlFFT {
                     preInterplotDBs.data(), preInterplotDBs.size(),
                     -static_cast<float>(preScale), static_cast<float>(preScale));
 
+                const auto tilt = tiltSlope.load();
                 for (size_t i = 0; i < interplotDBs.size(); ++i) {
-                    interplotDBs[i] = spline2(static_cast<float>(i));
+                    interplotDBs[i] = spline2(static_cast<float>(i)) + static_cast<float>(std::log2(zlIIR::frequencies[i] / 1000)) * tilt;
                 }
 
                 isAudioReady.store(false);
