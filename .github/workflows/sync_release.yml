@@ -13,6 +13,11 @@ jobs:
     permissions:
       contents: write
     steps:
+    - name: Checkout current repo
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        path: "current_repo"
     - name: Download release repo
       uses: actions/checkout@v4
       with:
@@ -40,7 +45,7 @@ jobs:
     - name: Move current release assets
       run: |
         mv -v "current_release"/* "release_repo/${{ github.event.repository.name }}/"
-        echo "LICENSE and CODE are available at [${{ github.repository }}](https://github.com/${{ github.repository }})." >> "release_repo/${{ github.event.repository.name }}/README.md"
+        mv -v "current_repo/CHANGELOG.md" "release_repo/${{ github.event.repository.name }}/README.md"
     - name: Commit release repo
       run: |
         cd "release_repo"
