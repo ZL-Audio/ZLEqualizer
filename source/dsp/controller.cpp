@@ -46,16 +46,16 @@ namespace zlDSP {
         msMainSplitter.prepare(subSpec);
         msSideSplitter.prepare(subSpec);
         tracker.prepare(subSpec);
-        for (auto &t : {&lTracker, &rTracker, &mTracker, &sTracker}) {
+        for (auto &t: {&lTracker, &rTracker, &mTracker, &sTracker}) {
             t->prepare({spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        juce::AudioBuffer<FloatType> mainBuffer {buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
+        juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
         fftAnalyzezr.pushPreFFTBuffer(mainBuffer);
-        juce::AudioBuffer<FloatType> sideBuffer {buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
+        juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
         // if no side chain, copy the main buffer into the side buffer
         if (!sideChain.load()) {
             sideBuffer.makeCopyOf(mainBuffer, true);
@@ -75,7 +75,14 @@ namespace zlDSP {
         }
         subBuffer.popBlock(block);
         // ---------------- end sub buffer
-        fftAnalyzezr.pushPostFFTBuffer(mainBuffer);
+        switch (ffTStyle.load()) {
+            case zlState::ffTStyle::prePost:
+                fftAnalyzezr.pushPostFFTBuffer(mainBuffer);
+                break;
+            case zlState::ffTStyle::preSide:
+                fftAnalyzezr.pushPostFFTBuffer(sideBuffer);
+                break;
+        }
     }
 
     template<typename FloatType>
@@ -138,8 +145,8 @@ namespace zlDSP {
             baseLine = tracker.getMomentaryLoudness();
         }
         for (size_t i = 0; i < bandNUM; ++i) {
-           if (dynRelatives[i].load()) {
-               filters[i].getCompressor().setBaseLine(baseLine);
+            if (dynRelatives[i].load()) {
+                filters[i].getCompressor().setBaseLine(baseLine);
             } else {
                 filters[i].getCompressor().setBaseLine(0);
             }
@@ -355,7 +362,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::updateTrackersON() {
-        for (auto &f : useTrackers) {
+        for (auto &f: useTrackers) {
             f.store(false);
         }
         for (size_t i = 0; i < filterLRs.size(); ++i) {

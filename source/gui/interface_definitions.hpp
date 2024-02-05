@@ -149,11 +149,18 @@ namespace zlInterface {
     public:
         UIBase();
 
+        UIBase(const float fSize, const size_t idx) {
+            fontSize.store(fSize);
+            styleID.store(idx);
+        }
+
         void setFontSize(const float fSize) { fontSize.store(fSize); }
 
         inline float getFontSize() const { return fontSize.load(); }
 
         void setStyle(const size_t idx) { styleID.store(idx); }
+
+        inline size_t getStyle() const { return styleID.load();}
 
         inline juce::Colour getTextColor() const { return styleColors[styleID.load()].TextColor; }
 
@@ -216,8 +223,8 @@ namespace zlInterface {
                                                       const fillShadowEllipseArgs &margs) const;
 
     private:
-        std::atomic<float> fontSize;
-        std::atomic<size_t> styleID;
+        std::atomic<float> fontSize {0};
+        std::atomic<size_t> styleID {1};
     };
 }
 

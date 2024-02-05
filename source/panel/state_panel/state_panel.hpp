@@ -11,6 +11,7 @@
 #define ZLEqualizer_STATE_PANEL_HPP
 
 #include "logo_panel.hpp"
+#include "fft_setting_panel.hpp"
 
 namespace zlPanel {
 
@@ -30,6 +31,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
 
         LogoPanel logoPanel;
+        FFTSettingPanel fftSettingPanel;
     };
 
 } // zlPanel

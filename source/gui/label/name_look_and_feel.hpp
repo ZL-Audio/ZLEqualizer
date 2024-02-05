@@ -16,7 +16,7 @@
 #include "../interface_definitions.hpp"
 
 namespace zlInterface {
-    class NameLookAndFeel : public juce::LookAndFeel_V4 {
+    class NameLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
         explicit NameLookAndFeel(UIBase &base) {
             uiBase = &base;

@@ -11,10 +11,13 @@
 
 namespace zlDSP {
     template<typename FloatType>
-    ChoreAttach<FloatType>::ChoreAttach(juce::AudioProcessor &processor, juce::AudioProcessorValueTreeState &parameters,
+    ChoreAttach<FloatType>::ChoreAttach(juce::AudioProcessor &processor,
+                                        juce::AudioProcessorValueTreeState &parameters,
+                                        juce::AudioProcessorValueTreeState &parametersNA,
                                         Controller<FloatType> &controller)
-        : processorRef(processor), parameterRef(parameters), controllerRef(controller) {
-        juce::ignoreUnused(processorRef);
+        : processorRef(processor),
+          parameterRef(parameters), parameterNARef(parametersNA),
+          controllerRef(controller) {
         addListeners();
         initDefaultValues();
     }
@@ -24,6 +27,9 @@ namespace zlDSP {
         for (auto &ID: IDs) {
             parameterRef.removeParameterListener(ID, this);
         }
+        for (auto &ID: NAIDs) {
+            parameterNARef.removeParameterListener(ID, this);
+        }
     }
 
     template<typename FloatType>
@@ -31,12 +37,25 @@ namespace zlDSP {
         for (auto &ID: IDs) {
             parameterRef.addParameterListener(ID, this);
         }
+        for (auto &ID: NAIDs) {
+            parameterNARef.addParameterListener(ID, this);
+        }
     }
 
     template<typename FloatType>
     void ChoreAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == sideChain::ID) {
             controllerRef.setSideChain(static_cast<bool>(newValue));
+        } else if (parameterID == zlState::ffTStyle::ID) {
+            controllerRef.setFFTStyle(static_cast<zlState::ffTStyle::styles>(newValue));
+        } else if (parameterID == zlState::ffTSpeed::ID) {
+            const auto idx = static_cast<size_t>(newValue);
+            controllerRef.getAnalyzer().getPreFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
+            controllerRef.getAnalyzer().getPostFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
+        } else if (parameterID == zlState::ffTTilt::ID) {
+            const auto idx = static_cast<size_t>(newValue);
+            controllerRef.getAnalyzer().getPreFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
+            controllerRef.getAnalyzer().getPostFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
         }
     }
 

@@ -15,5 +15,6 @@
 #include "combobox/combobox.hpp"
 #include "slider/slider.hpp"
 #include "dragger2d/dragger2d.hpp"
+#include "calloutbox/call_out_box_laf.hpp"
 
 #endif //ZL_GUI_H

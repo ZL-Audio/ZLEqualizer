@@ -13,13 +13,13 @@
 #include "controller.hpp"
 
 namespace zlDSP {
-
     template<typename FloatType>
     class ChoreAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit ChoreAttach(juce::AudioProcessor &processor,
-                               juce::AudioProcessorValueTreeState &parameters,
-                               Controller<FloatType> &controller);
+                             juce::AudioProcessorValueTreeState &parameters,
+                             juce::AudioProcessorValueTreeState &parametersNA,
+                             Controller<FloatType> &controller);
 
         ~ChoreAttach() override;
 
@@ -27,18 +27,18 @@ namespace zlDSP {
 
     private:
         juce::AudioProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parameterRef;
+        juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
         Controller<FloatType> &controllerRef;
 
         constexpr static std::array IDs{sideChain::ID};
+        constexpr static std::array defaultVs{static_cast<float>(sideChain::defaultV)};
 
-        constexpr static std::array defaultVs{float(sideChain::defaultV)};
+        constexpr static std::array NAIDs{zlState::ffTStyle::ID, zlState::ffTSpeed::ID, zlState::ffTTilt::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void initDefaultValues();
     };
-
 } // zlDSP
 
 #endif //ZLEqualizer_CHORE_ATTACH_HPP

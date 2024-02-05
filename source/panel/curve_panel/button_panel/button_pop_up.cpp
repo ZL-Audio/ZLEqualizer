@@ -68,7 +68,7 @@ namespace zlPanel {
             juce::GridItem(fTypeC).withArea(2, 1, 3, 3)
         };
 
-        auto bound = getLocalBounds().toFloat();
+        const auto bound = getLocalBounds().toFloat();
         grid.performLayout(bound.toNearestInt());
     }
 

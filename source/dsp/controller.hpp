@@ -14,11 +14,12 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include "dsp_definitions.hpp"
+#include "../state/state_definitions.hpp"
 #include "audio_buffer/audio_buffer.hpp"
 #include "dynamic_filter/dynamic_filter.hpp"
 #include "splitter/splitter.hpp"
 #include "fft_analyzer/fft_analyzer.hpp"
-#include "histogram//histogram.hpp"
+#include "histogram/histogram.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -74,6 +75,8 @@ namespace zlDSP {
 
         zlHistogram::Histogram<FloatType> &getLearningHist(const size_t idx) { return histograms[idx]; }
 
+        void setFFTStyle(const zlState::ffTStyle::styles x) { ffTStyle.store(x); }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -106,7 +109,7 @@ namespace zlDSP {
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
 
-        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "controller"};
+        std::atomic<zlState::ffTStyle::styles> ffTStyle;
 
         void processSolo();
 

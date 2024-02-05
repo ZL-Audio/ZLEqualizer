@@ -15,17 +15,22 @@ namespace zlPanel {
                            juce::AudioProcessorValueTreeState &state,
                            zlInterface::UIBase &base)
         : parametersRef(parameters), parametersNARef(parametersNA), stateRef(state),
-          uiBase(base), logoPanel(state, base) {
+          uiBase(base),
+          logoPanel(state, base),
+          fftSettingPanel(parameters, parametersNA, base) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         juce::ignoreUnused(stateRef, uiBase);
         setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
+        addAndMakeVisible(fftSettingPanel);
     }
 
     void StatePanel::resized() {
         auto bound = getLocalBounds().toFloat();
         const auto logoBound = bound.removeFromLeft(bound.getWidth() * .25f);
         logoPanel.setBounds(logoBound.toNearestInt());
+        bound.removeFromRight(uiBase.getFontSize() * 6);
+        const auto fftSettingBound = bound.removeFromRight(bound.getHeight() * 1.25f);
+        fftSettingPanel.setBounds(fftSettingBound.toNearestInt());
     }
-
 } // zlPanel

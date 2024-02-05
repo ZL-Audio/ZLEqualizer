@@ -113,6 +113,19 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
+    class ffTStyle : public ChoiceParameters<ffTStyle> {
+    public:
+        auto static constexpr ID = "fft_style";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Pre + Post", "Pre + Side"
+        };
+        enum styles {
+            prePost, preSide
+        };
+        int static constexpr defaultI = 0;
+    };
+
     class ffTOrder : public ChoiceParameters<ffTOrder> {
     public:
         auto static constexpr ID = "fft_order";
@@ -129,10 +142,10 @@ namespace zlState {
         auto static constexpr ID = "fft_speed";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "Fast", "Medium", "Slow", "Frozen"
+            "Very Fast", "Fast", "Medium", "Slow", "Very Slow", "Frozen"
         };
-        static constexpr std::array<float, 4> speeds {0.93f, 0.95f, 0.975f, 1.0f};
-        int static constexpr defaultI = 1;
+        static constexpr std::array<float, 6> speeds {0.90f, 0.93f, 0.95f, 0.975f, 0.99f, 1.0f};
+        int static constexpr defaultI = 2;
     };
 
     class ffTTilt : public ChoiceParameters<ffTTilt> {
@@ -160,7 +173,8 @@ namespace zlState {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(selectedBandIdx::get(), maximumDB::get());
+        layout.add(selectedBandIdx::get(), maximumDB::get(),
+            ffTStyle::get(), ffTOrder::get(), ffTSpeed::get(), ffTTilt::get());
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
@@ -168,14 +182,7 @@ namespace zlState {
         return layout;
     }
 
-    inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
-        juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(uiStyle::get(),
-                   windowW::get(), windowH::get());
-        return layout;
-    }
-
-    inline std::string appendSuffix(std::string s, size_t i) {
+    inline std::string appendSuffix(const std::string& s, const size_t i) {
         const auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
         return s + suffix;
     }
