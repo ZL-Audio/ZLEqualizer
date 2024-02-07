@@ -45,7 +45,6 @@ namespace zlPanel {
         if (analyzerRef.getPostON()) {
             auto &fft{analyzerRef.getPostFFT()};
             auto &path{path2};
-
             path.clear();
             fft.createPath(path, bound);
 

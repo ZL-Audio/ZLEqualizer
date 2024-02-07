@@ -118,7 +118,8 @@ namespace zlFFT {
 
                 const auto tilt = tiltSlope.load();
                 for (size_t i = 0; i < interplotDBs.size(); ++i) {
-                    interplotDBs[i] = spline2(static_cast<float>(i)) + static_cast<float>(std::log2(zlIIR::frequencies[i] / 1000)) * tilt;
+                    interplotDBs[i] = spline2(static_cast<float>(i * 2)) + static_cast<float>(std::log2(
+                                          zlIIR::frequencies[i * 2] / 1000)) * tilt;
                 }
 
                 isAudioReady.store(false);
@@ -136,9 +137,9 @@ namespace zlFFT {
         juce::ScopedLock lock(ampUpdatedLock);
         path.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
         size_t i = 0;
-        while (i < zlIIR::frequencies.size()) {
-            const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
-                           getWidth();
+        while (i < interplotDBs.size()) {
+            const auto x = static_cast<float>(2 * i) / static_cast<float>(zlIIR::frequencies.size() - 1) *
+                           bound.getWidth();
             const auto y = interplotDBs[i] / minDB * bound.getHeight() + bound.getY();
             if (i == 0) {
                 path.startNewSubPath(x, y);

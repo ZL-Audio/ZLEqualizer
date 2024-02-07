@@ -27,6 +27,7 @@ namespace zlPanel {
         zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
         zlInterface::UIBase &uiBase;
         juce::Path path1, path2, path3;
+        std::atomic<bool> firstPath = true;
     };
 } // zlPanel
 

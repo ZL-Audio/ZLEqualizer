@@ -156,24 +156,30 @@ namespace zlPanel {
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         const auto maxDB = maximumDB.load();
         if (reverse) {
+            auto y0 = 0.f;
             for (size_t j = zlIIR::frequencies.size(); j > 0; --j) {
                 const auto i = j - 1;
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
-                if (i == 0 && startPath) {
+                if (i ==  zlIIR::frequencies.size() - 1 && startPath) {
                     path.startNewSubPath(x, y);
-                } else {
+                    y0 = y;
+                } else if (std::abs(y - y0) >= 0.25f || i == 0){
                     path.lineTo(x, y);
+                    y0 = y;
                 }
             }
         } else {
+            auto y0 = 0.f;
             for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
-                } else {
+                    y0 = y;
+                } else if (std::abs(y - y0) >= 0.25f || i == zlIIR::frequencies.size() - 1){
                     path.lineTo(x, y);
+                    y0 = y;
                 }
             }
         }

@@ -52,9 +52,9 @@ namespace zlFFT {
         size_t audioIndex = 0;
 
         std::vector<float> smoothedDBs;
-        static constexpr size_t preScale = 3;
+        static constexpr size_t preScale = 4;
         std::array<float, zlIIR::frequencies.size() / preScale + 2> preInterplotDBs{};
-        std::array<float, zlIIR::frequencies.size()> interplotDBs{};
+        std::array<float, zlIIR::frequencies.size() / 2> interplotDBs{};
         std::atomic<float> deltaT, decayRate, tiltSlope;
 
         std::unique_ptr<juce::dsp::FFT> fft;
