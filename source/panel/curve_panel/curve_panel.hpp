@@ -37,6 +37,7 @@ namespace zlPanel {
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase &uiBase;
+        zlDSP::Controller<double> &controllerRef;
         BackgroundPanel backgroundPanel;
         FFTPanel fftPanel;
         SumPanel sumPanel;

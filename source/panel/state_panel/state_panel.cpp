@@ -29,7 +29,7 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         const auto logoBound = bound.removeFromLeft(bound.getWidth() * .25f);
         logoPanel.setBounds(logoBound.toNearestInt());
-        bound.removeFromRight(uiBase.getFontSize() * 6);
+        bound.removeFromRight(uiBase.getFontSize() * 4);
         const auto fftSettingBound = bound.removeFromRight(bound.getHeight() * 1.25f);
         fftSettingPanel.setBounds(fftSettingBound.toNearestInt());
     }

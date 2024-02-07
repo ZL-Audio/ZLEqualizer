@@ -32,6 +32,15 @@ namespace zlFFT {
     }
 
     template<typename FloatType>
+    void SingleFFTAnalyzer<FloatType>::clear() {
+        juce::ScopedWriteLock lock(fftParaLock);
+        audioIndex = 0;
+        isAudioReady.store(false);
+        isFFTReady.store(false);
+        std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
+    }
+
+    template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::setOrder(int fftOrder) {
         juce::ScopedWriteLock lock(fftParaLock);
         fft = std::make_unique<juce::dsp::FFT>(fftOrder);
@@ -44,7 +53,7 @@ namespace zlFFT {
         fftBuffer.setSize(1, static_cast<int>(fftSize.load()) * 2);
 
         smoothedDBs.resize(fftSize.load() / 2 + 2);
-        std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB);
+        std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
 
         deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
         decayRate.store(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]);
@@ -53,10 +62,10 @@ namespace zlFFT {
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         if (isAudioReady.load()) { return; }
+        juce::ScopedReadLock lock(fftParaLock);
         auto lBuffer = buffer.getReadPointer(0);
         auto rBuffer = buffer.getReadPointer(1);
         auto mBuffer = audioBuffer.getWritePointer(0);
-        juce::ScopedReadLock lock(fftParaLock);
         for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
             if (audioIndex < fftSize.load()) {
                 mBuffer[audioIndex] = 0.5f * static_cast<float>(lBuffer[i] + rBuffer[i]);
@@ -83,7 +92,7 @@ namespace zlFFT {
                 fft->performFrequencyOnlyForwardTransform(fftBuffer.getWritePointer(0));
                 const auto mBuffer = fftBuffer.getReadPointer(0);
 
-                const auto decay = currentDecay.load();
+                const auto decay = decayRate.load();
                 juce::ScopedLock lock2(ampUpdatedLock);
                 for (size_t i = 0; i < fftSize.load() / 2; ++i) {
                     const auto currentDB = juce::Decibels::gainToDecibels(

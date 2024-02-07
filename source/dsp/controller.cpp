@@ -28,12 +28,9 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        fftAnalyzezr.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
-
         subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
         latencyInSamples.store(static_cast<int>(subBuffer.getLatencySamples()));
-        fftAnalyzezr.setPreDelay(subBuffer.getLatencySamples());
         triggerAsyncUpdate();
         juce::dsp::ProcessSpec subSpec{spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2};
         for (auto &f: filters) {
@@ -46,6 +43,7 @@ namespace zlDSP {
         msMainSplitter.prepare(subSpec);
         msSideSplitter.prepare(subSpec);
         tracker.prepare(subSpec);
+        fftAnalyzezr.prepare(subSpec);
         for (auto &t: {&lTracker, &rTracker, &mTracker, &sTracker}) {
             t->prepare({spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
         }
@@ -54,7 +52,6 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
-        fftAnalyzezr.pushPreFFTBuffer(mainBuffer);
         juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
         // if no side chain, copy the main buffer into the side buffer
         if (!sideChain.load()) {
@@ -66,23 +63,23 @@ namespace zlDSP {
         subBuffer.pushBlock(block);
         while (subBuffer.isSubReady()) {
             subBuffer.popSubBuffer();
+            auto subMainBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 0,
+                                                          2, subBuffer.subBuffer.getNumSamples());
+            auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
+                                                              2, subBuffer.subBuffer.getNumSamples());
+            fftAnalyzezr.pushPreFFTBuffer(subMainBuffer);
+            fftAnalyzezr.pushSideFFTBuffer(subSideBuffer);
             if (useSolo.load()) {
                 processSolo();
             } else {
                 processDynamic();
             }
+            fftAnalyzezr.pushPostFFTBuffer(subMainBuffer);
+            fftAnalyzezr.process();
             subBuffer.pushSubBuffer();
         }
         subBuffer.popBlock(block);
         // ---------------- end sub buffer
-        switch (ffTStyle.load()) {
-            case zlState::ffTStyle::prePost:
-                fftAnalyzezr.pushPostFFTBuffer(mainBuffer);
-                break;
-            case zlState::ffTStyle::preSide:
-                fftAnalyzezr.pushPostFFTBuffer(sideBuffer);
-                break;
-        }
     }
 
     template<typename FloatType>

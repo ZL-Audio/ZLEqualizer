@@ -16,31 +16,59 @@ namespace zlPanel {
                                zlInterface::UIBase &base)
             : parametersNARef(parametersNA),
               uiBase(base.getFontSize(), base.getStyle()),
-              ffTStyle("", zlState::ffTStyle::choices, uiBase),
+              fftPreON("", zlState::fftPreON::choices, uiBase),
+              fftPostON("", zlState::fftPostON::choices, uiBase),
+              fftSideON("", zlState::fftSideON::choices, uiBase),
               ffTSpeed("", zlState::ffTSpeed::choices, uiBase),
-              fftTilt("", zlState::ffTTilt::choices, uiBase) {
-            for (auto &c: {&ffTStyle, &ffTSpeed, &fftTilt}) {
+              fftTilt("", zlState::ffTTilt::choices, uiBase),
+              preLabel("", "Pre:"),
+              postLabel("", "Post:"),
+              sideLabel("", "Side:"),
+              labelLAF(uiBase) {
+            for (auto &c: {&fftPreON, &fftPostON, &fftSideON, &ffTSpeed, &fftTilt}) {
                 addAndMakeVisible(c);
             }
-            attach({&ffTStyle.getBox(), &ffTSpeed.getBox(), &fftTilt.getBox()},
-                   {zlState::ffTStyle::ID, zlState::ffTSpeed::ID, zlState::ffTTilt::ID},
+            labelLAF.setFontScale(1.5f);
+            labelLAF.setJustification(juce::Justification::centredRight);
+            for (auto &l: {&preLabel, &postLabel, &sideLabel}) {
+                l->setLookAndFeel(&labelLAF);
+                addAndMakeVisible(l);
+            }
+            attach({
+                       &fftPreON.getBox(), &fftPostON.getBox(), &fftSideON.getBox(),
+                       &ffTSpeed.getBox(), &fftTilt.getBox()
+                   },
+                   {
+                       zlState::fftPreON::ID, zlState::fftPostON::ID, zlState::fftSideON::ID,
+                       zlState::ffTSpeed::ID, zlState::ffTTilt::ID
+                   },
                    parametersNARef, boxAttachments);
+            setBufferedToImage(true);
         }
 
-        ~FFTCallOutBox() override = default;
+        ~FFTCallOutBox() override {
+            for (auto &l: {&preLabel, &postLabel, &sideLabel}) {
+                l->setLookAndFeel(nullptr);
+            }
+        }
 
         void resized() override {
             juce::Grid grid;
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60))};
-            grid.templateColumns = {Track(Fr(60))};
+            grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(60))};
+            grid.templateColumns = {Track(Fr(50)), Track(Fr(50))};
 
             grid.items = {
-                juce::GridItem(ffTStyle).withArea(1, 1),
-                juce::GridItem(ffTSpeed).withArea(2, 1),
-                juce::GridItem(fftTilt).withArea(3, 1)
+                juce::GridItem(preLabel).withArea(1, 1),
+                juce::GridItem(postLabel).withArea(2, 1),
+                juce::GridItem(sideLabel).withArea(3, 1),
+                juce::GridItem(fftPreON).withArea(1, 2),
+                juce::GridItem(fftPostON).withArea(2, 2),
+                juce::GridItem(fftSideON).withArea(3, 2),
+                juce::GridItem(ffTSpeed).withArea(4, 1, 5, 3),
+                juce::GridItem(fftTilt).withArea(5, 1, 6, 3)
             };
 
             const auto bound = getLocalBounds().toFloat();
@@ -51,7 +79,9 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase uiBase;
 
-        zlInterface::CompactCombobox ffTStyle, ffTSpeed, fftTilt;
+        zlInterface::CompactCombobox fftPreON, fftPostON, fftSideON, ffTSpeed, fftTilt;
+        juce::Label preLabel, postLabel, sideLabel;
+        zlInterface::NameLookAndFeel labelLAF;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
     };
 
@@ -99,17 +129,16 @@ namespace zlPanel {
             return;
         }
         auto content = std::make_unique<FFTCallOutBox>(parametersNARef, uiBase);
-        content->setSize(static_cast<int>(uiBase.getFontSize() * 7),
-                         static_cast<int>(uiBase.getFontSize() * 5.5));
+        content->setSize(static_cast<int>(uiBase.getFontSize() * 7.f),
+                         static_cast<int>(uiBase.getFontSize() * 9.167f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getScreenBounds(),
                                                            nullptr);
-
         box.setLookAndFeel(&callOutBoxLAF);
         box.setArrowSize(0);
-        box.sendLookAndFeelChange();
-
+        box.updatePosition(getScreenBounds(), getTopLevelComponent()->getScreenBounds());
+        // box.sendLookAndFeelChange();
         boxPointer = &box;
     }
 } // zlPanel

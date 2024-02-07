@@ -27,6 +27,8 @@ namespace zlFFT {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        void clear();
+
         void setOrder(int fftOrder);
 
         void process(juce::AudioBuffer<FloatType> &buffer);
@@ -43,10 +45,6 @@ namespace zlFFT {
 
         void setTiltSlope(const float x) { tiltSlope.store(x); }
 
-        void resetDecay() { currentDecay.store(1.f); }
-
-        void nextDecay() { currentDecay.store(currentDecay.load() * decayRate.load()); }
-
     private:
         std::atomic<size_t> delay = 0;
         std::atomic<bool> isAudioReady = false, isFFTReady = false;
@@ -57,7 +55,7 @@ namespace zlFFT {
         static constexpr size_t preScale = 3;
         std::array<float, zlIIR::frequencies.size() / preScale + 2> preInterplotDBs{};
         std::array<float, zlIIR::frequencies.size()> interplotDBs{};
-        std::atomic<float> deltaT, decayRate, currentDecay, tiltSlope;
+        std::atomic<float> deltaT, decayRate, tiltSlope;
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;

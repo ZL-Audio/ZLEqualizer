@@ -15,6 +15,7 @@ namespace zlPanel {
                            zlInterface::UIBase &base,
                            zlDSP::Controller<double> &c)
         : parametersNARef(parametersNA), uiBase(base),
+          controllerRef(c),
           backgroundPanel(parameters, parametersNA, base),
           fftPanel(c.getAnalyzer(), base),
           sumPanel(base, c),
@@ -70,7 +71,10 @@ namespace zlPanel {
     }
 
     void CurvePanel::timerCallback() {
-        // sumPanel.repaint();
-        fftPanel.repaint();
+        if (controllerRef.getAnalyzer().isFFTReady()) {
+            fftPanel.repaint();
+        } else {
+            sumPanel.repaint();
+        }
     }
 }

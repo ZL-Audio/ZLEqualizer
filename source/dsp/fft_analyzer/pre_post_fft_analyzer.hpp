@@ -24,20 +24,41 @@ namespace zlFFT {
 
         void pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer);
 
-        void setPreDelay(size_t numSamples);
+        void pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer);
+
+        void process();
 
         SingleFFTAnalyzer<FloatType> &getPreFFT() { return preFFT; }
 
         SingleFFTAnalyzer<FloatType> &getPostFFT() { return postFFT; }
 
-        inline void setON(const bool x) { isON.store(x); }
+        SingleFFTAnalyzer<FloatType> &getSideFFT() { return sideFFT; }
+
+        void setON(bool x);
+
+        void setPreON(bool x);
+
+        inline bool getPreON() const { return isPreON.load(); }
+
+        void setPostON(bool x);
+
+        inline bool getPostON() const { return isPostON.load(); }
+
+        void setSideON(bool x);
+
+        inline bool getSideON() const { return isSideON.load(); }
+
+        bool isFFTReady();
 
     private:
-        SingleFFTAnalyzer<FloatType> preFFT{"pre_fft"}, postFFT{"post_fft"};
-        juce::AudioBuffer<FloatType> preBuffer, postBuffer;
-        juce::dsp::DelayLine<FloatType> preDelay;
+        SingleFFTAnalyzer<FloatType> preFFT{"pre_fft"}, postFFT{"post_fft"}, sideFFT{"side_fft"};
+        juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
         std::atomic<bool> isON = false;
-        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "prepostlog"};
+        std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
+
+        juce::CriticalSection fftOnOffLock;
+
+        void clearAll();
     };
 } // zlFFT
 

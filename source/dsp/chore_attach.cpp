@@ -46,16 +46,26 @@ namespace zlDSP {
     void ChoreAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == sideChain::ID) {
             controllerRef.setSideChain(static_cast<bool>(newValue));
-        } else if (parameterID == zlState::ffTStyle::ID) {
-            controllerRef.setFFTStyle(static_cast<zlState::ffTStyle::styles>(newValue));
+        } else if (parameterID == zlState::fftPreON::ID) {
+            controllerRef.getAnalyzer().setPreON(static_cast<bool>(newValue));
+        } else if (parameterID == zlState::fftPostON::ID) {
+            controllerRef.getAnalyzer().setPostON(static_cast<bool>(newValue));
+        } else if (parameterID == zlState::fftSideON::ID) {
+            controllerRef.getAnalyzer().setSideON(static_cast<bool>(newValue));
         } else if (parameterID == zlState::ffTSpeed::ID) {
             const auto idx = static_cast<size_t>(newValue);
-            controllerRef.getAnalyzer().getPreFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
-            controllerRef.getAnalyzer().getPostFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
+            if (idx == 5) {
+                controllerRef.getAnalyzer().getPostFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
+            } else {
+                controllerRef.getAnalyzer().getPreFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
+                controllerRef.getAnalyzer().getPostFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
+                controllerRef.getAnalyzer().getSideFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
+            }
         } else if (parameterID == zlState::ffTTilt::ID) {
             const auto idx = static_cast<size_t>(newValue);
             controllerRef.getAnalyzer().getPreFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
             controllerRef.getAnalyzer().getPostFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
+            controllerRef.getAnalyzer().getSideFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
         }
     }
 

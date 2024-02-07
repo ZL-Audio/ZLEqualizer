@@ -26,7 +26,7 @@ namespace zlPanel {
     private:
         zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
         zlInterface::UIBase &uiBase;
-        juce::Path path1, path2;
+        juce::Path path1, path2, path3;
     };
 } // zlPanel
 

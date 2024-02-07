@@ -33,7 +33,9 @@ namespace zlDSP {
         constexpr static std::array IDs{sideChain::ID};
         constexpr static std::array defaultVs{static_cast<float>(sideChain::defaultV)};
 
-        constexpr static std::array NAIDs{zlState::ffTStyle::ID, zlState::ffTSpeed::ID, zlState::ffTTilt::ID};
+        constexpr static std::array NAIDs{
+            zlState::fftPreON::ID, zlState::fftPostON::ID, zlState::fftSideON::ID,
+            zlState::ffTSpeed::ID, zlState::ffTTilt::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

@@ -15,6 +15,7 @@ namespace zlPanel {
         : analyzerRef(analyzer), uiBase(base) {
         path1.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
         path2.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
+        path3.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
         setInterceptsMouseClicks(false, false);
         analyzerRef.setON(true);
     }
@@ -26,30 +27,58 @@ namespace zlPanel {
     void FFTPanel::paint(juce::Graphics &g) {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-        if (analyzerRef.getPreFFT().getIsFFTReady() && analyzerRef.getPostFFT().getIsFFTReady()) {
-            path1.clear();
-            analyzerRef.getPreFFT().createPath(path1, bound);
-            analyzerRef.getPreFFT().resetDecay();
-            path1.lineTo(getLocalBounds().getBottomRight().toFloat());
-            path1.lineTo(getLocalBounds().getBottomLeft().toFloat());
-            path1.closeSubPath();
-            path2.clear();
-            analyzerRef.getPostFFT().createPath(path2, bound);
-            analyzerRef.getPostFFT().resetDecay();
-            path2.lineTo(getLocalBounds().getBottomRight().toFloat());
-            path2.lineTo(getLocalBounds().getBottomLeft().toFloat());
-            path2.closeSubPath();
-        }
-        analyzerRef.getPreFFT().nextDecay();
-        analyzerRef.getPostFFT().nextDecay();
-        g.setColour(uiBase.getTextColor().withAlpha(0.1f));
-        g.fillPath(path1);
 
-        g.setColour(uiBase.getTextColor().withAlpha(0.5f));
-        const auto thickness = uiBase.getFontSize() * 0.1f;
-        g.strokePath(path2, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
-                                                juce::PathStrokeType::rounded));
-        g.setColour(uiBase.getTextColor().withAlpha(0.1f));
-        g.fillPath(path2);
+        if (analyzerRef.getPreON()) {
+            auto &fft{analyzerRef.getPreFFT()};
+            auto &path{path1};
+
+            path.clear();
+            fft.createPath(path, bound);
+            path.lineTo(getLocalBounds().getBottomRight().toFloat());
+            path.lineTo(getLocalBounds().getBottomLeft().toFloat());
+            path.closeSubPath();
+
+            g.setColour(uiBase.getTextColor().withAlpha(0.1f));
+            g.fillPath(path);
+        }
+
+        if (analyzerRef.getPostON()) {
+            auto &fft{analyzerRef.getPostFFT()};
+            auto &path{path2};
+
+            path.clear();
+            fft.createPath(path, bound);
+
+            g.setColour(uiBase.getTextColor().withAlpha(0.5f));
+            const auto thickness = uiBase.getFontSize() * 0.1f;
+            g.strokePath(path, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
+                                                    juce::PathStrokeType::rounded));
+
+            path.lineTo(getLocalBounds().getBottomRight().toFloat());
+            path.lineTo(getLocalBounds().getBottomLeft().toFloat());
+            path.closeSubPath();
+
+            g.setColour(uiBase.getTextColor().withAlpha(0.1f));
+            g.fillPath(path);
+        }
+
+        if (analyzerRef.getSideON()) {
+            auto &fft{analyzerRef.getSideFFT()};
+            auto &path{path3};
+
+            path.clear();
+            fft.createPath(path, bound);
+            path.lineTo(getLocalBounds().getBottomRight().toFloat());
+            path.lineTo(getLocalBounds().getBottomLeft().toFloat());
+            path.closeSubPath();
+
+            g.setColour(uiBase.getTextColor().withAlpha(0.1f));
+            g.fillPath(path);
+            g.setColour(uiBase.getColorMap2(1).withAlpha(0.1f));
+            g.fillPath(path3);
+        }
+
+        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), ""};
+        logger.logMessage("1");
     }
 } // zlPanel

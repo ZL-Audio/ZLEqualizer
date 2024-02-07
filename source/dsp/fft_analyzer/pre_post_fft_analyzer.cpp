@@ -15,12 +15,12 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-
         preFFT.prepare(spec);
         postFFT.prepare(spec);
+        sideFFT.prepare(spec);
         preBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
-        preDelay.prepare(spec);
-        preDelay.setMaximumDelayInSamples(static_cast<int>(spec.sampleRate / 100));
+        postBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
+        sideBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
     }
 
     template<typename FloatType>
@@ -30,18 +30,74 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        if (isON.load() && !preFFT.getIsAudioReady() && !postFFT.getIsAudioReady()) {
-            juce::dsp::AudioBlock<FloatType> preBLock(preBuffer);
-            preDelay.process(juce::dsp::ProcessContextReplacing<FloatType>(preBLock));
-            preFFT.process(preBuffer);
-            postFFT.process(buffer);
+        postBuffer.makeCopyOf(buffer, true);
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
+        sideBuffer.makeCopyOf(buffer, true);
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::process() {
+        if (isON.load() &&
+            !preFFT.getIsAudioReady() &&
+            !postFFT.getIsAudioReady() &&
+            !sideFFT.getIsAudioReady()) {
+            juce::ScopedLock lock(fftOnOffLock);
+            if (isPreON.load()) preFFT.process(preBuffer);
+            if (isPostON.load()) postFFT.process(postBuffer);
+            if (isSideON.load()) sideFFT.process(sideBuffer);
         }
     }
 
     template<typename FloatType>
-    void PrePostFFTAnalyzer<FloatType>::setPreDelay(size_t numSamples) {
-        preDelay.setDelay(static_cast<float>(numSamples));
+    void PrePostFFTAnalyzer<FloatType>::setON(const bool x) {
+        isON.store(x);
     }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::setPreON(const bool x) {
+        juce::ScopedLock lock(fftOnOffLock);
+        clearAll();
+        isPreON.store(x);
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::setPostON(const bool x) {
+        juce::ScopedLock lock(fftOnOffLock);
+        clearAll();
+        isPostON.store(x);
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::setSideON(const bool x) {
+        juce::ScopedLock lock(fftOnOffLock);
+        clearAll();
+        isSideON.store(x);
+    }
+
+    template<typename FloatType>
+    bool PrePostFFTAnalyzer<FloatType>::isFFTReady() {
+        if (isPreON.load() && !preFFT.getIsFFTReady()) {
+            return false;
+        }
+        if (isPostON.load() && !postFFT.getIsFFTReady()) {
+            return false;
+        }
+        if (isSideON.load() && !sideFFT.getIsFFTReady()) {
+            return false;
+        }
+        return true;
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::clearAll() {
+        preFFT.clear();
+        postFFT.clear();
+        sideFFT.clear();
+    }
+
 
     template
     class PrePostFFTAnalyzer<float>;

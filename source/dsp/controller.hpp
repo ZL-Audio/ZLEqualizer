@@ -75,8 +75,6 @@ namespace zlDSP {
 
         zlHistogram::Histogram<FloatType> &getLearningHist(const size_t idx) { return histograms[idx]; }
 
-        void setFFTStyle(const zlState::ffTStyle::styles x) { ffTStyle.store(x); }
-
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -108,8 +106,6 @@ namespace zlDSP {
 
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
-
-        std::atomic<zlState::ffTStyle::styles> ffTStyle;
 
         void processSolo();
 

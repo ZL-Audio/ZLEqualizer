@@ -113,15 +113,45 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
-    class ffTStyle : public ChoiceParameters<ffTStyle> {
+    // class fftStyle : public ChoiceParameters<fftStyle> {
+    // public:
+    //     auto static constexpr ID = "fft_style";
+    //     auto static constexpr name = "";
+    //     inline auto static const choices = juce::StringArray{
+    //         "Pre + Post", "Pre + Side"
+    //     };
+    //     enum styles {
+    //         prePost, preSide
+    //     };
+    //     int static constexpr defaultI = 0;
+    // };
+
+    class fftPreON : public ChoiceParameters<fftPreON> {
     public:
-        auto static constexpr ID = "fft_style";
+        auto static constexpr ID = "fft_pre_on";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "Pre + Post", "Pre + Side"
+            "OFF", "ON"
         };
-        enum styles {
-            prePost, preSide
+        int static constexpr defaultI = 1;
+    };
+
+    class fftPostON : public ChoiceParameters<fftPostON> {
+    public:
+        auto static constexpr ID = "fft_post_on";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 1;
+    };
+
+    class fftSideON : public ChoiceParameters<fftSideON> {
+    public:
+        auto static constexpr ID = "fft_side_on";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
         };
         int static constexpr defaultI = 0;
     };
@@ -144,7 +174,7 @@ namespace zlState {
         inline auto static const choices = juce::StringArray{
             "Very Fast", "Fast", "Medium", "Slow", "Very Slow", "Frozen"
         };
-        static constexpr std::array<float, 6> speeds {0.90f, 0.93f, 0.95f, 0.975f, 0.99f, 1.0f};
+        static constexpr std::array<float, 6> speeds {0.90f, 0.93f, 0.95f, 0.98f, 0.99f, 1.0f};
         int static constexpr defaultI = 2;
     };
 
@@ -174,7 +204,8 @@ namespace zlState {
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(selectedBandIdx::get(), maximumDB::get(),
-            ffTStyle::get(), ffTOrder::get(), ffTSpeed::get(), ffTTilt::get());
+            fftPreON::get(), fftPostON::get(), fftSideON::get(),
+            ffTOrder::get(), ffTSpeed::get(), ffTTilt::get());
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
