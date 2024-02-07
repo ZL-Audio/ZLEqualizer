@@ -181,7 +181,6 @@ jobs:
       env:
         STRICTNESS_LEVEL: 10
         TIMEOUT_MS: 720000
-        REPEAT: 2
         RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
     - name: Codesign (macOS)
