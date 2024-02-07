@@ -20,6 +20,7 @@ namespace zlPanel {
         addAndMakeVisible(gridPanel);
         addAndMakeVisible(scalePanel);
         setInterceptsMouseClicks(false, true);
+        setOpaque(true);
         setBufferedToImage(true);
     }
 

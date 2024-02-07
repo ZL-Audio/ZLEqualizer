@@ -20,8 +20,7 @@
 
 namespace zlPanel {
     class CurvePanel final : public juce::Component,
-                             private juce::AudioProcessorValueTreeState::Listener,
-                             private juce::Timer {
+                             private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit CurvePanel(juce::AudioProcessorValueTreeState &parameters,
                             juce::AudioProcessorValueTreeState &parametersNA,
@@ -44,10 +43,11 @@ namespace zlPanel {
         SoloPanel soloPanel;
         ButtonPanel buttonPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
+        juce::VBlankAttachment vblank;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
-        void timerCallback() override;
+        void repaintCallBack();
     };
 }
 

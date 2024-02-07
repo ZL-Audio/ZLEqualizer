@@ -20,7 +20,8 @@ namespace zlPanel {
           fftPanel(c.getAnalyzer(), base),
           sumPanel(base, c),
           soloPanel(parameters, parametersNA, base, c),
-          buttonPanel(parameters, parametersNA, base) {
+          buttonPanel(parameters, parametersNA, base),
+          vblank(this, [this]() { repaintCallBack(); }) {
         addAndMakeVisible(backgroundPanel);
         addAndMakeVisible(fftPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
@@ -33,11 +34,11 @@ namespace zlPanel {
         parameterChanged(zlState::maximumDB::ID, parametersNA.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
 
-        startTimerHz(60);
+        setOpaque(true);
     }
 
     CurvePanel::~CurvePanel() {
-        stopTimer();
+        // stopTimer();
         parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
     }
 
@@ -70,7 +71,7 @@ namespace zlPanel {
         }
     }
 
-    void CurvePanel::timerCallback() {
+    void CurvePanel::repaintCallBack() {
         if (controllerRef.getAnalyzer().isFFTReady()) {
             fftPanel.repaint();
         } else {
