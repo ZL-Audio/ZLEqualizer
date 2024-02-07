@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.0.5
+
+- enable turning on/off pre/post/side FFT seperately
+- improve FFT GUI performance
+
 ## 0.0.4
 
 - enable FFT style, speed and tilt adjustment
