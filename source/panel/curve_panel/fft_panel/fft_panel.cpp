@@ -77,8 +77,5 @@ namespace zlPanel {
             g.setColour(uiBase.getColorMap2(1).withAlpha(0.1f));
             g.fillPath(path3);
         }
-
-        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), ""};
-        logger.logMessage("1");
     }
 } // zlPanel
