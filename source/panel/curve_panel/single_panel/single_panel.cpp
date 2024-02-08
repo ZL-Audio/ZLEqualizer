@@ -164,7 +164,7 @@ namespace zlPanel {
                 if (i ==  zlIIR::frequencies.size() - 1 && startPath) {
                     path.startNewSubPath(x, y);
                     y0 = y;
-                } else if (std::abs(y - y0) >= 0.25f || i == 0){
+                } else if (std::abs(y - y0) >= 0.125f || i == 0){
                     path.lineTo(x, y);
                     y0 = y;
                 }
@@ -177,7 +177,7 @@ namespace zlPanel {
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                     y0 = y;
-                } else if (std::abs(y - y0) >= 0.25f || i == zlIIR::frequencies.size() - 1){
+                } else if (std::abs(y - y0) >= 0.125f || i == zlIIR::frequencies.size() - 1){
                     path.lineTo(x, y);
                     y0 = y;
                 }

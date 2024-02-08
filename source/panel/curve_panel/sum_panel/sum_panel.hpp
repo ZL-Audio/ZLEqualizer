@@ -16,7 +16,7 @@
 #include "../../../gui/gui.hpp"
 
 namespace zlPanel {
-    class SumPanel final : public juce::Component {
+    class SumPanel final : public juce::Component, private juce::Thread {
     public:
         explicit SumPanel(zlInterface::UIBase &base, zlDSP::Controller<double> &controller);
 
@@ -27,10 +27,13 @@ namespace zlPanel {
         void setMaximumDB(const float x) { maximumDB.store(x);}
 
     private:
-        juce::Path path;
+        std::array<juce::Path, 5> paths;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &c;
         std::atomic<float> maximumDB;
+        juce::CriticalSection pathUpdateLock;
+
+        void run() override;
     };
 } // zlPanel
 
