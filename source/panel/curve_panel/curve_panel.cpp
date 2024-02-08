@@ -72,8 +72,9 @@ namespace zlPanel {
     void CurvePanel::repaintCallBack() {
         if (controllerRef.getAnalyzer().isFFTReady()) {
             fftPanel.repaint();
-        } else {
             sumPanel.repaint();
+        } else {
+
         }
     }
 }
