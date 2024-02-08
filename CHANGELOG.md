@@ -4,6 +4,10 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.0.7
+
+- improve GUI performance significantly on macOS
+
 ## 0.0.6
 
 - improve GUI performance slightly
