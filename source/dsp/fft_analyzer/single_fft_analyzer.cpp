@@ -28,7 +28,13 @@ namespace zlFFT {
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         sampleRate.store(static_cast<float>(spec.sampleRate));
-        setOrder(zlState::ffTOrder::orders[static_cast<size_t>(zlState::ffTOrder::defaultI)]);
+        int extraOrder = 0;
+        if (sampleRate >= 50000) {
+            extraOrder = 1;
+        } else if (sampleRate >= 100000) {
+            extraOrder = 2;
+        }
+        setOrder(extraOrder + zlState::ffTOrder::orders[static_cast<size_t>(zlState::ffTOrder::defaultI)]);
     }
 
     template<typename FloatType>
