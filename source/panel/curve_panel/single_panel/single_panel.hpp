@@ -50,6 +50,7 @@ namespace zlPanel {
         zlDynamicFilter::IIRFilter<double> &filter;
         zlIIR::Filter<double> &baseF, &targetF;
         std::atomic<float> maximumDB;
+        std::atomic<bool> skipRepaint {false};
 
         static constexpr std::array changeIDs{
             zlDSP::fType::ID, zlDSP::slope::ID,

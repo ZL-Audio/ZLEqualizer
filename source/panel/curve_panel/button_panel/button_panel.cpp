@@ -43,34 +43,16 @@ namespace zlPanel {
     void ButtonPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            // if a filter button is pressed
-            // if (panels[i]->getDragger().getButton().contains(event.getPosition())) {
-            //     // panels[i]->mouseDown(event);
-            //     panels[i]->setSelected(true);
-            //     auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
-            //     para->beginChangeGesture();
-            //     para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(i)));
-            //     para->endChangeGesture();
-            // } else {
-                panels[i]->setSelected(false);
-            // }
+            panels[i]->setSelected(false);
         }
     }
 
     void ButtonPanel::mouseUp(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        // for (const auto &p: panels) {
-        //     p->mouseUp(event);
-        // }
     }
 
     void ButtonPanel::mouseDrag(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        // for (size_t i = 0; i < zlState::bandNUM; ++i) {
-        //     if (panels[i]->getDragger().getButton().contains(event.getPosition())) {
-        //         panels[i]->mouseDrag(event);
-        //     }
-        // }
     }
 
     void ButtonPanel::mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) {

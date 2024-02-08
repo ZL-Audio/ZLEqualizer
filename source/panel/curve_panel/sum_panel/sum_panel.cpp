@@ -26,9 +26,6 @@ namespace zlPanel {
 
     void SumPanel::paint(juce::Graphics &g) {
         std::array<bool, 5> useLRMS{false, false, false, false, false};
-        // constexpr std::array<zlDSP::lrType::lrTypes, 5> lrTypes{
-        //     zlDSP::lrType::stereo, zlDSP::lrType::left, zlDSP::lrType::right, zlDSP::lrType::mid, zlDSP::lrType::side
-        // };
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             const auto idx = static_cast<size_t>(c.getFilterLRs(i));
             if (!c.getFilter(i).getBypass()) {

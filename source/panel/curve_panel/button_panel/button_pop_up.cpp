@@ -21,6 +21,7 @@ namespace zlPanel {
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
           fTypeC("", zlDSP::fType::choices, base) {
         juce::ignoreUnused(parametersNARef);
+        setBufferedToImage(true);
 
         bypassC.getLAF().enableShadow(false);
         soloC.getLAF().enableShadow(false);

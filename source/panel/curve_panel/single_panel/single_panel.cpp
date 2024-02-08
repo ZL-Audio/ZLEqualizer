@@ -21,10 +21,11 @@ namespace zlPanel {
           baseF(controller.getFilter(idx).getBaseFilter()),
           targetF(controller.getFilter(idx).getTargetFilter()),
           sidePanel(bandIdx, parameters, parametersNA, base, controller) {
-        path.preallocateSpace(zlIIR::frequencies.size() * 6);
+        path.preallocateSpace(zlIIR::frequencies.size() * 6 + 12);
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         juce::ignoreUnused(controllerRef);
+        skipRepaint.store(true);
         parameterChanged(zlDSP::dynamicON::ID + suffix,
                          parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
         parameterChanged(zlState::selectedBandIdx::ID,
@@ -41,7 +42,7 @@ namespace zlPanel {
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
         addAndMakeVisible(sidePanel);
-        colour = uiBase.getColorMap1(idx);
+        skipRepaint.store(false);
     }
 
     SinglePanel::~SinglePanel() {
@@ -58,6 +59,8 @@ namespace zlPanel {
         if (!actived.load()) {
             return;
         }
+        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), ""};
+        // logger.logMessage(juce::String(idx) + "r");
         colour = uiBase.getColorMap1(idx);
         path.clear();
         const auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
@@ -200,6 +203,8 @@ namespace zlPanel {
     }
 
     void SinglePanel::handleAsyncUpdate() {
-        repaint();
+        if (!skipRepaint.load()) {
+            repaint();
+        }
     }
 } // zlPanel

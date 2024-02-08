@@ -17,11 +17,11 @@ namespace zlPanel {
           gridPanel(base),
     scalePanel(parametersNA, base){
         juce::ignoreUnused(parameters);
-        addAndMakeVisible(gridPanel);
-        addAndMakeVisible(scalePanel);
         setInterceptsMouseClicks(false, true);
         setOpaque(true);
         setBufferedToImage(true);
+        addAndMakeVisible(gridPanel);
+        addAndMakeVisible(scalePanel);
     }
 
     BackgroundPanel::~BackgroundPanel() = default;
@@ -29,8 +29,6 @@ namespace zlPanel {
     void BackgroundPanel::paint(juce::Graphics &g) {
         juce::ignoreUnused(g);
         g.fillAll(uiBase.getBackgroundColor());
-        // auto bound = getLocalBounds().toFloat();
-        // uiBase.fillRoundedShadowRectangle(g, bound, 0.05f * uiBase.getFontSize(), {.blurRadius = 0.25f});
     }
 
     void BackgroundPanel::resized() {

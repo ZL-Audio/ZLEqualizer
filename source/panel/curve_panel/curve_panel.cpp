@@ -33,8 +33,6 @@ namespace zlPanel {
         addAndMakeVisible(buttonPanel);
         parameterChanged(zlState::maximumDB::ID, parametersNA.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
-
-        setOpaque(true);
     }
 
     CurvePanel::~CurvePanel() {
