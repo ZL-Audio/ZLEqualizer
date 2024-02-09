@@ -108,7 +108,8 @@ namespace zlPanel {
     FFTSettingPanel::~FFTSettingPanel() {
         name.setLookAndFeel(nullptr);
         if (boxPointer.getComponent() != nullptr) {
-            boxPointer->dismiss();
+            boxPointer->setLookAndFeel(nullptr);
+            // boxPointer->dismiss();
         }
     }
 
@@ -141,12 +142,15 @@ namespace zlPanel {
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.f),
                          juce::roundToInt(uiBase.getFontSize() * 9.167f));
 
+        // auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
+        //                                                    getScreenBounds(),
+        //                                                    nullptr);
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
-                                                           getScreenBounds(),
-                                                           nullptr);
+                                                           getBounds(),
+                                                           getParentComponent()->getParentComponent());
         box.setLookAndFeel(&callOutBoxLAF);
         box.setArrowSize(0);
-        box.updatePosition(getScreenBounds(), getTopLevelComponent()->getScreenBounds());
+        // box.updatePosition(getScreenBounds(), getTopLevelComponent()->getScreenBounds());
         box.sendLookAndFeelChange();
         boxPointer = &box;
     }
