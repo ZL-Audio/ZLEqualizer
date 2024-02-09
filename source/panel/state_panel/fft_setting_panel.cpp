@@ -91,16 +91,22 @@ namespace zlPanel {
         : parametersRef(parameters),
           parametersNARef(parametersNA),
           uiBase(base),
-          drawable(juce::Drawable::createFromImageData(BinaryData::fadwaveform_svg, BinaryData::fadwaveform_svgSize)),
-          button(drawable.get(), base),
+          nameLAF(uiBase),
+          // drawable(juce::Drawable::createFromImageData(BinaryData::fadwaveform_svg, BinaryData::fadwaveform_svgSize)),
+          // button(drawable.get(), base),
           callOutBoxLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
-        button.getButton().onClick = [this]() { openCallOutBox(); };
-        addAndMakeVisible(button);
+        name.setText("Analyzer", juce::sendNotification);
+        nameLAF.setFontScale(1.375f);
+        name.setLookAndFeel(&nameLAF);
+        name.setEditable(false);
+        name.setInterceptsMouseClicks(false, false);
+        addAndMakeVisible(name);
         setBufferedToImage(true);
     }
 
     FFTSettingPanel::~FFTSettingPanel() {
+        name.setLookAndFeel(nullptr);
         if (boxPointer.getComponent() != nullptr) {
             boxPointer->dismiss();
         }
@@ -118,10 +124,13 @@ namespace zlPanel {
         g.fillPath(path);
     }
 
+    void FFTSettingPanel::mouseDown(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        openCallOutBox();
+    }
 
     void FFTSettingPanel::resized() {
-        button.getLookAndFeel().setPadding(uiBase.getFontSize() * 1.f);
-        button.setBounds(getLocalBounds());
+        name.setBounds(getLocalBounds());
     }
 
     void FFTSettingPanel::openCallOutBox() {
@@ -129,8 +138,8 @@ namespace zlPanel {
             return;
         }
         auto content = std::make_unique<FFTCallOutBox>(parametersNARef, uiBase);
-        content->setSize(static_cast<int>(uiBase.getFontSize() * 7.f),
-                         static_cast<int>(uiBase.getFontSize() * 9.167f));
+        content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.f),
+                         juce::roundToInt(uiBase.getFontSize() * 9.167f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getScreenBounds(),
@@ -138,7 +147,7 @@ namespace zlPanel {
         box.setLookAndFeel(&callOutBoxLAF);
         box.setArrowSize(0);
         box.updatePosition(getScreenBounds(), getTopLevelComponent()->getScreenBounds());
-        // box.sendLookAndFeelChange();
+        box.sendLookAndFeelChange();
         boxPointer = &box;
     }
 } // zlPanel

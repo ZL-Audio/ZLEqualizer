@@ -30,7 +30,8 @@ namespace zlPanel {
         const auto logoBound = bound.removeFromLeft(bound.getWidth() * .25f);
         logoPanel.setBounds(logoBound.toNearestInt());
         bound.removeFromRight(uiBase.getFontSize() * 4);
-        const auto fftSettingBound = bound.removeFromRight(bound.getHeight() * 1.25f);
+        auto fftSettingBound = bound.removeFromRight(bound.getHeight() * 2.5f);
+        fftSettingBound.removeFromBottom(uiBase.getFontSize() * .5f);
         fftSettingPanel.setBounds(fftSettingBound.toNearestInt());
     }
 } // zlPanel

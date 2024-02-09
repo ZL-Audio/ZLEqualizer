@@ -27,11 +27,13 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void mouseDown(const juce::MouseEvent &event) override;
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        const std::unique_ptr<juce::Drawable> drawable;
-        zlInterface::ClickButton button;
+        juce::Label name;
+        zlInterface::NameLookAndFeel nameLAF;
         zlInterface::CallOutBoxLAF callOutBoxLAF;
         juce::Component::SafePointer<juce::CallOutBox> boxPointer;
 
