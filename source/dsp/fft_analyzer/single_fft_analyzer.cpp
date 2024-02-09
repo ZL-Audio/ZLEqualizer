@@ -35,6 +35,7 @@ namespace zlFFT {
             extraOrder = 2;
         }
         setOrder(extraOrder + zlState::ffTOrder::orders[static_cast<size_t>(zlState::ffTOrder::defaultI)]);
+        clear();
     }
 
     template<typename FloatType>
