@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.0.8
+
+- replace FFT analyzer icon with text
+- fix callbox display on Windows
+
 ## 0.0.7
 
 - improve GUI performance significantly on macOS

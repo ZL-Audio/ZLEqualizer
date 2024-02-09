@@ -61,7 +61,7 @@ namespace zlPanel {
         uiBase.setStyle(styleID);
         auto *para = stateRef.getParameter(zlState::uiStyle::ID);
         para->beginChangeGesture();
-        para->setValueNotifyingHost(zlState::uiStyle::convertTo01(styleID));
+        para->setValueNotifyingHost(zlState::uiStyle::convertTo01(static_cast<float>(styleID)));
         para->endChangeGesture();
     }
 
