@@ -17,12 +17,14 @@ namespace zlPanel {
         : parametersRef(parameters), parametersNARef(parametersNA), stateRef(state),
           uiBase(base),
           logoPanel(state, base),
-          fftSettingPanel(parameters, parametersNA, base) {
+          fftSettingPanel(parameters, parametersNA, base),
+          compSettingPanel(parameters, parametersNA, base) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         juce::ignoreUnused(stateRef, uiBase);
         setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
         addAndMakeVisible(fftSettingPanel);
+        addAndMakeVisible(compSettingPanel);
     }
 
     void StatePanel::resized() {
@@ -30,8 +32,12 @@ namespace zlPanel {
         const auto logoBound = bound.removeFromLeft(bound.getWidth() * .25f);
         logoPanel.setBounds(logoBound.toNearestInt());
         bound.removeFromRight(uiBase.getFontSize() * 4);
-        auto fftSettingBound = bound.removeFromRight(bound.getHeight() * 2.5f);
-        fftSettingBound.removeFromBottom(uiBase.getFontSize() * .5f);
+        const auto height = bound.getHeight();
+        bound.removeFromBottom(uiBase.getFontSize() * .5f);
+        const auto fftSettingBound = bound.removeFromRight(height * 2.5f);
         fftSettingPanel.setBounds(fftSettingBound.toNearestInt());
+        bound.removeFromRight(height * .5f);
+        const auto compSettingBound = bound.removeFromRight(height * 2.5f);
+        compSettingPanel.setBounds(compSettingBound.toNearestInt());
     }
 } // zlPanel
