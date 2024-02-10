@@ -11,6 +11,8 @@
 
 #include "../../state/state_definitions.hpp"
 
+#include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
+
 namespace zlFFT {
     template<typename FloatType>
     SingleFFTAnalyzer<FloatType>::SingleFFTAnalyzer(const std::string &name) : Thread(name) {
@@ -108,10 +110,12 @@ namespace zlFFT {
                                              ? smoothedDBs[i + 1] * decay + currentDB * (1 - decay)
                                              : currentDB;
                 }
+                smoothedDBs[0] = smoothedDBs[1];
 
                 boost::math::interpolators::cardinal_cubic_b_spline<float> spline(
                     smoothedDBs.data(), smoothedDBs.size(),
-                    -0.5f * deltaT.load(), deltaT.load());
+                    -0.5f * deltaT.load(), deltaT.load(),
+                    0.f);
 
                 preInterplotDBs.front() = spline(static_cast<float>(zlIIR::frequencies.front()));
                 preInterplotDBs.back() = spline(static_cast<float>(zlIIR::frequencies.back()));
@@ -121,7 +125,8 @@ namespace zlFFT {
 
                 boost::math::interpolators::cardinal_cubic_b_spline<float> spline2(
                     preInterplotDBs.data(), preInterplotDBs.size(),
-                    -static_cast<float>(preScale), static_cast<float>(preScale));
+                    -static_cast<float>(preScale), static_cast<float>(preScale),
+                    0.f);
 
                 const auto tilt = tiltSlope.load();
                 for (size_t i = 0; i < interplotDBs.size(); ++i) {

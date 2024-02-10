@@ -12,7 +12,6 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
-#include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
 
 #include "../iir_filter/single_filter.hpp"
 #include "../iir_filter/coeff/design_filter.hpp"
