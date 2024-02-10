@@ -83,7 +83,7 @@ namespace zlCompressor {
 
     private:
         std::atomic<size_t> aStyle, rStyle, phase;
-        std::atomic<FloatType> attack, release, aPara, rPara, smooth;
+        std::atomic<FloatType> attack, release, aPara, rPara, smooth {0.f};
         std::atomic<FloatType> deltaT = FloatType(1) / FloatType(44100);
         FloatType xC = 1.0, xS = 1.0;
 

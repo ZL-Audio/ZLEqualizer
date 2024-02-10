@@ -8,67 +8,46 @@
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "comp_setting_panel.hpp"
+#include "../../dsp/dsp.hpp"
 
 namespace zlPanel {
     class CompCallOutBox final : public juce::Component {
     public:
-        explicit CompCallOutBox(juce::AudioProcessorValueTreeState &parametersNA,
-                               zlInterface::UIBase &base)
-            : parametersNARef(parametersNA),
+        explicit CompCallOutBox(juce::AudioProcessorValueTreeState &parameters,
+                                zlInterface::UIBase &base)
+            : parametersRef(parameters),
               uiBase(base.getFontSize(), base.getStyle()),
-              fftPreON("", zlState::fftPreON::choices, uiBase),
-              fftPostON("", zlState::fftPostON::choices, uiBase),
-              fftSideON("", zlState::fftSideON::choices, uiBase),
-              ffTSpeed("", zlState::ffTSpeed::choices, uiBase),
-              fftTilt("", zlState::ffTTilt::choices, uiBase),
-              preLabel("", "Pre:"),
-              postLabel("", "Post:"),
-              sideLabel("", "Side:"),
-              labelLAF(uiBase) {
-            for (auto &c: {&fftPreON, &fftPostON, &fftSideON, &ffTSpeed, &fftTilt}) {
+              lookaheadS("Lookahead", uiBase),
+              rmsS("RMS", uiBase),
+              smoothS("Smooth", uiBase) {
+            for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
+                c->setPadding(uiBase.getFontSize() * .5f, uiBase.getFontSize() * .25f);
                 addAndMakeVisible(c);
             }
-            labelLAF.setFontScale(1.5f);
-            labelLAF.setJustification(juce::Justification::centredRight);
-            for (auto &l: {&preLabel, &postLabel, &sideLabel}) {
-                l->setLookAndFeel(&labelLAF);
-                addAndMakeVisible(l);
-            }
             attach({
-                       &fftPreON.getBox(), &fftPostON.getBox(), &fftSideON.getBox(),
-                       &ffTSpeed.getBox(), &fftTilt.getBox()
+                       &lookaheadS.getSlider(), &rmsS.getSlider(), &smoothS.getSlider()
                    },
                    {
-                       zlState::fftPreON::ID, zlState::fftPostON::ID, zlState::fftSideON::ID,
-                       zlState::ffTSpeed::ID, zlState::ffTTilt::ID
+                       zlDSP::dynLookahead::ID, zlDSP::dynRMS::ID, zlDSP::dynSmooth::ID
                    },
-                   parametersNARef, boxAttachments);
+                   parametersRef, sliderAttachments);
             setBufferedToImage(true);
         }
 
-        ~CompCallOutBox() override {
-            for (auto &l: {&preLabel, &postLabel, &sideLabel}) {
-                l->setLookAndFeel(nullptr);
-            }
-        }
+        ~CompCallOutBox() override = default;
 
         void resized() override {
             juce::Grid grid;
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(60))};
-            grid.templateColumns = {Track(Fr(50)), Track(Fr(50))};
+            grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60))};
+            grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
-                juce::GridItem(preLabel).withArea(1, 1),
-                juce::GridItem(postLabel).withArea(2, 1),
-                juce::GridItem(sideLabel).withArea(3, 1),
-                juce::GridItem(fftPreON).withArea(1, 2),
-                juce::GridItem(fftPostON).withArea(2, 2),
-                juce::GridItem(fftSideON).withArea(3, 2),
-                juce::GridItem(ffTSpeed).withArea(4, 1, 5, 3),
-                juce::GridItem(fftTilt).withArea(5, 1, 6, 3)
+                juce::GridItem(lookaheadS).withArea(1, 1),
+                juce::GridItem(rmsS).withArea(2, 1),
+                juce::GridItem(smoothS).withArea(3, 1)
             };
 
             const auto bound = getLocalBounds().toFloat();
@@ -76,24 +55,20 @@ namespace zlPanel {
         }
 
     private:
-        juce::AudioProcessorValueTreeState &parametersNARef;
+        juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase uiBase;
 
-        zlInterface::CompactCombobox fftPreON, fftPostON, fftSideON, ffTSpeed, fftTilt;
-        juce::Label preLabel, postLabel, sideLabel;
-        zlInterface::NameLookAndFeel labelLAF;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
+        zlInterface::CompactLinearSlider lookaheadS, rmsS, smoothS;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
     };
 
     CompSettingPanel::CompSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                     juce::AudioProcessorValueTreeState &parametersNA,
-                                     zlInterface::UIBase &base)
+                                       juce::AudioProcessorValueTreeState &parametersNA,
+                                       zlInterface::UIBase &base)
         : parametersRef(parameters),
           parametersNARef(parametersNA),
           uiBase(base),
           nameLAF(uiBase),
-          // drawable(juce::Drawable::createFromImageData(BinaryData::fadwaveform_svg, BinaryData::fadwaveform_svgSize)),
-          // button(drawable.get(), base),
           callOutBoxLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         name.setText("Dynamic", juce::sendNotification);
@@ -134,20 +109,19 @@ namespace zlPanel {
     }
 
     void CompSettingPanel::openCallOutBox() {
-        // if (getTopLevelComponent() == nullptr) {
-        //     return;
-        // }
-        // auto content = std::make_unique<CompCallOutBox>(parametersNARef, uiBase);
-        // content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.f),
-        //                  juce::roundToInt(uiBase.getFontSize() * 9.167f));
+        if (getTopLevelComponent() == nullptr) {
+            return;
+        }
+        auto content = std::make_unique<CompCallOutBox>(parametersRef, uiBase);
+        content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
+                         juce::roundToInt(uiBase.getFontSize() * 7.5f));
 
-        // auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
-        //                                                    getScreenBounds(),
-        //                                                    nullptr);
-        // box.setLookAndFeel(&callOutBoxLAF);
-        // box.setArrowSize(0);
-        // box.updatePosition(getScreenBounds(), getTopLevelComponent()->getScreenBounds());
-        // box.sendLookAndFeelChange();
-        // boxPointer = &box;
+        auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
+                                                           getBounds(),
+                                                           getParentComponent()->getParentComponent());
+        box.setLookAndFeel(&callOutBoxLAF);
+        box.setArrowSize(0);
+        box.sendLookAndFeelChange();
+        boxPointer = &box;
     }
 } // zlPanel

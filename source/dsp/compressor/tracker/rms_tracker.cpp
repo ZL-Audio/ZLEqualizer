@@ -31,6 +31,7 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void RMSTracker<FloatType>::process(const juce::AudioBuffer<FloatType> &buffer) {
+        // calculate mean square
         FloatType _ms = 0;
         for (auto channel = 0; channel < buffer.getNumChannels(); channel++) {
             auto data = buffer.getReadPointer(channel);
@@ -41,6 +42,8 @@ namespace zlCompressor {
 
         _ms = _ms / static_cast<FloatType> (buffer.getNumSamples());
 
+        // push mean square into the circular buffer
+        juce::ScopedLock lock(paraLock);
         if (loudnessBuffer.size() == loudnessBuffer.capacity()) {
             mLoudness -= loudnessBuffer.front();
         }
@@ -51,6 +54,7 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void RMSTracker<FloatType>::setMomentarySize(size_t mSize) {
+        juce::ScopedLock lock(paraLock);
         mSize = std::max(size_t(1), mSize);
         while (loudnessBuffer.size() > mSize) {
             mLoudness -= loudnessBuffer.front();

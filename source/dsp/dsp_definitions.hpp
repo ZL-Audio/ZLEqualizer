@@ -236,7 +236,7 @@ namespace zlDSP {
         auto static constexpr ID = "attack";
         auto static constexpr name = "Attack (ms)";
         inline auto static const range =
-                juce::NormalisableRange<float>(1.f, 500.f, 0.1f, 0.30103f);
+                juce::NormalisableRange<float>(0.f, 500.f, 0.1f, 0.3010299956639812f);
         auto static constexpr defaultV = 50.f;
     };
 
@@ -245,7 +245,7 @@ namespace zlDSP {
         auto static constexpr ID = "release";
         auto static constexpr name = "Release (ms)";
         inline auto static const range =
-                juce::NormalisableRange<float>(1.f, 5000.f, 0.1f, 0.30103f);
+                juce::NormalisableRange<float>(0.f, 5000.f, 0.1f, 0.3010299956639812f);
         auto static constexpr defaultV = 500.f;
     };
 
@@ -262,6 +262,30 @@ namespace zlDSP {
         auto static constexpr ID = "side_solo";
         auto static constexpr name = "Side Solo";
         auto static constexpr defaultV = false;
+    };
+
+    class dynLookahead : public FloatParameters<dynLookahead> {
+    public:
+        auto static constexpr ID = "dyn_lookahead";
+        auto static constexpr name = "Lookahead";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 20.f, .1f);
+        auto static constexpr defaultV = 0.f;
+    };
+
+    class dynRMS : public FloatParameters<dynRMS> {
+    public:
+        auto static constexpr ID = "dyn_rms";
+        auto static constexpr name = "RMS";
+        inline auto static const range = juce::NormalisableRange<float>(1.f, 40.f, .1f);
+        auto static constexpr defaultV = 1.f;
+    };
+
+    class dynSmooth : public FloatParameters<dynSmooth> {
+    public:
+        auto static constexpr ID = "dyn_smooth";
+        auto static constexpr name = "Smooth";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
+        auto static constexpr defaultV = 0.f;
     };
 
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
@@ -290,7 +314,7 @@ namespace zlDSP {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
         }
-        layout.add(sideChain::get());
+        layout.add(sideChain::get(), dynLookahead::get(), dynRMS::get());
         return layout;
     }
 

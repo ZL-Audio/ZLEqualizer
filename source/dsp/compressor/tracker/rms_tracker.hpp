@@ -40,6 +40,7 @@ namespace zlCompressor {
         }
 
         inline FloatType getMomentaryLoudness() override {
+            juce::ScopedLock lock(paraLock);
             FloatType meanSquare =
                     loudnessBuffer.size() > 0 ? mLoudness / static_cast<FloatType>(loudnessBuffer.size()) : 0;
 
@@ -50,6 +51,7 @@ namespace zlCompressor {
         FloatType mLoudness = 0;
         FloatType secondPerBuffer = FloatType(0.01);
         boost::circular_buffer<FloatType> loudnessBuffer{1};
+        juce::CriticalSection paraLock;
     };
 
 } // zldetector
