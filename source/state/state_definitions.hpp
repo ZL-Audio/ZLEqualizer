@@ -131,7 +131,7 @@ namespace zlState {
         auto static constexpr ID = "fft_pre_on";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "OFF", "ON"
+            "OFF", "ON", "FRZ"
         };
         int static constexpr defaultI = 1;
     };
@@ -141,7 +141,7 @@ namespace zlState {
         auto static constexpr ID = "fft_post_on";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "OFF", "ON"
+            "OFF", "ON", "FRZ"
         };
         int static constexpr defaultI = 1;
     };
@@ -151,7 +151,7 @@ namespace zlState {
         auto static constexpr ID = "fft_side_on";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "OFF", "ON"
+            "OFF", "ON", "FRZ"
         };
         int static constexpr defaultI = 0;
     };

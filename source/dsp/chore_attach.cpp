@@ -17,7 +17,8 @@ namespace zlDSP {
                                         Controller<FloatType> &controller)
         : processorRef(processor),
           parameterRef(parameters), parameterNARef(parametersNA),
-          controllerRef(controller) {
+          controllerRef(controller),
+          decaySpeed(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]) {
         addListeners();
         initDefaultValues();
     }
@@ -47,20 +48,75 @@ namespace zlDSP {
         if (parameterID == sideChain::ID) {
             controllerRef.setSideChain(static_cast<bool>(newValue));
         } else if (parameterID == zlState::fftPreON::ID) {
-            controllerRef.getAnalyzer().setPreON(static_cast<bool>(newValue));
+            switch (static_cast<size_t>(newValue)) {
+                case 0:
+                    controllerRef.getAnalyzer().setPreON(false);
+                    break;
+                case 1:
+                    if (isFFTON[0].load() == 0) {
+                        controllerRef.getAnalyzer().setPreON(true);
+                    }
+                    controllerRef.getAnalyzer().getPreFFT().setDecayRate(decaySpeed.load());
+                    break;
+                case 2:
+                    if (isFFTON[0].load() == 0) {
+                        controllerRef.getAnalyzer().setPreON(true);
+                    }
+                    controllerRef.getAnalyzer().getPreFFT().setDecayRate(1.f);
+                    break;
+                default: {
+                }
+            }
+            isFFTON[0].store(static_cast<int>(newValue));
         } else if (parameterID == zlState::fftPostON::ID) {
-            controllerRef.getAnalyzer().setPostON(static_cast<bool>(newValue));
+            switch (static_cast<size_t>(newValue)) {
+                case 0:
+                    controllerRef.getAnalyzer().setPostON(false);
+                    break;
+                case 1:
+                    if (isFFTON[1].load() == 0) {
+                        controllerRef.getAnalyzer().setPostON(true);
+                    }
+                    controllerRef.getAnalyzer().getPostFFT().setDecayRate(decaySpeed.load());
+                    break;
+                case 2:
+                    if (isFFTON[1].load() == 0) {
+                        controllerRef.getAnalyzer().setPostON(true);
+                    }
+                    controllerRef.getAnalyzer().getPostFFT().setDecayRate(1.f);
+                    break;
+                default: {
+                }
+            }
+            isFFTON[1].store(static_cast<int>(newValue));
         } else if (parameterID == zlState::fftSideON::ID) {
-            controllerRef.getAnalyzer().setSideON(static_cast<bool>(newValue));
+            switch (static_cast<size_t>(newValue)) {
+                case 0:
+                    controllerRef.getAnalyzer().setSideON(false);
+                    break;
+                case 1:
+                    if (isFFTON[2].load() == 0) {
+                        controllerRef.getAnalyzer().setSideON(true);
+                    }
+                    controllerRef.getAnalyzer().getSideFFT().setDecayRate(decaySpeed.load());
+                    break;
+                case 2:
+                    if (isFFTON[2].load() == 0) {
+                        controllerRef.getAnalyzer().setSideON(true);
+                    }
+                    controllerRef.getAnalyzer().getSideFFT().setDecayRate(1.f);
+                    break;
+                default: {
+                }
+            }
+            isFFTON[2].store(static_cast<int>(newValue));
         } else if (parameterID == zlState::ffTSpeed::ID) {
             const auto idx = static_cast<size_t>(newValue);
-            if (idx == 5) {
-                controllerRef.getAnalyzer().getPostFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
-            } else {
-                controllerRef.getAnalyzer().getPreFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
-                controllerRef.getAnalyzer().getPostFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
-                controllerRef.getAnalyzer().getSideFFT().setDecayRate(zlState::ffTSpeed::speeds[idx]);
-            }
+            const auto speed = zlState::ffTSpeed::speeds[idx];
+            decaySpeed.store(speed);
+            if (isFFTON[0].load() != 2) controllerRef.getAnalyzer().getPreFFT().setDecayRate(speed);
+            if (isFFTON[1].load() != 2) controllerRef.getAnalyzer().getPostFFT().setDecayRate(speed);
+            if (isFFTON[2].load() != 2) controllerRef.getAnalyzer().getSideFFT().setDecayRate(speed);
         } else if (parameterID == zlState::ffTTilt::ID) {
             const auto idx = static_cast<size_t>(newValue);
             controllerRef.getAnalyzer().getPreFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);

@@ -92,8 +92,6 @@ namespace zlPanel {
           parametersNARef(parametersNA),
           uiBase(base),
           nameLAF(uiBase),
-          // drawable(juce::Drawable::createFromImageData(BinaryData::fadwaveform_svg, BinaryData::fadwaveform_svgSize)),
-          // button(drawable.get(), base),
           callOutBoxLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         name.setText("Analyzer", juce::sendNotification);

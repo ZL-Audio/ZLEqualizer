@@ -29,13 +29,16 @@ namespace zlDSP {
         juce::AudioProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
         Controller<FloatType> &controllerRef;
+        std::atomic<float> decaySpeed;
+        std::array<std::atomic<int>, 3> isFFTON{1, 1, 0};
 
         constexpr static std::array IDs{sideChain::ID};
         constexpr static std::array defaultVs{static_cast<float>(sideChain::defaultV)};
 
         constexpr static std::array NAIDs{
             zlState::fftPreON::ID, zlState::fftPostON::ID, zlState::fftSideON::ID,
-            zlState::ffTSpeed::ID, zlState::ffTTilt::ID};
+            zlState::ffTSpeed::ID, zlState::ffTTilt::ID
+        };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
