@@ -16,15 +16,18 @@
 #include "../../../gui/gui.hpp"
 
 namespace zlPanel {
-    class SumPanel final : public juce::Component, private juce::Thread {
+    class SumPanel final : public juce::Component,
+                           private juce::Thread {
     public:
-        explicit SumPanel(zlInterface::UIBase &base, zlDSP::Controller<double> &controller);
+        explicit SumPanel(juce::AudioProcessorValueTreeState &parameters,
+                          zlInterface::UIBase &base,
+                          zlDSP::Controller<double> &controller);
 
         ~SumPanel() override;
 
         void paint(juce::Graphics &g) override;
 
-        void setMaximumDB(const float x) { maximumDB.store(x);}
+        void setMaximumDB(const float x) { maximumDB.store(x); }
 
     private:
         std::array<juce::Path, 5> paths;

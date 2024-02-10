@@ -18,7 +18,7 @@ namespace zlPanel {
           controllerRef(c),
           backgroundPanel(parameters, parametersNA, base),
           fftPanel(c.getAnalyzer(), base),
-          sumPanel(base, c),
+          sumPanel(parameters, base,  c),
           soloPanel(parameters, parametersNA, base, c),
           buttonPanel(parameters, parametersNA, base),
           currentT(juce::Time::getCurrentTime()),

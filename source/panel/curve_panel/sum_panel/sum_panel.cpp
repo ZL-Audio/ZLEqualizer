@@ -10,9 +10,12 @@
 #include "sum_panel.hpp"
 
 namespace zlPanel {
-    SumPanel::SumPanel(zlInterface::UIBase &base, zlDSP::Controller<double> &controller)
+    SumPanel::SumPanel(juce::AudioProcessorValueTreeState &parameters,
+                       zlInterface::UIBase &base,
+                       zlDSP::Controller<double> &controller)
         : Thread("sum_panel"), uiBase(base), c(controller) {
-        for (auto &path : paths) {
+        juce::ignoreUnused(parameters);
+        for (auto &path: paths) {
             path.preallocateSpace(zlIIR::frequencies.size() * 3);
         }
         startThread(juce::Thread::Priority::low);
@@ -37,7 +40,7 @@ namespace zlPanel {
             if (!useLRMS[j]) { continue; }
             g.setColour(uiBase.getColorMap2(j));
             g.strokePath(paths[j], juce::PathStrokeType(uiBase.getFontSize() * 0.2f,
-                                                    juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+                                                        juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
         notify();
     }
@@ -48,7 +51,8 @@ namespace zlPanel {
             juce::ignoreUnused(flag);
             std::array<bool, 5> useLRMS{false, false, false, false, false};
             constexpr std::array<zlDSP::lrType::lrTypes, 5> lrTypes{
-                zlDSP::lrType::stereo, zlDSP::lrType::left, zlDSP::lrType::right, zlDSP::lrType::mid, zlDSP::lrType::side
+                zlDSP::lrType::stereo, zlDSP::lrType::left, zlDSP::lrType::right, zlDSP::lrType::mid,
+                zlDSP::lrType::side
             };
             for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
                 const auto idx = static_cast<size_t>(c.getFilterLRs(i));
@@ -58,8 +62,9 @@ namespace zlPanel {
             }
             juce::ScopedLock lock(pathUpdateLock);
             for (size_t j = 0; j < useLRMS.size(); ++j) {
-                if (!useLRMS[j]) { continue; }
                 paths[j].clear();
+
+                if (!useLRMS[j]) { continue; }
 
                 c.updateDBs(lrTypes[j]);
                 const auto &dBs = c.getDBs();
@@ -76,7 +81,7 @@ namespace zlPanel {
                     if (i == 0) {
                         paths[j].startNewSubPath(x, y);
                         y0 = y;
-                    } else if (std::abs(y - y0) >= 0.125f || i == zlIIR::frequencies.size() - 1){
+                    } else if (std::abs(y - y0) >= 0.125f || i == zlIIR::frequencies.size() - 1) {
                         paths[j].lineTo(x, y);
                         y0 = y;
                     }
