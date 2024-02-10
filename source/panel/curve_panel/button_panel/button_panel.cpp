@@ -35,7 +35,7 @@ namespace zlPanel {
 
     void ButtonPanel::resized() {
         wheelSlider.setBounds(getLocalBounds());
-        for (const auto &p : panels) {
+        for (const auto &p: panels) {
             p->setBounds(getLocalBounds());
         }
     }
@@ -71,7 +71,6 @@ namespace zlPanel {
         const auto freq = xtoFreq(x, bound);
         const auto db = yToDB(y, maximumDB.load(), bound);
 
-        // logger.logMessage(juce::String(y) + " : " + juce::String(db));
         std::vector<std::string> initIDs;
         std::vector<float> initValues;
 
@@ -82,17 +81,23 @@ namespace zlPanel {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::lowShelf));
             initIDs.emplace_back(zlDSP::gain::ID);
-            initValues.emplace_back(zlDSP::gain::convertTo01(db));
+            initValues.emplace_back(zlDSP::gain::convertTo01(
+                juce::jlimit(-maximumDB.load(), maximumDB.load(), 2 * db)
+            ));
         } else if (freq < 5000.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::peak));
             initIDs.emplace_back(zlDSP::gain::ID);
-            initValues.emplace_back(zlDSP::gain::convertTo01(db));
+            initValues.emplace_back(zlDSP::gain::convertTo01(
+                juce::jlimit(-maximumDB.load(), maximumDB.load(), db)
+            ));
         } else if (freq < 15000.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::highShelf));
             initIDs.emplace_back(zlDSP::gain::ID);
-            initValues.emplace_back(zlDSP::gain::convertTo01(db));
+            initValues.emplace_back(zlDSP::gain::convertTo01(
+                juce::jlimit(-maximumDB.load(), maximumDB.load(), 2 * db)
+            ));
         } else {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::lowPass));
@@ -104,12 +109,12 @@ namespace zlPanel {
 
         for (size_t i = 0; i < initIDs.size(); ++i) {
             const auto paraID = zlDSP::appendSuffix(initIDs[i], idx);
-            parametersRef.getParameter(paraID)->beginChangeGesture();
-            parametersRef.getParameter(paraID)->setValueNotifyingHost(initValues[i]);
-            parametersRef.getParameter(paraID)->endChangeGesture();
+            auto *_para = parametersRef.getParameter(paraID);
+            _para->beginChangeGesture();
+            _para->setValueNotifyingHost(initValues[i]);
+            _para->endChangeGesture();
         }
 
-        // logger.logMessage(juce::String(idx));
         auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
         para->beginChangeGesture();
         para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(idx)));
@@ -121,14 +126,13 @@ namespace zlPanel {
             const auto idx = static_cast<size_t>(newValue);
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 panels[i]->setSelected(i == idx);
-            }
-            {
+            } {
                 const juce::MessageManagerLock mmLock;
                 panels[idx]->toFront(false);
             }
             wheelAttachment.reset();
             wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                    parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
+                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
         } else if (parameterID == zlState::maximumDB::ID) {
             const auto idx = static_cast<size_t>(newValue);
             for (const auto &p: panels) {
