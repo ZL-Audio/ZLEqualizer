@@ -21,6 +21,7 @@ namespace zlPanel {
           sumPanel(base, c),
           soloPanel(parameters, parametersNA, base, c),
           buttonPanel(parameters, parametersNA, base),
+          currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
         addAndMakeVisible(backgroundPanel);
         addAndMakeVisible(fftPanel);
@@ -70,11 +71,16 @@ namespace zlPanel {
     }
 
     void CurvePanel::repaintCallBack() {
-        if (controllerRef.getAnalyzer().isFFTReady()) {
-            fftPanel.repaint();
+        auto &analyzer = controllerRef.getAnalyzer();
+        const juce::Time nowT = juce::Time::getCurrentTime();
+        if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
+            if (analyzer.isFFTReady()) {
+                fftPanel.repaint();
+                currentT = nowT;
+            }
+        } else if ((nowT - currentT).inMilliseconds() >= 40) {
             sumPanel.repaint();
-        } else {
-
+            currentT = nowT;
         }
     }
 }

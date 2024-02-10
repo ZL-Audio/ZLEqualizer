@@ -43,6 +43,7 @@ namespace zlPanel {
         SoloPanel soloPanel;
         ButtonPanel buttonPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
+        juce::Time currentT;
         juce::VBlankAttachment vblank;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
