@@ -19,6 +19,7 @@ namespace zlDSP {
           parameterRef(parameters), parameterNARef(parametersNA),
           controllerRef(controller),
           decaySpeed(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]) {
+        juce::ignoreUnused(parameterRef);
         addListeners();
         initDefaultValues();
     }
