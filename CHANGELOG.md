@@ -7,8 +7,9 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 ## 0.0.9
 
 - improve GUI performance
-- adjust filter gain when added by double-clicking
+- fix filter gain when added by double-clicking
 - enable freezing pre/post/side FFT seperately
+- enable more dynamic settings
 
 ## 0.0.8
 
