@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.0.10
+
+- adjust padding of state panels
+- fix text colour of text editors
+
 ## 0.0.9
 
 - improve GUI performance

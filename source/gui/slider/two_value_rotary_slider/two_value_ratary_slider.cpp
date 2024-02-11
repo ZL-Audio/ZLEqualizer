@@ -60,8 +60,6 @@ namespace zlInterface {
         label2.setJustificationType(juce::Justification::centred);
         label1.addListener(this);
         label2.addListener(this);
-        // label1.addMouseListener(this, false);
-        // label2.addMouseListener(this, false);
     }
 
     TwoValueRotarySlider::~TwoValueRotarySlider() {
@@ -197,42 +195,14 @@ namespace zlInterface {
 
     void TwoValueRotarySlider::mouseDoubleClick(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        // if (label1.contains(event.getPosition())) {
-        // label1.showEditor();
-        // }
-        // if (label2.contains(event.getPosition())) {
-        //     label2.showEditor();
-        // }
-        // auto content = std::make_unique<juce::TextEditor>();
-        // content->setLookAndFeel(&textBoxLAF);
-        // content->setText("test", juce::dontSendNotification);
-        // // content->showEditor();
-        // content->setSize(juce::roundToInt(uiBase.getFontSize() * 4),
-        //     juce::roundToInt(uiBase.getFontSize() * 2));
-        //
-        // auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
-        //     {},
-        //     this->getParentComponent());
-        // box.setArrowSize(0);
-
-
-        // if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
-        //     slider1.mouseDoubleClick(event);
-        //     label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
-        // } else {
-        //     slider2.mouseDoubleClick(event);
-        //     label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
-        // }
     }
 
     void TwoValueRotarySlider::mouseWheelMove(const juce::MouseEvent &event,
                                               const juce::MouseWheelDetails &wheel) {
         if (!showSlider2.load() || !event.mods.isCommandDown()) {
             slider1.mouseWheelMove(event, wheel);
-            // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
             slider2.mouseWheelMove(event, wheel);
-            // label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
         }
     }
 
@@ -265,6 +235,11 @@ namespace zlInterface {
         for (auto &ll: {&label, &label1, &label2}) {
             ll->repaint();
         }
+        editor.setJustification(juce::Justification::centred);
+        editor.setColour(juce::TextEditor::outlineColourId, uiBase.getTextColor());
+        editor.setColour(juce::TextEditor::highlightedTextColourId, uiBase.getTextColor());
+        editor.applyFontToAllText(uiBase.getFontSize() * FontHuge);
+        editor.applyColourToAllText(uiBase.getTextColor(), true);
     }
 
     void TwoValueRotarySlider::editorHidden(juce::Label *l, juce::TextEditor &editor) {
