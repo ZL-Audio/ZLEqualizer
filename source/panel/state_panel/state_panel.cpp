@@ -18,18 +18,20 @@ namespace zlPanel {
           uiBase(base),
           logoPanel(state, base),
           fftSettingPanel(parameters, parametersNA, base),
-          compSettingPanel(parameters, parametersNA, base) {
+          compSettingPanel(parameters, parametersNA, base),
+          outputSettingPanel(parameters, parametersNA, base) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         juce::ignoreUnused(stateRef, uiBase);
         setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
         addAndMakeVisible(fftSettingPanel);
         addAndMakeVisible(compSettingPanel);
+        addAndMakeVisible(outputSettingPanel);
     }
 
     void StatePanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        const auto logoBound = bound.removeFromLeft(bound.getWidth() * .25f);
+        const auto logoBound = bound.removeFromLeft(bound.getWidth() * .125f);
         logoPanel.setBounds(logoBound.toNearestInt());
         bound.removeFromRight(uiBase.getFontSize() * 4);
         const auto height = bound.getHeight();
@@ -39,5 +41,8 @@ namespace zlPanel {
         bound.removeFromRight(height * .5f);
         const auto compSettingBound = bound.removeFromRight(height * 2.5f);
         compSettingPanel.setBounds(compSettingBound.toNearestInt());
+        bound.removeFromRight(height * .5f);
+        const auto outputSettingBound = bound.removeFromRight(height * 2.5f);
+        outputSettingPanel.setBounds(outputSettingBound.toNearestInt());
     }
 } // zlPanel

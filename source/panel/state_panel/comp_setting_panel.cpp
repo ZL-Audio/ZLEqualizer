@@ -21,7 +21,7 @@ namespace zlPanel {
               rmsS("RMS", uiBase),
               smoothS("Smooth", uiBase) {
             for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
-                c->setPadding(uiBase.getFontSize() * .5f, uiBase.getFontSize() * .25f);
+                c->setPadding(uiBase.getFontSize() * .5f, 0.01f);
                 addAndMakeVisible(c);
             }
             attach({
@@ -114,7 +114,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<CompCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
-                         juce::roundToInt(uiBase.getFontSize() * 7.5f));
+                         juce::roundToInt(uiBase.getFontSize() * 9.f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

@@ -26,6 +26,7 @@ namespace zlDSP {
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
                                                                T::name + suffix, T::range, T::defaultV, attributes);
         }
+
         inline static float convertTo01(const float x) {
             return T::range.convertTo0to1(x);
         }
@@ -41,8 +42,10 @@ namespace zlDSP {
                                                               T::name + suffix, T::defaultV, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterBool> get(bool meta, const std::string &suffix = "",  bool automate = true) {
-            auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::name).withMeta(meta);
+        static std::unique_ptr<juce::AudioParameterBool> get(bool meta, const std::string &suffix = "",
+                                                             bool automate = true) {
+            auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::name).
+                    withMeta(meta);
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
                                                               T::name + suffix, T::defaultV, attributes);
         }
@@ -61,6 +64,7 @@ namespace zlDSP {
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
                                                                 T::name + suffix, T::choices, T::defaultI, attributes);
         }
+
         inline static float convertTo01(const int x) {
             return static_cast<float>(x) / static_cast<float>(T::choices.size());
         }
@@ -288,6 +292,28 @@ namespace zlDSP {
         auto static constexpr defaultV = 0.f;
     };
 
+    class scale : public FloatParameters<scale> {
+    public:
+        auto static constexpr ID = "scale";
+        auto static constexpr name = "Scale";
+        inline auto static const range =
+                juce::NormalisableRange<float>(0.f, 200.f, .1f);
+        auto static constexpr defaultV = 100.f;
+
+        inline static float formatV(const float x) { return x / 100; }
+
+        inline static double formatV(const double x) { return x / 100; }
+    };
+
+    class outputGain : public FloatParameters<outputGain> {
+    public:
+        auto static constexpr ID = "output_gain";
+        auto static constexpr name = "Gain";
+        inline auto static const range =
+                juce::NormalisableRange<float>(-16.f, 16.f, .01f, 0.5, true);
+        auto static constexpr defaultV = 0.f;
+    };
+
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
         layout.add(bypass::get(suffix), solo::get(true, suffix),
@@ -314,7 +340,9 @@ namespace zlDSP {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
         }
-        layout.add(sideChain::get(), dynLookahead::get(), dynRMS::get(), dynSmooth::get());
+        layout.add(sideChain::get(),
+                   dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
+                   scale::get(), outputGain::get());
         return layout;
     }
 

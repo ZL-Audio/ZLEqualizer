@@ -13,6 +13,7 @@
 #include "logo_panel.hpp"
 #include "fft_setting_panel.hpp"
 #include "comp_setting_panel.hpp"
+#include "output_setting_panel.hpp"
 
 namespace zlPanel {
 
@@ -34,6 +35,7 @@ namespace zlPanel {
         LogoPanel logoPanel;
         FFTSettingPanel fftSettingPanel;
         CompSettingPanel compSettingPanel;
+        OutputSettingPanel outputSettingPanel;
     };
 
 } // zlPanel
