@@ -75,6 +75,10 @@ namespace zlDSP {
 
         zlHistogram::Histogram<FloatType> &getLearningHist(const size_t idx) { return histograms[idx]; }
 
+        void setLookAhead(float x);
+
+        void setRMS(float x);
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -102,10 +106,12 @@ namespace zlDSP {
 
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
-        std::atomic<int> latencyInSamples;
 
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
+
+        juce::dsp::DelayLine<FloatType> delay;
+        juce::CriticalSection delayLock;
 
         void processSolo();
 

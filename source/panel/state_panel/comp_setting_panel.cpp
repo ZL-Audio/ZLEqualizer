@@ -59,7 +59,7 @@ namespace zlPanel {
         zlInterface::UIBase uiBase;
 
         zlInterface::CompactLinearSlider lookaheadS, rmsS, smoothS;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
     };
 
     CompSettingPanel::CompSettingPanel(juce::AudioProcessorValueTreeState &parameters,

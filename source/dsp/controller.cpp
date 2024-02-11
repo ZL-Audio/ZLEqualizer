@@ -28,9 +28,10 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+        delay.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
+        delay.setMaximumDelayInSamples(static_cast<int>(0.02 * spec.sampleRate) + 1);
         subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
-        latencyInSamples.store(static_cast<int>(subBuffer.getLatencySamples()));
         triggerAsyncUpdate();
         juce::dsp::ProcessSpec subSpec{spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2};
         for (auto &f: filters) {
@@ -57,6 +58,15 @@ namespace zlDSP {
         if (!sideChain.load()) {
             sideBuffer.makeCopyOf(mainBuffer, true);
         }
+        // process lookahead
+        {
+            juce::ScopedLock lock(delayLock);
+            if (delay.getDelay() > FloatType(0)) {
+                juce::dsp::AudioBlock<FloatType> mainBlock(mainBuffer);
+                juce::dsp::ProcessContextReplacing<FloatType> mainContext(mainBlock);
+                delay.process(mainContext);
+            }
+        }
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         const juce::ScopedReadLock scopedLock(paraUpdateLock);
         // ---------------- start sub buffer
@@ -64,7 +74,7 @@ namespace zlDSP {
         while (subBuffer.isSubReady()) {
             subBuffer.popSubBuffer();
             auto subMainBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 0,
-                                                          2, subBuffer.subBuffer.getNumSamples());
+                                                              2, subBuffer.subBuffer.getNumSamples());
             auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
                                                               2, subBuffer.subBuffer.getNumSamples());
             fftAnalyzezr.pushPreFFTBuffer(subMainBuffer);
@@ -280,7 +290,9 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::handleAsyncUpdate() {
-        processorRef.setLatencySamples(latencyInSamples.load());
+        juce::ScopedLock lock(delayLock);
+        const auto latency = static_cast<int>(subBuffer.getLatencySamples()) + static_cast<int>(delay.getDelay());
+        processorRef.setLatencySamples(latency);
     }
 
     template<typename FloatType>
@@ -377,6 +389,24 @@ namespace zlDSP {
             histograms[idx].reset();
         }
         isHistON[idx].store(isLearning);
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setLookAhead(const float x) {
+        juce::ScopedLock lock(delayLock);
+        const auto numDelaySample = static_cast<int>(
+            x / 1000.f * static_cast<float>(subBuffer.getMainSpec().sampleRate));
+        delay.setDelay(static_cast<FloatType>(numDelaySample));
+        triggerAsyncUpdate();
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setRMS(const float x) {
+        const auto numRMS = static_cast<size_t>(
+            x / 1000.f * static_cast<float>(subBuffer.getMainSpec().sampleRate));
+        for (auto &f:filters) {
+            f.getCompressor().getTracker().setMomentarySize(numRMS);
+        }
     }
 
     template

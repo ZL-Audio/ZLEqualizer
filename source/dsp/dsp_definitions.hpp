@@ -314,7 +314,7 @@ namespace zlDSP {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
         }
-        layout.add(sideChain::get(), dynLookahead::get(), dynRMS::get());
+        layout.add(sideChain::get(), dynLookahead::get(), dynRMS::get(), dynSmooth::get());
         return layout;
     }
 

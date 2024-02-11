@@ -48,6 +48,14 @@ namespace zlDSP {
     void ChoreAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == sideChain::ID) {
             controllerRef.setSideChain(static_cast<bool>(newValue));
+        } else if (parameterID == dynLookahead::ID) {
+            controllerRef.setLookAhead(newValue);
+        } else if (parameterID == dynRMS::ID) {
+            controllerRef.setRMS(newValue);
+        } else if (parameterID == dynSmooth::ID) {
+            for (size_t i = 0; i < bandNUM; ++i) {
+                controllerRef.getFilter(i).getCompressor().getDetector().setSmooth(static_cast<FloatType>(newValue));
+            }
         } else if (parameterID == zlState::fftPreON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
