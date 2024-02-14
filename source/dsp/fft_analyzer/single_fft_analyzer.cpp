@@ -12,6 +12,7 @@
 #include "../../state/state_definitions.hpp"
 
 #include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
+#include <boost/math/interpolators/makima.hpp>
 
 namespace zlFFT {
     template<typename FloatType>
@@ -66,6 +67,12 @@ namespace zlFFT {
 
         deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
         decayRate.store(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]);
+
+        smoothedDBX.resize(fftSize.load() / 2 + 2);
+        smoothedDBX[0] = deltaT.load() * (-.5f);
+        for (size_t idx = 1; idx < smoothedDBX.size(); ++idx) {
+            smoothedDBX[idx] = smoothedDBX[idx - 1] + deltaT.load();
+        }
     }
 
     template<typename FloatType>
@@ -111,11 +118,17 @@ namespace zlFFT {
                                              : currentDB;
                 }
                 smoothedDBs[0] = smoothedDBs[1];
+                smoothedDBs[smoothedDBs.size() - 1] = smoothedDBs[smoothedDBs.size() - 2];
 
-                boost::math::interpolators::cardinal_cubic_b_spline<float> spline(
-                    smoothedDBs.data(), smoothedDBs.size(),
-                    -0.5f * deltaT.load(), deltaT.load(),
-                    0.f);
+                std::vector<float> x = smoothedDBX;
+                std::vector<float> y = smoothedDBs;
+
+                // boost::math::interpolators::cardinal_cubic_b_spline<float> spline(
+                //     smoothedDBs.data(), smoothedDBs.size(),
+                //     -0.5f * deltaT.load(), deltaT.load(),
+                //     0.f);
+                using boost::math::interpolators::makima;
+                auto spline = makima(std::move(x), std::move(y), 0.f, 0.f);
 
                 preInterplotDBs.front() = spline(static_cast<float>(zlIIR::frequencies.front()));
                 preInterplotDBs.back() = spline(static_cast<float>(zlIIR::frequencies.back()));
