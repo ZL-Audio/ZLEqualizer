@@ -51,7 +51,7 @@ namespace zlFFT {
         size_t audioIndex = 0;
 
         std::vector<float> smoothedDBs, smoothedDBX;
-        static constexpr size_t preScale = 4;
+        static constexpr size_t preScale = 5;
         std::array<float, zlIIR::frequencies.size() / preScale + 2> preInterplotDBs{};
         std::array<float, zlIIR::frequencies.size() / 2> interplotDBs{};
         std::atomic<float> deltaT, decayRate, tiltSlope;
