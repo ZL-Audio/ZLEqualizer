@@ -93,6 +93,7 @@ namespace zlPanel {
     void FilterButtonPanel::setMaximumDB(const float db) {
         maximumDB.store(db);
         updateAttachment();
+        updateTargetAttachment();
     }
 
     void FilterButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
