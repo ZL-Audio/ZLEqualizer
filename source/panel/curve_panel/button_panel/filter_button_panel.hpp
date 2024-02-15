@@ -15,7 +15,6 @@
 #include "../../../state/state.hpp"
 
 #include "button_pop_up.hpp"
-#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk/System/Library/Frameworks/CoreFoundation.framework/Headers/CFPlugIn.h"
 
 namespace zlPanel {
     class FilterButtonPanel final : public juce::Component,

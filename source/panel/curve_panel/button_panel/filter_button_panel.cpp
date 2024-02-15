@@ -284,7 +284,7 @@ namespace zlPanel {
             targetDragger.setInterceptsMouseClicks(false, false);
             targetAttach.reset();
             const juce::MessageManagerLock mmLock;
-            targetDragger.setVisible(false);\
+            targetDragger.setVisible(false);
         }
         if (isDynamicHasTarget.load() && isSelectedTarget.load() && isActiveTarget.load()) {
             const auto maxDB = maximumDB.load();
