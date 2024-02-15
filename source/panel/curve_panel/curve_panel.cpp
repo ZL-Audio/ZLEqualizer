@@ -26,7 +26,7 @@ namespace zlPanel {
         addAndMakeVisible(backgroundPanel);
         addAndMakeVisible(fftPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            singlePanels[i] = std::make_unique<SinglePanel>(i, parameters, parametersNA, base, c);
+            singlePanels[i] = std::make_unique<SinglePanel>(zlState::bandNUM - i - 1, parameters, parametersNA, base, c);
             addAndMakeVisible(*singlePanels[i]);
         }
         addAndMakeVisible(sumPanel);

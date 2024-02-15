@@ -79,6 +79,8 @@ namespace zlDSP {
 
         void setRMS(float x);
 
+        void setOutputGain(FloatType x);
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -112,6 +114,9 @@ namespace zlDSP {
 
         juce::dsp::DelayLine<FloatType> delay;
         juce::CriticalSection delayLock;
+
+        juce::dsp::Gain<FloatType> outputGain;
+        juce::CriticalSection outputGainLock;
 
         void processSolo();
 

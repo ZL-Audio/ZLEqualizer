@@ -56,6 +56,19 @@ namespace zlDSP {
             for (size_t i = 0; i < bandNUM; ++i) {
                 controllerRef.getFilter(i).getCompressor().getDetector().setSmooth(static_cast<FloatType>(newValue));
             }
+        } else if (parameterID == scale::ID) {
+            for (size_t i = 0; i < bandNUM; ++i) {
+                const auto baseGain = parameterRef.getRawParameterValue(appendSuffix(gain::ID, i))->load();
+                const auto targetGain = parameterRef.getRawParameterValue(appendSuffix(targetGain::ID, i))->load();
+                controllerRef.getFilter(i).getBaseFilter().setGain(
+                    zlDSP::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue)));
+                controllerRef.getFilter(i).getMainFilter().setGain(
+                    zlDSP::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue)));
+                controllerRef.getFilter(i).getTargetFilter().setGain(
+                    zlDSP::targetGain::range.snapToLegalValue(targetGain * scale::formatV(newValue)));
+            }
+        } else if (parameterID == outputGain::ID) {
+            controllerRef.setOutputGain(static_cast<FloatType>(newValue));
         } else if (parameterID == zlState::fftPreON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:

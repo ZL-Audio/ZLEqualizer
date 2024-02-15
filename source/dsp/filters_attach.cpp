@@ -44,7 +44,7 @@ namespace zlDSP {
     void FiltersAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
         const auto id = parameterID.dropLastCharacters(2);
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        const auto value = static_cast<FloatType>(newValue);
+        auto value = static_cast<FloatType>(newValue);
         if (id == bypass::ID) {
             filtersRef[idx].setBypass(static_cast<bool>(value));
         } else if (id == fType::ID) {
@@ -60,6 +60,8 @@ namespace zlDSP {
             filtersRef[idx].getMainFilter().setFreq(value);
             filtersRef[idx].getTargetFilter().setFreq(value);
         } else if (id == gain::ID) {
+            value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
+            value = gain::range.snapToLegalValue(static_cast<float>(value));
             filtersRef[idx].getBaseFilter().setGain(value);
             filtersRef[idx].getMainFilter().setGain(value);
         } else if (id == Q::ID) {
@@ -133,6 +135,8 @@ namespace zlDSP {
         } else if (id == dynamicRelative::ID) {
             controllerRef.setRelative(idx, static_cast<bool>(value));
         } else if (id == targetGain::ID) {
+            value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
+            value = targetGain::range.snapToLegalValue(static_cast<float>(value));
             filtersRef[idx].getTargetFilter().setGain(value);
         } else if (id == targetQ::ID) {
             filtersRef[idx].getTargetFilter().setQ(value);

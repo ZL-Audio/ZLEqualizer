@@ -44,6 +44,7 @@ namespace zlDSP {
         msMainSplitter.prepare(subSpec);
         msSideSplitter.prepare(subSpec);
         tracker.prepare(subSpec);
+        outputGain.prepare(subSpec);
         fftAnalyzezr.prepare(subSpec);
         for (auto &t: {&lTracker, &rTracker, &mTracker, &sTracker}) {
             t->prepare({spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
@@ -84,6 +85,7 @@ namespace zlDSP {
             } else {
                 processDynamic();
             }
+
             fftAnalyzezr.pushPostFFTBuffer(subMainBuffer);
             fftAnalyzezr.process();
             subBuffer.pushSubBuffer();
@@ -232,6 +234,12 @@ namespace zlDSP {
                 const auto histIdx = juce::jlimit(0, 80, juce::roundToInt(diff));
                 histograms[i].push(static_cast<size_t>(histIdx));
             }
+        }
+
+        {
+            juce::dsp::AudioBlock<FloatType> mainBlock(subMainBuffer);
+            const juce::ScopedLock lockGain(outputGainLock);
+            outputGain.process(juce::dsp::ProcessContextReplacing<FloatType>(mainBlock));
         }
     }
 
@@ -407,6 +415,12 @@ namespace zlDSP {
         for (auto &f:filters) {
             f.getCompressor().getTracker().setMomentarySize(numRMS);
         }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setOutputGain(const FloatType x) {
+        juce::ScopedLock lock(outputGainLock);
+        outputGain.setGainDecibels(x);
     }
 
     template

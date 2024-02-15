@@ -36,6 +36,7 @@ namespace zlPanel {
         for (auto &id: changeIDs) {
             parametersRef.addParameterListener(id + suffix, this);
         }
+        parametersRef.addParameterListener(zlDSP::scale::ID, this);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
 
@@ -51,6 +52,7 @@ namespace zlPanel {
         for (auto &id: changeIDs) {
             parametersRef.removeParameterListener(id + suffix, this);
         }
+        parametersRef.removeParameterListener(zlDSP::scale::ID, this);
         parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
         parametersNARef.removeParameterListener(zlState::active::ID + suffix, this);
     }
@@ -122,7 +124,9 @@ namespace zlPanel {
                 case zlIIR::FilterType::bandShelf: {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
                     const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(baseF.getGain()), maximumDB.load(), bound);
+                    const auto y2 = dbToY(
+                        parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::gain::ID, idx))->load(),
+                        maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
                     break;
                 }
@@ -131,7 +135,9 @@ namespace zlPanel {
                 case zlIIR::FilterType::tiltShelf: {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
                     const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(baseF.getGain() / 2), maximumDB.load(), bound);
+                    const auto y2 = dbToY(
+                        parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::gain::ID, idx))->load() / 2,
+                        maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
                     break;
                 }
@@ -164,10 +170,10 @@ namespace zlPanel {
                 const auto i = j - 1;
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
-                if (i ==  zlIIR::frequencies.size() - 1 && startPath) {
+                if (i == zlIIR::frequencies.size() - 1 && startPath) {
                     path.startNewSubPath(x, y);
                     y0 = y;
-                } else if (std::abs(y - y0) >= 0.125f || i == 0){
+                } else if (std::abs(y - y0) >= 0.125f || i == 0) {
                     path.lineTo(x, y);
                     y0 = y;
                 }
@@ -180,7 +186,7 @@ namespace zlPanel {
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                     y0 = y;
-                } else if (std::abs(y - y0) >= 0.125f || i == zlIIR::frequencies.size() - 1){
+                } else if (std::abs(y - y0) >= 0.125f || i == zlIIR::frequencies.size() - 1) {
                     path.lineTo(x, y);
                     y0 = y;
                 }
@@ -199,7 +205,7 @@ namespace zlPanel {
                 dynON.store(static_cast<bool>(newValue));
             }
         }
-        triggerAsyncUpdate();
+        juce::Timer::callAfterDelay(20, [this]() { triggerAsyncUpdate(); });
     }
 
     void SinglePanel::handleAsyncUpdate() {
