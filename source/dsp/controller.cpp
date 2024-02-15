@@ -306,7 +306,7 @@ namespace zlDSP {
     template<typename FloatType>
     std::tuple<FloatType, FloatType> Controller<FloatType>::getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter) {
         switch (baseFilter.getFilterType()) {
-            case zlIIR::FilterType::lowPass:
+            case zlIIR::FilterType::highPass:
             case zlIIR::FilterType::lowShelf: {
                 auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(baseFilter.getFreq()));
                 auto scale = soloFreq;
@@ -316,7 +316,7 @@ namespace zlDSP {
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
             }
-            case zlIIR::FilterType::highPass:
+            case zlIIR::FilterType::lowPass:
             case zlIIR::FilterType::highShelf: {
                 auto soloFreq = static_cast<FloatType>(std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(
                                                            baseFilter.getFreq()));
