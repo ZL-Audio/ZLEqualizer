@@ -205,7 +205,7 @@ namespace zlPanel {
                 dynON.store(static_cast<bool>(newValue));
             }
         }
-        juce::Timer::callAfterDelay(20, [this]() { triggerAsyncUpdate(); });
+        triggerAsyncUpdate();
     }
 
     void SinglePanel::handleAsyncUpdate() {
