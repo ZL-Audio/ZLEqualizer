@@ -17,7 +17,14 @@
 namespace zlInterface {
     class DraggerLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
-        explicit DraggerLookAndFeel(UIBase &base) : uiBase(base) {}
+        enum DraggerShape {
+            round,
+            rectangle,
+            upDownArrow
+        };
+
+        explicit DraggerLookAndFeel(UIBase &base) : uiBase(base) {
+        }
 
         void drawToggleButton(juce::Graphics &g, juce::ToggleButton &button,
                               bool shouldDrawButtonAsHighlighted,
@@ -33,19 +40,42 @@ namespace zlInterface {
                 g.setColour(uiBase.getTextColor().withMultipliedAlpha(0.5f));
                 g.fillEllipse(bound);
             }
-            radius *= .75f;
-            bound = bound.withSizeKeepingCentre(radius, radius);
-            g.setColour(colour);
-            g.fillEllipse(bound);
+
+            switch (draggerShape.load()) {
+                case DraggerShape::round: {
+                    bound = bound.withSizeKeepingCentre(radius * .75f, radius * .75f);
+                    g.setColour(colour);
+                    g.fillEllipse(bound);
+                    break;
+                }
+                case DraggerShape::rectangle: {
+                    break;
+                }
+                case DraggerShape::upDownArrow: {
+                    bound = bound.withSizeKeepingCentre(radius * .95f, radius * .95f);
+                    juce::Path path;
+                    path.startNewSubPath(bound.getCentreX(), bound.getY());
+                    path.lineTo(bound.getCentreX() + bound.getWidth() * .25f, bound.getCentreY());
+                    path.lineTo(bound.getCentreX(), bound.getBottom());
+                    path.lineTo(bound.getCentreX() - bound.getWidth() * .25f, bound.getCentreY());
+                    path.closeSubPath();
+                    g.setColour(colour);
+                    g.fillPath(path);
+                }
+            }
+
         }
 
         inline void setColour(const juce::Colour c) { colour = c; }
 
         void setActive(const bool f) { active.store(f); }
 
+        void setDraggerShape(const DraggerShape s) { draggerShape.store(s); }
+
     private:
         juce::Colour colour;
-        std::atomic<bool> active {true};
+        std::atomic<bool> active{true};
+        std::atomic<DraggerShape> draggerShape{DraggerShape::round};
         UIBase &uiBase;
     };
 }

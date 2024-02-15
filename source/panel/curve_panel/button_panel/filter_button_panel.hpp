@@ -38,6 +38,7 @@ namespace zlPanel {
 
         void setSelected(const bool f) {
             dragger.getButton().setToggleState(f, juce::NotificationType::dontSendNotification);
+            targetDragger.getButton().setToggleState(false, juce::NotificationType::dontSendNotification);
             if (!f) {
                 removeChildComponent(&buttonPopUp);
             }
@@ -54,14 +55,17 @@ namespace zlPanel {
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        zlInterface::Dragger dragger;
+        zlInterface::Dragger dragger, targetDragger;
         ButtonPopUp buttonPopUp;
-        std::unique_ptr<zlInterface::DraggerParameterAttach> attachment;
-        std::atomic<float> maximumDB {zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
+        std::unique_ptr<zlInterface::DraggerParameterAttach> attachment, targetAttach;
+        std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         std::atomic<zlIIR::FilterType> fType;
         std::atomic<size_t> band;
+        std::atomic<bool> isFilterTypeHasTarget{false}, isDynamicHasTarget{false},
+                isSelectedTarget{false}, isActiveTarget{false};
+        juce::CriticalSection targetLock;
 
-        static constexpr std::array IDs{zlDSP::fType::ID};
+        static constexpr std::array IDs{zlDSP::fType::ID, zlDSP::dynamicON::ID};
         static constexpr std::array NAIDs{zlState::active::ID};
         static constexpr auto scale = 1.5f;
 
@@ -72,6 +76,24 @@ namespace zlPanel {
         void updateAttachment();
 
         void updateBounds();
+
+        void updateTargetAttachment();
+
+        const juce::NormalisableRange<float> freqRange{
+            10.f, 20000.f,
+            [](float rangeStart, float rangeEnd, float valueToRemap) {
+                return std::exp(valueToRemap * std::log(
+                                    rangeEnd / rangeStart)) * rangeStart;
+            },
+            [](float rangeStart, float rangeEnd, float valueToRemap) {
+                return std::log(valueToRemap / rangeStart) / std::log(
+                           rangeEnd / rangeStart);
+            },
+            [](float rangeStart, float rangeEnd, float valueToRemap) {
+                return juce::jlimit(
+                    rangeStart, rangeEnd, valueToRemap);
+            }
+        };
     };
 } // zlPanel
 
