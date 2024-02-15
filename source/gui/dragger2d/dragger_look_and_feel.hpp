@@ -31,39 +31,21 @@ namespace zlInterface {
                               bool shouldDrawButtonAsDown) override {
             if (!active.load()) { return; }
             auto bound = button.getLocalBounds().toFloat();
-            auto radius = std::min(bound.getHeight(), bound.getWidth());
+            const auto radius = std::min(bound.getHeight(), bound.getWidth());
             bound = bound.withSizeKeepingCentre(radius, radius);
+
+            updatePaths(bound);
+
             if (shouldDrawButtonAsDown || button.getToggleState()) {
                 g.setColour(uiBase.getTextColor());
-                g.fillEllipse(bound);
+                g.fillPath(outlinePath);
             } else if (shouldDrawButtonAsHighlighted) {
                 g.setColour(uiBase.getTextColor().withMultipliedAlpha(0.5f));
-                g.fillEllipse(bound);
+                g.fillPath(outlinePath);
             }
 
-            switch (draggerShape.load()) {
-                case DraggerShape::round: {
-                    bound = bound.withSizeKeepingCentre(radius * .75f, radius * .75f);
-                    g.setColour(colour);
-                    g.fillEllipse(bound);
-                    break;
-                }
-                case DraggerShape::rectangle: {
-                    break;
-                }
-                case DraggerShape::upDownArrow: {
-                    bound = bound.withSizeKeepingCentre(radius * .95f, radius * .95f);
-                    juce::Path path;
-                    path.startNewSubPath(bound.getCentreX(), bound.getY());
-                    path.lineTo(bound.getCentreX() + bound.getWidth() * .25f, bound.getCentreY());
-                    path.lineTo(bound.getCentreX(), bound.getBottom());
-                    path.lineTo(bound.getCentreX() - bound.getWidth() * .25f, bound.getCentreY());
-                    path.closeSubPath();
-                    g.setColour(colour);
-                    g.fillPath(path);
-                }
-            }
-
+            g.setColour(colour);
+            g.fillPath(innerPath);
         }
 
         inline void setColour(const juce::Colour c) { colour = c; }
@@ -72,8 +54,54 @@ namespace zlInterface {
 
         void setDraggerShape(const DraggerShape s) { draggerShape.store(s); }
 
+        void updatePaths(juce::Rectangle<float> &bound) {
+            outlinePath.clear();
+            innerPath.clear();
+            switch (draggerShape.load()) {
+                case round: {
+                    updateRoundPaths(bound);
+                    break;
+                }
+                case rectangle: {
+                    updateRectanglePaths(bound);
+                    break;
+                }
+                case upDownArrow: {
+                    updateUpDownArrowPaths(bound);
+                    break;
+                }
+            }
+        }
+
+        void updateRoundPaths(juce::Rectangle<float> &bound) {
+            const auto radius = bound.getWidth();
+            outlinePath.addEllipse(bound);
+            bound = bound.withSizeKeepingCentre(radius * .75f, radius * .75f);
+            innerPath.addEllipse(bound);
+        }
+
+        void updateRectanglePaths(juce::Rectangle<float> &bound) {
+            const auto radius = bound.getWidth() * 0.707f;
+            bound = bound.withSizeKeepingCentre(radius * .75f, radius * .75f);
+            outlinePath.addRectangle(bound);
+            bound = bound.withSizeKeepingCentre(radius * .75f, radius * .75f);
+            innerPath.addRectangle(bound);
+        }
+
+        void updateUpDownArrowPaths(juce::Rectangle<float> &bound) {
+            auto updateOnePath = [](juce::Path &path, const juce::Rectangle<float> &temp) {
+                path.startNewSubPath(temp.getCentreX(), temp.getY());
+                path.lineTo(temp.getCentreX() + temp.getWidth() * .25f, temp.getCentreY());
+                path.lineTo(temp.getCentreX(), temp.getBottom());
+                path.lineTo(temp.getCentreX() - temp.getWidth() * .25f, temp.getCentreY());
+                path.closeSubPath();
+            };
+            updateOnePath(innerPath, bound);
+        }
+
     private:
         juce::Colour colour;
+        juce::Path outlinePath, innerPath;
         std::atomic<bool> active{true};
         std::atomic<DraggerShape> draggerShape{DraggerShape::round};
         UIBase &uiBase;
