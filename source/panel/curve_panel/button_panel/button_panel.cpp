@@ -17,6 +17,39 @@ namespace zlPanel {
           uiBase(base) {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base);
+            panels[i]->getDragger().getButton().onStateChange = [this]() {
+                const auto idx = selectBandIdx.load();
+                if (panels[idx]->getDragger().getButton().getToggleState()) {
+                    juce::ScopedLock lock(wheelLock);
+                    wheelAttachment.reset();
+                    wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                        parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider);
+                    panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
+                    panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
+                }
+            };
+            panels[i]->getTargetDragger().getButton().onStateChange = [this]() {
+                const auto idx = selectBandIdx.load();
+                if (panels[idx]->getTargetDragger().getButton().getToggleState()) {
+                    juce::ScopedLock lock(wheelLock);
+                    wheelAttachment.reset();
+                    wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                        parametersRef, zlDSP::appendSuffix(zlDSP::targetQ::ID, selectBandIdx.load()), wheelSlider);
+                    panels[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
+                    panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
+                }
+            };
+            panels[i]->getSideDragger().getButton().onStateChange = [this]() {
+                const auto idx = selectBandIdx.load();
+                if (panels[idx]->getSideDragger().getButton().getToggleState()) {
+                    juce::ScopedLock lock(wheelLock);
+                    wheelAttachment.reset();
+                    wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                        parametersRef, zlDSP::appendSuffix(zlDSP::sideQ::ID, selectBandIdx.load()), wheelSlider);
+                    panels[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
+                    panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
+                }
+            };
         }
         for (const auto &idx: IDs) {
             parametersNARef.addParameterListener(idx, this);
@@ -45,6 +78,8 @@ namespace zlPanel {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i]->setSelected(false);
         }
+        juce::ScopedLock lock(wheelLock);
+        wheelAttachment.reset();
     }
 
     void ButtonPanel::mouseUp(const juce::MouseEvent &event) {
@@ -124,15 +159,19 @@ namespace zlPanel {
     void ButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
             const auto idx = static_cast<size_t>(newValue);
+            selectBandIdx.store(idx);
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 panels[i]->setSelected(i == idx);
             } {
                 const juce::MessageManagerLock mmLock;
                 panels[idx]->toFront(false);
             }
+            juce::ScopedLock lock(wheelLock);
             wheelAttachment.reset();
             wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
+                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider);
+            panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
+            panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
         } else if (parameterID == zlState::maximumDB::ID) {
             const auto idx = static_cast<size_t>(newValue);
             for (const auto &p: panels) {

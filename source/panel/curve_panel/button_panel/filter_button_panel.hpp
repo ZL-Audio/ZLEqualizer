@@ -15,6 +15,7 @@
 #include "../../../state/state.hpp"
 
 #include "button_pop_up.hpp"
+#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk/System/Library/Frameworks/CoreFoundation.framework/Headers/CFPlugIn.h"
 
 namespace zlPanel {
     class FilterButtonPanel final : public juce::Component,
@@ -34,15 +35,13 @@ namespace zlPanel {
 
         zlInterface::Dragger &getDragger() { return dragger; }
 
+        zlInterface::Dragger &getTargetDragger() { return targetDragger; }
+
+        zlInterface::Dragger &getSideDragger() { return sideDragger; }
+
         bool getSelected() { return dragger.getButton().getToggleState(); }
 
-        void setSelected(const bool f) {
-            dragger.getButton().setToggleState(f, juce::NotificationType::dontSendNotification);
-            targetDragger.getButton().setToggleState(false, juce::NotificationType::dontSendNotification);
-            if (!f) {
-                removeChildComponent(&buttonPopUp);
-            }
-        }
+        void setSelected(bool f);
 
         void setMaximumDB(float db);
 
@@ -55,9 +54,9 @@ namespace zlPanel {
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        zlInterface::Dragger dragger, targetDragger;
+        zlInterface::Dragger dragger, targetDragger, sideDragger;
         ButtonPopUp buttonPopUp;
-        std::unique_ptr<zlInterface::DraggerParameterAttach> attachment, targetAttach;
+        std::unique_ptr<zlInterface::DraggerParameterAttach> attachment, targetAttach, sideAttach;
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         std::atomic<zlIIR::FilterType> fType;
         std::atomic<size_t> band;

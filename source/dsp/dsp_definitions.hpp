@@ -231,7 +231,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "side_freq";
         auto static constexpr name = "Freq";
-        inline auto static const range = juce::NormalisableRange<float>(10, 20000, 1.f, 0.23064293761596813f);
+        inline auto static const range = juce::NormalisableRange<float>(10, 20000, .1f, 0.23064293761596813f);
         auto static constexpr defaultV = 1000.f;
     };
 

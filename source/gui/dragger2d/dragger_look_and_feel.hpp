@@ -81,21 +81,23 @@ namespace zlInterface {
         }
 
         void updateRectanglePaths(juce::Rectangle<float> &bound) {
-            const auto radius = bound.getWidth() * 0.707f;
-            bound = bound.withSizeKeepingCentre(radius * .75f, radius * .75f);
+            const auto radius = bound.getWidth() * 0.75f;
+            bound = bound.withSizeKeepingCentre(radius, radius);
             outlinePath.addRectangle(bound);
-            bound = bound.withSizeKeepingCentre(radius * .75f, radius * .75f);
+            bound = bound.withSizeKeepingCentre(radius * .7f, radius * .7f);
             innerPath.addRectangle(bound);
         }
 
         void updateUpDownArrowPaths(juce::Rectangle<float> &bound) {
             auto updateOnePath = [](juce::Path &path, const juce::Rectangle<float> &temp) {
                 path.startNewSubPath(temp.getCentreX(), temp.getY());
-                path.lineTo(temp.getCentreX() + temp.getWidth() * .25f, temp.getCentreY());
+                path.lineTo(temp.getCentreX() + temp.getWidth() * .33f, temp.getCentreY());
                 path.lineTo(temp.getCentreX(), temp.getBottom());
-                path.lineTo(temp.getCentreX() - temp.getWidth() * .25f, temp.getCentreY());
+                path.lineTo(temp.getCentreX() - temp.getWidth() * .33f, temp.getCentreY());
                 path.closeSubPath();
             };
+            updateOnePath(outlinePath, bound);
+            bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight() * .75f);
             updateOnePath(innerPath, bound);
         }
 

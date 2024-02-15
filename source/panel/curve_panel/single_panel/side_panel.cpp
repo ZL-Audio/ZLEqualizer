@@ -19,7 +19,7 @@ namespace zlPanel {
           sideF(controller.getFilter(bandIdx).getSideFilter()) {
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
-        colour = uiBase.getColorMap1(idx);
+        // colour = uiBase.getColorMap1(idx);
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         parameterChanged(zlDSP::dynamicON::ID + suffix,

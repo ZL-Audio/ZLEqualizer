@@ -41,10 +41,13 @@ namespace zlPanel {
 
         juce::Slider wheelSlider;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wheelAttachment;
+        juce::CriticalSection wheelLock;
 
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         std::atomic<float> maximumDB;
+        std::atomic<size_t> selectBandIdx {0};
+
         static constexpr std::array IDs{zlState::maximumDB::ID, zlState::selectedBandIdx::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
