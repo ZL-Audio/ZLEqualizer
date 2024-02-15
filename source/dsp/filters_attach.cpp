@@ -70,9 +70,16 @@ namespace zlDSP {
         } else if (id == dynamicON::ID) {
             if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value) && dynamicONUpdateOthers.load()) {
                 auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
+                auto tGain = static_cast<float>(filtersRef[idx].getBaseFilter().getGain());
+                if (tGain >= 0 && tGain <= 2) {
+                    tGain = tGain * 2 + 1;
+                } else if (tGain < 0 && tGain >= -2) {
+                    tGain = tGain * 2 - 1;
+                } else {
+                    tGain *= .5f;
+                }
                 const std::array dynamicInitValues{
-                    targetGain::convertTo01(
-                        static_cast<float>(filtersRef[idx].getBaseFilter().getGain())),
+                    targetGain::convertTo01(tGain),
                     targetQ::convertTo01(
                         static_cast<float>(filtersRef[idx].getBaseFilter().getQ())),
                     sideFreq::convertTo01(static_cast<float>(soloFreq)),
