@@ -44,13 +44,9 @@ JUCE framework from [JUCE](https://github.com/juce-framework/JUCE)
 
 JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
-[Equalize It](https://github.com/suroge/equalize_it) by [suroge](https://github.com/suroge)
-
 [Friz](https://github.com/bgporter/animator) by [bgporter](https://github.com/bgporter)
 
 [fontaudio](https://github.com/fefanto/fontaudio) by [fefanto](https://github.com/fefanto)
-
-[Frequalizer](https://github.com/ffAudio/Frequalizer) by [ffAudio](https://github.com/ffAudio)
 
 Font from CMU Open Sans, Font Awesome and MiSans.
 
@@ -63,3 +59,7 @@ Matched Second Order Digital Filters, Martin Vicanek
 Cascading filters, Nigel Redmon
 
 A Simple Method of Designing Multiple Order All Pole Bandpass Filters by Cascading 2nd Order Sections, Nello Sevastopoulos and Richard Markell
+
+[Equalize It](https://github.com/suroge/equalize_it) by [suroge](https://github.com/suroge)
+
+[Frequalizer](https://github.com/ffAudio/Frequalizer) by [ffAudio](https://github.com/ffAudio)
