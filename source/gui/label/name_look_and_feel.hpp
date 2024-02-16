@@ -32,7 +32,12 @@ namespace zlInterface {
                 g.setColour(uiBase->getTextInactiveColor().withMultipliedAlpha(alpha.load()));
             }
             g.setFont(uiBase->getFontSize() * fontScale.load());
-            g.drawText(label.getText(), label.getLocalBounds(), justification.load());
+            auto bound = label.getLocalBounds().toFloat();
+            bound.removeFromTop(uPadding.load());
+            bound.removeFromBottom(dPadding.load());
+            bound.removeFromLeft(lPadding.load());
+            bound.removeFromRight(rPadding.load());
+            g.drawText(label.getText(), bound, justification.load());
         }
 
         inline void setEditable(const bool f) { editable.store(f); }
@@ -43,11 +48,19 @@ namespace zlInterface {
 
         inline void setJustification(const juce::Justification j) { justification.store(j); }
 
+        inline void setPadding(const float l, const float r, const float u, const float d) {
+            lPadding.store(l);
+            rPadding.store(r);
+            uPadding.store(u);
+            dPadding.store(d);
+        }
+
     private:
         std::atomic<bool> editable{true};
         std::atomic<float> alpha{1.f};
         std::atomic<float> fontScale{FontNormal};
         std::atomic<juce::Justification> justification{juce::Justification::centred};
+        std::atomic<float> lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, dPadding{0.f};
 
         UIBase *uiBase;
     };

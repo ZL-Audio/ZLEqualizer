@@ -41,7 +41,7 @@ namespace zlPanel {
         std::atomic<size_t> band;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        std::atomic<float> width{6.5f}, height{4.16667f};
+        std::atomic<float> width{7.7916666f}, height{4.16667f};
         std::atomic<zlIIR::FilterType> fType;
 
         zlInterface::CompactButton bypassC, soloC;
@@ -53,6 +53,9 @@ namespace zlPanel {
 
         juce::Label pitchLabel;
         zlInterface::NameLookAndFeel pitchLAF;
+
+        const std::unique_ptr<juce::Drawable> drawable;
+        zlInterface::ClickButton button;
 
         static constexpr std::array pitchLookUp{
             "A", "A#", "B", "C",
