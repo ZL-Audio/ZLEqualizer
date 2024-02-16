@@ -49,13 +49,14 @@ namespace zlPanel {
                parametersRef, boxAttachments);
 
         const auto freqId = zlDSP::appendSuffix(zlDSP::freq::ID, band.load());
+
         parametersRef.addParameterListener(freqId, this);
         parameterChanged(freqId, parametersRef.getRawParameterValue(freqId)->load());
+
         pitchLAF.setJustification(juce::Justification::centredRight);
         pitchLAF.setFontScale(1.2f);
         pitchLabel.setLookAndFeel(&pitchLAF);
         pitchLabel.setInterceptsMouseClicks(false, false);
-        pitchLabel.setText("", juce::dontSendNotification);
         addAndMakeVisible(pitchLabel);
 
         button.getButton().onClick = [this]() {
@@ -155,8 +156,8 @@ namespace zlPanel {
         const auto pitchString = pitchIdx2 >= 0
                                      ? pitchLookUp[static_cast<size_t>(pitchIdx1)] + std::to_string(pitchIdx2)
                                      : "A0";
-        const juce::MessageManagerLock mmLock;
+        // const juce::MessageManagerLock mmLock;
         pitchLabel.setText(pitchString, juce::dontSendNotification);
-        pitchLabel.repaint();
+        // pitchLabel.repaint();
     }
 } // zlPanel
