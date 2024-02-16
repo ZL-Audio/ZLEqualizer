@@ -20,7 +20,8 @@ PluginProcessor::PluginProcessor()
       controller(*this),
       filtersAttach(*this, parameters, controller),
       soloAttach(*this, parameters, controller),
-      choreAttach(*this, parameters, parametersNA, controller) {
+      choreAttach(*this, parameters, parametersNA, controller),
+      resetAttach(*this, parameters, parametersNA, controller) {
 }
 
 PluginProcessor::~PluginProcessor() = default;

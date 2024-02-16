@@ -16,8 +16,7 @@
 #include "../../../gui/gui.hpp"
 
 namespace zlPanel {
-    class ResetComponent : public juce::Component,
-                           private juce::AudioProcessorValueTreeState::Listener {
+    class ResetComponent : public juce::Component {
     public:
         explicit ResetComponent(juce::AudioProcessorValueTreeState &parameters,
                                 juce::AudioProcessorValueTreeState &parametersNA,
@@ -37,33 +36,6 @@ namespace zlPanel {
         const std::unique_ptr<juce::Drawable> drawable;
         zlInterface::ClickButton button;
         std::atomic<size_t> bandIdx;
-
-        constexpr static std::array resetIDs{
-            zlDSP::solo::ID,
-            zlDSP::dynamicON::ID, zlDSP::dynamicLearn::ID,
-            zlDSP::threshold::ID, zlDSP::kneeW::ID, zlDSP::attack::ID, zlDSP::release::ID,
-            zlDSP::bypass::ID, zlDSP::fType::ID, zlDSP::slope::ID, zlDSP::freq::ID,
-            zlDSP::gain::ID, zlDSP::Q::ID, zlDSP::lrType::ID
-        };
-
-        inline const static std::array resetDefaultVs{
-            zlDSP::solo::convertTo01(zlDSP::solo::defaultV),
-            zlDSP::dynamicON::convertTo01(zlDSP::dynamicON::defaultV),
-            zlDSP::dynamicLearn::convertTo01(zlDSP::dynamicLearn::defaultV),
-            zlDSP::threshold::convertTo01(zlDSP::threshold::defaultV),
-            zlDSP::kneeW::convertTo01(zlDSP::kneeW::defaultV),
-            zlDSP::attack::convertTo01(zlDSP::attack::defaultV),
-            zlDSP::release::convertTo01(zlDSP::release::defaultV),
-            zlDSP::bypass::convertTo01(zlDSP::bypass::defaultV),
-            zlDSP::fType::convertTo01(zlDSP::fType::defaultI),
-            zlDSP::slope::convertTo01(zlDSP::slope::defaultI),
-            zlDSP::freq::convertTo01(zlDSP::freq::defaultV),
-            zlDSP::gain::convertTo01(zlDSP::gain::defaultV),
-            zlDSP::Q::convertTo01(zlDSP::Q::defaultV),
-            zlDSP::lrType::convertTo01(zlDSP::lrType::defaultI),
-        };
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
 

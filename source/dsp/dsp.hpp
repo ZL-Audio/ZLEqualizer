@@ -15,5 +15,6 @@
 #include "filters_attach.hpp"
 #include "solo_attach.hpp"
 #include "chore_attach.hpp"
+#include "reset_attach.hpp"
 
 #endif //ZLEqualizer_DSP_H

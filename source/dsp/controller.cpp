@@ -247,25 +247,27 @@ namespace zlDSP {
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         // prepare the filter
-        filterLRs[idx].store(x);
-        if (x == lrType::stereo) {
-            filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
-        } else {
-            filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
-        }
-        // update useLR and useMS
-        useLR.store(false);
-        for (auto &lr: filterLRs) {
-            if (lr.load() == lrType::left || lr.load() == lrType::right) {
-                useLR.store(true);
-                break;
+        {
+            filterLRs[idx].store(x);
+            if (x == lrType::stereo) {
+                filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
+            } else {
+                filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
             }
-        }
-        useMS.store(false);
-        for (auto &lr: filterLRs) {
-            if (lr.load() == lrType::mid || lr.load() == lrType::side) {
-                useMS.store(true);
-                break;
+            // update useLR and useMS
+            useLR.store(false);
+            for (auto &lr: filterLRs) {
+                if (lr.load() == lrType::left || lr.load() == lrType::right) {
+                    useLR.store(true);
+                    break;
+                }
+            }
+            useMS.store(false);
+            for (auto &lr: filterLRs) {
+                if (lr.load() == lrType::mid || lr.load() == lrType::side) {
+                    useMS.store(true);
+                    break;
+                }
             }
         }
         if (useSolo.load()) {
