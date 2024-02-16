@@ -79,11 +79,11 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::updateParas() {
-        magOutdated.store(true);
         auto coeff = DesignFilter::getCoeff(filterType.load(),
                                             freq.load(), processSpec.sampleRate,
                                             gain.load(), q.load(), order.load());
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+        magOutdated.store(true);
         if (coeff.size() != filters.size()) {
             filters.clear();
             filters.resize(coeff.size());
@@ -117,13 +117,15 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::updateDBs() {
+        const juce::ScopedWriteLock scopedLock(magLock);
+        const juce::ScopedReadLock scopedLock2(paraUpdateLock);
         if (!magOutdated.load()) {
             return;
+        } else {
+            magOutdated.store(false);
         }
-        const juce::ScopedWriteLock scopedLock(magLock);
         gains.fill(FloatType(1));
         std::array<double, frequencies.size()> singleMagnitudes{};
-        const juce::ScopedReadLock scopedLock2(paraUpdateLock);
         for (size_t i = 0; i < filters.size(); i++) {
             filters[i].state->getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
                                                             frequencies.size(), processSpec.sampleRate);
@@ -144,7 +146,6 @@ namespace zlIIR {
                 }
             }
         }
-        magOutdated.store(false);
     }
 
     template<typename FloatType>

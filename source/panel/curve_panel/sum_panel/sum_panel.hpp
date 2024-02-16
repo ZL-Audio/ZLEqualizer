@@ -17,7 +17,8 @@
 
 namespace zlPanel {
     class SumPanel final : public juce::Component,
-                           private juce::Thread {
+                           private juce::Thread,
+    private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SumPanel(juce::AudioProcessorValueTreeState &parameters,
                           zlInterface::UIBase &base,
@@ -31,12 +32,21 @@ namespace zlPanel {
 
     private:
         std::array<juce::Path, 5> paths;
+        juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &c;
         std::atomic<float> maximumDB;
         juce::CriticalSection pathUpdateLock;
 
+        static constexpr std::array changeIDs{
+            // zlDSP::fType::ID, zlDSP::slope::ID,
+            zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID,
+            // zlDSP::targetGain::ID, zlDSP::targetQ::ID
+        };
+
         void run() override;
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
 

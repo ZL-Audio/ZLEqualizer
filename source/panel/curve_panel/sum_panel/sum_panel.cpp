@@ -13,15 +13,26 @@ namespace zlPanel {
     SumPanel::SumPanel(juce::AudioProcessorValueTreeState &parameters,
                        zlInterface::UIBase &base,
                        zlDSP::Controller<double> &controller)
-        : Thread("sum_panel"), uiBase(base), c(controller) {
-        juce::ignoreUnused(parameters);
+        : Thread("sum_panel"),
+    parametersRef(parameters),
+    uiBase(base), c(controller) {
         for (auto &path: paths) {
             path.preallocateSpace(zlIIR::frequencies.size() * 3);
         }
         startThread(juce::Thread::Priority::low);
+        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+            for (const auto &idx : changeIDs) {
+                parametersRef.addParameterListener(zlDSP::appendSuffix(idx, i), this);
+            }
+        }
     }
 
     SumPanel::~SumPanel() {
+        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+            for (const auto &idx : changeIDs) {
+                parametersRef.removeParameterListener(zlDSP::appendSuffix(idx, i), this);
+            }
+        }
         if (isThreadRunning()) {
             stopThread(-1);
         }
@@ -88,5 +99,10 @@ namespace zlPanel {
                 }
             }
         }
+    }
+
+    void SumPanel::parameterChanged(const juce::String &parameterID, float newValue) {
+        juce::ignoreUnused(parameterID, newValue);
+        notify();
     }
 } // zlPanel
