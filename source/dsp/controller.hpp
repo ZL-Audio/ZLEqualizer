@@ -123,6 +123,8 @@ namespace zlDSP {
         void processDynamic();
 
         void updateTrackersON();
+
+        void updateSoloLR(size_t idx);
     };
 }
 

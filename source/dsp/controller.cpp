@@ -247,7 +247,6 @@ namespace zlDSP {
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         // prepare the filter
-        {
             filterLRs[idx].store(x);
             if (x == lrType::stereo) {
                 filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
@@ -269,11 +268,27 @@ namespace zlDSP {
                     break;
                 }
             }
-        }
         if (useSolo.load()) {
-            setSolo(soloIdx.load(), soloSide.load());
+            updateSoloLR(soloIdx.load());
         }
         updateTrackersON();
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateSoloLR(const size_t idx) {
+        if (filterLRs[idx].load() == lrType::stereo) {
+            if (soloFilter.getNumChannels() != 2) {
+                soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
+            } else {
+                soloFilter.updateParas();
+            }
+        } else {
+            if (soloFilter.getNumChannels() != 1) {
+                soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+            } else {
+                soloFilter.updateParas();
+            }
+        }
     }
 
     template<typename FloatType>
@@ -355,19 +370,7 @@ namespace zlDSP {
         soloFilter.setQ(q, false);
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         useSolo.store(true);
-        if (filterLRs[idx].load() == lrType::stereo) {
-            if (soloFilter.getNumChannels() != 2) {
-                soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
-            } else {
-                soloFilter.updateParas();
-            }
-        } else {
-            if (soloFilter.getNumChannels() != 1) {
-                soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
-            } else {
-                soloFilter.updateParas();
-            }
-        }
+        updateSoloLR(idx);
         soloIdx.store(idx);
         soloSide.store(isSide);
     }

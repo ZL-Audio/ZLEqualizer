@@ -20,6 +20,7 @@ namespace zlPanel {
           uiBase(base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           button(drawable.get(), base) {
+        juce::ignoreUnused(parametersRef, parametersNARef);
         button.getButton().onClick = [this]() { resetBand(); };
         button.getLookAndFeel().setCurve(false, true, false, false);
         addAndMakeVisible(button);
