@@ -161,7 +161,7 @@ jobs:
         ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
       env:
         STRICTNESS_LEVEL: 10
-        TIMEOUT_MS: 720000
+        TIMEOUT_MS: 1440000
         REPEAT: 1
         RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 

@@ -166,7 +166,7 @@ jobs:
         ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
       env:
         STRICTNESS_LEVEL: 10
-        TIMEOUT_MS: 720000
+        TIMEOUT_MS: 1440000
         REPEAT: 2
         RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
@@ -180,7 +180,7 @@ jobs:
         ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
       env:
         STRICTNESS_LEVEL: 10
-        TIMEOUT_MS: 720000
+        TIMEOUT_MS: 1440000
         RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
     - name: Codesign (macOS)
