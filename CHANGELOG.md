@@ -4,6 +4,13 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.0
+
+- enable scale and output gain adjustment
+- add pitch label and reset button to filter button popup window
+- add target filter knob and side filter knob
+- imrpove GUI performance
+
 ## 0.0.10
 
 - adjust padding of state panels
