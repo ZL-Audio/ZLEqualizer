@@ -19,7 +19,8 @@ namespace zlPanel {
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
-          fTypeC("", zlDSP::fType::choices, base) {
+          fTypeC("", zlDSP::fType::choices, base),
+          pitchLAF(base) {
         juce::ignoreUnused(parametersNARef);
         setBufferedToImage(true);
 
@@ -45,6 +46,20 @@ namespace zlPanel {
                {zlDSP::appendSuffix(zlDSP::fType::ID, bandIdx)},
                parametersRef, boxAttachments);
 
+        const auto freqId = zlDSP::appendSuffix(zlDSP::freq::ID, band.load());
+        parametersRef.addParameterListener(freqId, this);
+        parameterChanged(freqId, parametersRef.getRawParameterValue(freqId)->load());
+        pitchLAF.setJustification(juce::Justification::centredLeft);
+        pitchLAF.setFontScale(1.125f);
+        pitchLabel.setLookAndFeel(&pitchLAF);
+        pitchLabel.setInterceptsMouseClicks(false, false);
+        pitchLabel.setText("", juce::dontSendNotification);
+        addAndMakeVisible(pitchLabel);
+    }
+
+    ButtonPopUp::~ButtonPopUp() {
+        pitchLabel.setLookAndFeel(nullptr);
+        parametersRef.removeParameterListener(zlDSP::appendSuffix(zlDSP::freq::ID, band.load()), this);
     }
 
     void ButtonPopUp::paint(juce::Graphics &g) {
@@ -61,12 +76,13 @@ namespace zlPanel {
 
         grid.templateRows = {Track(Fr(60)), Track(Fr(40))};
         grid.templateColumns = {
-            Track(Fr(30)), Track(Fr(30))
+            Track(Fr(30)), Track(Fr(30)), Track(Fr(25))
         };
         grid.items = {
             juce::GridItem(bypassC).withArea(1, 1),
             juce::GridItem(soloC).withArea(1, 2),
-            juce::GridItem(fTypeC).withArea(2, 1, 3, 3)
+            juce::GridItem(pitchLabel).withArea(1, 3, 2, 4),
+            juce::GridItem(fTypeC).withArea(2, 1, 3, 4)
         };
 
         const auto bound = getLocalBounds().toFloat();
@@ -114,5 +130,18 @@ namespace zlPanel {
             width.load() * uiBase.getFontSize(),
             height.load() * uiBase.getFontSize()).withCentre({finalX, finalY});
         setBounds(popUpBound.toNearestInt());
+    }
+
+    void ButtonPopUp::parameterChanged(const juce::String &parameterID, float newValue) {
+        juce::ignoreUnused(parameterID);
+        const auto pitchIdx = juce::roundToInt(12 * std::log2(newValue / 440.f));
+        const auto pitchIdx1 = (pitchIdx + 240) % 12;
+        const auto pitchIdx2 = pitchIdx / 12 + 4;
+        const auto pitchString = pitchIdx2 >= 0
+                                     ? pitchLookUp[static_cast<size_t>(pitchIdx1)] + std::to_string(pitchIdx2)
+                                     : "A0";
+        const juce::MessageManagerLock mmLock;
+        pitchLabel.setText(pitchString, juce::dontSendNotification);
+        pitchLabel.repaint();
     }
 } // zlPanel

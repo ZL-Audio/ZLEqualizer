@@ -17,14 +17,15 @@
 
 namespace zlPanel {
     class ButtonPopUp final : public juce::Component,
-                              public juce::ComponentListener {
+                              public juce::ComponentListener,
+                              private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit ButtonPopUp(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
                              zlInterface::UIBase &base);
 
-        ~ButtonPopUp() override = default;
+        ~ButtonPopUp() override;
 
         void paint(juce::Graphics &g) override;
 
@@ -40,7 +41,7 @@ namespace zlPanel {
         std::atomic<size_t> band;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        std::atomic<float> width {5.5f}, height {4.16667f};
+        std::atomic<float> width{6.5f}, height{4.16667f};
         std::atomic<zlIIR::FilterType> fType;
 
         zlInterface::CompactButton bypassC, soloC;
@@ -49,6 +50,17 @@ namespace zlPanel {
 
         zlInterface::CompactCombobox fTypeC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
+
+        juce::Label pitchLabel;
+        zlInterface::NameLookAndFeel pitchLAF;
+
+        static constexpr std::array pitchLookUp{
+            "A", "A#", "B", "C",
+            "C#", "D", "D#", "E",
+            "F", "F#", "G", "G#"
+        };
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
 
