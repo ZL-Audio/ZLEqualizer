@@ -15,7 +15,7 @@
 namespace zlDSP {
     inline auto static constexpr versionHint = 1;
 
-    inline auto static constexpr bandNUM = 9;
+    inline auto static constexpr bandNUM = 16;
 
     // float
     template<class T>

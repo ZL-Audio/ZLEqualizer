@@ -17,7 +17,7 @@
 namespace zlState {
     inline auto static constexpr versionHint = 1;
 
-    inline auto static constexpr bandNUM = 9;
+    inline auto static constexpr bandNUM = 16;
 
     // float
     template<class T>
@@ -97,7 +97,7 @@ namespace zlState {
         auto static constexpr ID = "selected_band_idx";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "1", "2", "3", "4", "5", "6", "7", "8", "9"
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"
         };
         int static constexpr defaultI = 0;
     };
