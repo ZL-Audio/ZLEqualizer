@@ -8,7 +8,7 @@
 
 ZLEqualizer is an equalizer plugin.
 
-<!-- <img src="Docs/screenshot.png" width=94%> -->
+<a href="https://drive.google.com/uc?export=view&id=1-hmRNQ351Uqc7sCrt_4JRD1LU_MlrZbg"><img src="https://drive.google.com/uc?export=view&id=1-hmRNQ351Uqc7sCrt_4JRD1LU_MlrZbg" width=99%/>
 
 ## Usage
 
