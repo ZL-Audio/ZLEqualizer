@@ -131,30 +131,30 @@ namespace zlInterface {
     void TwoValueRotarySlider::mouseUp(const juce::MouseEvent &event) {
         if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
             slider1.mouseUp(event);
-            label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
+            // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
             slider2.mouseUp(event);
-            label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
+            // label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
         }
     }
 
     void TwoValueRotarySlider::mouseDown(const juce::MouseEvent &event) {
         if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
             slider1.mouseDown(event);
-            label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
+            // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
             slider2.mouseDown(event);
-            label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
+            // label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
         }
     }
 
     void TwoValueRotarySlider::mouseDrag(const juce::MouseEvent &event) {
         if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
             slider1.mouseDrag(event);
-            label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
+            // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
             slider2.mouseDrag(event);
-            label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
+            // label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
         }
     }
 
@@ -206,6 +206,11 @@ namespace zlInterface {
 
     void TwoValueRotarySlider::mouseDoubleClick(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
+        if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
+            slider1.mouseDoubleClick(event);
+        } else {
+            slider2.mouseDoubleClick(event);
+        }
     }
 
     void TwoValueRotarySlider::mouseWheelMove(const juce::MouseEvent &event,
