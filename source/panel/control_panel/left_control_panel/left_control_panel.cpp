@@ -168,6 +168,25 @@ namespace zlPanel {
                     break;
                 }
             }
+            switch (static_cast<zlIIR::FilterType>(newValue)) {
+                case zlIIR::FilterType::lowPass:
+                case zlIIR::FilterType::highPass:
+                case zlIIR::FilterType::lowShelf:
+                case zlIIR::FilterType::highShelf:
+                case zlIIR::FilterType::bandShelf:
+                case zlIIR::FilterType::tiltShelf: {
+                    const juce::MessageManagerLock mmLock;
+                    slopeC.getBox().setItemEnabled(1, true);
+                    break;
+                }
+                case zlIIR::FilterType::peak:
+                case zlIIR::FilterType::bandPass:
+                case zlIIR::FilterType::notch: {
+                    const juce::MessageManagerLock mmLock;
+                    slopeC.getBox().setItemEnabled(1, false);
+                    break;
+                }
+            }
             if (idx == bandIdx.load()) {
                 triggerAsyncUpdate();
             }

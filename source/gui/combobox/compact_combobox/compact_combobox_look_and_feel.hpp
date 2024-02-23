@@ -86,6 +86,8 @@ namespace zlInterface {
             juce::ignoreUnused(isSeparator, hasSubMenu, shortcutKeyText, icon, textColourToUse);
             if ((isHighlighted || isTicked) && isActive && editable) {
                 g.setColour(uiBase->getTextColor());
+            } else if (!isActive) {
+                g.setColour(uiBase->getTextInactiveColor().withMultipliedAlpha(.25f));
             } else {
                 g.setColour(uiBase->getTextInactiveColor());
             }
