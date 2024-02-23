@@ -50,23 +50,37 @@ namespace zlDSP {
         } else if (id == fType::ID) {
             filtersRef[idx].getBaseFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
             filtersRef[idx].getMainFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
-            filtersRef[idx].getTargetFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
+            if (filtersRef[idx].getDynamicON()) {
+                filtersRef[idx].getTargetFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
+            }
         } else if (id == slope::ID) {
             filtersRef[idx].getBaseFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
             filtersRef[idx].getMainFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
-            filtersRef[idx].getTargetFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
+            if (filtersRef[idx].getDynamicON()) {
+                filtersRef[idx].getTargetFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
+            }
         } else if (id == freq::ID) {
             filtersRef[idx].getBaseFilter().setFreq(value);
             filtersRef[idx].getMainFilter().setFreq(value);
-            filtersRef[idx].getTargetFilter().setFreq(value);
+            if (filtersRef[idx].getDynamicON()) {
+                filtersRef[idx].getTargetFilter().setFreq(value);
+            }
         } else if (id == gain::ID) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
             value = gain::range.snapToLegalValue(static_cast<float>(value));
-            filtersRef[idx].getBaseFilter().setGain(value);
-            filtersRef[idx].getMainFilter().setGain(value);
+            if (filtersRef[idx].getDynamicON()) {
+                filtersRef[idx].getBaseFilter().setGain(value);
+            } else {
+                filtersRef[idx].getBaseFilter().setGain(value);
+                filtersRef[idx].getMainFilter().setGain(value);
+            }
         } else if (id == Q::ID) {
-            filtersRef[idx].getBaseFilter().setQ(value);
-            filtersRef[idx].getMainFilter().setQ(value);
+            if (filtersRef[idx].getDynamicON()) {
+                filtersRef[idx].getBaseFilter().setQ(value);
+            } else {
+                filtersRef[idx].getBaseFilter().setQ(value);
+                filtersRef[idx].getMainFilter().setQ(value);
+            }
         } else if (id == lrType::ID) {
             controllerRef.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
         } else if (id == dynamicON::ID) {
@@ -80,6 +94,9 @@ namespace zlDSP {
                 } else {
                     tGain *= .5f;
                 }
+                filtersRef[idx].getTargetFilter().setFreq(filtersRef[idx].getBaseFilter().getFreq(), false);
+                filtersRef[idx].getTargetFilter().setFilterType(filtersRef[idx].getBaseFilter().getFilterType(), false);
+                filtersRef[idx].getTargetFilter().setOrder(filtersRef[idx].getBaseFilter().getOrder(), false);
                 const std::array dynamicInitValues{
                     targetGain::convertTo01(tGain),
                     targetQ::convertTo01(
