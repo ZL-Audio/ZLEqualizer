@@ -156,7 +156,7 @@ namespace zlPanel {
         const auto pitchString = pitchIdx2 >= 0
                                      ? pitchLookUp[static_cast<size_t>(pitchIdx1)] + std::to_string(pitchIdx2)
                                      : "A0";
-        // const juce::MessageManagerLock mmLock;
+        const juce::MessageManagerLock mmLock;
         pitchLabel.setText(pitchString, juce::dontSendNotification);
         // pitchLabel.repaint();
     }
