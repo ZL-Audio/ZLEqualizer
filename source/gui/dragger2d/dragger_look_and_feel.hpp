@@ -46,6 +46,18 @@ namespace zlInterface {
 
             g.setColour(colour);
             g.fillPath(innerPath);
+
+            if (label.load() != ' ') {
+                const auto l = std::string{label.load()};
+                if (colour.getPerceivedBrightness() <= .5f) {
+                    g.setColour(juce::Colours::white);
+                } else {
+                    g.setColour(juce::Colours::black);
+                }
+                // g.setColour(colour.withMultipliedBrightness(2.f));
+                g.setFont(uiBase.getFontSize() * labelScale);
+                g.drawText(l, bound, juce::Justification::centred);
+            }
         }
 
         inline void setColour(const juce::Colour c) { colour = c; }
@@ -101,11 +113,17 @@ namespace zlInterface {
             updateOnePath(innerPath, bound);
         }
 
+        void setLabel(const char l) { label.store(l); }
+
+        void setLabelScale(const float x) { labelScale = x; }
+
     private:
         juce::Colour colour;
         juce::Path outlinePath, innerPath;
         std::atomic<bool> active{true};
         std::atomic<DraggerShape> draggerShape{DraggerShape::round};
+        std::atomic<char> label;
+        float labelScale = 1.f;
         UIBase &uiBase;
     };
 }

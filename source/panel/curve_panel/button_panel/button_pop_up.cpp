@@ -158,6 +158,5 @@ namespace zlPanel {
                                      : "A0";
         const juce::MessageManagerLock mmLock;
         pitchLabel.setText(pitchString, juce::dontSendNotification);
-        // pitchLabel.repaint();
     }
 } // zlPanel

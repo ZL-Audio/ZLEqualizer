@@ -45,7 +45,7 @@ namespace zlPanel {
         dragger.getButton().onClick = [this]() {
             if (dragger.getButton().getToggleState()) {
                 if (static_cast<size_t>(
-                    parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load()) != band.load()) {
+                        parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load()) != band.load()) {
                     auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
                     para->beginChangeGesture();
                     para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(band.load())));
@@ -141,6 +141,26 @@ namespace zlPanel {
         } else if (parameter == zlDSP::dynamicON::ID) {
             isDynamicHasTarget.store(static_cast<bool>(newValue));
             updateTargetAttachment();
+            triggerAsyncUpdate();
+        } else if (parameter == zlDSP::lrType::ID) {
+            lrType.store(static_cast<zlDSP::lrType::lrTypes>(newValue));
+            switch (lrType.load()) {
+                case zlDSP::lrType::stereo:
+                    dragger.getLAF().setLabel(' ');
+                    break;
+                case zlDSP::lrType::left:
+                    dragger.getLAF().setLabel('L');
+                    break;
+                case zlDSP::lrType::right:
+                    dragger.getLAF().setLabel('R');
+                    break;
+                case zlDSP::lrType::mid:
+                    dragger.getLAF().setLabel('M');
+                    break;
+                case zlDSP::lrType::side:
+                    dragger.getLAF().setLabel('S');
+                    break;
+            }
             triggerAsyncUpdate();
         }
     }
@@ -315,7 +335,6 @@ namespace zlPanel {
 
     void FilterButtonPanel::setSelected(const bool f) {
         if (dragger.getButton().getToggleState() != f) {
-            // dragger.getButton().setToggleState(false, juce::NotificationType::sendNotification);
             dragger.getButton().setToggleState(f, juce::NotificationType::sendNotification);
         }
         if (targetDragger.getButton().getToggleState()) {

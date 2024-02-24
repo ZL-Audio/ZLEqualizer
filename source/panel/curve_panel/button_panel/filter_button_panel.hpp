@@ -58,12 +58,13 @@ namespace zlPanel {
         std::unique_ptr<zlInterface::DraggerParameterAttach> attachment, targetAttach, sideAttach;
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         std::atomic<zlIIR::FilterType> fType;
+        std::atomic<zlDSP::lrType::lrTypes> lrType;
         std::atomic<size_t> band;
         std::atomic<bool> isFilterTypeHasTarget{false}, isDynamicHasTarget{false},
                 isSelectedTarget{false}, isActiveTarget{false};
         juce::CriticalSection targetLock;
 
-        static constexpr std::array IDs{zlDSP::fType::ID, zlDSP::dynamicON::ID};
+        static constexpr std::array IDs{zlDSP::fType::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID};
         static constexpr std::array NAIDs{zlState::active::ID};
         static constexpr auto scale = 1.5f;
 
