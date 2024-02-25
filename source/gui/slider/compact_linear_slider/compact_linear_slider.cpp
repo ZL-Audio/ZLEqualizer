@@ -22,7 +22,7 @@ namespace zlInterface {
         slider.setDoubleClickReturnValue(true, 0.0);
         slider.setScrollWheelEnabled(true);
         slider.setInterceptsMouseClicks(false, false);
-        slider.setBufferedToImage(true);
+        // slider.setBufferedToImage(true);
         slider.setLookAndFeel(&sliderLookAndFeel);
         addAndMakeVisible(slider);
 

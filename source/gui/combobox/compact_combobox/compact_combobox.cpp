@@ -17,7 +17,7 @@ namespace zlInterface {
         comboBox.addItemList(choices, 1);
         comboBox.setScrollWheelEnabled(false);
         comboBox.setInterceptsMouseClicks(false, false);
-        comboBox.setBufferedToImage(true);
+        // comboBox.setBufferedToImage(true);
         comboBox.setLookAndFeel(&boxLookAndFeel);
         addAndMakeVisible(comboBox);
 

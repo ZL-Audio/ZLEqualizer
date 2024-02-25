@@ -24,7 +24,7 @@ namespace zlPanel {
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           button(drawable.get(), base) {
         juce::ignoreUnused(parametersNARef);
-        setBufferedToImage(true);
+        // setBufferedToImage(true);
 
         bypassC.getLAF().enableShadow(false);
         soloC.getLAF().enableShadow(false);

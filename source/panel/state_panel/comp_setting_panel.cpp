@@ -31,7 +31,7 @@ namespace zlPanel {
                        zlDSP::dynLookahead::ID, zlDSP::dynRMS::ID, zlDSP::dynSmooth::ID
                    },
                    parametersRef, sliderAttachments);
-            setBufferedToImage(true);
+            // setBufferedToImage(true);
         }
 
         ~CompCallOutBox() override = default;
@@ -77,7 +77,7 @@ namespace zlPanel {
         name.setEditable(false);
         name.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(name);
-        setBufferedToImage(true);
+        // setBufferedToImage(true);
     }
 
     CompSettingPanel::~CompSettingPanel() {

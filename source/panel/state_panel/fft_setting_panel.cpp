@@ -43,7 +43,7 @@ namespace zlPanel {
                        zlState::ffTSpeed::ID, zlState::ffTTilt::ID
                    },
                    parametersNARef, boxAttachments);
-            setBufferedToImage(true);
+            // setBufferedToImage(true);
         }
 
         ~FFTCallOutBox() override {
@@ -100,7 +100,7 @@ namespace zlPanel {
         name.setEditable(false);
         name.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(name);
-        setBufferedToImage(true);
+        // setBufferedToImage(true);
     }
 
     FFTSettingPanel::~FFTSettingPanel() {

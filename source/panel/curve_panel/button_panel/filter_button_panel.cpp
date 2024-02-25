@@ -37,7 +37,7 @@ namespace zlPanel {
 
         for (auto &d: {&sideDragger, &targetDragger, &dragger}) {
             d->setScale(scale);
-            d->setBufferedToImage(true);
+            // d->setBufferedToImage(true);
             addAndMakeVisible(d);
         }
 

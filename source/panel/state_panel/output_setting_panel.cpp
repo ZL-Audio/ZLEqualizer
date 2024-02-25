@@ -30,7 +30,7 @@ namespace zlPanel {
                        zlDSP::scale::ID, zlDSP::outputGain::ID
                    },
                    parametersRef, sliderAttachments);
-            setBufferedToImage(true);
+            // setBufferedToImage(true);
         }
 
         ~OutputCallOutBox() override = default;
@@ -75,7 +75,7 @@ namespace zlPanel {
         name.setEditable(false);
         name.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(name);
-        setBufferedToImage(true);
+        // setBufferedToImage(true);
     }
 
     OutputSettingPanel::~OutputSettingPanel() {

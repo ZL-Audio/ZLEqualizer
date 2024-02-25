@@ -14,7 +14,7 @@ namespace zlInterface {
     ClickButton::ClickButton(juce::Drawable *image, UIBase &base)
         : button("", juce::DrawableButton::ButtonStyle::ImageFitted), lookAndFeel(image, base) {
         button.setLookAndFeel(&lookAndFeel);
-        setBufferedToImage(true);
+        // setBufferedToImage(true);
         addAndMakeVisible(button);
     }
 

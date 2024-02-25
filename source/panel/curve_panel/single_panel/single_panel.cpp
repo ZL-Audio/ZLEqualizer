@@ -129,6 +129,7 @@ namespace zlPanel {
     }
 
     void SinglePanel::resized() {
+        updatePaths();
         sidePanel.setBounds(getLocalBounds());
     }
 

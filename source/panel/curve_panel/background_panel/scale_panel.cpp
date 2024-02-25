@@ -19,7 +19,7 @@ namespace zlPanel {
         scaleBox.getLAF().setFontScale(zlInterface::FontLarge);
         attach({&scaleBox.getBox()}, {zlState::maximumDB::ID}, parametersNARef, boxAttachments);
         addAndMakeVisible(scaleBox);
-        setBufferedToImage(true);
+        // setBufferedToImage(true);
     }
 
     ScalePanel::~ScalePanel() = default;
