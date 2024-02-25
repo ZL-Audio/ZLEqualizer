@@ -1,7 +1,7 @@
 [submodule "JUCE"]
 	path = JUCE
 	url = https://github.com/juce-framework/JUCE/
-	branch = master
+	branch = direct2d
 [submodule "modules/friz"]
 	path = modules/friz
 	url = https://github.com/ZL-Audio/animator
