@@ -223,12 +223,3 @@ jobs:
       run: |
         iscc "packaging\installer.iss"
         mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
-
-    - name: Delete artifacts
-      uses: geekyeggo/delete-artifact@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        name: |
-          ${{ env.ARTIFACT_NAME }}.zip
-          ${{ env.ARTIFACT_NAME }}.exe
-          ${{ env.ARTIFACT_NAME }}.dmg
