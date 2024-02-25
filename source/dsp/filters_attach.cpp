@@ -96,7 +96,7 @@ namespace zlDSP {
                 }
                 filtersRef[idx].getTargetFilter().setFreq(filtersRef[idx].getBaseFilter().getFreq(), false);
                 filtersRef[idx].getTargetFilter().setFilterType(filtersRef[idx].getBaseFilter().getFilterType(), false);
-                filtersRef[idx].getTargetFilter().setOrder(filtersRef[idx].getBaseFilter().getOrder(), false);
+                filtersRef[idx].getTargetFilter().setOrder(filtersRef[idx].getBaseFilter().getOrder(), true);
                 const std::array dynamicInitValues{
                     targetGain::convertTo01(tGain),
                     targetQ::convertTo01(
