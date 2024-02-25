@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.2
+
+- improve GUI performance
+- support Direct2D rendering
+
 ## 0.1.1
 
 - improve GUI appearance
