@@ -21,7 +21,9 @@ namespace zlPanel {
           baseF(controller.getFilter(idx).getBaseFilter()),
           targetF(controller.getFilter(idx).getTargetFilter()),
           sidePanel(bandIdx, parameters, parametersNA, base, controller) {
-        path.preallocateSpace(zlIIR::frequencies.size() * 6 + 12);
+        curvePath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
+        shadowPath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
+        dynPath.preallocateSpace(zlIIR::frequencies.size() * 6 + 12);
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         juce::ignoreUnused(controllerRef);
@@ -41,13 +43,12 @@ namespace zlPanel {
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
 
         setInterceptsMouseClicks(false, false);
-        setBufferedToImage(true);
+        // setBufferedToImage(true);
         addAndMakeVisible(sidePanel);
         skipRepaint.store(false);
     }
 
     SinglePanel::~SinglePanel() {
-        path.clear();
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         for (auto &id: changeIDs) {
             parametersRef.removeParameterListener(id + suffix, this);
@@ -61,58 +62,30 @@ namespace zlPanel {
         if (!actived.load()) {
             return;
         }
-        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), ""};
-        // logger.logMessage(juce::String(idx) + "r");
         colour = uiBase.getColorMap1(idx);
-        path.clear();
         const auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
-        baseF.updateDBs();
-        drawCurve(baseF.getDBs());
         g.setColour(colour);
-        g.strokePath(path, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
-                                                juce::PathStrokeType::rounded));
+        // draw curve
+        {
+            juce::ScopedLock lock(curvePathLock);
+            g.strokePath(curvePath, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
+                                                         juce::PathStrokeType::rounded));
+        }
         // draw shadow
         if (selected.load()) {
-            switch (baseF.getFilterType()) {
-                case zlIIR::FilterType::peak:
-                case zlIIR::FilterType::lowShelf:
-                case zlIIR::FilterType::highShelf:
-                case zlIIR::FilterType::notch:
-                case zlIIR::FilterType::bandShelf:
-                case zlIIR::FilterType::tiltShelf: {
-                    const auto bound = getLocalBounds().toFloat();
-                    path.lineTo(bound.getRight(), bound.getCentreY());
-                    path.lineTo(bound.getX(), bound.getCentreY());
-                    path.closeSubPath();
-                    break;
-                }
-                case zlIIR::FilterType::lowPass:
-                case zlIIR::FilterType::highPass:
-                case zlIIR::FilterType::bandPass: {
-                    const auto bound = getLocalBounds().toFloat();
-                    path.lineTo(bound.getBottomRight());
-                    path.lineTo(bound.getBottomLeft());
-                    path.closeSubPath();
-                    break;
-                }
-            }
             g.setColour(colour.withMultipliedAlpha(0.125f));
-            g.fillPath(path);
-            path.clear();
-            drawCurve(baseF.getDBs());
+            juce::ScopedLock lock(shadowPathLock);
+            g.fillPath(shadowPath);
         }
         // draw dynamic shadow
         if (dynON.load()) {
-            targetF.updateDBs();
-            drawCurve(targetF.getDBs(), true, false);
-            path.closeSubPath();
             if (selected.load()) {
                 g.setColour(colour.withMultipliedAlpha(0.25f));
             } else {
                 g.setColour(colour.withMultipliedAlpha(0.125f));
             }
-            g.fillPath(path);
-            path.clear();
+            juce::ScopedLock lock(dynPathLock);
+            g.fillPath(dynPath);
         }
         // draw the line between the curve and the button
         {
@@ -159,8 +132,9 @@ namespace zlPanel {
         sidePanel.setBounds(getLocalBounds());
     }
 
-    void SinglePanel::drawCurve(const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse,
-                                bool startPath) {
+    void SinglePanel::drawCurve(juce::Path &path,
+                                const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse,
+                                const bool startPath) {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         const auto maxDB = maximumDB.load();
@@ -210,7 +184,60 @@ namespace zlPanel {
 
     void SinglePanel::handleAsyncUpdate() {
         if (!skipRepaint.load()) {
+            updatePaths();
             repaint();
+        }
+    }
+
+    void SinglePanel::updatePaths() {
+        // draw curve
+        {
+            juce::ScopedLock lock(curvePathLock);
+            baseF.updateDBs();
+            curvePath.clear();
+            drawCurve(curvePath, baseF.getDBs());
+        }
+        // draw shadow
+        {
+            juce::ScopedLock lock(shadowPathLock);
+            shadowPath.clear();
+            drawCurve(shadowPath, baseF.getDBs());
+            if (selected.load()) {
+                switch (baseF.getFilterType()) {
+                    case zlIIR::FilterType::peak:
+                    case zlIIR::FilterType::lowShelf:
+                    case zlIIR::FilterType::highShelf:
+                    case zlIIR::FilterType::notch:
+                    case zlIIR::FilterType::bandShelf:
+                    case zlIIR::FilterType::tiltShelf: {
+                        const auto bound = getLocalBounds().toFloat();
+                        shadowPath.lineTo(bound.getRight(), bound.getCentreY());
+                        shadowPath.lineTo(bound.getX(), bound.getCentreY());
+                        shadowPath.closeSubPath();
+                        break;
+                    }
+                    case zlIIR::FilterType::lowPass:
+                    case zlIIR::FilterType::highPass:
+                    case zlIIR::FilterType::bandPass: {
+                        const auto bound = getLocalBounds().toFloat();
+                        shadowPath.lineTo(bound.getBottomRight());
+                        shadowPath.lineTo(bound.getBottomLeft());
+                        shadowPath.closeSubPath();
+                        break;
+                    }
+                }
+            }
+        }
+        // draw dynamic shadow
+        {
+            juce::ScopedLock lock(dynPathLock);
+            dynPath.clear();
+            drawCurve(dynPath, baseF.getDBs());
+            if (dynON.load()) {
+                targetF.updateDBs();
+                drawCurve(dynPath, targetF.getDBs(), true, false);
+                dynPath.closeSubPath();
+            }
         }
     }
 } // zlPanel

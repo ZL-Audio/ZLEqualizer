@@ -40,7 +40,8 @@ namespace zlPanel {
         }
 
     private:
-        juce::Path path;
+        juce::Path curvePath, shadowPath, dynPath;
+        juce::CriticalSection curvePathLock, shadowPathLock, dynPathLock;
 
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -50,7 +51,7 @@ namespace zlPanel {
         zlDynamicFilter::IIRFilter<double> &filter;
         zlIIR::Filter<double> &baseF, &targetF;
         std::atomic<float> maximumDB;
-        std::atomic<bool> skipRepaint {false};
+        std::atomic<bool> skipRepaint{false};
 
         static constexpr std::array changeIDs{
             zlDSP::fType::ID, zlDSP::slope::ID,
@@ -65,7 +66,10 @@ namespace zlPanel {
 
         void handleAsyncUpdate() override;
 
-        void drawCurve(const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse = false,
+        void updatePaths();
+
+        void drawCurve(juce::Path &path,
+            const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse = false,
                        bool startPath = true);
 
         SidePanel sidePanel;
