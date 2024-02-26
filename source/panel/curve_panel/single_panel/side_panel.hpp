@@ -45,6 +45,9 @@ namespace zlPanel {
 
         juce::Colour colour;
 
+        std::atomic<float> scale1{.5f}, scale2{.5f};
+        std::atomic<bool> skipRepaint{false};
+
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void handleAsyncUpdate() override;

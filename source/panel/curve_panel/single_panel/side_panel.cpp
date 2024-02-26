@@ -18,26 +18,27 @@ namespace zlPanel {
           uiBase(base),
           sideF(controller.getFilter(bandIdx).getSideFilter()) {
         setInterceptsMouseClicks(false, false);
-        setBufferedToImage(true);
-        // colour = uiBase.getColorMap1(idx);
-
-        const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
+        // setBufferedToImage(true);
+        const std::string suffix = zlDSP::appendSuffix("", idx);
+        skipRepaint.store(true);
         parameterChanged(zlDSP::dynamicON::ID + suffix,
                          parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
         parameterChanged(zlState::active::ID + suffix,
                          parametersNARef.getRawParameterValue(zlState::active::ID + suffix)->load());
+        skipRepaint.store(false);
 
         for (auto &id: changeIDs) {
             parametersRef.addParameterListener(id + suffix, this);
         }
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
+        triggerAsyncUpdate();
     }
 
     SidePanel::~SidePanel() {
-        const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
+        const std::string suffix = zlDSP::appendSuffix("", idx);
         for (auto &id: changeIDs) {
             parametersRef.removeParameterListener(id + suffix, this);
         }
@@ -49,20 +50,20 @@ namespace zlPanel {
         if (!selected.load() || !actived.load() || !dynON.load()) {
             return;
         }
-        colour = uiBase.getColorMap1(idx);
-        const auto q = sideF.getQ(), freq = sideF.getFreq();
-        const auto bw = 2 * std::asinh(0.5f / q) / std::log(2.f);
-        const auto scale = std::pow(2.f, bw / 2.f);
-        const auto freq1 = freq / scale, freq2 = freq * scale;
+        // colour = uiBase.getColorMap1(idx);
+        // const auto q = sideF.getQ(), freq = sideF.getFreq();
+        // const auto bw = 2 * std::asinh(0.5f / q) / std::log(2.f);
+        // const auto scale = std::pow(2.f, bw / 2.f);
+        // const auto freq1 = freq / scale, freq2 = freq * scale;
 
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 4 * uiBase.getFontSize());
-        const auto x1 = std::log(freq1 / 10.f) / std::log(2200.f) * bound.getWidth();
-        const auto x2 = std::log(freq2 / 10.f) / std::log(2200.f) * bound.getWidth();
+        const auto x1 = scale1.load() * bound.getWidth();
+        const auto x2 = scale2.load() * bound.getWidth();
 
         const auto thickness = uiBase.getFontSize() * 0.15f;
-        g.setColour(colour);
-        g.drawLine(static_cast<float>(x1), bound.getBottom(), static_cast<float>(x2), bound.getBottom(), thickness);
+        g.setColour(uiBase.getColorMap1(idx));
+        g.drawLine(x1, bound.getBottom(), x2, bound.getBottom(), thickness);
     }
 
     void SidePanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -76,10 +77,19 @@ namespace zlPanel {
                 dynON.store(static_cast<bool>(newValue));
             }
         }
-        triggerAsyncUpdate();
+        if (!skipRepaint.load()) {
+            triggerAsyncUpdate();
+        }
     }
 
     void SidePanel::handleAsyncUpdate() {
+        const auto q = sideF.getQ(), freq = sideF.getFreq();
+        const auto bw = 2 * std::asinh(0.5f / q) / std::log(2.f);
+        const auto scale = std::pow(2.f, bw / 2.f);
+        const auto freq1 = freq / scale, freq2 = freq * scale;
+
+        scale1.store(std::log(static_cast<float>(freq1) / 10.f) / std::log(2200.f));
+        scale2.store(std::log(static_cast<float>(freq2) / 10.f) / std::log(2200.f));
         repaint();
     }
 } // zlPanel

@@ -18,7 +18,7 @@ namespace zlPanel {
           controllerRef(c),
           backgroundPanel(parameters, parametersNA, base),
           fftPanel(c.getAnalyzer(), base),
-          sumPanel(parameters, base,  c),
+          sumPanel(parameters, base, c),
           soloPanel(parameters, parametersNA, base, c),
           buttonPanel(parameters, parametersNA, base),
           currentT(juce::Time::getCurrentTime()),
@@ -26,7 +26,8 @@ namespace zlPanel {
         addAndMakeVisible(backgroundPanel);
         addAndMakeVisible(fftPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            singlePanels[i] = std::make_unique<SinglePanel>(zlState::bandNUM - i - 1, parameters, parametersNA, base, c);
+            singlePanels[i] = std::make_unique<
+                SinglePanel>(zlState::bandNUM - i - 1, parameters, parametersNA, base, c);
             addAndMakeVisible(*singlePanels[i]);
         }
         addAndMakeVisible(sumPanel);
@@ -73,12 +74,11 @@ namespace zlPanel {
     void CurvePanel::repaintCallBack() {
         auto &analyzer = controllerRef.getAnalyzer();
         const juce::Time nowT = juce::Time::getCurrentTime();
-        if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
-            if (analyzer.isFFTReady()) {
-                fftPanel.repaint();
-                currentT = nowT;
-            }
-        } else if ((nowT - currentT).inMilliseconds() >= 40) {
+        if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
+            && analyzer.isFFTReady()) {
+            fftPanel.repaint();
+            currentT = nowT;
+        } else if ((nowT - currentT).inMilliseconds() > 16) {
             sumPanel.repaint();
             currentT = nowT;
         }

@@ -32,6 +32,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         zlIIR::Filter<double> &soloF;
         zlDSP::Controller<double> &controllerRef;
+        std::atomic<float> scale1{.5f}, scale2{.5f};
 
         static constexpr std::array changeIDs{
             zlDSP::fType::ID, zlDSP::freq::ID, zlDSP::Q::ID,
