@@ -280,8 +280,8 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "dyn_rms";
         auto static constexpr name = "RMS";
-        inline auto static const range = juce::NormalisableRange<float>(1.f, 40.f, .1f);
-        auto static constexpr defaultV = 1.f;
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 40.f, .1f);
+        auto static constexpr defaultV = 0.f;
     };
 
     class dynSmooth : public FloatParameters<dynSmooth> {
