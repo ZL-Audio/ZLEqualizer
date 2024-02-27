@@ -17,7 +17,8 @@
 
 namespace zlPanel {
     class ControlPanel final : public juce::Component,
-                               private juce::AudioProcessorValueTreeState::Listener {
+                               private juce::AudioProcessorValueTreeState::Listener,
+                               private juce::AsyncUpdater {
     public:
         explicit ControlPanel(juce::AudioProcessorValueTreeState &parameters,
                               juce::AudioProcessorValueTreeState &parametersNA,
@@ -30,10 +31,13 @@ namespace zlPanel {
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase &uiBase;
+        std::atomic<size_t> bandIdx{0};
         LeftControlPanel leftControlPanel;
         RightControlPanel rightControlPanel;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void handleAsyncUpdate() override;
     };
 } // zlPanel
 

@@ -34,7 +34,6 @@ namespace zlPanel {
           dynLeDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpreseta_svg, BinaryData::fadpreseta_svgSize)) {
         juce::ignoreUnused(parametersNA, parametersNARef);
-        // attachGroup(0);
         bypassC.setDrawable(bypassDrawable.get());
         soloC.setDrawable(soloDrawable.get());
         dynONC.setDrawable(dynONDrawable.get());
