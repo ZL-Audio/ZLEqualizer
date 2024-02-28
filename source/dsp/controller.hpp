@@ -14,7 +14,6 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include "dsp_definitions.hpp"
-#include "../state/state_definitions.hpp"
 #include "audio_buffer/audio_buffer.hpp"
 #include "dynamic_filter/dynamic_filter.hpp"
 #include "splitter/splitter.hpp"

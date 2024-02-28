@@ -11,6 +11,7 @@
 #define ZLEqualizer_CHORE_ATTACH_HPP
 
 #include "controller.hpp"
+#include "../state/state_definitions.hpp"
 
 namespace zlDSP {
     template<typename FloatType>

@@ -11,6 +11,7 @@
 #define ZLEQUALIZER_FILTERS_ATTACH_HPP
 
 #include "controller.hpp"
+#include "../state/state_definitions.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -18,6 +19,7 @@ namespace zlDSP {
     public:
         explicit FiltersAttach(juce::AudioProcessor &processor,
                                juce::AudioProcessorValueTreeState &parameters,
+                               juce::AudioProcessorValueTreeState &parametersNA,
                                Controller<FloatType> &controller);
 
         ~FiltersAttach() override;
@@ -28,7 +30,7 @@ namespace zlDSP {
 
     private:
         juce::AudioProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parameterRef;
+        juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
         Controller<FloatType> &controllerRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> &filtersRef;
 
@@ -64,6 +66,7 @@ namespace zlDSP {
         void initDefaultValues();
 
         std::atomic<bool> dynamicONUpdateOthers = true;
+        std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "ftlog"};
     };
 }

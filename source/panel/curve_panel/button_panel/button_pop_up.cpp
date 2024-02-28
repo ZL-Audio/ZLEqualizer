@@ -114,7 +114,7 @@ namespace zlPanel {
         const auto compParentBound = component.getParentComponent()->getLocalBounds().toFloat();
         const auto shiftX = compBound.getCentreX() - compParentBound.getCentreX();
         const auto shiftY = compBound.getCentreY() - compParentBound.getCentreY();
-        const auto shiftYPortion = shiftY / compParentBound.getHeight() * 2;
+        const auto shiftYPortion = shiftY / (compParentBound.getHeight() - uiBase.getFontSize()) * 2;
         auto direction = -1.f;
         switch (fType.load()) {
             case zlIIR::FilterType::peak:

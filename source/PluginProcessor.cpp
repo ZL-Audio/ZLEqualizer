@@ -18,7 +18,7 @@ PluginProcessor::PluginProcessor()
             juce::Identifier("ZLEqualizerState"),
             zlState::getStateParameterLayout()),
       controller(*this),
-      filtersAttach(*this, parameters, controller),
+      filtersAttach(*this, parameters, parametersNA, controller),
       soloAttach(*this, parameters, controller),
       choreAttach(*this, parameters, parametersNA, controller),
       resetAttach(*this, parameters, parametersNA, controller) {

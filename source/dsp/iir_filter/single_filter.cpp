@@ -41,8 +41,9 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setFreq(FloatType x, bool update) {
-        if (const auto diff = std::max(static_cast<double>(x), freq.load()) / std::min(static_cast<double>(x), freq.load()); std::log10(diff) >= 2) {
+    void Filter<FloatType>::setFreq(const FloatType x, const bool update) {
+        if (const auto diff = std::max(static_cast<double>(x), freq.load()) / std::min(
+                                  static_cast<double>(x), freq.load()); std::log10(diff) >= 2) {
             const juce::ScopedWriteLock scopedLock(paraUpdateLock);
             reset();
         }
@@ -51,19 +52,34 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setGain(FloatType x, bool update) {
+    void Filter<FloatType>::setGain(const FloatType x, const bool update) {
         gain.store(static_cast<double>(x));
-        if (update) { updateParas(); }
+        switch (filterType.load()) {
+            case peak:
+            case bandShelf:
+            case lowShelf:
+            case highShelf:
+            case tiltShelf: {
+                if (update) { updateParas(); }
+                break;
+            }
+            case lowPass:
+            case highPass:
+            case notch:
+            case bandPass: {
+                break;
+            }
+        }
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setQ(FloatType x, bool update) {
+    void Filter<FloatType>::setQ(const FloatType x, const bool update) {
         q.store(static_cast<double>(x));
         if (update) { updateParas(); }
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setFilterType(zlIIR::FilterType x, bool update) { {
+    void Filter<FloatType>::setFilterType(const FilterType x, const bool update) { {
             const juce::ScopedWriteLock scopedLock(paraUpdateLock);
             reset();
         }
@@ -72,7 +88,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setOrder(size_t x, bool update) {
+    void Filter<FloatType>::setOrder(const size_t x, const bool update) {
         order.store(x);
         if (update) { updateParas(); }
     }
@@ -151,7 +167,7 @@ namespace zlIIR {
     template<typename FloatType>
     FloatType Filter<FloatType>::getDB(FloatType f) {
         const juce::ScopedReadLock scopedLock(paraUpdateLock);
-        double g {FloatType(1)};
+        double g{FloatType(1)};
         for (size_t i = 0; i < filters.size(); i++) {
             g *= filters[i].state->getMagnitudeForFrequency(static_cast<double>(f), processSpec.sampleRate);
         }

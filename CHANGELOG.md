@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.3
+
+- improve GUI performance
+- adjust RMS range and initial target filter gain
+
 ## 0.1.2
 
 - improve GUI performance

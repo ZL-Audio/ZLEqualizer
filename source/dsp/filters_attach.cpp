@@ -13,8 +13,9 @@ namespace zlDSP {
     template<typename FloatType>
     FiltersAttach<FloatType>::FiltersAttach(juce::AudioProcessor &processor,
                                             juce::AudioProcessorValueTreeState &parameters,
+                                            juce::AudioProcessorValueTreeState &parametersNA,
                                             Controller<FloatType> &controller)
-        : processorRef(processor), parameterRef(parameters),
+        : processorRef(processor), parameterRef(parameters), parameterNARef(parametersNA),
           controllerRef(controller), filtersRef(controller.getFilters()) {
         addListeners();
         initDefaultValues();
@@ -22,22 +23,24 @@ namespace zlDSP {
 
     template<typename FloatType>
     FiltersAttach<FloatType>::~FiltersAttach() {
-        for (int i = 0; i < bandNUM; ++i) {
-            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+        for (size_t i = 0; i < bandNUM; ++i) {
+            const auto suffix = appendSuffix("", i);
             for (auto &ID: IDs) {
                 parameterRef.removeParameterListener(ID + suffix, this);
             }
         }
+        parameterNARef.removeParameterListener(zlState::maximumDB::ID, this);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::addListeners() {
-        for (int i = 0; i < bandNUM; ++i) {
-            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+        for (size_t i = 0; i < bandNUM; ++i) {
+            const auto suffix = appendSuffix("", i);
             for (auto &ID: IDs) {
                 parameterRef.addParameterListener(ID + suffix, this);
             }
         }
+        parameterNARef.addParameterListener(zlState::maximumDB::ID, this);
     }
 
     template<typename FloatType>
@@ -87,12 +90,38 @@ namespace zlDSP {
             if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value) && dynamicONUpdateOthers.load()) {
                 auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
                 auto tGain = static_cast<float>(filtersRef[idx].getBaseFilter().getGain());
-                if (tGain >= 0 && tGain <= 2) {
-                    tGain = tGain * 2 + 1;
-                } else if (tGain < 0 && tGain >= -2) {
-                    tGain = tGain * 2 - 1;
-                } else {
-                    tGain *= .5f;
+                switch (filtersRef[idx].getBaseFilter().getFilterType()) {
+                    case zlIIR::FilterType::peak:
+                    case zlIIR::FilterType::bandShelf: {
+                        const auto maxDB = maximumDB.load();
+                        if (tGain < -maxDB * .5f) {
+                            tGain = juce::jlimit(-maxDB, maxDB, tGain -= maxDB * .125f);
+                        } else if (tGain < 0) {
+                            tGain += maxDB * .125f;
+                        } else if (tGain < maxDB * .5f) {
+                            tGain -= maxDB * .125f;
+                        } else {
+                            tGain = juce::jlimit(-maxDB, maxDB, tGain += maxDB * .125f);
+                        }
+                        break;
+                    }
+                    case zlIIR::FilterType::lowShelf:
+                    case zlIIR::FilterType::highShelf:
+                    case zlIIR::FilterType::tiltShelf: {
+                        if (tGain < 0) {
+                            tGain += maximumDB.load() * .25f;
+                        } else {
+                            tGain -= maximumDB.load() * .25f;
+                        }
+                        break;
+                    }
+                    case zlIIR::FilterType::lowPass:
+                    case zlIIR::FilterType::highPass:
+                    case zlIIR::FilterType::notch:
+                    case zlIIR::FilterType::bandPass:
+                    default: {
+                        break;
+                    }
                 }
                 filtersRef[idx].getTargetFilter().setFreq(filtersRef[idx].getBaseFilter().getFreq(), false);
                 filtersRef[idx].getTargetFilter().setFilterType(filtersRef[idx].getBaseFilter().getFilterType(), false);
@@ -169,6 +198,8 @@ namespace zlDSP {
             filtersRef[idx].getCompressor().getDetector().setRelease(value);
         } else if (id == sideQ::ID) {
             filtersRef[idx].getSideFilter().setQ(value);
+        } else if (id == zlState::maximumDB::ID) {
+            maximumDB.store(newValue);
         }
     }
 

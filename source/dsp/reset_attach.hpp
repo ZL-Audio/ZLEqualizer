@@ -10,8 +10,8 @@
 #ifndef ZLEqualizer_RESET_ATTACH_HPP
 #define ZLEqualizer_RESET_ATTACH_HPP
 
-#include "dsp_definitions.hpp"
 #include "controller.hpp"
+#include "../state/state_definitions.hpp"
 
 namespace zlDSP {
 
