@@ -45,6 +45,10 @@ namespace zlDSP {
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
+        if (parameterID == zlState::maximumDB::ID) {
+            maximumDB.store(zlState::maximumDB::dBs[static_cast<size_t>(newValue)]);
+            return;
+        }
         const auto id = parameterID.dropLastCharacters(2);
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         auto value = static_cast<FloatType>(newValue);
@@ -198,8 +202,6 @@ namespace zlDSP {
             filtersRef[idx].getCompressor().getDetector().setRelease(value);
         } else if (id == sideQ::ID) {
             filtersRef[idx].getSideFilter().setQ(value);
-        } else if (id == zlState::maximumDB::ID) {
-            maximumDB.store(newValue);
         }
     }
 

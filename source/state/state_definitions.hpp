@@ -113,19 +113,6 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
-    // class fftStyle : public ChoiceParameters<fftStyle> {
-    // public:
-    //     auto static constexpr ID = "fft_style";
-    //     auto static constexpr name = "";
-    //     inline auto static const choices = juce::StringArray{
-    //         "Pre + Post", "Pre + Side"
-    //     };
-    //     enum styles {
-    //         prePost, preSide
-    //     };
-    //     int static constexpr defaultI = 0;
-    // };
-
     class fftPreON : public ChoiceParameters<fftPreON> {
     public:
         auto static constexpr ID = "fft_pre_on";
