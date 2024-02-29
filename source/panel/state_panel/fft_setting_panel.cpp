@@ -15,27 +15,25 @@ namespace zlPanel {
         explicit FFTCallOutBox(juce::AudioProcessorValueTreeState &parametersNA,
                                zlInterface::UIBase &base)
             : parametersNARef(parametersNA),
-              uiBase(base.getFontSize(), base.getStyle()),
-              fftPreON("", zlState::fftPreON::choices, uiBase),
-              fftPostON("", zlState::fftPostON::choices, uiBase),
-              fftSideON("", zlState::fftSideON::choices, uiBase),
+              uiBase(base),
+              fftPreON("Pre:", zlState::fftPreON::choices, uiBase),
+              fftPostON("Post:", zlState::fftPostON::choices, uiBase),
+              fftSideON("Side:", zlState::fftSideON::choices, uiBase),
               ffTSpeed("", zlState::ffTSpeed::choices, uiBase),
-              fftTilt("", zlState::ffTTilt::choices, uiBase),
-              preLabel("", "Pre:"),
-              postLabel("", "Post:"),
-              sideLabel("", "Side:"),
-              labelLAF(uiBase) {
-            for (auto &c: {&fftPreON, &fftPostON, &fftSideON, &ffTSpeed, &fftTilt}) {
+              fftTilt("", zlState::ffTTilt::choices, uiBase) {
+            for (auto &c: {&fftPreON, &fftPostON, &fftSideON}) {
+                c->getLabelLAF().setFontScale(1.5f);
+                c->setLabelScale(.5f);
+                c->setLabelPos(zlInterface::ClickCombobox::left);
                 addAndMakeVisible(c);
             }
-            labelLAF.setFontScale(1.5f);
-            labelLAF.setJustification(juce::Justification::centredRight);
-            for (auto &l: {&preLabel, &postLabel, &sideLabel}) {
-                l->setLookAndFeel(&labelLAF);
-                addAndMakeVisible(l);
+            for (auto &c: {&ffTSpeed, &fftTilt}) {
+                addAndMakeVisible(c);
             }
             attach({
-                       &fftPreON.getBox(), &fftPostON.getBox(), &fftSideON.getBox(),
+                       &fftPreON.getCompactBox().getBox(),
+                       &fftPostON.getCompactBox().getBox(),
+                       &fftSideON.getCompactBox().getBox(),
                        &ffTSpeed.getBox(), &fftTilt.getBox()
                    },
                    {
@@ -43,14 +41,9 @@ namespace zlPanel {
                        zlState::ffTSpeed::ID, zlState::ffTTilt::ID
                    },
                    parametersNARef, boxAttachments);
-            // setBufferedToImage(true);
         }
 
-        ~FFTCallOutBox() override {
-            for (auto &l: {&preLabel, &postLabel, &sideLabel}) {
-                l->setLookAndFeel(nullptr);
-            }
-        }
+        ~FFTCallOutBox() override = default;
 
         void resized() override {
             juce::Grid grid;
@@ -58,17 +51,14 @@ namespace zlPanel {
             using Fr = juce::Grid::Fr;
 
             grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(60))};
-            grid.templateColumns = {Track(Fr(50)), Track(Fr(50))};
+            grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
-                juce::GridItem(preLabel).withArea(1, 1),
-                juce::GridItem(postLabel).withArea(2, 1),
-                juce::GridItem(sideLabel).withArea(3, 1),
-                juce::GridItem(fftPreON).withArea(1, 2),
-                juce::GridItem(fftPostON).withArea(2, 2),
-                juce::GridItem(fftSideON).withArea(3, 2),
-                juce::GridItem(ffTSpeed).withArea(4, 1, 5, 3),
-                juce::GridItem(fftTilt).withArea(5, 1, 6, 3)
+                juce::GridItem(fftPreON).withArea(1, 1),
+                juce::GridItem(fftPostON).withArea(2, 1),
+                juce::GridItem(fftSideON).withArea(3, 1),
+                juce::GridItem(ffTSpeed).withArea(4, 1),
+                juce::GridItem(fftTilt).withArea(5, 1)
             };
             grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
             const auto bound = getLocalBounds().toFloat();
@@ -77,11 +67,10 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
-        zlInterface::UIBase uiBase;
+        zlInterface::UIBase &uiBase;
 
-        zlInterface::CompactCombobox fftPreON, fftPostON, fftSideON, ffTSpeed, fftTilt;
-        juce::Label preLabel, postLabel, sideLabel;
-        zlInterface::NameLookAndFeel labelLAF;
+        zlInterface::ClickCombobox fftPreON, fftPostON, fftSideON;
+        zlInterface::CompactCombobox ffTSpeed, fftTilt;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
     };
 
@@ -100,7 +89,6 @@ namespace zlPanel {
         name.setEditable(false);
         name.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(name);
-        // setBufferedToImage(true);
     }
 
     FFTSettingPanel::~FFTSettingPanel() {

@@ -31,7 +31,6 @@ namespace zlPanel {
                        zlDSP::dynLookahead::ID, zlDSP::dynRMS::ID, zlDSP::dynSmooth::ID
                    },
                    parametersRef, sliderAttachments);
-            // setBufferedToImage(true);
         }
 
         ~CompCallOutBox() override = default;
@@ -50,6 +49,7 @@ namespace zlPanel {
                 juce::GridItem(smoothS).withArea(3, 1)
             };
 
+            grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
             const auto bound = getLocalBounds().toFloat();
             grid.performLayout(bound.toNearestInt());
         }
@@ -77,7 +77,6 @@ namespace zlPanel {
         name.setEditable(false);
         name.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(name);
-        // setBufferedToImage(true);
     }
 
     CompSettingPanel::~CompSettingPanel() {
@@ -114,7 +113,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<CompCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
-                         juce::roundToInt(uiBase.getFontSize() * 9.f));
+                         juce::roundToInt(uiBase.getFontSize() * 9.3f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

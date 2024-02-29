@@ -80,6 +80,8 @@ namespace zlDSP {
 
         void setOutputGain(FloatType x);
 
+        void setEffectON(const bool x) {isEffectON.store(x);}
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -116,6 +118,8 @@ namespace zlDSP {
 
         juce::dsp::Gain<FloatType> outputGain;
         juce::CriticalSection outputGainLock;
+
+        std::atomic<bool> isEffectON{true};
 
         void processSolo();
 

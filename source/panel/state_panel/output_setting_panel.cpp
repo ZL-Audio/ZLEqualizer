@@ -14,23 +14,26 @@ namespace zlPanel {
     class OutputCallOutBox final : public juce::Component {
     public:
         explicit OutputCallOutBox(juce::AudioProcessorValueTreeState &parameters,
-                                zlInterface::UIBase &base)
+                                  zlInterface::UIBase &base)
             : parametersRef(parameters),
               uiBase(base.getFontSize(), base.getStyle()),
+              effectC("ALL:", zlDSP::effectON::choices, uiBase),
               scaleS("Scale", uiBase),
               outGainS("Out Gain", uiBase) {
+            effectC.getLabelLAF().setFontScale(1.5f);
+            effectC.setLabelScale(.5f);
+            effectC.setLabelPos(zlInterface::ClickCombobox::left);
+            addAndMakeVisible(effectC);
             for (auto &c: {&scaleS, &outGainS}) {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.f);
                 addAndMakeVisible(c);
             }
-            attach({
-                       &scaleS.getSlider(), &outGainS.getSlider()
-                   },
-                   {
-                       zlDSP::scale::ID, zlDSP::outputGain::ID
-                   },
+            attach({&effectC.getCompactBox().getBox()},
+                   {zlDSP::effectON::ID},
+                   parametersRef, boxAttachments);
+            attach({&scaleS.getSlider(), &outGainS.getSlider()},
+                   {zlDSP::scale::ID, zlDSP::outputGain::ID},
                    parametersRef, sliderAttachments);
-            // setBufferedToImage(true);
         }
 
         ~OutputCallOutBox() override = default;
@@ -40,14 +43,16 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(60)), Track(Fr(60))};
+            grid.templateRows = {Track(Fr(44)), Track(Fr(60)), Track(Fr(60))};
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
-                juce::GridItem(scaleS).withArea(1, 1),
-                juce::GridItem(outGainS).withArea(2, 1)
+                juce::GridItem(effectC).withArea(1, 1),
+                juce::GridItem(scaleS).withArea(2, 1),
+                juce::GridItem(outGainS).withArea(3, 1)
             };
 
+            grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
             const auto bound = getLocalBounds().toFloat();
             grid.performLayout(bound.toNearestInt());
         }
@@ -56,13 +61,16 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase uiBase;
 
+        zlInterface::ClickCombobox effectC;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
+
         zlInterface::CompactLinearSlider scaleS, outGainS;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
     };
 
     OutputSettingPanel::OutputSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                       juce::AudioProcessorValueTreeState &parametersNA,
-                                       zlInterface::UIBase &base)
+                                           juce::AudioProcessorValueTreeState &parametersNA,
+                                           zlInterface::UIBase &base)
         : parametersRef(parameters),
           parametersNARef(parametersNA),
           uiBase(base),
@@ -112,7 +120,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<OutputCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
-                         juce::roundToInt(uiBase.getFontSize() * 6.f));
+                         juce::roundToInt(uiBase.getFontSize() * 8.2f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

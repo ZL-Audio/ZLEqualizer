@@ -80,12 +80,13 @@ namespace zlDSP {
                                                               2, subBuffer.subBuffer.getNumSamples());
             fftAnalyzezr.pushPreFFTBuffer(subMainBuffer);
             fftAnalyzezr.pushSideFFTBuffer(subSideBuffer);
-            if (useSolo.load()) {
-                processSolo();
-            } else {
-                processDynamic();
+            if (isEffectON.load()) {
+                if (useSolo.load()) {
+                    processSolo();
+                } else {
+                    processDynamic();
+                }
             }
-
             fftAnalyzezr.pushPostFFTBuffer(subMainBuffer);
             fftAnalyzezr.process();
             subBuffer.pushSubBuffer();

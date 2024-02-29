@@ -284,6 +284,16 @@ namespace zlDSP {
         auto static constexpr defaultV = 0.f;
     };
 
+    class effectON : public ChoiceParameters<effectON> {
+    public:
+        auto static constexpr ID = "effect_on";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 1;
+    };
+
     class dynSmooth : public FloatParameters<dynSmooth> {
     public:
         auto static constexpr ID = "dyn_smooth";
@@ -342,7 +352,7 @@ namespace zlDSP {
         }
         layout.add(sideChain::get(),
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
-                   scale::get(), outputGain::get());
+                   effectON::get(), scale::get(), outputGain::get());
         return layout;
     }
 

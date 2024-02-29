@@ -15,7 +15,7 @@
 #include "compact_combobox_look_and_feel.hpp"
 
 namespace zlInterface {
-    class CompactCombobox : public juce::Component {
+    class CompactCombobox final : public juce::Component {
     public:
         CompactCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base);
 

@@ -50,7 +50,7 @@ namespace zlInterface {
         }
 
         void positionComboBoxText(juce::ComboBox &box, juce::Label &label) override {
-            label.setBounds(0, 0, box.getWidth(), box.getHeight());
+            label.setBounds(box.getBounds());
         }
 
         void drawLabel(juce::Graphics &g, juce::Label &label) override {
