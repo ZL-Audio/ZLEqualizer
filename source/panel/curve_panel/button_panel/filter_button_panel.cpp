@@ -70,6 +70,7 @@ namespace zlPanel {
     }
 
     FilterButtonPanel::~FilterButtonPanel() {
+        dragger.getButton().removeComponentListener(&buttonPopUp);
         for (const auto &idx: IDs) {
             parametersRef.removeParameterListener(zlDSP::appendSuffix(idx, band.load()), this);
         }
