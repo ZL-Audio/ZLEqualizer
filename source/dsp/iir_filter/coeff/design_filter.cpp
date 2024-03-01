@@ -187,13 +187,16 @@ namespace zlIIR {
     }
 
     std::vector<double> DesignFilter::getQs(size_t n, double q0) {
-        size_t number = n / 2;
-        auto theta0 = pi / static_cast<double>(number) / 4;
-        auto qBase = std::pow(std::sqrt(2.0) * q0, 1 / static_cast<double>(number));
+        const size_t number = n / 2;
+        const auto theta0 = pi / static_cast<double>(number) / 4;
+        const auto scale = std::pow(std::sqrt(2.0) * q0, 1 / static_cast<double>(number));
+        const auto rescale_base = std::log10(std::sqrt(2.0) * q0) / std::pow(static_cast<double>(n), 1.5) * 12;
         std::vector<double> qs(number);
         for (size_t i = 0; i < number; i++) {
-            auto theta = theta0 * static_cast<double>(2 * i + 1);
-            qs[i] = 1.0 / 2.0 / std::cos(theta) * qBase;
+            const auto centered = static_cast<double>(i) - static_cast<double>(number) / 2 + 0.5;
+            const auto rescale = centered * rescale_base;
+            const auto theta = theta0 * static_cast<double>(2 * i + 1);
+            qs[i] = 1.0 / 2.0 / std::cos(theta) * scale * std::pow(2, rescale);
         }
         return qs;
     }
