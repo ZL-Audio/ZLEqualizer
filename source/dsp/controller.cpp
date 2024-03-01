@@ -223,7 +223,7 @@ namespace zlDSP {
                     } else {
                         filters[i].getCompressor().setBaseLine(0);
                     }
-                    filters[i].process(msMainSplitter.getSBuffer(), msSideSplitter.getMBuffer());
+                    filters[i].process(msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
                 }
             }
             msMainSplitter.combine(subMainBuffer);

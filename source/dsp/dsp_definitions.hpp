@@ -205,6 +205,13 @@ namespace zlDSP {
         auto static constexpr defaultV = false;
     };
 
+    class sideCross : public BoolParameters<sideCross> {
+    public:
+        auto static constexpr ID = "side_cross";
+        auto static constexpr name = "Side Cross";
+        auto static constexpr defaultV = false;
+    };
+
     class threshold : public FloatParameters<threshold> {
     public:
         auto static constexpr ID = "threshold";
@@ -332,7 +339,7 @@ namespace zlDSP {
                    lrType::get(suffix),
                    dynamicON::get(true, suffix), dynamicLearn::get(true, suffix),
                    dynamicBypass::get(suffix), sideSolo::get(true, suffix),
-                   dynamicRelative::get(suffix),
+                   dynamicRelative::get(suffix), //sideCross::get(suffix),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), kneeW::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
     }
