@@ -18,11 +18,11 @@
 
 namespace zlFFT {
     template<typename FloatType>
-    class SingleFFTAnalyzer final : private juce::Thread {
+    class SingleFFTAnalyzer final {
     public:
         explicit SingleFFTAnalyzer(const std::string &name);
 
-        ~SingleFFTAnalyzer() override;
+        ~SingleFFTAnalyzer();
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
@@ -44,6 +44,10 @@ namespace zlFFT {
 
         void setTiltSlope(const float x) { tiltSlope.store(x); }
 
+        std::array<float, zlIIR::frequencies.size() / 2> &getInterplotDBs() { return interplotDBs; }
+
+        void run();
+
     private:
         std::atomic<size_t> delay = 0;
         std::atomic<bool> isAudioReady = false, isFFTReady = false;
@@ -64,8 +68,6 @@ namespace zlFFT {
 
         static constexpr auto minFreq = 20.f, maxFreq = 22000.f, minDB = -72.f;
         std::atomic<float> sampleRate;
-
-        void run() override;
 
         inline float indexToX(const size_t index, const juce::Rectangle<float> bounds) const {
             const auto portion = (static_cast<float>(index) + .5f) / static_cast<float>(fft->getSize());

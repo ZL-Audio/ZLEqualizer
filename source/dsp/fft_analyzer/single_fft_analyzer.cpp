@@ -11,23 +11,18 @@
 
 #include "../../state/state_definitions.hpp"
 
-// #include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
 #include <boost/math/interpolators/cardinal_quintic_b_spline.hpp>
 #include <boost/math/interpolators/makima.hpp>
 
 namespace zlFFT {
     template<typename FloatType>
-    SingleFFTAnalyzer<FloatType>::SingleFFTAnalyzer(const std::string &name) : Thread(name) {
-        startThread(juce::Thread::Priority::low);
+    SingleFFTAnalyzer<FloatType>::SingleFFTAnalyzer(const std::string &name) {
+        juce::ignoreUnused(name);
         tiltSlope.store(zlState::ffTTilt::slopes[static_cast<size_t>(zlState::ffTTilt::defaultI)]);
     }
 
     template<typename FloatType>
-    SingleFFTAnalyzer<FloatType>::~SingleFFTAnalyzer() {
-        if (isThreadRunning()) {
-            stopThread(-1);
-        }
-    }
+    SingleFFTAnalyzer<FloatType>::~SingleFFTAnalyzer() = default;
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
@@ -74,6 +69,7 @@ namespace zlFFT {
         for (size_t idx = 1; idx < smoothedDBX.size(); ++idx) {
             smoothedDBX[idx] = smoothedDBX[idx - 1] + deltaT.load();
         }
+        std::fill(interplotDBs.begin(), interplotDBs.end(), minDB * 2.f);
     }
 
     template<typename FloatType>
@@ -90,9 +86,6 @@ namespace zlFFT {
             } else {
                 isAudioReady.store(true);
                 audioIndex = 0;
-                if (!isFFTReady.load()) {
-                    notify();
-                }
                 break;
             }
         }
@@ -100,57 +93,52 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::run() {
-        while (!threadShouldExit()) {
-            if (isAudioReady.load() && !isFFTReady.load()) {
-                juce::ScopedReadLock lock1(fftParaLock);
-                fftBuffer.copyFrom(0, 0, audioBuffer, 0, 0, audioBuffer.getNumSamples());
+        if (isAudioReady.load() && !isFFTReady.load()) {
+            juce::ScopedReadLock lock1(fftParaLock);
+            fftBuffer.copyFrom(0, 0, audioBuffer, 0, 0, audioBuffer.getNumSamples());
 
-                window->multiplyWithWindowingTable(fftBuffer.getWritePointer(0), fftSize.load());
-                fft->performFrequencyOnlyForwardTransform(fftBuffer.getWritePointer(0));
-                const auto mBuffer = fftBuffer.getReadPointer(0);
+            window->multiplyWithWindowingTable(fftBuffer.getWritePointer(0), fftSize.load());
+            fft->performFrequencyOnlyForwardTransform(fftBuffer.getWritePointer(0));
+            const auto mBuffer = fftBuffer.getReadPointer(0);
 
-                const auto decay = decayRate.load();
-                juce::ScopedLock lock2(ampUpdatedLock);
-                for (size_t i = 0; i < fftSize.load() / 2; ++i) {
-                    const auto currentDB = juce::Decibels::gainToDecibels(
-                        2 * mBuffer[i] / static_cast<float>(fftSize.load()));
-                    smoothedDBs[i + 1] = currentDB < smoothedDBs[i + 1]
-                                             ? smoothedDBs[i + 1] * decay + currentDB * (1 - decay)
-                                             : currentDB;
-                }
-                smoothedDBs[0] = smoothedDBs[1] * 2.f;
-                smoothedDBs[smoothedDBs.size() - 1] = smoothedDBs[smoothedDBs.size() - 2] * 2.f;
-
-                std::vector<float> x = smoothedDBX;
-                std::vector<float> y = smoothedDBs;
-
-                using boost::math::interpolators::makima;
-                auto spline = makima(std::move(x), std::move(y),
-                    1.f, -1.f);
-
-                preInterplotDBs.front() = spline(static_cast<float>(zlIIR::frequencies.front()));
-                preInterplotDBs.back() = spline(static_cast<float>(zlIIR::frequencies.back()));
-                for (size_t i = 0; i < preInterplotDBs.size() - 2; ++i) {
-                    preInterplotDBs[i + 1] = spline(static_cast<float>(zlIIR::frequencies[i * preScale]));
-                }
-
-                boost::math::interpolators::cardinal_quintic_b_spline<float> spline2(
-                    preInterplotDBs.data(), preInterplotDBs.size(),
-                    -static_cast<float>(preScale), static_cast<float>(preScale),
-                    {0.f, 0.f}, {0.f, 0.f});
-
-                const auto tilt = tiltSlope.load();
-                for (size_t i = 0; i < interplotDBs.size(); ++i) {
-                    interplotDBs[i] = spline2(static_cast<float>(i * 2)) + static_cast<float>(std::log2(
-                                          zlIIR::frequencies[i * 2] / 1000)) * tilt;
-                }
-
-                isAudioReady.store(false);
-                isFFTReady.store(true);
-            } else {
-                const auto flag = wait(-1);
-                juce::ignoreUnused(flag);
+            const auto decay = decayRate.load();
+            juce::ScopedLock lock2(ampUpdatedLock);
+            for (size_t i = 0; i < fftSize.load() / 2; ++i) {
+                const auto currentDB = juce::Decibels::gainToDecibels(
+                    2 * mBuffer[i] / static_cast<float>(fftSize.load()));
+                smoothedDBs[i + 1] = currentDB < smoothedDBs[i + 1]
+                                         ? smoothedDBs[i + 1] * decay + currentDB * (1 - decay)
+                                         : currentDB;
             }
+            smoothedDBs[0] = smoothedDBs[1] * 2.f;
+            smoothedDBs[smoothedDBs.size() - 1] = smoothedDBs[smoothedDBs.size() - 2] * 2.f;
+
+            std::vector<float> x = smoothedDBX;
+            std::vector<float> y = smoothedDBs;
+
+            using boost::math::interpolators::makima;
+            auto spline = makima(std::move(x), std::move(y),
+                                 1.f, -1.f);
+
+            preInterplotDBs.front() = spline(static_cast<float>(zlIIR::frequencies.front()));
+            preInterplotDBs.back() = spline(static_cast<float>(zlIIR::frequencies.back()));
+            for (size_t i = 0; i < preInterplotDBs.size() - 2; ++i) {
+                preInterplotDBs[i + 1] = spline(static_cast<float>(zlIIR::frequencies[i * preScale]));
+            }
+
+            boost::math::interpolators::cardinal_quintic_b_spline<float> spline2(
+                preInterplotDBs.data(), preInterplotDBs.size(),
+                -static_cast<float>(preScale), static_cast<float>(preScale),
+                {0.f, 0.f}, {0.f, 0.f});
+
+            const auto tilt = tiltSlope.load();
+            for (size_t i = 0; i < interplotDBs.size(); ++i) {
+                interplotDBs[i] = spline2(static_cast<float>(i * 2)) + static_cast<float>(std::log2(
+                                      zlIIR::frequencies[i * 2] / 1000)) * tilt;
+            }
+
+            isAudioReady.store(false);
+            isFFTReady.store(true);
         }
     }
 
@@ -172,7 +160,6 @@ namespace zlFFT {
             i += 1;
         }
         isFFTReady.store(false);
-        notify();
     }
 
     template

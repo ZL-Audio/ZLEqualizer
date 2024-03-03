@@ -11,7 +11,9 @@
 
 namespace zlFFT {
     template<typename FloatType>
-    PrePostFFTAnalyzer<FloatType>::PrePostFFTAnalyzer() = default;
+    PrePostFFTAnalyzer<FloatType>::PrePostFFTAnalyzer()
+        : Thread("pre_post_analyzer") {
+    }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
@@ -40,20 +42,29 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::process() {
-        if (isON.load() &&
-            !preFFT.getIsAudioReady() &&
-            !postFFT.getIsAudioReady() &&
-            !sideFFT.getIsAudioReady()) {
-            juce::ScopedLock lock(fftOnOffLock);
-            if (isPreON.load()) preFFT.process(preBuffer);
-            if (isPostON.load()) postFFT.process(postBuffer);
-            if (isSideON.load()) sideFFT.process(sideBuffer);
+        if (isON.load()) {
+            if (!preFFT.getIsAudioReady() &&
+                !postFFT.getIsAudioReady() &&
+                !sideFFT.getIsAudioReady()) {
+                juce::ScopedLock lock(fftOnOffLock);
+                if (isPreON.load()) preFFT.process(preBuffer);
+                if (isPostON.load()) postFFT.process(postBuffer);
+                if (isSideON.load()) sideFFT.process(sideBuffer);
+            } else {
+                notify();
+            }
         }
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setON(const bool x) {
         isON.store(x);
+        if (x && !isThreadRunning()) {
+            startThread(juce::Thread::Priority::low);
+        }
+        if (!x && isThreadRunning()) {
+            stopThread(-1);
+        }
     }
 
     template<typename FloatType>
@@ -98,6 +109,22 @@ namespace zlFFT {
         sideFFT.clear();
     }
 
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::run() {
+        while (!threadShouldExit()) {
+            if (isPreON.load() && preFFT.getIsAudioReady()) {
+                preFFT.run();
+            }
+            if (isPostON.load() && postFFT.getIsAudioReady()) {
+                postFFT.run();
+            }
+            if (isSideON.load() && sideFFT.getIsAudioReady()) {
+                sideFFT.run();
+            }
+            const auto flag = wait(-1);
+            juce::ignoreUnused(flag);
+        }
+    }
 
     template
     class PrePostFFTAnalyzer<float>;

@@ -14,7 +14,7 @@
 
 namespace zlFFT {
     template<typename FloatType>
-    class PrePostFFTAnalyzer {
+    class PrePostFFTAnalyzer : private juce::Thread {
     public:
         PrePostFFTAnalyzer();
 
@@ -59,6 +59,8 @@ namespace zlFFT {
         juce::CriticalSection fftOnOffLock;
 
         void clearAll();
+
+        void run() override;
     };
 } // zlFFT
 
