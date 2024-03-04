@@ -152,6 +152,8 @@ namespace zlDSP {
         } else if (parameterID == zlState::conflictStrength::ID) {
             controllerRef.getConflictAnalyzer().setStrength(
                 zlState::conflictStrength::formatV(static_cast<FloatType>(newValue)));
+        } else if (parameterID == zlState::conflictScale::ID) {
+            controllerRef.getConflictAnalyzer().setConflictScale(static_cast<FloatType>(newValue));
         }
     }
 

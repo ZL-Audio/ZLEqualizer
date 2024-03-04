@@ -119,11 +119,13 @@ namespace zlFFT {
                                                      juce::Colour colour,
                                                      juce::Rectangle<float> bound) {
         const auto rectWidth = bound.getWidth() / static_cast<float>(conflicts.size());
+        const auto scale = conflictScale.load();
         juce::ScopedLock lock(areaLock);
         for (size_t i = 0; i < conflicts.size(); ++i) {
             const auto rectBound = bound.removeFromLeft(rectWidth);
             if (conflicts[i] >= 0.01f) {
-                const auto rectColour = colour.withMultipliedAlpha(juce::jmin(.75f, conflicts[i]));
+                const auto rectColour = colour.withMultipliedAlpha(
+                    juce::jmin(.75f, static_cast<float>(conflicts[i] * scale)));
                 g.setColour(rectColour);
                 g.fillRect(rectBound);
             }

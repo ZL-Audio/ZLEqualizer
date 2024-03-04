@@ -209,6 +209,14 @@ namespace zlState {
         inline static double formatV(const double x) { return 0.75 * x; }
     };
 
+    class conflictScale : public FloatParameters<conflictScale> {
+    public:
+        auto static constexpr ID = "conflict_scale";
+        auto static constexpr name = "NA";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 2.f, .001f);
+        auto static constexpr defaultV = 1.f;
+    };
+
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
         layout.add(active::get(suffix));
@@ -219,7 +227,7 @@ namespace zlState {
         layout.add(selectedBandIdx::get(), maximumDB::get(),
                    fftPreON::get(), fftPostON::get(), fftSideON::get(),
                    ffTOrder::get(), ffTSpeed::get(), ffTTilt::get(),
-                   conflictON::get(), conflictStrength::get());
+                   conflictON::get(), conflictStrength::get(), conflictScale::get());
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);

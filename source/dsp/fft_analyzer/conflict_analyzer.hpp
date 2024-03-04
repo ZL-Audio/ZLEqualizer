@@ -31,6 +31,8 @@ namespace zlFFT {
 
         void setStrength(const FloatType x) { strength.store(x); }
 
+        void setConflictScale(const FloatType x) { conflictScale.store(x); }
+
         void pushMainBuffer(juce::AudioBuffer<FloatType> &buffer);
 
         void pushRefBuffer(juce::AudioBuffer<FloatType> &buffer);
@@ -46,7 +48,7 @@ namespace zlFFT {
     private:
         SingleFFTAnalyzer<FloatType> mainAnalyzer, refAnalyzer;
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
-        std::atomic<FloatType> strength{.375f};
+        std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
         std::atomic<bool> isON{false}, isConflictReady{false};
 
         // std::array<float, zlIIR::frequencies.size() / 8> conflictsActual{};

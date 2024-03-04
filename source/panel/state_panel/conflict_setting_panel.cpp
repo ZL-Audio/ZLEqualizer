@@ -18,20 +18,22 @@ namespace zlPanel {
             : parametersNARef(parametersNA),
               uiBase(base.getFontSize(), base.getStyle()),
               conflictC("DET:", zlState::conflictON::choices, uiBase),
-              strengthS("Stength", uiBase) {
+              strengthS("Stength", uiBase),
+        scaleS("Scale", uiBase){
             conflictC.getLabelLAF().setFontScale(1.5f);
             conflictC.setLabelScale(.5f);
             conflictC.setLabelPos(zlInterface::ClickCombobox::left);
             addAndMakeVisible(conflictC);
-            for (auto &c: {&strengthS}) {
+            for (auto &c: {&strengthS, &scaleS}) {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.f);
                 addAndMakeVisible(c);
             }
             attach({&conflictC.getCompactBox().getBox()},
                    {zlState::conflictON::ID},
                    parametersNARef, boxAttachments);
-            attach({&strengthS.getSlider()},
-                   {zlState::conflictStrength::ID},
+            attach({&strengthS.getSlider(), &scaleS.getSlider()},
+                   {zlState::conflictStrength::ID,
+                   zlState::conflictScale::ID},
                    parametersNARef, sliderAttachments);
         }
 
@@ -42,12 +44,13 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(44)), Track(Fr(60))};
+            grid.templateRows = {Track(Fr(44)), Track(Fr(60)), Track(Fr(60))};
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
                 juce::GridItem(conflictC).withArea(1, 1),
-                juce::GridItem(strengthS).withArea(2, 1)
+                juce::GridItem(strengthS).withArea(2, 1),
+                juce::GridItem(scaleS).withArea(3, 1)
             };
 
             grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
@@ -62,7 +65,7 @@ namespace zlPanel {
         zlInterface::ClickCombobox conflictC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
 
-        zlInterface::CompactLinearSlider strengthS;
+        zlInterface::CompactLinearSlider strengthS, scaleS;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
     };
 
@@ -117,7 +120,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<ConflictCallOutBox>(parametersNARef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
-                         juce::roundToInt(uiBase.getFontSize() * 5.1f));
+                         juce::roundToInt(uiBase.getFontSize() * 8.2f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),
