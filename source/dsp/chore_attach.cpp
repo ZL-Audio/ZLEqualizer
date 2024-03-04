@@ -150,7 +150,8 @@ namespace zlDSP {
             const auto f = static_cast<bool>(newValue);
             controllerRef.getConflictAnalyzer().setON(f);
         } else if (parameterID == zlState::conflictStrength::ID) {
-            controllerRef.getConflictAnalyzer().setStrength(static_cast<FloatType>(newValue));
+            controllerRef.getConflictAnalyzer().setStrength(
+                zlState::conflictStrength::formatV(static_cast<FloatType>(newValue)));
         }
     }
 

@@ -13,16 +13,16 @@ namespace zlPanel {
     ConflictPanel::ConflictPanel(zlFFT::ConflictAnalyzer<double> &conflictAnalyzer, zlInterface::UIBase &base)
         : analyzer(conflictAnalyzer), uiBase(base) {
         setInterceptsMouseClicks(false, false);
+        juce::ignoreUnused(uiBase);
     }
 
     ConflictPanel::~ConflictPanel() = default;
 
     void ConflictPanel::paint(juce::Graphics &g) {
         if (!analyzer.getON()) { return; }
-
         if (analyzer.getIsConflictReady()) {
             // analyzer.createPath(path, getLocalBounds().toFloat());
-            analyzer.drawRectangles(g, uiBase.getColorMap2(1).withMultipliedAlpha(0.75f), getLocalBounds().toFloat());
+            analyzer.drawRectangles(g, juce::Colours::red, getLocalBounds().toFloat());
         }
         // g.setColour(uiBase.getColorMap2(1).withAlpha(0.15f));
         // g.fillPath(path);

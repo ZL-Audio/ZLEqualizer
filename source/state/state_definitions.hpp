@@ -28,12 +28,14 @@ namespace zlState {
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
                                                                T::name + suffix, T::range, T::defaultV, attributes);
         }
+
         inline static float convertTo01(const float x) {
             return T::range.convertTo0to1(x);
         }
     };
 
-    class uiStyle : public FloatParameters<uiStyle> {public:
+    class uiStyle : public FloatParameters<uiStyle> {
+    public:
         auto static constexpr ID = "ui_style";
         auto static constexpr name = "NA";
         inline static constexpr int minV = 0;
@@ -73,6 +75,7 @@ namespace zlState {
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
                                                               T::name + suffix, T::defaultV, attributes);
         }
+
         inline static float convertTo01(const bool x) {
             return x ? 1.f : 0.f;
         }
@@ -87,6 +90,7 @@ namespace zlState {
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
                                                                 T::name + suffix, T::choices, T::defaultI, attributes);
         }
+
         inline static float convertTo01(const int x) {
             return static_cast<float>(x) / static_cast<float>(T::choices.size() - 1);
         }
@@ -150,7 +154,7 @@ namespace zlState {
         inline auto static const choices = juce::StringArray{
             "Low", "Medium", "High"
         };
-        static constexpr std::array<int, 3> orders {10, 11, 12};
+        static constexpr std::array<int, 3> orders{10, 11, 12};
         int static constexpr defaultI = 1;
     };
 
@@ -161,7 +165,7 @@ namespace zlState {
         inline auto static const choices = juce::StringArray{
             "Very Fast", "Fast", "Medium", "Slow", "Very Slow", "Frozen"
         };
-        static constexpr std::array<float, 6> speeds {0.90f, 0.93f, 0.95f, 0.98f, 0.99f, 1.0f};
+        static constexpr std::array<float, 6> speeds{0.90f, 0.93f, 0.95f, 0.98f, 0.99f, 1.0f};
         int static constexpr defaultI = 2;
     };
 
@@ -172,7 +176,7 @@ namespace zlState {
         inline auto static const choices = juce::StringArray{
             "0 dB/oct", "1.5 dB/oct", "3 dB/oct", "4.5 dB/oct", "6 dB/oct"
         };
-        static constexpr std::array<float, 5> slopes {0.f, 1.5f, 3.f, 4.5f, 6.f};
+        static constexpr std::array<float, 5> slopes{0.f, 1.5f, 3.f, 4.5f, 6.f};
         int static constexpr defaultI = 3;
     };
 
@@ -198,7 +202,11 @@ namespace zlState {
         auto static constexpr ID = "conflict_strength";
         auto static constexpr name = "NA";
         inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .001f);
-        auto static constexpr defaultV = 0.375f;
+        auto static constexpr defaultV = 0.5f;
+
+        inline static float formatV(const float x) { return 0.75f * x; }
+
+        inline static double formatV(const double x) { return 0.75 * x; }
     };
 
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
@@ -209,9 +217,9 @@ namespace zlState {
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(selectedBandIdx::get(), maximumDB::get(),
-            fftPreON::get(), fftPostON::get(), fftSideON::get(),
-            ffTOrder::get(), ffTSpeed::get(), ffTTilt::get(),
-            conflictON::get(), conflictStrength::get());
+                   fftPreON::get(), fftPostON::get(), fftSideON::get(),
+                   ffTOrder::get(), ffTSpeed::get(), ffTTilt::get(),
+                   conflictON::get(), conflictStrength::get());
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
@@ -219,7 +227,7 @@ namespace zlState {
         return layout;
     }
 
-    inline std::string appendSuffix(const std::string& s, const size_t i) {
+    inline std::string appendSuffix(const std::string &s, const size_t i) {
         const auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
         return s + suffix;
     }

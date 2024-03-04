@@ -39,7 +39,7 @@ namespace zlFFT {
 
         bool getIsConflictReady() const { return isConflictReady.load(); }
 
-        void createPath(juce::Path &path, juce::Rectangle<float> bound);
+        // void createPath(juce::Path &path, juce::Rectangle<float> bound);
 
         void drawRectangles(juce::Graphics &g, juce::Colour colour, juce::Rectangle<float> bound);
 
@@ -49,6 +49,7 @@ namespace zlFFT {
         std::atomic<FloatType> strength{.375f};
         std::atomic<bool> isON{false}, isConflictReady{false};
 
+        // std::array<float, zlIIR::frequencies.size() / 8> conflictsActual{};
         std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
         std::vector<std::pair<float, float> > conflictAreas;
         juce::CriticalSection areaLock;
