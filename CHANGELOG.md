@@ -4,6 +4,10 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.6
+
+- enable conflict detecting
+
 ## 0.1.5
 
 - BREAKING: change the method of calculating high order cascading Q values
