@@ -20,7 +20,7 @@ namespace zlFFT {
     template<typename FloatType>
     class SingleFFTAnalyzer final {
     public:
-        explicit SingleFFTAnalyzer(const std::string &name);
+        explicit SingleFFTAnalyzer();
 
         ~SingleFFTAnalyzer();
 
@@ -39,6 +39,8 @@ namespace zlFFT {
         inline bool getIsAudioReady() const { return isAudioReady.load(); }
 
         inline bool getIsFFTReady() const { return isFFTReady.load(); }
+
+        void setIsFFTReady(const bool f) { isFFTReady.store(f); }
 
         void setDecayRate(const float x) { decayRate.store(x); }
 

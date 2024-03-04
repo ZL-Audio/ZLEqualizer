@@ -17,6 +17,7 @@
 #include "sum_panel/solo_panel.hpp"
 #include "single_panel/single_panel.hpp"
 #include "button_panel/button_panel.hpp"
+#include "conflict_panel/conflict_panel.hpp"
 
 namespace zlPanel {
     class CurvePanel final : public juce::Component,
@@ -39,6 +40,7 @@ namespace zlPanel {
         zlDSP::Controller<double> &controllerRef;
         BackgroundPanel backgroundPanel;
         FFTPanel fftPanel;
+        ConflictPanel conflictPanel;
         SumPanel sumPanel;
         SoloPanel soloPanel;
         ButtonPanel buttonPanel;

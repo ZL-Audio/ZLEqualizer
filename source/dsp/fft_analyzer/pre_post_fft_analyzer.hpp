@@ -14,9 +14,9 @@
 
 namespace zlFFT {
     template<typename FloatType>
-    class PrePostFFTAnalyzer : private juce::Thread {
+    class PrePostFFTAnalyzer final : private juce::Thread {
     public:
-        PrePostFFTAnalyzer();
+        explicit PrePostFFTAnalyzer();
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
@@ -51,9 +51,9 @@ namespace zlFFT {
         bool isFFTReady();
 
     private:
-        SingleFFTAnalyzer<FloatType> preFFT{"pre_fft"}, postFFT{"post_fft"}, sideFFT{"side_fft"};
+        SingleFFTAnalyzer<FloatType> preFFT{}, postFFT{}, sideFFT{};
         juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
-        std::atomic<bool> isON = false;
+        std::atomic<bool> isON{false};
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
 
         juce::CriticalSection fftOnOffLock;

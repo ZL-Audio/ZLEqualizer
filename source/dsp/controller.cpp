@@ -46,6 +46,7 @@ namespace zlDSP {
         tracker.prepare(subSpec);
         outputGain.prepare(subSpec);
         fftAnalyzezr.prepare(subSpec);
+        conflictAnalyzer.prepare(subSpec);
         for (auto &t: {&lTracker, &rTracker, &mTracker, &sTracker}) {
             t->prepare({spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
         }
@@ -80,6 +81,7 @@ namespace zlDSP {
                                                               2, subBuffer.subBuffer.getNumSamples());
             fftAnalyzezr.pushPreFFTBuffer(subMainBuffer);
             fftAnalyzezr.pushSideFFTBuffer(subSideBuffer);
+            conflictAnalyzer.pushRefBuffer(subSideBuffer);
             if (isEffectON.load()) {
                 if (useSolo.load()) {
                     processSolo();
@@ -89,6 +91,8 @@ namespace zlDSP {
             }
             fftAnalyzezr.pushPostFFTBuffer(subMainBuffer);
             fftAnalyzezr.process();
+            conflictAnalyzer.pushMainBuffer(subMainBuffer);
+            conflictAnalyzer.process();
             subBuffer.pushSubBuffer();
         }
         subBuffer.popBlock(block);

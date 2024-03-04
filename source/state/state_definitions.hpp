@@ -183,6 +183,24 @@ namespace zlState {
         auto static constexpr defaultV = false;
     };
 
+    class conflictON : public ChoiceParameters<conflictON> {
+    public:
+        auto static constexpr ID = "conflict_on";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 0;
+    };
+
+    class conflictStrength : public FloatParameters<conflictStrength> {
+    public:
+        auto static constexpr ID = "conflict_strength";
+        auto static constexpr name = "NA";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .001f);
+        auto static constexpr defaultV = 0.375f;
+    };
+
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
         layout.add(active::get(suffix));
@@ -192,7 +210,8 @@ namespace zlState {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(selectedBandIdx::get(), maximumDB::get(),
             fftPreON::get(), fftPostON::get(), fftSideON::get(),
-            ffTOrder::get(), ffTSpeed::get(), ffTTilt::get());
+            ffTOrder::get(), ffTSpeed::get(), ffTTilt::get(),
+            conflictON::get(), conflictStrength::get());
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);

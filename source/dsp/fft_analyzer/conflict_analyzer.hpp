@@ -13,29 +13,45 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
+#include "single_fft_analyzer.hpp"
+
 namespace zlFFT {
     template<typename FloatType>
     class ConflictAnalyzer final : private juce::Thread {
     public:
-        explicit ConflictAnalyzer(const std::string &name);
+        explicit ConflictAnalyzer();
 
         ~ConflictAnalyzer() override;
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
-        void clear();
+        void setON(bool x);
 
-        void pushMainBlock(juce::dsp::AudioBlock<FloatType> &block);
+        bool getON() const { return isON.load(); }
 
-        void pushRefBlock(juce::dsp::AudioBlock<FloatType> &block);
+        void setStrength(const FloatType x) { strength.store(x); }
+
+        void pushMainBuffer(juce::AudioBuffer<FloatType> &buffer);
+
+        void pushRefBuffer(juce::AudioBuffer<FloatType> &buffer);
+
+        void process();
+
+        bool getIsConflictReady() const { return isConflictReady.load(); }
+
+        void createPath(juce::Path &path, juce::Rectangle<float> bound);
+
+        void drawRectangles(juce::Graphics &g, juce::Colour colour, juce::Rectangle<float> bound);
 
     private:
-        static constexpr auto minFreq = 20.f, maxFreq = 22000.f, minDB = -72.f;
-        std::atomic<float> sampleRate;
-        juce::ReadWriteLock fftParaLock;
-
-        std::atomic<FloatType> strength;
+        SingleFFTAnalyzer<FloatType> mainAnalyzer, refAnalyzer;
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
+        std::atomic<FloatType> strength{.375f};
+        std::atomic<bool> isON{false}, isConflictReady{false};
+
+        std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
+        std::vector<std::pair<float, float> > conflictAreas;
+        juce::CriticalSection areaLock;
 
         void run() override;
     };

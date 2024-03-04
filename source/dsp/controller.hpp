@@ -62,8 +62,6 @@ namespace zlDSP {
 
         std::tuple<FloatType, FloatType> getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter);
 
-        zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzezr; }
-
         inline void setSideChain(const bool x) { sideChain.store(x); }
 
         void setRelative(size_t idx, bool isRelative);
@@ -80,14 +78,16 @@ namespace zlDSP {
 
         void setOutputGain(FloatType x);
 
-        void setEffectON(const bool x) {isEffectON.store(x);}
+        void setEffectON(const bool x) { isEffectON.store(x); }
+
+        zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzezr; }
+
+        zlFFT::ConflictAnalyzer<FloatType> &getConflictAnalyzer() { return conflictAnalyzer; }
 
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
         juce::ReadWriteLock paraUpdateLock;
-
-        zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzezr;
 
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
@@ -120,6 +120,10 @@ namespace zlDSP {
         juce::CriticalSection outputGainLock;
 
         std::atomic<bool> isEffectON{true};
+
+        zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzezr{};
+
+        zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer{};
 
         void processSolo();
 

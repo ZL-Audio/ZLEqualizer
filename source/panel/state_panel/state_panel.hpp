@@ -14,6 +14,7 @@
 #include "fft_setting_panel.hpp"
 #include "comp_setting_panel.hpp"
 #include "output_setting_panel.hpp"
+#include "conflict_setting_panel.hpp"
 
 namespace zlPanel {
 
@@ -36,6 +37,7 @@ namespace zlPanel {
         FFTSettingPanel fftSettingPanel;
         CompSettingPanel compSettingPanel;
         OutputSettingPanel outputSettingPanel;
+        ConflictSettingPanel conflictSettingPanel;
     };
 
 } // zlPanel

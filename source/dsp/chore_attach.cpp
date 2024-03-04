@@ -146,6 +146,11 @@ namespace zlDSP {
             controllerRef.getAnalyzer().getPreFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
             controllerRef.getAnalyzer().getPostFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
             controllerRef.getAnalyzer().getSideFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
+        } else if (parameterID == zlState::conflictON::ID) {
+            const auto f = static_cast<bool>(newValue);
+            controllerRef.getConflictAnalyzer().setON(f);
+        } else if (parameterID == zlState::conflictStrength::ID) {
+            controllerRef.getConflictAnalyzer().setStrength(static_cast<FloatType>(newValue));
         }
     }
 

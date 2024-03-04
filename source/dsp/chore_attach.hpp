@@ -50,7 +50,8 @@ namespace zlDSP {
 
         constexpr static std::array NAIDs{
             zlState::fftPreON::ID, zlState::fftPostON::ID, zlState::fftSideON::ID,
-            zlState::ffTSpeed::ID, zlState::ffTTilt::ID
+            zlState::ffTSpeed::ID, zlState::ffTTilt::ID,
+            zlState::conflictON::ID, zlState::conflictStrength::ID
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
