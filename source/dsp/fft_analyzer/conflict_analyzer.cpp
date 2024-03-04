@@ -83,10 +83,10 @@ namespace zlFFT {
                 const auto fftIdx = 4 * i;
                 const auto dB1 = (mainDB[fftIdx] + mainDB[fftIdx + 1] + mainDB[fftIdx + 2] + mainDB[fftIdx + 3]) * .25f;
                 const auto dB2 = (refDB[fftIdx] + refDB[fftIdx + 1] + refDB[fftIdx + 2] + refDB[fftIdx + 3]) * .25f;
-                const auto dBMin = juce::jmin(dB1, dB2);
+                const auto dBMin = juce::jmin(dB1, dB2, 0.001f);
                 // const auto dBMax = juce::jmax(dB1, dB2);
                 conflicts[i] = juce::jmax(conflicts[i] * .98f,
-                                          (dBMin - threshold) / (0.125f - threshold));
+                                          (dBMin - threshold) / (0.001f - threshold));
             }
             for (size_t i = 1; i < conflicts.size() - 1; ++i) {
                 conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
