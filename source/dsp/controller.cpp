@@ -297,17 +297,9 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::updateSoloLR(const size_t idx) {
         if (filterLRs[idx].load() == lrType::stereo) {
-            if (soloFilter.getNumChannels() != 2) {
-                soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
-            } else {
-                soloFilter.updateParas();
-            }
+            soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
         } else {
-            if (soloFilter.getNumChannels() != 1) {
-                soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
-            } else {
-                soloFilter.updateParas();
-            }
+            soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
         }
     }
 

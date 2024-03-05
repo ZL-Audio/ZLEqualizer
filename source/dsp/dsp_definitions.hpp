@@ -333,13 +333,13 @@ namespace zlDSP {
 
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
-        layout.add(bypass::get(suffix), solo::get(true, suffix),
+        layout.add(bypass::get(suffix), solo::get(true, suffix, false),
                    fType::get(suffix), slope::get(suffix),
                    freq::get(suffix), gain::get(suffix), Q::get(suffix),
                    lrType::get(suffix),
-                   dynamicON::get(true, suffix), dynamicLearn::get(true, suffix),
-                   dynamicBypass::get(suffix), sideSolo::get(true, suffix),
-                   dynamicRelative::get(suffix), //sideCross::get(suffix),
+                   dynamicON::get(true, suffix, false), dynamicLearn::get(true, suffix, false),
+                   dynamicBypass::get(suffix), sideSolo::get(true, suffix, false),
+                   dynamicRelative::get(suffix, false), //sideCross::get(suffix),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), kneeW::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
     }
