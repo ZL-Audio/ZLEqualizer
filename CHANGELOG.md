@@ -7,6 +7,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 ## 0.1.7
 
 - improve conflict detecting
+- fix minor bugs
 
 ## 0.1.6
 
