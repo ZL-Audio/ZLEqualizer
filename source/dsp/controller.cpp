@@ -157,6 +157,9 @@ namespace zlDSP {
         if (useTrackers[0].load()) {
             tracker.process(subSideBuffer);
             baseLine = tracker.getMomentaryLoudness();
+            if (baseLine <= tracker.minusInfinityDB + 1) {
+                baseLine = tracker.minusInfinityDB * FloatType(0.5);
+            }
         }
         for (size_t i = 0; i < bandNUM; ++i) {
             if (dynRelatives[i].load()) {
@@ -176,10 +179,16 @@ namespace zlDSP {
             if (useTrackers[1].load()) {
                 lTracker.process(lrSideSplitter.getLBuffer());
                 lBaseLine = lTracker.getMomentaryLoudness();
+                if (lBaseLine <= lTracker.minusInfinityDB + 1) {
+                    lBaseLine =  lTracker.minusInfinityDB * FloatType(0.5);
+                }
             }
             if (useTrackers[2].load()) {
                 rTracker.process(lrSideSplitter.getRBuffer());
                 rBaseLine = rTracker.getMomentaryLoudness();
+                if (rBaseLine <= rTracker.minusInfinityDB + 1) {
+                    rBaseLine =  rTracker.minusInfinityDB * FloatType(0.5);
+                }
             }
             for (size_t i = 0; i < bandNUM; ++i) {
                 if (filterLRs[i].load() == lrType::left) {
@@ -208,10 +217,16 @@ namespace zlDSP {
             if (useTrackers[3].load()) {
                 mTracker.process(msSideSplitter.getMBuffer());
                 mBaseLine = mTracker.getMomentaryLoudness();
+                if (mBaseLine <= mTracker.minusInfinityDB + 1) {
+                    mBaseLine =  mTracker.minusInfinityDB * FloatType(0.5);
+                }
             }
             if (useTrackers[4].load()) {
                 sTracker.process(msSideSplitter.getSBuffer());
                 sBaseLine = sTracker.getMomentaryLoudness();
+                if (sBaseLine <= sTracker.minusInfinityDB + 1) {
+                    sBaseLine =  sTracker.minusInfinityDB * FloatType(0.5);
+                }
             }
             for (size_t i = 0; i < bandNUM; ++i) {
                 if (filterLRs[i].load() == lrType::mid) {

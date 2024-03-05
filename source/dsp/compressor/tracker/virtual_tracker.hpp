@@ -15,7 +15,6 @@
 #include <juce_dsp/juce_dsp.h>
 
 namespace zlCompressor {
-
     template<typename FloatType>
     class VirtualTracker {
     public:

@@ -79,7 +79,7 @@ namespace zlFFT {
 
         inline float binToY(float bin, const juce::Rectangle<float> bounds) const {
             constexpr float infinity = -72.0f;
-            const auto db = juce::Decibels::gainToDecibels(bin);
+            const auto db = juce::Decibels::gainToDecibels(bin, -240.f);
             return bounds.getY() + (db / infinity) * bounds.getHeight();
         }
     };

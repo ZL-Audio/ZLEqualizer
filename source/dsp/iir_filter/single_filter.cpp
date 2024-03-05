@@ -149,7 +149,7 @@ namespace zlIIR {
                            std::multiplies<FloatType>());
         }
         std::transform(gains.begin(), gains.end(), dBs.begin(),
-                       [](auto &c) { return juce::Decibels::gainToDecibels(c); });
+                       [](auto &c) { return juce::Decibels::gainToDecibels(c, -FloatType(240)); });
         if (filterType.load() == FilterType::notch && order.load() >= 2) {
             auto freqIdx = static_cast<size_t>(std::floor(std::log(freq.load() / 10) / std::log(2200) *
                                                           static_cast<double>(frequencies.size())));
@@ -171,7 +171,7 @@ namespace zlIIR {
         for (size_t i = 0; i < filters.size(); i++) {
             g *= filters[i].state->getMagnitudeForFrequency(static_cast<double>(f), processSpec.sampleRate);
         }
-        return juce::Decibels::gainToDecibels(static_cast<FloatType>(g));
+        return juce::Decibels::gainToDecibels(static_cast<FloatType>(g), FloatType(-240));
     }
 
     template

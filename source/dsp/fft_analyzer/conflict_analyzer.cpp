@@ -97,23 +97,6 @@ namespace zlFFT {
         }
     }
 
-    // template<typename FloatType>
-    // void ConflictAnalyzer<FloatType>::createPath(juce::Path &path, const juce::Rectangle<float> bound) {
-    //     juce::ScopedLock lock(areaLock);
-    //     if (isConflictReady.load()) {
-    //         path.clear();
-    //         for (const auto &p: conflictAreas) {
-    //             path.addRectangle(bound.getX() + bound.getWidth() * p.first,
-    //                               bound.getY(),
-    //                               bound.getWidth() * (p.second - p.first),
-    //                               bound.getHeight());
-    //         }
-    //         mainAnalyzer.setIsFFTReady(false);
-    //         refAnalyzer.setIsFFTReady(false);
-    //         isConflictReady.store(false);
-    //     }
-    // }
-
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::drawRectangles(juce::Graphics &g,
                                                      juce::Colour colour,

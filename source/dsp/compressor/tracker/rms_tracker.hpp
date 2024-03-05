@@ -21,8 +21,10 @@ namespace zlCompressor {
      * @tparam FloatType
      */
     template<typename FloatType>
-    class RMSTracker : VirtualTracker<FloatType> {
+    class RMSTracker final : VirtualTracker<FloatType> {
     public:
+        inline static FloatType minusInfinityDB = -240;
+
         RMSTracker() = default;
 
         ~RMSTracker() override;
@@ -44,7 +46,7 @@ namespace zlCompressor {
             FloatType meanSquare =
                     loudnessBuffer.size() > 0 ? mLoudness / static_cast<FloatType>(loudnessBuffer.size()) : 0;
 
-            return juce::Decibels::gainToDecibels(meanSquare) * static_cast<FloatType>(0.5);
+            return juce::Decibels::gainToDecibels(meanSquare, minusInfinityDB * 2) * static_cast<FloatType>(0.5);
         }
 
     private:

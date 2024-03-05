@@ -104,7 +104,7 @@ namespace zlFFT {
             juce::ScopedLock lock2(ampUpdatedLock);
             for (size_t i = 0; i < fftSize.load() / 2; ++i) {
                 const auto currentDB = juce::Decibels::gainToDecibels(
-                    2 * mBuffer[i] / static_cast<float>(fftSize.load()));
+                    2 * mBuffer[i] / static_cast<float>(fftSize.load()), -240.f);
                 smoothedDBs[i + 1] = currentDB < smoothedDBs[i + 1]
                                          ? smoothedDBs[i + 1] * decay + currentDB * (1 - decay)
                                          : currentDB;
