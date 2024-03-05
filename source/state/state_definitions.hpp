@@ -213,7 +213,7 @@ namespace zlState {
     public:
         auto static constexpr ID = "conflict_scale";
         auto static constexpr name = "NA";
-        inline auto static const range = juce::NormalisableRange<float>(0.f, 4.f, .001f, 0.5f);
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 6.f, .001f, 0.3868528072345416f);
         auto static constexpr defaultV = 1.f;
     };
 
