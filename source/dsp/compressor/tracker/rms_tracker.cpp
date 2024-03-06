@@ -55,7 +55,7 @@ namespace zlCompressor {
     template<typename FloatType>
     void RMSTracker<FloatType>::setMomentarySize(size_t mSize) {
         juce::ScopedLock lock(paraLock);
-        mSize = std::max(size_t(1), mSize);
+        mSize = std::max(static_cast<size_t>(1), mSize);
         while (loudnessBuffer.size() > mSize) {
             mLoudness -= loudnessBuffer.front();
             loudnessBuffer.pop_front();

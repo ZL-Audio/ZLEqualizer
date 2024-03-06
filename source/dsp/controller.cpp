@@ -43,12 +43,11 @@ namespace zlDSP {
         lrSideSplitter.prepare(subSpec);
         msMainSplitter.prepare(subSpec);
         msSideSplitter.prepare(subSpec);
-        tracker.prepare(subSpec);
         outputGain.prepare(subSpec);
         fftAnalyzezr.prepare(subSpec);
         conflictAnalyzer.prepare(subSpec);
-        for (auto &t: {&lTracker, &rTracker, &mTracker, &sTracker}) {
-            t->prepare({spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+        for (auto &t: {&tracker, &lTracker, &rTracker, &mTracker, &sTracker}) {
+            t->prepare(subSpec);
         }
     }
 
@@ -254,14 +253,8 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
-        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
-        // prepare the filter
+        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         filterLRs[idx].store(x);
-        if (x == lrType::stereo) {
-            filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
-        } else {
-            filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
-        }
         // update useLR and useMS
         useLR.store(false);
         for (auto &lr: filterLRs) {
@@ -277,24 +270,12 @@ namespace zlDSP {
                 break;
             }
         }
-        if (useSolo.load()) {
-            updateSoloLR(soloIdx.load());
-        }
         updateTrackersON();
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::updateSoloLR(const size_t idx) {
-        if (filterLRs[idx].load() == lrType::stereo) {
-            soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
-        } else {
-            soloFilter.prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
-        }
-    }
-
-    template<typename FloatType>
     void Controller<FloatType>::setDynamicON(const bool x, size_t idx) {
-        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         filters[idx].setDynamicON(x);
         filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
         filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
@@ -367,17 +348,16 @@ namespace zlDSP {
         }
         soloFilter.setOrder(2, false);
         soloFilter.setFreq(freq, false);
-        soloFilter.setQ(q, false);
-        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+        soloFilter.setQ(q, true);
+        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         useSolo.store(true);
-        updateSoloLR(idx);
         soloIdx.store(idx);
         soloSide.store(isSide);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setRelative(const size_t idx, const bool isRelative) {
-        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         dynRelatives[idx].store(isRelative);
         updateTrackersON();
     }
