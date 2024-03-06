@@ -19,6 +19,7 @@
 #include "splitter/splitter.hpp"
 #include "fft_analyzer/fft_analyzer.hpp"
 #include "histogram/histogram.hpp"
+#include "gain/gain.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -76,13 +77,13 @@ namespace zlDSP {
 
         void setRMS(float x);
 
-        void setOutputGain(FloatType x);
-
         void setEffectON(const bool x) { isEffectON.store(x); }
 
         zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzezr; }
 
         zlFFT::ConflictAnalyzer<FloatType> &getConflictAnalyzer() { return conflictAnalyzer; }
+
+        zlGain::Gain<FloatType> &getGainDSP() { return outputGain; }
 
     private:
         juce::AudioProcessor &processorRef;
@@ -116,8 +117,7 @@ namespace zlDSP {
         juce::dsp::DelayLine<FloatType> delay;
         juce::CriticalSection delayLock;
 
-        juce::dsp::Gain<FloatType> outputGain;
-        juce::CriticalSection outputGainLock;
+        zlGain::Gain<FloatType> outputGain;
 
         std::atomic<bool> isEffectON{true};
 

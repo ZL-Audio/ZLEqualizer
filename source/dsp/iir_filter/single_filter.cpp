@@ -34,9 +34,11 @@ namespace zlIIR {
     void Filter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
-        const juce::ScopedReadLock scopedLock(paraUpdateLock);
-        for (auto &f: filters) {
-            f.process(context);
+        const juce::ScopedTryReadLock scopedLock(paraUpdateLock);
+        if (scopedLock.isLocked()) {
+            for (auto &f: filters) {
+                f.process(context);
+            }
         }
     }
 

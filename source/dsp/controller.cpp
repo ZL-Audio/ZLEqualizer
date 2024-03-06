@@ -180,14 +180,14 @@ namespace zlDSP {
                 lTracker.process(lrSideSplitter.getLBuffer());
                 lBaseLine = lTracker.getMomentaryLoudness();
                 if (lBaseLine <= lTracker.minusInfinityDB + 1) {
-                    lBaseLine =  lTracker.minusInfinityDB * FloatType(0.5);
+                    lBaseLine = lTracker.minusInfinityDB * FloatType(0.5);
                 }
             }
             if (useTrackers[2].load()) {
                 rTracker.process(lrSideSplitter.getRBuffer());
                 rBaseLine = rTracker.getMomentaryLoudness();
                 if (rBaseLine <= rTracker.minusInfinityDB + 1) {
-                    rBaseLine =  rTracker.minusInfinityDB * FloatType(0.5);
+                    rBaseLine = rTracker.minusInfinityDB * FloatType(0.5);
                 }
             }
             for (size_t i = 0; i < bandNUM; ++i) {
@@ -218,14 +218,14 @@ namespace zlDSP {
                 mTracker.process(msSideSplitter.getMBuffer());
                 mBaseLine = mTracker.getMomentaryLoudness();
                 if (mBaseLine <= mTracker.minusInfinityDB + 1) {
-                    mBaseLine =  mTracker.minusInfinityDB * FloatType(0.5);
+                    mBaseLine = mTracker.minusInfinityDB * FloatType(0.5);
                 }
             }
             if (useTrackers[4].load()) {
                 sTracker.process(msSideSplitter.getSBuffer());
                 sBaseLine = sTracker.getMomentaryLoudness();
                 if (sBaseLine <= sTracker.minusInfinityDB + 1) {
-                    sBaseLine =  sTracker.minusInfinityDB * FloatType(0.5);
+                    sBaseLine = sTracker.minusInfinityDB * FloatType(0.5);
                 }
             }
             for (size_t i = 0; i < bandNUM; ++i) {
@@ -255,39 +255,34 @@ namespace zlDSP {
                 histograms[i].push(static_cast<size_t>(histIdx));
             }
         }
-
-        {
-            juce::dsp::AudioBlock<FloatType> mainBlock(subMainBuffer);
-            const juce::ScopedLock lockGain(outputGainLock);
-            outputGain.process(juce::dsp::ProcessContextReplacing<FloatType>(mainBlock));
-        }
+        outputGain.process(subMainBuffer);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         // prepare the filter
-            filterLRs[idx].store(x);
-            if (x == lrType::stereo) {
-                filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
-            } else {
-                filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+        filterLRs[idx].store(x);
+        if (x == lrType::stereo) {
+            filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2});
+        } else {
+            filters[idx].prepare({subBuffer.getSubSpec().sampleRate, subBuffer.getSubSpec().maximumBlockSize, 1});
+        }
+        // update useLR and useMS
+        useLR.store(false);
+        for (auto &lr: filterLRs) {
+            if (lr.load() == lrType::left || lr.load() == lrType::right) {
+                useLR.store(true);
+                break;
             }
-            // update useLR and useMS
-            useLR.store(false);
-            for (auto &lr: filterLRs) {
-                if (lr.load() == lrType::left || lr.load() == lrType::right) {
-                    useLR.store(true);
-                    break;
-                }
+        }
+        useMS.store(false);
+        for (auto &lr: filterLRs) {
+            if (lr.load() == lrType::mid || lr.load() == lrType::side) {
+                useMS.store(true);
+                break;
             }
-            useMS.store(false);
-            for (auto &lr: filterLRs) {
-                if (lr.load() == lrType::mid || lr.load() == lrType::side) {
-                    useMS.store(true);
-                    break;
-                }
-            }
+        }
         if (useSolo.load()) {
             updateSoloLR(soloIdx.load());
         }
@@ -429,15 +424,9 @@ namespace zlDSP {
     void Controller<FloatType>::setRMS(const float x) {
         const auto numRMS = static_cast<size_t>(
             x / 1000.f * static_cast<float>(subBuffer.getMainSpec().sampleRate));
-        for (auto &f:filters) {
+        for (auto &f: filters) {
             f.getCompressor().getTracker().setMomentarySize(numRMS);
         }
-    }
-
-    template<typename FloatType>
-    void Controller<FloatType>::setOutputGain(const FloatType x) {
-        juce::ScopedLock lock(outputGainLock);
-        outputGain.setGainDecibels(x);
     }
 
     template

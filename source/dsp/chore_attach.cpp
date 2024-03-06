@@ -70,7 +70,7 @@ namespace zlDSP {
                     zlDSP::targetGain::range.snapToLegalValue(targetGain * scale::formatV(newValue)));
             }
         } else if (parameterID == outputGain::ID) {
-            controllerRef.setOutputGain(static_cast<FloatType>(newValue));
+            controllerRef.getGainDSP().setGainDecibels(static_cast<FloatType>(newValue));
         } else if (parameterID == zlState::fftPreON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
