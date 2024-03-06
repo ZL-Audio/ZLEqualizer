@@ -63,7 +63,7 @@ namespace zlDSP {
         delay.process(mainBuffer);
 
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-        const juce::ScopedReadLock scopedLock(paraUpdateLock);
+        // const juce::ScopedReadLock scopedLock(paraUpdateLock);
         // ---------------- start sub buffer
         subBuffer.pushBlock(block);
         while (subBuffer.isSubReady()) {
