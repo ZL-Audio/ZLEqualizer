@@ -7,38 +7,43 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_GAIN_HPP
-#define ZLEqualizer_GAIN_HPP
+#ifndef ZLEqualizer_SAMPLE_DELAY_HPP
+#define ZLEqualizer_SAMPLE_DELAY_HPP
 
 #include <juce_dsp/juce_dsp.h>
 
-namespace zlGain {
+namespace zlDelay {
     /**
-     * a lock free, thread safe gain class
-     * it will not process the signal if the gain is equal to 1
+     * a lock free, thread safe integer delay class
+     * the delay in samples is set to be an integer
+     * it will not process the signal if the delay is equal to 0
      * @tparam FloatType
      */
     template<typename FloatType>
-    class Gain {
+    class SampleDelay {
     public:
-        Gain() = default;
+        SampleDelay() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec);
+
+        void setMaximumDelayInSamples(const int maxDelayInSamples) {
+            delayDSP.setMaximumDelayInSamples(maxDelayInSamples);
+        }
 
         void process(juce::AudioBuffer<FloatType> &buffer);
 
         void process(juce::dsp::AudioBlock<FloatType> block);
 
-        void setGainLinear(const FloatType x) { gain.store(x); }
-
-        void setGainDecibels(const FloatType x) {
-            gain.store(juce::Decibels::decibelsToGain(x, FloatType(-240)));
+        void setDelaySamples(const int x) {
+            delaySamples.store(x);
         }
 
-    private:
-        std::atomic<FloatType> gain{FloatType(1)};
-        juce::dsp::Gain<FloatType> gainDSP;
-    };
-} // zlGain
+        int getDelaySamples() const { return delaySamples.load(); }
 
-#endif //ZLEqualizer_GAIN_HPP
+    private:
+        std::atomic<int> delaySamples;
+        juce::dsp::DelayLine<FloatType> delayDSP;
+    };
+} // zlDelay
+
+#endif //ZLEqualizer_SAMPLE_DELAY_HPP

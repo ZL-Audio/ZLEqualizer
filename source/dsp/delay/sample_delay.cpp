@@ -7,31 +7,33 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "gain.hpp"
+#include "sample_delay.hpp"
 
-namespace zlGain {
+namespace zlDelay {
     template<typename FloatType>
-    void Gain<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        gainDSP.prepare(spec);
+    void SampleDelay<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+        delayDSP.prepare(spec);
     }
 
     template<typename FloatType>
-    void Gain<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+    void SampleDelay<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         process(block);
     }
 
     template<typename FloatType>
-    void Gain<FloatType>::process(juce::dsp::AudioBlock<FloatType> block) {
-        if (std::abs(gain.load() - 1) <= FloatType(1e-6)) { return; }
-        gainDSP.setGainLinear(gain.load());
+    void SampleDelay<FloatType>::process(juce::dsp::AudioBlock<FloatType> block) {
+        if (delaySamples.load() == 0) { return; }
+        if (static_cast<int>(delayDSP.getDelay()) != delaySamples.load()) {
+            delayDSP.setDelay(static_cast<FloatType>(delaySamples.load()));
+        }
         juce::dsp::ProcessContextReplacing<FloatType> context(block);
-        gainDSP.process(context);
+        delayDSP.process(context);
     }
 
     template
-    class Gain<float>;
+    class SampleDelay<float>;
 
     template
-    class Gain<double>;
-} // zlGain
+    class SampleDelay<double>;
+} // zlDelay

@@ -61,14 +61,8 @@ namespace zlDSP {
             sideBuffer.makeCopyOf(mainBuffer, true);
         }
         // process lookahead
-        {
-            juce::ScopedLock lock(delayLock);
-            if (delay.getDelay() > FloatType(0)) {
-                juce::dsp::AudioBlock<FloatType> mainBlock(mainBuffer);
-                juce::dsp::ProcessContextReplacing<FloatType> mainContext(mainBlock);
-                delay.process(mainContext);
-            }
-        }
+        delay.process(mainBuffer);
+
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         const juce::ScopedReadLock scopedLock(paraUpdateLock);
         // ---------------- start sub buffer
@@ -322,8 +316,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::handleAsyncUpdate() {
-        juce::ScopedLock lock(delayLock);
-        const auto latency = static_cast<int>(subBuffer.getLatencySamples()) + static_cast<int>(delay.getDelay());
+        const auto latency = static_cast<int>(subBuffer.getLatencySamples()) + static_cast<int>(delay.getDelaySamples());
         processorRef.setLatencySamples(latency);
     }
 
@@ -413,10 +406,9 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setLookAhead(const float x) {
-        juce::ScopedLock lock(delayLock);
         const auto numDelaySample = static_cast<int>(
             x / 1000.f * static_cast<float>(subBuffer.getMainSpec().sampleRate));
-        delay.setDelay(static_cast<FloatType>(numDelaySample));
+        delay.setDelaySamples(numDelaySample);
         triggerAsyncUpdate();
     }
 

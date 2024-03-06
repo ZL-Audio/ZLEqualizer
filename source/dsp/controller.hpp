@@ -20,6 +20,7 @@
 #include "fft_analyzer/fft_analyzer.hpp"
 #include "histogram/histogram.hpp"
 #include "gain/gain.hpp"
+#include "delay/delay.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -114,8 +115,7 @@ namespace zlDSP {
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
         juce::ReadWriteLock magLock;
 
-        juce::dsp::DelayLine<FloatType> delay;
-        juce::CriticalSection delayLock;
+        zlDelay::SampleDelay<FloatType> delay;
 
         zlGain::Gain<FloatType> outputGain;
 
