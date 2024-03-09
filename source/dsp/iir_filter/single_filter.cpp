@@ -12,8 +12,8 @@
 namespace zlIIR {
     template<typename FloatType>
     void Filter<FloatType>::reset() {
-        for (auto &f: filters) {
-            f.reset();
+        for (size_t i = 0; i < filterNum.load(); ++i) {
+            filters[i].reset();
         }
     }
 
@@ -36,8 +36,8 @@ namespace zlIIR {
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
         const juce::ScopedTryReadLock scopedLock(paraUpdateLock);
         if (scopedLock.isLocked()) {
-            for (auto &f: filters) {
-                f.process(context);
+            for (size_t i = 0; i < filterNum.load(); ++i) {
+                filters[i].process(context);
             }
         }
     }
@@ -102,14 +102,8 @@ namespace zlIIR {
                                             gain.load(), q.load(), order.load());
         const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         magOutdated.store(true);
-        if (coeff.size() != filters.size()) {
-            filters.clear();
-            filters.resize(coeff.size());
-            for (size_t i = 0; i < coeff.size(); i++) {
-                filters[i].prepare(processSpec);
-            }
-        }
-        for (size_t i = 0; i < coeff.size(); i++) {
+        filterNum.store(coeff.size());
+        for (size_t i = 0; i < filterNum.load(); i++) {
             auto [a, b] = coeff[i];
             std::array<FloatType, 6> finalCoeff{};
             for (size_t j = 0; j < 6; ++j) {
@@ -144,7 +138,7 @@ namespace zlIIR {
         }
         gains.fill(FloatType(1));
         std::array<double, frequencies.size()> singleMagnitudes{};
-        for (size_t i = 0; i < filters.size(); i++) {
+        for (size_t i = 0; i < filterNum.load(); i++) {
             filters[i].state->getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
                                                             frequencies.size(), processSpec.sampleRate);
             std::transform(gains.begin(), gains.end(), singleMagnitudes.begin(), gains.begin(),
@@ -170,7 +164,7 @@ namespace zlIIR {
     FloatType Filter<FloatType>::getDB(FloatType f) {
         const juce::ScopedReadLock scopedLock(paraUpdateLock);
         double g{FloatType(1)};
-        for (size_t i = 0; i < filters.size(); i++) {
+        for (size_t i = 0; i < filterNum.load(); i++) {
             g *= filters[i].state->getMagnitudeForFrequency(static_cast<double>(f), processSpec.sampleRate);
         }
         return juce::Decibels::gainToDecibels(static_cast<FloatType>(g), FloatType(-240));
