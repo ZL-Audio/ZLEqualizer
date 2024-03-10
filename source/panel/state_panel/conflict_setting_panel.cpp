@@ -78,7 +78,7 @@ namespace zlPanel {
           nameLAF(uiBase),
           callOutBoxLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
-        name.setText("Conflict", juce::sendNotification);
+        name.setText("Collision", juce::sendNotification);
         nameLAF.setFontScale(1.375f);
         name.setLookAndFeel(&nameLAF);
         name.setEditable(false);
