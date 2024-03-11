@@ -15,6 +15,7 @@
 
 namespace zlPanel {
     class ButtonPanel final : public juce::Component,
+                              private juce::LassoSource<zlInterface::Dragger*>,
                               private juce::AudioProcessorValueTreeState::Listener,
                               private juce::AsyncUpdater {
     public:
@@ -46,7 +47,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         std::atomic<float> maximumDB;
-        std::atomic<size_t> selectBandIdx {0};
+        std::atomic<size_t> selectBandIdx{0};
 
         static constexpr std::array IDs{zlState::maximumDB::ID, zlState::selectedBandIdx::ID};
 
@@ -66,6 +67,23 @@ namespace zlPanel {
         }
 
         size_t findAvailableBand() const;
+
+        juce::LassoComponent<zlInterface::Dragger*> lassoComponent;
+        juce::SelectedItemSet<zlInterface::Dragger*> itemsSet;
+
+        void findLassoItemsInArea(juce::Array<zlInterface::Dragger*> &itemsFound, const juce::Rectangle<int> &area) override {
+            juce::ignoreUnused(itemsFound, area);
+            for (const auto &p:panels) {
+                if (area.contains(p->getDragger().getButton().getBounds())) {
+                    itemsFound.add(&p->getDragger());
+                }
+            }
+        }
+
+        juce::SelectedItemSet<zlInterface::Dragger*> &getLassoSelection() override {
+            return itemsSet;
+        }
+
 
         // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "button"};
     };

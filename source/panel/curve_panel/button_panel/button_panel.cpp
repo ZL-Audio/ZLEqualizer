@@ -58,6 +58,7 @@ namespace zlPanel {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             addAndMakeVisible(panels[i].get());
         }
+        addAndMakeVisible(lassoComponent);
     }
 
     ButtonPanel::~ButtonPanel() {
@@ -80,14 +81,24 @@ namespace zlPanel {
         }
         juce::ScopedLock lock(wheelLock);
         wheelAttachment.reset();
+
+        lassoComponent.setColour(lassoComponent.lassoFillColourId, uiBase.getTextColor().withMultipliedAlpha(.25f));
+        lassoComponent.setColour(lassoComponent.lassoOutlineColourId, uiBase.getTextColor().withMultipliedAlpha(.375f));
+        lassoComponent.setVisible(true);
+        lassoComponent.beginLasso(event, this);
     }
 
     void ButtonPanel::mouseUp(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
+        for (auto *d : itemsSet) {
+            d->getButton().setToggleState(true, juce::sendNotification);
+        }
+        lassoComponent.endLasso();
     }
 
     void ButtonPanel::mouseDrag(const juce::MouseEvent &event) {
-        juce::ignoreUnused(event);
+        // juce::ignoreUnused(event);
+        lassoComponent.dragLasso(event);
     }
 
     void ButtonPanel::mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) {
