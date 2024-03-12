@@ -70,8 +70,7 @@ namespace zlPanel {
         for (size_t tempIdx = 0; tempIdx < panels.size(); ++tempIdx) {
             for (const auto &idx: IDs) {
                 const auto actualIdx = zlDSP::appendSuffix(idx, tempIdx);
-                parametersRef.addParameterListener(actualIdx, this);
-                parameterChanged(idx, parametersRef.getRawParameterValue(actualIdx)->load());
+                parametersRef.removeParameterListener(actualIdx, this);
             }
         }
     }
