@@ -39,7 +39,7 @@ namespace zlInterface {
             if (shouldDrawButtonAsDown || button.getToggleState()) {
                 g.setColour(uiBase.getTextColor());
                 g.fillPath(outlinePath);
-            } else if (shouldDrawButtonAsHighlighted) {
+            } else if (shouldDrawButtonAsHighlighted || isSelected.load()) {
                 g.setColour(uiBase.getTextColor().withMultipliedAlpha(0.5f));
                 g.fillPath(outlinePath);
             }
@@ -63,6 +63,10 @@ namespace zlInterface {
         inline void setColour(const juce::Colour c) { colour = c; }
 
         void setActive(const bool f) { active.store(f); }
+
+        void setIsSelected(const bool f) { isSelected.store(f); }
+
+        bool getIsSelected() const {return isSelected.load();}
 
         void setDraggerShape(const DraggerShape s) { draggerShape.store(s); }
 
@@ -120,7 +124,7 @@ namespace zlInterface {
     private:
         juce::Colour colour;
         juce::Path outlinePath, innerPath;
-        std::atomic<bool> active{true};
+        std::atomic<bool> active{true}, isSelected{false};
         std::atomic<DraggerShape> draggerShape{DraggerShape::round};
         std::atomic<char> label;
         float labelScale = 1.f;

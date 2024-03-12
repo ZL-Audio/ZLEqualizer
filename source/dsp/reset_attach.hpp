@@ -14,7 +14,6 @@
 #include "../state/state_definitions.hpp"
 
 namespace zlDSP {
-
     template<typename FloatType>
     class ResetAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
@@ -36,8 +35,7 @@ namespace zlDSP {
             zlDSP::solo::ID,
             zlDSP::dynamicON::ID, zlDSP::dynamicLearn::ID,
             zlDSP::threshold::ID, zlDSP::kneeW::ID, zlDSP::attack::ID, zlDSP::release::ID,
-            zlDSP::bypass::ID, zlDSP::fType::ID, zlDSP::slope::ID, zlDSP::freq::ID,
-            zlDSP::gain::ID, zlDSP::Q::ID, zlDSP::lrType::ID
+            zlDSP::bypass::ID, zlDSP::fType::ID, zlDSP::slope::ID, zlDSP::lrType::ID
         };
 
         inline const static std::array resetDefaultVs{
@@ -51,15 +49,12 @@ namespace zlDSP {
             zlDSP::bypass::convertTo01(zlDSP::bypass::defaultV),
             zlDSP::fType::convertTo01(zlDSP::fType::defaultI),
             zlDSP::slope::convertTo01(zlDSP::slope::defaultI),
-            zlDSP::freq::convertTo01(zlDSP::freq::defaultV),
-            zlDSP::gain::convertTo01(zlDSP::gain::defaultV),
-            zlDSP::Q::convertTo01(zlDSP::Q::defaultV),
             zlDSP::lrType::convertTo01(zlDSP::lrType::defaultI),
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
-        void initDefaultValues();
+        // void initDefaultValues();
     };
 } // zlDSP
 

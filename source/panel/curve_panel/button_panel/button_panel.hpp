@@ -11,13 +11,15 @@
 #define ZLEqualizer_BUTTON_PANEL_HPP
 
 #include "filter_button_panel.hpp"
+#include "../../../dsp/dsp.hpp"
 #include "../../../state/state.hpp"
 
 namespace zlPanel {
     class ButtonPanel final : public juce::Component,
-                              private juce::LassoSource<zlInterface::Dragger*>,
+                              private juce::LassoSource<size_t>,
                               private juce::AudioProcessorValueTreeState::Listener,
-                              private juce::AsyncUpdater {
+                              private juce::AsyncUpdater,
+                              private juce::ChangeListener {
     public:
         explicit ButtonPanel(juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
@@ -49,7 +51,9 @@ namespace zlPanel {
         std::atomic<float> maximumDB;
         std::atomic<size_t> selectBandIdx{0};
 
-        static constexpr std::array IDs{zlState::maximumDB::ID, zlState::selectedBandIdx::ID};
+        static constexpr std::array IDs{zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID};
+
+        static constexpr std::array NAIDs{zlState::maximumDB::ID, zlState::selectedBandIdx::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
@@ -68,24 +72,18 @@ namespace zlPanel {
 
         size_t findAvailableBand() const;
 
-        juce::LassoComponent<zlInterface::Dragger*> lassoComponent;
-        juce::SelectedItemSet<zlInterface::Dragger*> itemsSet;
+        juce::LassoComponent<size_t> lassoComponent;
+        juce::SelectedItemSet<size_t> itemsSet;
+        juce::CriticalSection itemLock;
+        std::atomic<double> currentFreq, currentGain, currentQ;
 
-        void findLassoItemsInArea(juce::Array<zlInterface::Dragger*> &itemsFound, const juce::Rectangle<int> &area) override {
-            juce::ignoreUnused(itemsFound, area);
-            for (const auto &p:panels) {
-                if (area.contains(p->getDragger().getButton().getBounds())) {
-                    itemsFound.add(&p->getDragger());
-                }
-            }
-        }
+        void findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) override;
 
-        juce::SelectedItemSet<zlInterface::Dragger*> &getLassoSelection() override {
-            return itemsSet;
-        }
+        juce::SelectedItemSet<size_t> &getLassoSelection() override;
 
+        void changeListenerCallback(juce::ChangeBroadcaster *source) override;
 
-        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "button"};
+        void attachGroup(size_t idx);
     };
 } // zlPanel
 

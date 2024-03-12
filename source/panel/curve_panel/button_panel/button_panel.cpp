@@ -51,19 +51,28 @@ namespace zlPanel {
                 }
             };
         }
-        for (const auto &idx: IDs) {
+        for (const auto &idx: NAIDs) {
             parametersNARef.addParameterListener(idx, this);
             parameterChanged(idx, parametersNARef.getRawParameterValue(idx)->load());
         }
+
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             addAndMakeVisible(panels[i].get());
         }
         addAndMakeVisible(lassoComponent);
+        itemsSet.addChangeListener(this);
     }
 
     ButtonPanel::~ButtonPanel() {
-        for (const auto &idx: IDs) {
+        for (const auto &idx: NAIDs) {
             parametersNARef.removeParameterListener(idx, this);
+        }
+        for (size_t tempIdx = 0; tempIdx < panels.size(); ++tempIdx) {
+            for (const auto &idx: IDs) {
+                const auto actualIdx = zlDSP::appendSuffix(idx, tempIdx);
+                parametersRef.addParameterListener(actualIdx, this);
+                parameterChanged(idx, parametersRef.getRawParameterValue(actualIdx)->load());
+            }
         }
     }
 
@@ -78,26 +87,27 @@ namespace zlPanel {
         juce::ignoreUnused(event);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i]->setSelected(false);
+        } {
+            juce::ScopedLock lock(wheelLock);
+            wheelAttachment.reset();
+        } {
+            juce::ScopedLock lock(itemLock);
+            itemsSet.deselectAll();
         }
-        juce::ScopedLock lock(wheelLock);
-        wheelAttachment.reset();
-
-        lassoComponent.setColour(lassoComponent.lassoFillColourId, uiBase.getTextColor().withMultipliedAlpha(.25f));
-        lassoComponent.setColour(lassoComponent.lassoOutlineColourId, uiBase.getTextColor().withMultipliedAlpha(.375f));
+        lassoComponent.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
+                                 uiBase.getTextColor().withMultipliedAlpha(.25f));
+        lassoComponent.setColour(juce::LassoComponent<size_t>::lassoOutlineColourId,
+                                 uiBase.getTextColor().withMultipliedAlpha(.375f));
         lassoComponent.setVisible(true);
         lassoComponent.beginLasso(event, this);
     }
 
     void ButtonPanel::mouseUp(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        for (auto *d : itemsSet) {
-            d->getButton().setToggleState(true, juce::sendNotification);
-        }
         lassoComponent.endLasso();
     }
 
     void ButtonPanel::mouseDrag(const juce::MouseEvent &event) {
-        // juce::ignoreUnused(event);
         lassoComponent.dragLasso(event);
     }
 
@@ -170,6 +180,7 @@ namespace zlPanel {
     void ButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
             const auto idx = static_cast<size_t>(newValue);
+            attachGroup(idx);
             selectBandIdx.store(idx);
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 panels[i]->setSelected(i == idx);
@@ -189,7 +200,68 @@ namespace zlPanel {
                 p->setMaximumDB(zlState::maximumDB::dBs[idx]);
             }
             maximumDB.store(zlState::maximumDB::dBs[idx]);
+        } else {
+            // the parameter is freq/gain/Q
+            juce::ScopedLock lock(itemLock);
+            const auto currentBand = selectBandIdx.load();
+            if (!itemsSet.isSelected(currentBand)) return;
+            const auto id = parameterID.dropLastCharacters(2);
+            const auto value = static_cast<double>(newValue);
+            if (id == zlDSP::freq::ID) {
+                const auto ratio = static_cast<float>(value / currentFreq.load());
+                currentFreq.store(value);
+                for (const size_t idx: itemsSet.getItemArray()) {
+                    if (idx != currentBand) {
+                        auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, idx));
+                        const auto shiftFreq = para->convertFrom0to1(para->getValue()) * ratio;
+                        const auto legalFreq = zlDSP::freq::range.snapToLegalValue(shiftFreq);
+                        para->beginChangeGesture();
+                        para->setValueNotifyingHost(para->convertTo0to1(legalFreq));
+                        para->endChangeGesture();
+                    }
+                }
+            } else if (id == zlDSP::gain::ID) {
+                const auto shift = static_cast<float>(value - currentGain.load());
+                currentGain.store(value);
+                for (const size_t idx: itemsSet.getItemArray()) {
+                    if (idx != currentBand) {
+                        auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
+                        const auto shiftGain = para->convertFrom0to1(para->getValue()) + shift;
+                        const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
+                        para->beginChangeGesture();
+                        para->setValueNotifyingHost(para->convertTo0to1(legalGain));
+                        para->endChangeGesture();
+                    }
+                }
+            } else if (id == zlDSP::Q::ID) {
+                const auto ratio = static_cast<float>(value / currentQ.load());
+                currentQ.store(value);
+                for (const size_t idx: itemsSet.getItemArray()) {
+                    if (idx != currentBand) {
+                        auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::Q::ID, idx));
+                        const auto shiftQ = para->convertFrom0to1(para->getValue()) * ratio;
+                        const auto legalQ = zlDSP::Q::range.snapToLegalValue(shiftQ);
+                        para->beginChangeGesture();
+                        para->setValueNotifyingHost(para->convertTo0to1(legalQ));
+                        para->endChangeGesture();
+                    }
+                }
+            }
         }
+    }
+
+    void ButtonPanel::attachGroup(const size_t idx) {
+        const auto oldIdx = selectBandIdx.load();
+        for (const auto &parameter: IDs) {
+            parametersRef.removeParameterListener(zlDSP::appendSuffix(parameter, oldIdx), this);
+            parametersRef.addParameterListener(zlDSP::appendSuffix(parameter, idx), this);
+        }
+        currentFreq.store(
+            static_cast<double>(parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::freq::ID, idx))->load()));
+        currentGain.store(
+            static_cast<double>(parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::gain::ID, idx))->load()));
+        currentQ.store(
+            static_cast<double>(parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::Q::ID, idx))->load()));
     }
 
     void ButtonPanel::handleAsyncUpdate() {
@@ -203,5 +275,35 @@ namespace zlPanel {
             if (!isActive) { return i; }
         }
         return zlState::bandNUM;
+    }
+
+    void ButtonPanel::findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) {
+        juce::ignoreUnused(itemsFound, area);
+        const auto gArea = area.withPosition(area.getPosition().translated(getScreenX(), getScreenY()));
+        for (size_t idx = 0; idx < panels.size(); ++idx) {
+            if (static_cast<bool>(parametersNARef.getRawParameterValue(
+                    zlState::appendSuffix(zlState::active::ID, idx))->load()) &&
+                gArea.contains(panels[idx]->getDragger().getButton().getScreenBounds())) {
+                juce::ScopedLock lock(itemLock);
+                itemsFound.add(idx);
+            }
+        }
+    }
+
+    juce::SelectedItemSet<size_t> &ButtonPanel::getLassoSelection() {
+        return itemsSet;
+    }
+
+    void ButtonPanel::changeListenerCallback(juce::ChangeBroadcaster *source) {
+        juce::ignoreUnused(source);
+        juce::ScopedLock lock(itemLock);
+        for (size_t idx = 0; idx < panels.size(); ++idx) {
+            const auto f1 = itemsSet.isSelected(idx);
+            const auto f2 = panels[idx]->getDragger().getLAF().getIsSelected();
+            if (f1 != f2) {
+                panels[idx]->getDragger().getLAF().setIsSelected(f1);
+                panels[idx]->repaint();
+            }
+        }
     }
 } // zlPanel
