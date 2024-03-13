@@ -202,12 +202,12 @@ namespace zlPanel {
         } else {
             // the parameter is freq/gain/Q
             const auto currentBand = selectBandIdx.load();
-            if (!isSelected[currentBand].load()) return;
             const auto id = parameterID.dropLastCharacters(2);
             const auto value = static_cast<double>(newValue);
             if (id == zlDSP::freq::ID) {
                 const auto ratio = static_cast<float>(value / currentFreq.load());
                 currentFreq.store(value);
+                if (!isSelected[currentBand].load()) return;
                 for (const size_t idx: itemsSet.getItemArray()) {
                     if (idx != currentBand) {
                         auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, idx));
@@ -221,6 +221,7 @@ namespace zlPanel {
             } else if (id == zlDSP::gain::ID) {
                 const auto shift = static_cast<float>(value - currentGain.load());
                 currentGain.store(value);
+                if (!isSelected[currentBand].load()) return;
                 for (const size_t idx: itemsSet.getItemArray()) {
                     if (idx != currentBand) {
                         auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
@@ -234,6 +235,7 @@ namespace zlPanel {
             } else if (id == zlDSP::Q::ID) {
                 const auto ratio = static_cast<float>(value / currentQ.load());
                 currentQ.store(value);
+                if (!isSelected[currentBand].load()) return;
                 for (const size_t idx: itemsSet.getItemArray()) {
                     if (idx != currentBand) {
                         auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::Q::ID, idx));
