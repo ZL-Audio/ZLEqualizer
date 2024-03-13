@@ -61,7 +61,8 @@ namespace zlPanel {
                 juce::GridItem(fftTilt).withArea(5, 1)
             };
             grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
-            const auto bound = getLocalBounds().toFloat();
+            auto bound = getLocalBounds().toFloat();
+            bound.removeFromTop(uiBase.getFontSize() * .2f);
             grid.performLayout(bound.toNearestInt());
         }
 
@@ -125,7 +126,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<FFTCallOutBox>(parametersNARef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.f),
-                         juce::roundToInt(uiBase.getFontSize() * 11.f));
+                         juce::roundToInt(uiBase.getFontSize() * 11.2f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),
