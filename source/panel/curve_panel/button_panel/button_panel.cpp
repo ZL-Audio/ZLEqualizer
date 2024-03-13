@@ -157,6 +157,8 @@ namespace zlPanel {
         }
         initIDs.emplace_back(zlDSP::freq::ID);
         initValues.emplace_back(zlDSP::freq::convertTo01(freq));
+        initIDs.emplace_back(zlDSP::Q::ID);
+        initValues.emplace_back(zlDSP::Q::convertTo01(zlDSP::Q::defaultV));
         initIDs.emplace_back(zlDSP::bypass::ID);
         initValues.emplace_back(zlDSP::bypass::convertTo01(false));
 

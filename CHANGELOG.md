@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.9
+
+- add multiple-filter simultaneous adjustment
+- add auto gain compensation
+
 ## 0.1.8
 
 - improve performance
@@ -15,7 +20,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.1.6
 
-- enable conflict detecting
+- add conflict detecting
 
 ## 0.1.5
 
@@ -24,7 +29,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.1.4
 
-- enable overall bypass
+- add overall bypass
 - fix initial target filter gain
 
 ## 0.1.3
@@ -43,7 +48,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.1.0
 
-- enable scale and output gain adjustment
+- add scale and output gain adjustment
 - add pitch label and reset button to filter button popup window
 - add target filter knob and side filter knob
 - improve GUI performance
@@ -57,8 +62,8 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 - improve GUI performance
 - fix filter gain when added by double-clicking
-- enable freezing pre/post/side FFT seperately
-- enable more dynamic settings
+- seperate pre/post/side FFT freezing
+- add more dynamic settings
 
 ## 0.0.8
 
@@ -75,17 +80,17 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.0.5
 
-- enable turning on/off pre/post/side FFT seperately
+- add turning on/off pre/post/side FFT seperately
 - improve FFT GUI performance
 
 ## 0.0.4
 
-- enable FFT style, speed and tilt adjustment
+- add FFT style, speed and tilt adjustment
 
 ## 0.0.3
 
 - adjust FFT speed and resolution
-- enable rotary slider value editing
+- add rotary slider value editing
 
 ## 0.0.2
 
