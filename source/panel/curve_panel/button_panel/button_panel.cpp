@@ -279,12 +279,15 @@ namespace zlPanel {
 
     void ButtonPanel::findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) {
         juce::ignoreUnused(itemsFound, area);
-        const auto gArea = area.withPosition(area.getPosition().translated(getScreenX(), getScreenY()));
         for (size_t idx = 0; idx < panels.size(); ++idx) {
             if (static_cast<bool>(parametersNARef.getRawParameterValue(
-                    zlState::appendSuffix(zlState::active::ID, idx))->load()) &&
-                gArea.contains(panels[idx]->getDragger().getButton().getScreenBounds().getCentre())) {
-                itemsFound.add(idx);
+                zlState::appendSuffix(zlState::active::ID, idx))->load())) {
+                auto bCenter = panels[idx]->getDragger().getButton().getBounds().toFloat().getCentre();
+                const auto dPosition = panels[idx]->getDragger().getPosition().toFloat();
+                bCenter = bCenter.translated(dPosition.getX(), dPosition.getY());
+                if (area.contains(bCenter.roundToInt())) {
+                    itemsFound.add(idx);
+                }
             }
         }
     }
