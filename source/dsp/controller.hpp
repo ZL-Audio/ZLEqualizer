@@ -86,6 +86,8 @@ namespace zlDSP {
 
         zlGain::Gain<FloatType> &getGainDSP() { return outputGain; }
 
+        zlGain::AutoGain<FloatType> &getAutoGain() { return autoGain; }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -118,6 +120,8 @@ namespace zlDSP {
 
         zlGain::Gain<FloatType> outputGain;
 
+        zlGain::AutoGain<FloatType> autoGain;
+
         std::atomic<bool> isEffectON{true};
 
         zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzezr{};
@@ -129,8 +133,6 @@ namespace zlDSP {
         void processDynamic();
 
         void updateTrackersON();
-
-        void updateSoloLR(size_t idx);
     };
 }
 

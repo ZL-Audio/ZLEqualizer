@@ -44,6 +44,7 @@ namespace zlDSP {
         msMainSplitter.prepare(subSpec);
         msSideSplitter.prepare(subSpec);
         outputGain.prepare(subSpec);
+        autoGain.prepare(subSpec);
         fftAnalyzezr.prepare(subSpec);
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: {&tracker, &lTracker, &rTracker, &mTracker, &sTracker}) {
@@ -145,6 +146,7 @@ namespace zlDSP {
                                                           2, subBuffer.subBuffer.getNumSamples());
         auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
                                                           2, subBuffer.subBuffer.getNumSamples());
+        autoGain.processPre(subMainBuffer);
         // stereo filters process
         FloatType baseLine = 0;
         if (useTrackers[0].load()) {
@@ -248,6 +250,7 @@ namespace zlDSP {
                 histograms[i].push(static_cast<size_t>(histIdx));
             }
         }
+        autoGain.processPost(subMainBuffer);
         outputGain.process(subMainBuffer);
     }
 

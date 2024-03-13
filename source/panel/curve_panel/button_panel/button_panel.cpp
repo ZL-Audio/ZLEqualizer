@@ -89,10 +89,8 @@ namespace zlPanel {
         } {
             juce::ScopedLock lock(wheelLock);
             wheelAttachment.reset();
-        } {
-            juce::ScopedLock lock(itemLock);
-            itemsSet.deselectAll();
         }
+        itemsSet.deselectAll();
         lassoComponent.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
                                  uiBase.getTextColor().withMultipliedAlpha(.25f));
         lassoComponent.setColour(juce::LassoComponent<size_t>::lassoOutlineColourId,
@@ -201,9 +199,8 @@ namespace zlPanel {
             maximumDB.store(zlState::maximumDB::dBs[idx]);
         } else {
             // the parameter is freq/gain/Q
-            juce::ScopedLock lock(itemLock);
             const auto currentBand = selectBandIdx.load();
-            if (!itemsSet.isSelected(currentBand)) return;
+            if (!isSelected[currentBand].load()) return;
             const auto id = parameterID.dropLastCharacters(2);
             const auto value = static_cast<double>(newValue);
             if (id == zlDSP::freq::ID) {
@@ -282,8 +279,7 @@ namespace zlPanel {
         for (size_t idx = 0; idx < panels.size(); ++idx) {
             if (static_cast<bool>(parametersNARef.getRawParameterValue(
                     zlState::appendSuffix(zlState::active::ID, idx))->load()) &&
-                gArea.contains(panels[idx]->getDragger().getButton().getScreenBounds())) {
-                juce::ScopedLock lock(itemLock);
+                gArea.contains(panels[idx]->getDragger().getButton().getScreenBounds().getCentre())) {
                 itemsFound.add(idx);
             }
         }
@@ -295,9 +291,9 @@ namespace zlPanel {
 
     void ButtonPanel::changeListenerCallback(juce::ChangeBroadcaster *source) {
         juce::ignoreUnused(source);
-        juce::ScopedLock lock(itemLock);
         for (size_t idx = 0; idx < panels.size(); ++idx) {
             const auto f1 = itemsSet.isSelected(idx);
+            isSelected[idx].store(f1);
             const auto f2 = panels[idx]->getDragger().getLAF().getIsSelected();
             if (f1 != f2) {
                 panels[idx]->getDragger().getLAF().setIsSelected(f1);

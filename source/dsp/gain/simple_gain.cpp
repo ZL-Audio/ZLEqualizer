@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "gain.hpp"
+#include "simple_gain.hpp"
 
 namespace zlGain {
     template<typename FloatType>

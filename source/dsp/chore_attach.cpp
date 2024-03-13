@@ -58,6 +58,8 @@ namespace zlDSP {
             }
         } else if (parameterID == effectON::ID) {
             controllerRef.setEffectON(static_cast<bool>(newValue));
+        } else if (parameterID == autoGain::ID) {
+            controllerRef.getAutoGain().enable(static_cast<bool>(newValue));
         } else if (parameterID == scale::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
                 const auto baseGain = parameterRef.getRawParameterValue(appendSuffix(gain::ID, i))->load();

@@ -74,8 +74,8 @@ namespace zlPanel {
 
         juce::LassoComponent<size_t> lassoComponent;
         juce::SelectedItemSet<size_t> itemsSet;
-        juce::CriticalSection itemLock;
         std::atomic<double> currentFreq, currentGain, currentQ;
+        std::array<std::atomic<bool>, zlState::bandNUM> isSelected{};
 
         void findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) override;
 

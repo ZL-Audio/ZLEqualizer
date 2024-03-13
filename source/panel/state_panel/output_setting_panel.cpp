@@ -18,18 +18,21 @@ namespace zlPanel {
             : parametersRef(parameters),
               uiBase(base.getFontSize(), base.getStyle()),
               effectC("ALL:", zlDSP::effectON::choices, uiBase),
+              agcC("AGC:", zlDSP::autoGain::choices, uiBase),
               scaleS("Scale", uiBase),
               outGainS("Out Gain", uiBase) {
-            effectC.getLabelLAF().setFontScale(1.5f);
-            effectC.setLabelScale(.5f);
-            effectC.setLabelPos(zlInterface::ClickCombobox::left);
-            addAndMakeVisible(effectC);
+            for (auto &c: {&effectC, &agcC}) {
+                c->getLabelLAF().setFontScale(1.5f);
+                c->setLabelScale(.5f);
+                c->setLabelPos(zlInterface::ClickCombobox::left);
+                addAndMakeVisible(c);
+            }
             for (auto &c: {&scaleS, &outGainS}) {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.f);
                 addAndMakeVisible(c);
             }
-            attach({&effectC.getCompactBox().getBox()},
-                   {zlDSP::effectON::ID},
+            attach({&effectC.getCompactBox().getBox(), &agcC.getCompactBox().getBox()},
+                   {zlDSP::effectON::ID, zlDSP::autoGain::ID},
                    parametersRef, boxAttachments);
             attach({&scaleS.getSlider(), &outGainS.getSlider()},
                    {zlDSP::scale::ID, zlDSP::outputGain::ID},
@@ -43,13 +46,14 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(44)), Track(Fr(60)), Track(Fr(60))};
+            grid.templateRows = {Track(Fr(44)), Track(Fr(60)), Track(Fr(44)), Track(Fr(60))};
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
                 juce::GridItem(effectC).withArea(1, 1),
                 juce::GridItem(scaleS).withArea(2, 1),
-                juce::GridItem(outGainS).withArea(3, 1)
+                juce::GridItem(agcC).withArea(3, 1),
+                juce::GridItem(outGainS).withArea(4, 1)
             };
 
             grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
@@ -62,7 +66,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase uiBase;
 
-        zlInterface::ClickCombobox effectC;
+        zlInterface::ClickCombobox effectC, agcC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
 
         zlInterface::CompactLinearSlider scaleS, outGainS;
@@ -121,7 +125,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<OutputCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
-                         juce::roundToInt(uiBase.getFontSize() * 8.4f));
+                         juce::roundToInt(uiBase.getFontSize() * 10.8f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),
