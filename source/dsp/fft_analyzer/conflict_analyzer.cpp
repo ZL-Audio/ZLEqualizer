@@ -76,42 +76,59 @@ namespace zlFFT {
             const auto &refDB = refAnalyzer.getInterplotDBs();
             const auto mainM = std::reduce(mainDB.begin(), mainDB.end()) / static_cast<float>(mainDB.size());
             const auto refM = std::reduce(refDB.begin(), refDB.end()) / static_cast<float>(refDB.size());
-            const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f);
-
-            juce::ScopedLock lock(areaLock);
-            for (size_t i = 0; i < conflicts.size(); ++i) {
-                const auto fftIdx = 4 * i;
-                const auto dB1 = (mainDB[fftIdx] + mainDB[fftIdx + 1] + mainDB[fftIdx + 2] + mainDB[fftIdx + 3]) * .25f;
-                const auto dB2 = (refDB[fftIdx] + refDB[fftIdx + 1] + refDB[fftIdx + 2] + refDB[fftIdx + 3]) * .25f;
-                const auto dBMin = juce::jmin(dB1, dB2, 0.001f);
-                // const auto dBMax = juce::jmax(dB1, dB2);
-                conflicts[i] = juce::jmax(conflicts[i] * .98f,
-                                          (dBMin - threshold) / (0.001f - threshold));
-            }
-            for (size_t i = 1; i < conflicts.size() - 1; ++i) {
-                conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
-            }
-
-            gradient.point1 = juce::Point<float>(x1.load(), 0.f);
-            gradient.point1 = juce::Point<float>(x2.load(), 0.f);
-            gradient.isRadial = false;
-            gradient.clearColours();
-
-            gradient.addColour(0.0, gColour.withMultipliedAlpha(0.f));
-            gradient.addColour(1.0, gColour.withMultipliedAlpha(0.f));
-
-            const auto scale = conflictScale.load();
-            for (size_t i = 0; i < conflicts.size(); ++i) {
-                if (i == 0 || i == conflicts.size() - 1 ||
-                    (conflicts[i - 1] >= 0.01 || conflicts[i] >= 0.01 || conflicts[i + 1] >= 0.01)) {
-                    const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflicts.size());
-                    const auto rectColour = gColour.withMultipliedAlpha(
-                        juce::jmin(.75f, static_cast<float>(conflicts[i] * scale)));
-                    gradient.addColour(p, rectColour);
+            const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f); {
+                juce::ScopedLock lock(areaLock);
+                for (size_t i = 0; i < conflicts.size(); ++i) {
+                    const auto fftIdx = 4 * i;
+                    const auto dB1 = (mainDB[fftIdx] + mainDB[fftIdx + 1] + mainDB[fftIdx + 2] + mainDB[fftIdx + 3]) *
+                                     .25f;
+                    const auto dB2 = (refDB[fftIdx] + refDB[fftIdx + 1] + refDB[fftIdx + 2] + refDB[fftIdx + 3]) * .25f;
+                    const auto dBMin = juce::jmin(dB1, dB2, 0.001f);
+                    // const auto dBMax = juce::jmax(dB1, dB2);
+                    conflicts[i] = juce::jmax(conflicts[i] * .98f,
+                                              (dBMin - threshold) / (0.001f - threshold));
                 }
+                for (size_t i = 1; i < conflicts.size() - 1; ++i) {
+                    conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
+                }
+            } {
+                const auto scale = conflictScale.load();
+                for (size_t i = 0; i < conflicts.size(); ++i) {
+                    if (conflicts[i] >= 0.01) {
+                        conflictsActual[i] = juce::jmin(.75f, static_cast<float>(conflicts[i] * scale));
+                    } else {
+                        conflictsActual[i] = -1.f;
+                    }
+                }
+
+                juce::ScopedLock lock(gradientLock);
+                gradient.point1 = juce::Point<float>(x1.load(), 0.f);
+                gradient.point1 = juce::Point<float>(x2.load(), 0.f);
+                gradient.isRadial = false;
+                gradient.clearColours();
+
+                gradient.addColour(0.0, gColour.withMultipliedAlpha(0.f));
+                gradient.addColour(1.0, gColour.withMultipliedAlpha(0.f));
+
+                for (size_t i = 1; i < conflictsActual.size() - 1; ++i) {
+                    const auto f1 = (conflictsActual[i-1] < 0 && conflictsActual[i] < 0 && conflictsActual[i+1] > 0);
+                    const auto f2 = (conflictsActual[i-1] > 0 && conflictsActual[i] < 0 && conflictsActual[i+1] < 0);
+                    const auto f3 = (conflictsActual[i-1] > conflictsActual[i] && conflictsActual[i+1] > conflictsActual[i]);
+                    const auto f4 = (conflictsActual[i-1] < conflictsActual[i] && conflictsActual[i+1] < conflictsActual[i]);
+                    if (f1 || f2 || f3 || f4){
+                        const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflicts.size());
+                        if (f1 || f2) {
+                            gradient.addColour(p, gColour.withMultipliedAlpha(0.f));
+                        } else {
+                            const auto rectColour = gColour.withMultipliedAlpha(
+                                juce::jmin(.75f, static_cast<float>(conflicts[i] * scale)));
+                            gradient.addColour(p, rectColour);
+                        }
+                    }
+                }
+                isConflictReady.store(true);
             }
 
-            isConflictReady.store(true);
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
         }
@@ -140,7 +157,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::drawGradient(juce::Graphics &g, juce::Rectangle<float> bound) {
-        juce::ScopedLock lock(areaLock);
+        juce::ScopedLock lock(gradientLock);
         g.setGradientFill(gradient);
         g.fillRect(bound);
         mainAnalyzer.setIsFFTReady(false);

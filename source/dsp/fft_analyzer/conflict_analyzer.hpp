@@ -58,11 +58,12 @@ namespace zlFFT {
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
         std::atomic<bool> isON{false}, isConflictReady{false};
 
-        // std::array<float, zlIIR::frequencies.size() / 8> conflictsActual{};
         std::atomic<float> x1{0.f}, x2{1.f};
         std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
+        std::array<float, zlIIR::frequencies.size() / 8> conflictsActual{};
         std::vector<std::pair<float, float> > conflictAreas;
         juce::CriticalSection areaLock;
+        juce::CriticalSection gradientLock;
 
         juce::ColourGradient gradient;
         const juce::Colour gColour = juce::Colours::red;
