@@ -60,7 +60,7 @@ namespace zlFFT {
 
         std::atomic<float> x1{0.f}, x2{1.f};
         std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
-        std::array<float, zlIIR::frequencies.size() / 8> conflictsActual{};
+        std::array<float, zlIIR::frequencies.size() / 8> conflictsP{};
         std::vector<std::pair<float, float> > conflictAreas;
         juce::CriticalSection areaLock;
         juce::CriticalSection gradientLock;

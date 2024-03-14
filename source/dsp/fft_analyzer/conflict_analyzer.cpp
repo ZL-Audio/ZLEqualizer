@@ -92,12 +92,14 @@ namespace zlFFT {
                     conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
                 }
             } {
-                const auto scale = conflictScale.load();
+                // calculate the conflict portion
+                const auto scale = static_cast<float>(conflictScale.load());
                 for (size_t i = 0; i < conflicts.size(); ++i) {
-                    if (conflicts[i] >= 0.01) {
-                        conflictsActual[i] = juce::jmin(.75f, static_cast<float>(conflicts[i] * scale));
+                    conflictsP[i] = conflicts[i] * scale;
+                    if (conflictsP[i] >= 0.01) {
+                        conflictsP[i] = juce::jmin(.75f, conflictsP[i]);
                     } else {
-                        conflictsActual[i] = -1.f;
+                        conflictsP[i] = -1.f;
                     }
                 }
 
@@ -107,21 +109,25 @@ namespace zlFFT {
                 gradient.isRadial = false;
                 gradient.clearColours();
 
-                gradient.addColour(0.0, gColour.withMultipliedAlpha(0.f));
-                gradient.addColour(1.0, gColour.withMultipliedAlpha(0.f));
+                gradient.addColour(1.0,
+                                   gColour.withMultipliedAlpha(juce::jmax(conflictsP.front(), 0.f)));
+                gradient.addColour(0.0,
+                                   gColour.withMultipliedAlpha(juce::jmax(conflictsP.back(), 0.f)));
 
-                for (size_t i = 1; i < conflictsActual.size() - 1; ++i) {
-                    const auto f1 = (conflictsActual[i-1] < 0 && conflictsActual[i] < 0 && conflictsActual[i+1] > 0);
-                    const auto f2 = (conflictsActual[i-1] > 0 && conflictsActual[i] < 0 && conflictsActual[i+1] < 0);
-                    const auto f3 = (conflictsActual[i-1] > conflictsActual[i] && conflictsActual[i+1] > conflictsActual[i]);
-                    const auto f4 = (conflictsActual[i-1] < conflictsActual[i] && conflictsActual[i+1] < conflictsActual[i]);
-                    if (f1 || f2 || f3 || f4){
-                        const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflicts.size());
+                for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
+                    // if the conflict is about to appear
+                    const auto f1 = (conflictsP[i - 1] < 0 && conflictsP[i + 1] > 0);
+                    // if the conflict is about to disappear
+                    const auto f2 = (conflictsP[i - 1] > 0 && conflictsP[i + 1] < 0);
+                    // if the conflict monotone changes
+                    const auto f3 = (conflictsP[i - 1] > conflictsP[i] && conflictsP[i + 1] > conflictsP[i]);
+                    const auto f4 = (conflictsP[i - 1] < conflictsP[i] && conflictsP[i + 1] < conflictsP[i]);
+                    if (f1 || f2 || f3 || f4) {
+                        const auto p = 1.0 - (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
                         if (f1 || f2) {
                             gradient.addColour(p, gColour.withMultipliedAlpha(0.f));
                         } else {
-                            const auto rectColour = gColour.withMultipliedAlpha(
-                                juce::jmin(.75f, static_cast<float>(conflicts[i] * scale)));
+                            const auto rectColour = gColour.withMultipliedAlpha(conflictsP[i]);
                             gradient.addColour(p, rectColour);
                         }
                     }
