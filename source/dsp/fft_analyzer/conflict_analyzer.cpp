@@ -91,7 +91,7 @@ namespace zlFFT {
             for (size_t i = 1; i < conflicts.size() - 1; ++i) {
                 conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
             }
-            
+
             gradient.point1 = juce::Point<float>(x1.load(), 0.f);
             gradient.point1 = juce::Point<float>(x2.load(), 0.f);
             gradient.isRadial = false;

@@ -4,6 +4,10 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.10
+
+- improve collision detection GUI
+
 ## 0.1.9
 
 - add multiple-filter simultaneous adjustment
@@ -15,12 +19,12 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.1.7
 
-- improve conflict detecting
+- improve collision detecting
 - fix minor bugs
 
 ## 0.1.6
 
-- add conflict detecting
+- add collision detecting
 
 ## 0.1.5
 
