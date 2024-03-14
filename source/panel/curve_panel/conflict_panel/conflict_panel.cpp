@@ -21,11 +21,17 @@ namespace zlPanel {
     void ConflictPanel::paint(juce::Graphics &g) {
         if (!analyzer.getON()) { return; }
         if (analyzer.getIsConflictReady()) {
-            analyzer.drawRectangles(g,
-                juce::Colours::red,
-                // uiBase.getTextColor(),
-                                    // juce::Colours::red.withBrightness(uiBase.getTextColor().getBrightness()),
-                                    getLocalBounds().toFloat());
+            // analyzer.drawRectangles(g,
+            //     juce::Colours::red,
+            //     // uiBase.getTextColor(),
+            //                         // juce::Colours::red.withBrightness(uiBase.getTextColor().getBrightness()),
+            //                         getLocalBounds().toFloat());
+            analyzer.drawGradient(g, getLocalBounds().toFloat());
         }
     }
+
+    void ConflictPanel::resized() {
+        analyzer.setLeftRight(0.f, static_cast<float>(getRight()));
+    }
+
 } // zlPanel

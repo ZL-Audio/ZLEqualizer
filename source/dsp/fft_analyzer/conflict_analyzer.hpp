@@ -43,7 +43,14 @@ namespace zlFFT {
 
         // void createPath(juce::Path &path, juce::Rectangle<float> bound);
 
+        void setLeftRight(const float left, const float right) {
+            x1.store(left);
+            x2.store(right);
+        }
+
         void drawRectangles(juce::Graphics &g, juce::Colour colour, juce::Rectangle<float> bound);
+
+        void drawGradient(juce::Graphics &g, juce::Rectangle<float> bound);
 
     private:
         SingleFFTAnalyzer<FloatType> mainAnalyzer, refAnalyzer;
@@ -52,9 +59,13 @@ namespace zlFFT {
         std::atomic<bool> isON{false}, isConflictReady{false};
 
         // std::array<float, zlIIR::frequencies.size() / 8> conflictsActual{};
+        std::atomic<float> x1{0.f}, x2{1.f};
         std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
         std::vector<std::pair<float, float> > conflictAreas;
         juce::CriticalSection areaLock;
+
+        juce::ColourGradient gradient;
+        const juce::Colour gColour = juce::Colours::red;
 
         void run() override;
     };

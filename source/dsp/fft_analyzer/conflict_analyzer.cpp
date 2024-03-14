@@ -91,6 +91,26 @@ namespace zlFFT {
             for (size_t i = 1; i < conflicts.size() - 1; ++i) {
                 conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
             }
+            
+            gradient.point1 = juce::Point<float>(x1.load(), 0.f);
+            gradient.point1 = juce::Point<float>(x2.load(), 0.f);
+            gradient.isRadial = false;
+            gradient.clearColours();
+
+            gradient.addColour(0.0, gColour.withMultipliedAlpha(0.f));
+            gradient.addColour(1.0, gColour.withMultipliedAlpha(0.f));
+
+            const auto scale = conflictScale.load();
+            for (size_t i = 0; i < conflicts.size(); ++i) {
+                if (i == 0 || i == conflicts.size() - 1 ||
+                    (conflicts[i - 1] >= 0.01 || conflicts[i] >= 0.01 || conflicts[i + 1] >= 0.01)) {
+                    const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflicts.size());
+                    const auto rectColour = gColour.withMultipliedAlpha(
+                        juce::jmin(.75f, static_cast<float>(conflicts[i] * scale)));
+                    gradient.addColour(p, rectColour);
+                }
+            }
+
             isConflictReady.store(true);
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
@@ -113,6 +133,16 @@ namespace zlFFT {
                 g.fillRect(rectBound);
             }
         }
+        mainAnalyzer.setIsFFTReady(false);
+        refAnalyzer.setIsFFTReady(false);
+        isConflictReady.store(false);
+    }
+
+    template<typename FloatType>
+    void ConflictAnalyzer<FloatType>::drawGradient(juce::Graphics &g, juce::Rectangle<float> bound) {
+        juce::ScopedLock lock(areaLock);
+        g.setGradientFill(gradient);
+        g.fillRect(bound);
         mainAnalyzer.setIsFFTReady(false);
         refAnalyzer.setIsFFTReady(false);
         isConflictReady.store(false);

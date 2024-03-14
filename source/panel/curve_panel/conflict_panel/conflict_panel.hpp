@@ -25,6 +25,8 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void resized() override;
+
     private:
         zlFFT::ConflictAnalyzer<double> &analyzer;
         zlInterface::UIBase &uiBase;
