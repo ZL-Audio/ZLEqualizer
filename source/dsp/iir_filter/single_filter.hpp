@@ -263,17 +263,28 @@ namespace zlIIR {
 
         inline std::array<FloatType, frequencies.size()> &getGains() { return gains; }
 
-        inline juce::ReadWriteLock &getMagLock() { return magLock; }
-
         inline juce::uint32 getNumChannels() const { return numChannels.load(); }
 
         void updateDBs();
 
         void updateParas();
 
+        size_t getFilterNum() const { return filterNum.load(); }
+
+        std::array<juce::dsp::ProcessorDuplicator<
+            juce::dsp::IIR::Filter<FloatType>,
+            juce::dsp::IIR::Coefficients<FloatType> >, 16> &getFilters() { return filters; }
+
+        void copyCoeffsFrom(Filter<FloatType> &anotherF);
+
+        juce::ReadWriteLock& getParaLock() {return paraUpdateLock;}
+
+        juce::ReadWriteLock &getMagLock() { return magLock; }
+
     private:
-        std::array<juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<FloatType>, juce::dsp::IIR::Coefficients<
-            FloatType> >, 16> filters{};
+        std::array<juce::dsp::ProcessorDuplicator<
+            juce::dsp::IIR::Filter<FloatType>,
+            juce::dsp::IIR::Coefficients<FloatType> >, 16> filters{};
         std::atomic<size_t> filterNum{1};
         std::atomic<double> freq = 1000, gain = 0, q = 0.707;
         std::atomic<size_t> order = 2;

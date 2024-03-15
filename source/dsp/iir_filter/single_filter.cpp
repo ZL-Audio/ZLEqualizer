@@ -170,6 +170,17 @@ namespace zlIIR {
         return juce::Decibels::gainToDecibels(static_cast<FloatType>(g), FloatType(-240));
     }
 
+    template<typename FloatType>
+    void Filter<FloatType>::copyCoeffsFrom(Filter<FloatType> &anotherF) {
+        juce::ScopedReadLock lock1(anotherF.getParaLock());
+        juce::ScopedWriteLock lock2(paraUpdateLock);
+        magOutdated.store(true);
+        filterNum.store(anotherF.getFilterNum());
+        for (size_t i = 0; i < filterNum.load(); i++) {
+            *filters[i].state = *anotherF.getFilters()[i].state;
+        }
+    }
+
     template
     class Filter<float>;
 
