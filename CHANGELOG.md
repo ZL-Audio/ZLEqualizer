@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.12
+
+- improve collision detection GUI
+- improve coeff updating
+
 ## 0.1.11
 
 - fix bugs of collision detection display
