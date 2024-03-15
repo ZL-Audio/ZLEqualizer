@@ -48,8 +48,6 @@ namespace zlFFT {
             x2.store(right);
         }
 
-        void drawRectangles(juce::Graphics &g, juce::Colour colour, juce::Rectangle<float> bound);
-
         void drawGradient(juce::Graphics &g, juce::Rectangle<float> bound);
 
     private:
@@ -62,7 +60,6 @@ namespace zlFFT {
         std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
         std::array<float, zlIIR::frequencies.size() / 8> conflictsP{};
         std::vector<std::pair<float, float> > conflictAreas;
-        juce::CriticalSection areaLock;
         juce::CriticalSection gradientLock;
 
         juce::ColourGradient gradient;

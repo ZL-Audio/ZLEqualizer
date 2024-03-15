@@ -77,14 +77,12 @@ namespace zlFFT {
             const auto mainM = std::reduce(mainDB.begin(), mainDB.end()) / static_cast<float>(mainDB.size());
             const auto refM = std::reduce(refDB.begin(), refDB.end()) / static_cast<float>(refDB.size());
             const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f); {
-                juce::ScopedLock lock(areaLock);
                 for (size_t i = 0; i < conflicts.size(); ++i) {
                     const auto fftIdx = 4 * i;
                     const auto dB1 = (mainDB[fftIdx] + mainDB[fftIdx + 1] + mainDB[fftIdx + 2] + mainDB[fftIdx + 3]) *
                                      .25f;
                     const auto dB2 = (refDB[fftIdx] + refDB[fftIdx + 1] + refDB[fftIdx + 2] + refDB[fftIdx + 3]) * .25f;
                     const auto dBMin = juce::jmin(dB1, dB2, 0.001f);
-                    // const auto dBMax = juce::jmax(dB1, dB2);
                     conflicts[i] = juce::jmax(conflicts[i] * .98f,
                                               (dBMin - threshold) / (0.001f - threshold));
                 }
@@ -113,52 +111,18 @@ namespace zlFFT {
                                    gColour.withMultipliedAlpha(juce::jmax(conflictsP.front(), 0.f)));
                 gradient.addColour(0.0,
                                    gColour.withMultipliedAlpha(juce::jmax(conflictsP.back(), 0.f)));
-
                 for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
-                    // if the conflict is about to appear
-                    const auto f1 = (conflictsP[i - 1] < 0 && conflictsP[i + 1] > 0);
-                    // if the conflict is about to disappear
-                    const auto f2 = (conflictsP[i - 1] > 0 && conflictsP[i + 1] < 0);
-                    // if the conflict monotone changes
-                    const auto f3 = (conflictsP[i - 1] > conflictsP[i] && conflictsP[i + 1] > conflictsP[i]);
-                    const auto f4 = (conflictsP[i - 1] < conflictsP[i] && conflictsP[i + 1] < conflictsP[i]);
-                    if (f1 || f2 || f3 || f4) {
+                    if (conflictsP[i + 1] > 0 || conflictsP[i - 1] > 0) {
                         const auto p = 1.0 - (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
-                        if (f1 || f2) {
-                            gradient.addColour(p, gColour.withMultipliedAlpha(0.f));
-                        } else {
-                            const auto rectColour = gColour.withMultipliedAlpha(conflictsP[i]);
-                            gradient.addColour(p, rectColour);
-                        }
+                        const auto rectColour = gColour.withMultipliedAlpha(conflictsP[i]);
+                        gradient.addColour(p, rectColour);
                     }
                 }
                 isConflictReady.store(true);
             }
-
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
         }
-    }
-
-    template<typename FloatType>
-    void ConflictAnalyzer<FloatType>::drawRectangles(juce::Graphics &g,
-                                                     juce::Colour colour,
-                                                     juce::Rectangle<float> bound) {
-        const auto rectWidth = bound.getWidth() / static_cast<float>(conflicts.size());
-        const auto scale = conflictScale.load();
-        juce::ScopedLock lock(areaLock);
-        for (size_t i = 0; i < conflicts.size(); ++i) {
-            const auto rectBound = bound.removeFromLeft(rectWidth);
-            if (conflicts[i] >= 0.01f) {
-                const auto rectColour = colour.withMultipliedAlpha(
-                    juce::jmin(.75f, static_cast<float>(conflicts[i] * scale)));
-                g.setColour(rectColour);
-                g.fillRect(rectBound);
-            }
-        }
-        mainAnalyzer.setIsFFTReady(false);
-        refAnalyzer.setIsFFTReady(false);
-        isConflictReady.store(false);
     }
 
     template<typename FloatType>
