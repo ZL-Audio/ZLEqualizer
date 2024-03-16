@@ -8,7 +8,7 @@
 
 ZLEqualizer is an equalizer plugin.
 
-[![](https://drive.google.com/uc?export=view&id=1-hmRNQ351Uqc7sCrt_4JRD1LU_MlrZbg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
+[![](https://drive.google.com/uc?export=view&id=1-hmRNQ351Uqc7sCrt_4JRD1LU_MlrZbg)](https://www.youtube.com/watch?v=bC-mBDumzvU)
 
 ## Usage
 
