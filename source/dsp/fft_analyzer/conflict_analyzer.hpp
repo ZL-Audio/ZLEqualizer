@@ -17,7 +17,7 @@
 
 namespace zlFFT {
     template<typename FloatType>
-    class ConflictAnalyzer final : private juce::Thread {
+    class ConflictAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
         explicit ConflictAnalyzer();
 
@@ -66,6 +66,8 @@ namespace zlFFT {
         const juce::Colour gColour = juce::Colours::red;
 
         void run() override;
+
+        void handleAsyncUpdate() override;
     };
 } // zlFFT
 

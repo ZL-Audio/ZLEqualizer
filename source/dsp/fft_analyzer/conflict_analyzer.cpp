@@ -59,7 +59,7 @@ namespace zlFFT {
     void ConflictAnalyzer<FloatType>::process() {
         if (isON.load()) {
             if (mainAnalyzer.getIsAudioReady() && refAnalyzer.getIsAudioReady()) {
-                notify();
+                triggerAsyncUpdate();
             } else {
                 mainAnalyzer.process(mainBuffer);
                 refAnalyzer.process(refBuffer);
@@ -134,6 +134,12 @@ namespace zlFFT {
         refAnalyzer.setIsFFTReady(false);
         isConflictReady.store(false);
     }
+
+    template<typename FloatType>
+    void ConflictAnalyzer<FloatType>::handleAsyncUpdate() {
+        notify();
+    }
+
 
     template
     class ConflictAnalyzer<float>;

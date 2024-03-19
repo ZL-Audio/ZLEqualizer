@@ -14,7 +14,7 @@
 
 namespace zlFFT {
     template<typename FloatType>
-    class PrePostFFTAnalyzer final : private juce::Thread {
+    class PrePostFFTAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
         explicit PrePostFFTAnalyzer();
 
@@ -61,6 +61,8 @@ namespace zlFFT {
         void clearAll();
 
         void run() override;
+
+        void handleAsyncUpdate() override;
     };
 } // zlFFT
 

@@ -51,7 +51,7 @@ namespace zlFFT {
                 if (isPostON.load()) postFFT.process(postBuffer);
                 if (isSideON.load()) sideFFT.process(sideBuffer);
             } else {
-                notify();
+                triggerAsyncUpdate();
             }
         }
     }
@@ -124,6 +124,11 @@ namespace zlFFT {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
         }
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::handleAsyncUpdate() {
+        notify();
     }
 
     template
