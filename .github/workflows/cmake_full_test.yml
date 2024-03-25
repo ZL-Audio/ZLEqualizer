@@ -22,29 +22,27 @@ env:
   DISPLAY: :0 # linux pluginval needs this
   CMAKE_BUILD_PARALLEL_LEVEL: 3 # Use up to 3 cpus to build juceaide, etc
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
 
 # jobs are run in paralell on different machines
 # all steps run in series
 jobs:
   build_and_test:
-    name: ${{ matrix.name }} Check Status
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
       matrix:
         include:
           - name: Linux
-            os: ubuntu-latest
+            os: ubuntu-22.04
             pluginval-binary: ./pluginval
-            ccache: ccache
           - name: macOS
             os: macos-13
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            ccache: ccache
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
-            ccache: sccache
 
     steps:
 
@@ -137,10 +135,10 @@ jobs:
         echo "ARTIFACTS_PATH=${{ env.BUILD_DIR }}/${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}" >> $GITHUB_ENV
         echo "VST3_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/VST3/${{ env.PRODUCT_NAME }}.vst3" >> $GITHUB_ENV
         echo "AU_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/AU/${{ env.PRODUCT_NAME }}.component" >> $GITHUB_ENV
-        echo "AUV3_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/AUv3/${{ env.PRODUCT_NAME }}.appex" >> $GITHUB_ENV          
+        echo "AUV3_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/AUv3/${{ env.PRODUCT_NAME }}.appex" >> $GITHUB_ENV
         echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}" >> $GITHUB_ENV
 
-    - name: Import certificates (macOS)
+    - name: Import Certificates (macOS)
       uses: apple-actions/import-codesign-certs@v2
       if: ${{ matrix.name == 'macOS' }}
       with:
@@ -167,7 +165,6 @@ jobs:
 
     - name: Pluginval VST3 validations
       working-directory: ${{ env.BUILD_DIR }}
-      # if: ${{ matrix.name != 'macOS' }}
       shell: bash
       run: |
         ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
@@ -187,7 +184,8 @@ jobs:
     #     ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
     #   env:
     #     STRICTNESS_LEVEL: 10
-    #     TIMEOUT_MS: 1440000
+    #     TIMEOUT_MS: 720000
+    #     REPEAT: 1
     #     RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
     - name: Codesign (macOS)
@@ -224,9 +222,30 @@ jobs:
       working-directory: ${{ env.ARTIFACTS_PATH }}
       run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" .
 
-    - name: Generate installer (Windows)
+    - name: Generate Installer (Windows)
       if: ${{ matrix.name == 'Windows' }}
       shell: bash
       run: |
         iscc "packaging\installer.iss"
         mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
+
+    - name: Upload Exe (Windows)
+      if: ${{ matrix.name == 'Windows' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ARTIFACT_NAME }}.exe
+        path: '${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe'
+
+    - name: Upload Zip (Linux)
+      if: ${{ matrix.name == 'Linux' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ARTIFACT_NAME }}.zip
+        path: '${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip'
+
+    - name: Upload DMG (MacOS)
+      if: ${{ matrix.name == 'macOS' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ARTIFACT_NAME }}.dmg
+        path: packaging/${{ env.ARTIFACT_NAME }}.dmg

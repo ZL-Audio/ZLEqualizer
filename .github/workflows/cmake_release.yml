@@ -18,6 +18,7 @@ env:
   DISPLAY: :0 # linux pluginval needs this
   CMAKE_BUILD_PARALLEL_LEVEL: 3 # Use up to 3 cpus to build juceaide, etc
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
 
 # jobs are run in paralell on different machines
 # all steps run in series
@@ -32,15 +33,12 @@ jobs:
           - name: Linux
             os: ubuntu-22.04
             pluginval-binary: ./pluginval
-            ccache: ccache
           - name: macOS
             os: macos-13
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            ccache: ccache
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
-            ccache: sccache
 
     steps:
 
@@ -116,16 +114,8 @@ jobs:
       uses: mozilla-actions/sccache-action@v0.0.4
 
     - name: Configure
-      if: ${{ matrix.name != 'Linux' }}
       shell: bash
       run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
-      env:
-        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
-
-    - name: Configure
-      if: ${{ matrix.name == 'Linux' }}
-      shell: bash
-      run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
       env:
         BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
