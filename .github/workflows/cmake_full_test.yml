@@ -59,6 +59,9 @@ jobs:
       # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
       run: |
         sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.0-dev libglu1-mesa-dev xvfb ninja-build
+        # downgrade gcc to workaround 22.04 and C++20 issue 
+        # see: https://github.com/actions/runner-images/issues/8659
+        sudo apt-get install -y --allow-downgrades libc6=2.35-0ubuntu3.6 libc6-dev=2.35-0ubuntu3.6 libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
         sudo /usr/bin/Xvfb $DISPLAY &
 
     - name: Cache IPP (Windows)
@@ -66,23 +69,23 @@ jobs:
       id: cache-ipp
       uses: actions/cache@v4
       with:
-        key: ipp-v1
-        path: C:\Program Files (x86)\Intel\oneAPI\ipp
+        key: ipp-v4
+        path: C:\Program Files (x86)\Intel
 
     - name: Install IPP (Windows)
       if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
       shell: bash
       run: |
-        curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/irc_nas/19078/w_BaseKit_p_2023.0.0.25940_offline.exe
+        curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/8d158661-ca8f-4e66-b5ea-3e0b3d00836a/w_ipp_oneapi_p_2021.10.1.15_offline.exe
         ./oneapi.exe -s -x -f oneapi
         ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
-    - name: Save IPP cache even on job fail
+    - name: Save IPP cache (even on CI fail)
       if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
       uses: actions/cache/save@v4
       with:
-        path: C:\Program Files (x86)\Intel\oneAPI\ipp
-        key: ipp-v1
+        path: C:\Program Files (x86)\Intel
+        key: ipp-v4
 
     # This lets us use sscache on Windows
     # We need to install ccache here for Windows to grab the right version
@@ -95,6 +98,13 @@ jobs:
       if: ${{ matrix.name == 'macOS' }}
       run: brew install ninja osxutils
 
+    # This block can be removed once 15.1 is default (JUCE requires it when building on macOS 14)
+    - name: Use latest Xcode on system (macOS)
+      if: ${{ matrix.name == 'macOS' }}
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
     - name: Checkout code
       uses: actions/checkout@v4
       with:
@@ -105,6 +115,9 @@ jobs:
       id: install-boost
       with:
         boost_version: 1.80.0
+
+    - name: Cache the build
+      uses: mozilla-actions/sccache-action@v0.0.4
 
     - name: Configure
       shell: bash
@@ -126,12 +139,6 @@ jobs:
         echo "AU_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/AU/${{ env.PRODUCT_NAME }}.component" >> $GITHUB_ENV
         echo "AUV3_PATH=${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}/AUv3/${{ env.PRODUCT_NAME }}.appex" >> $GITHUB_ENV          
         echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}" >> $GITHUB_ENV
-
-    - name: ccache
-      uses: hendrikmuhs/ccache-action@v1.2
-      with:
-        key: v3-${{ matrix.os }}-${{ matrix.type }}
-        variant: ${{ matrix.ccache }}
 
     - name: Import certificates (macOS)
       uses: apple-actions/import-codesign-certs@v2
