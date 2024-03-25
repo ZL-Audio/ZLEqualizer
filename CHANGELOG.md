@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.13
+
+- makes plugin compatible with older libstdc++ (Linux)
+- improve stability
+
 ## 0.1.12
 
 - improve collision detection GUI
