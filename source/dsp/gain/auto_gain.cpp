@@ -15,6 +15,7 @@ namespace zlGain {
         gainDSP.prepare(spec);
         gainDSP.setRampDurationSeconds(1.0);
     }
+
     template<typename FloatType>
     void AutoGain<FloatType>::processPre(juce::AudioBuffer<FloatType> &buffer) {
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
@@ -47,6 +48,13 @@ namespace zlGain {
             gainDSP.setGainDecibels(preRMS - postRMS);
             juce::dsp::ProcessContextReplacing<FloatType> context(block);
             gainDSP.process(context);
+            for (size_t channel = 0; channel < block.getNumChannels(); ++channel) {
+                juce::FloatVectorOperations::clip(block.getChannelPointer(channel),
+                                                  block.getChannelPointer(channel),
+                                                  static_cast<FloatType>(-1.0),
+                                                  static_cast<FloatType>(1.0),
+                                                  static_cast<int>(block.getNumSamples()));
+            }
         }
         isPreProcessed.store(false);
     }

@@ -7,6 +7,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 ## 0.1.13
 
 - makes plugin compatible with older libstdc++ (Linux)
+- hard-clip auto-gain to prevent audio pops
 - improve stability
 
 ## 0.1.12
