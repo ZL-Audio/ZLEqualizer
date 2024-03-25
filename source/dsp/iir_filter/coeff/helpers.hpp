@@ -19,6 +19,7 @@
 #include <numbers>
 #include <numeric>
 #include <vector>
+#include <tuple>
 
 namespace zlIIR {
     enum FilterType {
