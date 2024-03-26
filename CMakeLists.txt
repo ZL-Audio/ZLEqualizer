@@ -29,7 +29,7 @@ set(PLUGIN_MANUFACTURER_CODE "Zliu")
 # Change me! Used for the MacOS bundle identifier (and signing)
 set(BUNDLE_ID "com.zlaudio.plugins")
 
-set(LV2URI "https://github.com/ZL-Audio/${PRODUCT_NAME}/tree/${VERSION}")
+set(LV2URI "https://github.com/ZL-Audio/${PROJECT_NAME}")
 
 # Change me! Set the plugin formats you want built
 # Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
