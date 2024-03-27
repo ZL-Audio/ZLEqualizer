@@ -64,6 +64,12 @@ namespace zlPanel {
         g.restoreState();
     }
 
+    void SoloPanel::checkRepaint() {
+        if (soloF.getMagOutdated()) {
+            soloF.setMagOutdated(false);
+            triggerAsyncUpdate();
+        }
+    }
 
     void SoloPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         juce::ignoreUnused(parameterID, newValue);

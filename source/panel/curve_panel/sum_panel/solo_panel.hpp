@@ -27,6 +27,8 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void checkRepaint();
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
@@ -35,8 +37,6 @@ namespace zlPanel {
         std::atomic<float> scale1{.5f}, scale2{.5f};
 
         static constexpr std::array changeIDs{
-            zlDSP::fType::ID, zlDSP::freq::ID, zlDSP::Q::ID,
-            zlDSP::sideFreq::ID, zlDSP::sideQ::ID,
             zlDSP::solo::ID, zlDSP::sideSolo::ID
         };
 

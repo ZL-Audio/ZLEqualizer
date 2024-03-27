@@ -140,7 +140,6 @@ namespace zlFFT {
         notify();
     }
 
-
     template
     class ConflictAnalyzer<float>;
 

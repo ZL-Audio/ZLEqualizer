@@ -91,5 +91,6 @@ namespace zlPanel {
         for (const auto &sP: singlePanels) {
             sP->checkRepaint();
         }
+        soloPanel.checkRepaint();
     }
 }

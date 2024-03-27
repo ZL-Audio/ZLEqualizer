@@ -95,6 +95,12 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::processSolo() {
+        for (size_t i = 0; i < bandNUM; ++i) {
+            filters[i].getBaseFilter().updateParas();
+            filters[i].getMainFilter().updateParas();
+            filters[i].getTargetFilter().updateParas();
+            filters[i].getSideFilter().updateParas();
+        }
         // create main sub buffer and side sub buffer
         auto subMainBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 0,
                                                           2, subBuffer.subBuffer.getNumSamples());
