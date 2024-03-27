@@ -65,3 +65,5 @@ A Simple Method of Designing Multiple Order All Pole Bandpass Filters by Cascadi
 [Equalize It](https://github.com/suroge/equalize_it) by [suroge](https://github.com/suroge)
 
 [Frequalizer](https://github.com/ffAudio/Frequalizer) by [ffAudio](https://github.com/ffAudio)
+
+[farbot](https://github.com/hogliux/farbot) by [Fabian Renn](https://github.com/hogliux)

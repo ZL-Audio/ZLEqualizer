@@ -22,28 +22,22 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        processSpec = spec; {
-            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
-            for (auto &f: filters) {
-                f.prepare(spec);
-            }
+        processSpec = spec;
+        sampleRate.store(static_cast<float>(spec.sampleRate));
+        for (auto &f: filters) {
+            f.prepare(spec);
         }
-        numChannels.store(spec.numChannels);
         setOrder(order.load());
-        updateParas();
     }
 
     template<typename FloatType>
     void Filter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
-        const juce::ScopedTryReadLock scopedLock(paraUpdateLock);
-        if (scopedLock.isLocked()) {
-            reset();
-            updateParas();
-            for (size_t i = 0; i < filterNum.load(); ++i) {
-                filters[i].process(context);
-            }
+        reset();
+        updateParas();
+        for (size_t i = 0; i < filterNum.load(); ++i) {
+            filters[i].process(context);
         }
     }
 
@@ -89,32 +83,32 @@ namespace zlIIR {
             toReset.store(true);
         }
         filterType.store(x);
-        if (update) { updateParas(); }
+        if (update) { toUpdatePara.store(true); }
     }
 
     template<typename FloatType>
     void Filter<FloatType>::setOrder(const size_t x, const bool update) {
         order.store(x);
-        if (update) { updateParas(); }
+        if (update) {
+            toReset.store(true);
+            toUpdatePara.store(true);
+        }
     }
 
     template<typename FloatType>
     void Filter<FloatType>::updateParas() {
         if (toUpdatePara.load()) {
-            auto coeff = DesignFilter::getCoeff(filterType.load(),
-                                                freq.load(), processSpec.sampleRate,
-                                                gain.load(), q.load(), order.load());
-            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
-            magOutdated.store(true);
             filterNum.store(DesignFilter::updateCoeff(filterType.load(),
-                                                      freq.load(), processSpec.sampleRate,
-                                                      gain.load(), q.load(), order.load(), coeffs));
+                                                          freq.load(), processSpec.sampleRate,
+                                                          gain.load(), q.load(), order.load(), coeffs));
+            {
+                farbot::RealtimeObject<
+                            std::array<coeff33, 16>,
+                            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                            farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
+                *rrcentCoeffs = coeffs;
+            }
             for (size_t i = 0; i < filterNum.load(); i++) {
-                auto [a, b] = coeff[i];
-                std::array<FloatType, 6> finalCoeff{};
-                for (size_t j = 0; j < 6; ++j) {
-                    finalCoeff[j] = static_cast<FloatType>(j < 3 ? b[j] : a[j - 3]);
-                }
                 *filters[i].state = {
                     static_cast<FloatType>(std::get<1>(coeffs[i])[0]),
                     static_cast<FloatType>(std::get<1>(coeffs[i])[1]),
@@ -125,27 +119,24 @@ namespace zlIIR {
                 };
             }
             toUpdatePara.store(false);
+            magOutdated.store(true);
         }
     }
 
     template<typename FloatType>
     void Filter<FloatType>::addDBs(std::array<FloatType, frequencies.size()> &x, FloatType scale) {
-        const juce::ScopedReadLock scopedLock(magLock);
         std::transform(x.begin(), x.end(), dBs.begin(), x.begin(),
                        [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
     }
 
     template<typename FloatType>
     void Filter<FloatType>::addGains(std::array<FloatType, frequencies.size()> &x, FloatType scale) {
-        const juce::ScopedReadLock scopedLock(magLock);
         std::transform(x.begin(), x.end(), gains.begin(), x.begin(),
                        [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
     }
 
     template<typename FloatType>
     void Filter<FloatType>::updateDBs() {
-        const juce::ScopedWriteLock scopedLock(magLock);
-        const juce::ScopedReadLock scopedLock2(paraUpdateLock);
         if (!magOutdated.load()) {
             return;
         } else {
@@ -153,9 +144,22 @@ namespace zlIIR {
         }
         gains.fill(FloatType(1));
         std::array<double, frequencies.size()> singleMagnitudes{};
+        juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
+        farbot::RealtimeObject<
+                            std::array<coeff33, 16>,
+                            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                            farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
         for (size_t i = 0; i < filterNum.load(); i++) {
-            filters[i].state->getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
-                                                            frequencies.size(), processSpec.sampleRate);
+            dummyCoeff = {
+                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[0]),
+                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[1]),
+                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[2]),
+                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[0]),
+                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[1]),
+                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[2])
+            };
+            dummyCoeff.getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
+                frequencies.size(), sampleRate.load());
             std::transform(gains.begin(), gains.end(), singleMagnitudes.begin(), gains.begin(),
                            std::multiplies<FloatType>());
         }
@@ -177,23 +181,24 @@ namespace zlIIR {
 
     template<typename FloatType>
     FloatType Filter<FloatType>::getDB(FloatType f) {
-        const juce::ScopedReadLock scopedLock(paraUpdateLock);
         double g{FloatType(1)};
+        juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
+        farbot::RealtimeObject<
+                            std::array<coeff33, 16>,
+                            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                            farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
         for (size_t i = 0; i < filterNum.load(); i++) {
-            g *= filters[i].state->getMagnitudeForFrequency(static_cast<double>(f), processSpec.sampleRate);
+            dummyCoeff = {
+                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[0]),
+                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[1]),
+                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[2]),
+                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[0]),
+                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[1]),
+                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[2])
+            };
+            g *= dummyCoeff.getMagnitudeForFrequency(static_cast<double>(f), processSpec.sampleRate);
         }
         return juce::Decibels::gainToDecibels(static_cast<FloatType>(g), FloatType(-240));
-    }
-
-    template<typename FloatType>
-    void Filter<FloatType>::copyCoeffsFrom(Filter<FloatType> &anotherF) {
-        juce::ScopedReadLock lock1(anotherF.getParaLock());
-        juce::ScopedWriteLock lock2(paraUpdateLock);
-        magOutdated.store(true);
-        filterNum.store(anotherF.getFilterNum());
-        for (size_t i = 0; i < filterNum.load(); i++) {
-            *filters[i].state = *anotherF.getFilters()[i].state;
-        }
     }
 
     template

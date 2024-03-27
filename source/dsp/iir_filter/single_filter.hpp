@@ -12,6 +12,7 @@
 
 #include <juce_dsp/juce_dsp.h>
 #include "coeff/design_filter.hpp"
+#include "../farbot/RealtimeObject.hpp"
 
 namespace zlIIR {
     /** stl does not support constexpr log/pow, np.logspace(1, np.log10(22000), 800) */
@@ -275,8 +276,6 @@ namespace zlIIR {
             juce::dsp::IIR::Filter<FloatType>,
             juce::dsp::IIR::Coefficients<FloatType> >, 16> &getFilters() { return filters; }
 
-        void copyCoeffsFrom(Filter<FloatType> &anotherF);
-
         juce::ReadWriteLock& getParaLock() {return paraUpdateLock;}
 
         juce::ReadWriteLock &getMagLock() { return magLock; }
@@ -290,6 +289,7 @@ namespace zlIIR {
         std::atomic<size_t> order = 2;
         std::atomic<FilterType> filterType = FilterType::peak;
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
+        std::atomic<float> sampleRate {48000};
         juce::ReadWriteLock paraUpdateLock;
         std::atomic<juce::uint32> numChannels;
 
@@ -298,7 +298,9 @@ namespace zlIIR {
         std::atomic<bool> magOutdated = false;
 
         std::atomic<bool> toUpdatePara = false, toReset = false;
-        std::array<zlIIR::coeff33, 16> coeffs;
+
+        std::array<coeff33, 16> coeffs;
+        farbot::RealtimeObject<std::array<coeff33, 16>, farbot::RealtimeObjectOptions::realtimeMutatable> recentCoeffs;
     };
 }
 
