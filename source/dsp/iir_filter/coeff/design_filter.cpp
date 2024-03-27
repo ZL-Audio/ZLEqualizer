@@ -286,7 +286,7 @@ namespace zlIIR {
             return 1;
         }
         const size_t number = n / 2;
-        const auto _g = std::pow(g, 1.0 / static_cast<double>(n));
+        const auto _g = std::pow(g, 1.0 / static_cast<double>(number));
         const auto theta0 = pi / static_cast<double>(number) / 4;
         const auto scale = std::pow(std::sqrt(2.0) * q, 1 / static_cast<double>(number));
         const auto rescale_base = std::log10(std::sqrt(2.0) * q) / std::pow(static_cast<double>(n), 1.5) * 12;
@@ -308,7 +308,7 @@ namespace zlIIR {
             return 1;
         }
         const size_t number = n / 2;
-        const auto _g = std::pow(g, 1.0 / static_cast<double>(n));
+        const auto _g = std::pow(g, 1.0 / static_cast<double>(number));
         const auto theta0 = pi / static_cast<double>(number) / 4;
         const auto scale = std::pow(std::sqrt(2.0) * q, 1 / static_cast<double>(number));
         const auto rescale_base = std::log10(std::sqrt(2.0) * q) / std::pow(static_cast<double>(n), 1.5) * 12;
@@ -330,7 +330,7 @@ namespace zlIIR {
             return 1;
         }
         const size_t number = n / 2;
-        const auto _g = std::pow(g, 1.0 / static_cast<double>(n));
+        const auto _g = std::pow(g, 1.0 / static_cast<double>(number));
         const auto theta0 = pi / static_cast<double>(number) / 4;
         const auto scale = std::pow(std::sqrt(2.0) * q, 1 / static_cast<double>(number));
         const auto rescale_base = std::log10(std::sqrt(2.0) * q) / std::pow(static_cast<double>(n), 1.5) * 12;

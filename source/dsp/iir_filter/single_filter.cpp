@@ -196,7 +196,7 @@ namespace zlIIR {
                 static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[1]),
                 static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[2])
             };
-            g *= dummyCoeff.getMagnitudeForFrequency(static_cast<double>(f), processSpec.sampleRate);
+            g *= dummyCoeff.getMagnitudeForFrequency(static_cast<double>(f), sampleRate.load());
         }
         return juce::Decibels::gainToDecibels(static_cast<FloatType>(g), FloatType(-240));
     }

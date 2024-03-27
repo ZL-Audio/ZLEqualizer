@@ -39,6 +39,8 @@ namespace zlPanel {
             triggerAsyncUpdate();
         }
 
+        void checkRepaint();
+
     private:
         juce::Path curvePath, shadowPath, dynPath;
         juce::CriticalSection curvePathLock, shadowPathLock, dynPathLock;
@@ -52,12 +54,11 @@ namespace zlPanel {
         zlIIR::Filter<double> &baseF, &targetF;
         std::atomic<float> maximumDB;
         std::atomic<bool> skipRepaint{false};
+        SidePanel sidePanel;
+        juce::Time currentT;
 
         static constexpr std::array changeIDs{
-            zlDSP::fType::ID, zlDSP::slope::ID,
-            zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID,
-            zlDSP::lrType::ID, zlDSP::dynamicON::ID,
-            zlDSP::targetGain::ID, zlDSP::targetQ::ID
+            zlDSP::lrType::ID, zlDSP::dynamicON::ID
         };
 
         juce::Colour colour;
@@ -71,8 +72,6 @@ namespace zlPanel {
         void drawCurve(juce::Path &path,
             const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse = false,
                        bool startPath = true);
-
-        SidePanel sidePanel;
 
         inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
             return static_cast<float>(i) /

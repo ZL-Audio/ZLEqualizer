@@ -27,12 +27,17 @@ namespace zlCompressor {
     template<typename FloatType>
     FloatType KneeComputer<FloatType>::eval(FloatType x) {
         const juce::ScopedLock scopedLock(paraUpdateLock);
-        if (x <= threshold - kneeW) {
+        const auto threshold_ = threshold.load();
+        const auto kneeW_ = kneeW.load();
+        const auto bound_ = bound.load();
+        const auto ratio_ = ratio.load();
+        if (x <= threshold_ - kneeW_) {
             return x;
-        } else if (x >= threshold + kneeW) {
-            return juce::jlimit(x - bound.load(), x + bound.load(), x / ratio + (1 - 1 / ratio) * threshold);
+        } else if (x >= threshold_ + kneeW_) {
+            return juce::jlimit(x - bound_, x + bound_, threshold_ + (x - threshold_) / ratio_);
         } else {
-            return juce::jlimit(x - bound.load(), x + bound.load(), cubic->operator()(x));
+            const auto xx = x + tempB.load();
+            return juce::jlimit(x - bound_, x + bound_, x + tempA.load() * xx * xx / tempC.load());
         }
     }
 
@@ -43,21 +48,9 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void KneeComputer<FloatType>::interpolate() {
-//        logger.logMessage(juce::String(threshold.load()) + " " + juce::String(ratio.load()));
-        std::array initialX{threshold.load() - kneeW.load(),
-                            threshold.load(),
-                            threshold.load() + kneeW.load()};
-        std::array initialY{threshold.load() - kneeW.load(),
-                            threshold.load() - kneeD.load() * FloatType(0.75) * kneeW.load() *
-                                               (FloatType(1) - FloatType(0.5) / ratio.load() - FloatType(0.5)),
-                            threshold.load() + kneeW.load() / ratio.load()};
-        std::array initialYX{FloatType(1),
-                             kneeS.load() + (FloatType(1) - kneeS.load()) / ratio.load(),
-                             FloatType(1) / ratio.load()};
-        cubic = std::make_unique<boost::math::interpolators::cubic_hermite<std::array<FloatType, 3>>>(
-                std::move(initialX),
-                std::move(initialY),
-                std::move(initialYX));
+        tempA.store(1 / ratio.load() - 1);
+        tempB.store(-threshold.load() + kneeW.load());
+        tempC.store(kneeW.load() * 4);
         reductionAtKnee.store(process(threshold.load() + kneeW.load()));
     }
 

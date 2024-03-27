@@ -90,10 +90,11 @@ namespace zlCompressor {
         inline FloatType getReductionAtKnee() const {return reductionAtKnee.load(); }
 
     private:
-        std::atomic<FloatType> threshold = FloatType(0), ratio = FloatType(1);
-        std::atomic<FloatType> kneeW = FloatType(0.0625), kneeD = FloatType(0.5), kneeS = FloatType(0.5);
-        std::atomic<FloatType> bound = FloatType(60);
-        std::atomic<FloatType> reductionAtKnee = FloatType(0);
+        std::atomic<FloatType> threshold{0}, ratio{1};
+        std::atomic<FloatType> kneeW{FloatType(0.0625)}, kneeD{FloatType(0.5)}, kneeS{FloatType(0.5)};
+        std::atomic<FloatType> bound{60};
+        std::atomic<FloatType> tempA {0}, tempB{0}, tempC{0};
+        std::atomic<FloatType> reductionAtKnee{0};
         std::unique_ptr<boost::math::interpolators::cubic_hermite<std::array<FloatType, 3>>> cubic;
         juce::CriticalSection paraUpdateLock;
 

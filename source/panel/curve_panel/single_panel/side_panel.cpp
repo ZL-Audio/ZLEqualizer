@@ -49,12 +49,6 @@ namespace zlPanel {
         if (!selected.load() || !actived.load() || !dynON.load()) {
             return;
         }
-        // colour = uiBase.getColorMap1(idx);
-        // const auto q = sideF.getQ(), freq = sideF.getFreq();
-        // const auto bw = 2 * std::asinh(0.5f / q) / std::log(2.f);
-        // const auto scale = std::pow(2.f, bw / 2.f);
-        // const auto freq1 = freq / scale, freq2 = freq * scale;
-
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 4 * uiBase.getFontSize());
         const auto x1 = scale1.load() * bound.getWidth();
@@ -63,6 +57,13 @@ namespace zlPanel {
         const auto thickness = uiBase.getFontSize() * 0.15f;
         g.setColour(uiBase.getColorMap1(idx));
         g.drawLine(x1, bound.getBottom(), x2, bound.getBottom(), thickness);
+    }
+
+    void SidePanel::checkRepaint() {
+        if (sideF.getMagOutdated()) {
+            sideF.setMagOutdated(false);
+            triggerAsyncUpdate();
+        }
     }
 
     void SidePanel::parameterChanged(const juce::String &parameterID, float newValue) {

@@ -31,6 +31,8 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void checkRepaint();
+
     private:
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -39,8 +41,7 @@ namespace zlPanel {
         std::atomic<bool> dynON, selected, actived;
 
         static constexpr std::array changeIDs{
-            zlDSP::dynamicON::ID,
-            zlDSP::sideFreq::ID, zlDSP::sideQ::ID
+            zlDSP::dynamicON::ID
         };
 
         juce::Colour colour;

@@ -20,7 +20,8 @@ namespace zlPanel {
           filter(controller.getFilter(idx)),
           baseF(controller.getFilter(idx).getBaseFilter()),
           targetF(controller.getFilter(idx).getTargetFilter()),
-          sidePanel(bandIdx, parameters, parametersNA, base, controller) {
+          sidePanel(bandIdx, parameters, parametersNA, base, controller),
+          currentT(juce::Time::getCurrentTime()) {
         curvePath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
         shadowPath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
         dynPath.preallocateSpace(zlIIR::frequencies.size() * 6 + 12);
@@ -130,6 +131,13 @@ namespace zlPanel {
     void SinglePanel::resized() {
         updatePaths();
         sidePanel.setBounds(getLocalBounds());
+    }
+
+    void SinglePanel::checkRepaint() {
+        if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
+            triggerAsyncUpdate();
+        }
+        sidePanel.checkRepaint();
     }
 
     void SinglePanel::drawCurve(juce::Path &path,

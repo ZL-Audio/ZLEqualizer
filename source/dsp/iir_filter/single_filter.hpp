@@ -276,9 +276,11 @@ namespace zlIIR {
             juce::dsp::IIR::Filter<FloatType>,
             juce::dsp::IIR::Coefficients<FloatType> >, 16> &getFilters() { return filters; }
 
-        juce::ReadWriteLock& getParaLock() {return paraUpdateLock;}
-
         juce::ReadWriteLock &getMagLock() { return magLock; }
+
+        inline bool getMagOutdated() const { return magOutdated.load(); }
+
+        void setMagOutdated(const bool f) { magOutdated.store(f); }
 
     private:
         std::array<juce::dsp::ProcessorDuplicator<
@@ -289,8 +291,7 @@ namespace zlIIR {
         std::atomic<size_t> order = 2;
         std::atomic<FilterType> filterType = FilterType::peak;
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
-        std::atomic<float> sampleRate {48000};
-        juce::ReadWriteLock paraUpdateLock;
+        std::atomic<float> sampleRate{48000};
         std::atomic<juce::uint32> numChannels;
 
         std::array<FloatType, frequencies.size()> dBs{}, gains{};

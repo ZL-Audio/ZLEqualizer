@@ -88,5 +88,8 @@ namespace zlPanel {
             sumPanel.repaint();
             currentT = nowT;
         }
+        for (const auto &sP: singlePanels) {
+            sP->checkRepaint();
+        }
     }
 }
