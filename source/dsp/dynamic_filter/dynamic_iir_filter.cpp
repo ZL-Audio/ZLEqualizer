@@ -34,6 +34,9 @@ namespace zlDynamicFilter {
 
     template<typename FloatType>
     void IIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
+        bFilter.updateParas();
+        tFilter.updateParas();
+        sFilter.updateParas();
         if (!bypass.load()) {
             if (dynamicON.load()) {
                 sBufferCopy.makeCopyOf(sBuffer, true);

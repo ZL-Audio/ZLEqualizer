@@ -56,22 +56,19 @@ namespace zlDSP {
             filtersRef[idx].setBypass(static_cast<bool>(value));
         } else if (id == fType::ID) {
             filtersRef[idx].getBaseFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
-            filtersRef[idx].getMainFilter().setFilterType(static_cast<zlIIR::FilterType>(value), false);
-            filtersRef[idx].getMainFilter().copyCoeffsFrom(filtersRef[idx].getBaseFilter());
+            filtersRef[idx].getMainFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getTargetFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
             }
         } else if (id == slope::ID) {
             filtersRef[idx].getBaseFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
-            filtersRef[idx].getMainFilter().setOrder(slope::orderArray[static_cast<size_t>(value)], false);
-            filtersRef[idx].getMainFilter().copyCoeffsFrom(filtersRef[idx].getBaseFilter());
+            filtersRef[idx].getMainFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getTargetFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
             }
         } else if (id == freq::ID) {
             filtersRef[idx].getBaseFilter().setFreq(value);
-            filtersRef[idx].getMainFilter().setFreq(value, false);
-            filtersRef[idx].getMainFilter().copyCoeffsFrom(filtersRef[idx].getBaseFilter());
+            filtersRef[idx].getMainFilter().setFreq(value);
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getTargetFilter().setFreq(value);
             }
@@ -82,16 +79,14 @@ namespace zlDSP {
                 filtersRef[idx].getBaseFilter().setGain(value);
             } else {
                 filtersRef[idx].getBaseFilter().setGain(value);
-                filtersRef[idx].getMainFilter().setGain(value, false);
-                filtersRef[idx].getMainFilter().copyCoeffsFrom(filtersRef[idx].getBaseFilter());
+                filtersRef[idx].getMainFilter().setGain(value);
             }
         } else if (id == Q::ID) {
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getBaseFilter().setQ(value);
             } else {
                 filtersRef[idx].getBaseFilter().setQ(value);
-                filtersRef[idx].getMainFilter().setQ(value, false);
-                filtersRef[idx].getMainFilter().copyCoeffsFrom(filtersRef[idx].getBaseFilter());
+                filtersRef[idx].getMainFilter().setQ(value);
             }
         } else if (id == lrType::ID) {
             controllerRef.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);

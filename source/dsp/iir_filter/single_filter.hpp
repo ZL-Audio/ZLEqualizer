@@ -291,12 +291,14 @@ namespace zlIIR {
         std::atomic<FilterType> filterType = FilterType::peak;
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
         juce::ReadWriteLock paraUpdateLock;
-        std::atomic<bool> resetFlag;
         std::atomic<juce::uint32> numChannels;
 
         std::array<FloatType, frequencies.size()> dBs{}, gains{};
         juce::ReadWriteLock magLock;
         std::atomic<bool> magOutdated = false;
+
+        std::atomic<bool> toUpdatePara = false, toReset = false;
+        std::array<zlIIR::coeff33, 16> coeffs;
     };
 }
 

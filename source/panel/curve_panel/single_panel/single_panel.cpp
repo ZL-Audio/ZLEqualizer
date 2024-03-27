@@ -43,7 +43,6 @@ namespace zlPanel {
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
 
         setInterceptsMouseClicks(false, false);
-        // setBufferedToImage(true);
         addAndMakeVisible(sidePanel);
         skipRepaint.store(false);
     }

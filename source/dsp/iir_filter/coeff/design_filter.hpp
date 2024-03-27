@@ -23,6 +23,9 @@ namespace zlIIR {
         static std::vector<coeff33> getCoeff(FilterType filterType,
                                              double f, double fs, double gDB, double q, size_t n);
 
+        static size_t updateCoeff(FilterType filterType,
+                                  double f, double fs, double gDB, double q, size_t n, std::array<coeff33, 16> &coeffs);
+
     private:
         static std::vector<coeff33> getLowPass(size_t n, double w0, double q);
 
@@ -43,6 +46,25 @@ namespace zlIIR {
         static std::vector<coeff33> getBandShelf(size_t n, double w0, double g, double q);
 
         static std::vector<double> getQs(size_t n, double q0);
+
+        static size_t updateLowPass(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
+
+        static size_t updateHighPass(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
+
+        static size_t updateTiltShelf(size_t n, double w0, double g, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
+
+        static size_t updateLowShelf(size_t n, double w0, double g, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
+
+        static size_t updateHighShelf(size_t n, double w0, double g, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
+
+        static size_t updateBandPass(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
+
+        static size_t updateNotch(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
+
+        static size_t updatePeak(double w0, double g, double q, std::array<coeff33, 16> &coeffs);
+
+        static size_t updateBandShelf(size_t n, double w0, double g, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
+
     };
 }
 

@@ -12,8 +12,11 @@
 namespace zlIIR {
     template<typename FloatType>
     void Filter<FloatType>::reset() {
-        for (size_t i = 0; i < filterNum.load(); ++i) {
-            filters[i].reset();
+        if (toReset.load()) {
+            for (size_t i = 0; i < filterNum.load(); ++i) {
+                filters[i].reset();
+            }
+            toReset.store(false);
         }
     }
 
@@ -36,6 +39,8 @@ namespace zlIIR {
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
         const juce::ScopedTryReadLock scopedLock(paraUpdateLock);
         if (scopedLock.isLocked()) {
+            reset();
+            updateParas();
             for (size_t i = 0; i < filterNum.load(); ++i) {
                 filters[i].process(context);
             }
@@ -46,11 +51,10 @@ namespace zlIIR {
     void Filter<FloatType>::setFreq(const FloatType x, const bool update) {
         if (const auto diff = std::max(static_cast<double>(x), freq.load()) / std::min(
                                   static_cast<double>(x), freq.load()); std::log10(diff) >= 2) {
-            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
-            reset();
+            toReset.store(true);
         }
         freq.store(static_cast<double>(x));
-        if (update) { updateParas(); }
+        if (update) { toUpdatePara.store(true); }
     }
 
     template<typename FloatType>
@@ -62,7 +66,7 @@ namespace zlIIR {
             case lowShelf:
             case highShelf:
             case tiltShelf: {
-                if (update) { updateParas(); }
+                if (update) { toUpdatePara.store(true); }
                 break;
             }
             case lowPass:
@@ -77,13 +81,12 @@ namespace zlIIR {
     template<typename FloatType>
     void Filter<FloatType>::setQ(const FloatType x, const bool update) {
         q.store(static_cast<double>(x));
-        if (update) { updateParas(); }
+        if (update) { toUpdatePara.store(true); }
     }
 
     template<typename FloatType>
     void Filter<FloatType>::setFilterType(const FilterType x, const bool update) { {
-            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
-            reset();
+            toReset.store(true);
         }
         filterType.store(x);
         if (update) { updateParas(); }
@@ -97,19 +100,31 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::updateParas() {
-        auto coeff = DesignFilter::getCoeff(filterType.load(),
-                                            freq.load(), processSpec.sampleRate,
-                                            gain.load(), q.load(), order.load());
-        const juce::ScopedWriteLock scopedLock(paraUpdateLock);
-        magOutdated.store(true);
-        filterNum.store(coeff.size());
-        for (size_t i = 0; i < filterNum.load(); i++) {
-            auto [a, b] = coeff[i];
-            std::array<FloatType, 6> finalCoeff{};
-            for (size_t j = 0; j < 6; ++j) {
-                finalCoeff[j] = static_cast<FloatType>(j < 3 ? b[j] : a[j - 3]);
+        if (toUpdatePara.load()) {
+            auto coeff = DesignFilter::getCoeff(filterType.load(),
+                                                freq.load(), processSpec.sampleRate,
+                                                gain.load(), q.load(), order.load());
+            const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+            magOutdated.store(true);
+            filterNum.store(DesignFilter::updateCoeff(filterType.load(),
+                                                      freq.load(), processSpec.sampleRate,
+                                                      gain.load(), q.load(), order.load(), coeffs));
+            for (size_t i = 0; i < filterNum.load(); i++) {
+                auto [a, b] = coeff[i];
+                std::array<FloatType, 6> finalCoeff{};
+                for (size_t j = 0; j < 6; ++j) {
+                    finalCoeff[j] = static_cast<FloatType>(j < 3 ? b[j] : a[j - 3]);
+                }
+                *filters[i].state = {
+                    static_cast<FloatType>(std::get<1>(coeffs[i])[0]),
+                    static_cast<FloatType>(std::get<1>(coeffs[i])[1]),
+                    static_cast<FloatType>(std::get<1>(coeffs[i])[2]),
+                    static_cast<FloatType>(std::get<0>(coeffs[i])[0]),
+                    static_cast<FloatType>(std::get<0>(coeffs[i])[1]),
+                    static_cast<FloatType>(std::get<0>(coeffs[i])[2])
+                };
             }
-            *filters[i].state = finalCoeff;
+            toUpdatePara.store(false);
         }
     }
 

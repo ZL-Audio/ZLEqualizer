@@ -18,7 +18,6 @@ namespace zlPanel {
           uiBase(base),
           sideF(controller.getFilter(bandIdx).getSideFilter()) {
         setInterceptsMouseClicks(false, false);
-        // setBufferedToImage(true);
         const std::string suffix = zlDSP::appendSuffix("", idx);
         skipRepaint.store(true);
         parameterChanged(zlDSP::dynamicON::ID + suffix,
