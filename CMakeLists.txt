@@ -31,12 +31,16 @@ set(BUNDLE_ID "com.zlaudio.plugins")
 
 set(LV2URI "https://github.com/ZL-Audio/${PROJECT_NAME}")
 
-# Change me! Set the plugin formats you want built
-# Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
-set(FORMATS AU VST3)
-
 # For simplicity, the name of the CMake project is also the name of the target
 project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
+
+# Change me! Set the plugin formats you want built
+# Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(FORMATS VST3 LV2)
+else ()
+    set(FORMATS AU VST3)
+endif ()
 
 # include boost for this project
 find_package(Boost 1.80.0 REQUIRED)
@@ -126,9 +130,9 @@ target_compile_definitions(SharedCode
 
         # JucePlugin_Name is for some reason doesn't use the nicer PRODUCT_NAME
         PRODUCT_NAME_WITHOUT_VERSION="${PRODUCT_NAME}"
-#        JUCE_COREGRAPHICS_RENDER_WITH_MULTIPLE_PAINT_CALLS=1
+        #        JUCE_COREGRAPHICS_RENDER_WITH_MULTIPLE_PAINT_CALLS=1
         JUCE_SILENCE_XCODE_15_LINKER_WARNING=1
-        )
+)
 
 # Link to any other modules you added (with juce_add_module) here!
 # Usually JUCE modules must have PRIVATE visibility
