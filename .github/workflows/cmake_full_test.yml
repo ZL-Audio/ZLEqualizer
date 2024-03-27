@@ -37,12 +37,18 @@ jobs:
           - name: Linux
             os: ubuntu-22.04
             pluginval-binary: ./pluginval
+            boost_platform_version: "22.04"
+            boost_toolset: "gcc"
           - name: macOS
-            os: macos-13
+            os: macos-12
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+            boost_platform_version: "11"
+            boost_toolset: "clang"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
+            boost_platform_version: "2022"
+            boost_toolset: "mingw"
 
     steps:
 
@@ -113,6 +119,9 @@ jobs:
       id: install-boost
       with:
         boost_version: 1.80.0
+        platform_version: ${{ matrix.boost_platform_version }}
+        toolset: ${{ matrix.boost_toolset }}
+        link: "static"
 
     - name: Cache the build
       uses: mozilla-actions/sccache-action@v0.0.4
