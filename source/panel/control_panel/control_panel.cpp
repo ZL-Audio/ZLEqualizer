@@ -29,7 +29,6 @@ namespace zlPanel {
         parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
     }
 
-
     void ControlPanel::resized() {
         const auto bound = getLocalBounds().toFloat();
         const auto actualBound = uiBase.getRoundedShadowRectangleArea(bound, uiBase.getFontSize(), {});
@@ -51,5 +50,4 @@ namespace zlPanel {
         leftControlPanel.attachGroup(bandIdx.load());
         rightControlPanel.attachGroup(bandIdx.load());
     }
-
 } // zlPanel

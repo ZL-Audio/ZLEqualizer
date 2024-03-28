@@ -154,16 +154,14 @@ namespace zlPanel {
                 case zlIIR::FilterType::highShelf:
                 case zlIIR::FilterType::bandShelf:
                 case zlIIR::FilterType::tiltShelf: {
-                    const juce::MessageManagerLock mmLock;
-                    gainC.setEditable(true);
+                    gainCEditable.store(true);
                     break;
                 }
                 case zlIIR::FilterType::lowPass:
                 case zlIIR::FilterType::highPass:
                 case zlIIR::FilterType::bandPass:
                 case zlIIR::FilterType::notch: {
-                    const juce::MessageManagerLock mmLock;
-                    gainC.setEditable(false);
+                    gainCEditable.store(false);
                     break;
                 }
             }
@@ -174,15 +172,13 @@ namespace zlPanel {
                 case zlIIR::FilterType::highShelf:
                 case zlIIR::FilterType::bandShelf:
                 case zlIIR::FilterType::tiltShelf: {
-                    const juce::MessageManagerLock mmLock;
-                    slopeC.getBox().setItemEnabled(1, true);
+                    slopCEnable.store(true);
                     break;
                 }
                 case zlIIR::FilterType::peak:
                 case zlIIR::FilterType::bandPass:
                 case zlIIR::FilterType::notch: {
-                    const juce::MessageManagerLock mmLock;
-                    slopeC.getBox().setItemEnabled(1, false);
+                    slopCEnable.store(false);
                     break;
                 }
             }
@@ -191,9 +187,8 @@ namespace zlPanel {
             }
         } else if (id == zlDSP::dynamicON::ID) {
             const auto f = static_cast<bool>(newValue); {
-                const juce::MessageManagerLock mmLock;
-                gainC.setShowSlider2(gainC.getEditable() && f);
-                qC.setShowSlider2(f);
+                gainS2Editable.store(gainCEditable.load() && f);
+                qS2Editable.store(f);
             }
             if (idx == bandIdx.load()) {
                 triggerAsyncUpdate();
@@ -202,6 +197,10 @@ namespace zlPanel {
     }
 
     void LeftControlPanel::handleAsyncUpdate() {
+        gainC.setEditable(gainCEditable.load());
+        slopeC.getBox().setItemEnabled(1, slopCEnable.load());
+        gainC.setShowSlider2(gainS2Editable.load());
+        qC.setShowSlider2(qS2Editable.load());
         repaint();
     }
 }

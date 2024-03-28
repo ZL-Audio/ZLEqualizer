@@ -16,7 +16,7 @@
 #include "../../../gui/gui.hpp"
 
 namespace zlPanel {
-    class ResetComponent : public juce::Component {
+    class ResetComponent final : public juce::Component {
     public:
         explicit ResetComponent(juce::AudioProcessorValueTreeState &parameters,
                                 juce::AudioProcessorValueTreeState &parametersNA,

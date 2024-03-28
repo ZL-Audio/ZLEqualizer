@@ -18,7 +18,8 @@
 namespace zlPanel {
     class ButtonPopUp final : public juce::Component,
                               public juce::ComponentListener,
-                              private juce::AudioProcessorValueTreeState::Listener {
+                              private juce::AudioProcessorValueTreeState::Listener,
+                              private juce::AsyncUpdater {
     public:
         explicit ButtonPopUp(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
@@ -64,6 +65,9 @@ namespace zlPanel {
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        std::atomic<float> freq{1000.f};
+        void handleAsyncUpdate() override;
     };
 } // zlPanel
 

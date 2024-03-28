@@ -150,7 +150,12 @@ namespace zlPanel {
 
     void ButtonPopUp::parameterChanged(const juce::String &parameterID, float newValue) {
         juce::ignoreUnused(parameterID);
-        const auto pitchIdx = juce::roundToInt(12 * std::log2(newValue / 440.f));
+        freq.store(newValue);
+        triggerAsyncUpdate();
+    }
+
+    void ButtonPopUp::handleAsyncUpdate() {
+        const auto pitchIdx = juce::roundToInt(12 * std::log2(freq.load() / 440.f));
         const auto pitchIdx1 = (pitchIdx + 240) % 12;
         const auto pitchIdx2 = (pitchIdx + 240) / 12 - 16;
         const auto pitchString = pitchIdx2 >= 0
@@ -159,4 +164,5 @@ namespace zlPanel {
         const juce::MessageManagerLock mmLock;
         pitchLabel.setText(pitchString, juce::dontSendNotification);
     }
+
 } // zlPanel

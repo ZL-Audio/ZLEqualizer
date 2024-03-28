@@ -93,14 +93,15 @@ namespace zlPanel {
 
     void FilterButtonPanel::setMaximumDB(const float db) {
         maximumDB.store(db);
-        updateAttachment();
-        updateTargetAttachment();
+        toUpdateAttachment.store(true);
+        toUpdateTargetAttachment.store(true);
+        triggerAsyncUpdate();
     }
 
     void FilterButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
             isSelectedTarget.store(static_cast<size_t>(newValue) == band.load());
-            updateTargetAttachment();
+            toUpdateTargetAttachment.store(true);
             triggerAsyncUpdate();
             return;
         }
@@ -125,9 +126,9 @@ namespace zlPanel {
                     break;
                 }
             }
-            updateAttachment();
-            updateTargetAttachment();
-            updateBounds();
+            toUpdateAttachment.store(true);
+            toUpdateTargetAttachment.store(true);
+            toUpdateBounds.store(true);
             triggerAsyncUpdate();
         } else if (parameter == zlState::active::ID) {
             const auto f = static_cast<bool>(newValue);
@@ -137,11 +138,11 @@ namespace zlPanel {
             if (!f) {
                 removeChildComponent(&buttonPopUp);
             }
-            updateTargetAttachment();
+            toUpdateTargetAttachment.store(true);
             triggerAsyncUpdate();
         } else if (parameter == zlDSP::dynamicON::ID) {
             isDynamicHasTarget.store(static_cast<bool>(newValue));
-            updateTargetAttachment();
+            toUpdateTargetAttachment.store(true);
             triggerAsyncUpdate();
         } else if (parameter == zlDSP::lrType::ID) {
             lrType.store(static_cast<zlDSP::lrType::lrTypes>(newValue));
@@ -167,6 +168,15 @@ namespace zlPanel {
     }
 
     void FilterButtonPanel::handleAsyncUpdate() {
+        if (toUpdateAttachment.exchange(false)) {
+            updateAttachment();
+        }
+        if (toUpdateTargetAttachment.exchange(false)) {
+            updateTargetAttachment();
+        }
+        if (toUpdateBounds.exchange(false)) {
+            updateBounds();
+        }
         dragger.repaint();
         targetDragger.repaint();
         sideDragger.repaint();
@@ -175,7 +185,6 @@ namespace zlPanel {
     }
 
     void FilterButtonPanel::updateAttachment() {
-        juce::ScopedLock lock(targetLock);
         const auto maxDB = maximumDB.load();
         const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
         switch (fType.load()) {
@@ -207,7 +216,6 @@ namespace zlPanel {
                     dragger);
                 attachment->enableX(true);
                 attachment->enableY(false); {
-                    const juce::MessageManagerLock mmLock;
                     attachment->setY(0.5f);
                 }
                 attachment->sendInitialUpdate();
@@ -217,7 +225,6 @@ namespace zlPanel {
     }
 
     void FilterButtonPanel::updateBounds() {
-        const juce::MessageManagerLock mmLock;
         auto bound = getLocalBounds().toFloat();
         bound.removeFromRight((1 - 0.98761596f) * bound.getWidth() - uiBase.getFontSize() * scale * .5f);
         dragger.setPadding(0.f, uiBase.getFontSize() * scale * .5f, uiBase.getFontSize() * scale * .5f,
@@ -299,13 +306,11 @@ namespace zlPanel {
             targetAttach->enableY(true);
             targetAttach->sendInitialUpdate();
 
-            const juce::MessageManagerLock mmLock;
             targetDragger.setVisible(true);
         } else {
             targetDragger.setActive(false);
             targetDragger.setInterceptsMouseClicks(false, false);
             targetAttach.reset();
-            const juce::MessageManagerLock mmLock;
             targetDragger.setVisible(false);
         }
         if (isDynamicHasTarget.load() && isSelectedTarget.load() && isActiveTarget.load()) {
@@ -323,13 +328,11 @@ namespace zlPanel {
             sideAttach->enableY(false);
             sideAttach->sendInitialUpdate();
 
-            const juce::MessageManagerLock mmLock;
             sideDragger.setVisible(true);
         } else {
             sideDragger.setActive(false);
             sideDragger.setInterceptsMouseClicks(false, false);
             sideAttach.reset();
-            const juce::MessageManagerLock mmLock;
             sideDragger.setVisible(false);
         }
     }

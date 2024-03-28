@@ -62,11 +62,12 @@ namespace zlPanel {
         std::atomic<size_t> band;
         std::atomic<bool> isFilterTypeHasTarget{false}, isDynamicHasTarget{false},
                 isSelectedTarget{false}, isActiveTarget{false};
-        juce::CriticalSection targetLock;
 
         static constexpr std::array IDs{zlDSP::fType::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID};
         static constexpr std::array NAIDs{zlState::active::ID};
         static constexpr auto scale = 1.5f;
+
+        std::atomic<bool> toUpdateAttachment{false}, toUpdateBounds{false}, toUpdateTargetAttachment{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

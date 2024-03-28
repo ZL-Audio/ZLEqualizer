@@ -55,6 +55,8 @@ namespace zlPanel {
 
         std::atomic<size_t> bandIdx;
 
+        std::atomic<bool> gainCEditable{true}, slopCEnable{true}, gainS2Editable{false}, qS2Editable{false};
+
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void handleAsyncUpdate() override;
