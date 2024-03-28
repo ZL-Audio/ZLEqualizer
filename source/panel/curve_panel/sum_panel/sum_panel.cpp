@@ -19,22 +19,23 @@ namespace zlPanel {
         for (auto &path: paths) {
             path.preallocateSpace(zlIIR::frequencies.size() * 3);
         }
-        startThread(juce::Thread::Priority::low);
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             for (const auto &idx : changeIDs) {
                 parametersRef.addParameterListener(zlDSP::appendSuffix(idx, i), this);
             }
         }
+        startThread(juce::Thread::Priority::low);
+        juce::ignoreUnused(parametersRef);
     }
 
     SumPanel::~SumPanel() {
+        if (isThreadRunning()) {
+            stopThread(-1);
+        }
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             for (const auto &idx : changeIDs) {
                 parametersRef.removeParameterListener(zlDSP::appendSuffix(idx, i), this);
             }
-        }
-        if (isThreadRunning()) {
-            stopThread(-1);
         }
     }
 
@@ -53,7 +54,20 @@ namespace zlPanel {
             g.strokePath(paths[j], juce::PathStrokeType(uiBase.getFontSize() * 0.2f,
                                                         juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
-        notify();
+    }
+
+    void SumPanel::checkRepaint() {
+        if (toRepaint.load()) {
+            toRepaint.store(false);
+            notify();
+            return;
+        }
+        for (size_t i = 0; i < zlState::bandNUM; ++i) {
+            if (c.getFilter(i).getMainFilter().getMagOutdated()) {
+                notify();
+                return;
+            }
+        }
     }
 
     void SumPanel::run() {
@@ -99,10 +113,15 @@ namespace zlPanel {
                 }
             }
         }
+        triggerAsyncUpdate();
+    }
+
+    void SumPanel::handleAsyncUpdate() {
+        repaint();
     }
 
     void SumPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         juce::ignoreUnused(parameterID, newValue);
-        notify();
+        toRepaint.store(true);
     }
 } // zlPanel

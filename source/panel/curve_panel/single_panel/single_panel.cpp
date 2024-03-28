@@ -67,14 +67,14 @@ namespace zlPanel {
         g.setColour(colour);
         // draw curve
         {
-            juce::ScopedLock lock(curvePathLock);
+            // juce::ScopedLock lock(curvePathLock);
             g.strokePath(curvePath, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
                                                          juce::PathStrokeType::rounded));
         }
         // draw shadow
         if (selected.load()) {
             g.setColour(colour.withMultipliedAlpha(0.125f));
-            juce::ScopedLock lock(shadowPathLock);
+            // juce::ScopedLock lock(shadowPathLock);
             g.fillPath(shadowPath);
         }
         // draw dynamic shadow
@@ -84,7 +84,7 @@ namespace zlPanel {
             } else {
                 g.setColour(colour.withMultipliedAlpha(0.125f));
             }
-            juce::ScopedLock lock(dynPathLock);
+            // juce::ScopedLock lock(dynPathLock);
             g.fillPath(dynPath);
         }
         // draw the line between the curve and the button
@@ -135,10 +135,12 @@ namespace zlPanel {
 
     void SinglePanel::checkRepaint() {
         if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
-            handleAsyncUpdate();
+            updatePaths();
+            repaint();
         } else if (toRepaint.load()) {
             toRepaint.store(false);
-            handleAsyncUpdate();
+            updatePaths();
+            repaint();
         }
         sidePanel.checkRepaint();
     }

@@ -18,7 +18,8 @@
 namespace zlPanel {
     class SumPanel final : public juce::Component,
                            private juce::Thread,
-    private juce::AudioProcessorValueTreeState::Listener {
+                           private juce::AsyncUpdater,
+                           private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SumPanel(juce::AudioProcessorValueTreeState &parameters,
                           zlInterface::UIBase &base,
@@ -30,6 +31,8 @@ namespace zlPanel {
 
         void setMaximumDB(const float x) { maximumDB.store(x); }
 
+        void checkRepaint();
+
     private:
         std::array<juce::Path, 5> paths;
         juce::AudioProcessorValueTreeState &parametersRef;
@@ -40,11 +43,14 @@ namespace zlPanel {
 
         static constexpr std::array changeIDs{
             // zlDSP::fType::ID, zlDSP::slope::ID,
-            zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID,
+            zlDSP::lrType::ID,
             // zlDSP::targetGain::ID, zlDSP::targetQ::ID
         };
+        std::atomic<bool> toRepaint{false};
 
         void run() override;
+
+        void handleAsyncUpdate() override;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
     };

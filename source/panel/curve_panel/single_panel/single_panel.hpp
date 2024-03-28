@@ -43,7 +43,7 @@ namespace zlPanel {
 
     private:
         juce::Path curvePath, shadowPath, dynPath;
-        juce::CriticalSection curvePathLock, shadowPathLock, dynPathLock;
+        // juce::CriticalSection curvePathLock, shadowPathLock, dynPathLock;
 
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;

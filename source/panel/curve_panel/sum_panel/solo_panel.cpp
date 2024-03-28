@@ -68,9 +68,11 @@ namespace zlPanel {
         if (soloF.getMagOutdated()) {
             soloF.setMagOutdated(false);
             handleAsyncUpdate();
+            repaint();
         } else if (toRepaint.load()) {
             toRepaint.store(false);
             handleAsyncUpdate();
+            repaint();
         }
     }
 
@@ -87,6 +89,5 @@ namespace zlPanel {
 
         scale1.store(std::log(static_cast<float>(freq1) / 10.f) / std::log(2200.f));
         scale2.store(std::log(static_cast<float>(freq2) / 10.f) / std::log(2200.f));
-        repaint();
     }
 } // zlPanel
