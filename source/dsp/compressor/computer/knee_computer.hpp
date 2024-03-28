@@ -42,7 +42,6 @@ namespace zlCompressor {
         FloatType process(FloatType x) override;
 
         inline void setThreshold(FloatType v) {
-            const juce::ScopedLock scopedLock(paraUpdateLock);
             threshold.store(v);
             interpolate();
         }
@@ -50,7 +49,6 @@ namespace zlCompressor {
         inline FloatType getThreshold() const { return threshold.load(); }
 
         inline void setRatio(FloatType v) {
-            const juce::ScopedLock scopedLock(paraUpdateLock);
             ratio.store(v);
             interpolate();
         }
@@ -58,7 +56,6 @@ namespace zlCompressor {
         inline FloatType getRatio() const { return ratio.load(); }
 
         inline void setKneeW(FloatType v) {
-            const juce::ScopedLock scopedLock(paraUpdateLock);
             kneeW.store(v);
             interpolate();
         }
@@ -66,7 +63,6 @@ namespace zlCompressor {
         inline FloatType getKneeW() const { return kneeW.load(); }
 
         inline void setKneeD(FloatType v) {
-            const juce::ScopedLock scopedLock(paraUpdateLock);
             kneeD.store(v);
             interpolate();
         }
@@ -74,7 +70,6 @@ namespace zlCompressor {
         inline FloatType getKneeD() const { return kneeD.load(); }
 
         inline void setKneeS(FloatType v) {
-            const juce::ScopedLock scopedLock(paraUpdateLock);
             kneeS.store(v);
             interpolate();
         }

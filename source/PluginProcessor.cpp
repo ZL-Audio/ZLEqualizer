@@ -126,7 +126,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    controller.process(doubleBuffer);
+    controller.process(buffer);
 }
 
 //==============================================================================
