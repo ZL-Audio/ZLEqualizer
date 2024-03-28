@@ -114,7 +114,6 @@ namespace zlDSP {
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
 
         std::array<FloatType, zlIIR::frequencies.size()> dBs{};
-        juce::ReadWriteLock magLock;
 
         zlDelay::SampleDelay<FloatType> delay;
 

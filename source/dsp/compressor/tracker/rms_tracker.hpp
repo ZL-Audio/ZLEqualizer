@@ -50,7 +50,6 @@ namespace zlCompressor {
         FloatType secondPerBuffer = FloatType(0.01);
         boost::circular_buffer<FloatType> loudnessBuffer{1};
         std::atomic<size_t> currentSize;
-        juce::CriticalSection paraLock;
     };
 
 } // zldetector

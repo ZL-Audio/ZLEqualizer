@@ -96,7 +96,6 @@ namespace zlCompressor {
         std::atomic<FloatType> tempA {0}, tempB{0}, tempC{0};
         std::atomic<FloatType> reductionAtKnee{0};
         std::unique_ptr<boost::math::interpolators::cubic_hermite<std::array<FloatType, 3>>> cubic;
-        juce::CriticalSection paraUpdateLock;
 
         void interpolate();
     };

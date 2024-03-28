@@ -298,7 +298,6 @@ namespace zlDSP {
         for (size_t i = 0; i < bandNUM; i++) {
             if (filterLRs[i].load() == lr && !filters[i].getBypass()) {
                 filters[i].getMainFilter().updateDBs();
-                const juce::ScopedReadLock localScopedLock(filters[i].getMainFilter().getMagLock());
                 std::transform(dBs.begin(), dBs.end(),
                                filters[i].getMainFilter().getDBs().begin(),
                                dBs.begin(), std::plus<FloatType>());
