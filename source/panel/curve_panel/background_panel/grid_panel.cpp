@@ -12,7 +12,6 @@
 namespace zlPanel {
     GridPanel::GridPanel(zlInterface::UIBase &base) : uiBase(base) {
         setInterceptsMouseClicks(false, false);
-        // setBufferedToImage(true);
     }
 
     GridPanel::~GridPanel() = default;

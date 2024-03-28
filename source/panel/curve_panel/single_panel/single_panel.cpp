@@ -23,8 +23,11 @@ namespace zlPanel {
           sidePanel(bandIdx, parameters, parametersNA, base, controller),
           currentT(juce::Time::getCurrentTime()) {
         curvePath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
+        curvePath.setCacheEnabled(true);
         shadowPath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
+        shadowPath.setCacheEnabled(true);
         dynPath.preallocateSpace(zlIIR::frequencies.size() * 6 + 12);
+        dynPath.setCacheEnabled(true);
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         juce::ignoreUnused(controllerRef);
@@ -62,7 +65,9 @@ namespace zlPanel {
         if (!actived.load()) {
             return;
         }
-        if (toRepaint.load()) {
+        if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
+            updatePaths();
+        } else if (toRepaint.load()) {
             toRepaint.store(false);
             updatePaths();
         }
