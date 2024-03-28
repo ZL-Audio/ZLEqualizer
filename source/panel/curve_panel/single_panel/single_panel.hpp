@@ -36,7 +36,7 @@ namespace zlPanel {
 
         void setMaximumDB(const float x) {
             maximumDB.store(x);
-            triggerAsyncUpdate();
+            toRepaint.store(true);
         }
 
         void checkRepaint();

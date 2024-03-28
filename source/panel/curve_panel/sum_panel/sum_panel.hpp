@@ -29,7 +29,10 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void setMaximumDB(const float x) { maximumDB.store(x); }
+        void setMaximumDB(const float x) {
+            maximumDB.store(x);
+            toRepaint.store(true);
+        }
 
         void checkRepaint();
 
