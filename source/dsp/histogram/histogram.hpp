@@ -31,7 +31,7 @@ namespace zlHistogram {
         FloatType getPercentile(const FloatType x) const {
             FloatType totoalHits = 0;
             for (auto & hit : hits) {
-                totoalHits += hit.load();
+                totoalHits += static_cast<FloatType>(hit.load());
             }
             const FloatType targetHits = x * totoalHits;
             FloatType currentHits = 0;

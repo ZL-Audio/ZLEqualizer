@@ -43,7 +43,7 @@ namespace zlPanel {
 
         static constexpr std::array changeIDs{
             // zlDSP::fType::ID, zlDSP::slope::ID,
-            zlDSP::lrType::ID,
+            zlDSP::bypass::ID, zlDSP::lrType::ID,
             // zlDSP::targetGain::ID, zlDSP::targetQ::ID
         };
         std::atomic<bool> toRepaint{false};

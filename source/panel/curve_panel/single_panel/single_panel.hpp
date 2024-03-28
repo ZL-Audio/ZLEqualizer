@@ -59,7 +59,7 @@ namespace zlPanel {
         juce::Time currentT;
 
         static constexpr std::array changeIDs{
-            zlDSP::lrType::ID, zlDSP::dynamicON::ID
+            zlDSP::bypass::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID
         };
 
         juce::Colour colour;

@@ -62,6 +62,10 @@ namespace zlPanel {
         if (!actived.load()) {
             return;
         }
+        if (toRepaint.load()) {
+            toRepaint.store(false);
+            updatePaths();
+        }
         colour = uiBase.getColorMap1(idx);
         const auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
         g.setColour(colour);
