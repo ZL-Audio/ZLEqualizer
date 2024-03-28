@@ -43,6 +43,10 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::process() {
         if (isON.load()) {
+            if (toClear.load()) {
+                clearAll();
+                toClear.store(false);
+            }
             if (!preFFT.getIsAudioReady() &&
                 !postFFT.getIsAudioReady() &&
                 !sideFFT.getIsAudioReady()) {
@@ -69,22 +73,19 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPreON(const bool x) {
-        juce::ScopedLock lock(fftOnOffLock);
-        clearAll();
+        toClear.store(true);
         isPreON.store(x);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPostON(const bool x) {
-        juce::ScopedLock lock(fftOnOffLock);
-        clearAll();
+        toClear.store(true);
         isPostON.store(x);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setSideON(const bool x) {
-        juce::ScopedLock lock(fftOnOffLock);
-        clearAll();
+        toClear.store(true);
         isSideON.store(x);
     }
 

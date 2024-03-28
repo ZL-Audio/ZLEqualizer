@@ -38,16 +38,12 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::clear() {
-        juce::ScopedWriteLock lock(fftParaLock);
-        audioIndex = 0;
-        isAudioReady.store(false);
-        isFFTReady.store(false);
-        std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
+        toClear.store(true);
+
     }
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::setOrder(int fftOrder) {
-        juce::ScopedWriteLock lock(fftParaLock);
         fft = std::make_unique<juce::dsp::FFT>(fftOrder);
         window = std::make_unique<
             juce::dsp::WindowingFunction<float> >(static_cast<size_t>(fft->getSize()),
@@ -73,8 +69,14 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+        if (toClear.load()) {
+            audioIndex = 0;
+            isAudioReady.store(false);
+            isFFTReady.store(false);
+            std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
+            toClear.store(false);
+        }
         if (isAudioReady.load()) { return; }
-        juce::ScopedReadLock lock(fftParaLock);
         auto lBuffer = buffer.getReadPointer(0);
         auto rBuffer = buffer.getReadPointer(1);
         auto mBuffer = audioBuffer.getWritePointer(0);

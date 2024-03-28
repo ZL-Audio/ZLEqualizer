@@ -55,6 +55,7 @@ namespace zlFFT {
         juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
         std::atomic<bool> isON{false};
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
+        std::atomic<bool> toClear{false};
 
         juce::CriticalSection fftOnOffLock;
 

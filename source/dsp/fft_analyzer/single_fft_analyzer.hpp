@@ -70,6 +70,7 @@ namespace zlFFT {
 
         static constexpr auto minFreq = 20.f, maxFreq = 22000.f, minDB = -72.f;
         std::atomic<float> sampleRate;
+        std::atomic<bool> toClear{false};
 
         inline float indexToX(const size_t index, const juce::Rectangle<float> bounds) const {
             const auto portion = (static_cast<float>(index) + .5f) / static_cast<float>(fft->getSize());
