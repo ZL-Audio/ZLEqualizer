@@ -30,7 +30,9 @@ namespace zlCompressor {
 
         virtual void setMomentarySize(size_t mSize) = 0;
 
-        virtual inline FloatType getMomentaryLoudness() = 0;
+        virtual void setMaximumMomentarySize(size_t mSize) = 0;
+
+        virtual FloatType getMomentaryLoudness() = 0;
     };
 }
 

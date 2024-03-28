@@ -11,7 +11,6 @@
 #include "rms_tracker.hpp"
 
 namespace zlCompressor {
-
     template<typename FloatType>
     RMSTracker<FloatType>::~RMSTracker() {
         loudnessBuffer.clear();
@@ -19,8 +18,7 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void RMSTracker<FloatType>::reset() {
-        loudnessBuffer.clear();
-        mLoudness = 0;
+        mLoudness.store(0);
     }
 
     template<typename FloatType>
@@ -40,27 +38,39 @@ namespace zlCompressor {
             }
         }
 
-        _ms = _ms / static_cast<FloatType> (buffer.getNumSamples());
+        _ms = _ms / static_cast<FloatType>(buffer.getNumSamples());
 
         // push mean square into the circular buffer
-        juce::ScopedLock lock(paraLock);
-        if (loudnessBuffer.size() == loudnessBuffer.capacity()) {
-            mLoudness -= loudnessBuffer.front();
+        if (loudnessBuffer.size() > currentSize.load()) {
+            mLoudness.store(0);
+            loudnessBuffer.clear();
+        }
+
+        while (loudnessBuffer.size() >= currentSize.load()) {
+            mLoudness.store(mLoudness.load() - loudnessBuffer.front());
+            loudnessBuffer.pop_front();
         }
 
         loudnessBuffer.push_back(_ms);
-        mLoudness += _ms;
+        mLoudness.store(mLoudness.load() + loudnessBuffer.front());
     }
 
     template<typename FloatType>
     void RMSTracker<FloatType>::setMomentarySize(size_t mSize) {
-        juce::ScopedLock lock(paraLock);
         mSize = std::max(static_cast<size_t>(1), mSize);
-        while (loudnessBuffer.size() > mSize) {
-            mLoudness -= loudnessBuffer.front();
-            loudnessBuffer.pop_front();
-        }
+        currentSize.store(mSize);
+    }
+
+    template<typename FloatType>
+    void RMSTracker<FloatType>::setMaximumMomentarySize(size_t mSize) {
+        mSize = std::max(static_cast<size_t>(1), mSize);
         loudnessBuffer.set_capacity(mSize);
+    }
+
+    template<typename FloatType>
+    FloatType RMSTracker<FloatType>::getMomentaryLoudness() {
+        FloatType meanSquare = mLoudness.load() / static_cast<FloatType>(currentSize.load());
+        return juce::Decibels::gainToDecibels(meanSquare, minusInfinityDB * 2) * static_cast<FloatType>(0.5);
     }
 
     template

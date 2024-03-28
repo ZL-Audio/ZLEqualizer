@@ -37,22 +37,19 @@ namespace zlCompressor {
 
         void setMomentarySize(size_t mSize) override;
 
-        inline size_t getMomentarySize() {
-            return loudnessBuffer.capacity();
+        void setMaximumMomentarySize(size_t mSize) override;
+
+        inline size_t getMomentarySize() const {
+            return currentSize.load();
         }
 
-        inline FloatType getMomentaryLoudness() override {
-            juce::ScopedLock lock(paraLock);
-            FloatType meanSquare =
-                    loudnessBuffer.size() > 0 ? mLoudness / static_cast<FloatType>(loudnessBuffer.size()) : 0;
-
-            return juce::Decibels::gainToDecibels(meanSquare, minusInfinityDB * 2) * static_cast<FloatType>(0.5);
-        }
+        FloatType getMomentaryLoudness() override;
 
     private:
-        FloatType mLoudness = 0;
+        std::atomic<FloatType> mLoudness {0};
         FloatType secondPerBuffer = FloatType(0.01);
         boost::circular_buffer<FloatType> loudnessBuffer{1};
+        std::atomic<size_t> currentSize;
         juce::CriticalSection paraLock;
     };
 

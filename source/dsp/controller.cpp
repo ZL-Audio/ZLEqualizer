@@ -50,6 +50,11 @@ namespace zlDSP {
         for (auto &t: {&tracker, &lTracker, &rTracker, &mTracker, &sTracker}) {
             t->prepare(subSpec);
         }
+        const auto numRMS = static_cast<size_t>(
+            zlDSP::dynRMS::range.end / 1000.f * static_cast<float>(spec.sampleRate));
+        for (auto &f: filters) {
+            f.getCompressor().getTracker().setMaximumMomentarySize(numRMS);
+        }
     }
 
     template<typename FloatType>
