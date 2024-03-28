@@ -80,10 +80,8 @@ namespace zlPanel {
         if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
             && analyzer.isFFTReady()) {
             fftPanel.repaint();
-            // currentT = nowT;
         } else if (controllerRef.getConflictAnalyzer().getIsConflictReady()) {
             conflictPanel.repaint();
-            // currentT = nowT;
         }
         if ((nowT - currentT).inMilliseconds() > 16) {
             currentT = nowT;
@@ -92,7 +90,7 @@ namespace zlPanel {
             for (const auto &sP: singlePanels) {
                 sP->checkRepaint();
             }
+            soloPanel.checkRepaint();
         }
-        soloPanel.checkRepaint();
     }
 }
