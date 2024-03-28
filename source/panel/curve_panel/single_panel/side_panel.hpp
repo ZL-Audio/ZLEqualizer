@@ -39,6 +39,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         zlIIR::Filter<double> &sideF;
         std::atomic<bool> dynON, selected, actived;
+        std::atomic<bool> toRepaint{false};
 
         static constexpr std::array changeIDs{
             zlDSP::dynamicON::ID

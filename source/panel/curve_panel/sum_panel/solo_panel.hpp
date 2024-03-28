@@ -35,6 +35,7 @@ namespace zlPanel {
         zlIIR::Filter<double> &soloF;
         zlDSP::Controller<double> &controllerRef;
         std::atomic<float> scale1{.5f}, scale2{.5f};
+        std::atomic<bool> toRepaint{false};
 
         static constexpr std::array changeIDs{
             zlDSP::solo::ID, zlDSP::sideSolo::ID

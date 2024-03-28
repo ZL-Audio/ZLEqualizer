@@ -54,6 +54,7 @@ namespace zlPanel {
         zlIIR::Filter<double> &baseF, &targetF;
         std::atomic<float> maximumDB;
         std::atomic<bool> skipRepaint{false};
+        std::atomic<bool> toRepaint{false};
         SidePanel sidePanel;
         juce::Time currentT;
 

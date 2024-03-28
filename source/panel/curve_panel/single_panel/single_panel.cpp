@@ -135,7 +135,10 @@ namespace zlPanel {
 
     void SinglePanel::checkRepaint() {
         if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
-            triggerAsyncUpdate();
+            handleAsyncUpdate();
+        } else if (toRepaint.load()) {
+            toRepaint.store(false);
+            handleAsyncUpdate();
         }
         sidePanel.checkRepaint();
     }
@@ -187,7 +190,7 @@ namespace zlPanel {
                 dynON.store(static_cast<bool>(newValue));
             }
         }
-        triggerAsyncUpdate();
+        toRepaint.store(true);
     }
 
     void SinglePanel::handleAsyncUpdate() {
@@ -200,14 +203,14 @@ namespace zlPanel {
     void SinglePanel::updatePaths() {
         // draw curve
         {
-            juce::ScopedLock lock(curvePathLock);
+            // juce::ScopedLock lock(curvePathLock);
             baseF.updateDBs();
             curvePath.clear();
             drawCurve(curvePath, baseF.getDBs());
         }
         // draw shadow
         {
-            juce::ScopedLock lock(shadowPathLock);
+            // juce::ScopedLock lock(shadowPathLock);
             shadowPath.clear();
             drawCurve(shadowPath, baseF.getDBs());
             if (selected.load()) {
@@ -238,7 +241,7 @@ namespace zlPanel {
         }
         // draw dynamic shadow
         {
-            juce::ScopedLock lock(dynPathLock);
+            // juce::ScopedLock lock(dynPathLock);
             dynPath.clear();
             drawCurve(dynPath, baseF.getDBs());
             if (dynON.load()) {
