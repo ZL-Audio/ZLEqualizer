@@ -123,6 +123,12 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     buffer.makeCopyOf(doubleBuffer, true);
 }
 
+void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) {
+    juce::ignoreUnused(midiMessages);
+    juce::ScopedNoDenormals noDenormals;
+    controller.process(doubleBuffer);
+}
+
 //==============================================================================
 bool PluginProcessor::hasEditor() const {
     return true; // (change this to false if you choose to not supply an editor)
