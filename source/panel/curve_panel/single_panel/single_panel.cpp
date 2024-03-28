@@ -65,9 +65,7 @@ namespace zlPanel {
         if (!actived.load()) {
             return;
         }
-        if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
-            updatePaths();
-        } else if (toRepaint.load()) {
+        if (toRepaint.load()) {
             toRepaint.store(false);
             updatePaths();
         }
@@ -212,6 +210,7 @@ namespace zlPanel {
     }
 
     void SinglePanel::updatePaths() {
+        juce::ScopedNoDenormals noDenormals;
         // draw curve
         {
             // juce::ScopedLock lock(curvePathLock);

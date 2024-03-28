@@ -112,6 +112,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::run() {
+        juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
             if (isPreON.load() && preFFT.getIsAudioReady()) {
                 preFFT.run();

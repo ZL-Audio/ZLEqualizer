@@ -69,6 +69,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::run() {
+        juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
             mainAnalyzer.run();
             refAnalyzer.run();

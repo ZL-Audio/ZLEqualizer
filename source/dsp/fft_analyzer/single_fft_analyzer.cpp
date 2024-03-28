@@ -94,6 +94,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::run() {
+        juce::ScopedNoDenormals noDenormals;
         if (isAudioReady.load() && !isFFTReady.load()) {
             juce::ScopedReadLock lock1(fftParaLock);
             fftBuffer.copyFrom(0, 0, audioBuffer, 0, 0, audioBuffer.getNumSamples());
@@ -145,6 +146,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::createPath(juce::Path &path, const juce::Rectangle<float> bound) {
+        juce::ScopedNoDenormals noDenormals;
         path.clear();
         juce::ScopedLock lock(ampUpdatedLock);
         path.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);

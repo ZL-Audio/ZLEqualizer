@@ -71,6 +71,7 @@ namespace zlPanel {
     }
 
     void SumPanel::run() {
+        juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
