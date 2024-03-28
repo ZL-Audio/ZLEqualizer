@@ -72,7 +72,7 @@ namespace zlDSP {
 
         bool getLearningHistON(size_t idx) const { return isHistON[idx].load(); }
 
-        zlHistogram::Histogram<FloatType> &getLearningHist(const size_t idx) { return histograms[idx]; }
+        zlHistogram::Histogram<FloatType, 80> &getLearningHist(const size_t idx) { return histograms[idx]; }
 
         void setLookAhead(float x);
 
@@ -107,7 +107,7 @@ namespace zlDSP {
         std::atomic<size_t> soloIdx;
         std::atomic<bool> useSolo = false, soloSide = false;
 
-        std::array<zlHistogram::Histogram<FloatType>, bandNUM> histograms;
+        std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> histograms;
         std::array<std::atomic<bool>, bandNUM> isHistON;
 
         static inline double subBufferLength = 0.001;

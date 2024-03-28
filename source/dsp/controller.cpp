@@ -13,9 +13,6 @@ namespace zlDSP {
     template<typename FloatType>
     Controller<FloatType>::Controller(juce::AudioProcessor &processor)
         : processorRef(processor) {
-        for (auto &h: histograms) {
-            h.setSize(80);
-        }
     }
 
     template<typename FloatType>
@@ -391,7 +388,6 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setLearningHist(const size_t idx, const bool isLearning) {
-        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         if (isLearning) {
             histograms[idx].reset();
         }

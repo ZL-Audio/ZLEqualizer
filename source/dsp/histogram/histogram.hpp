@@ -13,22 +13,40 @@
 #include <juce_dsp/juce_dsp.h>
 
 namespace zlHistogram {
-    template<typename FloatType>
+    template<typename FloatType, size_t Size>
     class Histogram {
     public:
         Histogram() = default;
 
-        void reset();
+        void reset()  {
+            for (auto & hit : hits) {
+                hit.store(0);
+            }
+        }
 
-        void push(size_t x);
+        void push(const size_t x) {
+            hits[x].fetch_add(1);
+        }
 
-        void setSize(size_t x);
-
-        FloatType getPercentile(FloatType x) const;
+        FloatType getPercentile(const FloatType x) const {
+            FloatType totoalHits = 0;
+            for (auto & hit : hits) {
+                totoalHits += hit.load();
+            }
+            const FloatType targetHits = x * totoalHits;
+            FloatType currentHits = 0;
+            for (size_t i = 0; i < hits.size(); ++i) {
+                const auto hit = static_cast<FloatType>(hits[i].load());
+                currentHits += hit;
+                if (currentHits >= targetHits) {
+                    return static_cast<FloatType>(i) + (currentHits - targetHits) / std::max(hit, FloatType(1));
+                }
+            }
+            return FloatType(1);
+        }
 
     private:
-        std::vector<FloatType> hits;
-        juce::ReadWriteLock histLock;
+        std::array<std::atomic<size_t>, Size> hits;
     };
 }
 
