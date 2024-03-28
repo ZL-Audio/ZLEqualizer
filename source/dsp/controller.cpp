@@ -359,7 +359,7 @@ namespace zlDSP {
         soloFilter.setOrder(2, false);
         soloFilter.setFreq(freq, false);
         soloFilter.setQ(q, true);
-        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
+
         useSolo.store(true);
         soloIdx.store(idx);
         soloSide.store(isSide);
@@ -367,7 +367,6 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setRelative(const size_t idx, const bool isRelative) {
-        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         dynRelatives[idx].store(isRelative);
         updateTrackersON();
     }

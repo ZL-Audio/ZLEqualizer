@@ -62,7 +62,6 @@ namespace zlDSP {
                 controllerRef.setSolo(idx, isSide);
             } else {
                 if (idx == controllerRef.getSoloIdx() && isSide == controllerRef.getSoloIsSide()) {
-                    // logger.logMessage(std::to_string(idx) + " " + std::to_string(isSide));
                     controllerRef.clearSolo();
                 }
             }
