@@ -69,12 +69,11 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        if (toClear.load()) {
+        if (toClear.exchange(false)) {
             audioIndex = 0;
             isAudioReady.store(false);
             isFFTReady.store(false);
             std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
-            toClear.store(false);
         }
         if (isAudioReady.load()) { return; }
         auto lBuffer = buffer.getReadPointer(0);

@@ -97,7 +97,7 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::updateParas() {
-        if (toUpdatePara.load()) {
+        if (toUpdatePara.exchange(false)) {
             filterNum.store(DesignFilter::updateCoeff(filterType.load(),
                                                           freq.load(), processSpec.sampleRate,
                                                           gain.load(), q.load(), order.load(), coeffs));
@@ -118,7 +118,6 @@ namespace zlIIR {
                     static_cast<FloatType>(std::get<0>(coeffs[i])[2])
                 };
             }
-            toUpdatePara.store(false);
             magOutdated.store(true);
         }
     }
@@ -137,10 +136,8 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::updateDBs() {
-        if (!magOutdated.load()) {
+        if (!magOutdated.exchange(false)) {
             return;
-        } else {
-            magOutdated.store(false);
         }
         gains.fill(FloatType(1));
         std::array<double, frequencies.size()> singleMagnitudes{};

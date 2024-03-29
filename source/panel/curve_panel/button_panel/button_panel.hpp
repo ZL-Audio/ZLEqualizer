@@ -75,6 +75,8 @@ namespace zlPanel {
         juce::SelectedItemSet<size_t> itemsSet;
         std::atomic<double> currentFreq, currentGain, currentQ;
         std::array<std::atomic<bool>, zlState::bandNUM> isSelected{};
+        juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
+
         std::atomic<bool> toAttachGroup{false};
 
         void findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) override;

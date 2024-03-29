@@ -278,6 +278,8 @@ namespace zlIIR {
 
         inline bool getMagOutdated() const { return magOutdated.load(); }
 
+        inline bool getMagOutdated(const bool x) { return magOutdated.exchange(x); }
+
         void setMagOutdated(const bool f) { magOutdated.store(f); }
 
     private:

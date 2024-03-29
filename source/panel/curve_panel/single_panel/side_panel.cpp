@@ -60,12 +60,10 @@ namespace zlPanel {
     }
 
     void SidePanel::checkRepaint() {
-        if (sideF.getMagOutdated()) {
-            sideF.setMagOutdated(false);
+        if (sideF.getMagOutdated(false)) {
             handleAsyncUpdate();
             repaint();
-        } else if (toRepaint.load()) {
-            toRepaint.store(false);
+        } else if (toRepaint.exchange(false)) {
             handleAsyncUpdate();
             repaint();
         }

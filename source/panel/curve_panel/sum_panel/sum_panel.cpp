@@ -57,8 +57,7 @@ namespace zlPanel {
     }
 
     void SumPanel::checkRepaint() {
-        if (toRepaint.load()) {
-            toRepaint.store(false);
+        if (toRepaint.exchange(false)) {
             notify();
             return;
         }

@@ -62,8 +62,7 @@ namespace zlPanel {
         if (!actived.load()) {
             return;
         }
-        if (toRepaint.load()) {
-            toRepaint.store(false);
+        if (toRepaint.exchange(false)) {
             updatePaths();
         }
         colour = uiBase.getColorMap1(idx);
@@ -141,8 +140,7 @@ namespace zlPanel {
         if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
             updatePaths();
             repaint();
-        } else if (toRepaint.load()) {
-            toRepaint.store(false);
+        } else if (toRepaint.exchange(false)) {
             updatePaths();
             repaint();
         }

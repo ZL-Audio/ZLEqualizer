@@ -43,7 +43,7 @@ namespace zlGain {
 
     template<typename FloatType>
     void AutoGain<FloatType>::processPost(juce::dsp::AudioBlock<FloatType> block) {
-        if (isON.load() && isPreProcessed.load()) {
+        if (isON.load() && isPreProcessed.exchange(false)) {
             postRMS = juce::Decibels::gainToDecibels(calculateRMS(block), FloatType(-240));
             gainDSP.setGainDecibels(preRMS - postRMS);
             juce::dsp::ProcessContextReplacing<FloatType> context(block);
@@ -56,7 +56,6 @@ namespace zlGain {
                                                   static_cast<int>(block.getNumSamples()));
             }
         }
-        isPreProcessed.store(false);
     }
 
     template<typename FloatType>

@@ -193,8 +193,8 @@ namespace zlPanel {
                 const auto ratio = static_cast<float>(value / currentFreq.load());
                 currentFreq.store(value);
                 if (!isSelected[currentBand].load()) return;
-                for (const size_t idx: itemsSet.getItemArray()) {
-                    if (idx != currentBand) {
+                for (size_t idx = 0; idx < isSelected.size(); ++idx) {
+                    if (idx != currentBand && isSelected[idx].load()) {
                         auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, idx));
                         const auto shiftFreq = para->convertFrom0to1(para->getValue()) * ratio;
                         const auto legalFreq = zlDSP::freq::range.snapToLegalValue(shiftFreq);
@@ -207,8 +207,8 @@ namespace zlPanel {
                 const auto shift = static_cast<float>(value - currentGain.load());
                 currentGain.store(value);
                 if (!isSelected[currentBand].load()) return;
-                for (const size_t idx: itemsSet.getItemArray()) {
-                    if (idx != currentBand) {
+                for (size_t idx = 0; idx < isSelected.size(); ++idx) {
+                    if (idx != currentBand && isSelected[idx].load()) {
                         auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
                         const auto shiftGain = para->convertFrom0to1(para->getValue()) + shift;
                         const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
@@ -221,8 +221,8 @@ namespace zlPanel {
                 const auto ratio = static_cast<float>(value / currentQ.load());
                 currentQ.store(value);
                 if (!isSelected[currentBand].load()) return;
-                for (const size_t idx: itemsSet.getItemArray()) {
-                    if (idx != currentBand) {
+                for (size_t idx = 0; idx < isSelected.size(); ++idx) {
+                    if (idx != currentBand && isSelected[idx].load()) {
                         auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::Q::ID, idx));
                         const auto shiftQ = para->convertFrom0to1(para->getValue()) * ratio;
                         const auto legalQ = zlDSP::Q::range.snapToLegalValue(shiftQ);
@@ -236,9 +236,13 @@ namespace zlPanel {
     }
 
     void ButtonPanel::attachGroup(const size_t idx) {
-        const auto oldIdx = selectBandIdx.load();
+        for (size_t oldIdx = 0; oldIdx < zlState::bandNUM; ++oldIdx) {
+            for (const auto &parameter: IDs) {
+                parametersRef.removeParameterListener(zlDSP::appendSuffix(parameter, oldIdx), this);
+            }
+        }
         for (const auto &parameter: IDs) {
-            parametersRef.removeParameterListener(zlDSP::appendSuffix(parameter, oldIdx), this);
+            // parametersRef.removeParameterListener(zlDSP::appendSuffix(parameter, oldIdx), this);
             parametersRef.addParameterListener(zlDSP::appendSuffix(parameter, idx), this);
         }
         currentFreq.store(
@@ -252,18 +256,19 @@ namespace zlPanel {
     void ButtonPanel::handleAsyncUpdate() {
         if (toAttachGroup.exchange(false)) {
             const auto idx = selectBandIdx.load();
+            attachGroup(idx);
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 panels[i]->setSelected(i == idx);
             }
             panels[idx]->toFront(false);
             wheelAttachment.reset();
             wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider);
+                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
             panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
             panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
 
             wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider);
+                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
             panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
             panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
         }

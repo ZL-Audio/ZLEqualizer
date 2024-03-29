@@ -42,11 +42,9 @@ namespace zlPanel {
         if (!controllerRef.getSolo()) {
             return;
         }
-        if (soloF.getMagOutdated()) {
-            soloF.setMagOutdated(false);
+        if (soloF.getMagOutdated(false)) {
             handleAsyncUpdate();
-        } else if (toRepaint.load()) {
-            toRepaint.store(false);
+        } else if (toRepaint.exchange(false)) {
             handleAsyncUpdate();
         }
         auto bound = getLocalBounds().toFloat();
