@@ -4,6 +4,13 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.14
+
+- improve stability
+- improve GUI performance when the dynamic is off
+- add double-precision input support
+- add the LV2 format to the Linux release
+
 ## 0.1.13
 
 - makes plugin compatible with older libstdc++ (Linux)
