@@ -178,7 +178,7 @@ namespace zlDSP {
     class targetGain : public FloatParameters<targetGain> {
     public:
         auto static constexpr ID = "target_gain";
-        auto static constexpr name = "Gain";
+        auto static constexpr name = "Target Gain";
         inline auto static const range = juce::NormalisableRange<float>(-30, 30, .01f);
         auto static constexpr defaultV = 0.f;
     };
@@ -186,7 +186,7 @@ namespace zlDSP {
     class targetQ : public FloatParameters<targetQ> {
     public:
         auto static constexpr ID = "target_Q";
-        auto static constexpr name = "Q";
+        auto static constexpr name = "Target Q";
         inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
         auto static constexpr defaultV = 0.707f;
     };
@@ -202,13 +202,6 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "dynamic_relative";
         auto static constexpr name = "Dynamic Relative";
-        auto static constexpr defaultV = false;
-    };
-
-    class sideCross : public BoolParameters<sideCross> {
-    public:
-        auto static constexpr ID = "side_cross";
-        auto static constexpr name = "Side Cross";
         auto static constexpr defaultV = false;
     };
 
@@ -237,7 +230,7 @@ namespace zlDSP {
     class sideFreq : public FloatParameters<sideFreq> {
     public:
         auto static constexpr ID = "side_freq";
-        auto static constexpr name = "Freq";
+        auto static constexpr name = "Side Freq";
         inline auto static const range = juce::NormalisableRange<float>(10, 20000, .1f, 0.23064293761596813f);
         auto static constexpr defaultV = 1000.f;
     };
@@ -263,7 +256,7 @@ namespace zlDSP {
     class sideQ : public FloatParameters<sideQ> {
     public:
         auto static constexpr ID = "side_Q";
-        auto static constexpr name = "Q";
+        auto static constexpr name = "Side Q";
         inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
         auto static constexpr defaultV = 0.707f;
     };
@@ -278,7 +271,7 @@ namespace zlDSP {
     class dynLookahead : public FloatParameters<dynLookahead> {
     public:
         auto static constexpr ID = "dyn_lookahead";
-        auto static constexpr name = "Lookahead";
+        auto static constexpr name = "Dynamic Lookahead";
         inline auto static const range = juce::NormalisableRange<float>(0.f, 20.f, .1f);
         auto static constexpr defaultV = 0.f;
     };
@@ -286,7 +279,7 @@ namespace zlDSP {
     class dynRMS : public FloatParameters<dynRMS> {
     public:
         auto static constexpr ID = "dyn_rms";
-        auto static constexpr name = "RMS";
+        auto static constexpr name = "Dynamic RMS";
         inline auto static const range = juce::NormalisableRange<float>(0.f, 40.f, .1f);
         auto static constexpr defaultV = 0.f;
     };
@@ -294,7 +287,7 @@ namespace zlDSP {
     class effectON : public ChoiceParameters<effectON> {
     public:
         auto static constexpr ID = "effect_on";
-        auto static constexpr name = "";
+        auto static constexpr name = "Effect ON";
         inline auto static const choices = juce::StringArray{
             "OFF", "ON"
         };
@@ -304,7 +297,7 @@ namespace zlDSP {
     class autoGain : public ChoiceParameters<autoGain> {
     public:
         auto static constexpr ID = "auto_gain";
-        auto static constexpr name = "";
+        auto static constexpr name = "Auto Gain";
         inline auto static const choices = juce::StringArray{
             "OFF", "ON"
         };
@@ -314,7 +307,7 @@ namespace zlDSP {
     class dynSmooth : public FloatParameters<dynSmooth> {
     public:
         auto static constexpr ID = "dyn_smooth";
-        auto static constexpr name = "Smooth";
+        auto static constexpr name = "Dynamic Smooth";
         inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
         auto static constexpr defaultV = 0.f;
     };
@@ -335,7 +328,7 @@ namespace zlDSP {
     class outputGain : public FloatParameters<outputGain> {
     public:
         auto static constexpr ID = "output_gain";
-        auto static constexpr name = "Gain";
+        auto static constexpr name = "Output Gain";
         inline auto static const range =
                 juce::NormalisableRange<float>(-16.f, 16.f, .01f, 0.5, true);
         auto static constexpr defaultV = 0.f;
@@ -349,7 +342,7 @@ namespace zlDSP {
                    lrType::get(suffix),
                    dynamicON::get(true, suffix, false), dynamicLearn::get(true, suffix, false),
                    dynamicBypass::get(suffix), sideSolo::get(true, suffix, false),
-                   dynamicRelative::get(suffix, false), //sideCross::get(suffix),
+                   dynamicRelative::get(suffix, false),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), kneeW::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
     }
