@@ -57,8 +57,6 @@ namespace zlFFT {
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
         std::atomic<bool> toClear{false};
 
-        juce::CriticalSection fftOnOffLock;
-
         void clearAll();
 
         void run() override;

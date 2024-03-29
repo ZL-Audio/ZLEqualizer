@@ -44,7 +44,6 @@ namespace zlPanel {
 
         juce::Slider wheelSlider;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wheelAttachment;
-        juce::CriticalSection wheelLock;
 
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;

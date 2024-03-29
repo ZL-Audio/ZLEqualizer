@@ -50,7 +50,6 @@ namespace zlFFT {
             if (!preFFT.getIsAudioReady() &&
                 !postFFT.getIsAudioReady() &&
                 !sideFFT.getIsAudioReady()) {
-                juce::ScopedLock lock(fftOnOffLock);
                 if (isPreON.load()) preFFT.process(preBuffer);
                 if (isPostON.load()) postFFT.process(postBuffer);
                 if (isSideON.load()) sideFFT.process(sideBuffer);
