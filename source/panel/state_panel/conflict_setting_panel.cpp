@@ -18,7 +18,7 @@ namespace zlPanel {
             : parametersNARef(parametersNA),
               uiBase(base.getFontSize(), base.getStyle()),
               conflictC("DET:", zlState::conflictON::choices, uiBase),
-              strengthS("Stength", uiBase),
+              strengthS("Strength", uiBase),
         scaleS("Scale", uiBase){
             conflictC.getLabelLAF().setFontScale(1.5f);
             conflictC.setLabelScale(.5f);
