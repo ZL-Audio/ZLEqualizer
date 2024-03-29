@@ -26,8 +26,6 @@ namespace zlInterface {
     }
 
     void ClickCombobox::selectRight() {
-        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), ""};
-        // logger.logMessage("click");
         auto &box = compactBox.getBox();
         if (box.getSelectedId() == box.getNumItems()) {
             box.setSelectedId(1);

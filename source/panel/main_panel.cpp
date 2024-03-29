@@ -15,8 +15,6 @@ namespace zlPanel {
           controlPanel(p.parameters, p.parametersNA, uiBase),
           curvePanel(p.parameters, p.parametersNA, uiBase, p.getController()),
           statePanel(p.parameters, p.parametersNA, p.state, uiBase) {
-        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), ""};
-        // logger.logMessage("main" + juce::String(p.state.getRawParameterValue("ui_style")->load()));
         uiBase.setStyle(static_cast<size_t>(state.getRawParameterValue(zlState::uiStyle::ID)->load()));
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(controlPanel);

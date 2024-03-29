@@ -67,7 +67,6 @@ namespace zlDSP {
 
         std::atomic<bool> dynamicONUpdateOthers = true;
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
-        // juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), "ftlog"};
     };
 }
 
