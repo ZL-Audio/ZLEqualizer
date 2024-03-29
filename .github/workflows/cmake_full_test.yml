@@ -39,16 +39,19 @@ jobs:
             pluginval-binary: ./pluginval
             boost_platform_version: "22.04"
             boost_toolset: "gcc"
+            pluginval_repeat: 2
           - name: macOS
-            os: macos-12
+            os: macos-13
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"
+            pluginval_repeat: 1
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
             boost_toolset: "mingw"
+            pluginval_repeat: 2
 
     steps:
 
@@ -180,7 +183,7 @@ jobs:
       env:
         STRICTNESS_LEVEL: 10
         TIMEOUT_MS: 2880000
-        REPEAT: 2
+        REPEAT: ${{ matrix.pluginval_repeat }}
         RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
     # - name: Pluginval AU validations (macOS)

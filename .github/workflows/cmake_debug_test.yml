@@ -36,7 +36,7 @@ jobs:
             boost_platform_version: "22.04"
             boost_toolset: "gcc"
           - name: macOS
-            os: macos-12
+            os: macos-13
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"
