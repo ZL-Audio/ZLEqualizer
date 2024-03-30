@@ -14,6 +14,7 @@
 
 #include "../interface_definitions.hpp"
 #include "dragger_look_and_feel.hpp"
+#include "dragger_constrainer.hpp"
 
 namespace zlInterface {
     class Dragger final : public juce::Component {
@@ -79,7 +80,7 @@ namespace zlInterface {
         juce::ToggleButton button;
         DraggerLookAndFeel draggerLAF;
         juce::ComponentDragger dragger;
-        juce::ComponentBoundsConstrainer constrainer;
+        DraggerConstrainer constrainer;
         std::atomic<bool> isSelected;
         std::atomic<float> xPortion, yPortion;
 

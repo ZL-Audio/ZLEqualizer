@@ -42,6 +42,19 @@ namespace zlInterface {
 
     void Dragger::mouseDrag(const juce::MouseEvent &event) {
         if (isSelected.load()) {
+            if (event.mods.isCommandDown()) {
+                if (event.mods.isLeftButtonDown()) {
+                    constrainer.setXON(false);
+                    constrainer.setYON(true);
+                } else {
+                    constrainer.setXON(true);
+                    constrainer.setYON(false);
+                }
+            } else {
+                constrainer.setXON(true);
+                constrainer.setYON(true);
+            }
+
             dragger.dragComponent(&button, event, &constrainer);
             const auto buttonBound = button.getBoundsInParent().toFloat();
             xPortion.store((buttonBound.getCentreX() - buttonArea.getX()) / buttonArea.getWidth());
