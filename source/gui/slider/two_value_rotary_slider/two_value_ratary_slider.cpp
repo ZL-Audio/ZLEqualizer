@@ -1,6 +1,12 @@
+// ==============================================================================
+// Copyright (C) 2024 - zsliu98
+// This file is part of ZLEComp
 //
-// Created by Zishu Liu on 12/28/23.
+// ZLEComp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+// ZLEComp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
+// You should have received a copy of the GNU General Public License along with ZLEComp. If not, see <https://www.gnu.org/licenses/>.
+// ==============================================================================
 
 #include "two_value_rotary_slider.hpp"
 
@@ -67,10 +73,6 @@ namespace zlInterface {
         slider2.removeListener(this);
         label1.removeListener(this);
         label2.removeListener(this);
-        // label1.removeMouseListener(this);
-        // label2.removeMouseListener(this);
-        // this->removeMouseListener(&label1);
-        // this->removeMouseListener(&label2);
         slider1.setLookAndFeel(nullptr);
         slider2.setLookAndFeel(nullptr);
         for (auto &l: {&label, &label1, &label2}) {
@@ -129,7 +131,7 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseUp(const juce::MouseEvent &event) {
-        if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
+        if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseUp(event);
             // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
@@ -139,7 +141,7 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseDown(const juce::MouseEvent &event) {
-        if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
+        if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseDown(event);
             // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
@@ -149,7 +151,7 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseDrag(const juce::MouseEvent &event) {
-        if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
+        if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseDrag(event);
             // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
@@ -206,7 +208,7 @@ namespace zlInterface {
 
     void TwoValueRotarySlider::mouseDoubleClick(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        if (!showSlider2.load() || (event.mods.isLeftButtonDown() && !event.mods.isCommandDown())) {
+        if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseDoubleClick(event);
         } else {
             slider2.mouseDoubleClick(event);
@@ -215,9 +217,10 @@ namespace zlInterface {
 
     void TwoValueRotarySlider::mouseWheelMove(const juce::MouseEvent &event,
                                               const juce::MouseWheelDetails &wheel) {
-        if (!showSlider2.load() || !event.mods.isCommandDown()) {
+        if (!showSlider2.load()) {
             slider1.mouseWheelMove(event, wheel);
         } else {
+            slider1.mouseWheelMove(event, wheel);
             slider2.mouseWheelMove(event, wheel);
         }
     }

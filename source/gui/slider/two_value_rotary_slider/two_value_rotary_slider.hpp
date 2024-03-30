@@ -1,6 +1,12 @@
+// ==============================================================================
+// Copyright (C) 2024 - zsliu98
+// This file is part of ZLEComp
 //
-// Created by Zishu Liu on 12/28/23.
+// ZLEComp is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+// ZLEComp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
+// You should have received a copy of the GNU General Public License along with ZLEComp. If not, see <https://www.gnu.org/licenses/>.
+// ==============================================================================
 
 #ifndef TWO_VALUE_ROTARY_SLIDER_COMPONENT_H
 #define TWO_VALUE_ROTARY_SLIDER_COMPONENT_H
@@ -12,9 +18,10 @@
 #include "first_rotary_slider_look_and_feel.hpp"
 #include "second_rotary_slider_look_and_feel.hpp"
 #include "../../label/name_look_and_feel.hpp"
+#include "../extra_slider/snapping_slider.h"
 
 namespace zlInterface {
-    class TwoValueRotarySlider : public juce::Component,
+    class TwoValueRotarySlider final : public juce::Component,
     private juce::Label::Listener, private juce::Slider::Listener {
     public:
         explicit TwoValueRotarySlider(const juce::String &labelText, UIBase &base);
@@ -65,7 +72,7 @@ namespace zlInterface {
     private:
         UIBase &uiBase;
 
-        juce::Slider slider1, slider2;
+        SnappingSlider slider1, slider2;
         FirstRotarySliderLookAndFeel slider1LAF;
         SecondRotarySliderLookAndFeel slider2LAF;
 

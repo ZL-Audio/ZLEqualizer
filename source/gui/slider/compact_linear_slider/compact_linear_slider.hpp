@@ -9,6 +9,7 @@
 
 #include "../../label/name_look_and_feel.hpp"
 #include "compact_linear_slider_look_and_feel.hpp"
+#include "../extra_slider/snapping_slider.h"
 
 namespace zlInterface {
     class CompactLinearSlider : public juce::Component {
@@ -53,7 +54,7 @@ namespace zlInterface {
 
         CompactLinearSliderLookAndFeel sliderLookAndFeel;
         NameLookAndFeel nameLookAndFeel, textLookAndFeel;
-        juce::Slider slider;
+        SnappingSlider slider;
         juce::Label label, text;
 
         std::atomic<float> lrPad = 0, ubPad = 0;

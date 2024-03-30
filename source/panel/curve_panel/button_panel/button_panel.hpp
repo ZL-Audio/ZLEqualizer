@@ -42,7 +42,7 @@ namespace zlPanel {
     private:
         std::array<std::unique_ptr<FilterButtonPanel>, zlState::bandNUM> panels;
 
-        juce::Slider wheelSlider;
+        zlInterface::SnappingSlider wheelSlider;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wheelAttachment;
 
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
