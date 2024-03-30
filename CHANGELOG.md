@@ -8,6 +8,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 - improve stability
 - improve GUI performance when the dynamic is off
+- support fixed gain/freq dragging
 - add double-precision input support
 - add the LV2 format to the Linux release
 
