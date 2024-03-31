@@ -364,7 +364,7 @@ namespace zlIIR {
         auto g = db_to_gain(-6 / static_cast<double>(n));
         auto _q = g * w * w0 / std::sqrt((1 - g * g)) / (w0 * w0 - w * w);
 
-        const auto singleCoeff = MartinCoeff::get2BandPass(w0, _q);
+        const auto singleCoeff = MartinCoeff::get2Notch(w0, _q);
         for (size_t i = 0; i < n / 2; ++i) {
             coeffs[i + startIdx] = singleCoeff;
         }

@@ -4,6 +4,12 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.15
+
+- fix incorrect notch filter (introduced in 0.1.14)
+- add slider mousewheel fine adjustment (with Ctrl/Command)
+- change mousewheel behaviour when dynamic is on
+
 ## 0.1.14
 
 - improve stability
