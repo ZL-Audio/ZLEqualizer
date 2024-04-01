@@ -56,7 +56,7 @@ namespace zlDSP {
 
         inline void clearSolo() {
             useSolo.store(false);
-            soloFilter.setOrder(2);
+            // soloFilter.setOrder(2);
         }
 
         inline size_t getSoloIdx() const { return soloIdx.load(); }

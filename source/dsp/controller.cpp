@@ -356,7 +356,7 @@ namespace zlDSP {
         } else {
             std::tie(freq, q) = getSoloFilterParas(filters[idx].getSideFilter());
         }
-        soloFilter.setOrder(2, false);
+        // soloFilter.setOrder(2, false);
         soloFilter.setFreq(freq, false);
         soloFilter.setQ(q, true);
 
