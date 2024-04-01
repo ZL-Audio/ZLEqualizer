@@ -41,10 +41,10 @@ namespace zlCompressor {
         _ms = _ms / static_cast<FloatType>(buffer.getNumSamples());
 
         // push mean square into the circular buffer
-        if (loudnessBuffer.size() > currentSize.load()) {
-            mLoudness.store(0);
-            loudnessBuffer.clear();
-        }
+        // if (loudnessBuffer.size() > currentSize.load()) {
+        //     mLoudness.store(0);
+        //     loudnessBuffer.clear();
+        // }
 
         while (loudnessBuffer.size() >= currentSize.load()) {
             mLoudness.store(mLoudness.load() - loudnessBuffer.front());
@@ -52,7 +52,7 @@ namespace zlCompressor {
         }
 
         loudnessBuffer.push_back(_ms);
-        mLoudness.store(mLoudness.load() + loudnessBuffer.front());
+        mLoudness.store(mLoudness.load() + _ms);
     }
 
     template<typename FloatType>
