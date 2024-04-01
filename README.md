@@ -50,6 +50,8 @@ JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
 [fontaudio](https://github.com/fefanto/fontaudio) by [fefanto](https://github.com/fefanto)
 
+[farbot](https://github.com/hogliux/farbot) by [Fabian Renn](https://github.com/hogliux)
+
 Font from CMU Open Sans, Font Awesome and MiSans.
 
 ## References
@@ -65,5 +67,3 @@ A Simple Method of Designing Multiple Order All Pole Bandpass Filters by Cascadi
 [Equalize It](https://github.com/suroge/equalize_it) by [suroge](https://github.com/suroge)
 
 [Frequalizer](https://github.com/ffAudio/Frequalizer) by [ffAudio](https://github.com/ffAudio)
-
-[farbot](https://github.com/hogliux/farbot) by [Fabian Renn](https://github.com/hogliux)
