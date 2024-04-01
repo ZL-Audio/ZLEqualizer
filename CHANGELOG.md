@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.1.16
+
+- fix incorrect dynamic relative behaviour (endless loop, introduced in 0.1.14)
+- fix incorrect RMS behaviour (compressor not working, introduced in 0.1.14)
+
 ## 0.1.15
 
 - fix incorrect notch filter (introduced in 0.1.14)
