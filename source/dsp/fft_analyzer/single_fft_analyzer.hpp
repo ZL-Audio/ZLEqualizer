@@ -37,8 +37,27 @@ namespace zlFFT {
 
         void setOrder(int fftOrder);
 
+        /**
+         * process (copy) the income audio
+         * when it has enough audio samples, `isAudioReady` will be set to true
+         * and it will stop collecting audio samples
+         * @param buffer
+         */
         void process(juce::AudioBuffer<FloatType> &buffer);
 
+        /**
+         * run the forward FFT
+         * when it completes the calculation, `isAudioReady` will be set to false
+         * and `isFFTReady` will be set to true
+         */
+        void run();
+
+        /**
+         * create the FFT path within a given bound
+         * when it completed the calculation, `isFFTReady` will be set to false
+         * @param path
+         * @param bound
+         */
         void createPath(juce::Path &path, juce::Rectangle<float> bound);
 
         inline size_t getFFTSize() const { return fftSize.load(); }
@@ -54,8 +73,6 @@ namespace zlFFT {
         void setTiltSlope(const float x) { tiltSlope.store(x); }
 
         std::array<float, zlIIR::frequencies.size() / 2> &getInterplotDBs() { return interplotDBs; }
-
-        void run();
 
     private:
         std::atomic<size_t> delay = 0;

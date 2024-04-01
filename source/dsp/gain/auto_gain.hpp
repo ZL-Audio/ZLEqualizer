@@ -15,6 +15,7 @@
 namespace zlGain {
     /**
      * a lock free, thread safe auto-gain class
+     * it will hard-clip output signal to 0dB
      * @tparam FloatType
      */
     template<typename FloatType>

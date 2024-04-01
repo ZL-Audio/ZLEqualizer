@@ -20,9 +20,30 @@
 namespace zlIIR {
     class DesignFilter {
     public:
+        /**
+         * get a vector of 2nd order filter coeffs
+         * @param filterType filter type
+         * @param f frequency
+         * @param fs sample rate
+         * @param gDB gain
+         * @param q Q
+         * @param n filter order
+         * @return a vector of 2nd order filter coeffs
+         */
         static std::vector<coeff33> getCoeff(FilterType filterType,
                                              double f, double fs, double gDB, double q, size_t n);
 
+        /**
+         * update an array of 2nd order filter coeffs
+         * @param filterType filter type
+         * @param f frequency
+         * @param fs sample rate
+         * @param gDB gain
+         * @param q Q
+         * @param n filter order
+         * @param coeffs the array of coeffs
+         * @return the actual filter size
+         */
         static size_t updateCoeff(FilterType filterType,
                                   double f, double fs, double gDB, double q, size_t n, std::array<coeff33, 16> &coeffs);
 

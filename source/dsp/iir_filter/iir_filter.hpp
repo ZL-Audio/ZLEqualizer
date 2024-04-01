@@ -7,10 +7,6 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-//
-// Created by Zishu Liu on 12/23/23.
-//
-
 #ifndef ZLEQUALIZER_IIR_FILTER_HPP
 #define ZLEQUALIZER_IIR_FILTER_HPP
 
