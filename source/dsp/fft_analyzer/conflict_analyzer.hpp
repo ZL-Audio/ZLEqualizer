@@ -16,6 +16,10 @@
 #include "single_fft_analyzer.hpp"
 
 namespace zlFFT {
+    /**
+     * a conflict fft analyzer
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class ConflictAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
@@ -40,8 +44,6 @@ namespace zlFFT {
         void process();
 
         bool getIsConflictReady() const { return isConflictReady.load(); }
-
-        // void createPath(juce::Path &path, juce::Rectangle<float> bound);
 
         void setLeftRight(const float left, const float right) {
             x1.store(left);

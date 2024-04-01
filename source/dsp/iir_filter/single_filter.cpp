@@ -12,11 +12,10 @@
 namespace zlIIR {
     template<typename FloatType>
     void Filter<FloatType>::reset() {
-        if (toReset.load()) {
+        if (toReset.exchange(false)) {
             for (size_t i = 0; i < filterNum.load(); ++i) {
                 filters[i].reset();
             }
-            toReset.store(false);
         }
     }
 
@@ -43,8 +42,9 @@ namespace zlIIR {
 
     template<typename FloatType>
     void Filter<FloatType>::setFreq(const FloatType x, const bool update) {
-        if (const auto diff = std::max(static_cast<double>(x), freq.load()) / std::min(
-                                  static_cast<double>(x), freq.load()); std::log10(diff) >= 2) {
+        const auto diff = std::max(static_cast<double>(x), freq.load()) /
+                          std::min(static_cast<double>(x), freq.load());
+        if (std::log10(diff) >= 2 && update) {
             toReset.store(true);
         }
         freq.store(static_cast<double>(x));
@@ -79,9 +79,8 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setFilterType(const FilterType x, const bool update) { {
-            toReset.store(true);
-        }
+    void Filter<FloatType>::setFilterType(const FilterType x, const bool update) {
+        toReset.store(true);
         filterType.store(x);
         if (update) { toUpdatePara.store(true); }
     }
@@ -99,13 +98,12 @@ namespace zlIIR {
     void Filter<FloatType>::updateParas() {
         if (toUpdatePara.exchange(false)) {
             filterNum.store(DesignFilter::updateCoeff(filterType.load(),
-                                                          freq.load(), processSpec.sampleRate,
-                                                          gain.load(), q.load(), order.load(), coeffs));
-            {
+                                                      freq.load(), processSpec.sampleRate,
+                                                      gain.load(), q.load(), order.load(), coeffs)); {
                 farbot::RealtimeObject<
-                            std::array<coeff33, 16>,
-                            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-                            farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
+                    std::array<coeff33, 16>,
+                    farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                    farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
                 *rrcentCoeffs = coeffs;
             }
             for (size_t i = 0; i < filterNum.load(); i++) {
@@ -143,9 +141,9 @@ namespace zlIIR {
         std::array<double, frequencies.size()> singleMagnitudes{};
         juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
         farbot::RealtimeObject<
-                            std::array<coeff33, 16>,
-                            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-                            farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
+            std::array<coeff33, 16>,
+            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+            farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
         for (size_t i = 0; i < filterNum.load(); i++) {
             dummyCoeff = {
                 static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[0]),
@@ -156,7 +154,7 @@ namespace zlIIR {
                 static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[2])
             };
             dummyCoeff.getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
-                frequencies.size(), sampleRate.load());
+                                                     frequencies.size(), sampleRate.load());
             std::transform(gains.begin(), gains.end(), singleMagnitudes.begin(), gains.begin(),
                            std::multiplies<FloatType>());
         }
@@ -181,9 +179,9 @@ namespace zlIIR {
         double g{FloatType(1)};
         juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
         farbot::RealtimeObject<
-                            std::array<coeff33, 16>,
-                            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-                            farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
+            std::array<coeff33, 16>,
+            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+            farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
         for (size_t i = 0; i < filterNum.load(); i++) {
             dummyCoeff = {
                 static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[0]),

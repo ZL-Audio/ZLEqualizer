@@ -104,17 +104,17 @@ namespace zlFFT {
 
                 juce::ScopedLock lock(gradientLock);
                 gradient.point1 = juce::Point<float>(x1.load(), 0.f);
-                gradient.point1 = juce::Point<float>(x2.load(), 0.f);
+                gradient.point2 = juce::Point<float>(x2.load(), 0.f);
                 gradient.isRadial = false;
                 gradient.clearColours();
 
-                gradient.addColour(1.0,
-                                   gColour.withMultipliedAlpha(juce::jmax(conflictsP.front(), 0.f)));
                 gradient.addColour(0.0,
+                                   gColour.withMultipliedAlpha(juce::jmax(conflictsP.front(), 0.f)));
+                gradient.addColour(1.0,
                                    gColour.withMultipliedAlpha(juce::jmax(conflictsP.back(), 0.f)));
                 for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
                     if (conflictsP[i + 1] > 0 || conflictsP[i - 1] > 0) {
-                        const auto p = 1.0 - (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
+                        const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
                         const auto rectColour = gColour.withMultipliedAlpha(conflictsP[i]);
                         gradient.addColour(p, rectColour);
                     }

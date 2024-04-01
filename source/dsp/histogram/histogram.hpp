@@ -13,21 +13,40 @@
 #include <juce_dsp/juce_dsp.h>
 
 namespace zlHistogram {
+    /**
+     * a lock free, thread safe histogram
+     * @tparam FloatType count precision
+     * @tparam Size size of the histogram
+     */
     template<typename FloatType, size_t Size>
     class Histogram {
     public:
         Histogram() = default;
 
+
+        /**
+         * reset all counts to zero
+         */
         void reset()  {
             for (auto & hit : hits) {
                 hit.store(0);
             }
         }
 
+        /**
+         * add one to bin x
+         * @param x bin idx
+         */
         void push(const size_t x) {
             hits[x].fetch_add(1);
         }
 
+
+        /**
+         * get percentile value
+         * @param x percentile, 0.05 = 5%, etc
+         * @return
+         */
         FloatType getPercentile(const FloatType x) const {
             FloatType totoalHits = 0;
             for (auto & hit : hits) {

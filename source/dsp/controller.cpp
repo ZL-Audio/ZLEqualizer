@@ -360,9 +360,10 @@ namespace zlDSP {
         soloFilter.setFreq(freq, false);
         soloFilter.setQ(q, true);
 
-        useSolo.store(true);
         soloIdx.store(idx);
         soloSide.store(isSide);
+
+        useSolo.store(true);
     }
 
     template<typename FloatType>

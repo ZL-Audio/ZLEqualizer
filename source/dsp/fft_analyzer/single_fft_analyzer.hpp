@@ -17,6 +17,10 @@
 #include "../iir_filter/coeff/design_filter.hpp"
 
 namespace zlFFT {
+    /**
+     * a fft analyzer
+     * @tparam FloatType
+     */
     template<typename FloatType>
     class SingleFFTAnalyzer final {
     public:
@@ -26,6 +30,9 @@ namespace zlFFT {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        /**
+         * clear un-processed audio samples and current FFT data
+         */
         void clear();
 
         void setOrder(int fftOrder);
@@ -70,7 +77,7 @@ namespace zlFFT {
 
         static constexpr auto minFreq = 20.f, maxFreq = 22000.f, minDB = -72.f;
         std::atomic<float> sampleRate;
-        std::atomic<bool> toClear{false};
+        std::atomic<bool> toClear{false}, toClearFFT{false};
 
         inline float indexToX(const size_t index, const juce::Rectangle<float> bounds) const {
             const auto portion = (static_cast<float>(index) + .5f) / static_cast<float>(fft->getSize());

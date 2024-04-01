@@ -39,7 +39,7 @@ namespace zlFFT {
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::clear() {
         toClear.store(true);
-
+        toClearFFT.store(true);
     }
 
     template<typename FloatType>
@@ -73,7 +73,6 @@ namespace zlFFT {
             audioIndex = 0;
             isAudioReady.store(false);
             isFFTReady.store(false);
-            std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
         }
         if (isAudioReady.load()) { return; }
         auto lBuffer = buffer.getReadPointer(0);
@@ -104,6 +103,9 @@ namespace zlFFT {
 
             const auto decay = decayRate.load();
             juce::ScopedLock lock2(ampUpdatedLock);
+            if (toClearFFT.exchange(false)) {
+                std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
+            }
             for (size_t i = 0; i < fftSize.load() / 2; ++i) {
                 const auto currentDB = juce::Decibels::gainToDecibels(
                     2 * mBuffer[i] / static_cast<float>(fftSize.load()), -240.f);
@@ -118,7 +120,7 @@ namespace zlFFT {
             std::vector<float> y = smoothedDBs;
 
             using boost::math::interpolators::makima;
-            auto spline = makima(std::move(x), std::move(y),
+            const auto spline = makima(std::move(x), std::move(y),
                                  1.f, -1.f);
 
             preInterplotDBs.front() = spline(static_cast<float>(zlIIR::frequencies.front()));

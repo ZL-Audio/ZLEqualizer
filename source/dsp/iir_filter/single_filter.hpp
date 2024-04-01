@@ -220,7 +220,8 @@ namespace zlIIR {
     };
 
     /**
-     * a static IIR filter
+     * a lock free, thread safe static IIR filter
+     * the maximum modulation rate of parameters is once per block
      * @tparam FloatType
      */
     template<typename FloatType>
@@ -234,22 +235,51 @@ namespace zlIIR {
 
         void process(juce::AudioBuffer<FloatType> &buffer);
 
+        /**
+         * set the frequency of the filter
+         * if frequency changes >= 2 octaves, the filter will reset
+         * @param x frequency
+         * @param update whether update filter coefficient
+         */
         void setFreq(FloatType x, bool update = true);
 
         inline FloatType getFreq() const { return static_cast<FloatType>(freq.load()); }
 
+        /**
+         * set the gain of the filter
+         * @param x gain
+         * @param update whether update filter coefficient
+         */
         void setGain(FloatType x, bool update = true);
 
         inline FloatType getGain() const { return static_cast<FloatType>(gain.load()); }
 
+
+        /**
+         * set the Q value of the filter
+         * @param x Q value
+         * @param update whether update filter coefficient
+         */
         void setQ(FloatType x, bool update = true);
 
         inline FloatType getQ() const { return static_cast<FloatType>(q.load()); }
 
+
+        /**
+         * set the type of the filter, the filter will always reset
+         * @param x filter type
+         * @param update whether update filter coefficient
+         */
         void setFilterType(FilterType x, bool update = true);
 
         inline FilterType getFilterType() const { return filterType.load(); }
 
+
+        /**
+         * set the order of the filter, the filter will always reset
+         * @param x filter order
+         * @param update whether update filter coefficient
+         */
         void setOrder(size_t x, bool update = true);
 
         inline size_t getOrder() const { return order.load(); }
