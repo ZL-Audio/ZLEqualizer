@@ -395,9 +395,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setLookAhead(const float x) {
-        const auto numDelaySample = static_cast<int>(
-            x / 1000.f * static_cast<float>(subBuffer.getMainSpec().sampleRate));
-        delay.setDelaySamples(numDelaySample);
+        delay.setDelaySeconds(static_cast<FloatType>(x / 1000));
         triggerAsyncUpdate();
     }
 

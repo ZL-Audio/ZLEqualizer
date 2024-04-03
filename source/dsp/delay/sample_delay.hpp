@@ -34,14 +34,17 @@ namespace zlDelay {
 
         void process(juce::dsp::AudioBlock<FloatType> block);
 
-        void setDelaySamples(const int x) {
-            delaySamples.store(x);
+        void setDelaySeconds(const FloatType x) {
+            delaySeconds.store(x);
         }
 
-        int getDelaySamples() const { return delaySamples.load(); }
+        int getDelaySamples() const {
+            return static_cast<int>(static_cast<double>(delaySeconds.load()) * sampleRate.load());
+        }
 
     private:
-        std::atomic<int> delaySamples;
+        std::atomic<double> sampleRate;
+        std::atomic<FloatType> delaySeconds;
         juce::dsp::DelayLine<FloatType> delayDSP;
     };
 } // zlDelay
