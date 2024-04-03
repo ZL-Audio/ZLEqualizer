@@ -39,7 +39,7 @@ namespace zlFFT {
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::clear() {
         toClear.store(true);
-        toClearFFT.store(true);
+        // toClearFFT.store(true);
     }
 
     template<typename FloatType>
@@ -69,12 +69,12 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+        if (isAudioReady.load()) { return; }
         if (toClear.exchange(false)) {
             audioIndex = 0;
-            isAudioReady.store(false);
+            // isAudioReady.store(false);
             // isFFTReady.store(false);
         }
-        if (isAudioReady.load()) { return; }
         auto lBuffer = buffer.getReadPointer(0);
         auto rBuffer = buffer.getReadPointer(1);
         auto mBuffer = audioBuffer.getWritePointer(0);

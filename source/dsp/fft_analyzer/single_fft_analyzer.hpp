@@ -64,6 +64,8 @@ namespace zlFFT {
 
         inline bool getIsAudioReady() const { return isAudioReady.load(); }
 
+        void setIsAudioReady(const bool f) { isAudioReady.store(f); }
+
         inline bool getIsFFTReady() const { return isFFTReady.load(); }
 
         void setIsFFTReady(const bool f) { isFFTReady.store(f); }

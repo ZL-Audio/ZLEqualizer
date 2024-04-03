@@ -27,31 +27,35 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        preBuffer.makeCopyOf(buffer, true);
+        if (isPreON.load()) {
+            preBuffer.makeCopyOf(buffer, true);
+        }
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        postBuffer.makeCopyOf(buffer, true);
+        if (isPostON.load()) {
+            postBuffer.makeCopyOf(buffer, true);
+        }
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        sideBuffer.makeCopyOf(buffer, true);
+        if (isSideON.load()) {
+            sideBuffer.makeCopyOf(buffer, true);
+        }
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::process() {
         if (isON.load()) {
-            if (toClear.exchange(false)) {
-                clearAll();
-            }
-            if (!preFFT.getIsAudioReady() &&
-                !postFFT.getIsAudioReady() &&
-                !sideFFT.getIsAudioReady()) {
-                if (isPreON.load()) preFFT.process(preBuffer);
-                if (isPostON.load()) postFFT.process(postBuffer);
-                if (isSideON.load()) sideFFT.process(sideBuffer);
+            const auto f1 = !preFFT.getIsAudioReady() || !isPreON.load();
+            const auto f2 = !postFFT.getIsAudioReady() || !isPostON.load();
+            const auto f3 = !sideFFT.getIsAudioReady() || !isSideON.load();
+            if (f1 && f2 && f3) {
+                preFFT.process(preBuffer);
+                postFFT.process(postBuffer);
+                sideFFT.process(sideBuffer);
             } else {
                 triggerAsyncUpdate();
             }
@@ -71,19 +75,16 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPreON(const bool x) {
-        toClear.store(true);
         isPreON.store(x);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPostON(const bool x) {
-        toClear.store(true);
         isPostON.store(x);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setSideON(const bool x) {
-        toClear.store(true);
         isSideON.store(x);
     }
 
@@ -99,13 +100,6 @@ namespace zlFFT {
             return false;
         }
         return true;
-    }
-
-    template<typename FloatType>
-    void PrePostFFTAnalyzer<FloatType>::clearAll() {
-        preFFT.clear();
-        postFFT.clear();
-        sideFFT.clear();
     }
 
     template<typename FloatType>
