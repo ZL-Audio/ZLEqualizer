@@ -36,10 +36,10 @@ project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 
 # Change me! Set the plugin formats you want built
 # Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(FORMATS VST3 LV2)
-else ()
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(FORMATS AU VST3)
+else ()
+    set(FORMATS LV2 VST3)
 endif ()
 
 # include boost for this project
