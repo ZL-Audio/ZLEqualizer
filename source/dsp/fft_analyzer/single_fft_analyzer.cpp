@@ -72,7 +72,7 @@ namespace zlFFT {
         if (toClear.exchange(false)) {
             audioIndex = 0;
             isAudioReady.store(false);
-            isFFTReady.store(false);
+            // isFFTReady.store(false);
         }
         if (isAudioReady.load()) { return; }
         auto lBuffer = buffer.getReadPointer(0);

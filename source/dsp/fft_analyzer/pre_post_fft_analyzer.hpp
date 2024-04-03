@@ -13,10 +13,6 @@
 #include "single_fft_analyzer.hpp"
 
 namespace zlFFT {
-    /**
-     * a pre-post-side fft analyzer
-     * @tparam FloatType
-     */
     template<typename FloatType>
     class PrePostFFTAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
