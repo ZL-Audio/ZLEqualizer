@@ -19,6 +19,7 @@ namespace zlCompressor {
     template<typename FloatType>
     void RMSTracker<FloatType>::reset() {
         mLoudness.store(0);
+        loudnessBuffer.clear();
     }
 
     template<typename FloatType>
@@ -39,12 +40,6 @@ namespace zlCompressor {
         }
 
         _ms = _ms / static_cast<FloatType>(buffer.getNumSamples());
-
-        // push mean square into the circular buffer
-        // if (loudnessBuffer.size() > currentSize.load()) {
-        //     mLoudness.store(0);
-        //     loudnessBuffer.clear();
-        // }
 
         while (loudnessBuffer.size() >= currentSize.load()) {
             mLoudness.store(mLoudness.load() - loudnessBuffer.front());
