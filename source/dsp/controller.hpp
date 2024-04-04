@@ -77,9 +77,9 @@ namespace zlDSP {
 
         zlHistogram::Histogram<FloatType, 80> &getLearningHist(const size_t idx) { return histograms[idx]; }
 
-        void setLookAhead(float x);
+        void setLookAhead(FloatType x);
 
-        void setRMS(float x);
+        void setRMS(FloatType x);
 
         void setEffectON(const bool x) { isEffectON.store(x); }
 

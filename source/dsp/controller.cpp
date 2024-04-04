@@ -25,15 +25,26 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+        delay.setMaximumDelayInSamples(static_cast<int>(
+            zlDSP::dynLookahead::range.end / 1000.f * static_cast<float>(spec.sampleRate)) + 1);
         delay.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
-        delay.setMaximumDelayInSamples(static_cast<int>(0.02 * spec.sampleRate) + 1);
+
         subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
+
         triggerAsyncUpdate();
+
+        const auto numRMS = static_cast<size_t>(
+            zlDSP::dynRMS::range.end / 1000.f * static_cast<float>(spec.sampleRate));
+        for (auto &f: filters) {
+            f.getCompressor().getTracker().setMaximumMomentarySize(numRMS);
+        }
+
         juce::dsp::ProcessSpec subSpec{spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2};
         for (auto &f: filters) {
             f.prepare(subSpec);
         }
+
         soloFilter.setFilterType(zlIIR::FilterType::bandPass, false);
         soloFilter.prepare(subSpec);
         lrMainSplitter.prepare(subSpec);
@@ -46,11 +57,6 @@ namespace zlDSP {
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: {&tracker, &lTracker, &rTracker, &mTracker, &sTracker}) {
             t->prepare(subSpec);
-        }
-        const auto numRMS = static_cast<size_t>(
-            zlDSP::dynRMS::range.end / 1000.f * static_cast<float>(spec.sampleRate));
-        for (auto &f: filters) {
-            f.getCompressor().getTracker().setMaximumMomentarySize(numRMS);
         }
     }
 
@@ -394,17 +400,16 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::setLookAhead(const float x) {
-        delay.setDelaySeconds(static_cast<FloatType>(x / 1000));
+    void Controller<FloatType>::setLookAhead(const FloatType x) {
+        delay.setDelaySeconds(x / static_cast<FloatType>(1000));
         triggerAsyncUpdate();
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::setRMS(const float x) {
-        const auto numRMS = static_cast<size_t>(
-            x / 1000.f * static_cast<float>(subBuffer.getMainSpec().sampleRate));
+    void Controller<FloatType>::setRMS(const FloatType x) {
+        const auto rmsMs = x / static_cast<FloatType>(1000);
         for (auto &f: filters) {
-            f.getCompressor().getTracker().setMomentarySize(numRMS);
+            f.getCompressor().getTracker().setMomentarySeconds(rmsMs);
         }
     }
 

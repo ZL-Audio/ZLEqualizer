@@ -12,8 +12,7 @@
 #define ZLECOMP_RMS_TRACKER_H
 
 #include <boost/circular_buffer.hpp>
-
-#include "virtual_tracker.hpp"
+#include <juce_dsp/juce_dsp.h>
 
 namespace zlCompressor {
     /**
@@ -21,34 +20,38 @@ namespace zlCompressor {
      * @tparam FloatType
      */
     template<typename FloatType>
-    class RMSTracker final : VirtualTracker<FloatType> {
+    class RMSTracker {
     public:
         inline static FloatType minusInfinityDB = -240;
 
         RMSTracker() = default;
 
-        ~RMSTracker() override;
+        ~RMSTracker();
 
-        void reset() override;
+        void reset();
 
-        void prepare(const juce::dsp::ProcessSpec &spec) override;
+        void prepare(const juce::dsp::ProcessSpec &spec);
 
-        void process(const juce::AudioBuffer<FloatType> &buffer) override;
+        void process(const juce::AudioBuffer<FloatType> &buffer);
 
-        void setMomentarySize(size_t mSize) override;
+        void setMomentarySeconds(FloatType x);
 
-        void setMaximumMomentarySize(size_t mSize) override;
+        void setMomentarySize(size_t mSize);
+
+        void setMaximumMomentarySize(size_t mSize);
 
         inline size_t getMomentarySize() const {
             return currentSize.load();
         }
 
-        FloatType getMomentaryLoudness() override;
+        FloatType getMomentaryLoudness();
 
     private:
         std::atomic<FloatType> mLoudness {0};
-        FloatType secondPerBuffer = FloatType(0.01);
         boost::circular_buffer<FloatType> loudnessBuffer{1};
+
+        std::atomic<double> sampleRate{44100};
+        std::atomic<FloatType> currentSeconds{0};
         std::atomic<size_t> currentSize{1};
     };
 

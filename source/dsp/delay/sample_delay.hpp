@@ -43,8 +43,8 @@ namespace zlDelay {
         }
 
     private:
-        std::atomic<double> sampleRate;
-        std::atomic<FloatType> delaySeconds;
+        std::atomic<double> sampleRate{44100};
+        std::atomic<FloatType> delaySeconds{0};
         juce::dsp::DelayLine<FloatType> delayDSP;
     };
 } // zlDelay

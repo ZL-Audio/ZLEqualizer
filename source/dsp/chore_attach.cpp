@@ -49,9 +49,9 @@ namespace zlDSP {
         if (parameterID == sideChain::ID) {
             controllerRef.setSideChain(static_cast<bool>(newValue));
         } else if (parameterID == dynLookahead::ID) {
-            controllerRef.setLookAhead(newValue);
+            controllerRef.setLookAhead(static_cast<FloatType>(newValue));
         } else if (parameterID == dynRMS::ID) {
-            controllerRef.setRMS(newValue);
+            controllerRef.setRMS(static_cast<FloatType>(newValue));
         } else if (parameterID == dynSmooth::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
                 controllerRef.getFilter(i).getCompressor().getDetector().setSmooth(static_cast<FloatType>(newValue));

@@ -24,8 +24,9 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void RMSTracker<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        secondPerBuffer = static_cast<FloatType>(spec.maximumBlockSize) / static_cast<FloatType>(spec.sampleRate);
+        sampleRate.store(spec.sampleRate);
         reset();
+        setMomentarySeconds(currentSeconds.load());
     }
 
     template<typename FloatType>
@@ -48,6 +49,12 @@ namespace zlCompressor {
 
         loudnessBuffer.push_back(_ms);
         mLoudness.store(mLoudness.load() + _ms);
+    }
+
+    template<typename FloatType>
+    void RMSTracker<FloatType>::setMomentarySeconds(FloatType x) {
+        currentSeconds.store(x);
+        setMomentarySize(static_cast<size_t>(x * static_cast<FloatType>(sampleRate.load())));
     }
 
     template<typename FloatType>
