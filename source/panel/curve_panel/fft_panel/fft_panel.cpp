@@ -71,8 +71,6 @@ namespace zlPanel {
             path.lineTo(getLocalBounds().getBottomLeft().toFloat());
             path.closeSubPath();
 
-            // g.setColour(uiBase.getTextColor().withAlpha(0.1f));
-            // g.fillPath(path);
             g.setColour(uiBase.getColorMap2(1).withAlpha(0.1f));
             g.fillPath(path);
         }

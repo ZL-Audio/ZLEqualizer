@@ -34,38 +34,6 @@ namespace zlState {
         }
     };
 
-    class uiStyle : public FloatParameters<uiStyle> {
-    public:
-        auto static constexpr ID = "ui_style";
-        auto static constexpr name = "NA";
-        inline static constexpr int minV = 0;
-        inline static constexpr int maxV = 1;
-        inline static constexpr int defaultV = 1;
-        inline auto static const range = juce::NormalisableRange<float>(minV, maxV, 1.f);
-    };
-
-    class windowW : public FloatParameters<windowW> {
-    public:
-        auto static constexpr ID = "window_w";
-        auto static constexpr name = "NA";
-        inline static constexpr int minV = 600;
-        inline static constexpr int maxV = 6000;
-        inline static constexpr int defaultV = 704;
-        inline auto static const range =
-                juce::NormalisableRange<float>(minV, maxV, 1.f);
-    };
-
-    class windowH : public FloatParameters<windowH> {
-    public:
-        auto static constexpr ID = "window_h";
-        auto static constexpr name = "NA";
-        inline static constexpr int minV = 375;
-        inline static constexpr int maxV = 3750;
-        inline static constexpr int defaultV = 440;
-        inline auto static const range =
-                juce::NormalisableRange<float>(minV, maxV, 1.f);
-    };
-
     // bool
     template<class T>
     class BoolParameters {
@@ -240,10 +208,87 @@ namespace zlState {
         return s + suffix;
     }
 
+    class uiStyle : public FloatParameters<uiStyle> {
+    public:
+        auto static constexpr ID = "ui_style";
+        auto static constexpr name = "NA";
+        inline static constexpr int minV = 0;
+        inline static constexpr int maxV = 2;
+        inline static constexpr int defaultV = 1;
+        inline auto static const range = juce::NormalisableRange<float>(minV, maxV, 1.f);
+    };
+
+    class windowW : public FloatParameters<windowW> {
+    public:
+        auto static constexpr ID = "window_w";
+        auto static constexpr name = "NA";
+        inline static constexpr int minV = 600;
+        inline static constexpr int maxV = 6000;
+        inline static constexpr int defaultV = 704;
+        inline auto static const range =
+                juce::NormalisableRange<float>(minV, maxV, 1.f);
+    };
+
+    class windowH : public FloatParameters<windowH> {
+    public:
+        auto static constexpr ID = "window_h";
+        auto static constexpr name = "NA";
+        inline static constexpr int minV = 375;
+        inline static constexpr int maxV = 3750;
+        inline static constexpr int defaultV = 440;
+        inline auto static const range =
+                juce::NormalisableRange<float>(minV, maxV, 1.f);
+    };
+
+    class gridThickness : public FloatParameters<gridThickness> {
+    public:
+        auto static constexpr ID = "grid_thickness";
+        auto static constexpr name = "NA";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 2.f, .01f);
+        auto static constexpr defaultV = 1.f;
+    };
+
+    class preOpacity : public FloatParameters<preOpacity> {
+    public:
+        auto static constexpr ID = "pre_opacity";
+        auto static constexpr name = "NA";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
+        auto static constexpr defaultV = .1f;
+    };
+
+    class postOpacity : public FloatParameters<postOpacity> {
+    public:
+        auto static constexpr ID = "post_opacity";
+        auto static constexpr name = "NA";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
+        auto static constexpr defaultV = .5f;
+    };
+
+    class sideOpacity : public FloatParameters<sideOpacity> {
+    public:
+        auto static constexpr ID = "side_opacity";
+        auto static constexpr name = "NA";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
+        auto static constexpr defaultV = .1f;
+    };
+
+    inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
+                             const std::string &suffix = "",
+                             const int red = 0, const int green = 0, const int blue = 0) {
+        layout.add(std::make_unique<juce::AudioParameterInt>(
+                       juce::ParameterID(suffix + "_r", versionHint), "",
+                       0, 255, red),
+                   std::make_unique<juce::AudioParameterInt>(
+                       juce::ParameterID(suffix + "_g", versionHint), "",
+                       0, 255, green),
+                   std::make_unique<juce::AudioParameterInt>(
+                       juce::ParameterID(suffix + "_b", versionHint), "",
+                       0, 255, blue));
+    }
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(uiStyle::get(),
-                   windowW::get(), windowH::get());
+        layout.add(uiStyle::get(), windowW::get(), windowH::get());
         return layout;
     }
 }

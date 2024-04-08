@@ -260,7 +260,7 @@ namespace zlIIR {
     size_t DesignFilter::updateHighPass(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs,
                                         size_t startIdx) {
         if (n == 1) {
-            auto [a, b] = MartinCoeff::get1LowPass(w0);
+            auto [a, b] = MartinCoeff::get1HighPass(w0);
             coeffs[0] = {{a[0], a[1], 0.0}, {b[0], b[1], 0.0}};
             return 1;
         }

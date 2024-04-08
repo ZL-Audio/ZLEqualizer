@@ -20,7 +20,7 @@ namespace zlPanel {
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
-        addAndMakeVisible(uiSettingButton);
+        addChildComponent(uiSettingButton);
         addChildComponent(uiSettingPanel);
         state.addParameterListener(zlState::uiStyle::ID, this);
     }
@@ -56,6 +56,7 @@ namespace zlPanel {
     }
 
     void MainPanel::handleAsyncUpdate() {
+        uiSettingButton.setVisible(uiBase.getStyle() == 2);
         sendLookAndFeelChange();
     }
 }
