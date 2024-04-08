@@ -15,7 +15,6 @@ namespace zlPanel {
           uiBase(base),
           brandDrawable(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
           logoDrawable(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
-        // setBufferedToImage(true);
     }
 
     void LogoPanel::paint(juce::Graphics &g) {

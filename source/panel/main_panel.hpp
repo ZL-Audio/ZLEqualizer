@@ -14,6 +14,8 @@
 #include "control_panel/control_panel.hpp"
 #include "curve_panel/curve_panel.hpp"
 #include "state_panel/state_panel.hpp"
+#include "ui_setting_panel/ui_setting_panel.hpp"
+#include "ui_setting_panel/ui_setting_button.hpp"
 
 namespace zlPanel {
     class MainPanel final : public juce::Component,
@@ -34,6 +36,8 @@ namespace zlPanel {
         ControlPanel controlPanel;
         CurvePanel curvePanel;
         StatePanel statePanel;
+        UISettingPanel uiSettingPanel;
+        UISettingButton uiSettingButton;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

@@ -23,9 +23,6 @@ namespace zlInterface {
         void drawCallOutBoxBackground(juce::CallOutBox &box, juce::Graphics &g,
                                       const juce::Path &,
                                       juce::Image &) override {
-            // g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
-            // g.fillRoundedRectangle(box.getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
-            // g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
             g.setColour(uiBase.getBackgroundColor());
             g.fillRoundedRectangle(box.getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
         }

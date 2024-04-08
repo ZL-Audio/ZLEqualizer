@@ -14,11 +14,14 @@ namespace zlPanel {
         : state(p.state),
           controlPanel(p.parameters, p.parametersNA, uiBase),
           curvePanel(p.parameters, p.parametersNA, uiBase, p.getController()),
-          statePanel(p.parameters, p.parametersNA, p.state, uiBase) {
+          statePanel(p.parameters, p.parametersNA, p.state, uiBase),
+          uiSettingPanel(uiBase), uiSettingButton(uiSettingPanel, uiBase) {
         uiBase.setStyle(static_cast<size_t>(state.getRawParameterValue(zlState::uiStyle::ID)->load()));
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
+        addAndMakeVisible(uiSettingButton);
+        addChildComponent(uiSettingPanel);
         state.addParameterListener(zlState::uiStyle::ID, this);
     }
 
@@ -34,8 +37,12 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         uiBase.setFontSize(bound.getWidth() * 0.014287762237762238f);
 
-        const auto stateBound = bound.removeFromTop(bound.getHeight() * .06f);
+        auto stateBound = bound.removeFromTop(bound.getHeight() * .06f);
         statePanel.setBounds(stateBound.toNearestInt());
+        stateBound = stateBound.removeFromRight(stateBound.getHeight());
+        stateBound.removeFromBottom(uiBase.getFontSize() * .5f);
+        uiSettingButton.setBounds(stateBound.toNearestInt());
+        uiSettingPanel.setBounds(getLocalBounds());
 
         const auto controlBound = bound.removeFromBottom(bound.getWidth() * 0.105f);
         controlPanel.setBounds(controlBound.toNearestInt());

@@ -1,0 +1,35 @@
+// Copyright (C) 2024 - zsliu98
+// This file is part of ZLEqualizer
+//
+// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+//
+// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ZLEqualizer_UISETTINGPANEL_H
+#define ZLEqualizer_UISETTINGPANEL_H
+
+#include "internal_setting_panel.hpp"
+
+namespace zlPanel {
+
+class UISettingPanel final : public juce::Component {
+public:
+    explicit UISettingPanel(zlInterface::UIBase &base);
+
+    void paint(juce::Graphics &g) override;
+
+    void resized() override;
+
+private:
+    zlInterface::UIBase &uiBase;
+    juce::Viewport viewPort;
+    InternalSettingPanel internelPanel;
+    const std::unique_ptr<juce::Drawable> saveDrawable, closeDrawable, resetDrawable;
+    zlInterface::ClickButton saveButton, closeButton, resetButton;
+};
+
+} // zlPanel
+
+#endif //ZLEqualizer_UISETTINGPANEL_H

@@ -14,12 +14,12 @@ namespace zlPanel {
     class ConflictCallOutBox final : public juce::Component {
     public:
         explicit ConflictCallOutBox(juce::AudioProcessorValueTreeState &parametersNA,
-                                  zlInterface::UIBase &base)
+                                    zlInterface::UIBase &base)
             : parametersNARef(parametersNA),
               uiBase(base.getFontSize(), base.getStyle()),
               conflictC("DET:", zlState::conflictON::choices, uiBase),
               strengthS("Strength", uiBase),
-        scaleS("Scale", uiBase){
+              scaleS("Scale", uiBase) {
             conflictC.getLabelLAF().setFontScale(1.5f);
             conflictC.setLabelScale(.5f);
             conflictC.setLabelPos(zlInterface::ClickCombobox::left);
@@ -32,8 +32,10 @@ namespace zlPanel {
                    {zlState::conflictON::ID},
                    parametersNARef, boxAttachments);
             attach({&strengthS.getSlider(), &scaleS.getSlider()},
-                   {zlState::conflictStrength::ID,
-                   zlState::conflictScale::ID},
+                   {
+                       zlState::conflictStrength::ID,
+                       zlState::conflictScale::ID
+                   },
                    parametersNARef, sliderAttachments);
         }
 
@@ -71,8 +73,8 @@ namespace zlPanel {
     };
 
     ConflictSettingPanel::ConflictSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                           juce::AudioProcessorValueTreeState &parametersNA,
-                                           zlInterface::UIBase &base)
+                                               juce::AudioProcessorValueTreeState &parametersNA,
+                                               zlInterface::UIBase &base)
         : parametersRef(parameters),
           parametersNARef(parametersNA),
           uiBase(base),

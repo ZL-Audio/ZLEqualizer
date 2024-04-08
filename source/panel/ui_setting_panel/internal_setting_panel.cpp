@@ -1,4 +1,4 @@
-// Copyright (C) 2023 - zsliu98
+// Copyright (C) 2024 - zsliu98
 // This file is part of ZLEqualizer
 //
 // ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -7,15 +7,18 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_GUI_H
-#define ZL_GUI_H
+#include "internal_setting_panel.hpp"
 
-#include "interface_definitions.hpp"
-#include "button/button.hpp"
-#include "combobox/combobox.hpp"
-#include "slider/slider.hpp"
-#include "dragger2d/dragger2d.hpp"
-#include "calloutbox/call_out_box_laf.hpp"
-#include "colour_selector/colour_selector.hpp"
+namespace zlPanel {
+    void InternalSettingPanel::loadSetting() {
 
-#endif //ZL_GUI_H
+    }
+
+    void InternalSettingPanel::saveSetting() {
+
+    }
+
+    void InternalSettingPanel::resetSetting() {
+
+    }
+} // zlPanel
