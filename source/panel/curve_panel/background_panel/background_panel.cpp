@@ -32,7 +32,6 @@ namespace zlPanel {
 
     void BackgroundPanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        // bound = uiBase.getRoundedShadowRectangleArea(bound, 0.05f * uiBase.getFontSize(), {.blurRadius = 0.25f});
         const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4);
         gridPanel.setBounds(bound.toNearestInt());
         scalePanel.setBounds(scaleBound.toNearestInt());

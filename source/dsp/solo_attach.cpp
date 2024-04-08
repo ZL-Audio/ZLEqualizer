@@ -42,11 +42,10 @@ namespace zlDSP {
 
     template<typename FloatType>
     void SoloAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
-        const auto id = parameterID.dropLastCharacters(2);
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         const auto value = static_cast<FloatType>(newValue);
-        if (id == solo::ID || id == sideSolo::ID) {
-            const auto isSide = (id == sideSolo::ID);
+        if (parameterID.startsWith(solo::ID) || parameterID.startsWith(sideSolo::ID)) {
+            const auto isSide = parameterID.startsWith(sideSolo::ID);
             if (static_cast<bool>(value)) {
                 if (controllerRef.getSolo() && (idx != controllerRef.getSoloIdx() ||
                                                 isSide != controllerRef.getSoloIsSide())) {

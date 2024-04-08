@@ -49,30 +49,29 @@ namespace zlDSP {
             maximumDB.store(zlState::maximumDB::dBs[static_cast<size_t>(newValue)]);
             return;
         }
-        const auto id = parameterID.dropLastCharacters(2);
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         auto value = static_cast<FloatType>(newValue);
-        if (id == bypass::ID) {
+        if (parameterID.startsWith(bypass::ID)) {
             filtersRef[idx].setBypass(static_cast<bool>(value));
-        } else if (id == fType::ID) {
+        } else if (parameterID.startsWith(fType::ID)) {
             filtersRef[idx].getBaseFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
             filtersRef[idx].getMainFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getTargetFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
             }
-        } else if (id == slope::ID) {
+        } else if (parameterID.startsWith(slope::ID)) {
             filtersRef[idx].getBaseFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
             filtersRef[idx].getMainFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getTargetFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
             }
-        } else if (id == freq::ID) {
+        } else if (parameterID.startsWith(freq::ID)) {
             filtersRef[idx].getBaseFilter().setFreq(value);
             filtersRef[idx].getMainFilter().setFreq(value);
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getTargetFilter().setFreq(value);
             }
-        } else if (id == gain::ID) {
+        } else if (parameterID.startsWith(gain::ID)) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
             value = gain::range.snapToLegalValue(static_cast<float>(value));
             if (filtersRef[idx].getDynamicON()) {
@@ -81,16 +80,16 @@ namespace zlDSP {
                 filtersRef[idx].getBaseFilter().setGain(value);
                 filtersRef[idx].getMainFilter().setGain(value);
             }
-        } else if (id == Q::ID) {
+        } else if (parameterID.startsWith(Q::ID)) {
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getBaseFilter().setQ(value);
             } else {
                 filtersRef[idx].getBaseFilter().setQ(value);
                 filtersRef[idx].getMainFilter().setQ(value);
             }
-        } else if (id == lrType::ID) {
+        } else if (parameterID.startsWith(lrType::ID)) {
             controllerRef.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
-        } else if (id == dynamicON::ID) {
+        } else if (parameterID.startsWith(dynamicON::ID)) {
             if (!filtersRef[idx].getDynamicON() && static_cast<bool>(value) && dynamicONUpdateOthers.load()) {
                 auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
                 auto tGain = static_cast<float>(filtersRef[idx].getBaseFilter().getGain());
@@ -159,7 +158,7 @@ namespace zlDSP {
                 }
             }
             controllerRef.setDynamicON(static_cast<bool>(value), idx);
-        } else if (id == dynamicLearn::ID) {
+        } else if (parameterID.startsWith(dynamicLearn::ID)) {
             const auto f = static_cast<bool>(newValue);
             if (!f && controllerRef.getLearningHistON(idx)) {
                 controllerRef.setLearningHist(idx, false);
@@ -180,27 +179,27 @@ namespace zlDSP {
             } else {
                 controllerRef.setLearningHist(idx, f);
             }
-        } else if (id == dynamicBypass::ID) {
+        } else if (parameterID.startsWith(dynamicBypass::ID)) {
             filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
-        } else if (id == dynamicRelative::ID) {
+        } else if (parameterID.startsWith(dynamicRelative::ID)) {
             controllerRef.setRelative(idx, static_cast<bool>(value));
-        } else if (id == targetGain::ID) {
+        } else if (parameterID.startsWith(targetGain::ID)) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
             value = targetGain::range.snapToLegalValue(static_cast<float>(value));
             filtersRef[idx].getTargetFilter().setGain(value);
-        } else if (id == targetQ::ID) {
+        } else if (parameterID.startsWith(targetQ::ID)) {
             filtersRef[idx].getTargetFilter().setQ(value);
-        } else if (id == threshold::ID) {
+        } else if (parameterID.startsWith(threshold::ID)) {
             filtersRef[idx].getCompressor().getComputer().setThreshold(value);
-        } else if (id == kneeW::ID) {
+        } else if (parameterID.startsWith(kneeW::ID)) {
             filtersRef[idx].getCompressor().getComputer().setKneeW(kneeW::formatV(value));
-        } else if (id == sideFreq::ID) {
+        } else if (parameterID.startsWith(sideFreq::ID)) {
             filtersRef[idx].getSideFilter().setFreq(value);
-        } else if (id == attack::ID) {
+        } else if (parameterID.startsWith(attack::ID)) {
             filtersRef[idx].getCompressor().getDetector().setAttack(value);
-        } else if (id == release::ID) {
+        } else if (parameterID.startsWith(release::ID)) {
             filtersRef[idx].getCompressor().getDetector().setRelease(value);
-        } else if (id == sideQ::ID) {
+        } else if (parameterID.startsWith(sideQ::ID)) {
             filtersRef[idx].getSideFilter().setQ(value);
         }
     }

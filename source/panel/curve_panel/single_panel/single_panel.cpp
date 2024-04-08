@@ -187,10 +187,9 @@ namespace zlPanel {
         if (parameterID == zlState::selectedBandIdx::ID) {
             selected.store(static_cast<size_t>(newValue) == idx);
         } else {
-            const auto id = parameterID.dropLastCharacters(2);
-            if (id == zlState::active::ID) {
+            if (parameterID.startsWith(zlState::active::ID)) {
                 actived.store(static_cast<bool>(newValue));
-            } else if (id == zlDSP::dynamicON::ID) {
+            } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
                 dynON.store(static_cast<bool>(newValue));
             }
         }
@@ -208,14 +207,12 @@ namespace zlPanel {
         juce::ScopedNoDenormals noDenormals;
         // draw curve
         {
-            // juce::ScopedLock lock(curvePathLock);
             baseF.updateDBs();
             curvePath.clear();
             drawCurve(curvePath, baseF.getDBs());
         }
         // draw shadow
         {
-            // juce::ScopedLock lock(shadowPathLock);
             shadowPath.clear();
             drawCurve(shadowPath, baseF.getDBs());
             if (selected.load()) {
@@ -246,7 +243,6 @@ namespace zlPanel {
         }
         // draw dynamic shadow
         {
-            // juce::ScopedLock lock(dynPathLock);
             dynPath.clear();
             drawCurve(dynPath, baseF.getDBs());
             if (dynON.load()) {

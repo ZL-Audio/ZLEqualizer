@@ -34,16 +34,15 @@ namespace zlDSP {
 
     template<typename FloatType>
     void ResetAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
-        const auto id = parameterID.dropLastCharacters(2);
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        if (id == zlDSP::bypass::ID) {
+        if (parameterID.startsWith(zlDSP::bypass::ID)) {
             if (!static_cast<bool>(newValue)) {
                 auto *para = parameterNARef.getParameter(zlState::appendSuffix(zlState::active::ID, idx));
                 para->beginChangeGesture();
                 para->setValueNotifyingHost(zlState::active::convertTo01(true));
                 para->endChangeGesture();
             }
-        } else if (id == zlState::active::ID) {
+        } else if (parameterID.startsWith(zlState::active::ID)) {
             if (!static_cast<bool>(newValue)) {
                 const auto suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
                 for (size_t j = 0; j < resetDefaultVs.size(); ++j) {

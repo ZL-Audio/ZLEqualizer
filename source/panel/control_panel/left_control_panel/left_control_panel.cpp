@@ -145,9 +145,8 @@ namespace zlPanel {
     }
 
     void LeftControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        const auto id = parameterID.dropLastCharacters(2);
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        if (id == zlDSP::fType::ID) {
+        if (parameterID.startsWith(zlDSP::fType::ID)) {
             switch (static_cast<zlIIR::FilterType>(newValue)) {
                 case zlIIR::FilterType::peak:
                 case zlIIR::FilterType::lowShelf:
@@ -185,7 +184,7 @@ namespace zlPanel {
             if (idx == bandIdx.load()) {
                 triggerAsyncUpdate();
             }
-        } else if (id == zlDSP::dynamicON::ID) {
+        } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
             const auto f = static_cast<bool>(newValue); {
                 gainS2Editable.store(gainCEditable.load() && f);
                 qS2Editable.store(f);

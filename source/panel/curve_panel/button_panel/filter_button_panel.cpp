@@ -105,8 +105,7 @@ namespace zlPanel {
             triggerAsyncUpdate();
             return;
         }
-        const auto parameter = parameterID.dropLastCharacters(2);
-        if (parameter == zlDSP::fType::ID) {
+        if (parameterID.startsWith(zlDSP::fType::ID)) {
             fType.store(static_cast<zlIIR::FilterType>(newValue));
             buttonPopUp.setFType(fType.load());
             switch (fType.load()) {
@@ -130,7 +129,7 @@ namespace zlPanel {
             toUpdateTargetAttachment.store(true);
             toUpdateBounds.store(true);
             triggerAsyncUpdate();
-        } else if (parameter == zlState::active::ID) {
+        } else if (parameterID.startsWith(zlState::active::ID)) {
             const auto f = static_cast<bool>(newValue);
             isActiveTarget.store(f);
             dragger.setActive(f);
@@ -140,11 +139,11 @@ namespace zlPanel {
             }
             toUpdateTargetAttachment.store(true);
             triggerAsyncUpdate();
-        } else if (parameter == zlDSP::dynamicON::ID) {
+        } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
             isDynamicHasTarget.store(static_cast<bool>(newValue));
             toUpdateTargetAttachment.store(true);
             triggerAsyncUpdate();
-        } else if (parameter == zlDSP::lrType::ID) {
+        } else if (parameterID.startsWith(zlDSP::lrType::ID)) {
             lrType.store(static_cast<zlDSP::lrType::lrTypes>(newValue));
             switch (lrType.load()) {
                 case zlDSP::lrType::stereo:

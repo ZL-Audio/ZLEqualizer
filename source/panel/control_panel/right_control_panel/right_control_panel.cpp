@@ -136,7 +136,6 @@ namespace zlPanel {
             dynBypassC.setEditable(f);
             dynSoloC.setEditable(f);
             dynRelativeC.setEditable(f);
-            // sideChainC.setEditable(f);
             thresC.setEditable(f);
             attackC.setEditable(f);
             kneeC.setEditable(f);
@@ -153,7 +152,6 @@ namespace zlPanel {
         dynBypassC.repaint();
         dynSoloC.repaint();
         dynRelativeC.repaint();
-        // sideChainC.repaint();
         repaint();
     }
 }

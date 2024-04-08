@@ -187,9 +187,8 @@ namespace zlPanel {
         } else {
             // the parameter is freq/gain/Q
             const auto currentBand = selectBandIdx.load();
-            const auto id = parameterID.dropLastCharacters(2);
             const auto value = static_cast<double>(newValue);
-            if (id == zlDSP::freq::ID) {
+            if (parameterID.startsWith(zlDSP::freq::ID)) {
                 const auto ratio = static_cast<float>(value / currentFreq.load());
                 currentFreq.store(value);
                 if (!isSelected[currentBand].load()) return;
@@ -203,7 +202,7 @@ namespace zlPanel {
                         para->endChangeGesture();
                     }
                 }
-            } else if (id == zlDSP::gain::ID) {
+            } else if (parameterID.startsWith(zlDSP::gain::ID)) {
                 const auto shift = static_cast<float>(value - currentGain.load());
                 currentGain.store(value);
                 if (!isSelected[currentBand].load()) return;
@@ -217,7 +216,7 @@ namespace zlPanel {
                         para->endChangeGesture();
                     }
                 }
-            } else if (id == zlDSP::Q::ID) {
+            } else if (parameterID.startsWith(zlDSP::Q::ID)) {
                 const auto ratio = static_cast<float>(value / currentQ.load());
                 currentQ.store(value);
                 if (!isSelected[currentBand].load()) return;
