@@ -21,6 +21,7 @@ namespace zlPanel {
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
         addChildComponent(uiSettingButton);
+        uiSettingButton.setVisible(uiBase.getStyle() == 2);
         addChildComponent(uiSettingPanel);
         state.addParameterListener(zlState::uiStyle::ID, this);
     }

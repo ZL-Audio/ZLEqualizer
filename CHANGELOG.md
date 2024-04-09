@@ -4,6 +4,13 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.2.0
+
+- add UI setting panel
+- fix incorrect 6dB/oct high-pass filter
+- fix incorrect RMS and lookahead behaviour (when the sample-rate changes)
+- improve stability
+
 ## 0.1.16
 
 - fix incorrect dynamic relative behaviour (endless loop, introduced in 0.1.14)

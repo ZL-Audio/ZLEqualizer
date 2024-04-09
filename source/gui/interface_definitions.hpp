@@ -50,7 +50,6 @@ namespace zlInterface {
             {},
             {
                 .TextColor = juce::Colour(255 - 8, 255 - 9, 255 - 11),
-                // .BackgroundColor = juce::Colour(255 - 214, 255 - 223, 255 - 236),
                 .BackgroundColor = juce::Colour((255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2),
                 .TextLightColor = juce::Colour(137, 125, 109),
                 .DarkShadowColor = juce::Colour(0, 0, 0),
@@ -152,42 +151,46 @@ namespace zlInterface {
         UIBase(const float fSize, const size_t idx) {
             fontSize.store(fSize);
             styleID.store(idx);
+            mainID.store(std::min(static_cast<size_t>(1), idx));
         }
 
         void setFontSize(const float fSize) { fontSize.store(fSize); }
 
         inline float getFontSize() const { return fontSize.load(); }
 
-        void setStyle(const size_t idx) { styleID.store(idx); }
+        void setStyle(const size_t idx) {
+            styleID.store(idx);
+            mainID.store(std::min(static_cast<size_t>(1), idx));
+        }
 
         inline size_t getStyle() const { return styleID.load();}
 
-        inline juce::Colour getTextColor() const { return styleColors[styleID.load()].TextColor; }
+        inline juce::Colour getTextColor() const { return styleColors[mainID.load()].TextColor; }
 
         inline juce::Colour getTextInactiveColor() const { return getTextColor().withAlpha(0.5f); }
 
         inline juce::Colour getTextHideColor() const { return getTextColor().withAlpha(0.25f); }
 
-        inline juce::Colour getBackgroundColor() const { return styleColors[styleID.load()].BackgroundColor; }
+        inline juce::Colour getBackgroundColor() const { return styleColors[mainID.load()].BackgroundColor; }
 
-        inline juce::Colour getTextLightColor() const { return styleColors[styleID.load()].TextLightColor; }
+        inline juce::Colour getTextLightColor() const { return styleColors[mainID.load()].TextLightColor; }
 
         inline juce::Colour getBackgroundInactiveColor() const { return getBackgroundColor().withAlpha(0.8f); }
 
         inline juce::Colour getBackgroundHideColor() const { return getBackgroundColor().withAlpha(0.5f); }
 
-        inline juce::Colour getDarkShadowColor() const { return styleColors[styleID.load()].DarkShadowColor; }
+        inline juce::Colour getDarkShadowColor() const { return styleColors[mainID.load()].DarkShadowColor; }
 
-        inline juce::Colour getBrightShadowColor() const { return styleColors[styleID.load()].BrightShadowColor; }
+        inline juce::Colour getBrightShadowColor() const { return styleColors[mainID.load()].BrightShadowColor; }
 
-        inline juce::Colour getExtraColor1() const { return styleColors[styleID.load()].ExtraColor1; }
+        inline juce::Colour getExtraColor1() const { return styleColors[mainID.load()].ExtraColor1; }
 
         inline juce::Colour getColorMap1(const size_t idx) const {
-            return styleColors[styleID.load()].ColorMap1[idx % ColorMap1Size];
+            return styleColors[std::max(static_cast<size_t>(1), mainID.load())].ColorMap1[idx % ColorMap1Size];
         }
 
         inline juce::Colour getColorMap2(const size_t idx) const {
-            return styleColors[styleID.load()].ColorMap2[idx % ColorMap2Size];
+            return styleColors[mainID.load()].ColorMap2[idx % ColorMap2Size];
         }
 
         static juce::Rectangle<float> getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds,
@@ -224,7 +227,7 @@ namespace zlInterface {
 
     private:
         std::atomic<float> fontSize {0};
-        std::atomic<size_t> styleID {1};
+        std::atomic<size_t> styleID {1}, mainID{1};
     };
 }
 
