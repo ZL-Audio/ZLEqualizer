@@ -272,6 +272,16 @@ namespace zlState {
         auto static constexpr defaultV = .1f;
     };
 
+    class sliderStyle : public ChoiceParameters<sliderStyle> {
+    public:
+        auto static constexpr ID = "slider_style";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Circular", "Horizontal", "Vertical", "Horiz + Vert"
+        };
+        int static constexpr defaultI = 0;
+    };
+
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0) {
