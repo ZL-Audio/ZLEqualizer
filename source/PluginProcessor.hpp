@@ -67,6 +67,8 @@ public:
 
     void setStateInformation(const void *data, int sizeInBytes) override;
 
+    bool supportsDoublePrecisionProcessing() const override { return true; }
+
     inline zlDSP::Controller<double>& getController() {return controller;}
 
 private:
