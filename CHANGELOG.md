@@ -7,7 +7,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 ## 0.2.0
 
 - add UI setting panel
-- fix incorrect 6dB/oct high-pass filter
+- fix incorrect 6dB/oct high-pass filter & high-order peak(band shelf) filter
 - fix incorrect RMS and lookahead behaviour (when the sample-rate changes)
 - improve stability
 

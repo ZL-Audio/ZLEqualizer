@@ -390,6 +390,9 @@ namespace zlIIR {
         size_t n2 = 0;
         if (w2 < 22000.0 * 2 * pi / 48000) {
             n2 = updateLowShelf(n, w2, g, std::sqrt(2) / 2, coeffs, startIdx + n1);
+        } else {
+            n2 = 1;
+            coeffs[startIdx + n1] = {{1, 1, 1}, {g, g, g}};
         }
         return n1 + n2;
     }
