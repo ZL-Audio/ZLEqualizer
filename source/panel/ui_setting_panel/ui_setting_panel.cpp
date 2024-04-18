@@ -40,10 +40,16 @@ namespace zlPanel {
 
     void UISettingPanel::paint(juce::Graphics &g) {
         g.fillAll(uiBase.getBackgroundColor());
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight());
+        uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.5f});
     }
 
     void UISettingPanel::resized() {
         auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight());
+        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
+
         internelPanel.setBounds(0, 0,
                                 juce::roundToInt(bound.getWidth()),
                                 juce::roundToInt(bound.getHeight()) * 2);
