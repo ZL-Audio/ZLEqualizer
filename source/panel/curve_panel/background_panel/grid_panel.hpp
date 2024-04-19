@@ -38,8 +38,11 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void resized() override;
+
     private:
         zlInterface::UIBase &uiBase;
+        juce::RectangleList<float> rectList;
     };
 }
 

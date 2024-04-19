@@ -19,25 +19,34 @@ namespace zlPanel {
     void GridPanel::paint(juce::Graphics &g) {
         auto bound = getLocalBounds().toFloat();
 
-        const auto thickness = uiBase.getFontSize() * 0.1f;
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
+        g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
             const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
-            g.setColour(uiBase.getTextLightColor());
-            g.drawLine(x, bound.getY(), x, bound.getBottom(), thickness);
-
             const auto textBound = juce::Rectangle<float>(x - uiBase.getFontSize() * 3 - uiBase.getFontSize() * 0.125f,
                                                           bound.getBottom() - uiBase.getFontSize() * 2,
                                                           uiBase.getFontSize() * 3, uiBase.getFontSize() * 2);
-            g.setColour(uiBase.getTextInactiveColor());
             g.drawText(backgroundFreqsNames[i], textBound, juce::Justification::bottomRight);
+        }
+        
+        g.fillRectList(rectList);
+    }
+
+    void GridPanel::resized() {
+        rectList.clear();
+        auto bound = getLocalBounds().toFloat();
+        const auto thickness = uiBase.getFontSize() * 0.1f;
+        for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
+            const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
+            rectList.add({x - thickness * .5f, bound.getY(),thickness, bound.getHeight()});
         }
 
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-        g.setColour(uiBase.getTextLightColor());
+
         for (auto &d:backgroundDBs) {
             const auto y = d * bound.getHeight() + bound.getY();
-            g.drawLine(bound.getX(), y, bound.getRight(), y, thickness);
+            rectList.add({bound.getX(), y - thickness * .5f, bound.getWidth(), thickness});
         }
     }
+
 }

@@ -251,4 +251,16 @@ namespace zlInterface {
         g.restoreState();
         return boxBounds;
     }
+
+    juce::Colour UIBase::getColourByIdx(const colourIdx idx) const {
+        switch (idx) {
+            case gridColour:
+                return getTextLightColor();
+            case colourNum:
+                return juce::Colours::white;
+            default:
+                return juce::Colours::white;
+        }
+    }
+
 }

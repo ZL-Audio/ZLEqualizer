@@ -13,6 +13,11 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace zlInterface {
+    enum colourIdx {
+        gridColour,
+        colourNum
+    };
+
     static constexpr size_t ColorMap1Size = 10;
     static constexpr size_t ColorMap2Size = 6;
 
@@ -224,6 +229,8 @@ namespace zlInterface {
                                                       juce::Rectangle<float> boxBounds,
                                                       float cornerSize,
                                                       const fillShadowEllipseArgs &margs) const;
+
+        juce::Colour getColourByIdx(colourIdx idx) const;
 
     private:
         std::atomic<float> fontSize {0};
