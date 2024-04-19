@@ -124,4 +124,8 @@ namespace zlPanel {
         juce::ignoreUnused(parameterID, newValue);
         toRepaint.store(true);
     }
+
+    void SumPanel::resized() {
+        toRepaint.store(true);
+    }
 } // zlPanel

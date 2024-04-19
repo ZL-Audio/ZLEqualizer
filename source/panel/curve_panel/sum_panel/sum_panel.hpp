@@ -36,6 +36,8 @@ namespace zlPanel {
 
         void checkRepaint();
 
+        void resized() override;
+
     private:
         std::array<juce::Path, 5> paths;
         juce::AudioProcessorValueTreeState &parametersRef;

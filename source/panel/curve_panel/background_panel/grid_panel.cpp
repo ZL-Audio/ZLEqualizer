@@ -28,7 +28,7 @@ namespace zlPanel {
                                                           uiBase.getFontSize() * 3, uiBase.getFontSize() * 2);
             g.drawText(backgroundFreqsNames[i], textBound, juce::Justification::bottomRight);
         }
-        
+
         g.fillRectList(rectList);
     }
 
