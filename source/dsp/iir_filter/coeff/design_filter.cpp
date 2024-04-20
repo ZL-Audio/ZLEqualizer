@@ -345,8 +345,8 @@ namespace zlIIR {
     }
 
     size_t DesignFilter::updateBandPass(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs, size_t startIdx) {
-        auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
-        auto w = w0 / std::pow(2, bw / 2);
+        auto halfbw = std::asinh(0.5 / q) / std::log(2);
+        auto w = w0 / std::pow(2, halfbw);
         auto g = db_to_gain(-6 / static_cast<double>(n));
         auto _q = std::sqrt(1 - g * g) * w * w0 / g / (w0 * w0 - w * w);
 
@@ -359,8 +359,8 @@ namespace zlIIR {
     }
 
     size_t DesignFilter::updateNotch(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs, size_t startIdx) {
-        auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
-        auto w = w0 / std::pow(2, bw / 2);
+        auto halfbw = std::asinh(0.5 / q) / std::log(2);
+        auto w = w0 / std::pow(2, halfbw);
         auto g = db_to_gain(-6 / static_cast<double>(n));
         auto _q = g * w * w0 / std::sqrt((1 - g * g)) / (w0 * w0 - w * w);
 
@@ -380,19 +380,22 @@ namespace zlIIR {
         if (n <= 2) {
             return 0;
         }
-        const auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
-        const auto w1 = w0 / std::pow(2, bw / 2);
-        const auto w2 = w0 * std::pow(2, bw / 2);
-        size_t n1 = 0;
-        if (w1 > 10.0 * 2 * pi / 48000) {
-            n1 = updateLowShelf(n, w1, 1 / g, std::sqrt(2) / 2, coeffs, startIdx);
-        }
+        const auto halfbw = std::asinh(0.5 / q) / std::log(2);
+        const auto scale = std::pow(2, halfbw);
+        const auto w1 = w0 / scale;
+        const auto w2 = w0 * scale;
+        const auto f1 = w1 > 10.0 * 2 * pi / 48000, f2 = w2 < 22000.0 * 2 * pi / 48000;
+        size_t n1 = 1;
         size_t n2 = 0;
-        if (w2 < 22000.0 * 2 * pi / 48000) {
+        if (f1 && f2) {
+            n1 = updateLowShelf(n, w1, 1 / g, std::sqrt(2) / 2, coeffs, startIdx);
             n2 = updateLowShelf(n, w2, g, std::sqrt(2) / 2, coeffs, startIdx + n1);
+        } else if (f1) {
+            n1 = updateHighShelf(n, w1, g, std::sqrt(2) / 2, coeffs, startIdx);
+        } else if (f2) {
+            n1 = updateLowShelf(n, w2, g, std::sqrt(2) / 2, coeffs, startIdx);
         } else {
-            n2 = 1;
-            coeffs[startIdx + n1] = {{1, 1, 1}, {g, g, g}};
+            coeffs[startIdx] = {{1, 1, 1}, {g, g, g}};
         }
         return n1 + n2;
     }
