@@ -16,7 +16,7 @@ namespace zlPanel {
         explicit ConflictCallOutBox(juce::AudioProcessorValueTreeState &parametersNA,
                                     zlInterface::UIBase &base)
             : parametersNARef(parametersNA),
-              uiBase(base.getFontSize(), base.getStyle()),
+              uiBase(base),
               conflictC("DET:", zlState::conflictON::choices, uiBase),
               strengthS("Strength", uiBase),
               scaleS("Scale", uiBase) {
@@ -63,7 +63,7 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
-        zlInterface::UIBase uiBase;
+        zlInterface::UIBase &uiBase;
 
         zlInterface::ClickCombobox conflictC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};

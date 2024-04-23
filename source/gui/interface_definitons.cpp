@@ -253,14 +253,22 @@ namespace zlInterface {
     }
 
     juce::Colour UIBase::getColourByIdx(const colourIdx idx) const {
-        switch (idx) {
-            case gridColour:
-                return getTextLightColor();
-            case colourNum:
-                return juce::Colours::white;
-            default:
-                return juce::Colours::white;
+        if (styleID.load() < 2) {
+            switch (idx) {
+                case preColour:
+                    return getTextColor().withAlpha(0.1f);
+                case postColour:
+                    return getTextColor().withAlpha(0.1f);
+                case sideColour:
+                    return getColorMap2(1).withAlpha(0.1f);
+                case gridColour:
+                    return getTextLightColor();
+                case colourNum:
+                default:
+                    return juce::Colours::white;
+            }
+        } else {
+            return customColours[static_cast<size_t>(idx)];
         }
     }
-
 }

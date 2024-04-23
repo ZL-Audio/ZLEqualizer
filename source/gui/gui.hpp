@@ -17,5 +17,6 @@
 #include "dragger2d/dragger2d.hpp"
 #include "calloutbox/call_out_box_laf.hpp"
 #include "colour_selector/colour_selector.hpp"
+#include "colour_selector/colour_opacity_selector.hpp"
 
 #endif //ZL_GUI_H

@@ -16,7 +16,7 @@ namespace zlPanel {
         explicit CompCallOutBox(juce::AudioProcessorValueTreeState &parameters,
                                 zlInterface::UIBase &base)
             : parametersRef(parameters),
-              uiBase(base.getFontSize(), base.getStyle()),
+              uiBase(base),
               lookaheadS("Lookahead", uiBase),
               rmsS("RMS", uiBase),
               smoothS("Smooth", uiBase) {
@@ -56,7 +56,7 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
-        zlInterface::UIBase uiBase;
+        zlInterface::UIBase &uiBase;
 
         zlInterface::CompactLinearSlider lookaheadS, rmsS, smoothS;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};

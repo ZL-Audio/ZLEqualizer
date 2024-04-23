@@ -13,9 +13,11 @@
 namespace zlPanel {
     UISettingPanel::UISettingPanel(zlInterface::UIBase &base)
         : uiBase(base),
+          internelPanel(uiBase),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
           closeDrawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          resetDrawable(juce::Drawable::createFromImageData(BinaryData::loopleftline_svg, BinaryData::loopleftline_svgSize)),
+          resetDrawable(
+              juce::Drawable::createFromImageData(BinaryData::loopleftline_svg, BinaryData::loopleftline_svgSize)),
           saveButton(saveDrawable.get(), uiBase),
           closeButton(closeDrawable.get(), uiBase),
           resetButton(resetDrawable.get(), uiBase) {

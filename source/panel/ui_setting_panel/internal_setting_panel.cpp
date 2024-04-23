@@ -10,15 +10,51 @@
 #include "internal_setting_panel.hpp"
 
 namespace zlPanel {
-    void InternalSettingPanel::loadSetting() {
+    InternalSettingPanel::InternalSettingPanel(zlInterface::UIBase &base)
+        : uiBase(base), nameLAF(base),
+          preSelector(base, *this),
+          postSelector(base, *this),
+          sideSelector(base, *this),
+          gridSelector(base, *this, false) {
+        nameLAF.setJustification(juce::Justification::centredRight);
+        nameLAF.setFontScale(zlInterface::FontHuge);
+        for (size_t i = 0; i < numSelectors; ++i) {
+            selectorLabels[i].setText(selectorNames[i], juce::dontSendNotification);
+            selectorLabels[i].setLookAndFeel(&nameLAF);
+            addAndMakeVisible(selectorLabels[i]);
+            addAndMakeVisible(selectors[i]);
+        }
+    }
 
+    InternalSettingPanel::~InternalSettingPanel() {
+        for (size_t i = 0; i < numSelectors; ++i) {
+            selectorLabels[i].setLookAndFeel(nullptr);
+        }
+    }
+
+    void InternalSettingPanel::resized() {
+        auto bound = getLocalBounds().toFloat();
+        for (size_t i = 0; i < numSelectors; ++i) {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            selectorLabels[i].setBounds(localBound.removeFromLeft(bound.getWidth() * .2f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            selectors[i]->setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
+        }
+    }
+
+    void InternalSettingPanel::loadSetting() {
+        for (size_t i = 0; i < numSelectors; ++i) {
+            selectors[i]->setColour(uiBase.getColourByIdx(static_cast<zlInterface::colourIdx>(i)));
+        }
     }
 
     void InternalSettingPanel::saveSetting() {
-
+        for (size_t i = 0; i < numSelectors; ++i) {
+            uiBase.setColourByIdx(static_cast<zlInterface::colourIdx>(i), selectors[i]->getColour());
+        }
     }
 
     void InternalSettingPanel::resetSetting() {
-
     }
 } // zlPanel

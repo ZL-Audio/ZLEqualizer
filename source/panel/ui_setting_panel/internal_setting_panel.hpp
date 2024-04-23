@@ -13,16 +13,40 @@
 #include "../../gui/gui.hpp"
 
 namespace zlPanel {
+    class InternalSettingPanel final : public juce::Component {
+    public:
+        explicit InternalSettingPanel(zlInterface::UIBase &base);
 
-class InternalSettingPanel final : public juce::Component  {
-public:
-    void loadSetting();
+        ~InternalSettingPanel() override;
 
-    void saveSetting();
+        void loadSetting();
 
-    void resetSetting();
-};
+        void saveSetting();
 
+        void resetSetting();
+
+        void resized() override;
+
+    private:
+        zlInterface::UIBase &uiBase;
+        zlInterface::NameLookAndFeel nameLAF;
+        zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector;
+
+        static constexpr size_t numSelectors = 4;
+        std::array<juce::Label, numSelectors> selectorLabels;
+        std::array<zlInterface::ColourOpacitySelector*, numSelectors> selectors{
+            &preSelector,
+            &postSelector,
+            &sideSelector,
+            &gridSelector
+        };
+        std::array<std::string, numSelectors> selectorNames{
+            "Pre Colour",
+            "Post Colour",
+            "Side Colour",
+            "Grid Colour"
+        };
+    };
 } // zlPanel
 
 #endif //INTERNAL_SETTING_PANEL_HPP

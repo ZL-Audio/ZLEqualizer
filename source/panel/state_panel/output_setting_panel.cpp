@@ -16,7 +16,7 @@ namespace zlPanel {
         explicit OutputCallOutBox(juce::AudioProcessorValueTreeState &parameters,
                                   zlInterface::UIBase &base)
             : parametersRef(parameters),
-              uiBase(base.getFontSize(), base.getStyle()),
+              uiBase(base),
               effectC("ALL:", zlDSP::effectON::choices, uiBase),
               agcC("AGC:", zlDSP::autoGain::choices, uiBase),
               scaleS("Scale", uiBase),
@@ -64,7 +64,7 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
-        zlInterface::UIBase uiBase;
+        zlInterface::UIBase &uiBase;
 
         zlInterface::ClickCombobox effectC, agcC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};

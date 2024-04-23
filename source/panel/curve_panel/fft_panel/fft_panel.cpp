@@ -38,7 +38,7 @@ namespace zlPanel {
             path.lineTo(getLocalBounds().getBottomLeft().toFloat());
             path.closeSubPath();
 
-            g.setColour(uiBase.getTextColor().withAlpha(0.1f));
+            g.setColour(uiBase.getColourByIdx(zlInterface::preColour));
             g.fillPath(path);
         }
 
@@ -57,7 +57,7 @@ namespace zlPanel {
             path.lineTo(getLocalBounds().getBottomLeft().toFloat());
             path.closeSubPath();
 
-            g.setColour(uiBase.getTextColor().withAlpha(0.1f));
+            g.setColour(uiBase.getColourByIdx(zlInterface::postColour));
             g.fillPath(path);
         }
 
@@ -71,7 +71,7 @@ namespace zlPanel {
             path.lineTo(getLocalBounds().getBottomLeft().toFloat());
             path.closeSubPath();
 
-            g.setColour(uiBase.getColorMap2(1).withAlpha(0.1f));
+            g.setColour(uiBase.getColourByIdx(zlInterface::sideColour));
             g.fillPath(path);
         }
     }

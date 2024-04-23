@@ -240,35 +240,19 @@ namespace zlState {
                 juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
 
-    class gridThickness : public FloatParameters<gridThickness> {
+    class wheelSensitivity : public FloatParameters<wheelSensitivity> {
     public:
-        auto static constexpr ID = "grid_thickness";
-        auto static constexpr name = "NA";
-        inline auto static const range = juce::NormalisableRange<float>(0.f, 2.f, .01f);
+        auto static constexpr ID = "wheel_sensitivity";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
         auto static constexpr defaultV = 1.f;
     };
 
-    class preOpacity : public FloatParameters<preOpacity> {
+    class wheelFineSensitivity : public FloatParameters<wheelFineSensitivity> {
     public:
-        auto static constexpr ID = "pre_opacity";
-        auto static constexpr name = "NA";
-        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
-        auto static constexpr defaultV = .1f;
-    };
-
-    class postOpacity : public FloatParameters<postOpacity> {
-    public:
-        auto static constexpr ID = "post_opacity";
-        auto static constexpr name = "NA";
-        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
-        auto static constexpr defaultV = .5f;
-    };
-
-    class sideOpacity : public FloatParameters<sideOpacity> {
-    public:
-        auto static constexpr ID = "side_opacity";
-        auto static constexpr name = "NA";
-        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
+        auto static constexpr ID = "wheel_fine_sensitivity";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
         auto static constexpr defaultV = .1f;
     };
 
@@ -284,7 +268,8 @@ namespace zlState {
 
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
-                             const int red = 0, const int green = 0, const int blue = 0) {
+                             const int red = 0, const int green = 0, const int blue = 0,
+                             const bool addOpacity = false, const float opacity=1.f) {
         layout.add(std::make_unique<juce::AudioParameterInt>(
                        juce::ParameterID(suffix + "_r", versionHint), "",
                        0, 255, red),
@@ -294,11 +279,20 @@ namespace zlState {
                    std::make_unique<juce::AudioParameterInt>(
                        juce::ParameterID(suffix + "_b", versionHint), "",
                        0, 255, blue));
+        if (addOpacity) {
+            layout.add(std::make_unique<juce::AudioParameterFloat>(
+                juce::ParameterID(suffix + "_o", versionHint), "",
+                juce::NormalisableRange<float>(0.f, 1.f, .01f), opacity));
+        }
     }
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(uiStyle::get(), windowW::get(), windowH::get());
+        addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
+        addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
+        addOneColour(layout, "side", 252, 18, 197, true, 0.1f);
+        addOneColour(layout, "grid", 137, 125, 109, false);
         return layout;
     }
 }

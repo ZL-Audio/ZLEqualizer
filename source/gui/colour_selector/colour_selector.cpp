@@ -13,7 +13,10 @@ namespace zlInterface {
     class SelectorBox final : public juce::Component {
     public:
         explicit SelectorBox(const int flags, zlInterface::UIBase &base)
-            : selector(flags), uiBase(base) {
+            : selector(flags,
+                       juce::roundToInt(base.getFontSize() * 0.5f),
+                       juce::roundToInt(base.getFontSize() * 0.33f)),
+              uiBase(base) {
             selector.setColour(juce::ColourSelector::ColourIds::backgroundColourId, uiBase.getBackgroundColor());
             addAndMakeVisible(selector);
         }
@@ -38,9 +41,9 @@ namespace zlInterface {
     };
 
     ColourSelector::ColourSelector(zlInterface::UIBase &base, juce::Component &parent,
-        const float widthS, const float heightS)
+                                   const float widthS, const float heightS)
         : uiBase(base), laf(uiBase), parentC(parent),
-    selectorWidthS(widthS), selectorHeightS(heightS) {
+          selectorWidthS(widthS), selectorHeightS(heightS) {
     }
 
     void ColourSelector::paint(juce::Graphics &g) {
@@ -56,7 +59,8 @@ namespace zlInterface {
         colourSelector->setSize(juce::roundToInt(selectorWidthS * uiBase.getFontSize()),
                                 juce::roundToInt(selectorHeightS * uiBase.getFontSize()));
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(colourSelector),
-                                                           getBounds(), &parentC);
+                                                           parentC.getLocalArea(this, getLocalBounds()),
+                                                           &parentC);
         box.setLookAndFeel(&laf);
         box.setArrowSize(0);
         box.sendLookAndFeelChange();
@@ -64,7 +68,7 @@ namespace zlInterface {
 
     void ColourSelector::changeListenerCallback(juce::ChangeBroadcaster *source) {
         if (const auto *cs = dynamic_cast<juce::ColourSelector *>(source)) {
-            colour = cs->getCurrentColour();
+            colour = cs->getCurrentColour().withAlpha(colour.getAlpha());
             repaint();
         }
     }

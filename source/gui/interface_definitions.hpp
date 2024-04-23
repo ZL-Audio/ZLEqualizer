@@ -14,6 +14,9 @@
 
 namespace zlInterface {
     enum colourIdx {
+        preColour,
+        postColour,
+        sideColour,
         gridColour,
         colourNum
     };
@@ -232,9 +235,14 @@ namespace zlInterface {
 
         juce::Colour getColourByIdx(colourIdx idx) const;
 
+        void setColourByIdx(const colourIdx idx, const juce::Colour colour) {
+            customColours[static_cast<size_t>(idx)] = colour;
+        }
+
     private:
         std::atomic<float> fontSize {0};
         std::atomic<size_t> styleID {1}, mainID{1};
+        std::array<juce::Colour, colourNum> customColours;
     };
 }
 
