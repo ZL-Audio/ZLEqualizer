@@ -22,6 +22,8 @@ namespace zlInterface {
                                        float widthS = 12.f, float heightS = 10.f,
                                        float w1 = 0.3f, float w2 = 0.3f);
 
+        ~ColourOpacitySelector() override;
+
         void resized() override;
 
         juce::Colour getColour() const {

@@ -27,6 +27,12 @@ namespace zlInterface {
         addAndMakeVisible(selector);
     }
 
+    ColourOpacitySelector::~ColourOpacitySelector() {
+        if (opacityON) {
+            slider.getSlider().removeListener(this);
+        }
+    }
+
     void ColourOpacitySelector::resized() {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(),

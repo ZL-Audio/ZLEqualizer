@@ -42,8 +42,6 @@ namespace zlPanel {
     private:
         std::array<std::unique_ptr<FilterButtonPanel>, zlState::bandNUM> panels;
 
-
-
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
 

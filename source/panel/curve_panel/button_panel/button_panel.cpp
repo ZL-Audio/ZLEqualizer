@@ -70,6 +70,8 @@ namespace zlPanel {
                 parametersRef.removeParameterListener(actualIdx, this);
             }
         }
+        itemsSet.removeChangeListener(this);
+        wheelAttachment.reset();
     }
 
     void ButtonPanel::resized() {
