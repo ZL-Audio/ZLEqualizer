@@ -10,6 +10,7 @@
 #ifndef ZL_INTERFACE_DEFINES_H
 #define ZL_INTERFACE_DEFINES_H
 
+#include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace zlInterface {
@@ -20,6 +21,8 @@ namespace zlInterface {
         gridColour,
         colourNum
     };
+
+    inline std::array<std::string, colourNum> colourNames {"pre", "post", "side", "grid"};
 
     static constexpr size_t ColorMap1Size = 10;
     static constexpr size_t ColorMap2Size = 6;
@@ -154,9 +157,12 @@ namespace zlInterface {
 
     class UIBase {
     public:
-        UIBase();
+        explicit UIBase(juce::AudioProcessorValueTreeState &apvts)
+            : state(apvts), fontSize{0.f}, styleID{1} {
+        }
 
-        UIBase(const float fSize, const size_t idx) {
+        UIBase(const float fSize, const size_t idx, juce::AudioProcessorValueTreeState &apvts)
+            : state(apvts) {
             fontSize.store(fSize);
             styleID.store(idx);
             mainID.store(std::min(static_cast<size_t>(1), idx));
@@ -171,7 +177,7 @@ namespace zlInterface {
             mainID.store(std::min(static_cast<size_t>(1), idx));
         }
 
-        inline size_t getStyle() const { return styleID.load();}
+        inline size_t getStyle() const { return styleID.load(); }
 
         inline juce::Colour getTextColor() const { return styleColors[mainID.load()].TextColor; }
 
@@ -239,9 +245,14 @@ namespace zlInterface {
             customColours[static_cast<size_t>(idx)] = colour;
         }
 
+        void loadFromAPVTS();
+
+        void saveToAPVTS();
+
     private:
-        std::atomic<float> fontSize {0};
-        std::atomic<size_t> styleID {1}, mainID{1};
+        juce::AudioProcessorValueTreeState &state;
+        std::atomic<float> fontSize{0};
+        std::atomic<size_t> styleID{1}, mainID{1};
         std::array<juce::Colour, colourNum> customColours;
     };
 }

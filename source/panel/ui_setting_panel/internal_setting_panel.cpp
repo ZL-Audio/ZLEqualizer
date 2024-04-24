@@ -15,7 +15,7 @@ namespace zlPanel {
           preSelector(base, *this),
           postSelector(base, *this),
           sideSelector(base, *this),
-          gridSelector(base, *this, false) {
+          gridSelector(base, *this) {
         nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
         for (size_t i = 0; i < numSelectors; ++i) {
@@ -53,8 +53,10 @@ namespace zlPanel {
         for (size_t i = 0; i < numSelectors; ++i) {
             uiBase.setColourByIdx(static_cast<zlInterface::colourIdx>(i), selectors[i]->getColour());
         }
+        uiBase.saveToAPVTS();
     }
 
     void InternalSettingPanel::resetSetting() {
+        loadSetting();
     }
 } // zlPanel

@@ -10,7 +10,6 @@
 #include "property.hpp"
 
 namespace zlState {
-
     Property::Property() {
         if (!path.isDirectory()) {
             path.createDirectory();

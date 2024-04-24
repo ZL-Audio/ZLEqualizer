@@ -41,7 +41,11 @@ private:
     constexpr const static std::array IDs{
         zlState::uiStyle::ID,
         zlState::windowW::ID,
-        zlState::windowH::ID
+        zlState::windowH::ID,
+        "pre_r", "pre_g", "pre_b", "pre_o",
+        "post_r", "post_g", "post_b", "post_o",
+        "side_r", "side_g", "side_b", "side_o",
+        "grid_r", "grid_g", "grid_b"
     };
 
     void valueChanged(juce::Value &) override;

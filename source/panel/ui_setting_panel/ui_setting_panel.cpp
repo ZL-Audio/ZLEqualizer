@@ -54,7 +54,7 @@ namespace zlPanel {
 
         internelPanel.setBounds(0, 0,
                                 juce::roundToInt(bound.getWidth()),
-                                juce::roundToInt(bound.getHeight()) * 2);
+                                juce::roundToInt(bound.getHeight() * .66f));
         viewPort.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
         const auto leftBound = bound.removeFromLeft(
             bound.getWidth() * .3333333f).withSizeKeepingCentre(
@@ -67,5 +67,9 @@ namespace zlPanel {
         saveButton.setBounds(leftBound.toNearestInt());
         resetButton.setBounds(centerBound.toNearestInt());
         closeButton.setBounds(rightBound.toNearestInt());
+    }
+
+    void UISettingPanel::visibilityChanged() {
+        internelPanel.loadSetting();
     }
 } // zlPanel

@@ -292,7 +292,7 @@ namespace zlState {
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);
-        addOneColour(layout, "grid", 137, 125, 109, false);
+        addOneColour(layout, "grid", 137, 125, 109, true, 1.f);
         return layout;
     }
 }

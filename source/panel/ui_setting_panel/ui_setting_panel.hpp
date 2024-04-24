@@ -22,6 +22,8 @@ public:
 
     void resized() override;
 
+    void visibilityChanged() override;
+
 private:
     zlInterface::UIBase &uiBase;
     juce::Viewport viewPort;

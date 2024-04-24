@@ -10,9 +10,6 @@
 #include "interface_definitions.hpp"
 
 namespace zlInterface {
-    UIBase::UIBase() : fontSize{0.f}, styleID{1} {
-    }
-
     juce::Rectangle<float> UIBase::getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds, float cornerSize,
                                                                  const fillRoundedShadowRectangleArgs &margs) {
         const auto radius = juce::jmax(juce::roundToInt(cornerSize * margs.blurRadius * 1.5f), 1);
@@ -269,6 +266,37 @@ namespace zlInterface {
             }
         } else {
             return customColours[static_cast<size_t>(idx)];
+        }
+    }
+
+    void UIBase::loadFromAPVTS() {
+        for (size_t i = 0; i < colourNum; ++i) {
+            const auto r = static_cast<juce::uint8>(state.getRawParameterValue(colourNames[i] + "_r")->load());
+            const auto g = static_cast<juce::uint8>(state.getRawParameterValue(colourNames[i] + "_g")->load());
+            const auto b = static_cast<juce::uint8>(state.getRawParameterValue(colourNames[i] + "_b")->load());
+            const auto o = static_cast<float>(state.getRawParameterValue(colourNames[i] + "_o")->load());
+            customColours[i] = juce::Colour(r, g, b, o);
+        }
+    }
+
+    void UIBase::saveToAPVTS() {
+        for (size_t i = 0; i < colourNum; ++i) {
+            const std::array<float, 4> rgbo = {
+                customColours[i].getFloatRed(),
+                customColours[i].getFloatGreen(),
+                customColours[i].getFloatBlue(),
+                customColours[i].getFloatAlpha()
+            };
+            const std::array<std::string, 4> ID {colourNames[i] + "_r",
+            colourNames[i] + "_g",
+            colourNames[i] + "_b",
+            colourNames[i] + "_o"};
+            for (size_t j = 0; j < 4; ++j) {
+                auto para = state.getParameter(ID[j]);
+                para->beginChangeGesture();
+                para->setValueNotifyingHost(rgbo[j]);
+                para->endChangeGesture();
+            }
         }
     }
 }

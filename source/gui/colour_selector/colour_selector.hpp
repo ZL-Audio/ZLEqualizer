@@ -10,7 +10,6 @@
 #ifndef COLOURSELECTOR_H
 #define COLOURSELECTOR_H
 
-#include <_xlocale.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 #include "../interface_definitions.hpp"
