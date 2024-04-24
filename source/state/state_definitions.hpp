@@ -256,14 +256,28 @@ namespace zlState {
         auto static constexpr defaultV = .12f;
     };
 
-    class sliderStyle : public ChoiceParameters<sliderStyle> {
+    class rotaryStyle : public ChoiceParameters<rotaryStyle> {
     public:
-        auto static constexpr ID = "slider_style";
+        auto static constexpr ID = "rotary_style";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
             "Circular", "Horizontal", "Vertical", "Horiz + Vert"
         };
         int static constexpr defaultI = 0;
+        inline static std::array<juce::Slider::SliderStyle, 4> styles{
+            juce::Slider::Rotary,
+            juce::Slider::RotaryHorizontalDrag,
+            juce::Slider::RotaryVerticalDrag,
+            juce::Slider::RotaryHorizontalVerticalDrag
+        };
+    };
+
+    class rotaryDragSensitivity : public FloatParameters<rotaryDragSensitivity> {
+    public:
+        auto static constexpr ID = "rotary_darg_sensitivity";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(2.f, 32.f, 0.01f);
+        auto static constexpr defaultV = 10.f;
     };
 
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
@@ -289,7 +303,8 @@ namespace zlState {
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(uiStyle::get(), windowW::get(), windowH::get(),
-                   wheelSensitivity::get(), wheelFineSensitivity::get());
+                   wheelSensitivity::get(), wheelFineSensitivity::get(),
+                   rotaryStyle::get(), rotaryDragSensitivity::get());
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);

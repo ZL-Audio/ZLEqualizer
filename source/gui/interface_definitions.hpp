@@ -13,6 +13,8 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include "../state/state_definitions.hpp"
+
 namespace zlInterface {
     enum colourIdx {
         preColour,
@@ -253,6 +255,26 @@ namespace zlInterface {
             wheelSensitivity[x] = v;
         }
 
+        size_t getRotaryStyleID() const {
+            return rotaryStyleId;
+        }
+
+        juce::Slider::SliderStyle getRotaryStyle() const {
+            return zlState::rotaryStyle::styles[rotaryStyleId];
+        }
+
+        void setRotaryStyleID(const size_t x) {
+            rotaryStyleId = x;
+        }
+
+        float getRotaryDragSensitivity() const {
+            return rotaryDragSensitivity;
+        }
+
+        void setRotaryDragSensitivity(const float x) {
+            rotaryDragSensitivity = x;
+        }
+
         void loadFromAPVTS();
 
         void saveToAPVTS();
@@ -263,6 +285,8 @@ namespace zlInterface {
         std::atomic<size_t> styleID{1}, mainID{1};
         std::array<juce::Colour, colourNum> customColours;
         std::array<float, 2> wheelSensitivity {1.f, 0.12f};
+        size_t rotaryStyleId {0};
+        float rotaryDragSensitivity;
 
         void savePara(const std::string &id, const float x) const {
             const auto para = state.getParameter(id);

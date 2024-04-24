@@ -16,15 +16,14 @@ namespace zlInterface {
           slider1LAF(base), slider2LAF(base),
           labelLookAndFeel(base), labelLookAndFeel1(base), labelLookAndFeel2(base), textBoxLAF(base),
           animator{} {
-        juce::ignoreUnused(uiBase);
         for (auto const s: {&slider1, &slider2}) {
-            s->setSliderStyle(juce::Slider::Rotary);
+            s->setSliderStyle(uiBase.getRotaryStyle());
             s->setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
             s->setDoubleClickReturnValue(true, 0.0);
             s->setScrollWheelEnabled(true);
             s->setInterceptsMouseClicks(false, false);
         }
-        // slider1.setBufferedToImage(true);
+
         slider1.setLookAndFeel(&slider1LAF);
         slider2LAF.setEditable(showSlider2.load());
         slider2.setLookAndFeel(&slider2LAF);

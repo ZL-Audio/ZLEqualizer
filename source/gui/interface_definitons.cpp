@@ -280,6 +280,8 @@ namespace zlInterface {
         }
         wheelSensitivity[0] = state.getRawParameterValue(zlState::wheelSensitivity::ID)->load();
         wheelSensitivity[1] = state.getRawParameterValue(zlState::wheelFineSensitivity::ID)->load();
+        rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlState::rotaryStyle::ID)->load());
+        rotaryDragSensitivity = state.getRawParameterValue(zlState::rotaryDragSensitivity::ID)->load();
     }
 
     void UIBase::saveToAPVTS() {
@@ -290,15 +292,20 @@ namespace zlInterface {
                 customColours[i].getFloatBlue(),
                 customColours[i].getFloatAlpha()
             };
-            const std::array<std::string, 4> ID {colourNames[i] + "_r",
-            colourNames[i] + "_g",
-            colourNames[i] + "_b",
-            colourNames[i] + "_o"};
+            const std::array<std::string, 4> ID{
+                colourNames[i] + "_r",
+                colourNames[i] + "_g",
+                colourNames[i] + "_b",
+                colourNames[i] + "_o"
+            };
             for (size_t j = 0; j < 4; ++j) {
                 savePara(ID[j], rgbo[j]);
             }
         }
         savePara(zlState::wheelSensitivity::ID, wheelSensitivity[0]);
         savePara(zlState::wheelFineSensitivity::ID, wheelSensitivity[1]);
+        savePara(zlState::rotaryStyle::ID, zlState::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
+        savePara(zlState::rotaryDragSensitivity::ID,
+                 zlState::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
     }
 }

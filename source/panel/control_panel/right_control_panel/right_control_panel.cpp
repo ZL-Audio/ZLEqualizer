@@ -58,6 +58,14 @@ namespace zlPanel {
     void RightControlPanel::paint(juce::Graphics &g) {
         const auto bound = getLocalBounds().toFloat();
         uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+        const auto style = uiBase.getRotaryStyle();
+        const auto sensitivity = juce::roundToInt(uiBase.getRotaryDragSensitivity() * uiBase.getFontSize());
+        for (auto &c: {&sideFreqC, &sideQC}) {
+            c->getSlider1().setSliderStyle(style);
+            c->getSlider1().setMouseDragSensitivity(sensitivity);
+            c->getSlider2().setSliderStyle(style);
+            c->getSlider2().setMouseDragSensitivity(sensitivity);
+        }
     }
 
     void RightControlPanel::resized() {
