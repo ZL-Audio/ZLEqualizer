@@ -253,7 +253,7 @@ namespace zlState {
         auto static constexpr ID = "wheel_fine_sensitivity";
         auto static constexpr name = "";
         inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
-        auto static constexpr defaultV = .1f;
+        auto static constexpr defaultV = .12f;
     };
 
     class sliderStyle : public ChoiceParameters<sliderStyle> {
@@ -269,7 +269,7 @@ namespace zlState {
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
-                             const bool addOpacity = false, const float opacity=1.f) {
+                             const bool addOpacity = false, const float opacity = 1.f) {
         layout.add(std::make_unique<juce::AudioParameterInt>(
                        juce::ParameterID(suffix + "_r", versionHint), "",
                        0, 255, red),
@@ -288,7 +288,8 @@ namespace zlState {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(uiStyle::get(), windowW::get(), windowH::get());
+        layout.add(uiStyle::get(), windowW::get(), windowH::get(),
+                   wheelSensitivity::get(), wheelFineSensitivity::get());
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);

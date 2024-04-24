@@ -245,6 +245,14 @@ namespace zlInterface {
             customColours[static_cast<size_t>(idx)] = colour;
         }
 
+        inline float getWheelSensitivity(const size_t x) const {
+            return wheelSensitivity[x];
+        }
+
+        void setWheelSensitivity(const float v, const size_t x) {
+            wheelSensitivity[x] = v;
+        }
+
         void loadFromAPVTS();
 
         void saveToAPVTS();
@@ -254,6 +262,14 @@ namespace zlInterface {
         std::atomic<float> fontSize{0};
         std::atomic<size_t> styleID{1}, mainID{1};
         std::array<juce::Colour, colourNum> customColours;
+        std::array<float, 2> wheelSensitivity {1.f, 0.12f};
+
+        void savePara(const std::string &id, const float x) const {
+            const auto para = state.getParameter(id);
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(x);
+            para->endChangeGesture();
+        }
     };
 }
 

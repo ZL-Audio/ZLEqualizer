@@ -31,6 +31,8 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         zlInterface::NameLookAndFeel nameLAF;
         zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector;
+        juce::Label wheelLabel;
+        zlInterface::CompactLinearSlider roughWheelSlider, fineWheelSlider;
 
         static constexpr size_t numSelectors = 4;
         std::array<juce::Label, numSelectors> selectorLabels;

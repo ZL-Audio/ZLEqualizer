@@ -12,6 +12,7 @@
 namespace zlInterface {
     CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base) : uiBase(base),
         sliderLookAndFeel(base), nameLookAndFeel(base), textLookAndFeel(base),
+        slider(base),
         animator{} {
         juce::ignoreUnused(uiBase);
 

@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "interface_definitions.hpp"
+#include "../state/state_definitions.hpp"
 
 namespace zlInterface {
     juce::Rectangle<float> UIBase::getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds, float cornerSize,
@@ -277,6 +278,8 @@ namespace zlInterface {
             const auto o = static_cast<float>(state.getRawParameterValue(colourNames[i] + "_o")->load());
             customColours[i] = juce::Colour(r, g, b, o);
         }
+        wheelSensitivity[0] = state.getRawParameterValue(zlState::wheelSensitivity::ID)->load();
+        wheelSensitivity[1] = state.getRawParameterValue(zlState::wheelFineSensitivity::ID)->load();
     }
 
     void UIBase::saveToAPVTS() {
@@ -292,11 +295,10 @@ namespace zlInterface {
             colourNames[i] + "_b",
             colourNames[i] + "_o"};
             for (size_t j = 0; j < 4; ++j) {
-                auto para = state.getParameter(ID[j]);
-                para->beginChangeGesture();
-                para->setValueNotifyingHost(rgbo[j]);
-                para->endChangeGesture();
+                savePara(ID[j], rgbo[j]);
             }
         }
+        savePara(zlState::wheelSensitivity::ID, wheelSensitivity[0]);
+        savePara(zlState::wheelFineSensitivity::ID, wheelSensitivity[1]);
     }
 }

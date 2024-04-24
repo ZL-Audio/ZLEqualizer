@@ -14,7 +14,7 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parametersNA,
                              zlInterface::UIBase &base)
         : parametersRef(parameters), parametersNARef(parametersNA),
-          uiBase(base) {
+          uiBase(base), wheelSlider(base) {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base);
             panels[i]->getDragger().getButton().onStateChange = [this]() {

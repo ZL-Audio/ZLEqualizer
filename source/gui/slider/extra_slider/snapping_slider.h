@@ -15,22 +15,22 @@
 namespace zlInterface {
     class SnappingSlider final : public juce::Slider {
     public:
-        SnappingSlider() : juce::Slider() {
+        explicit SnappingSlider(UIBase &base) : juce::Slider(), uiBase(base) {
         }
-
-        void setSnappingVal(const float val) noexcept { m_snapVal = val; }
 
         void mouseWheelMove(const juce::MouseEvent &e, const juce::MouseWheelDetails &wheel) override {
             w = wheel;
+            w.deltaX *= uiBase.getWheelSensitivity(0);
+            w.deltaY *= uiBase.getWheelSensitivity(0);
             if (e.mods.isCommandDown()) {
-                w.deltaX *= m_snapVal;
-                w.deltaY *= m_snapVal;
+                w.deltaX *= uiBase.getWheelSensitivity(1);
+                w.deltaY *= uiBase.getWheelSensitivity(1);
             }
             Slider::mouseWheelMove(e, w);
         }
 
     private:
-        float m_snapVal{0.125f};
+        UIBase &uiBase;
         juce::MouseWheelDetails w{0.f, 0.f, true, true, true};
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SnappingSlider)
