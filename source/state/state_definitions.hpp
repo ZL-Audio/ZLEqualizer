@@ -280,6 +280,19 @@ namespace zlState {
         auto static constexpr defaultV = 10.f;
     };
 
+    class refreshRate : public ChoiceParameters<refreshRate> {
+    public:
+        auto static constexpr ID = "rotary_style";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "30 Hz", "60 Hz", "90 Hz", "120 Hz"
+        };
+        int static constexpr defaultI = 1;
+        inline static std::array<int, 4> ms{
+            33, 16, 11, 8
+        };
+    };
+
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
@@ -304,7 +317,8 @@ namespace zlState {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(uiStyle::get(), windowW::get(), windowH::get(),
                    wheelSensitivity::get(), wheelFineSensitivity::get(),
-                   rotaryStyle::get(), rotaryDragSensitivity::get());
+                   rotaryStyle::get(), rotaryDragSensitivity::get(),
+                   refreshRate::get());
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);

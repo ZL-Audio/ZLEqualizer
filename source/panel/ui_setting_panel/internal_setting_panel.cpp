@@ -19,7 +19,8 @@ namespace zlPanel {
           roughWheelSlider("Rough", base),
           fineWheelSlider("Fine", base),
           rotaryStyleBox("", zlState::rotaryStyle::choices, base),
-          rotaryDragSensitivitySlider("Distance", base) {
+          rotaryDragSensitivitySlider("Distance", base),
+    refreshRateBox("", zlState::refreshRate::choices, base) {
         nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
         for (size_t i = 0; i < numSelectors; ++i) {
@@ -44,6 +45,10 @@ namespace zlPanel {
         rotaryDragSensitivitySlider.getSlider().setRange(2.0, 32.0, 0.01);
         rotaryDragSensitivitySlider.getSlider().setDoubleClickReturnValue(true, 10.0);
         addAndMakeVisible(rotaryDragSensitivitySlider);
+        refreshRateLabel.setText("Refresh Rate", juce::dontSendNotification);
+        refreshRateLabel.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(refreshRateLabel);
+        addAndMakeVisible(refreshRateBox);
     }
 
     InternalSettingPanel::~InternalSettingPanel() {
@@ -52,6 +57,7 @@ namespace zlPanel {
         }
         wheelLabel.setLookAndFeel(nullptr);
         rotaryStyleLabel.setLookAndFeel(nullptr);
+        refreshRateLabel.setLookAndFeel(nullptr);
     }
 
     void InternalSettingPanel::resized() {
@@ -80,6 +86,13 @@ namespace zlPanel {
             rotaryStyleBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
             localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
             rotaryDragSensitivitySlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+        } {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            refreshRateLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            refreshRateBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
     }
 
@@ -91,6 +104,7 @@ namespace zlPanel {
         fineWheelSlider.getSlider().setValue(static_cast<double>(uiBase.getWheelSensitivity(1)));
         rotaryStyleBox.getBox().setSelectedId(static_cast<int>(uiBase.getRotaryStyleID()) + 1);
         rotaryDragSensitivitySlider.getSlider().setValue(static_cast<double>(uiBase.getRotaryDragSensitivity()));
+        refreshRateBox.getBox().setSelectedId(static_cast<int>(uiBase.getRefreshRateID()) + 1);
     }
 
     void InternalSettingPanel::saveSetting() {
@@ -101,6 +115,7 @@ namespace zlPanel {
         uiBase.setWheelSensitivity(static_cast<float>(fineWheelSlider.getSlider().getValue()), 1);
         uiBase.setRotaryStyleID(static_cast<size_t>(rotaryStyleBox.getBox().getSelectedId() - 1));
         uiBase.setRotaryDragSensitivity(static_cast<float>(rotaryDragSensitivitySlider.getSlider().getValue()));
+        uiBase.setRefreshRateID(static_cast<size_t>(refreshRateBox.getBox().getSelectedId() - 1));
         uiBase.saveToAPVTS();
     }
 

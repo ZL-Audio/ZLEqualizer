@@ -83,14 +83,13 @@ namespace zlPanel {
         } else if (controllerRef.getConflictAnalyzer().getIsConflictReady()) {
             conflictPanel.repaint();
         }
-        if ((nowT - currentT).inMilliseconds() > 16) {
-            currentT = nowT;
+        if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
             sumPanel.checkRepaint();
-            // }
             for (const auto &sP: singlePanels) {
                 sP->checkRepaint();
             }
             soloPanel.checkRepaint();
+            currentT = nowT;
         }
     }
 }

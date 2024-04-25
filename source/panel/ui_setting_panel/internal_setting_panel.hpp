@@ -36,6 +36,8 @@ namespace zlPanel {
         juce::Label rotaryStyleLabel;
         zlInterface::CompactCombobox rotaryStyleBox;
         zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
+        juce::Label refreshRateLabel;
+        zlInterface::CompactCombobox refreshRateBox;
 
         static constexpr size_t numSelectors = 4;
         std::array<juce::Label, numSelectors> selectorLabels;

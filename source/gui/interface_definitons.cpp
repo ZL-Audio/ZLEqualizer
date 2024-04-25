@@ -282,6 +282,7 @@ namespace zlInterface {
         wheelSensitivity[1] = state.getRawParameterValue(zlState::wheelFineSensitivity::ID)->load();
         rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlState::rotaryStyle::ID)->load());
         rotaryDragSensitivity = state.getRawParameterValue(zlState::rotaryDragSensitivity::ID)->load();
+        refreshRateId.store(static_cast<size_t>(state.getRawParameterValue(zlState::refreshRate::ID)->load()));
     }
 
     void UIBase::saveToAPVTS() {
@@ -307,5 +308,6 @@ namespace zlInterface {
         savePara(zlState::rotaryStyle::ID, zlState::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
         savePara(zlState::rotaryDragSensitivity::ID,
                  zlState::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
+        savePara(zlState::refreshRate::ID, zlState::rotaryStyle::convertTo01(static_cast<int>(refreshRateId.load())));
     }
 }
