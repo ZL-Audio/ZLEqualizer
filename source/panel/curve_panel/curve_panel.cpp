@@ -79,17 +79,37 @@ namespace zlPanel {
         const juce::Time nowT = juce::Time::getCurrentTime();
         if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
             && analyzer.isFFTReady()) {
-            fftPanel.repaint();
-        } else if (controllerRef.getConflictAnalyzer().getIsConflictReady()) {
-            conflictPanel.repaint();
-        }
-        if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
-            sumPanel.checkRepaint();
             for (const auto &sP: singlePanels) {
-                sP->checkRepaint();
+                sP->setAvoidRepaint(sP->getWillRepaint());
             }
-            soloPanel.checkRepaint();
+            fftPanel.repaint();
+            for (const auto &sP: singlePanels) {
+                sP->setAvoidRepaint(false);
+            }
+            checkRepaint();
+            currentT = nowT;
+        } else if (controllerRef.getConflictAnalyzer().getIsConflictReady()) {
+            for (const auto &sP: singlePanels) {
+                sP->setAvoidRepaint(sP->getWillRepaint());
+            }
+            conflictPanel.repaint();
+            for (const auto &sP: singlePanels) {
+                sP->setAvoidRepaint(false);
+            }
+            checkRepaint();
+            currentT = nowT;
+        } else if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
+            checkRepaint();
             currentT = nowT;
         }
     }
+
+    void CurvePanel::checkRepaint() {
+        sumPanel.checkRepaint();
+        for (const auto &sP: singlePanels) {
+            sP->checkRepaint();
+        }
+        soloPanel.checkRepaint();
+    }
+
 }

@@ -41,6 +41,14 @@ namespace zlPanel {
 
         void checkRepaint();
 
+        bool getWillRepaint() const {
+            return baseF.getMagOutdated() || targetF.getMagOutdated() || toRepaint.load();
+        }
+
+        void setAvoidRepaint(const bool x) {
+            avoidRepaint.store(x);
+        }
+
     private:
         juce::Path curvePath, shadowPath, dynPath;
         // juce::CriticalSection curvePathLock, shadowPathLock, dynPathLock;
@@ -55,6 +63,7 @@ namespace zlPanel {
         std::atomic<float> maximumDB;
         std::atomic<bool> skipRepaint{false};
         std::atomic<bool> toRepaint{false};
+        std::atomic<bool> avoidRepaint{false};
         SidePanel sidePanel;
         juce::Time currentT;
 

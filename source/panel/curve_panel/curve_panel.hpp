@@ -51,6 +51,8 @@ namespace zlPanel {
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void repaintCallBack();
+
+        void checkRepaint();
     };
 }
 

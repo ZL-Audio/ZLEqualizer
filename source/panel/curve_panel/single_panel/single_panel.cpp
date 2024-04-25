@@ -59,7 +59,7 @@ namespace zlPanel {
     }
 
     void SinglePanel::paint(juce::Graphics &g) {
-        if (!actived.load()) {
+        if (!actived.load() || avoidRepaint.load()) {
             return;
         }
         if (toRepaint.exchange(false)) {
