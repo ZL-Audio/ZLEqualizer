@@ -64,6 +64,15 @@ namespace zlPanel {
         fftSpeedSlider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(zlState::fftExtraSpeed::defaultV));
         addAndMakeVisible(fftTiltSlider);
         addAndMakeVisible(fftSpeedSlider);
+        curveThickLabel.setText("Curve Thickness", juce::dontSendNotification);
+        curveThickLabel.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(curveThickLabel);
+        singleCurveSlider.getSlider().setNormalisableRange(zlState::singleCurveThickness::doubleRange);
+        singleCurveSlider.getSlider().setDoubleClickReturnValue(true, zlState::singleCurveThickness::defaultV);
+        sumCurveSlider.getSlider().setNormalisableRange(zlState::sumCurveThickness::doubleRange);
+        sumCurveSlider.getSlider().setDoubleClickReturnValue(true, zlState::sumCurveThickness::defaultV);
+        addAndMakeVisible(singleCurveSlider);
+        addAndMakeVisible(sumCurveSlider);
     }
 
     InternalSettingPanel::~InternalSettingPanel() {
@@ -73,6 +82,8 @@ namespace zlPanel {
         wheelLabel.setLookAndFeel(nullptr);
         rotaryStyleLabel.setLookAndFeel(nullptr);
         refreshRateLabel.setLookAndFeel(nullptr);
+        fftLabel.setLookAndFeel(nullptr);
+        curveThickLabel.setLookAndFeel(nullptr);
     }
 
     void InternalSettingPanel::resized() {
@@ -117,6 +128,15 @@ namespace zlPanel {
             fftTiltSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
             localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
             fftSpeedSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+        } {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            curveThickLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            singleCurveSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            sumCurveSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
     }
 
@@ -131,6 +151,8 @@ namespace zlPanel {
         refreshRateBox.getBox().setSelectedId(static_cast<int>(uiBase.getRefreshRateID()) + 1);
         fftTiltSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraTilt()));
         fftSpeedSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraSpeed()));
+        singleCurveSlider.getSlider().setValue(uiBase.getSingleCurveThickness());
+        sumCurveSlider.getSlider().setValue(uiBase.getSumCurveThickness());
     }
 
     void InternalSettingPanel::saveSetting() {
@@ -144,6 +166,8 @@ namespace zlPanel {
         uiBase.setRefreshRateID(static_cast<size_t>(refreshRateBox.getBox().getSelectedId() - 1));
         uiBase.setFFTExtraTilt(static_cast<float>(fftTiltSlider.getSlider().getValue()));
         uiBase.setFFTExtraSpeed(static_cast<float>(fftSpeedSlider.getSlider().getValue()));
+        uiBase.setSingleCurveThickness(static_cast<float>(singleCurveSlider.getSlider().getValue()));
+        uiBase.setSumCurveThickness(static_cast<float>(sumCurveSlider.getSlider().getValue()));
         uiBase.saveToAPVTS();
     }
 
