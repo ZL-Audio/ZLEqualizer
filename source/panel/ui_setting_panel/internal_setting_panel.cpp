@@ -20,7 +20,7 @@ namespace zlPanel {
           fineWheelSlider("Fine", base),
           rotaryStyleBox("", zlState::rotaryStyle::choices, base),
           rotaryDragSensitivitySlider("Distance", base),
-    refreshRateBox("", zlState::refreshRate::choices, base) {
+          refreshRateBox("", zlState::refreshRate::choices, base) {
         nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
         for (size_t i = 0; i < numSelectors; ++i) {

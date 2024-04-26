@@ -285,11 +285,11 @@ namespace zlState {
         auto static constexpr ID = "rotary_style";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "30 Hz", "60 Hz", "90 Hz", "120 Hz"
+            "Lowest", "30 Hz", "60 Hz", "90 Hz", "120 Hz"
         };
-        int static constexpr defaultI = 1;
-        inline static std::array<int, 4> ms{
-            33, 16, 11, 8
+        int static constexpr defaultI = 2;
+        inline static std::array<int, 5> ms{
+            60, 33, 16, 11, 8
         };
     };
 

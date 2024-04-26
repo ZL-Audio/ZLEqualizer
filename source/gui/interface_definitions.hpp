@@ -298,7 +298,7 @@ namespace zlInterface {
         std::array<juce::Colour, colourNum> customColours;
         std::array<float, 2> wheelSensitivity {1.f, 0.12f};
         size_t rotaryStyleId {0};
-        std::atomic<size_t> refreshRateId {1};
+        std::atomic<size_t> refreshRateId {2};
         float rotaryDragSensitivity;
 
         void savePara(const std::string &id, const float x) const {
