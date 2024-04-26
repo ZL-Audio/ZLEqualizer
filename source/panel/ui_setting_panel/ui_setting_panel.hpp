@@ -11,12 +11,13 @@
 #define ZLEqualizer_UISETTINGPANEL_H
 
 #include "internal_setting_panel.hpp"
+#include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
 
 class UISettingPanel final : public juce::Component {
 public:
-    explicit UISettingPanel(zlInterface::UIBase &base);
+    explicit UISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
     void paint(juce::Graphics &g) override;
 
@@ -25,6 +26,7 @@ public:
     void visibilityChanged() override;
 
 private:
+    PluginProcessor &pRef;
     zlInterface::UIBase &uiBase;
     juce::Viewport viewPort;
     InternalSettingPanel internelPanel;

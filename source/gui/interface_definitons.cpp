@@ -283,6 +283,10 @@ namespace zlInterface {
         rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlState::rotaryStyle::ID)->load());
         rotaryDragSensitivity = state.getRawParameterValue(zlState::rotaryDragSensitivity::ID)->load();
         refreshRateId.store(static_cast<size_t>(state.getRawParameterValue(zlState::refreshRate::ID)->load()));
+        fftExtraTilt.store(loadPara(zlState::fftExtraTilt::ID));
+        fftExtraSpeed.store(loadPara(zlState::fftExtraSpeed::ID));
+        singleCurveThickness.store(loadPara(zlState::singleCurveThickness::ID));
+        sumCurveThickness.store(loadPara(zlState::sumCurveThickness::ID));
     }
 
     void UIBase::saveToAPVTS() {
@@ -309,5 +313,11 @@ namespace zlInterface {
         savePara(zlState::rotaryDragSensitivity::ID,
                  zlState::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
         savePara(zlState::refreshRate::ID, zlState::rotaryStyle::convertTo01(static_cast<int>(refreshRateId.load())));
+        savePara(zlState::fftExtraTilt::ID, zlState::fftExtraTilt::convertTo01(fftExtraTilt.load()));
+        savePara(zlState::fftExtraSpeed::ID, zlState::fftExtraSpeed::convertTo01(fftExtraSpeed.load()));
+        savePara(zlState::singleCurveThickness::ID,
+                 zlState::singleCurveThickness::convertTo01(singleCurveThickness.load()));
+        savePara(zlState::sumCurveThickness::ID,
+                 zlState::sumCurveThickness::convertTo01(sumCurveThickness.load()));
     }
 }

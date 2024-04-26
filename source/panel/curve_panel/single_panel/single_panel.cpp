@@ -66,7 +66,8 @@ namespace zlPanel {
             updatePaths();
         }
         colour = uiBase.getColorMap1(idx);
-        const auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
+        auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
+        thickness *= uiBase.getSingleCurveThickness();
         g.setColour(colour);
         // draw curve
         {

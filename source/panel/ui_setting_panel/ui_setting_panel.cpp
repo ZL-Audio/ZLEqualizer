@@ -11,9 +11,9 @@
 #include "BinaryData.h"
 
 namespace zlPanel {
-    UISettingPanel::UISettingPanel(zlInterface::UIBase &base)
-        : uiBase(base),
-          internelPanel(uiBase),
+    UISettingPanel::UISettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
+        : pRef(p), uiBase(base),
+          internelPanel(p, uiBase),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
           closeDrawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           resetDrawable(
@@ -21,6 +21,7 @@ namespace zlPanel {
           saveButton(saveDrawable.get(), uiBase),
           closeButton(closeDrawable.get(), uiBase),
           resetButton(resetDrawable.get(), uiBase) {
+        juce::ignoreUnused(pRef);
         setOpaque(true);
         addAndMakeVisible(saveButton);
         addAndMakeVisible(closeButton);
@@ -54,7 +55,7 @@ namespace zlPanel {
 
         internelPanel.setBounds(0, 0,
                                 juce::roundToInt(bound.getWidth()),
-                                juce::roundToInt(bound.getHeight() * .66f));
+                                juce::roundToInt(bound.getHeight() * .8f));
         viewPort.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
         const auto leftBound = bound.removeFromLeft(
             bound.getWidth() * .3333333f).withSizeKeepingCentre(

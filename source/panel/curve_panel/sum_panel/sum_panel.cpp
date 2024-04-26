@@ -51,7 +51,7 @@ namespace zlPanel {
         for (size_t j = 0; j < useLRMS.size(); ++j) {
             if (!useLRMS[j]) { continue; }
             g.setColour(uiBase.getColorMap2(j));
-            g.strokePath(paths[j], juce::PathStrokeType(uiBase.getFontSize() * 0.2f,
+            g.strokePath(paths[j], juce::PathStrokeType(uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness(),
                                                         juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
     }

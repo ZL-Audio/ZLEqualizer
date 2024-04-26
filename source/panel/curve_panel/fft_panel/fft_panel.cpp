@@ -27,7 +27,10 @@ namespace zlPanel {
     void FFTPanel::paint(juce::Graphics &g) {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-
+        for (auto &fft : {&analyzerRef.getPreFFT(), &analyzerRef.getPostFFT(), &analyzerRef.getSideFFT()}) {
+            fft->setExtraTilt(uiBase.getFFTExtraTilt());
+            fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
+        }
         if (analyzerRef.getPreON()) {
             auto &fft{analyzerRef.getPreFFT()};
             auto &path{path1};

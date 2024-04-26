@@ -74,6 +74,10 @@ namespace zlFFT {
 
         void setTiltSlope(const float x) { tiltSlope.store(x); }
 
+        void setExtraTilt(const float x) { extraTilt.store(x); }
+
+        void setExtraSpeed(const float x) { extraSpeed.store(x); }
+
         std::array<float, zlIIR::frequencies.size() / 2> &getInterplotDBs() { return interplotDBs; }
 
     private:
@@ -87,6 +91,7 @@ namespace zlFFT {
         std::array<float, zlIIR::frequencies.size() / preScale + 2> preInterplotDBs{};
         std::array<float, zlIIR::frequencies.size() / 2> interplotDBs{};
         std::atomic<float> deltaT, decayRate, tiltSlope;
+        std::atomic<float> extraTilt{0.f}, extraSpeed{1.f};
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;

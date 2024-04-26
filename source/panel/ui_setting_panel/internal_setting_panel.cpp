@@ -10,8 +10,9 @@
 #include "internal_setting_panel.hpp"
 
 namespace zlPanel {
-    InternalSettingPanel::InternalSettingPanel(zlInterface::UIBase &base)
-        : uiBase(base), nameLAF(base),
+    InternalSettingPanel::InternalSettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
+        : pRef(p),
+          uiBase(base), nameLAF(base),
           preSelector(base, *this),
           postSelector(base, *this),
           sideSelector(base, *this),
@@ -20,7 +21,12 @@ namespace zlPanel {
           fineWheelSlider("Fine", base),
           rotaryStyleBox("", zlState::rotaryStyle::choices, base),
           rotaryDragSensitivitySlider("Distance", base),
-          refreshRateBox("", zlState::refreshRate::choices, base) {
+          refreshRateBox("", zlState::refreshRate::choices, base),
+          fftTiltSlider("Tilt", base),
+          fftSpeedSlider("Speed", base),
+          singleCurveSlider("Single", base),
+          sumCurveSlider("Sum", base) {
+        juce::ignoreUnused(pRef);
         nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
         for (size_t i = 0; i < numSelectors; ++i) {
@@ -49,6 +55,15 @@ namespace zlPanel {
         refreshRateLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(refreshRateLabel);
         addAndMakeVisible(refreshRateBox);
+        fftLabel.setText("FFT", juce::dontSendNotification);
+        fftLabel.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(fftLabel);
+        fftTiltSlider.getSlider().setNormalisableRange(zlState::fftExtraTilt::doubleRange);
+        fftTiltSlider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(zlState::fftExtraTilt::defaultV));
+        fftSpeedSlider.getSlider().setNormalisableRange(zlState::fftExtraSpeed::doubleRange);
+        fftSpeedSlider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(zlState::fftExtraSpeed::defaultV));
+        addAndMakeVisible(fftTiltSlider);
+        addAndMakeVisible(fftSpeedSlider);
     }
 
     InternalSettingPanel::~InternalSettingPanel() {
@@ -93,6 +108,15 @@ namespace zlPanel {
             localBound.removeFromLeft(bound.getWidth() * .05f);
             const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
             refreshRateBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+        } {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            fftLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            fftTiltSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            fftSpeedSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
     }
 
@@ -105,6 +129,8 @@ namespace zlPanel {
         rotaryStyleBox.getBox().setSelectedId(static_cast<int>(uiBase.getRotaryStyleID()) + 1);
         rotaryDragSensitivitySlider.getSlider().setValue(static_cast<double>(uiBase.getRotaryDragSensitivity()));
         refreshRateBox.getBox().setSelectedId(static_cast<int>(uiBase.getRefreshRateID()) + 1);
+        fftTiltSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraTilt()));
+        fftSpeedSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraSpeed()));
     }
 
     void InternalSettingPanel::saveSetting() {
@@ -116,6 +142,8 @@ namespace zlPanel {
         uiBase.setRotaryStyleID(static_cast<size_t>(rotaryStyleBox.getBox().getSelectedId() - 1));
         uiBase.setRotaryDragSensitivity(static_cast<float>(rotaryDragSensitivitySlider.getSlider().getValue()));
         uiBase.setRefreshRateID(static_cast<size_t>(refreshRateBox.getBox().getSelectedId() - 1));
+        uiBase.setFFTExtraTilt(static_cast<float>(fftTiltSlider.getSlider().getValue()));
+        uiBase.setFFTExtraSpeed(static_cast<float>(fftSpeedSlider.getSlider().getValue()));
         uiBase.saveToAPVTS();
     }
 

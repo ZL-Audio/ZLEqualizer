@@ -11,11 +11,12 @@
 #define INTERNAL_SETTING_PANEL_HPP
 
 #include "../../gui/gui.hpp"
+#include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
     class InternalSettingPanel final : public juce::Component {
     public:
-        explicit InternalSettingPanel(zlInterface::UIBase &base);
+        explicit InternalSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
         ~InternalSettingPanel() override;
 
@@ -28,6 +29,7 @@ namespace zlPanel {
         void resized() override;
 
     private:
+        PluginProcessor &pRef;
         zlInterface::UIBase &uiBase;
         zlInterface::NameLookAndFeel nameLAF;
         zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector;
@@ -38,6 +40,10 @@ namespace zlPanel {
         zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
         juce::Label refreshRateLabel;
         zlInterface::CompactCombobox refreshRateBox;
+        juce::Label fftLabel;
+        zlInterface::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
+        juce::Label curveThickLabel;
+        zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
 
         static constexpr size_t numSelectors = 4;
         std::array<juce::Label, numSelectors> selectorLabels;

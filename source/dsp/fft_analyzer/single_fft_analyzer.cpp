@@ -72,8 +72,6 @@ namespace zlFFT {
         if (isAudioReady.load()) { return; }
         if (toClear.exchange(false)) {
             audioIndex = 0;
-            // isAudioReady.store(false);
-            // isFFTReady.store(false);
         }
         auto lBuffer = buffer.getReadPointer(0);
         auto rBuffer = buffer.getReadPointer(1);
@@ -101,7 +99,7 @@ namespace zlFFT {
             fft->performFrequencyOnlyForwardTransform(fftBuffer.getWritePointer(0));
             const auto mBuffer = fftBuffer.getReadPointer(0);
 
-            const auto decay = decayRate.load();
+            const auto decay = 1 - (1 - decayRate.load()) * extraSpeed.load();
             juce::ScopedLock lock2(ampUpdatedLock);
             if (toClearFFT.exchange(false)) {
                 std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
@@ -134,7 +132,7 @@ namespace zlFFT {
                 -static_cast<float>(preScale), static_cast<float>(preScale),
                 {0.f, 0.f}, {0.f, 0.f});
 
-            const auto tilt = tiltSlope.load();
+            const auto tilt = tiltSlope.load() + extraTilt.load();
             for (size_t i = 0; i < interplotDBs.size(); ++i) {
                 interplotDBs[i] = spline2(static_cast<float>(i * 2)) + static_cast<float>(std::log2(
                                       zlIIR::frequencies[i * 2] / 1000)) * tilt;

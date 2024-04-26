@@ -287,6 +287,38 @@ namespace zlInterface {
             refreshRateId.store(x);
         }
 
+        float getFFTExtraTilt() const {
+            return fftExtraTilt.load();
+        }
+
+        void setFFTExtraTilt(const float x) {
+            fftExtraTilt.store(x);
+        }
+
+        float getFFTExtraSpeed() const {
+            return fftExtraSpeed.load();
+        }
+
+        void setFFTExtraSpeed(const float x) {
+            fftExtraSpeed.store(x);
+        }
+
+        float getSingleCurveThickness() const {
+            return singleCurveThickness.load();
+        }
+
+        void setSingleCurveThickness(const float x) {
+            singleCurveThickness.store(x);
+        }
+
+        float getSumCurveThickness() const {
+            return sumCurveThickness.load();
+        }
+
+        void setSumCurveThickness(const float x) {
+            sumCurveThickness.store(x);
+        }
+
         void loadFromAPVTS();
 
         void saveToAPVTS();
@@ -300,6 +332,12 @@ namespace zlInterface {
         size_t rotaryStyleId {0};
         std::atomic<size_t> refreshRateId {2};
         float rotaryDragSensitivity;
+        std::atomic<float> fftExtraTilt{0.f}, fftExtraSpeed{1.f};
+        std::atomic<float> singleCurveThickness{1.f}, sumCurveThickness{1.f};
+
+        float loadPara(const std::string &id) const {
+            return state.getRawParameterValue(id)->load();
+        }
 
         void savePara(const std::string &id, const float x) const {
             const auto para = state.getParameter(id);

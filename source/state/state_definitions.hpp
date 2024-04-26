@@ -293,6 +293,42 @@ namespace zlState {
         };
     };
 
+    class fftExtraTilt : public FloatParameters<fftExtraTilt> {
+    public:
+        auto static constexpr ID = "fft_extra_tilt";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(-4.5f, 4.5f, .01f);
+        inline auto static const doubleRange = juce::NormalisableRange<double>(-4.5, 4.5, .01);
+        auto static constexpr defaultV = 0.f;
+    };
+
+    class fftExtraSpeed : public FloatParameters<fftExtraSpeed> {
+    public:
+        auto static constexpr ID = "fft_extra_speed";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 2.f, .01f);
+        inline auto static const doubleRange = juce::NormalisableRange<double>(0.0, 2.0, 0.01);
+        auto static constexpr defaultV = 1.f;
+    };
+
+    class singleCurveThickness : public FloatParameters<singleCurveThickness> {
+    public:
+        auto static constexpr ID = "single_curve_thickness";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 4.f, .01f);
+        inline auto static const doubleRange = juce::NormalisableRange<double>(0.0, 4.0, 0.01);
+        auto static constexpr defaultV = 1.f;
+    };
+
+    class sumCurveThickness : public FloatParameters<sumCurveThickness> {
+    public:
+        auto static constexpr ID = "sum_curve_thickness";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 4.f, .01f);
+        inline auto static const doubleRange = juce::NormalisableRange<double>(0.0, 4.0, 0.01);
+        auto static constexpr defaultV = 1.f;
+    };
+
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
@@ -318,7 +354,9 @@ namespace zlState {
         layout.add(uiStyle::get(), windowW::get(), windowH::get(),
                    wheelSensitivity::get(), wheelFineSensitivity::get(),
                    rotaryStyle::get(), rotaryDragSensitivity::get(),
-                   refreshRate::get());
+                   refreshRate::get(),
+                   fftExtraTilt::get(), fftExtraSpeed::get(),
+                   singleCurveThickness::get(), sumCurveThickness::get());
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);
