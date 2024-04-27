@@ -96,9 +96,11 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     // initialisation that you need.
     const auto channels = static_cast<juce::uint32>(juce::jmin(getMainBusNumInputChannels(),
                                                                getMainBusNumOutputChannels()));
+    isMono.store(channels == 1);
     const juce::dsp::ProcessSpec spec{
-        sampleRate, static_cast<juce::uint32>(samplesPerBlock),
-        channels
+        sampleRate,
+        static_cast<juce::uint32>(samplesPerBlock),
+        2
     };
     doubleBuffer.setSize(4, samplesPerBlock);
     controller.prepare(spec);
@@ -111,7 +113,8 @@ void PluginProcessor::releaseResources() {
 }
 
 bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo()) {
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo()
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()) {
         return false;
     }
     if (layouts.getChannelSet(true, 0) != layouts.getChannelSet(true, 1)) {
@@ -127,20 +130,61 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                    juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    doubleBuffer.makeCopyOf(buffer, true);
-    controller.process(doubleBuffer);
-    buffer.makeCopyOf(doubleBuffer, true);
+    if (isMono.load()) {
+        doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+        for (int chan = 0; chan < 4; ++chan) {
+            auto *dest = doubleBuffer.getWritePointer(chan);
+            auto *src = buffer.getReadPointer(chan / 2);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = static_cast<double>(src[i]);
+            }
+        }
+        controller.process(doubleBuffer); {
+            auto *dest = buffer.getWritePointer(0);
+            auto *src = doubleBuffer.getReadPointer(0);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = static_cast<float>(src[i]);
+            }
+        }
+    } else {
+        doubleBuffer.makeCopyOf(buffer, true);
+        controller.process(doubleBuffer);
+        for (int chan = 0; chan < 2; ++chan) {
+            auto *dest = buffer.getWritePointer(chan);
+            auto *src = doubleBuffer.getReadPointer(chan);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = static_cast<float>(src[i]);
+            }
+        }
+    }
 }
 
 void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    controller.process(buffer);
+    if (isMono.load()) {
+        for (int chan = 0; chan < 4; ++chan) {
+            auto *dest = doubleBuffer.getWritePointer(chan);
+            auto *src = buffer.getReadPointer(chan / 2);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = src[i];
+            }
+        }
+        controller.process(doubleBuffer); {
+            auto *dest = buffer.getWritePointer(0);
+            auto *src = doubleBuffer.getReadPointer(0);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = src[i];
+            }
+        }
+    } else {
+        controller.process(buffer);
+    }
 }
 
 //==============================================================================
 bool PluginProcessor::hasEditor() const {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor *PluginProcessor::createEditor() {
