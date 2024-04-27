@@ -44,7 +44,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &c;
         std::atomic<float> maximumDB;
-        juce::CriticalSection pathUpdateLock;
+        std::array<juce::CriticalSection, 5> pathUpdateLocks;
 
         static constexpr std::array changeIDs{
             // zlDSP::fType::ID, zlDSP::slope::ID,

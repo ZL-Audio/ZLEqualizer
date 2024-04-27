@@ -47,10 +47,14 @@ namespace zlPanel {
                 useLRMS[idx] = true;
             }
         }
-        juce::ScopedLock lock(pathUpdateLock);
         for (size_t j = 0; j < useLRMS.size(); ++j) {
             if (!useLRMS[j]) { continue; }
             g.setColour(uiBase.getColorMap2(j));
+            juce::ScopedTryLock lock(pathUpdateLocks[j]);
+            if (!lock.isLocked()) {
+                toRepaint.store(true);
+                return;
+            }
             g.strokePath(paths[j], juce::PathStrokeType(uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness(),
                                                         juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
@@ -85,10 +89,8 @@ namespace zlPanel {
                     useLRMS[idx] = true;
                 }
             }
-            juce::ScopedLock lock(pathUpdateLock);
-            for (size_t j = 0; j < useLRMS.size(); ++j) {
-                paths[j].clear();
 
+            for (size_t j = 0; j < useLRMS.size(); ++j) {
                 if (!useLRMS[j]) { continue; }
 
                 c.updateDBs(lrTypes[j]);
@@ -99,6 +101,8 @@ namespace zlPanel {
 
                 const auto maxDB = maximumDB.load();
                 auto y0 = 0.f;
+                juce::ScopedLock lock(pathUpdateLocks[j]);
+                paths[j].clear();
                 for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
                     const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
                                    getWidth();
