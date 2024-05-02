@@ -99,6 +99,13 @@ namespace zlPanel {
     void CurvePanel::checkRepaint() {
         if (sumPanel.checkRepaint()) {
             notify();
+            return;
+        }
+        for (const auto &sP: singlePanels) {
+            if (sP->willRepaint()) {
+                notify();
+                return;
+            }
         }
         soloPanel.checkRepaint();
     }

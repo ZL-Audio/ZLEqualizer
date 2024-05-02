@@ -39,6 +39,10 @@ namespace zlPanel {
             toRepaint.store(true);
         }
 
+        bool willRepaint() {
+            return baseF.getMagOutdated() || targetF.getMagOutdated() || toRepaint.load();
+        }
+
         bool checkRepaint();
 
         void run();
