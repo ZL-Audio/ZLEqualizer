@@ -49,49 +49,37 @@ namespace zlIIR {
         static constexpr FloatType k5 = FloatType(1.494580);
         static constexpr FloatType k6 = FloatType(7.131157);
         static constexpr FloatType k7 = FloatType(0.014366);
-        static constexpr std::array<FloatType, 5> pps{
-            FloatType(0.0605857500413059),
-            FloatType(0.0595128381706827),
-            FloatType(0.3735951009224384),
-            FloatType(0.5425036087957785),
-            FloatType(-0.0336383285891464),
+        static constexpr std::array<FloatType, 3> pps{
+            FloatType(0.6797385437634612),
+            FloatType(0.6501623179337382),
+            FloatType(0.1661043031674446),
         };
-        static constexpr std::array<FloatType, 5> pns{
-            FloatType(0.0770122145524605),
-            FloatType(0.0212413743693820),
-            FloatType(-0.1887677967939364),
-            FloatType(0.4059777723530943),
-            FloatType(0.0800498794823235),
+        static constexpr std::array<FloatType, 3> pns{
+            FloatType(1.0005839027125558),
+            FloatType(0.2615438074138483),
+            FloatType(0.0876180361048472),
         };
 
-        static constexpr std::array<FloatType, 5> lps{
-            FloatType(0.0682443555510180),
-            FloatType(0.0057106970019589),
-            FloatType(-0.0161585411074138),
-            FloatType(1.3024416303778590),
-            FloatType(-1.1765258767845355),
+        static constexpr std::array<FloatType, 3> lps{
+            FloatType(0.5615303279130026),
+            FloatType(1.0955796383939556),
+            FloatType(0.0578375534446572),
         };
-        static constexpr std::array<FloatType, 5> lns{
-            FloatType(0.0825428757193346),
-            FloatType(-0.0326573926413902),
-            FloatType(0.0190833263448853),
-            FloatType(1.1310539900637915),
-            FloatType(-0.8724556311482653),
+        static constexpr std::array<FloatType, 3> lns{
+            FloatType(1.7666900390139590),
+            FloatType(-0.9879875452397923),
+            FloatType(0.0466874416227134),
         };
 
-        static constexpr std::array<FloatType, 5> hps{
-            FloatType(-0.2142211518644782),
-            FloatType(0.3723364793714626),
-            FloatType(-0.0023831323818586),
-            FloatType(3.9933845620563613),
-            FloatType(-5.5364406039418395),
+        static constexpr std::array<FloatType, 3> hps{
+            FloatType(-1.6271905034386083),
+            FloatType(2.6722453328537070),
+            FloatType(0.1780141475194901),
         };
-        static constexpr std::array<FloatType, 5> hns{
-            FloatType(-0.0613317836504331),
-            FloatType(0.1869945607080542),
-            FloatType(1.0128946247252020),
-            FloatType(15.2852741225328312),
-            FloatType(0.0212001385282977),
+        static constexpr std::array<FloatType, 3> hns{
+            FloatType(-0.0999799556355004),
+            FloatType(1.0888973867418563),
+            FloatType(0.0760070892708112),
         };
 
         static FloatType getPeakEstimation(const FloatType f, const FloatType g, const FloatType q) {
@@ -119,7 +107,7 @@ namespace zlIIR {
         }
 
         static FloatType getHighShelfEstimation(FloatType f, const FloatType g) {
-            f = juce::jlimit(FloatType(200), FloatType(16000), f);
+            f = juce::jlimit(FloatType(200), FloatType(18000), f);
             const auto bw = static_cast<FloatType>(std::log2(FloatType(20000) / f));
             const auto fqEffect = integrateFQ(f, 20000);
             if (g > 0) {
@@ -130,8 +118,8 @@ namespace zlIIR {
         }
 
         static FloatType getEstimation(FloatType fq_effect, FloatType bw, FloatType g,
-                                       const std::array<FloatType, 5> &x) {
-            return (x[0] * fq_effect + x[1] * bw) * g * (x[2] / (bw + x[3]) * g * (x[4] * g + 1) + 1);
+                                       const std::array<FloatType, 3> &x) {
+            return (x[0] * fq_effect + x[1] * bw) * g * x[2];
         }
     };
 } // zlIIR
