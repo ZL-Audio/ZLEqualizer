@@ -59,11 +59,8 @@ namespace zlPanel {
     }
 
     void SinglePanel::paint(juce::Graphics &g) {
-        if (!actived.load() || avoidRepaint.load()) {
+        if (!actived.load()) {
             return;
-        }
-        if (toRepaint.exchange(false)) {
-            updatePaths();
         }
         colour = uiBase.getColorMap1(idx);
         auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
@@ -71,15 +68,21 @@ namespace zlPanel {
         g.setColour(colour);
         // draw curve
         {
-            // juce::ScopedLock lock(curvePathLock);
-            g.strokePath(curvePath, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
+            farbot::RealtimeObject<
+                juce::Path,
+                farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                farbot::ThreadType::nonRealtime> pathLock(recentCurvePath);
+            g.strokePath(*pathLock, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
                                                          juce::PathStrokeType::rounded));
         }
         // draw shadow
         if (selected.load()) {
             g.setColour(colour.withMultipliedAlpha(0.125f));
-            // juce::ScopedLock lock(shadowPathLock);
-            g.fillPath(shadowPath);
+            farbot::RealtimeObject<
+                juce::Path,
+                farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                farbot::ThreadType::nonRealtime> pathLock(recentShadowPath);
+            g.fillPath(*pathLock);
         }
         // draw dynamic shadow
         if (dynON.load()) {
@@ -88,8 +91,11 @@ namespace zlPanel {
             } else {
                 g.setColour(colour.withMultipliedAlpha(0.125f));
             }
-            // juce::ScopedLock lock(dynPathLock);
-            g.fillPath(dynPath);
+            farbot::RealtimeObject<
+                juce::Path,
+                farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                farbot::ThreadType::nonRealtime> pathLock(recentDynPath);
+            g.fillPath(*pathLock);
         }
         // draw the line between the curve and the button
         {
@@ -133,19 +139,18 @@ namespace zlPanel {
     }
 
     void SinglePanel::resized() {
-        updatePaths();
+        run();
         sidePanel.setBounds(getLocalBounds());
     }
 
-    void SinglePanel::checkRepaint() {
+    bool SinglePanel::checkRepaint() {
         if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
-            updatePaths();
-            repaint();
+            return true;
         } else if (toRepaint.exchange(false)) {
-            updatePaths();
-            repaint();
+            return true;
         }
         sidePanel.checkRepaint();
+        return false;
     }
 
     void SinglePanel::drawCurve(juce::Path &path,
@@ -199,18 +204,22 @@ namespace zlPanel {
 
     void SinglePanel::handleAsyncUpdate() {
         if (!skipRepaint.load()) {
-            updatePaths();
             repaint();
         }
     }
 
-    void SinglePanel::updatePaths() {
+    void SinglePanel::run() {
         juce::ScopedNoDenormals noDenormals;
         // draw curve
         {
             baseF.updateDBs();
             curvePath.clear();
             drawCurve(curvePath, baseF.getDBs());
+            farbot::RealtimeObject<
+                juce::Path,
+                farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                farbot::ThreadType::realtime> pathLock(recentCurvePath);
+            *pathLock = curvePath;
         }
         // draw shadow
         {
@@ -241,16 +250,27 @@ namespace zlPanel {
                     }
                 }
             }
+            farbot::RealtimeObject<
+                juce::Path,
+                farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                farbot::ThreadType::realtime> pathLock(recentShadowPath);
+            *pathLock = shadowPath;
         }
         // draw dynamic shadow
         {
             dynPath.clear();
-            drawCurve(dynPath, baseF.getDBs());
             if (dynON.load()) {
+                drawCurve(dynPath, baseF.getDBs());
                 targetF.updateDBs();
                 drawCurve(dynPath, targetF.getDBs(), true, false);
                 dynPath.closeSubPath();
             }
+            farbot::RealtimeObject<
+                juce::Path,
+                farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                farbot::ThreadType::realtime> pathLock(recentDynPath);
+            *pathLock = dynPath;
         }
+        triggerAsyncUpdate();
     }
 } // zlPanel

@@ -282,7 +282,7 @@ namespace zlState {
 
     class refreshRate : public ChoiceParameters<refreshRate> {
     public:
-        auto static constexpr ID = "rotary_style";
+        auto static constexpr ID = "refresh_rate";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
             "Lowest", "30 Hz", "60 Hz", "90 Hz", "120 Hz"

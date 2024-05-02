@@ -14,7 +14,8 @@ namespace zlPanel {
                            juce::AudioProcessorValueTreeState &parametersNA,
                            zlInterface::UIBase &base,
                            zlDSP::Controller<double> &c)
-        : parametersNARef(parametersNA), uiBase(base),
+        : Thread("curve panel"),
+          parametersNARef(parametersNA), uiBase(base),
           controllerRef(c),
           backgroundPanel(parameters, parametersNA, base),
           fftPanel(c.getAnalyzer(), base),
@@ -37,10 +38,13 @@ namespace zlPanel {
         addAndMakeVisible(buttonPanel);
         parameterChanged(zlState::maximumDB::ID, parametersNA.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
+        startThread(juce::Thread::Priority::low);
     }
 
     CurvePanel::~CurvePanel() {
-        // stopTimer();
+        if (isThreadRunning()) {
+            stopThread(-1);
+        }
         parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
     }
 
@@ -79,23 +83,11 @@ namespace zlPanel {
         const juce::Time nowT = juce::Time::getCurrentTime();
         if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
             && analyzer.isFFTReady()) {
-            for (const auto &sP: singlePanels) {
-                sP->setAvoidRepaint(sP->getWillRepaint());
-            }
             fftPanel.repaint();
-            for (const auto &sP: singlePanels) {
-                sP->setAvoidRepaint(false);
-            }
             checkRepaint();
             currentT = nowT;
         } else if (controllerRef.getConflictAnalyzer().getIsConflictReady()) {
-            for (const auto &sP: singlePanels) {
-                sP->setAvoidRepaint(sP->getWillRepaint());
-            }
             conflictPanel.repaint();
-            for (const auto &sP: singlePanels) {
-                sP->setAvoidRepaint(false);
-            }
             checkRepaint();
             currentT = nowT;
         } else if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
@@ -105,11 +97,23 @@ namespace zlPanel {
     }
 
     void CurvePanel::checkRepaint() {
-        sumPanel.checkRepaint();
-        for (const auto &sP: singlePanels) {
-            sP->checkRepaint();
+        if (sumPanel.checkRepaint()) {
+            notify();
         }
         soloPanel.checkRepaint();
     }
 
+    void CurvePanel::run() {
+        juce::ScopedNoDenormals noDenormals;
+        while (!threadShouldExit()) {
+            const auto flag = wait(-1);
+            juce::ignoreUnused(flag);
+            for (const auto &sP: singlePanels) {
+                if (sP->checkRepaint()) {
+                    sP->run();
+                }
+            }
+            sumPanel.run();
+        }
+    }
 }

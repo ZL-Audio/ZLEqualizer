@@ -14,10 +14,10 @@
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
+#include "../../../dsp/farbot/RealtimeObject.hpp"
 
 namespace zlPanel {
     class SumPanel final : public juce::Component,
-                           private juce::Thread,
                            private juce::AsyncUpdater,
                            private juce::AudioProcessorValueTreeState::Listener {
     public:
@@ -34,26 +34,24 @@ namespace zlPanel {
             toRepaint.store(true);
         }
 
-        void checkRepaint();
+        bool checkRepaint();
 
         void resized() override;
 
+        void run();
+
     private:
         std::array<juce::Path, 5> paths;
+        std::array<farbot::RealtimeObject<juce::Path, farbot::RealtimeObjectOptions::realtimeMutatable>, 5> recentPaths;
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &c;
         std::atomic<float> maximumDB;
-        std::array<juce::CriticalSection, 5> pathUpdateLocks;
 
         static constexpr std::array changeIDs{
-            // zlDSP::fType::ID, zlDSP::slope::ID,
-            zlDSP::bypass::ID, zlDSP::lrType::ID,
-            // zlDSP::targetGain::ID, zlDSP::targetQ::ID
+            zlDSP::bypass::ID, zlDSP::lrType::ID
         };
         std::atomic<bool> toRepaint{false};
-
-        void run() override;
 
         void handleAsyncUpdate() override;
 

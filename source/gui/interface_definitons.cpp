@@ -312,7 +312,7 @@ namespace zlInterface {
         savePara(zlState::rotaryStyle::ID, zlState::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
         savePara(zlState::rotaryDragSensitivity::ID,
                  zlState::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
-        savePara(zlState::refreshRate::ID, zlState::rotaryStyle::convertTo01(static_cast<int>(refreshRateId.load())));
+        savePara(zlState::refreshRate::ID, zlState::refreshRate::convertTo01(static_cast<int>(refreshRateId.load())));
         savePara(zlState::fftExtraTilt::ID, zlState::fftExtraTilt::convertTo01(fftExtraTilt.load()));
         savePara(zlState::fftExtraSpeed::ID, zlState::fftExtraSpeed::convertTo01(fftExtraSpeed.load()));
         savePara(zlState::singleCurveThickness::ID,

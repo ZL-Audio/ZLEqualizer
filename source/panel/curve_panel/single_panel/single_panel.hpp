@@ -12,7 +12,7 @@
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
-#include <juce_gui_basics/juce_gui_basics.h>
+#include "../../../dsp/farbot/RealtimeObject.hpp"
 
 #include "../../../state/state_definitions.hpp"
 #include "side_panel.hpp"
@@ -39,19 +39,14 @@ namespace zlPanel {
             toRepaint.store(true);
         }
 
-        void checkRepaint();
+        bool checkRepaint();
 
-        bool getWillRepaint() const {
-            return baseF.getMagOutdated() || targetF.getMagOutdated() || toRepaint.load();
-        }
-
-        void setAvoidRepaint(const bool x) {
-            avoidRepaint.store(x);
-        }
+        void run();
 
     private:
         juce::Path curvePath, shadowPath, dynPath;
-        // juce::CriticalSection curvePathLock, shadowPathLock, dynPathLock;
+        farbot::RealtimeObject<juce::Path, farbot::RealtimeObjectOptions::realtimeMutatable>
+                recentCurvePath, recentShadowPath, recentDynPath;
 
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -77,10 +72,8 @@ namespace zlPanel {
 
         void handleAsyncUpdate() override;
 
-        void updatePaths();
-
         void drawCurve(juce::Path &path,
-            const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse = false,
+                       const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse = false,
                        bool startPath = true);
 
         inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
