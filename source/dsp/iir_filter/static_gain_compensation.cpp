@@ -13,6 +13,7 @@ namespace zlIIR {
     template<typename FloatType>
     StaticGainCompensation<FloatType>::StaticGainCompensation(Filter<FloatType> &filter)
         : target(filter) {
+        gain.setGainDecibels(0);
     }
 
     template<typename FloatType>
@@ -53,6 +54,7 @@ namespace zlIIR {
             case notch:
             case bandPass:
             default:
+                gain.setGainDecibels(FloatType(0));
                 break;
         }
     }
