@@ -95,7 +95,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::updateParas() {
+    bool Filter<FloatType>::updateParas() {
         if (toUpdatePara.exchange(false)) {
             filterNum.store(DesignFilter::updateCoeff(filterType.load(),
                                                       freq.load(), processSpec.sampleRate,
@@ -117,7 +117,9 @@ namespace zlIIR {
                 };
             }
             magOutdated.store(true);
+            return true;
         }
+        return false;
     }
 
     template<typename FloatType>

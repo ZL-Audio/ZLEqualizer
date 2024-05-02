@@ -63,7 +63,6 @@ namespace zlIIR {
 
         inline FloatType getQ() const { return static_cast<FloatType>(q.load()); }
 
-
         /**
          * set the type of the filter, the filter will always reset
          * @param x filter type
@@ -72,7 +71,6 @@ namespace zlIIR {
         void setFilterType(FilterType x, bool update = true);
 
         inline FilterType getFilterType() const { return filterType.load(); }
-
 
         /**
          * set the order of the filter, the filter will always reset
@@ -86,8 +84,9 @@ namespace zlIIR {
         /**
          * update filter coefficients
          * DO NOT call it unless you are sure what you are doing
+         * @return where coefficients have been updated
          */
-        void updateParas();
+        bool updateParas();
 
         /**
          * get the number of 2nd order filters

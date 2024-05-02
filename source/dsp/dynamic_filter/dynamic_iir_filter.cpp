@@ -27,6 +27,8 @@ namespace zlDynamicFilter {
         sFilter.setFilterType(zlIIR::FilterType::bandPass, false);
         sFilter.prepare(spec);
         compressor.prepare(spec);
+        compensation.prepare(spec);
+
         compressor.getComputer().setRatio(100);
         sBufferCopy.setSize(static_cast<int>(spec.numChannels),
                             static_cast<int>(spec.maximumBlockSize));
@@ -34,7 +36,9 @@ namespace zlDynamicFilter {
 
     template<typename FloatType>
     void IIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
-        bFilter.updateParas();
+        if (bFilter.updateParas()) {
+            compensation.update();
+        }
         tFilter.updateParas();
         sFilter.updateParas();
         if (!bypass.load()) {
@@ -51,6 +55,7 @@ namespace zlDynamicFilter {
                 mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
             }
             mFilter.process(mBuffer);
+            compensation.process(mBuffer);
         }
     }
 
