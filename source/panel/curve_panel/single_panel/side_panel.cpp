@@ -61,11 +61,9 @@ namespace zlPanel {
 
     void SidePanel::checkRepaint() {
         if (sideF.getMagOutdated(false)) {
-            handleAsyncUpdate();
-            repaint();
+            triggerAsyncUpdate();
         } else if (toRepaint.exchange(false)) {
-            handleAsyncUpdate();
-            repaint();
+            triggerAsyncUpdate();
         }
     }
 
@@ -92,5 +90,6 @@ namespace zlPanel {
 
         scale1.store(std::log(static_cast<float>(freq1) / 10.f) / std::log(2200.f));
         scale2.store(std::log(static_cast<float>(freq2) / 10.f) / std::log(2200.f));
+        repaint();
     }
 } // zlPanel
