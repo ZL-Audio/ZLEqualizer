@@ -89,7 +89,6 @@ namespace zlDSP {
             highPass,
             notch,
             bandPass,
-            // bandShelf,
             tiltShelf,
             fTypeNUM
         };
@@ -304,6 +303,16 @@ namespace zlDSP {
         int static constexpr defaultI = 0;
     };
 
+    class staticAutoGain : public ChoiceParameters<staticAutoGain> {
+    public:
+        auto static constexpr ID = "static_auto_gain";
+        auto static constexpr name = "Auto Gain";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 0;
+    };
+
     class dynSmooth : public FloatParameters<dynSmooth> {
     public:
         auto static constexpr ID = "dyn_smooth";
@@ -362,7 +371,8 @@ namespace zlDSP {
         }
         layout.add(sideChain::get(),
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
-                   effectON::get(), autoGain::get(), scale::get(), outputGain::get());
+                   effectON::get(), staticAutoGain::get(), autoGain::get(),
+                   scale::get(), outputGain::get());
         return layout;
     }
 
