@@ -8,8 +8,10 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 - add UI setting panel
 - add static gain compensation
+- add mono support
 - fix incorrect 6dB/oct high-pass filter & high-order peak filter
-- fix incorrect RMS and lookahead behaviour (when the sample-rate changes)
+- fix incorrect RMS and lookahead behavior (when the sample rate changes)
+- improve GUI performance
 - improve stability
 
 ## 0.1.16
