@@ -20,8 +20,7 @@ namespace zlPanel {
           filter(controller.getFilter(idx)),
           baseF(controller.getFilter(idx).getBaseFilter()),
           targetF(controller.getFilter(idx).getTargetFilter()),
-          sidePanel(bandIdx, parameters, parametersNA, base, controller),
-          currentT(juce::Time::getCurrentTime()) {
+          sidePanel(bandIdx, parameters, parametersNA, base, controller) {
         curvePath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
         shadowPath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
         dynPath.preallocateSpace(zlIIR::frequencies.size() * 6 + 12);
@@ -106,7 +105,7 @@ namespace zlPanel {
                 case zlIIR::FilterType::peak:
                 case zlIIR::FilterType::bandShelf: {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
-                    const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
+                    const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(
                         parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::gain::ID, idx))->load(),
                         maximumDB.load(), bound);
@@ -117,7 +116,7 @@ namespace zlPanel {
                 case zlIIR::FilterType::highShelf:
                 case zlIIR::FilterType::tiltShelf: {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
-                    const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
+                    const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(
                         parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::gain::ID, idx))->load() / 2,
                         maximumDB.load(), bound);
@@ -129,7 +128,7 @@ namespace zlPanel {
                 case zlIIR::FilterType::highPass:
                 case zlIIR::FilterType::bandPass: {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
-                    const auto y1 = dbToY(static_cast<float>(baseF.getDB(baseF.getFreq())), maximumDB.load(), bound);
+                    const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
                     break;
@@ -216,6 +215,9 @@ namespace zlPanel {
             curvePath.clear();
             if (actived.load()) {
                 drawCurve(curvePath, baseF.getDBs());
+                centeredDB.store(static_cast<float>(baseF.getDB(baseF.getFreq())));
+            } else {
+                centeredDB.store(0.f);
             }
             farbot::RealtimeObject<
                 juce::Path,

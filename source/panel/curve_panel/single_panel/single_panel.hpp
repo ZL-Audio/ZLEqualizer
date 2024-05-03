@@ -64,7 +64,7 @@ namespace zlPanel {
         std::atomic<bool> toRepaint{false};
         std::atomic<bool> avoidRepaint{false};
         SidePanel sidePanel;
-        juce::Time currentT;
+        std::atomic<float> centeredDB{0.f};
 
         static constexpr std::array changeIDs{
             zlDSP::bypass::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID
