@@ -31,6 +31,7 @@ namespace zlPanel {
         void resized() override;
 
     private:
+        PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &state;
         zlInterface::UIBase uiBase;
         ControlPanel controlPanel;

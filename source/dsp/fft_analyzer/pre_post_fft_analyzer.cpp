@@ -125,6 +125,14 @@ namespace zlFFT {
         notify();
     }
 
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::setBound(juce::Rectangle<float> bound) {
+        x.store(bound.getX());
+        y.store(bound.getY());
+        width.store(bound.getWidth());
+        height.store(bound.getHeight());
+    }
+
     template
     class PrePostFFTAnalyzer<float>;
 

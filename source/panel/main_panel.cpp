@@ -11,7 +11,7 @@
 
 namespace zlPanel {
     MainPanel::MainPanel(PluginProcessor &p)
-        : state(p.state), uiBase(p.state),
+        : processorRef(p), state(p.state), uiBase(p.state),
           controlPanel(p.parameters, p.parametersNA, uiBase),
           curvePanel(p.parameters, p.parametersNA, uiBase, p.getController()),
           statePanel(p.parameters, p.parametersNA, p.state, uiBase),
@@ -24,7 +24,17 @@ namespace zlPanel {
         addChildComponent(uiSettingButton);
         uiSettingButton.setVisible(uiBase.getStyle() == 2);
         addChildComponent(uiSettingPanel);
+
+        for (auto &fft : {&processorRef.getController().getAnalyzer().getPreFFT(),
+        &processorRef.getController().getAnalyzer().getPostFFT(),
+        &processorRef.getController().getAnalyzer().getSideFFT()}) {
+            fft->setExtraTilt(uiBase.getFFTExtraTilt());
+            fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
+        }
+
         state.addParameterListener(zlState::uiStyle::ID, this);
+        state.addParameterListener(zlState::fftExtraTilt::ID, this);
+        state.addParameterListener(zlState::fftExtraSpeed::ID, this);
     }
 
     MainPanel::~MainPanel() {
@@ -59,5 +69,11 @@ namespace zlPanel {
 
     void MainPanel::handleAsyncUpdate() {
         uiSettingButton.setVisible(uiBase.getStyle() == 2);
+        for (auto &fft : {&processorRef.getController().getAnalyzer().getPreFFT(),
+        &processorRef.getController().getAnalyzer().getPostFFT(),
+        &processorRef.getController().getAnalyzer().getSideFFT()}) {
+            fft->setExtraTilt(uiBase.getFFTExtraTilt());
+            fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
+        }
     }
 }

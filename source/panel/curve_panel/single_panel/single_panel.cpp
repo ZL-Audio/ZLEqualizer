@@ -214,7 +214,9 @@ namespace zlPanel {
         {
             baseF.updateDBs();
             curvePath.clear();
-            drawCurve(curvePath, baseF.getDBs());
+            if (actived.load()) {
+                drawCurve(curvePath, baseF.getDBs());
+            }
             farbot::RealtimeObject<
                 juce::Path,
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
@@ -224,8 +226,10 @@ namespace zlPanel {
         // draw shadow
         {
             shadowPath.clear();
-            drawCurve(shadowPath, baseF.getDBs());
-            if (selected.load()) {
+            if (actived.load()) {
+                drawCurve(shadowPath, baseF.getDBs());
+            }
+            if (actived.load() && selected.load()) {
                 switch (baseF.getFilterType()) {
                     case zlIIR::FilterType::peak:
                     case zlIIR::FilterType::lowShelf:
@@ -259,7 +263,7 @@ namespace zlPanel {
         // draw dynamic shadow
         {
             dynPath.clear();
-            if (dynON.load()) {
+            if (dynON.load() && actived.load()) {
                 drawCurve(dynPath, baseF.getDBs());
                 targetF.updateDBs();
                 drawCurve(dynPath, targetF.getDBs(), true, false);
