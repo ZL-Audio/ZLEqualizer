@@ -22,48 +22,43 @@ namespace zlPanel {
     }
 
     void FFTPanel::paint(juce::Graphics &g) {
-        analyzerRef.updatePaths(path1, path2, path3);
         if (analyzerRef.getPreON() && !path1.isEmpty()) {
-            auto &path{path1};
-
-            path.lineTo(getLocalBounds().getBottomRight().toFloat());
-            path.lineTo(getLocalBounds().getBottomLeft().toFloat());
-            path.closeSubPath();
-
             g.setColour(uiBase.getColourByIdx(zlInterface::preColour));
-            g.fillPath(path);
+            g.fillPath(path1);
         }
 
         if (analyzerRef.getPostON() && !path2.isEmpty()) {
-            auto &path{path2};
             g.setColour(uiBase.getTextColor().withAlpha(0.5f));
             const auto thickness = uiBase.getFontSize() * 0.1f;
-            g.strokePath(path, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
+            g.strokePath(path2, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
                                                     juce::PathStrokeType::rounded));
 
-            path.lineTo(getLocalBounds().getBottomRight().toFloat());
-            path.lineTo(getLocalBounds().getBottomLeft().toFloat());
-            path.closeSubPath();
-
             g.setColour(uiBase.getColourByIdx(zlInterface::postColour));
-            g.fillPath(path);
+            g.fillPath(path2);
         }
 
         if (analyzerRef.getSideON() && !path3.isEmpty()) {
-            auto &path{path3};
-
-            path.lineTo(getLocalBounds().getBottomRight().toFloat());
-            path.lineTo(getLocalBounds().getBottomLeft().toFloat());
-            path.closeSubPath();
-
             g.setColour(uiBase.getColourByIdx(zlInterface::sideColour));
-            g.fillPath(path);
+            g.fillPath(path3);
         }
     }
 
     void FFTPanel::resized() {
         auto bound = getLocalBounds().toFloat();
+        leftCorner = {bound.getX() * 0.9f, bound.getBottom() * 1.1f};
+        rightCorner = {bound.getRight() * 1.1f, bound.getBottom() * 1.1f};
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         analyzerRef.setBound(bound);
+    }
+
+    void FFTPanel::updatePaths() {
+        analyzerRef.updatePaths(path1, path2, path3);
+        for (auto &path : {&path1, &path2, &path3}) {
+            if (!path->isEmpty()) {
+                path->lineTo(rightCorner);
+                path->lineTo(leftCorner);
+                path->closeSubPath();
+            }
+        }
     }
 } // zlPanel

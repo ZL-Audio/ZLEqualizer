@@ -83,6 +83,7 @@ namespace zlPanel {
         const juce::Time nowT = juce::Time::getCurrentTime();
         if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
             && analyzer.getPathReady()) {
+            fftPanel.updatePaths();
             fftPanel.repaint();
             checkRepaint();
             currentT = nowT;

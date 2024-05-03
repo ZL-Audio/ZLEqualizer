@@ -147,15 +147,15 @@ namespace zlFFT {
     void PrePostFFTAnalyzer<FloatType>::updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_) {
         if (isPreON.load()) {
             juce::ScopedLock lock(pathLock);
-            prePath_ = prePath;
+            prePath_.swapWithPath(prePath);
         }
         if (isPostON.load()) {
             juce::ScopedLock lock(pathLock);
-            postPath_ = postPath;
+            postPath_.swapWithPath(postPath);
         }
         if (isSideON.load()) {
             juce::ScopedLock lock(pathLock);
-            sidePath_ = sidePath;
+            sidePath_.swapWithPath(sidePath);
         }
         isPathReady.store(false);
     }
