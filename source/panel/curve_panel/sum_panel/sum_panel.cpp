@@ -81,7 +81,10 @@ namespace zlPanel {
         }
 
         for (size_t j = 0; j < useLRMS.size(); ++j) {
-            if (!useLRMS[j]) { continue; }
+            if (!useLRMS[j]) {
+                paths[j].clear();
+                continue;
+            }
 
             c.updateDBs(lrTypes[j]);
             const auto &dBs = c.getDBs();
