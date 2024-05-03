@@ -57,7 +57,9 @@ namespace zlFFT {
                 postFFT.process(postBuffer);
                 sideFFT.process(sideBuffer);
             } else {
-                triggerAsyncUpdate();
+                if (!isPathReady.load()) {
+                    triggerAsyncUpdate();
+                }
             }
         }
     }
@@ -106,15 +108,23 @@ namespace zlFFT {
     void PrePostFFTAnalyzer<FloatType>::run() {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
+            const juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()};
             if (isPreON.load() && preFFT.getIsAudioReady()) {
                 preFFT.run();
+                juce::ScopedLock lock(pathLock);
+                preFFT.createPath(prePath, bound);
             }
             if (isPostON.load() && postFFT.getIsAudioReady()) {
                 postFFT.run();
+                juce::ScopedLock lock(pathLock);
+                postFFT.createPath(postPath, bound);
             }
             if (isSideON.load() && sideFFT.getIsAudioReady()) {
                 sideFFT.run();
+                juce::ScopedLock lock(pathLock);
+                sideFFT.createPath(sidePath, bound);
             }
+            isPathReady.store(true);
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
         }
@@ -127,10 +137,27 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setBound(juce::Rectangle<float> bound) {
-        x.store(bound.getX());
-        y.store(bound.getY());
+        xx.store(bound.getX());
+        yy.store(bound.getY());
         width.store(bound.getWidth());
         height.store(bound.getHeight());
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_) {
+        if (isPreON.load()) {
+            juce::ScopedLock lock(pathLock);
+            prePath_ = prePath;
+        }
+        if (isPostON.load()) {
+            juce::ScopedLock lock(pathLock);
+            postPath_ = postPath;
+        }
+        if (isSideON.load()) {
+            juce::ScopedLock lock(pathLock);
+            sidePath_ = sidePath;
+        }
+        isPathReady.store(false);
     }
 
     template

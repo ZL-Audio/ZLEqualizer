@@ -110,7 +110,7 @@ namespace zlPanel {
                 juce::Path,
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                 farbot::ThreadType::realtime> pathLock(recentPaths[j]);
-            *pathLock = paths[j];
+            (*pathLock).swapWithPath(paths[j]);
         }
         triggerAsyncUpdate();
     }

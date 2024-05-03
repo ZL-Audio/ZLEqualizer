@@ -13,9 +13,6 @@ namespace zlPanel {
     FFTPanel::FFTPanel(zlFFT::PrePostFFTAnalyzer<double> &analyzer,
                        zlInterface::UIBase &base)
         : analyzerRef(analyzer), uiBase(base) {
-        path1.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
-        path2.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
-        path3.preallocateSpace(static_cast<int>(zlIIR::frequencies.size()) * 3 + 9);
         setInterceptsMouseClicks(false, false);
         analyzerRef.setON(true);
     }
@@ -25,14 +22,10 @@ namespace zlPanel {
     }
 
     void FFTPanel::paint(juce::Graphics &g) {
-        auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        analyzerRef.updatePaths(path1, path2, path3);
         if (analyzerRef.getPreON()) {
-            auto &fft{analyzerRef.getPreFFT()};
             auto &path{path1};
 
-            path.clear();
-            fft.createPath(path, bound);
             path.lineTo(getLocalBounds().getBottomRight().toFloat());
             path.lineTo(getLocalBounds().getBottomLeft().toFloat());
             path.closeSubPath();
@@ -42,10 +35,7 @@ namespace zlPanel {
         }
 
         if (analyzerRef.getPostON()) {
-            auto &fft{analyzerRef.getPostFFT()};
             auto &path{path2};
-            path.clear();
-            fft.createPath(path, bound);
 
             g.setColour(uiBase.getTextColor().withAlpha(0.5f));
             const auto thickness = uiBase.getFontSize() * 0.1f;
@@ -61,11 +51,8 @@ namespace zlPanel {
         }
 
         if (analyzerRef.getSideON()) {
-            auto &fft{analyzerRef.getSideFFT()};
             auto &path{path3};
 
-            path.clear();
-            fft.createPath(path, bound);
             path.lineTo(getLocalBounds().getBottomRight().toFloat());
             path.lineTo(getLocalBounds().getBottomLeft().toFloat());
             path.closeSubPath();
@@ -74,4 +61,11 @@ namespace zlPanel {
             g.fillPath(path);
         }
     }
+
+    void FFTPanel::resized() {
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        analyzerRef.setBound(bound);
+    }
+
 } // zlPanel

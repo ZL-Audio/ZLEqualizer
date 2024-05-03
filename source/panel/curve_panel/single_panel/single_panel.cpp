@@ -221,7 +221,7 @@ namespace zlPanel {
                 juce::Path,
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                 farbot::ThreadType::realtime> pathLock(recentCurvePath);
-            *pathLock = curvePath;
+            (*pathLock).swapWithPath(curvePath);
         }
         // draw shadow
         {
@@ -258,7 +258,7 @@ namespace zlPanel {
                 juce::Path,
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                 farbot::ThreadType::realtime> pathLock(recentShadowPath);
-            *pathLock = shadowPath;
+            (*pathLock).swapWithPath(shadowPath);
         }
         // draw dynamic shadow
         {
@@ -273,7 +273,7 @@ namespace zlPanel {
                 juce::Path,
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                 farbot::ThreadType::realtime> pathLock(recentDynPath);
-            *pathLock = dynPath;
+            (*pathLock).swapWithPath(dynPath);
         }
         triggerAsyncUpdate();
     }

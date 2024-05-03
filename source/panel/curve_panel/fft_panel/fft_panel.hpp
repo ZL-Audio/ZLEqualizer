@@ -23,6 +23,8 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void resized() override;
+
     private:
         zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
         zlInterface::UIBase &uiBase;

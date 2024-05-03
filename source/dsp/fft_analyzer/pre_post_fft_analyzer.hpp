@@ -52,14 +52,20 @@ namespace zlFFT {
 
         void setBound(juce::Rectangle<float> bound);
 
+        bool getPathReady() const {return isPathReady.load();}
+
+        void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_);
+
     private:
         SingleFFTAnalyzer<FloatType> preFFT{}, postFFT{}, sideFFT{};
         juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
         std::atomic<bool> isON{false};
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
-        // juce::Path prePath, postPath, sidePath;
-        std::atomic<float> x, y, width, height;
+        juce::Path prePath, postPath, sidePath;
+        std::atomic<float> xx, yy, width, height;
         std::atomic<bool> isPathReady{false};
+
+        juce::CriticalSection pathLock;
 
         void run() override;
 
