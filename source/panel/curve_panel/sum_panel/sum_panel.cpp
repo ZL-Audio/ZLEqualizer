@@ -66,7 +66,7 @@ namespace zlPanel {
         return false;
     }
 
-    void SumPanel::run() {
+    void SumPanel::run(bool triggerRepaint) {
         juce::ScopedNoDenormals noDenormals;
         std::array<bool, 5> useLRMS{false, false, false, false, false};
         constexpr std::array<zlDSP::lrType::lrTypes, 5> lrTypes{
@@ -115,7 +115,9 @@ namespace zlPanel {
                 farbot::ThreadType::realtime> pathLock(recentPaths[j]);
             (*pathLock).swapWithPath(paths[j]);
         }
-        triggerAsyncUpdate();
+        if (triggerRepaint) {
+            triggerAsyncUpdate();
+        }
     }
 
     void SumPanel::handleAsyncUpdate() {

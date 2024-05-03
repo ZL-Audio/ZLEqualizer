@@ -98,6 +98,7 @@ namespace zlPanel {
         }
         // draw the line between the curve and the button
         {
+            const auto linkThickness = uiBase.getFontSize() * 0.065f * uiBase.getSingleCurveThickness();
             auto bound = getLocalBounds().toFloat();
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
             g.setColour(colour);
@@ -106,10 +107,8 @@ namespace zlPanel {
                 case zlIIR::FilterType::bandShelf: {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
-                    const auto y2 = dbToY(
-                        parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::gain::ID, idx))->load(),
-                        maximumDB.load(), bound);
-                    g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
+                    const auto y2 = dbToY(static_cast<float>(baseF.getGain()), maximumDB.load(), bound);
+                    g.drawLine(x1, y1, x1, y2, linkThickness);
                     break;
                 }
                 case zlIIR::FilterType::lowShelf:
@@ -117,10 +116,8 @@ namespace zlPanel {
                 case zlIIR::FilterType::tiltShelf: {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
-                    const auto y2 = dbToY(
-                        parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::gain::ID, idx))->load() / 2,
-                        maximumDB.load(), bound);
-                    g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
+                    const auto y2 = dbToY(static_cast<float>(baseF.getGain()) / 2, maximumDB.load(), bound);
+                    g.drawLine(x1, y1, x1, y2, linkThickness);
                     break;
                 }
                 case zlIIR::FilterType::notch:
@@ -130,7 +127,7 @@ namespace zlPanel {
                     const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);
-                    g.drawLine(x1, y1, x1, y2, uiBase.getFontSize() * 0.065f);
+                    g.drawLine(x1, y1, x1, y2, linkThickness);
                     break;
                 }
             }
@@ -140,6 +137,10 @@ namespace zlPanel {
     void SinglePanel::resized() {
         run();
         sidePanel.setBounds(getLocalBounds());
+    }
+
+    bool SinglePanel::willRepaint() const {
+        return toRepaint.load();
     }
 
     bool SinglePanel::checkRepaint() {
@@ -207,7 +208,7 @@ namespace zlPanel {
         }
     }
 
-    void SinglePanel::run() {
+    void SinglePanel::run(bool triggerRepaint) {
         juce::ScopedNoDenormals noDenormals;
         // draw curve
         {
@@ -277,6 +278,8 @@ namespace zlPanel {
                 farbot::ThreadType::realtime> pathLock(recentDynPath);
             (*pathLock).swapWithPath(dynPath);
         }
-        triggerAsyncUpdate();
+        if (triggerRepaint) {
+            triggerAsyncUpdate();
+        }
     }
 } // zlPanel

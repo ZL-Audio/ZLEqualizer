@@ -18,7 +18,7 @@
 
 namespace zlPanel {
     class SumPanel final : public juce::Component,
-                           private juce::AsyncUpdater,
+                           public juce::AsyncUpdater,
                            private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SumPanel(juce::AudioProcessorValueTreeState &parameters,
@@ -38,7 +38,9 @@ namespace zlPanel {
 
         void resized() override;
 
-        void run();
+        void run(bool triggerRepaint = true);
+
+        void handleAsyncUpdate() override;
 
     private:
         std::array<juce::Path, 5> paths;
@@ -52,8 +54,6 @@ namespace zlPanel {
             zlDSP::bypass::ID, zlDSP::lrType::ID
         };
         std::atomic<bool> toRepaint{false};
-
-        void handleAsyncUpdate() override;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
