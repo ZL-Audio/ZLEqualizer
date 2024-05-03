@@ -147,9 +147,9 @@ namespace zlFFT {
     void SingleFFTAnalyzer<FloatType>::createPath(juce::Path &path, const juce::Rectangle<float> bound) {
         juce::ScopedNoDenormals noDenormals;
         path.clear();
-        juce::ScopedLock lock(ampUpdatedLock);
         path.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
         size_t i = 0;
+        juce::ScopedLock lock(ampUpdatedLock);
         while (i < interplotDBs.size()) {
             const auto x = static_cast<float>(2 * i) / static_cast<float>(zlIIR::frequencies.size() - 1) *
                            bound.getWidth();
