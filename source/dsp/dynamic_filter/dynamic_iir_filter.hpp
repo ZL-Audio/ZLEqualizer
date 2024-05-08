@@ -39,6 +39,8 @@ namespace zlDynamicFilter {
          */
         void process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer);
 
+        void processBypass();
+
         inline zlIIR::Filter<FloatType> &getMainFilter() { return mFilter; }
 
         inline zlIIR::Filter<FloatType> &getBaseFilter() { return bFilter; }

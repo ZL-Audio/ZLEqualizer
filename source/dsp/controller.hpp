@@ -34,6 +34,8 @@ namespace zlDSP {
 
         void process(juce::AudioBuffer<FloatType> &buffer);
 
+        void processBypass();
+
         inline zlDynamicFilter::IIRFilter<FloatType> &getFilter(const size_t idx) { return filters[idx]; }
 
         inline std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> &getFilters() { return filters; }

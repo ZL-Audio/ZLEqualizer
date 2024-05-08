@@ -39,6 +39,10 @@ public:
 
     void processBlock(juce::AudioBuffer<double> &, juce::MidiBuffer &) override;
 
+    void processBlockBypassed(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override;
+
+    void processBlockBypassed(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) override;
+
     juce::AudioProcessorEditor *createEditor() override;
 
     bool hasEditor() const override;

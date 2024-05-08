@@ -59,6 +59,17 @@ namespace zlDynamicFilter {
         }
     }
 
+    template<typename FloatType>
+    void IIRFilter<FloatType>::processBypass() {
+        if (bFilter.updateParas()) {
+            compensation.update();
+        }
+        mFilter.updateParas();
+        tFilter.updateParas();
+        sFilter.updateParas();
+    }
+
+
     template
     class IIRFilter<float>;
 

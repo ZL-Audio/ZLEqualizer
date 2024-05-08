@@ -269,6 +269,13 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
+    void Controller<FloatType>::processBypass() {
+        for (size_t i = 0; i < bandNUM; ++i) {
+            filters[i].processBypass();
+        }
+    }
+
+    template<typename FloatType>
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
         // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         filterLRs[idx].store(x);
