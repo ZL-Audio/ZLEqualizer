@@ -8,31 +8,32 @@
 ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x64
 AppName={#ProductName}
-OutputBaseFilename={#ProductName}-{#Version}
+OutputBaseFilename={#ProductName}-{#Version}-Windows
 AppCopyright=Copyright (C) {#Year} {#Publisher}
 AppPublisher={#Publisher}
 AppVersion={#Version}
 DefaultDirName="{commoncf64}\VST3\{#ProductName}.vst3"
 DisableDirPage=yes
 CreateAppDir=no
+SetupIconFile=..\packaging\icon.ico
+UninstallDisplayIcon={uninstallexe}
 
 ; MAKE SURE YOU READ THE FOLLOWING!
-; LicenseFile="EULA.rtf"
-InfoBeforeFile="EULA.rtf"
+; LicenseFile="EULA"
+InfoBeforeFile="Readme.rtf"
 UninstallFilesDir="{commonappdata}\{#ProductName}\uninstall"
 
 [Types]
-Name: "vst3";     Description: "VST3 only";
-Name: "lv2";      Description: "LV2 only";
-Name: "full";     Description: "Full installation";
+Name: "full"; Description: "Full installation"
+Name: "custom"; Description: "Custom installation"; Flags: iscustom
 
 [Components]
-Name: "vst3";     Description: "VST3 only";         Types: vst3
-Name: "lv2";      Description: "LV2 only";          Types: lv2
-Name: "full";     Description: "Full installation"; Types: lv2 vst3
+Name: "vst3"; Description: {#ProductName} VST3; Types: full custom; Flags: checkablealone
+Name: "lv2"; Description: {#ProductName} LV2; Types: full custom; Flags: checkablealone
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{commoncf64}\VST3\{#ProductName}Data"
+Type: filesandordirs; Name: "{commoncf64}\LV2\{#ProductName}Data"
 
 ; MSVC adds a .ilk when building the plugin. Let's not include that.
 [Files]
