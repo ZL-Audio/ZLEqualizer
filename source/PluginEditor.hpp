@@ -16,7 +16,6 @@
 
 //==============================================================================
 class PluginEditor : public juce::AudioProcessorEditor,
-                     private juce::Value::Listener,
                      private juce::AudioProcessorValueTreeState::Listener,
                      private juce::AsyncUpdater  {
 public:
@@ -52,8 +51,6 @@ private:
         zlState::fftExtraTilt::ID, zlState::fftExtraSpeed::ID,
         zlState::singleCurveThickness::ID, zlState::sumCurveThickness::ID
     };
-
-    void valueChanged(juce::Value &) override;
 
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 

@@ -29,8 +29,6 @@ PluginEditor::PluginEditor(PluginProcessor &p)
     lastUIWidth.referTo(p.state.getParameterAsValue(zlState::windowW::ID));
     lastUIHeight.referTo(p.state.getParameterAsValue(zlState::windowH::ID));
     setSize(lastUIWidth.getValue(), lastUIHeight.getValue());
-    lastUIWidth.addListener(this);
-    lastUIHeight.addListener(this);
 
     // add main panel
     addAndMakeVisible(mainPanel);
@@ -50,10 +48,6 @@ void PluginEditor::resized() {
     mainPanel.setBounds(getLocalBounds());
     lastUIWidth = getWidth();
     lastUIHeight = getHeight();
-}
-
-void PluginEditor::valueChanged(juce::Value &) {
-    setSize(lastUIWidth.getValue(), lastUIHeight.getValue());
 }
 
 void PluginEditor::parameterChanged(const juce::String &parameterID, float newValue) {
