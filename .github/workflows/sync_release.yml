@@ -29,9 +29,9 @@ jobs:
       uses: robinraju/release-downloader@v1.10
       with:
         latest: true
-        fileName: "*dmg"
+        fileName: "*tgz"
         out-file-path: "current_release"
-    - name: Download current release assets (macOS)
+    - name: Download current release assets (Windows)
       uses: robinraju/release-downloader@v1.10
       with:
         latest: true
