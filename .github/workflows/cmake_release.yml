@@ -119,7 +119,7 @@ jobs:
         uses: mozilla-actions/sccache-action@v0.0.4
 
       - name: Import Certificates (macOS)
-        uses: apple-actions/import-codesign-certs@v2 # only exists as a tag right now
+        uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
         if: ${{ (matrix.name == 'macOS') && (env.p12-file-base64 != '')}}
         with:
           p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
