@@ -20,7 +20,8 @@ namespace zlPanel {
               juce::Drawable::createFromImageData(BinaryData::loopleftline_svg, BinaryData::loopleftline_svgSize)),
           saveButton(saveDrawable.get(), uiBase),
           closeButton(closeDrawable.get(), uiBase),
-          resetButton(resetDrawable.get(), uiBase) {
+          resetButton(resetDrawable.get(), uiBase),
+          labelLAF(uiBase) {
         juce::ignoreUnused(pRef);
         setOpaque(true);
         addAndMakeVisible(saveButton);
@@ -39,6 +40,19 @@ namespace zlPanel {
         closeButton.getButton().onClick = [this]() {
             setVisible(false);
         };
+
+        labelLAF.setFontScale(1.125f);
+        labelLAF.setAlpha(.5f);
+        labelLAF.setJustification(juce::Justification::bottomLeft);
+        versionLabel.setText(
+            juce::String(ZLEQUALIZER_CURRENT_VERSION) + " " + juce::String(ZLEQUALIZER_CURRENT_HASH),
+            juce::dontSendNotification);
+        versionLabel.setLookAndFeel(&labelLAF);
+        addAndMakeVisible(versionLabel);
+    }
+
+    UISettingPanel::~UISettingPanel() {
+        versionLabel.setLookAndFeel(nullptr);
     }
 
     void UISettingPanel::paint(juce::Graphics &g) {
@@ -68,6 +82,13 @@ namespace zlPanel {
         saveButton.setBounds(leftBound.toNearestInt());
         resetButton.setBounds(centerBound.toNearestInt());
         closeButton.setBounds(rightBound.toNearestInt());
+
+        bound = getLocalBounds().toFloat();
+        bound = bound.removeFromBottom(2.f * uiBase.getFontSize());
+        bound = bound.removeFromLeft(bound.getWidth() * .125f);
+        bound.removeFromLeft(uiBase.getFontSize() * .25f);
+        bound.removeFromBottom(uiBase.getFontSize() * .0625f);
+        versionLabel.setBounds(bound.toNearestInt());
     }
 
     void UISettingPanel::visibilityChanged() {

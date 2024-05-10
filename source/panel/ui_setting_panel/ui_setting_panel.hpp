@@ -19,6 +19,8 @@ class UISettingPanel final : public juce::Component {
 public:
     explicit UISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
+    ~UISettingPanel() override;
+
     void paint(juce::Graphics &g) override;
 
     void resized() override;
@@ -32,6 +34,9 @@ private:
     InternalSettingPanel internelPanel;
     const std::unique_ptr<juce::Drawable> saveDrawable, closeDrawable, resetDrawable;
     zlInterface::ClickButton saveButton, closeButton, resetButton;
+
+    juce::Label versionLabel;
+    zlInterface::NameLookAndFeel labelLAF;
 };
 
 } // zlPanel
