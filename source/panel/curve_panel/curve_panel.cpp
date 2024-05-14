@@ -52,6 +52,11 @@ namespace zlPanel {
         juce::ignoreUnused(g);
     }
 
+    void CurvePanel::paintOverChildren(juce::Graphics &g) {
+        juce::ignoreUnused(g);
+        notify();
+    }
+
     void CurvePanel::resized() {
         backgroundPanel.setBounds(getLocalBounds());
         auto bound = getLocalBounds().toFloat();
@@ -84,12 +89,10 @@ namespace zlPanel {
         if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
             && analyzer.getPathReady()) {
             fftPanel.updatePaths();
-            fftPanel.repaint();
-            checkRepaint();
+            repaint();
             currentT = nowT;
         } else if (controllerRef.getConflictAnalyzer().getIsConflictReady()) {
-            conflictPanel.repaint();
-            checkRepaint();
+            repaint();
             currentT = nowT;
         } else if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
             checkRepaint();
@@ -99,12 +102,12 @@ namespace zlPanel {
 
     void CurvePanel::checkRepaint() {
         if (sumPanel.checkRepaint()) {
-            notify();
+            repaint();
             return;
         }
         for (const auto &sP: singlePanels) {
             if (sP->willRepaint()) {
-                notify();
+                repaint();
                 return;
             }
         }
@@ -121,7 +124,7 @@ namespace zlPanel {
                     sP->run(false);
                 }
             }
-            sumPanel.run(true);
+            sumPanel.run(false);
         }
     }
 }
