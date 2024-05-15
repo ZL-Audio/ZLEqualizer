@@ -163,6 +163,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::Midi
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
     if (isMono.load()) {
+        doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
         for (int chan = 0; chan < 4; ++chan) {
             auto *dest = doubleBuffer.getWritePointer(chan);
             auto *src = buffer.getReadPointer(chan / 2);
