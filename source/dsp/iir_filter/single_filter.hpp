@@ -13,6 +13,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include "coeff/design_filter.hpp"
 #include "static_frequency_array.hpp"
+#include "svf_base.hpp"
 #include "../farbot/RealtimeObject.hpp"
 
 namespace zlIIR {
@@ -165,10 +166,13 @@ namespace zlIIR {
          */
         void setMagOutdated(const bool f) { magOutdated.store(f); }
 
+        void setSVFON(const bool f) { useSVF.store(f); }
+
     private:
         std::array<juce::dsp::ProcessorDuplicator<
             juce::dsp::IIR::Filter<FloatType>,
             juce::dsp::IIR::Coefficients<FloatType> >, 16> filters{};
+
         std::atomic<size_t> filterNum{1};
         std::atomic<double> freq = 1000, gain = 0, q = 0.707;
         std::atomic<size_t> order = 2;
@@ -184,6 +188,10 @@ namespace zlIIR {
 
         std::array<coeff33, 16> coeffs;
         farbot::RealtimeObject<std::array<coeff33, 16>, farbot::RealtimeObjectOptions::realtimeMutatable> recentCoeffs;
+
+        std::atomic<bool> useSVF{true};
+        bool currentUseSVF{true};
+        std::array<SVFBase<FloatType>, 16> svfFilters{};
     };
 }
 

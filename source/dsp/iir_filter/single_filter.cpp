@@ -16,6 +16,9 @@ namespace zlIIR {
             for (size_t i = 0; i < filterNum.load(); ++i) {
                 filters[i].reset();
             }
+            for (size_t i = 0; i < filterNum.load(); ++i) {
+                svfFilters[i].reset();
+            }
         }
     }
 
@@ -26,17 +29,32 @@ namespace zlIIR {
         for (auto &f: filters) {
             f.prepare(spec);
         }
+        for (auto &f: svfFilters) {
+            f.prepare(spec);
+        }
         setOrder(order.load());
     }
 
     template<typename FloatType>
     void Filter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-        auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
+        const auto nextUseSVF = useSVF.load();
+        if (currentUseSVF != nextUseSVF) {
+            currentUseSVF = nextUseSVF;
+            toReset.store(true);
+            toUpdatePara.store(true);
+        }
         reset();
         updateParas();
-        for (size_t i = 0; i < filterNum.load(); ++i) {
-            filters[i].process(context);
+        auto block = juce::dsp::AudioBlock<FloatType>(buffer);
+        auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
+        if (!currentUseSVF) {
+             for (size_t i = 0; i < filterNum.load(); ++i) {
+                filters[i].process(context);
+            }
+        } else {
+            for (size_t i = 0; i < filterNum.load(); ++i) {
+                svfFilters[i].process(context);
+            }
         }
     }
 
@@ -106,17 +124,23 @@ namespace zlIIR {
                     farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
                 *rrcentCoeffs = coeffs;
             }
-            for (size_t i = 0; i < filterNum.load(); i++) {
-                *filters[i].state = {
-                    static_cast<FloatType>(std::get<1>(coeffs[i])[0]),
-                    static_cast<FloatType>(std::get<1>(coeffs[i])[1]),
-                    static_cast<FloatType>(std::get<1>(coeffs[i])[2]),
-                    static_cast<FloatType>(std::get<0>(coeffs[i])[0]),
-                    static_cast<FloatType>(std::get<0>(coeffs[i])[1]),
-                    static_cast<FloatType>(std::get<0>(coeffs[i])[2])
-                };
-            }
             magOutdated.store(true);
+            if (!useSVF.load()) {
+                for (size_t i = 0; i < filterNum.load(); i++) {
+                    *filters[i].state = {
+                        static_cast<FloatType>(std::get<1>(coeffs[i])[0]),
+                        static_cast<FloatType>(std::get<1>(coeffs[i])[1]),
+                        static_cast<FloatType>(std::get<1>(coeffs[i])[2]),
+                        static_cast<FloatType>(std::get<0>(coeffs[i])[0]),
+                        static_cast<FloatType>(std::get<0>(coeffs[i])[1]),
+                        static_cast<FloatType>(std::get<0>(coeffs[i])[2])
+                    };
+                }
+            } else {
+                for (size_t i = 0; i < filterNum.load(); i++) {
+                    svfFilters[i].updateFromBiquad(coeffs[i]);
+                }
+            }
             return true;
         }
         return false;
