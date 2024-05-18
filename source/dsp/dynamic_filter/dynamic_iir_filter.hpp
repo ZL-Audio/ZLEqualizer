@@ -71,6 +71,7 @@ namespace zlDynamicFilter {
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass{true}, dynamicON{false}, dynamicBypass{false};
+        bool currentBypass{false};
     };
 }
 

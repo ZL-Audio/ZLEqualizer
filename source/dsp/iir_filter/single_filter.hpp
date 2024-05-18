@@ -31,6 +31,8 @@ namespace zlIIR {
 
         void reset();
 
+        void setToRest() { toReset.store(true); }
+
         void prepare(const juce::dsp::ProcessSpec &spec);
 
         void process(juce::AudioBuffer<FloatType> &buffer);
@@ -189,8 +191,8 @@ namespace zlIIR {
         std::array<coeff33, 16> coeffs;
         farbot::RealtimeObject<std::array<coeff33, 16>, farbot::RealtimeObjectOptions::realtimeMutatable> recentCoeffs;
 
-        std::atomic<bool> useSVF{true};
-        bool currentUseSVF{true};
+        std::atomic<bool> useSVF{false};
+        bool currentUseSVF{false};
         std::array<SVFBase<FloatType>, 16> svfFilters{};
     };
 }

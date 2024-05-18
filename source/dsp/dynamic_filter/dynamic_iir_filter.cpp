@@ -42,6 +42,11 @@ namespace zlDynamicFilter {
         tFilter.updateParas();
         sFilter.updateParas();
         if (!bypass.load()) {
+            if (currentBypass != bypass.load()) {
+                currentBypass = bypass.load();
+                sFilter.setToRest();
+                mFilter.setToRest();
+            }
             if (dynamicON.load()) {
                 sBufferCopy.makeCopyOf(sBuffer, true);
                 sFilter.process(sBufferCopy);
@@ -68,7 +73,6 @@ namespace zlDynamicFilter {
         tFilter.updateParas();
         sFilter.updateParas();
     }
-
 
     template
     class IIRFilter<float>;
