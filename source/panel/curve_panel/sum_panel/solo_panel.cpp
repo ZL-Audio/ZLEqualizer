@@ -1,4 +1,4 @@
-// Copyright (C) 2023 - zsliu98
+// Copyright (C) 2024 - zsliu98
 // This file is part of ZLEqualizer
 //
 // ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -19,7 +19,6 @@ namespace zlPanel {
           soloF(controller.getSoloFilter()),
           controllerRef(controller) {
         juce::ignoreUnused(parametersNA);
-        // setBufferedToImage(true);
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
             const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
             for (auto &id: changeIDs) {
