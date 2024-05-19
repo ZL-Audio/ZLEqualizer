@@ -82,15 +82,15 @@ namespace zlIIR {
         void updateFromBiquad(const coeff33 &coeffs) {
             const auto a = std::get<0>(coeffs);
             const auto b = std::get<1>(coeffs);
-            const auto temp1 = std::sqrt(std::abs((-1 - a[1] - a[2])));
-            const auto temp2 = std::sqrt(std::abs((-1 + a[1] - a[2])));
+            const auto temp1 = std::sqrt(std::abs((-a[0] - a[1] - a[2])));
+            const auto temp2 = std::sqrt(std::abs((-a[0] + a[1] - a[2])));
             g = static_cast<SampleType>(temp1 / temp2);
-            R2 = static_cast<SampleType>(2 * (1 - a[2]) / (temp1 * temp2));
+            R2 = static_cast<SampleType>(2 * (a[0] - a[2]) / (temp1 * temp2));
             h = static_cast<SampleType>(1) / (g * (R2 + g) + static_cast<SampleType>(1));
 
-            chp = static_cast<SampleType>((b[0] - b[1] + b[2]) / (1 - a[1] + a[2]));
+            chp = static_cast<SampleType>((b[0] - b[1] + b[2]) / (a[0] - a[1] + a[2]));
             cbp = static_cast<SampleType>(2 * (b[2] - b[0]) / (temp1 * temp2));
-            clp = static_cast<SampleType>((b[0] + b[1] + b[2]) / (1 + a[1] + a[2]));
+            clp = static_cast<SampleType>((b[0] + b[1] + b[2]) / (a[0] + a[1] + a[2]));
         }
 
     private:
