@@ -27,6 +27,7 @@ namespace zlIIR {
         void reset() {
             std::fill(s1.begin(), s1.end(), static_cast<SampleType>(0));
             std::fill(s2.begin(), s2.end(), static_cast<SampleType>(0));
+            currentReset = true;
         }
 
         void snapToZero() {
@@ -53,12 +54,25 @@ namespace zlIIR {
                 return;
             }
 
-            for (size_t channel = 0; channel < numChannels; ++channel) {
-                auto *inputSamples = inputBlock.getChannelPointer(channel);
-                auto *outputSamples = outputBlock.getChannelPointer(channel);
+            if (currentReset) {
+                for (size_t channel = 0; channel < numChannels; ++channel) {
+                    auto *inputSamples = inputBlock.getChannelPointer(channel);
+                    auto *outputSamples = outputBlock.getChannelPointer(channel);
 
-                for (size_t i = 0; i < numSamples; ++i) {
-                    outputSamples[i] = processSample(channel, inputSamples[i]);
+                    for (size_t i = 0; i < numSamples; ++i) {
+                        processSample(channel, inputSamples[i]);
+                        outputSamples[i] = inputSamples[i];
+                    }
+                }
+                currentReset = false;
+            } else {
+                for (size_t channel = 0; channel < numChannels; ++channel) {
+                    auto *inputSamples = inputBlock.getChannelPointer(channel);
+                    auto *outputSamples = outputBlock.getChannelPointer(channel);
+
+                    for (size_t i = 0; i < numSamples; ++i) {
+                        outputSamples[i] = processSample(channel, inputSamples[i]);
+                    }
                 }
             }
 
@@ -96,6 +110,7 @@ namespace zlIIR {
     private:
         SampleType g, R2, h, chp, cbp, clp;
         std::vector<SampleType> s1, s2;
+        bool currentReset{false};
     };
 }
 
