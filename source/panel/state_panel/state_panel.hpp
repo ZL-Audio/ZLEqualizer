@@ -15,6 +15,7 @@
 #include "comp_setting_panel.hpp"
 #include "output_setting_panel.hpp"
 #include "conflict_setting_panel.hpp"
+#include "general_setting_panel.hpp"
 
 namespace zlPanel {
 
@@ -38,6 +39,7 @@ namespace zlPanel {
         CompSettingPanel compSettingPanel;
         OutputSettingPanel outputSettingPanel;
         ConflictSettingPanel conflictSettingPanel;
+        GeneralSettingPanel generalSettingPanel;
     };
 
 } // zlPanel

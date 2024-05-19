@@ -20,7 +20,8 @@ namespace zlPanel {
           fftSettingPanel(parameters, parametersNA, base),
           compSettingPanel(parameters, parametersNA, base),
           outputSettingPanel(parameters, parametersNA, base),
-          conflictSettingPanel(parameters, parametersNA, base) {
+          conflictSettingPanel(parameters, parametersNA, base),
+          generalSettingPanel(parameters, parametersNA, base) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         juce::ignoreUnused(stateRef, uiBase);
         setInterceptsMouseClicks(false, true);
@@ -29,6 +30,7 @@ namespace zlPanel {
         addAndMakeVisible(compSettingPanel);
         addAndMakeVisible(outputSettingPanel);
         addAndMakeVisible(conflictSettingPanel);
+        addAndMakeVisible(generalSettingPanel);
     }
 
     void StatePanel::resized() {
@@ -49,5 +51,8 @@ namespace zlPanel {
         bound.removeFromRight(height * .5f);
         const auto conflictSettingBound = bound.removeFromRight(height * 2.5f);
         conflictSettingPanel.setBounds(conflictSettingBound.toNearestInt());
+        bound.removeFromRight(height * .5f);
+        const auto generalSettingBound = bound.removeFromRight(height * 2.5f);
+        generalSettingPanel.setBounds(generalSettingBound.toNearestInt());
     }
 } // zlPanel

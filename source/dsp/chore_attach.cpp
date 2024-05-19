@@ -77,6 +77,10 @@ namespace zlDSP {
             }
         } else if (parameterID == outputGain::ID) {
             controllerRef.getGainDSP().setGainDecibels(static_cast<FloatType>(newValue));
+        } else if (parameterID == filterStructure::ID) {
+            for (size_t i = 0; i < bandNUM; ++i) {
+                controllerRef.getFilter(i).setSVFON(static_cast<bool>(newValue));
+            }
         } else if (parameterID == zlState::fftPreON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
