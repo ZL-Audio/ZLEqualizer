@@ -13,18 +13,25 @@ namespace zlPanel {
     class GeneralCallOutBox final : public juce::Component {
     public:
         explicit GeneralCallOutBox(juce::AudioProcessorValueTreeState &parameters,
-                               zlInterface::UIBase &base)
+                                   zlInterface::UIBase &base)
             : parametersRef(parameters),
               uiBase(base),
-              filterStructure("", zlDSP::filterStructure::choices, uiBase) {
+              filterStructure("", zlDSP::filterStructure::choices, uiBase),
+              dynLinkC("Dyn Link:", zlDSP::dynLink::choices, uiBase) {
             for (auto &c: {&filterStructure}) {
                 addAndMakeVisible(c);
             }
+            for (auto &c: {&dynLinkC}) {
+                c->getLabelLAF().setFontScale(1.5f);
+                c->setLabelScale(.625f);
+                c->setLabelPos(zlInterface::ClickCombobox::left);
+                addAndMakeVisible(c);
+            }
             attach({
-                       &filterStructure.getBox(),
+                       &filterStructure.getBox(), &dynLinkC.getCompactBox().getBox()
                    },
                    {
-                       zlDSP::filterStructure::ID
+                       zlDSP::filterStructure::ID, zlDSP::dynLink::ID
                    },
                    parametersRef, boxAttachments);
         }
@@ -36,11 +43,12 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(60))};
+            grid.templateRows = {Track(Fr(60)), Track(Fr(60))};
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
                 juce::GridItem(filterStructure).withArea(1, 1),
+                juce::GridItem(dynLinkC).withArea(2, 1),
             };
             grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
             auto bound = getLocalBounds().toFloat();
@@ -53,12 +61,13 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
 
         zlInterface::CompactCombobox filterStructure;
+        zlInterface::ClickCombobox dynLinkC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
     };
 
     GeneralSettingPanel::GeneralSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                     juce::AudioProcessorValueTreeState &parametersNA,
-                                     zlInterface::UIBase &base)
+                                             juce::AudioProcessorValueTreeState &parametersNA,
+                                             zlInterface::UIBase &base)
         : parametersRef(parameters),
           parametersNARef(parametersNA),
           uiBase(base),
@@ -107,7 +116,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<GeneralCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 10.f),
-                         juce::roundToInt(uiBase.getFontSize() * 2.f));
+                         juce::roundToInt(uiBase.getFontSize() * 4.3525f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

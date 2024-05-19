@@ -149,8 +149,7 @@ namespace zlPanel {
         } else if (toRepaint.exchange(false)) {
             return true;
         }
-        sidePanel.checkRepaint();
-        return false;
+        return sidePanel.checkRepaint();
     }
 
     void SinglePanel::drawCurve(juce::Path &path,

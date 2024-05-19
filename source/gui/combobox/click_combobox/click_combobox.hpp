@@ -27,10 +27,6 @@ namespace zlInterface {
 
         void resized() override;
 
-        // void mouseDown(const juce::MouseEvent &event) override;
-        //
-        // void mouseUp(const juce::MouseEvent &event) override;
-
         void setLabelScale(const float x) { lScale.store(x); }
 
         void setLabelPos(const LabelPos x) { lPos.store(x); }

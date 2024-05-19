@@ -125,7 +125,7 @@ namespace zlIIR {
                 *rrcentCoeffs = coeffs;
             }
             magOutdated.store(true);
-            if (!useSVF.load()) {
+            if (!currentUseSVF) {
                 for (size_t i = 0; i < filterNum.load(); i++) {
                     *filters[i].state = {
                         static_cast<FloatType>(std::get<1>(coeffs[i])[0]),

@@ -93,6 +93,10 @@ namespace zlDSP {
 
         zlGain::AutoGain<FloatType> &getAutoGain() { return autoGain; }
 
+        void setDynLink(const bool x) { dynLink.store(x); }
+
+        bool getDynLink() const { return dynLink.load(); }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
@@ -131,6 +135,8 @@ namespace zlDSP {
         zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzezr{};
 
         zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer{};
+
+        std::atomic<bool> dynLink{false};
 
         void processSolo();
 

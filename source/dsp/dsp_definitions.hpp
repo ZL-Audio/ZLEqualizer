@@ -65,6 +65,13 @@ namespace zlDSP {
                                                                 T::name + suffix, T::choices, T::defaultI, attributes);
         }
 
+        static std::unique_ptr<juce::AudioParameterChoice> get(bool meta, const std::string &suffix = "", bool automate = true) {
+            auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::name).
+                    withMeta(meta);
+            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
+                                                                T::name + suffix, T::choices, T::defaultI, attributes);
+        }
+
         inline static float convertTo01(const int x) {
             return static_cast<float>(x) / static_cast<float>(T::choices.size());
         }
@@ -393,7 +400,7 @@ namespace zlDSP {
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
                    effectON::get(), staticAutoGain::get(), autoGain::get(),
                    scale::get(), outputGain::get(),
-                   filterStructure::get(), dynLink::get());
+                   filterStructure::get(), dynLink::get(true));
         return layout;
     }
 

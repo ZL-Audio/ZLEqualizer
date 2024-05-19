@@ -18,8 +18,7 @@
 
 namespace zlPanel {
     class SidePanel final : public juce::Component,
-                            private juce::AudioProcessorValueTreeState::Listener,
-                            private juce::AsyncUpdater {
+                            private juce::AudioProcessorValueTreeState::Listener{
     public:
         explicit SidePanel(size_t bandIdx,
                            juce::AudioProcessorValueTreeState &parameters,
@@ -31,7 +30,7 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void checkRepaint();
+        bool checkRepaint();
 
     private:
         size_t idx;
@@ -42,17 +41,18 @@ namespace zlPanel {
         std::atomic<bool> toRepaint{false};
 
         static constexpr std::array changeIDs{
-            zlDSP::dynamicON::ID
+            zlDSP::dynamicON::ID, zlDSP::sideFreq::ID, zlDSP::sideQ::ID
         };
 
         juce::Colour colour;
 
+        std::atomic<double> sideFreq{1000.0}, sideQ{0.707};
         std::atomic<float> scale1{.5f}, scale2{.5f};
         std::atomic<bool> skipRepaint{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
-        void handleAsyncUpdate() override;
+        void update();
     };
 } // zlPanel
 

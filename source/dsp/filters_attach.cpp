@@ -70,6 +70,19 @@ namespace zlDSP {
             filtersRef[idx].getMainFilter().setFreq(value);
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getTargetFilter().setFreq(value);
+                if (controllerRef.getDynLink() && dynamicONUpdateOthers.load()) {
+                    auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
+                    const auto soloFreq01 = sideFreq::convertTo01(static_cast<float>(soloFreq));
+                    const auto soloQ01 = sideQ::convertTo01(static_cast<float>(soloQ));
+                    const auto paraFreq = parameterRef.getParameter(sideFreq::ID + parameterID.getLastCharacters(2)) ;
+                    paraFreq->beginChangeGesture();
+                    paraFreq->setValueNotifyingHost(soloFreq01);
+                    paraFreq->endChangeGesture();
+                    const auto paraQ = parameterRef.getParameter(sideQ::ID + parameterID.getLastCharacters(2));
+                    paraQ->beginChangeGesture();
+                    paraQ->setValueNotifyingHost(soloQ01);
+                    paraQ->endChangeGesture();
+                }
             }
         } else if (parameterID.startsWith(gain::ID)) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
@@ -83,6 +96,19 @@ namespace zlDSP {
         } else if (parameterID.startsWith(Q::ID)) {
             if (filtersRef[idx].getDynamicON()) {
                 filtersRef[idx].getBaseFilter().setQ(value);
+                if (controllerRef.getDynLink() && dynamicONUpdateOthers.load()) {
+                    auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
+                    const auto soloFreq01 = sideFreq::convertTo01(static_cast<float>(soloFreq));
+                    const auto soloQ01 = sideQ::convertTo01(static_cast<float>(soloQ));
+                    const auto paraFreq = parameterRef.getParameter(sideFreq::ID + parameterID.getLastCharacters(2));
+                    paraFreq->beginChangeGesture();
+                    paraFreq->setValueNotifyingHost(soloFreq01);
+                    paraFreq->endChangeGesture();
+                    const auto paraQ = parameterRef.getParameter(sideQ::ID + parameterID.getLastCharacters(2));
+                    paraQ->beginChangeGesture();
+                    paraQ->setValueNotifyingHost(soloQ01);
+                    paraQ->endChangeGesture();
+                }
             } else {
                 filtersRef[idx].getBaseFilter().setQ(value);
                 filtersRef[idx].getMainFilter().setQ(value);
