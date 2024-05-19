@@ -58,13 +58,13 @@ Font from CMU Open Sans, Font Awesome and MiSans.
 
 ## References
 
-Matched One-Pole Digital Shelving Filters, Martin Vicanek
+Vicanek, Martin. *Matched One-Pole Digital Shelving Filters*. (2019).
 
-Matched Second Order Digital Filters, Martin Vicanek
+Vicanek, Martin. *Matched Second Order Digital Filters*. (2016).
 
-Cascading filters, Nigel Redmon
+Redmon, Nigel. *Cascading filters*. (2016).
 
-A Simple Method of Designing Multiple Order All Pole Bandpass Filters by Cascading 2nd Order Sections, Nello Sevastopoulos and Richard Markell
+Wishnick, Aaron. *Time-Varying Filters for Musical Applications*. DAFx. (2014).
 
 [Equalize It](https://github.com/suroge/equalize_it) by [suroge](https://github.com/suroge)
 
