@@ -363,6 +363,26 @@ namespace zlDSP {
         auto static constexpr defaultV = false;
     };
 
+    class filterStructure : public ChoiceParameters<filterStructure> {
+    public:
+        auto static constexpr ID = "filter_structure";
+        auto static constexpr name = "Filter Structure";
+        inline auto static const choices = juce::StringArray{
+            "Minimum Phase", "State Variable"
+        };
+        int static constexpr defaultI = 0;
+    };
+
+    class dynLink : public ChoiceParameters<dynLink> {
+    public:
+        auto static constexpr ID = "dyn_link";
+        auto static constexpr name = "Dynamic Link";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 0;
+    };
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         for (int i = 0; i < bandNUM; ++i) {
@@ -372,7 +392,8 @@ namespace zlDSP {
         layout.add(sideChain::get(),
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
                    effectON::get(), staticAutoGain::get(), autoGain::get(),
-                   scale::get(), outputGain::get());
+                   scale::get(), outputGain::get(),
+                   filterStructure::get(), dynLink::get());
         return layout;
     }
 

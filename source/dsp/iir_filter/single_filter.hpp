@@ -92,6 +92,13 @@ namespace zlIIR {
         bool updateParas();
 
         /**
+         * update filter coefficients for dB calculation
+         * DO NOT call it unless you are sure what you are doing
+         * @return where coefficients have been updated
+         */
+        bool updateParasForDBOnly();
+
+        /**
          * get the number of 2nd order filters
          * @return
          */

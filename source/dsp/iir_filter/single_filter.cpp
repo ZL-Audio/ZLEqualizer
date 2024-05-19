@@ -48,7 +48,7 @@ namespace zlIIR {
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
         if (!currentUseSVF) {
-             for (size_t i = 0; i < filterNum.load(); ++i) {
+            for (size_t i = 0; i < filterNum.load(); ++i) {
                 filters[i].process(context);
             }
         } else {
@@ -141,6 +141,24 @@ namespace zlIIR {
                     svfFilters[i].updateFromBiquad(coeffs[i]);
                 }
             }
+            return true;
+        }
+        return false;
+    }
+
+    template<typename FloatType>
+    bool Filter<FloatType>::updateParasForDBOnly() {
+        if (toUpdatePara.exchange(false)) {
+            filterNum.store(DesignFilter::updateCoeff(filterType.load(),
+                                                      freq.load(), processSpec.sampleRate,
+                                                      gain.load(), q.load(), order.load(), coeffs)); {
+                farbot::RealtimeObject<
+                    std::array<coeff33, 16>,
+                    farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
+                    farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
+                *rrcentCoeffs = coeffs;
+            }
+            magOutdated.store(true);
             return true;
         }
         return false;
