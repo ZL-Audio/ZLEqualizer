@@ -105,18 +105,18 @@ namespace zlPanel {
             switch (baseF.getFilterType()) {
                 case zlIIR::FilterType::peak:
                 case zlIIR::FilterType::bandShelf: {
-                    const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
+                    const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(baseF.getGain()), maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(baseGain.load()), maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, linkThickness);
                     break;
                 }
                 case zlIIR::FilterType::lowShelf:
                 case zlIIR::FilterType::highShelf:
                 case zlIIR::FilterType::tiltShelf: {
-                    const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
+                    const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(baseF.getGain()) / 2, maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(baseGain.load()) / 2, maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, linkThickness);
                     break;
                 }
@@ -124,7 +124,7 @@ namespace zlPanel {
                 case zlIIR::FilterType::lowPass:
                 case zlIIR::FilterType::highPass:
                 case zlIIR::FilterType::bandPass: {
-                    const auto x1 = freqToX(static_cast<double>(baseF.getFreq()), bound);
+                    const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, linkThickness);
@@ -195,6 +195,8 @@ namespace zlPanel {
         } else {
             if (parameterID.startsWith(zlState::active::ID)) {
                 actived.store(static_cast<bool>(newValue));
+                baseFreq.store(10.0);
+                baseGain.store(0.0);
             } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
                 dynON.store(static_cast<bool>(newValue));
             }
@@ -211,12 +213,14 @@ namespace zlPanel {
     void SinglePanel::run(bool triggerRepaint) {
         juce::ScopedNoDenormals noDenormals;
         // draw curve
+        baseFreq.store(static_cast<double>(baseF.getFreq()));
+        baseGain.store(static_cast<double>(baseF.getGain()));
         {
             baseF.updateDBs();
             curvePath.clear();
             if (actived.load()) {
                 drawCurve(curvePath, baseF.getDBs());
-                centeredDB.store(static_cast<float>(baseF.getDB(baseF.getFreq())));
+                centeredDB.store(static_cast<float>(baseF.getDB(baseFreq.load())));
             } else {
                 centeredDB.store(0.f);
             }

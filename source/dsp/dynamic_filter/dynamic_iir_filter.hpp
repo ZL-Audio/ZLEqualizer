@@ -65,6 +65,11 @@ namespace zlDynamicFilter {
 
         inline void setCompoensationON(const bool x) { compensation.enable(x); }
 
+        void setSVFON(const bool f) {
+            mFilter.setSVFON(f);
+            sFilter.setSVFON(f);
+        }
+
     private:
         zlIIR::Filter<FloatType> mFilter, bFilter, tFilter, sFilter;
         zlIIR::StaticGainCompensation<FloatType> compensation {bFilter};
