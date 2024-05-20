@@ -49,8 +49,10 @@ namespace zlIIR {
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
         context.isBypassed = isBypassed;
         if (!currentUseSVF) {
-            for (size_t i = 0; i < filterNum.load(); ++i) {
-                filters[i].process(context);
+            if (!isBypassed) {
+                for (size_t i = 0; i < filterNum.load(); ++i) {
+                    filters[i].process(context);
+                }
             }
         } else {
             for (size_t i = 0; i < filterNum.load(); ++i) {

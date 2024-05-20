@@ -49,14 +49,17 @@ namespace zlIIR {
             jassert(inputBlock.getNumChannels() == numChannels);
             jassert(inputBlock.getNumSamples() == numSamples);
 
-            if (context.isBypassed) {
-                outputBlock.copyFrom(inputBlock);
+            if (context.isBypassed || byPassNextBlock.load()) {
+                if (context.usesSeparateInputAndOutputBlocks()) {
+                    outputBlock.copyFrom(inputBlock);
+                }
                 for (size_t channel = 0; channel < numChannels; ++channel) {
                     auto *inputSamples = inputBlock.getChannelPointer(channel);
                     for (size_t i = 0; i < numSamples; ++i) {
                         processSample(channel, inputSamples[i]);
                     }
                 }
+                byPassNextBlock.store(false);
             } else {
                 for (size_t channel = 0; channel < numChannels; ++channel) {
                     auto *inputSamples = inputBlock.getChannelPointer(channel);
