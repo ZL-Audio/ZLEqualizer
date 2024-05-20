@@ -43,7 +43,7 @@ namespace zlPanel {
         zlDSP::Controller<double> &controllerRef;
         BackgroundPanel backgroundPanel;
         FFTPanel fftPanel;
-        // ConflictPanel conflictPanel;
+        ConflictPanel conflictPanel;
         SumPanel sumPanel;
         SoloPanel soloPanel;
         ButtonPanel buttonPanel;

@@ -64,14 +64,6 @@ namespace zlFFT {
 
         inline size_t getFFTSize() const { return fftSize.load(); }
 
-        inline bool getIsAudioReady() const { return isAudioReady.load(); }
-
-        void setIsAudioReady(const bool f) { isAudioReady.store(f); }
-
-        inline bool getIsFFTReady() const { return isFFTReady.load(); }
-
-        void setIsFFTReady(const bool f) { isFFTReady.store(f); }
-
         void setDecayRate(const float x) {
             decayRate.store(x);
             updateActualDecayRate();
@@ -100,7 +92,6 @@ namespace zlFFT {
 
     private:
         std::atomic<size_t> delay = 0;
-        std::atomic<bool> isAudioReady = false, isFFTReady = false;
 
         std::vector<float> currentBuffer;
         size_t currentPos;

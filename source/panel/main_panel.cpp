@@ -25,13 +25,7 @@ namespace zlPanel {
         uiSettingButton.setVisible(uiBase.getStyle() == 2);
         addChildComponent(uiSettingPanel);
 
-        for (auto &fft : {&processorRef.getController().getAnalyzer().getPreFFT(),
-        &processorRef.getController().getAnalyzer().getPostFFT(),
-        &processorRef.getController().getAnalyzer().getSideFFT()}) {
-            fft->setExtraTilt(uiBase.getFFTExtraTilt());
-            fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
-            fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
-        }
+        updateFFTs();
 
         state.addParameterListener(zlState::uiStyle::ID, this);
         state.addParameterListener(zlState::fftExtraTilt::ID, this);
@@ -74,6 +68,10 @@ namespace zlPanel {
 
     void MainPanel::handleAsyncUpdate() {
         uiSettingButton.setVisible(uiBase.getStyle() == 2);
+        updateFFTs();
+    }
+
+    void MainPanel::updateFFTs() {
         for (auto &fft : {&processorRef.getController().getAnalyzer().getPreFFT(),
         &processorRef.getController().getAnalyzer().getPostFFT(),
         &processorRef.getController().getAnalyzer().getSideFFT()}) {
@@ -81,5 +79,12 @@ namespace zlPanel {
             fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
             fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
+        for (auto &fft : {&processorRef.getController().getConflictAnalyzer().getMainFFT(),
+        &processorRef.getController().getConflictAnalyzer().getRefFFT()}) {
+            // fft->setExtraTilt(uiBase.getFFTExtraTilt());
+            // fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
+            fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
+        }
     }
+
 }

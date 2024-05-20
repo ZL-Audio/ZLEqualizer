@@ -14,17 +14,14 @@ namespace zlPanel {
         : analyzer(conflictAnalyzer), uiBase(base) {
         setInterceptsMouseClicks(false, false);
         juce::ignoreUnused(uiBase);
-        // setBufferedToImage(true);
     }
 
     ConflictPanel::~ConflictPanel() = default;
 
     void ConflictPanel::paint(juce::Graphics &g) {
         if (!analyzer.getON()) { return; }
-        // if (analyzer.getIsConflictReady()) {
         const auto bound = getLocalBounds().toFloat();
         analyzer.drawGradient(g, bound);
-        // }
     }
 
     void ConflictPanel::resized() {

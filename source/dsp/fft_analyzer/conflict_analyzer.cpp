@@ -13,6 +13,8 @@ namespace zlFFT {
     template<typename FloatType>
     ConflictAnalyzer<FloatType>::ConflictAnalyzer()
         : Thread("conflict_analyzer") {
+        std::fill(mainDB.begin(), mainDB.end(), -144.f);
+        std::fill(refDB.begin(), refDB.end(), -144.f);
         mainAnalyzer.setDecayRate(0.985f);
         refAnalyzer.setDecayRate(0.985f);
     }
@@ -58,11 +60,10 @@ namespace zlFFT {
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::process() {
         if (isON.load()) {
-            if (mainAnalyzer.getIsAudioReady() && refAnalyzer.getIsAudioReady()) {
+            mainAnalyzer.process(mainBuffer);
+            refAnalyzer.process(refBuffer);
+            if (!isConflictReady.load()) {
                 triggerAsyncUpdate();
-            } else {
-                mainAnalyzer.process(mainBuffer);
-                refAnalyzer.process(refBuffer);
             }
         }
     }
@@ -73,40 +74,40 @@ namespace zlFFT {
         while (!threadShouldExit()) {
             mainAnalyzer.run();
             refAnalyzer.run();
-            const auto &mainDB = mainAnalyzer.getInterplotDBs();
-            const auto &refDB = refAnalyzer.getInterplotDBs();
-            float mainM {0.f}, refM {0.f};
+            const auto &mainDBAtomic = mainAnalyzer.getInterplotDBs();
+            const auto &refDBAtomic = refAnalyzer.getInterplotDBs();
             for (size_t i = 0; i < mainDB.size(); ++i) {
-                mainM += mainDB[i].load();
-                refM += refDB[i].load();
+                mainDB[i] = mainDBAtomic[i].load();
+                refDB[i] = refDBAtomic[i].load();
             }
-            mainM /= static_cast<float>(mainDB.size());
-            refM /= static_cast<float>(refDB.size());
-            const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f); {
-                for (size_t i = 0; i < conflicts.size(); ++i) {
-                    const auto fftIdx = 4 * i;
-                    const auto dB1 = (mainDB[fftIdx] + mainDB[fftIdx + 1] + mainDB[fftIdx + 2] + mainDB[fftIdx + 3]) *
-                                     .25f;
-                    const auto dB2 = (refDB[fftIdx] + refDB[fftIdx + 1] + refDB[fftIdx + 2] + refDB[fftIdx + 3]) * .25f;
-                    const auto dBMin = juce::jmin(dB1, dB2, 0.001f);
-                    conflicts[i] = juce::jmax(conflicts[i] * .98f,
-                                              (dBMin - threshold) / (0.001f - threshold));
-                }
-                for (size_t i = 1; i < conflicts.size() - 1; ++i) {
-                    conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
-                }
-            } {
-                // calculate the conflict portion
-                const auto scale = static_cast<float>(conflictScale.load());
-                for (size_t i = 0; i < conflicts.size(); ++i) {
-                    conflictsP[i] = conflicts[i] * scale;
-                    if (conflictsP[i] >= 0.01) {
-                        conflictsP[i] = juce::jmin(.75f, conflictsP[i]);
-                    } else {
-                        conflictsP[i] = -1.f;
-                    }
-                }
+            const auto mainM = std::reduce(mainDB.begin(), mainDB.end()) / static_cast<float>(mainDB.size());
+            const auto refM = std::reduce(refDB.begin(), refDB.end()) / static_cast<float>(refDB.size());
+            const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f);
+            for (size_t i = 0; i < conflicts.size(); ++i) {
+                const auto fftIdx = 4 * i;
+                const auto dB1 = (mainDB[fftIdx] + mainDB[fftIdx + 1] + mainDB[fftIdx + 2] + mainDB[fftIdx + 3]) *
+                                 .25f;
+                const auto dB2 = (refDB[fftIdx] + refDB[fftIdx + 1] + refDB[fftIdx + 2] + refDB[fftIdx + 3]) * .25f;
+                const auto dBMin = juce::jmin(dB1, dB2, 0.001f);
+                conflicts[i] = juce::jmax(conflicts[i] * .98f,
+                                          (dBMin - threshold) / (0.001f - threshold));
+            }
+            for (size_t i = 1; i < conflicts.size() - 1; ++i) {
+                conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
+            }
 
+            // calculate the conflict portion
+            const auto scale = static_cast<float>(conflictScale.load());
+            for (size_t i = 0; i < conflicts.size(); ++i) {
+                conflictsP[i] = conflicts[i] * scale;
+                if (conflictsP[i] >= 0.01) {
+                    conflictsP[i] = juce::jmin(.75f, conflictsP[i]);
+                } else {
+                    conflictsP[i] = -1.f;
+                }
+            }
+            // calculate gradient
+            {
                 juce::ScopedLock lock(gradientLock);
                 gradient.point1 = juce::Point<float>(x1.load(), 0.f);
                 gradient.point2 = juce::Point<float>(x2.load(), 0.f);
@@ -136,8 +137,6 @@ namespace zlFFT {
         juce::ScopedLock lock(gradientLock);
         g.setGradientFill(gradient);
         g.fillRect(bound);
-        mainAnalyzer.setIsFFTReady(false);
-        refAnalyzer.setIsFFTReady(false);
         isConflictReady.store(false);
     }
 

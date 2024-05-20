@@ -19,7 +19,7 @@ namespace zlPanel {
           controllerRef(c),
           backgroundPanel(parameters, parametersNA, base),
           fftPanel(c.getAnalyzer(), base),
-          // conflictPanel(c.getConflictAnalyzer(), base),
+          conflictPanel(c.getConflictAnalyzer(), base),
           sumPanel(parameters, base, c),
           soloPanel(parameters, parametersNA, base, c),
           buttonPanel(parameters, parametersNA, base),
@@ -27,7 +27,7 @@ namespace zlPanel {
           vblank(this, [this]() { repaintCallBack(); }) {
         addAndMakeVisible(backgroundPanel);
         addAndMakeVisible(fftPanel);
-        // addAndMakeVisible(conflictPanel);
+        addAndMakeVisible(conflictPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i] = std::make_unique<
                 SinglePanel>(zlState::bandNUM - i - 1, parameters, parametersNA, base, c);
@@ -62,7 +62,7 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         bound.removeFromRight(uiBase.getFontSize() * 4);
         fftPanel.setBounds(bound.toNearestInt());
-        // conflictPanel.setBounds(bound.toNearestInt());
+        conflictPanel.setBounds(bound.toNearestInt());
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound.toNearestInt());
         }

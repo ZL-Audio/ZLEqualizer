@@ -52,9 +52,14 @@ namespace zlFFT {
 
         void drawGradient(juce::Graphics &g, juce::Rectangle<float> bound);
 
+        SingleFFTAnalyzer<FloatType> &getMainFFT() { return mainAnalyzer; }
+
+        SingleFFTAnalyzer<FloatType> &getRefFFT() { return refAnalyzer; }
+
     private:
         SingleFFTAnalyzer<FloatType> mainAnalyzer, refAnalyzer;
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
+        std::array<float, zlIIR::frequencies.size() / 2> mainDB{}, refDB{};
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
         std::atomic<bool> isON{false}, isConflictReady{false};
 

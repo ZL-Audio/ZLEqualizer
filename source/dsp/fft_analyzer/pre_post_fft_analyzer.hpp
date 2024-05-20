@@ -61,6 +61,7 @@ namespace zlFFT {
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
         juce::Path prePath, postPath, sidePath;
         std::atomic<float> xx, yy, width, height;
+        std::atomic<bool> isBoundReady{false};
         std::atomic<bool> isPathReady{false};
         std::atomic<bool> toReset{false};
 

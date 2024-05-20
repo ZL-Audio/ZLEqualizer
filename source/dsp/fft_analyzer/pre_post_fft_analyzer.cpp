@@ -135,20 +135,28 @@ namespace zlFFT {
         yy.store(bound.getY());
         width.store(bound.getWidth());
         height.store(bound.getHeight());
+        isBoundReady.store(false); // skip the next update cause bound is out-dated
     }
 
     template<typename FloatType>
-    void PrePostFFTAnalyzer<
-        FloatType>::updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_) {
+    void PrePostFFTAnalyzer<FloatType>::updatePaths(
+        juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_) {
         juce::ScopedLock lock(pathLock);
-        if (isPreON.load()) {
-            prePath_ = prePath;
-        }
-        if (isPostON.load()) {
-            postPath_ = postPath;
-        }
-        if (isSideON.load()) {
-            sidePath_ = sidePath;
+        if (isBoundReady.load()) {
+            if (isPreON.load()) {
+                prePath_ = prePath;
+            }
+            if (isPostON.load()) {
+                postPath_ = postPath;
+            }
+            if (isSideON.load()) {
+                sidePath_ = sidePath;
+            }
+        } else {
+            prePath_.clear();
+            postPath_.clear();
+            sidePath_.clear();
+            isBoundReady.store(true);
         }
         isPathReady.store(false);
     }
