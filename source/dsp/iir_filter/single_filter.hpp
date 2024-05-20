@@ -35,7 +35,7 @@ namespace zlIIR {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
-        void process(juce::AudioBuffer<FloatType> &buffer);
+        void process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed = false);
 
         /**
          * set the frequency of the filter
@@ -55,7 +55,6 @@ namespace zlIIR {
         void setGain(FloatType x, bool update = true);
 
         inline FloatType getGain() const { return static_cast<FloatType>(gain.load()); }
-
 
         /**
          * set the Q value of the filter

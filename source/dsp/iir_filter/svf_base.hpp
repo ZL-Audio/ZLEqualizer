@@ -21,16 +21,13 @@ namespace zlIIR {
         void prepare(const juce::dsp::ProcessSpec &spec) {
             s1.resize(spec.numChannels);
             s2.resize(spec.numChannels);
-            // currentMix.reset(spec.sampleRate, 10.0);
             reset();
         }
 
         void reset() {
             std::fill(s1.begin(), s1.end(), static_cast<SampleType>(0));
             std::fill(s2.begin(), s2.end(), static_cast<SampleType>(0));
-            // currentMix.setCurrentAndTargetValue(SampleType(0));
-            // currentMix.setTargetValue(SampleType(1));
-            // currentCount = 0;
+            byPassNextBlock.store(true);
         }
 
         void snapToZero() {
@@ -54,29 +51,21 @@ namespace zlIIR {
 
             if (context.isBypassed) {
                 outputBlock.copyFrom(inputBlock);
-                return;
-            }
-
-            // if (currentCount <= 5000) {
-            //     currentCount += 1;
-            //     for (size_t channel = 0; channel < numChannels; ++channel) {
-            //         auto *inputSamples = inputBlock.getChannelPointer(channel);
-            //         auto *outputSamples = outputBlock.getChannelPointer(channel);
-            //         for (size_t i = 0; i < numSamples; ++i) {
-            //             processSample(channel, inputSamples[i]);
-            //             outputSamples[i] = inputSamples[i];
-            //         }
-            //     }
-            // } else {
+                for (size_t channel = 0; channel < numChannels; ++channel) {
+                    auto *inputSamples = inputBlock.getChannelPointer(channel);
+                    for (size_t i = 0; i < numSamples; ++i) {
+                        processSample(channel, inputSamples[i]);
+                    }
+                }
+            } else {
                 for (size_t channel = 0; channel < numChannels; ++channel) {
                     auto *inputSamples = inputBlock.getChannelPointer(channel);
                     auto *outputSamples = outputBlock.getChannelPointer(channel);
-
                     for (size_t i = 0; i < numSamples; ++i) {
                         outputSamples[i] = processSample(channel, inputSamples[i]);
                     }
                 }
-            // }
+            }
 
 #if JUCE_DSP_ENABLE_SNAP_TO_ZERO
             snapToZero();
@@ -112,8 +101,7 @@ namespace zlIIR {
     private:
         SampleType g, R2, h, chp, cbp, clp;
         std::vector<SampleType> s1, s2;
-        // juce::SmoothedValue<SampleType> currentMix;
-        // size_t currentCount {0};
+        std::atomic<bool> byPassNextBlock{false};
     };
 }
 

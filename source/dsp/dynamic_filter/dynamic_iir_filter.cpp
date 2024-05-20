@@ -41,25 +41,21 @@ namespace zlDynamicFilter {
         }
         tFilter.updateParasForDBOnly();
         sFilter.updateParas();
-        if (!bypass.load()) {
-            if (currentBypass != bypass.load()) {
-                currentBypass = bypass.load();
-                sFilter.setToRest();
-                mFilter.setToRest();
+        const auto currentBypass = bypass.load();
+        if (dynamicON.load()) {
+            sBufferCopy.makeCopyOf(sBuffer, true);
+            sFilter.process(sBufferCopy);
+            auto reducedLoudness = juce::Decibels::gainToDecibels(compressor.process(sBufferCopy));
+            auto maximumReduction = compressor.getComputer().getReductionAtKnee();
+            auto portion = std::min(reducedLoudness / maximumReduction, FloatType(1));
+            if (dynamicBypass.load()) {
+                portion = 0;
             }
-            if (dynamicON.load()) {
-                sBufferCopy.makeCopyOf(sBuffer, true);
-                sFilter.process(sBufferCopy);
-                auto reducedLoudness = juce::Decibels::gainToDecibels(compressor.process(sBufferCopy));
-                auto maximumReduction = compressor.getComputer().getReductionAtKnee();
-                auto portion = std::min(reducedLoudness / maximumReduction, FloatType(1));
-                if (dynamicBypass.load()) {
-                    portion = 0;
-                }
-                mFilter.setGain((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(), false);
-                mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
-            }
-            mFilter.process(mBuffer);
+            mFilter.setGain((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(), false);
+            mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
+        }
+        mFilter.process(mBuffer, currentBypass);
+        if (!currentBypass) {
             compensation.process(mBuffer);
         }
     }

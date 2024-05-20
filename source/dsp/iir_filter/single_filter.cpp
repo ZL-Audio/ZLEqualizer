@@ -36,7 +36,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+    void Filter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed) {
         const auto nextUseSVF = useSVF.load();
         if (currentUseSVF != nextUseSVF) {
             currentUseSVF = nextUseSVF;
@@ -47,6 +47,7 @@ namespace zlIIR {
         updateParas();
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
+        context.isBypassed = isBypassed;
         if (!currentUseSVF) {
             for (size_t i = 0; i < filterNum.load(); ++i) {
                 filters[i].process(context);
