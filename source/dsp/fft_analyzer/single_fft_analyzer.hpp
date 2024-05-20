@@ -104,10 +104,9 @@ namespace zlFFT {
 
         std::vector<float> currentBuffer;
         size_t currentPos;
+
         std::atomic<int> doubleBufferIdx{0};
-
         enum { BIT_IDX = (1 << 0), BIT_NEWDATA = (1 << 1), BIT_BUSY = (1 << 2) };
-
         std::array<juce::AudioBuffer<float>, 2> audioBuffer;
 
         juce::AudioBuffer<float> fftBuffer;
@@ -128,6 +127,7 @@ namespace zlFFT {
         static constexpr auto minFreq = 20.f, maxFreq = 22000.f, minDB = -72.f;
         std::atomic<float> sampleRate;
         std::atomic<bool> toClear{false}, toClearFFT{false};
+        std::atomic<bool> isPrepared{false};
 
         inline float indexToX(const size_t index, const juce::Rectangle<float> bounds) const {
             const auto portion = (static_cast<float>(index) + .5f) / static_cast<float>(fft->getSize());

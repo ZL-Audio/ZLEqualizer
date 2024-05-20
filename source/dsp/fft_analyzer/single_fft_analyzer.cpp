@@ -34,6 +34,7 @@ namespace zlFFT {
         }
         setOrder(extraOrder + zlState::ffTOrder::orders[static_cast<size_t>(zlState::ffTOrder::defaultI)]);
         reset();
+        isPrepared.store(true);
     }
 
     template<typename FloatType>
@@ -106,6 +107,9 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::run() {
+        if (!isPrepared.load()) {
+            return;
+        }
         juce::ScopedNoDenormals noDenormals;
         // read from the double buffer
         auto current = doubleBufferIdx.load();
