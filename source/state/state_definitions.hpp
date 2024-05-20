@@ -285,11 +285,14 @@ namespace zlState {
         auto static constexpr ID = "refresh_rate";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "Lowest", "30 Hz", "60 Hz", "90 Hz", "120 Hz"
+            "25 Hz", "30 Hz", "60 Hz", "90 Hz", "120 Hz"
         };
         int static constexpr defaultI = 2;
         inline static std::array<int, 5> ms{
-            60, 33, 16, 11, 8
+            39, 33, 16, 11, 8
+        };
+        inline static std::array<float, 5> rates {
+            25, 30, 60, 90, 120
         };
     };
 

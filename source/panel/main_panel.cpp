@@ -30,15 +30,20 @@ namespace zlPanel {
         &processorRef.getController().getAnalyzer().getSideFFT()}) {
             fft->setExtraTilt(uiBase.getFFTExtraTilt());
             fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
+            fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
 
         state.addParameterListener(zlState::uiStyle::ID, this);
         state.addParameterListener(zlState::fftExtraTilt::ID, this);
         state.addParameterListener(zlState::fftExtraSpeed::ID, this);
+        state.addParameterListener(zlState::refreshRate::ID, this);
     }
 
     MainPanel::~MainPanel() {
         state.removeParameterListener(zlState::uiStyle::ID, this);
+        state.removeParameterListener(zlState::fftExtraTilt::ID, this);
+        state.removeParameterListener(zlState::fftExtraSpeed::ID, this);
+        state.removeParameterListener(zlState::refreshRate::ID, this);
     }
 
     void MainPanel::paint(juce::Graphics &g) {
@@ -74,6 +79,7 @@ namespace zlPanel {
         &processorRef.getController().getAnalyzer().getSideFFT()}) {
             fft->setExtraTilt(uiBase.getFFTExtraTilt());
             fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
+            fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
     }
 }

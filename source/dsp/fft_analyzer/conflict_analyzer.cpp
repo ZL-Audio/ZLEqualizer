@@ -34,8 +34,8 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::setON(const bool x) {
-        mainAnalyzer.clear();
-        refAnalyzer.clear();
+        mainAnalyzer.reset();
+        refAnalyzer.reset();
         isON.store(x);
         if (x && !isThreadRunning()) {
             startThread(juce::Thread::Priority::low);
@@ -75,8 +75,13 @@ namespace zlFFT {
             refAnalyzer.run();
             const auto &mainDB = mainAnalyzer.getInterplotDBs();
             const auto &refDB = refAnalyzer.getInterplotDBs();
-            const auto mainM = std::reduce(mainDB.begin(), mainDB.end()) / static_cast<float>(mainDB.size());
-            const auto refM = std::reduce(refDB.begin(), refDB.end()) / static_cast<float>(refDB.size());
+            float mainM {0.f}, refM {0.f};
+            for (size_t i = 0; i < mainDB.size(); ++i) {
+                mainM += mainDB[i].load();
+                refM += refDB[i].load();
+            }
+            mainM /= static_cast<float>(mainDB.size());
+            refM /= static_cast<float>(refDB.size());
             const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f); {
                 for (size_t i = 0; i < conflicts.size(); ++i) {
                     const auto fftIdx = 4 * i;

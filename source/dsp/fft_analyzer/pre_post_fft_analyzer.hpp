@@ -48,8 +48,6 @@ namespace zlFFT {
 
         inline bool getSideON() const { return isSideON.load(); }
 
-        bool isFFTReady();
-
         void setBound(juce::Rectangle<float> bound);
 
         bool getPathReady() const {return isPathReady.load();}
@@ -64,12 +62,14 @@ namespace zlFFT {
         juce::Path prePath, postPath, sidePath;
         std::atomic<float> xx, yy, width, height;
         std::atomic<bool> isPathReady{false};
+        std::atomic<bool> toReset{false};
 
         juce::CriticalSection pathLock;
 
         void run() override;
 
         void handleAsyncUpdate() override;
+        juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
     };
 } // zlFFT
 
