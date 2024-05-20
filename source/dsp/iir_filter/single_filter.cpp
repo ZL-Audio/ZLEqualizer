@@ -19,6 +19,7 @@ namespace zlIIR {
             for (size_t i = 0; i < filterNum.load(); ++i) {
                 svfFilters[i].reset();
             }
+            bypassNextBlock.store(true);
         }
     }
 
@@ -47,12 +48,10 @@ namespace zlIIR {
         updateParas();
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
-        context.isBypassed = isBypassed;
+        context.isBypassed = isBypassed || bypassNextBlock.exchange(false);
         if (!currentUseSVF) {
-            if (!isBypassed) {
-                for (size_t i = 0; i < filterNum.load(); ++i) {
-                    filters[i].process(context);
-                }
+            for (size_t i = 0; i < filterNum.load(); ++i) {
+                filters[i].process(context);
             }
         } else {
             for (size_t i = 0; i < filterNum.load(); ++i) {

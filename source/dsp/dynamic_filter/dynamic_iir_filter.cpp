@@ -36,6 +36,7 @@ namespace zlDynamicFilter {
 
     template<typename FloatType>
     void IIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
+        if (!active.load()) { return; }
         if (bFilter.updateParasForDBOnly()) {
             compensation.update();
         }

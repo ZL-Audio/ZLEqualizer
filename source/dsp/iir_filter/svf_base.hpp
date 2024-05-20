@@ -27,7 +27,6 @@ namespace zlIIR {
         void reset() {
             std::fill(s1.begin(), s1.end(), static_cast<SampleType>(0));
             std::fill(s2.begin(), s2.end(), static_cast<SampleType>(0));
-            byPassNextBlock.store(true);
         }
 
         void snapToZero() {
@@ -49,7 +48,7 @@ namespace zlIIR {
             jassert(inputBlock.getNumChannels() == numChannels);
             jassert(inputBlock.getNumSamples() == numSamples);
 
-            if (context.isBypassed || byPassNextBlock.load()) {
+            if (context.isBypassed) {
                 if (context.usesSeparateInputAndOutputBlocks()) {
                     outputBlock.copyFrom(inputBlock);
                 }
@@ -59,7 +58,6 @@ namespace zlIIR {
                         processSample(channel, inputSamples[i]);
                     }
                 }
-                byPassNextBlock.store(false);
             } else {
                 for (size_t channel = 0; channel < numChannels; ++channel) {
                     auto *inputSamples = inputBlock.getChannelPointer(channel);
@@ -104,7 +102,6 @@ namespace zlIIR {
     private:
         SampleType g, R2, h, chp, cbp, clp;
         std::vector<SampleType> s1, s2;
-        std::atomic<bool> byPassNextBlock{false};
     };
 }
 

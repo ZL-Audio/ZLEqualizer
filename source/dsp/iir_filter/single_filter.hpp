@@ -200,6 +200,7 @@ namespace zlIIR {
         std::atomic<bool> useSVF{false};
         bool currentUseSVF{false};
         std::array<SVFBase<FloatType>, 16> svfFilters{};
+        std::atomic<bool> bypassNextBlock{false};
     };
 }
 
