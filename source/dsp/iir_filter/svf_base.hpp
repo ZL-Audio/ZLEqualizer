@@ -54,8 +54,9 @@ namespace zlIIR {
                 }
                 for (size_t channel = 0; channel < numChannels; ++channel) {
                     auto *inputSamples = inputBlock.getChannelPointer(channel);
+                    auto *outputSamples = outputBlock.getChannelPointer(channel);
                     for (size_t i = 0; i < numSamples; ++i) {
-                        processSample(channel, inputSamples[i]);
+                        outputSamples[i] = processSampleBypass(channel, inputSamples[i]);
                     }
                 }
             } else {
@@ -83,6 +84,18 @@ namespace zlIIR {
             s2[channel] = yBP * g + yLP;
 
             return chp * yHP + cbp * yBP + clp * yLP;
+        }
+
+        SampleType processSampleBypass(const size_t channel, SampleType inputValue) {
+            const auto yHP = h * (inputValue - s1[channel] * (g + R2) - s2[channel]);
+
+            const auto yBP = yHP * g + s1[channel];
+            s1[channel] = yHP * g + yBP;
+
+            const auto yLP = yBP * g + s2[channel];
+            s2[channel] = yBP * g + yLP;
+
+            return yHP - R2 * yBP + yLP;
         }
 
         void updateFromBiquad(const coeff33 &coeffs) {
