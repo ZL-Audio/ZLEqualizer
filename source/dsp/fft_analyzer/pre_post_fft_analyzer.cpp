@@ -17,8 +17,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        preFFT.prepare(spec);
-        postFFT.prepare(spec);
+        syncFFT.prepare(spec);
         sideFFT.prepare(spec);
         preBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
         postBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
@@ -27,16 +26,16 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        if (isPreON.load()) {
+        // if (isPreON.load()) {
             preBuffer.makeCopyOf(buffer, true);
-        }
+        // }
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        if (isPostON.load()) {
+        // if (isPostON.load()) {
             postBuffer.makeCopyOf(buffer, true);
-        }
+        // }
     }
 
     template<typename FloatType>
@@ -49,17 +48,11 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::process() {
         if (toReset.exchange(false)) {
-            preFFT.reset();
-            postFFT.reset();
+            syncFFT.reset();
             sideFFT.reset();
         }
         if (isON.load()) {
-            if (isPreON.load()) {
-                preFFT.process(preBuffer);
-            }
-            if (isPostON.load()) {
-                postFFT.process(postBuffer);
-            }
+            syncFFT.process(preBuffer, postBuffer);
             if (isSideON.load()) {
                 sideFFT.process(sideBuffer);
             }
@@ -71,7 +64,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setON(const bool x) {
-        isON.store(x);
+        isON.store(x, std::memory_order_relaxed);
         if (x && !isThreadRunning()) {
             startThread(juce::Thread::Priority::low);
         }
@@ -83,12 +76,14 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPreON(const bool x) {
         isPreON.store(x);
+        syncFFT.setON({x, isPostON.load()});
         toReset.store(true);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPostON(const bool x) {
         isPostON.store(x);
+        syncFFT.setON({isPreON.load(), x});
         toReset.store(true);
     }
 
@@ -103,15 +98,10 @@ namespace zlFFT {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
             const juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()};
-            if (isPreON.load()) {
-                preFFT.run();
+            {
+                syncFFT.run();
                 juce::ScopedLock lock(pathLock);
-                preFFT.createPath(prePath, bound);
-            }
-            if (isPostON.load()) {
-                postFFT.run();
-                juce::ScopedLock lock(pathLock);
-                postFFT.createPath(postPath, bound);
+                syncFFT.createPath(prePath, postPath, bound);
             }
             if (isSideON.load()) {
                 sideFFT.run();

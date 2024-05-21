@@ -49,7 +49,7 @@ namespace zlFFT {
             juce::dsp::WindowingFunction<float> >(static_cast<size_t>(fft->getSize()),
                                                   juce::dsp::WindowingFunction<float>::hann,
                                                   true);
-        fftSize = static_cast<size_t>(fft->getSize());
+        fftSize.store(static_cast<size_t>(fft->getSize()));
 
         currentPos = 0;
         currentBuffer.resize(fftSize.load());
@@ -113,7 +113,7 @@ namespace zlFFT {
         juce::ScopedNoDenormals noDenormals;
         // read from the double buffer
         auto current = doubleBufferIdx.load();
-        if ((current & BIT_NEWDATA) != 0 ) {
+        if ((current & BIT_NEWDATA) != 0) {
             int newValue;
             do {
                 current &= ~BIT_BUSY;
@@ -131,11 +131,12 @@ namespace zlFFT {
         fft->performFrequencyOnlyForwardTransform(fftBuffer.getWritePointer(0));
         const auto mBuffer = fftBuffer.getReadPointer(0);
 
-        // calculate dB value fo each bin and apply decay
+        // calculate dB value of each bin and apply decay
         const auto decay = actualDecayRate.load();
         for (size_t i = 0; i < fftSize.load() / 2; ++i) {
             const auto currentDB = juce::Decibels::gainToDecibels(
                 2 * mBuffer[i] / static_cast<float>(fftSize.load()), -240.f);
+            // logger.logMessage(juce::String(currentDB));
             smoothedDBs[i + 1] = currentDB < smoothedDBs[i + 1]
                                      ? smoothedDBs[i + 1] * decay + currentDB * (1 - decay)
                                      : currentDB;

@@ -13,7 +13,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
-#include "single_fft_analyzer.hpp"
+#include "sync_fft_analyzer.hpp"
 
 namespace zlFFT {
     /**
@@ -52,12 +52,10 @@ namespace zlFFT {
 
         void drawGradient(juce::Graphics &g, juce::Rectangle<float> bound);
 
-        SingleFFTAnalyzer<FloatType> &getMainFFT() { return mainAnalyzer; }
-
-        SingleFFTAnalyzer<FloatType> &getRefFFT() { return refAnalyzer; }
+        SyncFFTAnalyzer<FloatType> &getSyncFFT() { return syncAnalyzer; }
 
     private:
-        SingleFFTAnalyzer<FloatType> mainAnalyzer, refAnalyzer;
+        SyncFFTAnalyzer<FloatType> syncAnalyzer;
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
         std::array<float, zlIIR::frequencies.size() / 2> mainDB{}, refDB{};
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};

@@ -11,6 +11,7 @@
 #define ZLEqualizer_PRE_POST_FFT_ANALYZER_HPP
 
 #include "single_fft_analyzer.hpp"
+#include "sync_fft_analyzer.hpp"
 
 namespace zlFFT {
     template<typename FloatType>
@@ -28,9 +29,7 @@ namespace zlFFT {
 
         void process();
 
-        SingleFFTAnalyzer<FloatType> &getPreFFT() { return preFFT; }
-
-        SingleFFTAnalyzer<FloatType> &getPostFFT() { return postFFT; }
+        SyncFFTAnalyzer<FloatType> &getSyncFFT() { return syncFFT; }
 
         SingleFFTAnalyzer<FloatType> &getSideFFT() { return sideFFT; }
 
@@ -50,12 +49,13 @@ namespace zlFFT {
 
         void setBound(juce::Rectangle<float> bound);
 
-        bool getPathReady() const {return isPathReady.load();}
+        bool getPathReady() const { return isPathReady.load(); }
 
         void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_);
 
     private:
-        SingleFFTAnalyzer<FloatType> preFFT{}, postFFT{}, sideFFT{};
+        SyncFFTAnalyzer<FloatType> syncFFT{};
+        SingleFFTAnalyzer<FloatType> sideFFT{};
         juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
         std::atomic<bool> isON{false};
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
@@ -70,6 +70,7 @@ namespace zlFFT {
         void run() override;
 
         void handleAsyncUpdate() override;
+
         juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
     };
 } // zlFFT

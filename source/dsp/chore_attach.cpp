@@ -92,13 +92,13 @@ namespace zlDSP {
                     if (isFFTON[0].load() == 0) {
                         controllerRef.getAnalyzer().setPreON(true);
                     }
-                    controllerRef.getAnalyzer().getPreFFT().setDecayRate(decaySpeed.load());
+                    controllerRef.getAnalyzer().getSyncFFT().setDecayRate(0, decaySpeed.load());
                     break;
                 case 2:
                     if (isFFTON[0].load() == 0) {
                         controllerRef.getAnalyzer().setPreON(true);
                     }
-                    controllerRef.getAnalyzer().getPreFFT().setDecayRate(1.f);
+                    controllerRef.getAnalyzer().getSyncFFT().setDecayRate(0, 1.f);
                     break;
                 default: {
                 }
@@ -113,13 +113,13 @@ namespace zlDSP {
                     if (isFFTON[1].load() == 0) {
                         controllerRef.getAnalyzer().setPostON(true);
                     }
-                    controllerRef.getAnalyzer().getPostFFT().setDecayRate(decaySpeed.load());
+                    controllerRef.getAnalyzer().getSyncFFT().setDecayRate(1, decaySpeed.load());
                     break;
                 case 2:
                     if (isFFTON[1].load() == 0) {
                         controllerRef.getAnalyzer().setPostON(true);
                     }
-                    controllerRef.getAnalyzer().getPostFFT().setDecayRate(1.f);
+                    controllerRef.getAnalyzer().getSyncFFT().setDecayRate(1, 1.f);
                     break;
                 default: {
                 }
@@ -150,13 +150,12 @@ namespace zlDSP {
             const auto idx = static_cast<size_t>(newValue);
             const auto speed = zlState::ffTSpeed::speeds[idx];
             decaySpeed.store(speed);
-            if (isFFTON[0].load() != 2) controllerRef.getAnalyzer().getPreFFT().setDecayRate(speed);
-            if (isFFTON[1].load() != 2) controllerRef.getAnalyzer().getPostFFT().setDecayRate(speed);
+            if (isFFTON[0].load() != 2) controllerRef.getAnalyzer().getSyncFFT().setDecayRate(0, speed);
+            if (isFFTON[1].load() != 2) controllerRef.getAnalyzer().getSyncFFT().setDecayRate(1, speed);
             if (isFFTON[2].load() != 2) controllerRef.getAnalyzer().getSideFFT().setDecayRate(speed);
         } else if (parameterID == zlState::ffTTilt::ID) {
             const auto idx = static_cast<size_t>(newValue);
-            controllerRef.getAnalyzer().getPreFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
-            controllerRef.getAnalyzer().getPostFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
+            controllerRef.getAnalyzer().getSyncFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
             controllerRef.getAnalyzer().getSideFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
         } else if (parameterID == zlState::conflictON::ID) {
             const auto f = static_cast<bool>(newValue);
@@ -173,6 +172,9 @@ namespace zlDSP {
     void ChoreAttach<FloatType>::initDefaultValues() {
         for (size_t j = 0; j < defaultVs.size(); ++j) {
             parameterChanged(IDs[j], defaultVs[j]);
+        }
+        for (size_t j = 0; j < defaultNAVs.size(); ++j) {
+            parameterChanged(NAIDs[j], defaultNAVs[j]);
         }
     }
 

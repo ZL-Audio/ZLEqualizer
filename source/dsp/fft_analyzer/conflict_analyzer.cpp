@@ -15,8 +15,8 @@ namespace zlFFT {
         : Thread("conflict_analyzer") {
         std::fill(mainDB.begin(), mainDB.end(), -144.f);
         std::fill(refDB.begin(), refDB.end(), -144.f);
-        mainAnalyzer.setDecayRate(0.985f);
-        refAnalyzer.setDecayRate(0.985f);
+        syncAnalyzer.setDecayRate(0, 0.985f);
+        syncAnalyzer.setDecayRate(1, 0.985f);
     }
 
     template<typename FloatType>
@@ -28,16 +28,14 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        mainAnalyzer.prepare(spec);
-        refAnalyzer.prepare(spec);
+        syncAnalyzer.prepare(spec);
         mainBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
         refBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
     }
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::setON(const bool x) {
-        mainAnalyzer.reset();
-        refAnalyzer.reset();
+        syncAnalyzer.reset();
         isON.store(x);
         if (x && !isThreadRunning()) {
             startThread(juce::Thread::Priority::low);
@@ -60,8 +58,7 @@ namespace zlFFT {
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::process() {
         if (isON.load()) {
-            mainAnalyzer.process(mainBuffer);
-            refAnalyzer.process(refBuffer);
+            syncAnalyzer.process(mainBuffer, refBuffer);
             if (!isConflictReady.load()) {
                 triggerAsyncUpdate();
             }
@@ -72,10 +69,9 @@ namespace zlFFT {
     void ConflictAnalyzer<FloatType>::run() {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
-            mainAnalyzer.run();
-            refAnalyzer.run();
-            const auto &mainDBAtomic = mainAnalyzer.getInterplotDBs();
-            const auto &refDBAtomic = refAnalyzer.getInterplotDBs();
+            syncAnalyzer.run();
+            const auto &mainDBAtomic = syncAnalyzer.getInterplotDBs(0);
+            const auto &refDBAtomic = syncAnalyzer.getInterplotDBs(1);
             for (size_t i = 0; i < mainDB.size(); ++i) {
                 mainDB[i] = mainDBAtomic[i].load();
                 refDB[i] = refDBAtomic[i].load();

@@ -62,6 +62,17 @@ namespace zlDSP {
             zlState::conflictScale::ID
         };
 
+        constexpr static std::array defaultNAVs {
+            static_cast<float>(zlState::fftPreON::defaultI),
+            static_cast<float>(zlState::fftPostON::defaultI),
+            static_cast<float>(zlState::fftSideON::defaultI),
+            static_cast<float>(zlState::ffTSpeed::defaultI),
+            static_cast<float>(zlState::ffTTilt::defaultI),
+            static_cast<float>(zlState::conflictON::defaultI),
+            static_cast<float>(zlState::conflictStrength::defaultV),
+            static_cast<float>(zlState::conflictScale::defaultV)
+        };
+
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void initDefaultValues();

@@ -31,7 +31,6 @@ namespace zlPanel {
         zlFFT::ConflictAnalyzer<double> &analyzer;
         zlInterface::UIBase &uiBase;
         juce::Path path;
-        // void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
 
