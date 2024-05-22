@@ -7,16 +7,16 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef SVF_BASE_HPP
-#define SVF_BASE_HPP
+#ifndef IIR_BASE_HPP
+#define IIR_BASE_HPP
 
 #include "coeff/design_filter.hpp"
 
 namespace zlIIR {
     template<typename SampleType>
-    class SVFBase {
+    class IIRBase {
     public:
-        SVFBase() = default;
+        IIRBase() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
             s1.resize(spec.numChannels);
@@ -49,11 +49,13 @@ namespace zlIIR {
             jassert(inputBlock.getNumSamples() == numSamples);
 
             if (context.isBypassed) {
+                if (context.usesSeparateInputAndOutputBlocks()) {
+                    outputBlock.copyFrom(inputBlock);
+                }
                 for (size_t channel = 0; channel < numChannels; ++channel) {
                     auto *inputSamples = inputBlock.getChannelPointer(channel);
-                    auto *outputSamples = outputBlock.getChannelPointer(channel);
                     for (size_t i = 0; i < numSamples; ++i) {
-                        outputSamples[i] = processSampleBypass(channel, inputSamples[i]);
+                        processSample(channel, inputSamples[i]);
                     }
                 }
             } else {
@@ -72,47 +74,28 @@ namespace zlIIR {
         }
 
         SampleType processSample(const size_t channel, SampleType inputValue) {
-            const auto yHP = h * (inputValue - s1[channel] * (g + R2) - s2[channel]);
-
-            const auto yBP = yHP * g + s1[channel];
-            s1[channel] = yHP * g + yBP;
-
-            const auto yLP = yBP * g + s2[channel];
-            s2[channel] = yBP * g + yLP;
-
-            return chp * yHP + cbp * yBP + clp * yLP;
-        }
-
-        SampleType processSampleBypass(const size_t channel, SampleType inputValue) {
-            const auto yHP = h * (inputValue - s1[channel] * (g + R2) - s2[channel]);
-
-            const auto yBP = yHP * g + s1[channel];
-            s1[channel] = yHP * g + yBP;
-
-            const auto yLP = yBP * g + s2[channel];
-            s2[channel] = yBP * g + yLP;
-
-            return yHP - R2 * yBP + yLP;
+            const auto outputValue = inputValue * coeff[0] + s1[channel];
+            s1[channel] = (inputValue * coeff[1]) - (outputValue * coeff[3]) + s2[channel];
+            s2[channel] = (inputValue * coeff[2]) - (outputValue * coeff[4]);
+            return outputValue;
         }
 
         void updateFromBiquad(const coeff33 &coeffs) {
             const auto a = std::get<0>(coeffs);
             const auto b = std::get<1>(coeffs);
-            const auto temp1 = std::sqrt(std::abs((-a[0] - a[1] - a[2])));
-            const auto temp2 = std::sqrt(std::abs((-a[0] + a[1] - a[2])));
-            g = static_cast<SampleType>(temp1 / temp2);
-            R2 = static_cast<SampleType>(2 * (a[0] - a[2]) / (temp1 * temp2));
-            h = static_cast<SampleType>(1) / (g * (R2 + g) + static_cast<SampleType>(1));
-
-            chp = static_cast<SampleType>((b[0] - b[1] + b[2]) / (a[0] - a[1] + a[2]));
-            cbp = static_cast<SampleType>(2 * (b[2] - b[0]) / (temp1 * temp2));
-            clp = static_cast<SampleType>((b[0] + b[1] + b[2]) / (a[0] + a[1] + a[2]));
+            const auto a0Inv = 1.0 / a[0];
+            coeff[0] = static_cast<SampleType>(b[0] * a0Inv);
+            coeff[1] = static_cast<SampleType>(b[1] * a0Inv);
+            coeff[2] = static_cast<SampleType>(b[2] * a0Inv);
+            coeff[3] = static_cast<SampleType>(a[1] * a0Inv);
+            coeff[4] = static_cast<SampleType>(a[2] * a0Inv);
         }
 
     private:
+        std::array<SampleType, 5> coeff{0, 0, 0, 0, 0};
         SampleType g, R2, h, chp, cbp, clp;
         std::vector<SampleType> s1, s2;
     };
 }
 
-#endif //SVF_BASE_HPP
+#endif //IIR_BASE_HPP

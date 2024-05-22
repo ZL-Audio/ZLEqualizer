@@ -10,6 +10,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 - add dynamic link
 - add dynamic high-quality
 - fix collision detection
+- improve IIR filter performance
 - improve spectrum display
 
 ## 0.2.0

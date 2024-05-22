@@ -130,14 +130,7 @@ namespace zlIIR {
             magOutdated.store(true);
             if (!currentUseSVF) {
                 for (size_t i = 0; i < filterNum.load(); i++) {
-                    *filters[i].state = {
-                        static_cast<FloatType>(std::get<1>(coeffs[i])[0]),
-                        static_cast<FloatType>(std::get<1>(coeffs[i])[1]),
-                        static_cast<FloatType>(std::get<1>(coeffs[i])[2]),
-                        static_cast<FloatType>(std::get<0>(coeffs[i])[0]),
-                        static_cast<FloatType>(std::get<0>(coeffs[i])[1]),
-                        static_cast<FloatType>(std::get<0>(coeffs[i])[2])
-                    };
+                    filters[i].updateFromBiquad(coeffs[i]);
                 }
             } else {
                 for (size_t i = 0; i < filterNum.load(); i++) {

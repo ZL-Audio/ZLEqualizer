@@ -13,6 +13,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include "coeff/design_filter.hpp"
 #include "static_frequency_array.hpp"
+#include "iir_base.hpp"
 #include "svf_base.hpp"
 #include "../farbot/RealtimeObject.hpp"
 
@@ -151,9 +152,7 @@ namespace zlIIR {
          * get the array of 2nd order filters
          * @return
          */
-        std::array<juce::dsp::ProcessorDuplicator<
-            juce::dsp::IIR::Filter<FloatType>,
-            juce::dsp::IIR::Coefficients<FloatType> >, 16> &getFilters() { return filters; }
+        std::array<IIRBase<FloatType>, 16> &getFilters() { return filters; }
 
         /**
          * get whether the response curve is outdated
@@ -177,9 +176,7 @@ namespace zlIIR {
         void setSVFON(const bool f) { useSVF.store(f); }
 
     private:
-        std::array<juce::dsp::ProcessorDuplicator<
-            juce::dsp::IIR::Filter<FloatType>,
-            juce::dsp::IIR::Coefficients<FloatType> >, 16> filters{};
+        std::array<IIRBase<FloatType>, 16> filters{};
 
         std::atomic<size_t> filterNum{1};
         std::atomic<double> freq = 1000, gain = 0, q = 0.707;
