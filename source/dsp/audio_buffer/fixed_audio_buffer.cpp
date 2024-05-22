@@ -31,6 +31,11 @@ namespace zlAudioBuffer {
         // init internal spec
         subSpec = mainSpec;
         subSpec.maximumBlockSize = static_cast<juce::uint32>(subBufferSize);
+        if (subSpec.maximumBlockSize > 1) {
+            latencyInSamples.store(subSpec.maximumBlockSize);
+        } else {
+            latencyInSamples.store(0);
+        }
         // resize subBuffer, inputBuffer and outputBuffer
         subBuffer.setSize(static_cast<int>(subSpec.numChannels),
                           static_cast<int>(subSpec.maximumBlockSize));

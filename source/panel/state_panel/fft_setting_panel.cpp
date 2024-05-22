@@ -72,7 +72,7 @@ namespace zlPanel {
 
         zlInterface::ClickCombobox fftPreON, fftPostON, fftSideON;
         zlInterface::CompactCombobox ffTSpeed, fftTilt;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
     };
 
     FFTSettingPanel::FFTSettingPanel(juce::AudioProcessorValueTreeState &parameters,

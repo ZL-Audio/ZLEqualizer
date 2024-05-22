@@ -32,6 +32,7 @@ namespace zlDynamicFilter {
         compressor.getComputer().setRatio(100);
         sBufferCopy.setSize(static_cast<int>(spec.numChannels),
                             static_cast<int>(spec.maximumBlockSize));
+        // isPerSample.store(false);
     }
 
     template<typename FloatType>
@@ -52,10 +53,31 @@ namespace zlDynamicFilter {
             if (dynamicBypass.load()) {
                 portion = 0;
             }
-            mFilter.setGain((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(), false);
-            mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
+            if (!isPerSample.load()) {
+                mFilter.setGain((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(), false);
+                mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
+                // auto audioWriters = mBuffer.getArrayOfWritePointers();
+
+                mFilter.process(mBuffer, currentBypass);
+            } else {
+                const auto oldGain = mFilter.getGain();
+                const auto oldQ = mFilter.getQ();
+                const auto newGain = (1 - portion) * bFilter.getGain() + portion * tFilter.getGain();
+                const auto newQ = (1 - portion) * bFilter.getQ() + portion * tFilter.getQ();
+                auto audioWriters = mBuffer.getArrayOfWritePointers();
+                for (int i = 0; i < mBuffer.getNumSamples(); ++i) {
+                    const auto pp = static_cast<FloatType>(i) / static_cast<FloatType>(mBuffer.getNumSamples());
+                    const auto currentGain = newGain * pp + oldGain * (1 - pp);
+                    const auto currentQ = newQ * pp + oldQ * (1 - pp);
+                    mFilter.setGain(currentGain, false);
+                    mFilter.setQ(currentQ, true);
+                    sampleBuffer.setDataToReferTo(audioWriters, static_cast<int>(mBuffer.getNumChannels()), i, 1);
+                    mFilter.process(sampleBuffer, currentBypass);
+                }
+            }
+        } else {
+            mFilter.process(mBuffer, currentBypass);
         }
-        mFilter.process(mBuffer, currentBypass);
         if (!currentBypass) {
             compensation.process(mBuffer);
         }

@@ -26,21 +26,28 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         delay.setMaximumDelayInSamples(static_cast<int>(
-            zlDSP::dynLookahead::range.end / 1000.f * static_cast<float>(spec.sampleRate)) + 1);
+                                           zlDSP::dynLookahead::range.end / 1000.f * static_cast<float>(spec.
+                                               sampleRate)) + 1);
         delay.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
 
         subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
-        subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * spec.sampleRate));
+        sampleRate.store(spec.sampleRate);
+        updateSubBuffer();
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateSubBuffer() {
+        subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * sampleRate.load()));
 
         triggerAsyncUpdate();
 
         const auto numRMS = static_cast<size_t>(
-            zlDSP::dynRMS::range.end / 1000.f * static_cast<float>(spec.sampleRate));
+            zlDSP::dynRMS::range.end / 1000.f * static_cast<float>(sampleRate.load()));
         for (auto &f: filters) {
             f.getCompressor().getTracker().setMaximumMomentarySize(numRMS);
         }
 
-        juce::dsp::ProcessSpec subSpec{spec.sampleRate, subBuffer.getSubSpec().maximumBlockSize, 2};
+        juce::dsp::ProcessSpec subSpec{sampleRate.load(), subBuffer.getSubSpec().maximumBlockSize, 2};
         for (auto &f: filters) {
             f.prepare(subSpec);
         }
@@ -320,7 +327,8 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::handleAsyncUpdate() {
-        const auto latency = static_cast<int>(subBuffer.getLatencySamples()) + static_cast<int>(delay.getDelaySamples());
+        const auto latency = static_cast<int>(subBuffer.getLatencySamples()) + static_cast<int>(delay.
+                                 getDelaySamples());
         processorRef.setLatencySamples(latency);
     }
 

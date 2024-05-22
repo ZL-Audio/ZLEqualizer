@@ -58,7 +58,6 @@ namespace zlDSP {
 
         inline void clearSolo() {
             useSolo.store(false);
-            // soloFilter.setOrder(2);
         }
 
         inline size_t getSoloIdx() const { return soloIdx.load(); }
@@ -138,11 +137,15 @@ namespace zlDSP {
 
         std::atomic<bool> dynLink{false};
 
+        std::atomic<double> sampleRate{48000};
+
         void processSolo();
 
         void processDynamic();
 
         void updateTrackersON();
+
+        void updateSubBuffer();
     };
 }
 

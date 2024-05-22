@@ -4,10 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
-## 0.3.0 (WIP)
+## 0.3.0
 
 - add state-variable filter structure
 - add dynamic link
+- add dynamic high-quality
 - fix collision detection
 - improve spectrum display
 

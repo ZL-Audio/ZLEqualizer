@@ -19,7 +19,8 @@ namespace zlPanel {
               uiBase(base),
               lookaheadS("Lookahead", uiBase),
               rmsS("RMS", uiBase),
-              smoothS("Smooth", uiBase) {
+              smoothS("Smooth", uiBase),
+              dynHQC("HQ:", zlDSP::dynHQ::choices, uiBase) {
             for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.01f);
                 addAndMakeVisible(c);
@@ -31,6 +32,19 @@ namespace zlPanel {
                        zlDSP::dynLookahead::ID, zlDSP::dynRMS::ID, zlDSP::dynSmooth::ID
                    },
                    parametersRef, sliderAttachments);
+            for (auto &c: {&dynHQC}) {
+                c->getLabelLAF().setFontScale(1.5f);
+                c->setLabelScale(.5f);
+                c->setLabelPos(zlInterface::ClickCombobox::left);
+                addAndMakeVisible(c);
+            }
+            attach({
+                       &dynHQC.getCompactBox().getBox(),
+                   },
+                   {
+                       zlDSP::dynHQ::ID
+                   },
+                   parametersRef, boxAttachments);
         }
 
         ~CompCallOutBox() override = default;
@@ -40,17 +54,19 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60))};
+            grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(44))};
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
                 juce::GridItem(lookaheadS).withArea(1, 1),
                 juce::GridItem(rmsS).withArea(2, 1),
-                juce::GridItem(smoothS).withArea(3, 1)
+                juce::GridItem(smoothS).withArea(3, 1),
+                juce::GridItem(dynHQC).withArea(4, 1)
             };
 
             grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
-            const auto bound = getLocalBounds().toFloat();
+            auto bound = getLocalBounds().toFloat();
+            bound.removeFromTop(uiBase.getFontSize() * .2f);
             grid.performLayout(bound.toNearestInt());
         }
 
@@ -59,7 +75,9 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
 
         zlInterface::CompactLinearSlider lookaheadS, rmsS, smoothS;
+        zlInterface::ClickCombobox dynHQC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
     };
 
     CompSettingPanel::CompSettingPanel(juce::AudioProcessorValueTreeState &parameters,
@@ -113,7 +131,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<CompCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
-                         juce::roundToInt(uiBase.getFontSize() * 9.3f));
+                         juce::roundToInt(uiBase.getFontSize() * 11.5201933f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

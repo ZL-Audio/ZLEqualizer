@@ -390,6 +390,16 @@ namespace zlDSP {
         int static constexpr defaultI = 0;
     };
 
+    class dynHQ : public ChoiceParameters<dynHQ> {
+    public:
+        auto static constexpr ID = "dyn_hq";
+        auto static constexpr name = "Dynamic HQ";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 0;
+    };
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         for (int i = 0; i < bandNUM; ++i) {
@@ -400,7 +410,7 @@ namespace zlDSP {
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
                    effectON::get(), staticAutoGain::get(), autoGain::get(),
                    scale::get(), outputGain::get(),
-                   filterStructure::get(), dynLink::get(true));
+                   filterStructure::get(), dynLink::get(true), dynHQ::get());
         return layout;
     }
 

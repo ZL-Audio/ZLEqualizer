@@ -38,7 +38,7 @@ namespace zlDSP {
             dynRMS::ID, dynSmooth::ID,
             effectON::ID, staticAutoGain::ID, autoGain::ID,
             scale::ID, outputGain::ID,
-            filterStructure::ID, dynLink::ID
+            filterStructure::ID, dynLink::ID, dynHQ::ID
         };
         constexpr static std::array defaultVs{
             static_cast<float>(sideChain::defaultV),
@@ -51,7 +51,8 @@ namespace zlDSP {
             static_cast<float>(scale::defaultV),
             static_cast<float>(outputGain::defaultV),
             static_cast<float>(filterStructure::defaultI),
-            static_cast<float>(dynLink::defaultI)
+            static_cast<float>(dynLink::defaultI),
+            static_cast<float>(dynHQ::defaultI)
         };
 
         constexpr static std::array NAIDs{

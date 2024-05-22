@@ -26,6 +26,7 @@ namespace zlIIR {
     template<typename FloatType>
     void Filter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         processSpec = spec;
+        numChannels.store(spec.numChannels);
         sampleRate.store(static_cast<float>(spec.sampleRate));
         for (auto &f: filters) {
             f.prepare(spec);

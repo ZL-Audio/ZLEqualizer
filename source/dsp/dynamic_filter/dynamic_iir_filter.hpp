@@ -77,12 +77,16 @@ namespace zlDynamicFilter {
             sFilter.setSVFON(f);
         }
 
+        void setIsPerSample(const bool x) {isPerSample.store(x);}
+
     private:
         zlIIR::Filter<FloatType> mFilter, bFilter, tFilter, sFilter;
         zlIIR::StaticGainCompensation<FloatType> compensation {bFilter};
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass{true}, active{false}, dynamicON{false}, dynamicBypass{false};
+        juce::AudioBuffer<FloatType> sampleBuffer;
+        std::atomic<bool> isPerSample{false};
     };
 }
 

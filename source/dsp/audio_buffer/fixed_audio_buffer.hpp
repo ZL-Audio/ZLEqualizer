@@ -53,16 +53,13 @@ namespace zlAudioBuffer {
         inline auto getSubSpec() { return subSpec; }
 
         inline juce::uint32 getLatencySamples() {
-            if (subSpec.maximumBlockSize > 1) {
-                return subSpec.maximumBlockSize;
-            } else {
-                return juce::uint32(0);
-            }
+            return static_cast<juce::uint32>(latencyInSamples.load());
         }
 
     private:
         FIFOAudioBuffer<FloatType> inputBuffer, outputBuffer;
         juce::dsp::ProcessSpec subSpec, mainSpec;
+        std::atomic<juce::uint32> latencyInSamples{0};
     };
 }
 
