@@ -11,6 +11,7 @@
 #define ZLEqualizer_BUTTON_PANEL_HPP
 
 #include "filter_button_panel.hpp"
+#include "link_button_panel.hpp"
 #include "../../../dsp/dsp.hpp"
 #include "../../../state/state.hpp"
 
@@ -41,6 +42,7 @@ namespace zlPanel {
 
     private:
         std::array<std::unique_ptr<FilterButtonPanel>, zlState::bandNUM> panels;
+        std::array<std::unique_ptr<LinkButtonPanel>, zlState::bandNUM> linkButtons;
 
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;

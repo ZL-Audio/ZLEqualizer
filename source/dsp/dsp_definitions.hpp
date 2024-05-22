@@ -350,6 +350,13 @@ namespace zlDSP {
         auto static constexpr defaultV = 0.f;
     };
 
+    class singleDynLink : public BoolParameters<singleDynLink> {
+    public:
+        auto static constexpr ID = "single_dyn_link";
+        auto static constexpr name = "Dynamic Link";
+        auto static constexpr defaultV = false;
+    };
+
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
         layout.add(bypass::get(suffix), solo::get(true, suffix, false),
@@ -360,7 +367,8 @@ namespace zlDSP {
                    dynamicBypass::get(suffix), sideSolo::get(true, suffix, false),
                    dynamicRelative::get(suffix, false),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), kneeW::get(suffix),
-                   sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix));
+                   sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix),
+                   singleDynLink::get(suffix));
     }
 
     class sideChain : public BoolParameters<sideChain> {
@@ -382,8 +390,8 @@ namespace zlDSP {
 
     class dynLink : public ChoiceParameters<dynLink> {
     public:
-        auto static constexpr ID = "dyn_link";
-        auto static constexpr name = "Dynamic Link";
+        auto static constexpr ID = "global_dyn_link";
+        auto static constexpr name = "Global Dynamic Link";
         inline auto static const choices = juce::StringArray{
             "OFF", "ON"
         };

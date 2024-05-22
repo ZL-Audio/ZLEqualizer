@@ -18,7 +18,7 @@
 
 namespace zlPanel {
     class SidePanel final : public juce::Component,
-                            private juce::AudioProcessorValueTreeState::Listener{
+                            private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SidePanel(size_t bandIdx,
                            juce::AudioProcessorValueTreeState &parameters,

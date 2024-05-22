@@ -17,6 +17,7 @@ namespace zlPanel {
           uiBase(base), wheelSlider(base) {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base);
+            linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parameters, parametersNA, base);
             panels[i]->getDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getDragger().getButton().getToggleState()) {
@@ -55,6 +56,7 @@ namespace zlPanel {
 
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             addAndMakeVisible(panels[i].get());
+            addAndMakeVisible(linkButtons[i].get());
         }
         addAndMakeVisible(lassoComponent);
         itemsSet.addChangeListener(this);
@@ -77,6 +79,9 @@ namespace zlPanel {
     void ButtonPanel::resized() {
         wheelSlider.setBounds(getLocalBounds());
         for (const auto &p: panels) {
+            p->setBounds(getLocalBounds());
+        }
+        for (const auto &p: linkButtons) {
             p->setBounds(getLocalBounds());
         }
     }

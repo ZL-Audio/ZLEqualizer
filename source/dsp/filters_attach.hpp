@@ -39,7 +39,8 @@ namespace zlDSP {
             lrType::ID, dynamicON::ID, dynamicLearn::ID,
             dynamicBypass::ID, dynamicRelative::ID,
             targetGain::ID, targetQ::ID, threshold::ID, kneeW::ID,
-            sideFreq::ID, attack::ID, release::ID, sideQ::ID
+            sideFreq::ID, attack::ID, release::ID, sideQ::ID,
+            singleDynLink::ID
         };
 
         constexpr static std::array defaultVs{
@@ -49,12 +50,13 @@ namespace zlDSP {
             float(dynamicBypass::defaultV), float(dynamicRelative::defaultV),
             targetGain::defaultV, targetQ::defaultV,
             threshold::defaultV, kneeW::defaultV,
-            sideFreq::defaultV, attack::defaultV, release::defaultV, sideQ::defaultV
+            sideFreq::defaultV, attack::defaultV, release::defaultV, sideQ::defaultV,
+            float(singleDynLink::defaultV)
         };
 
         constexpr static std::array dynamicInitIDs{
             targetGain::ID, targetQ::ID, sideFreq::ID, sideQ::ID,
-            dynamicBypass::ID
+            dynamicBypass::ID, singleDynLink::ID
         };
         constexpr static std::array dynamicResetIDs{dynamicLearn::ID, dynamicBypass::ID,
             sideSolo::ID, dynamicRelative::ID};
@@ -67,6 +69,9 @@ namespace zlDSP {
 
         std::atomic<bool> dynamicONUpdateOthers = true;
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
+
+        std::atomic<bool> gDynLink{false};
+        std::array<std::atomic<bool>, bandNUM> sDynLink{};
     };
 }
 
