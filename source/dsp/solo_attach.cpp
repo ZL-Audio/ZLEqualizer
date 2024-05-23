@@ -58,7 +58,7 @@ namespace zlDSP {
                     parameterRef.getParameter(initID)->setValueNotifyingHost(static_cast<float>(false));
                     parameterRef.getParameter(initID)->endChangeGesture();
                 }
-                controllerRef.getSoloFilter().setOrder(2);
+                controllerRef.getSoloFilter().setToRest();
                 controllerRef.setSolo(idx, isSide);
             } else {
                 if (idx == controllerRef.getSoloIdx() && isSide == controllerRef.getSoloIsSide()) {

@@ -65,7 +65,7 @@ namespace zlIIR {
     void Filter<FloatType>::setFreq(const FloatType x, const bool update) {
         const auto diff = std::max(static_cast<double>(x), freq.load()) /
                           std::min(static_cast<double>(x), freq.load());
-        if (std::log10(diff) >= 2 && update) {
+        if (std::log10(diff) >= 2 && update && !useSVF.load()) {
             toReset.store(true);
         }
         freq.store(static_cast<double>(x));

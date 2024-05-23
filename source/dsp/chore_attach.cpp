@@ -81,6 +81,7 @@ namespace zlDSP {
             for (size_t i = 0; i < bandNUM; ++i) {
                 controllerRef.getFilter(i).setSVFON(static_cast<bool>(newValue));
             }
+            controllerRef.getSoloFilter().setSVFON(static_cast<bool>(newValue));
         } else if (parameterID == dynLink::ID) {
             controllerRef.setDynLink(static_cast<bool>(newValue));
         } else if (parameterID == dynHQ::ID) {
