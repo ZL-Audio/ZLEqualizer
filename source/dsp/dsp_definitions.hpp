@@ -27,6 +27,14 @@ namespace zlDSP {
                                                                T::name + suffix, T::range, T::defaultV, attributes);
         }
 
+        static std::unique_ptr<juce::AudioParameterFloat> get(bool meta, const std::string &suffix = "",
+                                                             bool automate = true) {
+            auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::name).
+                    withMeta(meta);
+            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
+                                                              T::name + suffix, T::range, T::defaultV, attributes);
+        }
+
         inline static float convertTo01(const float x) {
             return T::range.convertTo0to1(x);
         }
@@ -361,14 +369,14 @@ namespace zlDSP {
                                 const std::string &suffix = "") {
         layout.add(bypass::get(suffix), solo::get(true, suffix, false),
                    fType::get(suffix), slope::get(suffix),
-                   freq::get(suffix), gain::get(suffix), Q::get(suffix),
+                   freq::get(true, suffix, true), gain::get(suffix), Q::get(true, suffix, true),
                    lrType::get(suffix),
                    dynamicON::get(true, suffix, false), dynamicLearn::get(true, suffix, false),
                    dynamicBypass::get(suffix), sideSolo::get(true, suffix, false),
                    dynamicRelative::get(suffix, false),
                    targetGain::get(suffix), targetQ::get(suffix), threshold::get(suffix), kneeW::get(suffix),
                    sideFreq::get(suffix), attack::get(suffix), release::get(suffix), sideQ::get(suffix),
-                   singleDynLink::get(suffix));
+                   singleDynLink::get(true, suffix, false));
     }
 
     class sideChain : public BoolParameters<sideChain> {
@@ -418,7 +426,7 @@ namespace zlDSP {
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
                    effectON::get(), staticAutoGain::get(), autoGain::get(),
                    scale::get(), outputGain::get(),
-                   filterStructure::get(), dynLink::get(true), dynHQ::get());
+                   filterStructure::get(), dynLink::get(), dynHQ::get());
         return layout;
     }
 
