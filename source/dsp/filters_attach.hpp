@@ -72,6 +72,8 @@ namespace zlDSP {
 
         std::atomic<bool> gDynLink{false};
         std::array<std::atomic<bool>, bandNUM> sDynLink{};
+
+        void checkUpdateSide(size_t idx);
     };
 }
 

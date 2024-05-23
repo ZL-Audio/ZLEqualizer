@@ -66,7 +66,7 @@ namespace zlPanel {
     void LinkButtonPanel::updateBound() {
         if (isSelected.load() && isDynamicON.load()) {
             auto dynPos = std::log(sideFreq.load() / 10.f) / std::log(2200.f);
-            dynPos = juce::jlimit(0.1f, 0.9f, dynPos);
+            dynPos = juce::jlimit(0.025f, 0.975f, dynPos);
             auto buttonBound = juce::Rectangle<float>{2.5f * uiBase.getFontSize(), 2.5f * uiBase.getFontSize()};
             auto bound = getLocalBounds().toFloat();
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 8 * uiBase.getFontSize());
