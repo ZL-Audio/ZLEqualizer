@@ -17,17 +17,19 @@
 
 namespace zlPanel {
     class LinkButtonPanel final : public juce::Component,
-    private juce::AudioProcessorValueTreeState::Listener,
-    private juce::AsyncUpdater{
+                                  private juce::AudioProcessorValueTreeState::Listener,
+                                  private juce::AsyncUpdater {
     public:
         explicit LinkButtonPanel(size_t idx,
-                        juce::AudioProcessorValueTreeState &parameters,
-                        juce::AudioProcessorValueTreeState &parametersNA,
-                        zlInterface::UIBase &base);
+                                 juce::AudioProcessorValueTreeState &parameters,
+                                 juce::AudioProcessorValueTreeState &parametersNA,
+                                 zlInterface::UIBase &base);
 
         ~LinkButtonPanel() override;
 
         void resized() override;
+
+        zlInterface::CompactButton &getButton() { return dynLinkC; }
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;

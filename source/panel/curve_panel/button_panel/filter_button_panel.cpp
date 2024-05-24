@@ -40,7 +40,7 @@ namespace zlPanel {
             d->setScale(scale);
             addAndMakeVisible(d);
         }
-
+        // set current band if dragger is clicked
         dragger.getButton().onClick = [this]() {
             if (dragger.getButton().getToggleState()) {
                 if (static_cast<size_t>(
@@ -59,10 +59,19 @@ namespace zlPanel {
             } else {
                 buttonPopUp.setVisible(false);
                 buttonPopUp.repaint();
-
                 removeChildComponent(&buttonPopUp);
             }
         };
+        // disable link if side dragger is clicked
+        sideDragger.getButton().onClick = [this]() {
+            if (sideDragger.getButton().getToggleState()) {
+                const auto para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::singleDynLink::ID, band.load()));
+                para->beginChangeGesture();
+                para->setValueNotifyingHost(0.f);
+                para->endChangeGesture();
+            }
+        };
+
         setInterceptsMouseClicks(false, true);
 
         dragger.getButton().addComponentListener(&buttonPopUp);

@@ -18,6 +18,7 @@ namespace zlPanel {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base, wheelSlider);
             linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parameters, parametersNA, base);
+            // attach wheel to main Q when main dragger is clicked
             panels[i]->getDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getDragger().getButton().getToggleState()) {
@@ -28,6 +29,7 @@ namespace zlPanel {
                     panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
+            // attach wheel to target Q when target dragger is clicked
             panels[i]->getTargetDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getTargetDragger().getButton().getToggleState()) {
@@ -38,6 +40,7 @@ namespace zlPanel {
                     panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
+            // attach wheel to side Q when side dragger is clicked
             panels[i]->getSideDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getSideDragger().getButton().getToggleState()) {
@@ -46,6 +49,13 @@ namespace zlPanel {
                         parametersRef, zlDSP::appendSuffix(zlDSP::sideQ::ID, selectBandIdx.load()), wheelSlider);
                     panels[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
                     panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
+                }
+            };
+            // deselect the side dragger when link button is clicked
+            linkButtons[i]->getButton().getButton().onClick = [this]() {
+                const auto idx = selectBandIdx.load();
+                if (linkButtons[idx]->getButton().getButton().getToggleState()) {
+                    panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
         }
