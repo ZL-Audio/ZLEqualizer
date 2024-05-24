@@ -25,7 +25,9 @@ namespace zlPanel {
                                    juce::AudioProcessorValueTreeState &parameters,
                                    juce::AudioProcessorValueTreeState &parametersNA,
                                    zlInterface::UIBase &base,
-                                   zlInterface::SnappingSlider &qSlider);
+                                   zlInterface::SnappingSlider &qSlider,
+                                   zlInterface::SnappingSlider &targetQSlider,
+                                   zlInterface::SnappingSlider &sideQSlider);
 
         ~FilterButtonPanel() override;
 
@@ -57,7 +59,6 @@ namespace zlPanel {
         std::atomic<size_t> band;
         std::atomic<bool> isFilterTypeHasTarget{false}, isDynamicHasTarget{false},
                 isSelectedTarget{false}, isActiveTarget{false};
-        zlInterface::SnappingSlider &wheelSlider;
 
         static constexpr std::array IDs{zlDSP::fType::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID};
         static constexpr std::array NAIDs{zlState::active::ID};

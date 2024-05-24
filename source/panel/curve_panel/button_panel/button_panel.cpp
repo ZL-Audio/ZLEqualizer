@@ -14,17 +14,22 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parametersNA,
                              zlInterface::UIBase &base)
         : parametersRef(parameters), parametersNARef(parametersNA),
-          uiBase(base), wheelSlider(base) {
+          uiBase(base),
+          wheelSlider{zlInterface::SnappingSlider{base}, zlInterface::SnappingSlider{base}} {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base, wheelSlider);
+            panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base,
+                wheelSlider[0], wheelSlider[1], wheelSlider[0]);
             linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parameters, parametersNA, base);
             // attach wheel to main Q when main dragger is clicked
             panels[i]->getDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getDragger().getButton().getToggleState()) {
-                    wheelAttachment.reset();
-                    wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                        parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider);
+                    wheelAttachment[0].reset();
+                    wheelAttachment[0] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                        parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider[0]);
+                    wheelAttachment[1].reset();
+                    wheelAttachment[1] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                        parametersRef, zlDSP::appendSuffix(zlDSP::targetQ::ID, selectBandIdx.load()), wheelSlider[1]);
                     panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
                     panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
@@ -33,9 +38,12 @@ namespace zlPanel {
             panels[i]->getTargetDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getTargetDragger().getButton().getToggleState()) {
-                    wheelAttachment.reset();
-                    wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                        parametersRef, zlDSP::appendSuffix(zlDSP::targetQ::ID, selectBandIdx.load()), wheelSlider);
+                    wheelAttachment[0].reset();
+                    wheelAttachment[0] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                        parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider[0]);
+                    wheelAttachment[1].reset();
+                    wheelAttachment[1] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                        parametersRef, zlDSP::appendSuffix(zlDSP::targetQ::ID, selectBandIdx.load()), wheelSlider[1]);
                     panels[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
                     panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
@@ -44,9 +52,10 @@ namespace zlPanel {
             panels[i]->getSideDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getSideDragger().getButton().getToggleState()) {
-                    wheelAttachment.reset();
-                    wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                        parametersRef, zlDSP::appendSuffix(zlDSP::sideQ::ID, selectBandIdx.load()), wheelSlider);
+                    wheelAttachment[0].reset();
+                    wheelAttachment[1].reset();
+                    wheelAttachment[0] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                        parametersRef, zlDSP::appendSuffix(zlDSP::sideQ::ID, selectBandIdx.load()), wheelSlider[0]);
                     panels[idx]->getDragger().getButton().setToggleState(false, juce::sendNotification);
                     panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
@@ -83,11 +92,13 @@ namespace zlPanel {
             }
         }
         itemsSet.removeChangeListener(this);
-        wheelAttachment.reset();
+        wheelAttachment[0].reset();
+        wheelAttachment[1].reset();
     }
 
     void ButtonPanel::resized() {
-        wheelSlider.setBounds(getLocalBounds());
+        wheelSlider[0].setBounds(getLocalBounds());
+        wheelSlider[1].setBounds(getLocalBounds());
         for (const auto &p: panels) {
             p->setBounds(getLocalBounds());
         }
@@ -100,9 +111,11 @@ namespace zlPanel {
         juce::ignoreUnused(event);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i]->setSelected(false);
-        } {
-            wheelAttachment.reset();
         }
+
+        wheelAttachment[0].reset();
+        wheelAttachment[1].reset();
+
         itemsSet.deselectAll();
         lassoComponent.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
                                  uiBase.getTextColor().withMultipliedAlpha(.25f));
@@ -122,7 +135,8 @@ namespace zlPanel {
     }
 
     void ButtonPanel::mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) {
-        wheelSlider.mouseWheelMove(event, wheel);
+        wheelSlider[0].mouseWheelMove(event, wheel);
+        wheelSlider[1].mouseWheelMove(event, wheel);
     }
 
     void ButtonPanel::mouseDoubleClick(const juce::MouseEvent &event) {
@@ -277,9 +291,12 @@ namespace zlPanel {
                 panels[i]->setSelected(i == idx);
             }
             panels[idx]->toFront(false);
-            wheelAttachment.reset();
-            wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
+            wheelAttachment[0].reset();
+            wheelAttachment[0] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, selectBandIdx.load()), wheelSlider[0]);
+            wheelAttachment[1].reset();
+            wheelAttachment[1] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                parametersRef, zlDSP::appendSuffix(zlDSP::targetQ::ID, selectBandIdx.load()), wheelSlider[1]);
             panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
             panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
 

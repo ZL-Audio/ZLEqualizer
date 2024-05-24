@@ -12,11 +12,14 @@
 namespace zlPanel {
     FilterButtonPanel::FilterButtonPanel(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
                                          juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base,
-                                   zlInterface::SnappingSlider &qSlider)
+                                         zlInterface::SnappingSlider &qSlider,
+                                         zlInterface::SnappingSlider &targetQSlider,
+                                         zlInterface::SnappingSlider &sideQSlider)
         : parametersRef(parameters), parametersNARef(parametersNA),
-          uiBase(base), dragger(base, &qSlider), targetDragger(base, &qSlider), sideDragger(base, &qSlider),
+          uiBase(base),
+          dragger(base, &qSlider), targetDragger(base, &targetQSlider), sideDragger(base, &sideQSlider),
           buttonPopUp(bandIdx, parameters, parametersNA, base),
-          band{bandIdx}, wheelSlider(qSlider) {
+          band{bandIdx} {
         dragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
         targetDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::upDownArrow);
         targetDragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
@@ -65,7 +68,8 @@ namespace zlPanel {
         // disable link if side dragger is clicked
         sideDragger.getButton().onClick = [this]() {
             if (sideDragger.getButton().getToggleState()) {
-                const auto para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::singleDynLink::ID, band.load()));
+                const auto para = parametersRef.
+                        getParameter(zlDSP::appendSuffix(zlDSP::singleDynLink::ID, band.load()));
                 para->beginChangeGesture();
                 para->setValueNotifyingHost(0.f);
                 para->endChangeGesture();

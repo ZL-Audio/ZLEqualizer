@@ -47,8 +47,8 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
 
-        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wheelAttachment;
-        zlInterface::SnappingSlider wheelSlider;
+        std::array<zlInterface::SnappingSlider, 2> wheelSlider;
+        std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>, 2> wheelAttachment;
 
         std::atomic<float> maximumDB;
         std::atomic<size_t> selectBandIdx{0};
