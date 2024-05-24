@@ -16,7 +16,7 @@ namespace zlPanel {
         : parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), wheelSlider(base) {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base);
+            panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base, wheelSlider);
             linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parameters, parametersNA, base);
             panels[i]->getDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
@@ -273,10 +273,10 @@ namespace zlPanel {
             panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
             panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
 
-            wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
-            panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
-            panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
+            // wheelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            //     parametersRef, zlDSP::appendSuffix(zlDSP::Q::ID, idx), wheelSlider);
+            // panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
+            // panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
         }
         repaint();
     }

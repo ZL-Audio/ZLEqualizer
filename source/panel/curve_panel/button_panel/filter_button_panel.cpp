@@ -11,11 +11,12 @@
 
 namespace zlPanel {
     FilterButtonPanel::FilterButtonPanel(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
-                                         juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
+                                         juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base,
+                                   zlInterface::SnappingSlider &qSlider)
         : parametersRef(parameters), parametersNARef(parametersNA),
-          uiBase(base), dragger(base), targetDragger(base), sideDragger(base),
+          uiBase(base), dragger(base, &qSlider), targetDragger(base, &qSlider), sideDragger(base, &qSlider),
           buttonPopUp(bandIdx, parameters, parametersNA, base),
-          band{bandIdx} {
+          band{bandIdx}, wheelSlider(qSlider) {
         dragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
         targetDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::upDownArrow);
         targetDragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
@@ -40,7 +41,6 @@ namespace zlPanel {
             addAndMakeVisible(d);
         }
 
-        // buttonPopUp.setAlwaysOnTop(true);
         dragger.getButton().onClick = [this]() {
             if (dragger.getButton().getToggleState()) {
                 if (static_cast<size_t>(
@@ -273,18 +273,6 @@ namespace zlPanel {
             bound.getWidth(), scale * uiBase.getFontSize()
         };
         sideDragger.setBounds(sideBound.toNearestInt());
-    }
-
-    void FilterButtonPanel::mouseDown(const juce::MouseEvent &event) {
-        dragger.mouseDown(event);
-    }
-
-    void FilterButtonPanel::mouseUp(const juce::MouseEvent &event) {
-        dragger.mouseUp(event);
-    }
-
-    void FilterButtonPanel::mouseDrag(const juce::MouseEvent &event) {
-        dragger.mouseDrag(event);
     }
 
     void FilterButtonPanel::updateTargetAttachment() {

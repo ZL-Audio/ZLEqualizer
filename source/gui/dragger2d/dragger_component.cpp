@@ -10,8 +10,8 @@
 #include "dragger_component.hpp"
 
 namespace zlInterface {
-    Dragger::Dragger(UIBase &base)
-        : uiBase(base), draggerLAF(base) {
+    Dragger::Dragger(UIBase &base, SnappingSlider* wheelSlider)
+        : uiBase(base), draggerLAF(base), wheelS(wheelSlider) {
         button.addMouseListener(this, false);
         draggerLAF.setColour(uiBase.getColorMap1(1));
         button.setClickingTogglesState(false);
@@ -62,6 +62,12 @@ namespace zlInterface {
 
             const BailOutChecker checker(this);
             listeners.callChecked(checker, [&](Listener &l) { l.draggerValueChanged(this); });
+        }
+    }
+
+    void Dragger::mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) {
+        if (wheelS != nullptr) {
+            wheelS->mouseWheelMove(event, wheel);
         }
     }
 

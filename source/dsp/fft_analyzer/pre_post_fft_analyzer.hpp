@@ -70,8 +70,6 @@ namespace zlFFT {
         void run() override;
 
         void handleAsyncUpdate() override;
-
-        juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
     };
 } // zlFFT
 
