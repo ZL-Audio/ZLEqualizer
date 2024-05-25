@@ -11,13 +11,10 @@
 
 namespace zlPanel {
     FilterButtonPanel::FilterButtonPanel(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
-                                         juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base,
-                                         zlInterface::SnappingSlider &qSlider,
-                                         zlInterface::SnappingSlider &targetQSlider,
-                                         zlInterface::SnappingSlider &sideQSlider)
+                                         juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
         : parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
-          dragger(base, &qSlider), targetDragger(base, &targetQSlider), sideDragger(base, &sideQSlider),
+          dragger(base), targetDragger(base), sideDragger(base),
           buttonPopUp(bandIdx, parameters, parametersNA, base),
           band{bandIdx} {
         dragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));

@@ -24,10 +24,7 @@ namespace zlPanel {
         explicit FilterButtonPanel(size_t bandIdx,
                                    juce::AudioProcessorValueTreeState &parameters,
                                    juce::AudioProcessorValueTreeState &parametersNA,
-                                   zlInterface::UIBase &base,
-                                   zlInterface::SnappingSlider &qSlider,
-                                   zlInterface::SnappingSlider &targetQSlider,
-                                   zlInterface::SnappingSlider &sideQSlider);
+                                   zlInterface::UIBase &base);
 
         ~FilterButtonPanel() override;
 

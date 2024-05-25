@@ -20,7 +20,7 @@
 namespace zlInterface {
     class Dragger final : public juce::Component {
     public:
-        explicit Dragger(UIBase &base, SnappingSlider *wheelSlider=nullptr);
+        explicit Dragger(UIBase &base);
 
         ~Dragger() override;
 
@@ -29,8 +29,6 @@ namespace zlInterface {
         void mouseUp(const juce::MouseEvent &event) override;
 
         void mouseDrag(const juce::MouseEvent &event) override;
-
-        void mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override;
 
         void resized() override;
 
@@ -92,8 +90,6 @@ namespace zlInterface {
         std::atomic<float> scale {1.f};
 
         juce::ListenerList<Listener> listeners;
-
-        SnappingSlider *wheelS;
     };
 } // zlInterface
 
