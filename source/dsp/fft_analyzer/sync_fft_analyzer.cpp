@@ -202,27 +202,25 @@ namespace zlFFT {
     void SyncFFTAnalyzer<FloatType>::createPath(juce::Path &path1, juce::Path &path2, const juce::Rectangle<float> bound) {
         juce::ScopedNoDenormals noDenormals;
         std::vector<size_t> isONVector{};
-        if (isON[0].load()) isONVector.push_back(0);
-        if (isON[1].load()) isONVector.push_back(1);
-        const std::array<std::reference_wrapper<juce::Path>, 2> paths{path1, path2};
-        for (const auto &z:isONVector) {
-            paths[z].get().clear();
-            paths[z].get().startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
+        if (isON[0].load()) {
+            path1.clear();
+            path1.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
+            isONVector.push_back(0);
         }
-        size_t i = 0;
+        if (isON[1].load()) {
+            path2.clear();
+            path2.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
+            isONVector.push_back(1);
+        }
+        const std::array<std::reference_wrapper<juce::Path>, 2> paths{path1, path2};
 
-        while (i < interplotDBs[0].size()) {
+        for (size_t i = 0; i < interplotDBs[0].size(); ++i) {
             const auto x = static_cast<float>(2 * i) / static_cast<float>(zlIIR::frequencies.size() - 1) *
                            bound.getWidth();
             for (const auto &z:isONVector) {
                 const auto y = interplotDBs[z][i].load() / minDB * bound.getHeight() + bound.getY();
-                if (i == 0) {
-                    paths[z].get().startNewSubPath(x, y);
-                } else {
-                    paths[z].get().lineTo(x, y);
-                }
+                paths[z].get().lineTo(x, y);
             }
-            i += 1;
         }
     }
 

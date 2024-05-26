@@ -176,17 +176,11 @@ namespace zlFFT {
         juce::ScopedNoDenormals noDenormals;
         path.clear();
         path.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
-        size_t i = 0;
-        while (i < interplotDBs.size()) {
+        for (size_t i = 0; i < interplotDBs.size(); ++i) {
             const auto x = static_cast<float>(2 * i) / static_cast<float>(zlIIR::frequencies.size() - 1) *
                            bound.getWidth();
             const auto y = interplotDBs[i].load() / minDB * bound.getHeight() + bound.getY();
-            if (i == 0) {
-                path.startNewSubPath(x, y);
-            } else {
-                path.lineTo(x, y);
-            }
-            i += 1;
+            path.lineTo(x, y);
         }
     }
 
