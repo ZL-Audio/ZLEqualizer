@@ -23,7 +23,7 @@ namespace zlPanel {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base);
             linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parameters, parametersNA, base);
-            // attach wheel to main Q when main dragger is clicked
+            // when main dragger is clicked, de-select target & side dragger
             panels[i]->getDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getDragger().getButton().getToggleState()) {
@@ -31,7 +31,7 @@ namespace zlPanel {
                     panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
-            // attach wheel to target Q when target dragger is clicked
+            // when main dragger is clicked, de-select target & side dragger
             panels[i]->getTargetDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getTargetDragger().getButton().getToggleState()) {
@@ -39,7 +39,7 @@ namespace zlPanel {
                     panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
                 }
             };
-            // attach wheel to side Q when side dragger is clicked
+            // when side dragger is clicked, de-select main & side dragger
             panels[i]->getSideDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
                 if (panels[idx]->getSideDragger().getButton().getToggleState()) {
@@ -102,9 +102,6 @@ namespace zlPanel {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i]->setSelected(false);
         }
-
-        wheelAttachment[0].reset();
-        wheelAttachment[1].reset();
 
         itemsSet.deselectAll();
         lassoComponent.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
