@@ -39,6 +39,9 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SingleFFTAnalyzer<FloatType>::reset() {
+        for (size_t i = 0; i < interplotDBs.size(); ++i) {
+            interplotDBs[i].store(minDB * 2.f);
+        }
         toClear.store(true);
     }
 
@@ -82,9 +85,6 @@ namespace zlFFT {
         if (toClear.exchange(false)) {
             currentPos = 0;
             std::fill(currentBuffer.begin(), currentBuffer.end(), 0.f);
-            for (size_t i = 0; i < interplotDBs.size(); ++i) {
-                interplotDBs[i].store(minDB * 2.f);
-            }
         }
         // write to the circular buffer
         auto lBuffer = buffer.getReadPointer(0);

@@ -39,6 +39,10 @@ namespace zlFFT {
 
     template<typename FloatType>
     void SyncFFTAnalyzer<FloatType>::reset() {
+        for (size_t i = 0; i < interplotDBs[0].size(); ++i) {
+            interplotDBs[0][i].store(minDB * 2.f);
+            interplotDBs[1][i].store(minDB * 2.f);
+        }
         toClear.store(true);
     }
 
@@ -83,10 +87,6 @@ namespace zlFFT {
             currentPos = 0;
             std::fill(currentBuffer[0].begin(), currentBuffer[0].end(), 0.f);
             std::fill(currentBuffer[1].begin(), currentBuffer[1].end(), 0.f);
-            for (size_t i = 0; i < interplotDBs[0].size(); ++i) {
-                interplotDBs[0][i].store(minDB * 2.f);
-                interplotDBs[1][i].store(minDB * 2.f);
-            }
         }
         // write to the circular buffer
         auto lBuffer1 = buffer1.getReadPointer(0);
@@ -107,11 +107,6 @@ namespace zlFFT {
             }
             const auto audioWriter = audioBuffer[z][dIdx].getWritePointer(0);
             const auto audioReader = currentBuffer[z].data();
-            // auto posCopy = currentPos;
-            // for (size_t i = 0; i < static_cast<size_t>(audioBuffer[z][dIdx].getNumSamples()); ++i) {
-            //     audioWriter[i] = audioReader[posCopy];
-            //     posCopy = (posCopy - 1) % currentBuffer[z].size();
-            // }
             std::memcpy(audioWriter, audioReader + currentPos, (fftSize.load() - currentPos) * sizeof(float));
             if (currentPos > 0) {
                 std::memcpy(audioWriter + fftSize.load() - currentPos, audioReader, currentPos * sizeof(float));
