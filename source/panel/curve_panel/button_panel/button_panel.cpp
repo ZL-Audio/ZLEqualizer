@@ -20,6 +20,7 @@ namespace zlPanel {
               zlInterface::SnappingSlider{base},
               zlInterface::SnappingSlider{base}
           } {
+        // addAndMakeVisible(wheelSlider[0]);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base);
             linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parameters, parametersNA, base);
@@ -82,11 +83,10 @@ namespace zlPanel {
         itemsSet.removeChangeListener(this);
         wheelAttachment[0].reset();
         wheelAttachment[1].reset();
+        wheelAttachment[2].reset();
     }
 
     void ButtonPanel::resized() {
-        wheelSlider[0].setBounds(getLocalBounds());
-        wheelSlider[1].setBounds(getLocalBounds());
         for (const auto &p: panels) {
             p->setBounds(getLocalBounds());
         }
@@ -127,20 +127,29 @@ namespace zlPanel {
     }
 
     void ButtonPanel::mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) {
+        juce::MouseEvent e{
+            event.source, event.position,
+            event.mods.withoutMouseButtons(),
+            event.pressure, event.orientation, event.rotation,
+            event.tiltX, event.tiltY,
+            event.eventComponent, event.originalComponent,
+            event.eventTime, event.mouseDownPosition, event.mouseDownTime,
+            event.getNumberOfClicks(), false
+        };
         if (event.originalComponent == this) {
-            wheelSlider[0].mouseWheelMove(event, wheel);
-            wheelSlider[1].mouseWheelMove(event, wheel);
+            wheelSlider[0].mouseWheelMove(e, wheel);
+            wheelSlider[1].mouseWheelMove(e, wheel);
         } else if (!panels[selectBandIdx.load()]->isParentOf(event.originalComponent)) {
-            wheelSlider[0].mouseWheelMove(event, wheel);
-            wheelSlider[1].mouseWheelMove(event, wheel);
+            wheelSlider[0].mouseWheelMove(e, wheel);
+            wheelSlider[1].mouseWheelMove(e, wheel);
         } else {
             const auto &p = panels[selectBandIdx.load()];
             if (p.get()->getDragger().isParentOf(event.originalComponent)) {
-                wheelSlider[0].mouseWheelMove(event, wheel);
+                wheelSlider[0].mouseWheelMove(e, wheel);
             } else if (p.get()->getTargetDragger().isParentOf(event.originalComponent)) {
-                wheelSlider[1].mouseWheelMove(event, wheel);
+                wheelSlider[1].mouseWheelMove(e, wheel);
             } else if (p.get()->getSideDragger().isParentOf(event.originalComponent)) {
-                wheelSlider[2].mouseWheelMove(event, wheel);
+                wheelSlider[2].mouseWheelMove(e, wheel);
             }
         }
     }
@@ -308,7 +317,7 @@ namespace zlPanel {
                 parametersRef, zlDSP::appendSuffix(zlDSP::targetQ::ID, selectBandIdx.load()), wheelSlider[1]);
             wheelAttachment[2].reset();
             wheelAttachment[2] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                        parametersRef, zlDSP::appendSuffix(zlDSP::sideQ::ID, selectBandIdx.load()), wheelSlider[2]);
+                parametersRef, zlDSP::appendSuffix(zlDSP::sideQ::ID, selectBandIdx.load()), wheelSlider[2]);
             panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
             panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
         }
