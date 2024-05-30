@@ -12,15 +12,15 @@
 namespace zlPanel {
     ButtonPanel::ButtonPanel(juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
-                             zlInterface::UIBase &base)
+                             zlInterface::UIBase &base,
+                             zlDSP::Controller<double> &c)
         : parametersRef(parameters), parametersNARef(parametersNA),
-          uiBase(base),
+          uiBase(base), controllerRef(c),
           wheelSlider{
               zlInterface::SnappingSlider{base},
               zlInterface::SnappingSlider{base},
               zlInterface::SnappingSlider{base}
           } {
-        // addAndMakeVisible(wheelSlider[0]);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base);
             linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parameters, parametersNA, base);
@@ -84,6 +84,91 @@ namespace zlPanel {
         wheelAttachment[0].reset();
         wheelAttachment[1].reset();
         wheelAttachment[2].reset();
+    }
+
+    void ButtonPanel::paint(juce::Graphics &g) {
+        const auto bound = getLocalBounds().toFloat();
+        const auto idx = selectBandIdx.load();
+        const auto &p = panels[idx];
+        g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
+        if (p->getDragger().getButton().getToggleState()) {
+            drawFilterParas(g, controllerRef.getFilter(idx).getBaseFilter(), bound);
+        } else if (p->getTargetDragger().getButton().getToggleState()) {
+            drawFilterParas(g, controllerRef.getFilter(idx).getTargetFilter(), bound);
+        } else if (p->getSideDragger().getButton().getToggleState()) {
+            drawFilterParas(g, controllerRef.getFilter(idx).getSideFilter(), bound);
+        }
+    }
+
+    void ButtonPanel::drawFilterParas(juce::Graphics &g, const zlIIR::Filter<double> &f,
+                                      const juce::Rectangle<float> &bound) {
+        switch (f.getFilterType()) {
+            case zlIIR::FilterType::peak:
+            case zlIIR::FilterType::bandShelf: {
+                drawGain(g, static_cast<float>(f.getGain()), bound, static_cast<float>(f.getFreq()) <= 500.f);
+                break;
+            }
+            case zlIIR::FilterType::lowShelf: {
+                drawGain(g, static_cast<float>(f.getGain()), bound, true);
+                break;
+            }
+            case zlIIR::FilterType::highShelf: {
+                drawGain(g, static_cast<float>(f.getGain()), bound, false);
+                break;
+            }
+            case zlIIR::FilterType::tiltShelf: {
+                drawGain(g, static_cast<float>(f.getGain()) * .5f, bound, false);
+                break;
+            }
+            case zlIIR::FilterType::notch:
+            case zlIIR::FilterType::lowPass:
+            case zlIIR::FilterType::highPass:
+            case zlIIR::FilterType::bandPass: {
+                break;
+            }
+        }
+        drawFreq(g, static_cast<float>(f.getFreq()), bound, false);
+    }
+
+    void ButtonPanel::drawFreq(juce::Graphics &g, const float freq, const juce::Rectangle<float> &bound,
+                               const bool isTop) {
+        const auto freqString = freq < 100 ? juce::String(freq, 2, false) : juce::String(freq, 1, false);
+        juce::ignoreUnused(isTop);
+        auto p = std::log(freq / 10.f) / std::log(2205.f);
+        p = juce::jlimit(0.025f, 0.97f, p);
+        auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 5, uiBase.getFontSize() * 1.5f);
+        textBound = textBound.withCentre({bound.getWidth() * p, bound.getBottom() - 0.75f * uiBase.getFontSize()});
+        g.setColour(uiBase.getBackgroundColor());
+        g.fillRect(textBound);
+        g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
+        g.drawText(freqString, textBound, juce::Justification::centredBottom, false);
+    }
+
+    void ButtonPanel::drawGain(juce::Graphics &g, const float gain, const juce::Rectangle<float> &bound,
+                               const bool isLeft) {
+        const auto tempBound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        const auto gString = std::abs(gain) < 10 ? juce::String(gain, 2, false) : juce::String(gain, 1, false);
+        const auto p = juce::jlimit(-0.5f, 0.5f, -.5f * gain / maximumDB.load());
+        auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 2.7f, uiBase.getFontSize() * 1.5f);
+        if (isLeft) {
+            textBound = textBound.withCentre({
+                uiBase.getFontSize() * 1.35f,
+                tempBound.getY() + (0.5f + p) * tempBound.getHeight()
+            });
+        } else {
+            textBound = textBound.withCentre({
+                tempBound.getRight() - uiBase.getFontSize() * 1.35f,
+                tempBound.getY() + (0.5f + p) * tempBound.getHeight()
+            });
+        }
+        g.setColour(uiBase.getBackgroundColor());
+        g.fillRect(textBound);
+        g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
+        if (isLeft) {
+            g.drawText(gString, textBound, juce::Justification::centred, false);
+        } else {
+            g.drawText(gString, textBound, juce::Justification::centred, false);
+        }
     }
 
     void ButtonPanel::resized() {

@@ -24,9 +24,12 @@ namespace zlPanel {
     public:
         explicit ButtonPanel(juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
-                             zlInterface::UIBase &base);
+                             zlInterface::UIBase &base,
+                             zlDSP::Controller<double> &c);
 
         ~ButtonPanel() override;
+
+        void paint(juce::Graphics &g) override;
 
         void resized() override;
 
@@ -46,6 +49,7 @@ namespace zlPanel {
 
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
+        zlDSP::Controller<double> &controllerRef;
 
         std::array<zlInterface::SnappingSlider, 3> wheelSlider;
         std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>, 3> wheelAttachment;
@@ -88,6 +92,12 @@ namespace zlPanel {
         void changeListenerCallback(juce::ChangeBroadcaster *source) override;
 
         void attachGroup(size_t idx);
+
+        inline void drawFilterParas(juce::Graphics &g, const zlIIR::Filter<double> &f, const juce::Rectangle<float> &bound);
+
+        inline void drawFreq(juce::Graphics &g, float freq, const juce::Rectangle<float> &bound, bool isTop);
+
+        inline void drawGain(juce::Graphics &g, float gain, const juce::Rectangle<float> &bound, bool isLeft);
     };
 } // zlPanel
 

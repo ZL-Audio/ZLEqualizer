@@ -22,7 +22,7 @@ namespace zlPanel {
           conflictPanel(c.getConflictAnalyzer(), base),
           sumPanel(parameters, base, c),
           soloPanel(parameters, parametersNA, base, c),
-          buttonPanel(parameters, parametersNA, base),
+          buttonPanel(parameters, parametersNA, base, c),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
         addAndMakeVisible(backgroundPanel);
