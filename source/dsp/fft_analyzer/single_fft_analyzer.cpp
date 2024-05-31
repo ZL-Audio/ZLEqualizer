@@ -43,6 +43,7 @@ namespace zlFFT {
             interplotDBs[i].store(minDB * 2.f);
         }
         toClear.store(true);
+        toClearFFT.store(true);
     }
 
     template<typename FloatType>
@@ -122,6 +123,16 @@ namespace zlFFT {
             current = newValue;
         }
         const auto dIdx = static_cast<size_t>((current & BIT_IDX) ^ 1);
+
+        if (toClearFFT.exchange(false)) {
+            for (size_t z = 0; z < 2; ++z) {
+                std::fill(smoothedDBs.begin(), smoothedDBs.end(), minDB * 2.f);
+                for (size_t i = 0; i < interplotDBs.size(); ++i) {
+                    interplotDBs[i].store(minDB * 2.f);
+                }
+            }
+            return;
+        }
 
         fftBuffer.copyFrom(0, 0, audioBuffer[dIdx],
             0, 0, audioBuffer[dIdx].getNumSamples());

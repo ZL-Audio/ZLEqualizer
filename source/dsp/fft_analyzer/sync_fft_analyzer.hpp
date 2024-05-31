@@ -95,8 +95,6 @@ namespace zlFFT {
         }
 
     private:
-        std::atomic<size_t> delay = 0;
-
         std::array<std::vector<float>, 2> currentBuffer;
         size_t currentPos{0};
 
@@ -121,7 +119,7 @@ namespace zlFFT {
 
         static constexpr auto minFreq = 20.f, maxFreq = 22000.f, minDB = -72.f;
         std::atomic<float> sampleRate;
-        std::atomic<bool> toClear{false}, toClearFFT{false};
+        std::atomic<bool> toClear{false}, toClearFFT{true};
         std::atomic<bool> isPrepared{false};
 
         inline float indexToX(const size_t index, const juce::Rectangle<float> bounds) const {

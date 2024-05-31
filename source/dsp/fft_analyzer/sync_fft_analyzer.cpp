@@ -44,6 +44,7 @@ namespace zlFFT {
             interplotDBs[1][i].store(minDB * 2.f);
         }
         toClear.store(true);
+        toClearFFT.store(true);
     }
 
     template<typename FloatType>
@@ -138,7 +139,16 @@ namespace zlFFT {
         if (isON[0].load()) isONVector.push_back(0);
         if (isON[1].load()) isONVector.push_back(1);
 
-        for (const auto &z:isONVector) {
+        if (toClearFFT.exchange(false)) {
+            for (size_t z = 0; z < 2; ++z) {
+                std::fill(smoothedDBs[z].begin(), smoothedDBs[z].end(), minDB * 2.f);
+                for (size_t i = 0; i < interplotDBs[z].size(); ++i) {
+                    interplotDBs[z][i].store(minDB * 2.f);
+                }
+            }
+            return;
+        }
+        for (const auto &z: isONVector) {
             fftBuffer.copyFrom(0, 0, audioBuffer[z][dIdx],
                                0, 0, audioBuffer[z][dIdx].getNumSamples());
 
@@ -153,8 +163,8 @@ namespace zlFFT {
                 const auto currentDB = juce::Decibels::gainToDecibels(
                     2 * mBuffer[i] / static_cast<float>(fftSize.load()), -240.f);
                 smoothedDBs[z][i + 1] = currentDB < smoothedDBs[z][i + 1]
-                                         ? smoothedDBs[z][i + 1] * decay + currentDB * (1 - decay)
-                                         : currentDB;
+                                            ? smoothedDBs[z][i + 1] * decay + currentDB * (1 - decay)
+                                            : currentDB;
             }
             smoothedDBs[z][0] = smoothedDBs[z][1] * 2.f;
             smoothedDBs[z][smoothedDBs[z].size() - 1] = smoothedDBs[z][smoothedDBs[z].size() - 2] * 2.f;
@@ -176,25 +186,26 @@ namespace zlFFT {
         // use cardinal interpolate dB and apply tilt
         const std::array splines{
             boost::math::interpolators::cardinal_quintic_b_spline<float>(
-            preInterplotDBs[0].data(), preInterplotDBs[0].size(),
-            -static_cast<float>(preScale), static_cast<float>(preScale),
-            {0.f, 0.f}, {0.f, 0.f}),
+                preInterplotDBs[0].data(), preInterplotDBs[0].size(),
+                -static_cast<float>(preScale), static_cast<float>(preScale),
+                {0.f, 0.f}, {0.f, 0.f}),
             boost::math::interpolators::cardinal_quintic_b_spline<float>(
-            preInterplotDBs[1].data(), preInterplotDBs[1].size(),
-            -static_cast<float>(preScale), static_cast<float>(preScale),
-            {0.f, 0.f}, {0.f, 0.f})
+                preInterplotDBs[1].data(), preInterplotDBs[1].size(),
+                -static_cast<float>(preScale), static_cast<float>(preScale),
+                {0.f, 0.f}, {0.f, 0.f})
         };
         const auto tilt = tiltSlope.load() + extraTilt.load();
         for (size_t i = 0; i < interplotDBs[0].size(); ++i) {
-            for (const auto &z:isONVector) {
+            for (const auto &z: isONVector) {
                 interplotDBs[z][i].store(splines[z](static_cast<float>(i * 2)) + static_cast<float>(std::log2(
-                                          zlIIR::frequencies[i * 2] / 1000)) * tilt);
+                                             zlIIR::frequencies[i * 2] / 1000)) * tilt);
             }
         }
     }
 
     template<typename FloatType>
-    void SyncFFTAnalyzer<FloatType>::createPath(juce::Path &path1, juce::Path &path2, const juce::Rectangle<float> bound) {
+    void SyncFFTAnalyzer<FloatType>::createPath(juce::Path &path1, juce::Path &path2,
+                                                const juce::Rectangle<float> bound) {
         juce::ScopedNoDenormals noDenormals;
         std::vector<size_t> isONVector{};
         if (isON[0].load()) {
@@ -212,7 +223,7 @@ namespace zlFFT {
         for (size_t i = 0; i < interplotDBs[0].size(); ++i) {
             const auto x = static_cast<float>(2 * i) / static_cast<float>(zlIIR::frequencies.size() - 1) *
                            bound.getWidth();
-            for (const auto &z:isONVector) {
+            for (const auto &z: isONVector) {
                 const auto y = interplotDBs[z][i].load() / minDB * bound.getHeight() + bound.getY();
                 paths[z].get().lineTo(x, y);
             }
