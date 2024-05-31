@@ -22,6 +22,9 @@ namespace zlPanel {
         const auto bound = getLocalBounds().toFloat();
 
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
+        if (uiBase.getColourByIdx(zlInterface::gridColour).getFloatAlpha() <= 0.01f) {
+            return;
+        }
         g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
             const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
@@ -50,5 +53,4 @@ namespace zlPanel {
             rectList.add({bound.getX(), y - thickness * .5f, bound.getWidth(), thickness});
         }
     }
-
 }
