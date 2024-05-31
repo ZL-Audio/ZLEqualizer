@@ -17,6 +17,7 @@ namespace zlPanel {
           postSelector(base, *this),
           sideSelector(base, *this),
           gridSelector(base, *this),
+          tagSelector(base, *this),
           roughWheelSlider("Rough", base),
           fineWheelSlider("Fine", base),
           rotaryStyleBox("", zlState::rotaryStyle::choices, base),

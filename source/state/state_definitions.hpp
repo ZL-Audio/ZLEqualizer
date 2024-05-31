@@ -364,6 +364,7 @@ namespace zlState {
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);
         addOneColour(layout, "grid", 137, 125, 109, true, 1.f);
+        addOneColour(layout, "tag", 137, 125, 109, true, 0.f);
         return layout;
     }
 }

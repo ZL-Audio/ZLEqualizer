@@ -87,6 +87,9 @@ namespace zlPanel {
     }
 
     void ButtonPanel::paint(juce::Graphics &g) {
+        if (uiBase.getColourByIdx(zlInterface::tagColour).getFloatAlpha() < 0.01f) {
+            return;
+        }
         const auto bound = getLocalBounds().toFloat();
         const auto idx = selectBandIdx.load();
         const auto &p = panels[idx];
@@ -138,9 +141,10 @@ namespace zlPanel {
         p = juce::jlimit(0.025f, 0.97f, p);
         auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 5, uiBase.getFontSize() * 1.5f);
         textBound = textBound.withCentre({bound.getWidth() * p, bound.getBottom() - 0.75f * uiBase.getFontSize()});
-        g.setColour(uiBase.getBackgroundColor());
+        const auto colour = uiBase.getColourByIdx(zlInterface::tagColour);
+        g.setColour(uiBase.getBackgroundColor().withAlpha(colour.getFloatAlpha()));
         g.fillRect(textBound);
-        g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
+        g.setColour(colour);
         g.drawText(freqString, textBound, juce::Justification::centredBottom, false);
     }
 
@@ -161,14 +165,11 @@ namespace zlPanel {
                 tempBound.getY() + (0.5f + p) * tempBound.getHeight()
             });
         }
-        g.setColour(uiBase.getBackgroundColor());
+        const auto colour = uiBase.getColourByIdx(zlInterface::tagColour);
+        g.setColour(uiBase.getBackgroundColor().withAlpha(colour.getFloatAlpha()));
         g.fillRect(textBound);
-        g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
-        if (isLeft) {
-            g.drawText(gString, textBound, juce::Justification::centred, false);
-        } else {
-            g.drawText(gString, textBound, juce::Justification::centred, false);
-        }
+        g.setColour(colour);
+        g.drawText(gString, textBound, juce::Justification::centred, false);
     }
 
     void ButtonPanel::resized() {

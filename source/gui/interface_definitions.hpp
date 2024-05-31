@@ -21,10 +21,11 @@ namespace zlInterface {
         postColour,
         sideColour,
         gridColour,
+        tagColour,
         colourNum
     };
 
-    inline std::array<std::string, colourNum> colourNames {"pre", "post", "side", "grid"};
+    inline std::array<std::string, colourNum> colourNames {"pre", "post", "side", "grid", "tag"};
 
     static constexpr size_t ColorMap1Size = 10;
     static constexpr size_t ColorMap2Size = 6;
