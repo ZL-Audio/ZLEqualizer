@@ -64,6 +64,8 @@ namespace zlInterface {
 
         void setActive(const bool f) { active.store(f); }
 
+        bool getActive() const { return active.load(); }
+
         void setIsSelected(const bool f) { isSelected.store(f); }
 
         bool getIsSelected() const {return isSelected.load();}

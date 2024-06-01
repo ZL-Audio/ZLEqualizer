@@ -93,6 +93,9 @@ namespace zlPanel {
         const auto bound = getLocalBounds().toFloat();
         const auto idx = selectBandIdx.load();
         const auto &p = panels[idx];
+        if (!p->getDragger().getLAF().getActive()) {
+            return;
+        }
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
         if (p->getDragger().getButton().getToggleState()) {
             drawFilterParas(g, controllerRef.getFilter(idx).getBaseFilter(), bound);
