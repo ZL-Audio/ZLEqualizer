@@ -4,6 +4,12 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.3.1
+
+- add filter parameter tags
+- fix mouse-wheel issues #63
+- fix incorrect FFT curve at start-up
+
 ## 0.3.0
 
 - add state-variable filter structure
