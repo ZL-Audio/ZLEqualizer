@@ -141,11 +141,6 @@ namespace zlPanel {
         } else if (parameterID.startsWith(zlState::active::ID)) {
             const auto f = static_cast<bool>(newValue);
             isActiveTarget.store(f);
-            dragger.setActive(f);
-            dragger.setInterceptsMouseClicks(false, f);
-            if (!f) {
-                removeChildComponent(&buttonPopUp);
-            }
             toUpdateTargetAttachment.store(true);
             triggerAsyncUpdate();
         } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
@@ -176,6 +171,13 @@ namespace zlPanel {
     }
 
     void FilterButtonPanel::handleAsyncUpdate() {
+        const auto f = isActiveTarget.load();
+        dragger.setActive(f);
+        dragger.setInterceptsMouseClicks(false, f);
+        if (!f) {
+            removeChildComponent(&buttonPopUp);
+        }
+
         if (toUpdateAttachment.exchange(false)) {
             updateAttachment();
         }

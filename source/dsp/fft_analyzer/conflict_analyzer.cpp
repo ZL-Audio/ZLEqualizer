@@ -37,12 +37,7 @@ namespace zlFFT {
     void ConflictAnalyzer<FloatType>::setON(const bool x) {
         syncAnalyzer.reset();
         isON.store(x);
-        if (x && !isThreadRunning()) {
-            startThread(juce::Thread::Priority::low);
-        }
-        if (!x && isThreadRunning()) {
-            stopThread(-1);
-        }
+        triggerAsyncUpdate();
     }
 
     template<typename FloatType>
@@ -117,7 +112,7 @@ namespace zlFFT {
                 for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
                     if (conflictsP[i + 1] > 0 || conflictsP[i - 1] > 0) {
                         const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
-                        const auto rectColour = gColour.withMultipliedAlpha(conflictsP[i]);
+                        const auto rectColour = gColour.withMultipliedAlpha(juce::jmax(conflictsP[i], 0.f));
                         gradient.addColour(p, rectColour);
                     }
                 }
@@ -138,7 +133,15 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::handleAsyncUpdate() {
-        notify();
+        const auto x = isON.load();
+        if (x && !isThreadRunning()) {
+            startThread(juce::Thread::Priority::low);
+        }
+        else if (!x && isThreadRunning()) {
+            stopThread(-1);
+        } else {
+            notify();
+        }
     }
 
     template

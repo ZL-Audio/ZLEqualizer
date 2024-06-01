@@ -26,16 +26,12 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        // if (isPreON.load()) {
-            preBuffer.makeCopyOf(buffer, true);
-        // }
+        preBuffer.makeCopyOf(buffer, true);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        // if (isPostON.load()) {
-            postBuffer.makeCopyOf(buffer, true);
-        // }
+        postBuffer.makeCopyOf(buffer, true);
     }
 
     template<typename FloatType>
@@ -65,12 +61,7 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setON(const bool x) {
         isON.store(x, std::memory_order_relaxed);
-        if (x && !isThreadRunning()) {
-            startThread(juce::Thread::Priority::low);
-        }
-        if (!x && isThreadRunning()) {
-            stopThread(-1);
-        }
+        triggerAsyncUpdate();
     }
 
     template<typename FloatType>
@@ -97,8 +88,7 @@ namespace zlFFT {
     void PrePostFFTAnalyzer<FloatType>::run() {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
-            const juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()};
-            {
+            const juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()}; {
                 syncFFT.run();
                 juce::ScopedLock lock(pathLock);
                 syncFFT.createPath(prePath, postPath, bound);
@@ -116,7 +106,14 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::handleAsyncUpdate() {
-        notify();
+        const auto x = isON.load();
+        if (x && !isThreadRunning()) {
+            startThread(juce::Thread::Priority::low);
+        } else if (!x && isThreadRunning()) {
+            stopThread(-1);
+        } else {
+            notify();
+        }
     }
 
     template<typename FloatType>
