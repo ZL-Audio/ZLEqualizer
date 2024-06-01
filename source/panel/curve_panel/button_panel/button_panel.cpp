@@ -304,10 +304,15 @@ namespace zlPanel {
             _para->endChangeGesture();
         }
 
-        auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
-        para->beginChangeGesture();
-        para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(idx)));
-        para->endChangeGesture();
+        if (idx != selectBandIdx.load()) {
+            auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(static_cast<int>(idx)));
+            para->endChangeGesture();
+        } else {
+            toAttachGroup.store(true);
+            triggerAsyncUpdate();
+        }
     }
 
     void ButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -379,7 +384,6 @@ namespace zlPanel {
             }
         }
         for (const auto &parameter: IDs) {
-            // parametersRef.removeParameterListener(zlDSP::appendSuffix(parameter, oldIdx), this);
             parametersRef.addParameterListener(zlDSP::appendSuffix(parameter, idx), this);
         }
         currentFreq.store(
