@@ -12,8 +12,8 @@
 namespace zlInterface {
     TwoValueRotarySlider::TwoValueRotarySlider(const juce::String &labelText, UIBase &base)
         : uiBase(base),
-          slider1(base), slider2(base),
           slider1LAF(base), slider2LAF(base),
+          slider1(base), slider2(base),
           labelLookAndFeel(base), labelLookAndFeel1(base), labelLookAndFeel2(base), textBoxLAF(base),
           animator{} {
         for (auto const s: {&slider1, &slider2}) {
@@ -69,15 +69,11 @@ namespace zlInterface {
     }
 
     TwoValueRotarySlider::~TwoValueRotarySlider() {
+        animator.cancelAllAnimations(false);
         slider1.removeListener(this);
         slider2.removeListener(this);
         label1.removeListener(this);
         label2.removeListener(this);
-        slider1.setLookAndFeel(nullptr);
-        slider2.setLookAndFeel(nullptr);
-        for (auto &l: {&label, &label1, &label2}) {
-            l->setLookAndFeel(nullptr);
-        }
     }
 
     juce::String TwoValueRotarySlider::getDisplayValue(juce::Slider &s) {
@@ -133,30 +129,24 @@ namespace zlInterface {
     void TwoValueRotarySlider::mouseUp(const juce::MouseEvent &event) {
         if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseUp(event);
-            // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
             slider2.mouseUp(event);
-            // label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
         }
     }
 
     void TwoValueRotarySlider::mouseDown(const juce::MouseEvent &event) {
         if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseDown(event);
-            // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
             slider2.mouseDown(event);
-            // label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
         }
     }
 
     void TwoValueRotarySlider::mouseDrag(const juce::MouseEvent &event) {
         if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseDrag(event);
-            // label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         } else {
             slider2.mouseDrag(event);
-            // label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
         }
     }
 

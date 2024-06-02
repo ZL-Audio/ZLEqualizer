@@ -81,8 +81,8 @@ namespace zlPanel {
         }
 
         for (size_t j = 0; j < useLRMS.size(); ++j) {
+            paths[j].clear();
             if (!useLRMS[j]) {
-                paths[j].clear();
                 continue;
             }
 
@@ -94,7 +94,6 @@ namespace zlPanel {
 
             const auto maxDB = maximumDB.load();
             auto y0 = 0.f;
-            paths[j].clear();
             for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
                 const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
                                getWidth();

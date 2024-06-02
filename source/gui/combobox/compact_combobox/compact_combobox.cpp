@@ -25,6 +25,7 @@ namespace zlInterface {
 
 
     CompactCombobox::~CompactCombobox() {
+        animator.cancelAllAnimations(false);
         comboBox.setLookAndFeel(nullptr);
     }
 

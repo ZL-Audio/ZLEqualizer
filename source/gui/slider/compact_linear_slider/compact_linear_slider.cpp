@@ -10,10 +10,10 @@
 #include "compact_linear_slider.hpp"
 
 namespace zlInterface {
-    CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base) : uiBase(base),
-        sliderLookAndFeel(base), nameLookAndFeel(base), textLookAndFeel(base),
-        slider(base),
-        animator{} {
+    CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base)
+        : uiBase(base),
+          sliderLookAndFeel(base), nameLookAndFeel(base), textLookAndFeel(base),
+          slider(base) {
         juce::ignoreUnused(uiBase);
 
         slider.setSliderStyle(juce::Slider::LinearHorizontal);
@@ -23,7 +23,6 @@ namespace zlInterface {
         slider.setDoubleClickReturnValue(true, 0.0);
         slider.setScrollWheelEnabled(true);
         slider.setInterceptsMouseClicks(false, false);
-        // slider.setBufferedToImage(true);
         slider.setLookAndFeel(&sliderLookAndFeel);
         addAndMakeVisible(slider);
 
@@ -45,9 +44,7 @@ namespace zlInterface {
     }
 
     CompactLinearSlider::~CompactLinearSlider() {
-        slider.setLookAndFeel(nullptr);
-        label.setLookAndFeel(nullptr);
-        text.setLookAndFeel(nullptr);
+        animator.cancelAllAnimations(false);
     }
 
     void CompactLinearSlider::resized() {

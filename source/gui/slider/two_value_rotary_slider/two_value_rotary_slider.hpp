@@ -27,8 +27,6 @@ namespace zlInterface {
 
         ~TwoValueRotarySlider() override;
 
-        // void paintOverChildren(juce::Graphics &g) override;
-
         void mouseUp(const juce::MouseEvent &event) override;
 
         void mouseDown(const juce::MouseEvent &event) override;
@@ -71,14 +69,15 @@ namespace zlInterface {
     private:
         UIBase &uiBase;
 
-        SnappingSlider slider1, slider2;
         FirstRotarySliderLookAndFeel slider1LAF;
         SecondRotarySliderLookAndFeel slider2LAF;
 
-        juce::Label label, label1, label2;
-        NameLookAndFeel labelLookAndFeel, labelLookAndFeel1, labelLookAndFeel2;
+        SnappingSlider slider1, slider2;
 
+        NameLookAndFeel labelLookAndFeel, labelLookAndFeel1, labelLookAndFeel2;
         NameLookAndFeel textBoxLAF;
+
+        juce::Label label, label1, label2;
 
         std::atomic<bool> showSlider2 = true, mouseOver, editable;
         std::atomic<float> lrPad = 0, ubPad = 0;

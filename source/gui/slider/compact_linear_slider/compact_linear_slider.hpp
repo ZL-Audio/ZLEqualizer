@@ -62,10 +62,10 @@ namespace zlInterface {
         SnappingSlider slider;
         juce::Label label, text;
 
-        std::atomic<float> lrPad = 0, ubPad = 0;
-
-        friz::Animator animator;
+        friz::Animator animator{};
         static constexpr int animationId = 1;
+
+        std::atomic<float> lrPad = 0, ubPad = 0;
 
         juce::String getDisplayValue(juce::Slider &s);
     };
