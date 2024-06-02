@@ -160,7 +160,7 @@ namespace zlPanel {
     void SinglePanel::drawCurve(juce::Path &path,
                                 const std::array<double, zlIIR::frequencies.size()> &dBs,
                                 juce::Rectangle<float> bound,
-                                bool reverse,
+                                const bool reverse,
                                 const bool startPath) {
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         const auto maxDB = maximumDB.load();
@@ -228,7 +228,7 @@ namespace zlPanel {
                 juce::Path,
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                 farbot::ThreadType::realtime> pathLock(recentCurvePath);
-            (*pathLock).swapWithPath(curvePath);
+            *pathLock = curvePath;
         }
         // draw shadow
         {
@@ -263,7 +263,7 @@ namespace zlPanel {
                 juce::Path,
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                 farbot::ThreadType::realtime> pathLock(recentShadowPath);
-            (*pathLock).swapWithPath(shadowPath);
+            *pathLock = shadowPath;
         }
         // draw dynamic shadow
         {
@@ -278,7 +278,7 @@ namespace zlPanel {
                 juce::Path,
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                 farbot::ThreadType::realtime> pathLock(recentDynPath);
-            (*pathLock).swapWithPath(dynPath);
+            *pathLock = dynPath;
         }
     }
 } // zlPanel

@@ -97,20 +97,6 @@ namespace zlPanel {
         }
     }
 
-    void CurvePanel::checkRepaint() {
-        if (sumPanel.checkRepaint()) {
-            repaint();
-            return;
-        }
-        for (const auto &sP: singlePanels) {
-            if (sP->willRepaint()) {
-                repaint();
-                return;
-            }
-        }
-        soloPanel.checkRepaint();
-    }
-
     void CurvePanel::run() {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {

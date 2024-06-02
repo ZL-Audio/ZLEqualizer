@@ -51,13 +51,9 @@ namespace zlPanel {
         juce::Time currentT;
         juce::VBlankAttachment vblank;
 
-        std::atomic<bool> sumRepaint{false};
-
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void repaintCallBack();
-
-        void checkRepaint();
 
         void run() override;
     };
