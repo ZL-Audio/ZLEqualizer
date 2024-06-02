@@ -44,15 +44,13 @@ namespace zlPanel {
     }
 
     void FFTPanel::resized() {
-        auto bound = getLocalBounds().toFloat();
+        const auto bound = getLocalBounds().toFloat();
         leftCorner = {bound.getX() * 0.9f, bound.getBottom() * 1.1f};
         rightCorner = {bound.getRight() * 1.1f, bound.getBottom() * 1.1f};
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-        analyzerRef.setBound(bound);
     }
 
     void FFTPanel::updatePaths() {
-        analyzerRef.updatePaths(path1, path2, path3);
+        analyzerRef.updatePaths(path1, path2, path3, getLocalBounds().toFloat());
         for (auto &path : {&path1, &path2, &path3}) {
             if (!path->isEmpty()) {
                 path->lineTo(rightCorner);

@@ -47,11 +47,9 @@ namespace zlFFT {
 
         inline bool getSideON() const { return isSideON.load(); }
 
-        void setBound(juce::Rectangle<float> bound);
-
         bool getPathReady() const { return isPathReady.load(); }
 
-        void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_);
+        void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_, juce::Rectangle<float> bound);
 
     private:
         SyncFFTAnalyzer<FloatType> syncFFT{};
@@ -59,13 +57,10 @@ namespace zlFFT {
         juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
         std::atomic<bool> isON{false};
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
-        juce::Path prePath, postPath, sidePath;
         std::atomic<float> xx, yy, width, height;
         std::atomic<bool> isBoundReady{false};
         std::atomic<bool> isPathReady{false};
         std::atomic<bool> toReset{false};
-
-        juce::CriticalSection pathLock;
 
         void run() override;
 

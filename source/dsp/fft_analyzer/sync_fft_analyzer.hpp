@@ -89,9 +89,9 @@ namespace zlFFT {
 
         std::array<std::atomic<float>, zlIIR::frequencies.size() / 2> &getInterplotDBs(const size_t z) { return interplotDBs[z]; }
 
-        void setON(const std::array<bool, 2> x) {
-            isON[0].store(x[0]);
-            isON[1].store(x[1]);
+        void setON(const bool x0, const bool x1) {
+            isON[0].store(x0);
+            isON[1].store(x1);
         }
 
     private:

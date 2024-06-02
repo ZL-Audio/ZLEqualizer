@@ -43,8 +43,6 @@ namespace zlFFT {
 
         void process();
 
-        bool getIsConflictReady() const { return isConflictReady.load(); }
-
         void setLeftRight(const float left, const float right) {
             x1.store(left);
             x2.store(right);
@@ -59,13 +57,12 @@ namespace zlFFT {
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
         std::array<float, zlIIR::frequencies.size() / 2> mainDB{}, refDB{};
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
-        std::atomic<bool> isON{false}, isConflictReady{false};
+        std::atomic<bool> isON{false}, isConflictReady{false}, toReset{false};
 
         std::atomic<float> x1{0.f}, x2{1.f};
         std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
-        std::array<float, zlIIR::frequencies.size() / 8> conflictsP{};
+        std::array<std::atomic<float>, zlIIR::frequencies.size() / 8> conflictsP{};
         std::vector<std::pair<float, float> > conflictAreas;
-        juce::CriticalSection gradientLock;
 
         juce::ColourGradient gradient;
         const juce::Colour gColour = juce::Colours::red;

@@ -74,6 +74,10 @@ namespace zlFFT {
             const auto mainM = std::reduce(mainDB.begin(), mainDB.end()) / static_cast<float>(mainDB.size());
             const auto refM = std::reduce(refDB.begin(), refDB.end()) / static_cast<float>(refDB.size());
             const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f);
+
+            if (toReset.exchange(false)) {
+                std::fill(conflicts.begin(), conflicts.end(), 0.f);
+            }
             for (size_t i = 0; i < conflicts.size(); ++i) {
                 const auto fftIdx = 4 * i;
                 const auto dB1 = (mainDB[fftIdx] + mainDB[fftIdx + 1] + mainDB[fftIdx + 2] + mainDB[fftIdx + 3]) *
@@ -91,33 +95,13 @@ namespace zlFFT {
             const auto scale = static_cast<float>(conflictScale.load());
             for (size_t i = 0; i < conflicts.size(); ++i) {
                 conflictsP[i] = conflicts[i] * scale;
-                if (conflictsP[i] >= 0.01) {
-                    conflictsP[i] = juce::jmin(.75f, conflictsP[i]);
+                if (conflictsP[i].load() >= 0.01) {
+                    conflictsP[i].store(juce::jmin(.75f, conflictsP[i].load()));
                 } else {
-                    conflictsP[i] = -1.f;
+                    conflictsP[i].store(-1.f);
                 }
             }
-            // calculate gradient
-            {
-                juce::ScopedLock lock(gradientLock);
-                gradient.point1 = juce::Point<float>(x1.load(), 0.f);
-                gradient.point2 = juce::Point<float>(x2.load(), 0.f);
-                gradient.isRadial = false;
-                gradient.clearColours();
-
-                gradient.addColour(0.0,
-                                   gColour.withMultipliedAlpha(juce::jmax(conflictsP.front(), 0.f)));
-                gradient.addColour(1.0,
-                                   gColour.withMultipliedAlpha(juce::jmax(conflictsP.back(), 0.f)));
-                for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
-                    if (conflictsP[i + 1] > 0 || conflictsP[i - 1] > 0) {
-                        const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
-                        const auto rectColour = gColour.withMultipliedAlpha(juce::jmax(conflictsP[i], 0.f));
-                        gradient.addColour(p, rectColour);
-                    }
-                }
-                isConflictReady.store(true);
-            }
+            isConflictReady.store(true);
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
         }
@@ -125,7 +109,24 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::drawGradient(juce::Graphics &g, juce::Rectangle<float> bound) {
-        juce::ScopedLock lock(gradientLock);
+        // calculate gradient
+        gradient.point1 = juce::Point<float>(x1.load(), 0.f);
+        gradient.point2 = juce::Point<float>(x2.load(), 0.f);
+        gradient.isRadial = false;
+        gradient.clearColours();
+
+        gradient.addColour(0.0,
+                           gColour.withMultipliedAlpha(juce::jmax(conflictsP.front().load(), 0.f)));
+        gradient.addColour(1.0,
+                           gColour.withMultipliedAlpha(juce::jmax(conflictsP.back().load(), 0.f)));
+        for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
+            if (conflictsP[i + 1] > 0 || conflictsP[i - 1] > 0) {
+                const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
+                const auto rectColour = gColour.withMultipliedAlpha(juce::jmax(conflictsP[i].load(), 0.f));
+                gradient.addColour(p, rectColour);
+            }
+        }
+
         g.setGradientFill(gradient);
         g.fillRect(bound);
         isConflictReady.store(false);
@@ -133,14 +134,15 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::handleAsyncUpdate() {
-        const auto x = isON.load();
-        if (x && !isThreadRunning()) {
-            startThread(juce::Thread::Priority::low);
-        }
-        else if (!x && isThreadRunning()) {
+        if (isON.load()) {
+            if (isThreadRunning()) {
+                notify();
+            } else {
+                toReset.store(true);
+                startThread(juce::Thread::Priority::low);
+            }
+        } else if (isThreadRunning()) {
             stopThread(-1);
-        } else {
-            notify();
         }
     }
 

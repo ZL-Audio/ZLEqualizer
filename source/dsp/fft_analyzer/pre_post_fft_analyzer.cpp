@@ -60,21 +60,21 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setON(const bool x) {
-        isON.store(x, std::memory_order_relaxed);
+        isON.store(x);
         triggerAsyncUpdate();
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPreON(const bool x) {
         isPreON.store(x);
-        syncFFT.setON({x, isPostON.load()});
+        syncFFT.setON(x, isPostON.load());
         toReset.store(true);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPostON(const bool x) {
         isPostON.store(x);
-        syncFFT.setON({isPreON.load(), x});
+        syncFFT.setON(isPreON.load(), x);
         toReset.store(true);
     }
 
@@ -88,15 +88,9 @@ namespace zlFFT {
     void PrePostFFTAnalyzer<FloatType>::run() {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
-            const juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()}; {
-                syncFFT.run();
-                juce::ScopedLock lock(pathLock);
-                syncFFT.createPath(prePath, postPath, bound);
-            }
+            syncFFT.run();
             if (isSideON.load()) {
                 sideFFT.run();
-                juce::ScopedLock lock(pathLock);
-                sideFFT.createPath(sidePath, bound);
             }
             isPathReady.store(true);
             const auto flag = wait(-1);
@@ -111,39 +105,22 @@ namespace zlFFT {
             startThread(juce::Thread::Priority::low);
         } else if (!x && isThreadRunning()) {
             stopThread(-1);
-        } else {
+        } else if (x) {
             notify();
         }
     }
 
     template<typename FloatType>
-    void PrePostFFTAnalyzer<FloatType>::setBound(juce::Rectangle<float> bound) {
-        xx.store(bound.getX());
-        yy.store(bound.getY());
-        width.store(bound.getWidth());
-        height.store(bound.getHeight());
-        isBoundReady.store(false); // skip the next update cause bound is out-dated
-    }
-
-    template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::updatePaths(
-        juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_) {
-        juce::ScopedLock lock(pathLock);
-        if (isBoundReady.load()) {
-            if (isPreON.load()) {
-                prePath_ = prePath;
-            }
-            if (isPostON.load()) {
-                postPath_ = postPath;
-            }
-            if (isSideON.load()) {
-                sidePath_ = sidePath;
-            }
-        } else {
-            prePath_.clear();
-            postPath_.clear();
-            sidePath_.clear();
-            isBoundReady.store(true);
+        juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_, juce::Rectangle<float> bound) {
+        prePath_.clear();
+        postPath_.clear();
+        sidePath_.clear();
+        if (isPreON.load() || isPostON.load()) {
+            syncFFT.createPath(prePath_, postPath_, bound);
+        }
+        if (isSideON.load()) {
+            sideFFT.createPath(sidePath_, bound);
         }
         isPathReady.store(false);
     }

@@ -208,13 +208,13 @@ namespace zlFFT {
                                                 const juce::Rectangle<float> bound) {
         juce::ScopedNoDenormals noDenormals;
         std::vector<size_t> isONVector{};
+        path1.clear();
         if (isON[0].load()) {
-            path1.clear();
             path1.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
             isONVector.push_back(0);
         }
+        path2.clear();
         if (isON[1].load()) {
-            path2.clear();
             path2.startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
             isONVector.push_back(1);
         }
