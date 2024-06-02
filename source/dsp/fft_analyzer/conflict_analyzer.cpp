@@ -37,7 +37,7 @@ namespace zlFFT {
     void ConflictAnalyzer<FloatType>::setON(const bool x) {
         syncAnalyzer.reset();
         isON.store(x);
-        triggerAsyncUpdate();
+        toReset.store(true);
     }
 
     template<typename FloatType>
@@ -134,16 +134,7 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::handleAsyncUpdate() {
-        if (isON.load()) {
-            if (isThreadRunning()) {
-                notify();
-            } else {
-                toReset.store(true);
-                startThread(juce::Thread::Priority::low);
-            }
-        } else if (isThreadRunning()) {
-            stopThread(-1);
-        }
+        notify();
     }
 
     template

@@ -12,11 +12,14 @@
 namespace zlPanel {
     ConflictPanel::ConflictPanel(zlFFT::ConflictAnalyzer<double> &conflictAnalyzer, zlInterface::UIBase &base)
         : analyzer(conflictAnalyzer), uiBase(base) {
+        analyzer.start();
         setInterceptsMouseClicks(false, false);
         juce::ignoreUnused(uiBase);
     }
 
-    ConflictPanel::~ConflictPanel() = default;
+    ConflictPanel::~ConflictPanel() {
+        analyzer.stop();
+    }
 
     void ConflictPanel::paint(juce::Graphics &g) {
         if (!analyzer.getON()) { return; }

@@ -29,6 +29,15 @@ namespace zlFFT {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        void start() {
+            toReset.store(true);
+            startThread(juce::Thread::Priority::low);
+        }
+
+        void stop() {
+            stopThread(-1);
+        }
+
         void setON(bool x);
 
         bool getON() const { return isON.load(); }

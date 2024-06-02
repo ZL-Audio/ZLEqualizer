@@ -18,6 +18,7 @@ namespace zlFFT {
     template<typename FloatType>
     SingleFFTAnalyzer<FloatType>::SingleFFTAnalyzer() {
         tiltSlope.store(zlState::ffTTilt::slopes[static_cast<size_t>(zlState::ffTTilt::defaultI)]);
+        reset();
     }
 
     template<typename FloatType>
