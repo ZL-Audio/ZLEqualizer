@@ -57,7 +57,7 @@ namespace zlFFT {
             x2.store(right);
         }
 
-        void drawGradient(juce::Graphics &g, juce::Rectangle<float> bound);
+        void updateGradient(juce::ColourGradient &gradient);
 
         SyncFFTAnalyzer<FloatType> &getSyncFFT() { return syncAnalyzer; }
 
@@ -71,9 +71,7 @@ namespace zlFFT {
         std::atomic<float> x1{0.f}, x2{1.f};
         std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
         std::array<std::atomic<float>, zlIIR::frequencies.size() / 8> conflictsP{};
-        std::vector<std::pair<float, float> > conflictAreas;
 
-        juce::ColourGradient gradient;
         const juce::Colour gColour = juce::Colours::red;
 
         void run() override;

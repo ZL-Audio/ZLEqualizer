@@ -108,7 +108,7 @@ namespace zlFFT {
     }
 
     template<typename FloatType>
-    void ConflictAnalyzer<FloatType>::drawGradient(juce::Graphics &g, juce::Rectangle<float> bound) {
+    void ConflictAnalyzer<FloatType>::updateGradient(juce::ColourGradient &gradient) {
         // calculate gradient
         gradient.point1 = juce::Point<float>(x1.load(), 0.f);
         gradient.point2 = juce::Point<float>(x2.load(), 0.f);
@@ -127,8 +127,6 @@ namespace zlFFT {
             }
         }
 
-        g.setGradientFill(gradient);
-        g.fillRect(bound);
         isConflictReady.store(false);
     }
 

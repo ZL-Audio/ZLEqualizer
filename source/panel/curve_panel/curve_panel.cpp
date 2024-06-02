@@ -91,6 +91,7 @@ namespace zlPanel {
             && analyzer.getPathReady()) {
                 fftPanel.updatePaths();
             }
+            conflictPanel.updateGradient();
             repaint();
             currentT = nowT;
         }

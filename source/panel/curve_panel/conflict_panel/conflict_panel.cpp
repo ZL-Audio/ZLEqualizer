@@ -22,9 +22,10 @@ namespace zlPanel {
     }
 
     void ConflictPanel::paint(juce::Graphics &g) {
-        if (!analyzer.getON()) { return; }
-        const auto bound = getLocalBounds().toFloat();
-        analyzer.drawGradient(g, bound);
+        if (isGradientInit.load()) {
+            g.setGradientFill(gradient);
+            g.fillRect(getLocalBounds());
+        }
     }
 
     void ConflictPanel::resized() {

@@ -27,10 +27,21 @@ namespace zlPanel {
 
         void resized() override;
 
+        void updateGradient() {
+            if (analyzer.getON()) {
+                analyzer.updateGradient(gradient);
+                isGradientInit.store(true);
+            } else {
+                isGradientInit.store(false);
+            }
+        }
+
     private:
         zlFFT::ConflictAnalyzer<double> &analyzer;
         zlInterface::UIBase &uiBase;
         juce::Path path;
+        juce::ColourGradient gradient;
+        std::atomic<bool> isGradientInit{false};
     };
 } // zlPanel
 
