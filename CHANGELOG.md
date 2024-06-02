@@ -9,6 +9,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 - add filter parameter tags
 - fix mouse-wheel issues #63
 - fix incorrect FFT curve at start-up
+- improve stability
 
 ## 0.3.0
 
