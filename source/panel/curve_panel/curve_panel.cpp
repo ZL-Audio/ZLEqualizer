@@ -118,10 +118,10 @@ namespace zlPanel {
             juce::ignoreUnused(flag);
             for (const auto &sP: singlePanels) {
                 if (sP->checkRepaint()) {
-                    sP->run(false);
+                    sP->run();
                 }
             }
-            sumPanel.run(false);
+            sumPanel.run();
         }
     }
 }

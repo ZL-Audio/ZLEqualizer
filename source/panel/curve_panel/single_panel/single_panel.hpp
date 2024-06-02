@@ -19,8 +19,7 @@
 
 namespace zlPanel {
     class SinglePanel final : public juce::Component,
-                              private juce::AudioProcessorValueTreeState::Listener,
-                              private juce::AsyncUpdater {
+                              private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SinglePanel(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
@@ -43,7 +42,7 @@ namespace zlPanel {
 
         bool willRepaint() const;
 
-        void run(bool triggerRepaint = true);
+        void run();
 
     private:
         juce::Path curvePath, shadowPath, dynPath;
@@ -58,6 +57,8 @@ namespace zlPanel {
         zlDynamicFilter::IIRFilter<double> &filter;
         zlIIR::Filter<double> &baseF, &targetF;
         std::atomic<float> maximumDB;
+        std::atomic<float> xx{-100.f}, yy{-100.f}, width{.1f}, height{.1f};
+
         std::atomic<bool> skipRepaint{false};
         std::atomic<bool> toRepaint{false};
         std::atomic<bool> avoidRepaint{false};
@@ -73,10 +74,10 @@ namespace zlPanel {
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
-        void handleAsyncUpdate() override;
-
         void drawCurve(juce::Path &path,
-                       const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse = false,
+                       const std::array<double, zlIIR::frequencies.size()> &dBs,
+                       juce::Rectangle<float> bound,
+                       bool reverse = false,
                        bool startPath = true);
 
         inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {

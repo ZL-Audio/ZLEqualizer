@@ -66,7 +66,7 @@ namespace zlPanel {
         return false;
     }
 
-    void SumPanel::run(bool triggerRepaint) {
+    void SumPanel::run() {
         juce::ScopedNoDenormals noDenormals;
         std::array<bool, 5> useLRMS{false, false, false, false, false};
         constexpr std::array<zlDSP::lrType::lrTypes, 5> lrTypes{
@@ -89,7 +89,7 @@ namespace zlPanel {
             c.updateDBs(lrTypes[j]);
             const auto &dBs = c.getDBs();
 
-            auto bound = getLocalBounds().toFloat();
+            juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()};
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
 
             const auto maxDB = maximumDB.load();
@@ -115,13 +115,6 @@ namespace zlPanel {
                 farbot::ThreadType::realtime> pathLock(recentPaths[j]);
             (*pathLock).swapWithPath(paths[j]);
         }
-        if (triggerRepaint) {
-            triggerAsyncUpdate();
-        }
-    }
-
-    void SumPanel::handleAsyncUpdate() {
-        repaint();
     }
 
     void SumPanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -130,6 +123,11 @@ namespace zlPanel {
     }
 
     void SumPanel::resized() {
+        const auto bound = getLocalBounds().toFloat();
+        xx.store(bound.getX());
+        yy.store(bound.getY());
+        width.store(bound.getWidth());
+        height.store(bound.getHeight());
         toRepaint.store(true);
     }
 } // zlPanel

@@ -135,8 +135,13 @@ namespace zlPanel {
     }
 
     void SinglePanel::resized() {
-        run();
+        const auto bound = getLocalBounds().toFloat();
+        xx.store(bound.getX());
+        yy.store(bound.getY());
+        width.store(bound.getWidth());
+        height.store(bound.getHeight());
         sidePanel.setBounds(getLocalBounds());
+        toRepaint.store(true);
     }
 
     bool SinglePanel::willRepaint() const {
@@ -153,9 +158,10 @@ namespace zlPanel {
     }
 
     void SinglePanel::drawCurve(juce::Path &path,
-                                const std::array<double, zlIIR::frequencies.size()> &dBs, bool reverse,
+                                const std::array<double, zlIIR::frequencies.size()> &dBs,
+                                juce::Rectangle<float> bound,
+                                bool reverse,
                                 const bool startPath) {
-        auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         const auto maxDB = maximumDB.load();
         if (reverse) {
@@ -203,14 +209,9 @@ namespace zlPanel {
         toRepaint.store(true);
     }
 
-    void SinglePanel::handleAsyncUpdate() {
-        if (!skipRepaint.load()) {
-            repaint();
-        }
-    }
-
-    void SinglePanel::run(bool triggerRepaint) {
+    void SinglePanel::run() {
         juce::ScopedNoDenormals noDenormals;
+        const juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()};
         // draw curve
         baseFreq.store(static_cast<double>(baseF.getFreq()));
         baseGain.store(static_cast<double>(baseF.getGain()));
@@ -218,7 +219,7 @@ namespace zlPanel {
             baseF.updateDBs();
             curvePath.clear();
             if (actived.load()) {
-                drawCurve(curvePath, baseF.getDBs());
+                drawCurve(curvePath, baseF.getDBs(), bound);
                 centeredDB.store(static_cast<float>(baseF.getDB(baseFreq.load())));
             } else {
                 centeredDB.store(0.f);
@@ -233,7 +234,7 @@ namespace zlPanel {
         {
             shadowPath.clear();
             if (actived.load()) {
-                drawCurve(shadowPath, baseF.getDBs());
+                drawCurve(shadowPath, baseF.getDBs(), bound);
             }
             if (actived.load() && selected.load()) {
                 switch (baseF.getFilterType()) {
@@ -243,7 +244,6 @@ namespace zlPanel {
                     case zlIIR::FilterType::notch:
                     case zlIIR::FilterType::bandShelf:
                     case zlIIR::FilterType::tiltShelf: {
-                        const auto bound = getLocalBounds().toFloat();
                         shadowPath.lineTo(bound.getRight(), bound.getCentreY());
                         shadowPath.lineTo(bound.getX(), bound.getCentreY());
                         shadowPath.closeSubPath();
@@ -252,7 +252,6 @@ namespace zlPanel {
                     case zlIIR::FilterType::lowPass:
                     case zlIIR::FilterType::highPass:
                     case zlIIR::FilterType::bandPass: {
-                        const auto bound = getLocalBounds().toFloat();
                         shadowPath.lineTo(bound.getBottomRight());
                         shadowPath.lineTo(bound.getBottomLeft());
                         shadowPath.closeSubPath();
@@ -270,9 +269,9 @@ namespace zlPanel {
         {
             dynPath.clear();
             if (dynON.load() && actived.load()) {
-                drawCurve(dynPath, baseF.getDBs());
+                drawCurve(dynPath, baseF.getDBs(), bound);
                 targetF.updateDBs();
-                drawCurve(dynPath, targetF.getDBs(), true, false);
+                drawCurve(dynPath, targetF.getDBs(), bound, true, false);
                 dynPath.closeSubPath();
             }
             farbot::RealtimeObject<
@@ -280,9 +279,6 @@ namespace zlPanel {
                 farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                 farbot::ThreadType::realtime> pathLock(recentDynPath);
             (*pathLock).swapWithPath(dynPath);
-        }
-        if (triggerRepaint) {
-            triggerAsyncUpdate();
         }
     }
 } // zlPanel
