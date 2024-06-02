@@ -29,6 +29,7 @@ jobs:
       uses: robinraju/release-downloader@v1.10
       with:
         latest: true
+        preRelease: true
         fileName: "*dmg"
         out-file-path: "current_release"
     - name: Download current release assets (Windows)
