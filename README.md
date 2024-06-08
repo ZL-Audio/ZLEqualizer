@@ -1,5 +1,5 @@
 <p float="left">
-  <img src="docs/compact_darkblue_flat.svg" width="33%" />
+  <img src="docs/zlaudio.svg" width="16.6%" />
   <img src="docs/logo.svg" width="7.5%" />
 </p>
 
