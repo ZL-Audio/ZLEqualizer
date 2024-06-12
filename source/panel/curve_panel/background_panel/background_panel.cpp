@@ -32,7 +32,7 @@ namespace zlPanel {
 
     void BackgroundPanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4);
+        const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4.1f);
         gridPanel.setBounds(bound.toNearestInt());
         scalePanel.setBounds(scaleBound.toNearestInt());
     }

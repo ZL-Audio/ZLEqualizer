@@ -60,7 +60,7 @@ namespace zlPanel {
     void CurvePanel::resized() {
         backgroundPanel.setBounds(getLocalBounds());
         auto bound = getLocalBounds().toFloat();
-        bound.removeFromRight(uiBase.getFontSize() * 4);
+        bound.removeFromRight(uiBase.getFontSize() * 4.1f);
         fftPanel.setBounds(bound.toNearestInt());
         conflictPanel.setBounds(bound.toNearestInt());
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
