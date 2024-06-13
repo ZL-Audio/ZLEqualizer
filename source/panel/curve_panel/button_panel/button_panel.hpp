@@ -80,7 +80,8 @@ namespace zlPanel {
 
         juce::LassoComponent<size_t> lassoComponent;
         juce::SelectedItemSet<size_t> itemsSet;
-        std::atomic<double> currentFreq, currentGain, currentQ;
+        std::atomic<double> currentFreq, currentQ;
+        std::array<std::atomic<float>, zlState::bandNUM> previousGains{};
         std::array<std::atomic<bool>, zlState::bandNUM> isSelected{};
 
         std::atomic<bool> toAttachGroup{false};
