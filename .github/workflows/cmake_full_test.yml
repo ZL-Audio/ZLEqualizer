@@ -45,12 +45,15 @@ jobs:
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
-            boost_toolset: "mingw"
+            boost_toolset: "msvc"
 
     steps:
-      # This is just easier than debugging different compilers on different platforms
-      - name: Set up Clang
-        if: ${{ matrix.name != 'macOS' }}
+      - name: Set up MSVC Developer Command Prompt (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up Clang (Linux)
+        if: runner.os == 'Linux'
         uses: egor-tensin/setup-clang@v1
 
       # This also starts up our "fake" display Xvfb, needed for pluginval
