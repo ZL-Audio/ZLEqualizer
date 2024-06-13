@@ -186,6 +186,11 @@ namespace zlPanel {
 
     void ButtonPanel::mouseDown(const juce::MouseEvent &event) {
         if (event.originalComponent != this) {
+            isLeftClick.store(event.mods.isLeftButtonDown());
+            for (size_t idx = 0; idx < panels.size(); ++idx) {
+                previousGains[idx].store(
+                    static_cast<float>(controllerRef.getFilter(idx).getBaseFilter().getGain()));
+            }
             return;
         }
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
@@ -347,16 +352,30 @@ namespace zlPanel {
                 }
             } else if (parameterID.startsWith(zlDSP::gain::ID)) {
                 if (!isSelected[currentBand].load()) return;
-                if (std::abs(previousGains[currentBand].load()) <= 0.1f) return;
-                const auto scale = newValue / previousGains[currentBand].load();
-                for (size_t idx = 0; idx < isSelected.size(); ++idx) {
-                    if (idx != currentBand && isSelected[idx].load()) {
-                        auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
-                        const auto shiftGain = scale * previousGains[idx].load();
-                        const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
-                        para->beginChangeGesture();
-                        para->setValueNotifyingHost(para->convertTo0to1(legalGain));
-                        para->endChangeGesture();
+                if (isLeftClick.load()) {
+                    if (std::abs(previousGains[currentBand].load()) <= 0.1f) return;
+                    const auto scale = newValue / previousGains[currentBand].load();
+                    for (size_t idx = 0; idx < isSelected.size(); ++idx) {
+                        if (idx != currentBand && isSelected[idx].load()) {
+                            auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
+                            const auto shiftGain = scale * previousGains[idx].load();
+                            const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
+                            para->beginChangeGesture();
+                            para->setValueNotifyingHost(para->convertTo0to1(legalGain));
+                            para->endChangeGesture();
+                        }
+                    }
+                } else {
+                    const auto shift = newValue - previousGains[currentBand].load();
+                    for (size_t idx = 0; idx < isSelected.size(); ++idx) {
+                        if (idx != currentBand && isSelected[idx].load()) {
+                            auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
+                            const auto shiftGain = shift + previousGains[idx].load();
+                            const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
+                            para->beginChangeGesture();
+                            para->setValueNotifyingHost(para->convertTo0to1(legalGain));
+                            para->endChangeGesture();
+                        }
                     }
                 }
             } else if (parameterID.startsWith(zlDSP::Q::ID)) {
@@ -448,8 +467,8 @@ namespace zlPanel {
         for (size_t idx = 0; idx < panels.size(); ++idx) {
             const auto f1 = itemsSet.isSelected(idx);
             isSelected[idx].store(f1);
-            previousGains[idx].store(
-                static_cast<float>(controllerRef.getFilter(idx).getBaseFilter().getGain()));
+            // previousGains[idx].store(
+            //     static_cast<float>(controllerRef.getFilter(idx).getBaseFilter().getGain()));
             const auto f2 = panels[idx]->getDragger().getLAF().getIsSelected();
             if (f1 != f2) {
                 panels[idx]->getDragger().getLAF().setIsSelected(f1);

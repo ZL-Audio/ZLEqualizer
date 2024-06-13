@@ -81,6 +81,7 @@ namespace zlPanel {
         juce::LassoComponent<size_t> lassoComponent;
         juce::SelectedItemSet<size_t> itemsSet;
         std::atomic<double> currentFreq, currentQ;
+        std::atomic<bool> isLeftClick{true};
         std::array<std::atomic<float>, zlState::bandNUM> previousGains{};
         std::array<std::atomic<bool>, zlState::bandNUM> isSelected{};
 
