@@ -87,7 +87,7 @@ namespace zlCompressor {
         FloatType xC = 1.0, xS = 1.0;
 
         inline static FloatType sgn(FloatType val) {
-            return (FloatType(0) < val) - (val < FloatType(0));
+            return static_cast<FloatType>(FloatType(0) < val) - static_cast<FloatType>(val < FloatType(0));
         }
     };
 

@@ -24,8 +24,6 @@ namespace zlDSP {
 
         ~ResetAttach() override;
 
-        void addListeners();
-
     private:
         juce::AudioProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;

@@ -21,9 +21,9 @@ namespace zlPanel {
           baseF(controller.getFilter(idx).getBaseFilter()),
           targetF(controller.getFilter(idx).getTargetFilter()),
           sidePanel(bandIdx, parameters, parametersNA, base, controller) {
-        curvePath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
-        shadowPath.preallocateSpace(zlIIR::frequencies.size() * 3 + 12);
-        dynPath.preallocateSpace(zlIIR::frequencies.size() * 6 + 12);
+        curvePath.preallocateSpace(static_cast<int>(zlIIR::frequencies.size() * 3 + 12));
+        shadowPath.preallocateSpace(static_cast<int>(zlIIR::frequencies.size() * 3 + 12));
+        dynPath.preallocateSpace(static_cast<int>(zlIIR::frequencies.size() * 6 + 12));
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         juce::ignoreUnused(controllerRef);

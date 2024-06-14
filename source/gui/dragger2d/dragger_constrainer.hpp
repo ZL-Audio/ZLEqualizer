@@ -26,16 +26,16 @@ namespace zlInterface {
             if (!enableX.load()) {
                 pos.setX(previousPos.getX());
             } else {
-                const auto minOffLeft = getMinimumWhenOffTheLeft();
-                const auto minOffRight = getMinimumWhenOffTheRight();
-                if (minOffLeft > 0) {
-                    const int limit = limits.getX() + juce::jmin(minOffLeft - bounds.getWidth(), 0);
+                const auto _minOffLeft = getMinimumWhenOffTheLeft();
+                const auto _minOffRight = getMinimumWhenOffTheRight();
+                if (_minOffLeft > 0) {
+                    const int limit = limits.getX() + juce::jmin(_minOffLeft - bounds.getWidth(), 0);
                     if (bounds.getX() < limit) {
                         pos.setX(limit);
                     }
                 }
-                if (minOffRight > 0) {
-                    const auto limit = limits.getRight() - juce::jmin(minOffRight, bounds.getWidth());
+                if (_minOffRight > 0) {
+                    const auto limit = limits.getRight() - juce::jmin(_minOffRight, bounds.getWidth());
                     if (bounds.getX() > limit) {
                         pos.setX(limit);
                     }
@@ -45,16 +45,16 @@ namespace zlInterface {
             if (!enableY.load()) {
                 pos.setY(previousPos.getY());
             } else {
-                const auto minOffTop = getMinimumWhenOffTheTop();
-                const auto minOffBottom = getMinimumWhenOffTheBottom();
-                if (minOffTop > 0) {
-                    const auto limit = limits.getY() + juce::jmin(minOffTop - bounds.getHeight(), 0);
+                const auto _minOffTop = getMinimumWhenOffTheTop();
+                const auto _minOffBottom = getMinimumWhenOffTheBottom();
+                if (_minOffTop > 0) {
+                    const auto limit = limits.getY() + juce::jmin(_minOffTop - bounds.getHeight(), 0);
                     if (bounds.getY() < limit) {
                         pos.setY(limit);
                     }
                 }
-                if (minOffBottom > 0) {
-                    const auto limit = limits.getBottom() - juce::jmin(minOffBottom, bounds.getHeight());
+                if (_minOffBottom > 0) {
+                    const auto limit = limits.getBottom() - juce::jmin(_minOffBottom, bounds.getHeight());
                     if (bounds.getY() > limit) {
                         pos.setY(limit);
                     }

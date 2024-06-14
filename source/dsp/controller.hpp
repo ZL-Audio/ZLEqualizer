@@ -46,7 +46,7 @@ namespace zlDSP {
 
         void setDynamicON(bool x, size_t idx);
 
-        inline std::array<FloatType, zlIIR::frequencies.size()> &getDBs() { return dBs; }
+        inline std::array<double, zlIIR::frequencies.size()> &getDBs() { return dBs; }
 
         void updateDBs(lrType::lrTypes lr);
 
@@ -121,7 +121,7 @@ namespace zlDSP {
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
 
-        std::array<FloatType, zlIIR::frequencies.size()> dBs{};
+        std::array<double, zlIIR::frequencies.size()> dBs{};
 
         zlDelay::SampleDelay<FloatType> delay;
 

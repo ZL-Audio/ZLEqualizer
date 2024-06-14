@@ -109,20 +109,20 @@ namespace zlIIR {
          * @param x input array
          * @param scale
          */
-        void addDBs(std::array<FloatType, frequencies.size()> &x, FloatType scale = 1.0);
+        void addDBs(std::array<double, frequencies.size()> &x, FloatType scale = 1.0);
 
         /**
          * add response curve (gain) of this filter (multiplied by the scale) to an input array
          * @param x input array
          * @param scale
          */
-        void addGains(std::array<FloatType, frequencies.size()> &x, FloatType scale = 1.0);
+        void addGains(std::array<double, frequencies.size()> &x, FloatType scale = 1.0);
 
         /**
          * return the array of response curve (dB)
          * @return
          */
-        inline std::array<FloatType, frequencies.size()> &getDBs() { return dBs; }
+        inline std::array<double, frequencies.size()> &getDBs() { return dBs; }
 
         /**
          * get the response (dB) at a specific frequency
@@ -135,7 +135,7 @@ namespace zlIIR {
         * return the array of response curve (dB)
         * @return
         */
-        inline std::array<FloatType, frequencies.size()> &getGains() { return gains; }
+        inline std::array<double, frequencies.size()> &getGains() { return gains; }
 
         /**
          * get the num of channels
@@ -186,7 +186,7 @@ namespace zlIIR {
         std::atomic<float> sampleRate{48000};
         std::atomic<juce::uint32> numChannels;
 
-        std::array<FloatType, frequencies.size()> dBs{}, gains{};
+        std::array<double, frequencies.size()> dBs{}, gains{};
         std::atomic<bool> magOutdated = false;
 
         std::atomic<bool> toUpdatePara = false, toReset = false;

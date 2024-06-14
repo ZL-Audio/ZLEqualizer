@@ -161,13 +161,13 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::addDBs(std::array<FloatType, frequencies.size()> &x, FloatType scale) {
+    void Filter<FloatType>::addDBs(std::array<double, frequencies.size()> &x, FloatType scale) {
         std::transform(x.begin(), x.end(), dBs.begin(), x.begin(),
                        [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::addGains(std::array<FloatType, frequencies.size()> &x, FloatType scale) {
+    void Filter<FloatType>::addGains(std::array<double, frequencies.size()> &x, FloatType scale) {
         std::transform(x.begin(), x.end(), gains.begin(), x.begin(),
                        [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
     }
@@ -196,10 +196,10 @@ namespace zlIIR {
             dummyCoeff.getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
                                                      frequencies.size(), sampleRate.load());
             std::transform(gains.begin(), gains.end(), singleMagnitudes.begin(), gains.begin(),
-                           std::multiplies<FloatType>());
+                           std::multiplies<double>());
         }
         std::transform(gains.begin(), gains.end(), dBs.begin(),
-                       [](auto &c) { return juce::Decibels::gainToDecibels(c, -FloatType(240)); });
+                       [](auto &c) { return juce::Decibels::gainToDecibels(c, -240.0); });
         if (filterType.load() == FilterType::notch && order.load() >= 2) {
             auto freqIdx = static_cast<size_t>(std::floor(std::log(freq.load() / 10) / std::log(2200) *
                                                           static_cast<double>(frequencies.size())));

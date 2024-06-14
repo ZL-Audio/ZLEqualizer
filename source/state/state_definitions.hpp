@@ -212,9 +212,9 @@ namespace zlState {
     public:
         auto static constexpr ID = "ui_style";
         auto static constexpr name = "NA";
-        inline static constexpr int minV = 0;
-        inline static constexpr int maxV = 2;
-        inline static constexpr int defaultV = 1;
+        inline static constexpr float minV = 0.f;
+        inline static constexpr float maxV = 2.f;
+        inline static constexpr float defaultV = 1.f;
         inline auto static const range = juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
 
@@ -222,9 +222,9 @@ namespace zlState {
     public:
         auto static constexpr ID = "window_w";
         auto static constexpr name = "NA";
-        inline static constexpr int minV = 600;
-        inline static constexpr int maxV = 6000;
-        inline static constexpr int defaultV = 704;
+        inline static constexpr float minV = 600.f;
+        inline static constexpr float maxV = 6000.f;
+        inline static constexpr float defaultV = 704.f;
         inline auto static const range =
                 juce::NormalisableRange<float>(minV, maxV, 1.f);
     };
@@ -233,9 +233,9 @@ namespace zlState {
     public:
         auto static constexpr ID = "window_h";
         auto static constexpr name = "NA";
-        inline static constexpr int minV = 375;
-        inline static constexpr int maxV = 3750;
-        inline static constexpr int defaultV = 440;
+        inline static constexpr float minV = 375.f;
+        inline static constexpr float maxV = 3750.f;
+        inline static constexpr float defaultV = 440.f;
         inline auto static const range =
                 juce::NormalisableRange<float>(minV, maxV, 1.f);
     };

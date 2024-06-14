@@ -56,7 +56,7 @@ namespace zlPanel {
     void LogoPanel::mouseDoubleClick(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
         auto styleID = static_cast<size_t>(stateRef.getRawParameterValue(zlState::uiStyle::ID)->load());
-        styleID = (styleID + 1) % (zlState::uiStyle::maxV + 1);
+        styleID = (styleID + 1) % (static_cast<size_t>(zlState::uiStyle::maxV) + 1);
         uiBase.setStyle(styleID);
         auto *para = stateRef.getParameter(zlState::uiStyle::ID);
         para->beginChangeGesture();

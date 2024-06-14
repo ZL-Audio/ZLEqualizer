@@ -21,10 +21,12 @@ PluginEditor::PluginEditor(PluginProcessor &p)
     juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(sourceCodePro);
 
     // set size & size listener
-    setResizeLimits(zlState::windowW::minV, zlState::windowH::minV,
-                    zlState::windowW::maxV, zlState::windowH::maxV);
+    setResizeLimits(static_cast<int>(zlState::windowW::minV),
+        static_cast<int>(zlState::windowH::minV),
+                    static_cast<int>(zlState::windowW::maxV),
+                    static_cast<int>(zlState::windowH::maxV));
     getConstrainer()->setFixedAspectRatio(
-        static_cast<float>(zlState::windowW::defaultV) / static_cast<float>(zlState::windowH::defaultV));
+        zlState::windowW::defaultV / zlState::windowH::defaultV);
     setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
     lastUIWidth.referTo(p.state.getParameterAsValue(zlState::windowW::ID));
     lastUIHeight.referTo(p.state.getParameterAsValue(zlState::windowH::ID));

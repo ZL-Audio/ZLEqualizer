@@ -16,7 +16,7 @@ namespace zlPanel {
         : parametersRef(parameters),
           uiBase(base), c(controller) {
         for (auto &path: paths) {
-            path.preallocateSpace(zlIIR::frequencies.size() * 3);
+            path.preallocateSpace(static_cast<int>(zlIIR::frequencies.size() * 3));
         }
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             for (const auto &idx: changeIDs) {
