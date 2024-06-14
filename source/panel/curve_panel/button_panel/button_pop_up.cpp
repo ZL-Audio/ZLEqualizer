@@ -143,10 +143,11 @@ namespace zlPanel {
                                          bound.getRight() - width.load() * uiBase.getFontSize() / 2,
                                          bound.getCentreX() + shiftX);
 
-        const auto popUpBound = juce::Rectangle<float>(
+        popUpBound = juce::Rectangle<float>(
             width.load() * uiBase.getFontSize(),
             height.load() * uiBase.getFontSize()).withCentre({finalX, finalY});
-        setBounds(popUpBound.toNearestInt());
+        toUpdateBounds.store(true);
+        // setBounds(popUpBound.toNearestInt());
     }
 
     void ButtonPopUp::parameterChanged(const juce::String &parameterID, float newValue) {

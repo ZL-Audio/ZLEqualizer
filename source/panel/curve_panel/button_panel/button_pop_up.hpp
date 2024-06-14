@@ -30,6 +30,12 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void updateBounds() {
+            if (toUpdateBounds.exchange(false)) {
+                setBounds(popUpBound.toNearestInt());
+            }
+        }
+
         void resized() override;
 
         void componentMovedOrResized(Component &component, bool wasMoved, bool wasResized) override;
@@ -68,7 +74,11 @@ namespace zlPanel {
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         std::atomic<float> freq{1000.f};
+
         void handleAsyncUpdate() override;
+
+        std::atomic<bool> toUpdateBounds{false};
+        juce::Rectangle<float> popUpBound;
     };
 } // zlPanel
 

@@ -18,8 +18,7 @@
 
 namespace zlPanel {
     class FilterButtonPanel final : public juce::Component,
-                                    private juce::AudioProcessorValueTreeState::Listener,
-                                    private juce::AsyncUpdater {
+                                    private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit FilterButtonPanel(size_t bandIdx,
                                    juce::AudioProcessorValueTreeState &parameters,
@@ -44,6 +43,13 @@ namespace zlPanel {
 
         void setMaximumDB(float db);
 
+        void updateDraggers() {
+            if (toUpdateDraggers.exchange(false)) {
+                handleAsyncUpdate();
+            }
+            buttonPopUp.updateBounds();
+        }
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
@@ -65,7 +71,9 @@ namespace zlPanel {
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
-        void handleAsyncUpdate() override;
+        void handleAsyncUpdate();
+
+        std::atomic<bool> toUpdateDraggers{false};
 
         void updateAttachment();
 

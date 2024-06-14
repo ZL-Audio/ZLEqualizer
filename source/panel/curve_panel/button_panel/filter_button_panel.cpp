@@ -74,7 +74,6 @@ namespace zlPanel {
         };
 
         setInterceptsMouseClicks(false, true);
-
         dragger.getButton().addComponentListener(&buttonPopUp);
     }
 
@@ -104,14 +103,14 @@ namespace zlPanel {
         maximumDB.store(db);
         toUpdateAttachment.store(true);
         toUpdateTargetAttachment.store(true);
-        triggerAsyncUpdate();
+        toUpdateDraggers.store(true);
     }
 
     void FilterButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
             isSelectedTarget.store(static_cast<size_t>(newValue) == band.load());
             toUpdateTargetAttachment.store(true);
-            triggerAsyncUpdate();
+            toUpdateDraggers.store(true);
             return;
         }
         if (parameterID.startsWith(zlDSP::fType::ID)) {
@@ -137,16 +136,16 @@ namespace zlPanel {
             toUpdateAttachment.store(true);
             toUpdateTargetAttachment.store(true);
             toUpdateBounds.store(true);
-            triggerAsyncUpdate();
+            toUpdateDraggers.store(true);
         } else if (parameterID.startsWith(zlState::active::ID)) {
             const auto f = static_cast<bool>(newValue);
             isActiveTarget.store(f);
             toUpdateTargetAttachment.store(true);
-            triggerAsyncUpdate();
+            toUpdateDraggers.store(true);
         } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
             isDynamicHasTarget.store(static_cast<bool>(newValue));
             toUpdateTargetAttachment.store(true);
-            triggerAsyncUpdate();
+            toUpdateDraggers.store(true);
         } else if (parameterID.startsWith(zlDSP::lrType::ID)) {
             lrType.store(static_cast<zlDSP::lrType::lrTypes>(newValue));
             switch (lrType.load()) {
@@ -166,7 +165,7 @@ namespace zlPanel {
                     dragger.getLAF().setLabel('S');
                     break;
             }
-            triggerAsyncUpdate();
+            toUpdateDraggers.store(true);
         }
     }
 

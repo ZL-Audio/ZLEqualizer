@@ -320,7 +320,7 @@ namespace zlDSP {
                 filters[i].getMainFilter().updateDBs();
                 std::transform(dBs.begin(), dBs.end(),
                                filters[i].getMainFilter().getDBs().begin(),
-                               dBs.begin(), std::plus<FloatType>());
+                               dBs.begin(), std::plus<double>());
             }
         }
     }

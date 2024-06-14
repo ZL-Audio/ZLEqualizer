@@ -31,11 +31,12 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void updateDraggers() {
+        void updateDraggers() const {
             for (const auto &p : panels) {
                 p->getDragger().updateButton();
                 p->getTargetDragger().updateButton();
                 p->getSideDragger().updateButton();
+                p->updateDraggers();
             }
         }
 
