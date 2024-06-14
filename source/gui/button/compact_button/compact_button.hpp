@@ -17,7 +17,7 @@
 #include "compact_button_look_and_feel.hpp"
 
 namespace zlInterface {
-    class CompactButton : public juce::Component {
+    class CompactButton final : public juce::Component {
     public:
         explicit CompactButton(const juce::String &labelText, UIBase &base);
 
@@ -44,7 +44,7 @@ namespace zlInterface {
         juce::ToggleButton button;
         CompactButtonLookAndFeel lookAndFeel;
         static constexpr int animationId = 1;
-        static constexpr float animationDuration = 200.f;
+        static constexpr int animationDuration = 200;
 
         std::atomic<bool> fit = false;
 

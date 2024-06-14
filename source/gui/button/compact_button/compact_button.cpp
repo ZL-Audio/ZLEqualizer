@@ -42,7 +42,7 @@ namespace zlInterface {
             if (animator.getAnimation(animationId) != nullptr)
                 return;
             auto effect{
-                friz::makeAnimation<friz::Parametric, 1>(
+                friz::makeAnimation<friz::Parametric, static_cast<int>(1)>(
                     // ID of the animation
                     animationId, {0.f}, {1.f}, animationDuration, friz::Parametric::kLinear)
             };
