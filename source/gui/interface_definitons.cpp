@@ -262,7 +262,7 @@ namespace zlInterface {
                 case gridColour:
                     return getTextLightColor();
                 case tagColour:
-                    return getTextLightColor();
+                    return getTextColor().withAlpha(customColours[static_cast<size_t>(idx)].getFloatAlpha());
                 case colourNum:
                 default:
                     return juce::Colours::white;
