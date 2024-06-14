@@ -24,10 +24,17 @@ namespace zlInterface {
         button.setLookAndFeel(nullptr);
     }
 
+    void Dragger::paint(juce::Graphics &g) {
+        juce::ignoreUnused(g);
+        if (dummyButtonChanged.exchange(false)) {
+            button.setBounds(dummyButton.getBoundsInParent());
+        }
+    }
+
     void Dragger::mouseDown(const juce::MouseEvent &event) {
         isSelected.store(true);
         button.setToggleState(true, juce::NotificationType::sendNotificationSync);
-        dragger.startDraggingComponent(&button, event);
+        dragger.startDraggingComponent(&dummyButton, event);
 
         const BailOutChecker checker(this);
         listeners.callChecked(checker, [&](Dragger::Listener &l) { l.dragStarted(this); });
@@ -55,11 +62,11 @@ namespace zlInterface {
                 constrainer.setYON(true);
             }
 
-            dragger.dragComponent(&button, event, &constrainer);
-            const auto buttonBound = button.getBoundsInParent().toFloat();
+            dragger.dragComponent(&dummyButton, event, &constrainer);
+            const auto buttonBound = dummyButton.getBoundsInParent().toFloat();
             xPortion.store((buttonBound.getCentreX() - buttonArea.getX()) / buttonArea.getWidth());
             yPortion.store((buttonArea.getBottom() - buttonBound.getCentreY()) / buttonArea.getHeight());
-
+            dummyButtonChanged.store(true);
             const BailOutChecker checker(this);
             listeners.callChecked(checker, [&](Listener &l) { l.draggerValueChanged(this); });
         }
@@ -74,7 +81,8 @@ namespace zlInterface {
                                                   uiBase.getFontSize() * scale.load());
         buttonBound.setCentre(buttonArea.getX() + xPortion.load() * buttonArea.getWidth(),
                               buttonArea.getBottom() - yPortion.load() * buttonArea.getHeight());
-        button.setBounds(buttonBound.toNearestInt());
+        dummyButton.setBounds(buttonBound.toNearestInt());
+        dummyButtonChanged.store(true);
         // set constrainer
         const auto minimumOffset = uiBase.getFontSize() * scale.load() * .5f;
         constrainer.setMinimumOnscreenAmounts(static_cast<int>(std::floor(minimumOffset + uPadding + .5f)),
@@ -93,18 +101,20 @@ namespace zlInterface {
 
     void Dragger::setXPortion(const float x) {
         xPortion.store(x);
-        auto buttonBound = button.getBoundsInParent().toFloat();
+        auto buttonBound = dummyButton.getBoundsInParent().toFloat();
         buttonBound.setCentre(buttonArea.getX() + x * buttonArea.getWidth(),
                               buttonBound.getCentreY());
-        button.setBounds(buttonBound.toNearestInt());
+        dummyButton.setBounds(buttonBound.toNearestInt());
+        dummyButtonChanged.store(true);
     }
 
     void Dragger::setYPortion(const float y) {
         yPortion.store(y);
-        auto buttonBound = button.getBoundsInParent().toFloat();
+        auto buttonBound = dummyButton.getBoundsInParent().toFloat();
         buttonBound.setCentre(buttonBound.getCentreX(),
                               buttonArea.getBottom() - y * buttonArea.getHeight());
-        button.setBounds(buttonBound.toNearestInt());
+        dummyButton.setBounds(buttonBound.toNearestInt());
+        dummyButtonChanged.store(true);
     }
 
     float Dragger::getXPortion() const {

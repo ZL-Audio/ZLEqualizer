@@ -78,6 +78,7 @@ namespace zlPanel {
         g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
         g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
         g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
+        pitchLabel.setText(pitchString, juce::dontSendNotification);
     }
 
     void ButtonPopUp::resized() {
@@ -157,10 +158,8 @@ namespace zlPanel {
         const auto pitchIdx = juce::roundToInt(12 * std::log2(freq.load() / 440.f));
         const auto pitchIdx1 = (pitchIdx + 240) % 12;
         const auto pitchIdx2 = (pitchIdx + 240) / 12 - 16;
-        const auto pitchString = pitchIdx2 >= 0
-                                     ? pitchLookUp[static_cast<size_t>(pitchIdx1)] + std::to_string(pitchIdx2)
+        pitchString = pitchIdx2 >= 0
+                                     ? std::string(pitchLookUp[static_cast<size_t>(pitchIdx1)]) + std::to_string(pitchIdx2)
                                      : "A0";
-        pitchLabel.setText(pitchString, juce::dontSendNotification);
     }
-
 } // zlPanel

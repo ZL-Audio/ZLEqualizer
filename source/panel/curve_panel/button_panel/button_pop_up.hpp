@@ -53,6 +53,7 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
 
         juce::Label pitchLabel;
+        std::string pitchString;
         zlInterface::NameLookAndFeel pitchLAF;
 
         const std::unique_ptr<juce::Drawable> drawable;

@@ -24,6 +24,8 @@ namespace zlInterface {
 
         ~Dragger() override;
 
+        void paint(juce::Graphics &g) override;
+
         void mouseDown(const juce::MouseEvent &event) override;
 
         void mouseUp(const juce::MouseEvent &event) override;
@@ -78,7 +80,8 @@ namespace zlInterface {
     private:
         UIBase &uiBase;
 
-        juce::ToggleButton button;
+        juce::ToggleButton button, dummyButton;
+        std::atomic<bool> dummyButtonChanged{false};
         DraggerLookAndFeel draggerLAF;
         juce::ComponentDragger dragger;
         DraggerConstrainer constrainer;
