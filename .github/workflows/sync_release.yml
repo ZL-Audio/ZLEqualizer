@@ -36,6 +36,7 @@ jobs:
       uses: robinraju/release-downloader@v1.10
       with:
         latest: true
+        preRelease: true
         fileName: "*exe"
         out-file-path: "current_release"
     - name: Remove old release assets
