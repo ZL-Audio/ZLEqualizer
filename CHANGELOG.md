@@ -4,6 +4,14 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.3.2
+
+WARNING for Windows users: You have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).
+
+- bump to JUCE 8
+- improve multi-band selection
+- improve GUI performance
+
 ## 0.3.1
 
 - add filter parameter tags
