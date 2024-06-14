@@ -26,6 +26,10 @@ namespace zlInterface {
 
     void Dragger::paint(juce::Graphics &g) {
         juce::ignoreUnused(g);
+        // updateButton();
+    }
+
+    void Dragger::updateButton() {
         if (dummyButtonChanged.exchange(false)) {
             button.setBounds(dummyButton.getBoundsInParent());
         }

@@ -27,6 +27,8 @@ namespace zlPanel {
 
         ~LinkButtonPanel() override;
 
+        void paint(juce::Graphics &g) override;
+
         void resized() override;
 
         zlInterface::CompactButton &getButton() { return dynLinkC; }
@@ -35,6 +37,8 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlInterface::CompactButton dynLinkC;
+        juce::Rectangle<float> buttonBound;
+        std::atomic<bool> buttonChanged{false};
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
         const std::unique_ptr<juce::Drawable> linkDrawable;
 

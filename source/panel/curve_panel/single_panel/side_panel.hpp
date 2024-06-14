@@ -49,6 +49,7 @@ namespace zlPanel {
         std::atomic<double> sideFreq{1000.0}, sideQ{0.707};
         std::atomic<float> scale1{.5f}, scale2{.5f};
         std::atomic<bool> skipRepaint{false};
+        std::atomic<bool> toUpdate{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

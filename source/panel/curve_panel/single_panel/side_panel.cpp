@@ -53,6 +53,9 @@ namespace zlPanel {
         if (!selected.load() || !actived.load() || !dynON.load()) {
             return;
         }
+        if (toUpdate.exchange(false)) {
+            update();
+        }
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 4 * uiBase.getFontSize());
         const auto x1 = scale1.load() * bound.getWidth();
@@ -80,10 +83,10 @@ namespace zlPanel {
                 dynON.store(static_cast<bool>(newValue));
             } else if (parameterID.startsWith(zlDSP::sideFreq::ID)) {
                 sideFreq.store(newValue);
-                update();
+                toUpdate.store(true);
             } else if (parameterID.startsWith(zlDSP::sideQ::ID)) {
                 sideQ.store(newValue);
-                update();
+                toUpdate.store(true);
             }
         }
         if (!skipRepaint.load()) {

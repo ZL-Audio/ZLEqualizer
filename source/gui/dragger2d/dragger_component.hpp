@@ -26,6 +26,8 @@ namespace zlInterface {
 
         void paint(juce::Graphics &g) override;
 
+        void updateButton();
+
         void mouseDown(const juce::MouseEvent &event) override;
 
         void mouseUp(const juce::MouseEvent &event) override;

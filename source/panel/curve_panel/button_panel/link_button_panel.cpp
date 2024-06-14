@@ -44,6 +44,13 @@ namespace zlPanel {
         }
     }
 
+    void LinkButtonPanel::paint(juce::Graphics &g) {
+        juce::ignoreUnused(g);
+        if (buttonChanged.exchange(false) && dynLinkC.isVisible()) {
+            dynLinkC.setBounds(buttonBound.toNearestInt());
+        }
+    }
+
     void LinkButtonPanel::resized() {
         handleAsyncUpdate();
     }
@@ -67,13 +74,13 @@ namespace zlPanel {
         if (isSelected.load() && isDynamicON.load()) {
             auto dynPos = std::log(sideFreq.load() / 10.f) / std::log(2200.f);
             dynPos = juce::jlimit(0.025f, 0.975f, dynPos);
-            auto buttonBound = juce::Rectangle<float>{2.5f * uiBase.getFontSize(), 2.5f * uiBase.getFontSize()};
+            buttonBound = juce::Rectangle<float>{2.5f * uiBase.getFontSize(), 2.5f * uiBase.getFontSize()};
             auto bound = getLocalBounds().toFloat();
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 8 * uiBase.getFontSize());
             buttonBound = buttonBound.withCentre(
                 {bound.getX() + dynPos * bound.getWidth(), bound.getBottom()}
             );
-            dynLinkC.setBounds(buttonBound.toNearestInt());
+            buttonChanged.store(true);
             dynLinkC.setVisible(true);
         } else {
             dynLinkC.setVisible(false);

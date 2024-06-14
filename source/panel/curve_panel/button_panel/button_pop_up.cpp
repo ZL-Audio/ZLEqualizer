@@ -52,9 +52,6 @@ namespace zlPanel {
         parametersRef.addParameterListener(freqId, this);
         parameterChanged(freqId, parametersRef.getRawParameterValue(freqId)->load());
 
-        pitchLAF.setJustification(juce::Justification::centredRight);
-        pitchLAF.setFontScale(1.2f);
-        pitchLabel.setLookAndFeel(&pitchLAF);
         pitchLabel.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(pitchLabel);
 
@@ -78,7 +75,11 @@ namespace zlPanel {
         g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
         g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
         g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
-        pitchLabel.setText(pitchString, juce::dontSendNotification);
+        g.setFont(uiBase.getFontSize() * 1.2f);
+        g.setColour(uiBase.getTextColor());
+        auto textBound = pitchLabel.getBoundsInParent().toFloat();
+        textBound.removeFromRight(uiBase.getFontSize() * .25f);
+        g.drawText(pitchString, textBound, juce::Justification::centredRight, false);
     }
 
     void ButtonPopUp::resized() {

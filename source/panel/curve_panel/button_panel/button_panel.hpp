@@ -31,6 +31,14 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void updateDraggers() {
+            for (const auto &p : panels) {
+                p->getDragger().updateButton();
+                p->getTargetDragger().updateButton();
+                p->getSideDragger().updateButton();
+            }
+        }
+
         void resized() override;
 
         void mouseDown(const juce::MouseEvent &event) override;
