@@ -17,6 +17,7 @@ namespace zlInterface {
         button.setClickingTogglesState(false);
         button.setLookAndFeel(&draggerLAF);
         addAndMakeVisible(button);
+        addChildComponent(dummyButton);
     }
 
     Dragger::~Dragger() {
@@ -26,12 +27,11 @@ namespace zlInterface {
 
     void Dragger::paint(juce::Graphics &g) {
         juce::ignoreUnused(g);
-        // updateButton();
     }
 
     void Dragger::updateButton() {
         if (dummyButtonChanged.exchange(false)) {
-            button.setBounds(dummyButton.getBoundsInParent());
+            button.setBounds(dummyButton.getBounds());
         }
     }
 
