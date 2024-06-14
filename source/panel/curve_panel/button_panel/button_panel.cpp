@@ -186,7 +186,7 @@ namespace zlPanel {
 
     void ButtonPanel::mouseDown(const juce::MouseEvent &event) {
         if (event.originalComponent != this) {
-            isLeftClick.store(event.mods.isLeftButtonDown());
+            isLeftClick.store(!event.mods.isRightButtonDown());
             for (size_t idx = 0; idx < panels.size(); ++idx) {
                 previousGains[idx].store(
                     static_cast<float>(controllerRef.getFilter(idx).getBaseFilter().getGain()));
