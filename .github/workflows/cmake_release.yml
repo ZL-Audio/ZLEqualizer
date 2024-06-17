@@ -32,16 +32,19 @@ jobs:
             pluginval-binary: ./pluginval
             boost_platform_version: "22.04"
             boost_toolset: "gcc"
+            checkout_branch: "juce7"
           - name: macOS
             os: macos-14
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"
+            checkout_branch: "main"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
             boost_toolset: "msvc"
+            checkout_branch: "main"
 
     steps:
       - name: Set up MSVC Developer Command Prompt (Windows)
@@ -103,6 +106,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true # Get JUCE populated
+          ref: ${{matrix.checkout_branch}}
 
       - name: Install boost
         uses: MarkusJx/install-boost@v2.4.5
