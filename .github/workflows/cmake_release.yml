@@ -107,6 +107,7 @@ jobs:
         with:
           submodules: true # Get JUCE populated
           ref: ${{matrix.checkout_branch}}
+          fetch-depth: 0
 
       - name: Install boost
         uses: MarkusJx/install-boost@v2.4.5
