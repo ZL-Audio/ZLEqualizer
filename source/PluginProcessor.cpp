@@ -14,8 +14,8 @@
 PluginProcessor::PluginProcessor()
     : AudioProcessor(BusesProperties()
           .withInput("Input", juce::AudioChannelSet::stereo(), true)
-          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
           .withInput("Aux", juce::AudioChannelSet::stereo(), true)
+          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
       ), dummyProcessor(),
       parameters(*this, nullptr,
                  juce::Identifier("ZLEqualizerParameters"),
@@ -97,6 +97,8 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     const auto channels = static_cast<juce::uint32>(juce::jmin(getMainBusNumInputChannels(),
                                                                getMainBusNumOutputChannels()));
     isMono.store(channels == 1);
+    mainInChannelNum.store(getMainBusNumInputChannels());
+    auxInChannelNum.store(getChannelCountOfBus(true, 1));
     const juce::dsp::ProcessSpec spec{
         sampleRate,
         static_cast<juce::uint32>(samplesPerBlock),
@@ -113,24 +115,30 @@ void PluginProcessor::releaseResources() {
 }
 
 bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo()
-        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()) {
-        return false;
+    if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::stereo() &&
+        layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo() &&
+        (layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono() ||
+         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::stereo())) {
+        return true;
     }
-    if (layouts.getChannelSet(true, 0) != layouts.getChannelSet(true, 1)) {
-        return false;
+    if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::mono() &&
+        layouts.getMainOutputChannelSet() == juce::AudioChannelSet::mono() &&
+        layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono()) {
+        return true;
     }
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet()) {
         return false;
     }
-    return true;
+    return false;
 }
 
 void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                    juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    if (isMono.load()) {
+    const auto mINum = mainInChannelNum.load();
+    const auto aINum = auxInChannelNum.load();
+    if (mINum == 1 && aINum == 1) {
         doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
         for (int chan = 0; chan < 4; ++chan) {
             auto *dest = doubleBuffer.getWritePointer(chan);
@@ -146,7 +154,31 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                 dest[i] = static_cast<float>(src[i]);
             }
         }
-    } else {
+    } else if (mINum == 2 && aINum == 1) {
+        doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+        for (int chan = 0; chan < 2; ++chan) {
+            auto *dest = doubleBuffer.getWritePointer(chan);
+            auto *src = buffer.getReadPointer(chan);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = static_cast<double>(src[i]);
+            }
+        }
+        for (int chan = 2; chan < 4; ++chan) {
+            auto *dest = doubleBuffer.getWritePointer(chan);
+            auto *src = buffer.getReadPointer(2);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = static_cast<double>(src[i]);
+            }
+        }
+        controller.process(doubleBuffer);
+        for (int chan = 0; chan < 2; ++chan) {
+            auto *dest = buffer.getWritePointer(chan);
+            auto *src = doubleBuffer.getReadPointer(chan);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = static_cast<float>(src[i]);
+            }
+        }
+    } else if (mINum == 2 && aINum == 2) {
         doubleBuffer.makeCopyOf(buffer, true);
         controller.process(doubleBuffer);
         for (int chan = 0; chan < 2; ++chan) {
@@ -162,7 +194,9 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    if (isMono.load()) {
+    const auto mINum = mainInChannelNum.load();
+    const auto aINum = auxInChannelNum.load();
+    if (mINum == 1 && aINum == 1) {
         doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
         for (int chan = 0; chan < 4; ++chan) {
             auto *dest = doubleBuffer.getWritePointer(chan);
@@ -178,12 +212,36 @@ void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::Midi
                 dest[i] = src[i];
             }
         }
-    } else {
+    } else if (mINum == 2 && aINum == 1) {
+        doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+        for (int chan = 0; chan < 2; ++chan) {
+            auto *dest = doubleBuffer.getWritePointer(chan);
+            auto *src = buffer.getReadPointer(chan);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = src[i];
+            }
+        }
+        for (int chan = 2; chan < 4; ++chan) {
+            auto *dest = doubleBuffer.getWritePointer(chan);
+            auto *src = buffer.getReadPointer(2);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = src[i];
+            }
+        }
+        controller.process(doubleBuffer);
+        for (int chan = 0; chan < 2; ++chan) {
+            auto *dest = buffer.getWritePointer(chan);
+            auto *src = doubleBuffer.getReadPointer(chan);
+            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                dest[i] = src[i];
+            }
+        }
+    } else if (mINum == 2 && aINum == 2) {
         controller.process(buffer);
     }
 }
 
-void PluginProcessor::processBlockBypassed(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
+void PluginProcessor::processBlockBypassed(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(buffer, midiMessages);
     controller.processBypass();
 }

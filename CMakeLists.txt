@@ -37,7 +37,15 @@ project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 # Change me! Set the plugin formats you want built
 # Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(FORMATS AU VST3)
+    set(FORMATS AU VST3 AAX)
+    if (DEFINED ENV{GITHUB_TOKEN})
+        set(JUCE_AAX_COPY_DIR "/Users/runner/Library/Audio/Plug-Ins/AAX")
+    else ()
+        set(JUCE_AAX_COPY_DIR "/Library/Application Support/Avid/Audio/Plug-Ins")
+    endif ()
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(FORMATS LV2 VST3 AAX)
+    set(JUCE_AAX_COPY_DIR "C:/Program Files/Common Files/Avid/Audio/Plug-Ins")
 else ()
     set(FORMATS LV2 VST3)
 endif ()
@@ -71,6 +79,7 @@ juce_add_plugin("${PROJECT_NAME}"
 
         # On MacOS, plugin is copied to ~/Users/yourname/Library/Audio/Plug-Ins/
         COPY_PLUGIN_AFTER_BUILD TRUE
+        AAX_COPY_DIR "${JUCE_AAX_COPY_DIR}"
 
         # Change me!
         # A four-character plugin id
@@ -83,6 +92,10 @@ juce_add_plugin("${PROJECT_NAME}"
         PLUGIN_CODE "${PLUGIN_CODE}"
         FORMATS "${FORMATS}"
         LV2URI "${LV2URI}"
+
+        AU_MAIN_TYPE kAudioUnitType_Effect
+        VST3_CATEGORIES EQ
+        AAX_CATEGORY AAX_ePlugInCategory_EQ
 
         # The name of your final executable
         # This is how it's listed in the DAW
@@ -125,7 +138,7 @@ target_compile_definitions(SharedCode
         CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
         VERSION="${CURRENT_VERSION}"
 
-#        JUCE_DISPLAY_SPLASH_SCREEN=0
+        #        JUCE_DISPLAY_SPLASH_SCREEN=0
 
         # JucePlugin_Name is for some reason doesn't use the nicer PRODUCT_NAME
         PRODUCT_NAME_WITHOUT_VERSION="${PRODUCT_NAME}"
@@ -165,6 +178,6 @@ include(PamplejuceIPP)
 include(GitHubENV)
 
 # Static link C++ runtime on Windows
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE INTERNAL "")
-endif()
+endif ()

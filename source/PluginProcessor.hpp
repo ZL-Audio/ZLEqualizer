@@ -83,6 +83,7 @@ private:
     zlDSP::ResetAttach<double> resetAttach;
     juce::AudioBuffer<double> doubleBuffer;
     std::atomic<bool> isMono{false};
+    std::atomic<int> mainInChannelNum{2}, auxInChannelNum{2};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };
