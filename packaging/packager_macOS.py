@@ -4,6 +4,7 @@ import xml
 import xml.etree.cElementTree as ET
 import subprocess
 
+
 def main():
     temp_dir = "./appletmp"
     subprocess.run(["mkdir", temp_dir])
@@ -14,6 +15,7 @@ def main():
     bundle_id = os.getenv("BUNDLE_ID", "")
     build_dir = os.getenv("BUILD_DIR", "")
     artifact_name = os.getenv("ARTIFACT_NAME", "")
+    developer_id_app = os.getenv("DEVELOPER_ID_APPLICATION", "")
 
     # root
     root = ET.Element("installer-gui-script", minSpecVersion="1")
@@ -40,16 +42,31 @@ def main():
     # choices outline
     outline = ET.SubElement(root, "choices-outline")
 
+    install_paths = [
+        "/Library/Audio/Plug-Ins/VST3",
+        "/Library/Audio/Plug-Ins/Components",
+        "/Library/Audio/Plug-Ins/LV2",
+        "/Library/Audio/Plug-Ins/CLAP"]
+
     print("Create packages")
     for plugin_format, extension, install_path in zip(
-        ["VST3", "AU", "LV2", "CLAP"],
-        ["vst3", "au", "lv2", "clap"],
-        ["VST3", "Components", "LV2", "CLAP"]):
+            ["VST3", "AU", "LV2", "CLAP"],
+            ["vst3", "au", "lv2", "clap"],
+            install_paths):
         if plugin_format + "_PATH" in os.environ:
             plugin_path = os.environ[plugin_format + "_PATH"]
             if os.path.exists(plugin_path):
+                if developer_id_app != "":
+                    subprocess.run(
+                        'codesign --force -s "{}" -v "{}" --deep --strict --options=runtime --timestamp'.format(
+                            developer_id_app, plugin_path), shell=True)
+
                 identifier = "{}.{}.{}.pkg".format(bundle_id, project_name, extension)
                 pkg_path = "{}/{}.{}.pkg".format(build_dir, product_name, extension)
+
+                subprocess.run(
+                    'pkgbuild --identifier "{}" --version {} --component "{}" --install-location "{}" "{}"'.format(
+                        identifier, version, plugin_path, install_path, pkg_path), shell=True)
                 ref = ET.SubElement(root, "pkg-ref",
                                     id=identifier, version=version, onConclusion="none")
                 ref.text = pkg_path
@@ -74,7 +91,7 @@ def main():
                     "--package-path", build_dir,
                     "--resources", "packaging",
                     artifact_name + "_unsigned.pkg"]
-        
+
     subprocess.run(["productbuild"] + command_list)
 
     if os.path.exists("packaging/icon.icns"):
@@ -87,6 +104,7 @@ def main():
         print(subprocess.run(["SetFile -a C \"{}_unsigned.pkg\"".format(artifact_name)], shell=True))
     print("")
     return 0
+
 
 if __name__ == '__main__':
     sys.exit(main())

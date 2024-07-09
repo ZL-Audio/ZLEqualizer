@@ -36,16 +36,19 @@ jobs:
             pluginval-binary: ./pluginval
             boost_platform_version: "22.04"
             boost_toolset: "gcc"
+            plugin_os_format: "VST3;LV2"
           - name: macOS
             os: macos-14
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"
+            plugin_os_format: "AU"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
             boost_toolset: "msvc"
+            plugin_os_format: "VST3;LV2"
 
     steps:
       - name: Set up MSVC Developer Command Prompt (Windows)
@@ -134,6 +137,7 @@ jobs:
         run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
 
       - name: Build
         shell: bash
@@ -197,21 +201,12 @@ jobs:
           REPEAT: 2
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
-      - name: Codesign (macOS)
-        if: ${{ matrix.name == 'macOS' &&  (env.DEVELOPER_ID_APPLICATION != '')}}
-        run: |
-          # Each plugin must be code signed
-          codesign --force -s "${{ secrets.DEVELOPER_ID_APPLICATION}}" -v "${{ env.VST3_PATH }}" --deep --strict --options=runtime --timestamp
-          codesign --force -s "${{ secrets.DEVELOPER_ID_APPLICATION}}" -v "${{ env.AU_PATH }}" --deep --strict --options=runtime --timestamp
-        env:
-          DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION}}
-
-      - name: Create Individual Packages (macOS)
+      - name: Codesign and Create Individual Packages (macOS)
         if: ${{ matrix.name == 'macOS' }}
         run: |
-          pkgbuild --identifier "${{ env.BUNDLE_ID }}.au.pkg" --version $VERSION --component "${{ env.AU_PATH }}" --install-location "/Library/Audio/Plug-Ins/Components" "${{ env.BUILD_DIR }}/${{ env.PRODUCT_NAME }}.au.pkg"
-          pkgbuild --identifier "${{ env.BUNDLE_ID }}.vst3.pkg" --version $VERSION --component "${{ env.VST3_PATH }}" --install-location "/Library/Audio/Plug-Ins/VST3" "${{ env.BUILD_DIR }}/${{ env.PRODUCT_NAME }}.vst3.pkg"
-          python3 -u packaging/generator.py
+          python3 -u packaging/packager_macOS.py
+        env:
+          DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
 
       - name: Sign Final Package (macOS)
         if: ${{ (matrix.name == 'macOS') && (env.APPLE_INSTALLER_DEV != '') }}
