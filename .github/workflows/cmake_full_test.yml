@@ -160,8 +160,7 @@ jobs:
           echo "ARTIFACTS_PATH=$ARTIFACTS_PATH" >> $GITHUB_ENV
           echo "VST3_PATH=$ARTIFACTS_PATH/VST3/${{ env.PRODUCT_NAME }}.vst3" >> $GITHUB_ENV
           echo "AU_PATH=$ARTIFACTS_PATH/AU/${{ env.PRODUCT_NAME }}.component" >> $GITHUB_ENV
-          echo "AUV3_PATH=$ARTIFACTS_PATH/AUv3/${{ env.PRODUCT_NAME }}.appex" >> $GITHUB_ENV
-          echo "STANDALONE_PATH=$ARTIFACTS_PATH/Standalone/${{ env.PRODUCT_NAME }}.app" >> $GITHUB_ENV
+          echo "LV2_PATH=$ARTIFACTS_PATH/LV2/${{ env.PRODUCT_NAME }}.lv2" >> $GITHUB_ENV
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
 
       - name: Pluginval setup
@@ -242,6 +241,13 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_NAME }}.dmg
           path: "${{ env.ARTIFACT_NAME }}.dmg"
+
+      - name: Generate InnoScript (Windows)
+        if: ${{ matrix.name == 'Windows' }}
+        shell: bash
+        run: |
+          python3 -u packaging/packager_Windows.py
+          cat "packaging\installer.iss"
 
       - name: Generate Installer (Windows)
         if: ${{ matrix.name == 'Windows' }}

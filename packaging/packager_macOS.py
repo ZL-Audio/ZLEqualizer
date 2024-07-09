@@ -46,12 +46,14 @@ def main():
         "/Library/Audio/Plug-Ins/VST3",
         "/Library/Audio/Plug-Ins/Components",
         "/Library/Audio/Plug-Ins/LV2",
-        "/Library/Audio/Plug-Ins/CLAP"]
+        "/Library/Audio/Plug-Ins/CLAP",
+        "/Library/Application Support/Avid/Plug-Ins"
+        ]
 
     print("Create packages")
     for plugin_format, extension, install_path in zip(
-            ["VST3", "AU", "LV2", "CLAP"],
-            ["vst3", "au", "lv2", "clap"],
+            ["VST3", "AU", "LV2", "CLAP", "AAX"],
+            ["vst3", "au", "lv2", "clap", "aax"],
             install_paths):
         if plugin_format + "_PATH" in os.environ:
             plugin_path = os.environ[plugin_format + "_PATH"]
