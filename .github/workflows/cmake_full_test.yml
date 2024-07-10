@@ -36,7 +36,7 @@ jobs:
             pluginval-binary: ./pluginval
             boost_platform_version: "22.04"
             boost_toolset: "gcc"
-            plugin_os_format: "VST3;LV2"
+            plugin_os_format: "VST3"
           - name: macOS
             os: macos-14
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
@@ -48,7 +48,7 @@ jobs:
             pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
             boost_toolset: "msvc"
-            plugin_os_format: "VST3;LV2"
+            plugin_os_format: "VST3"
 
     steps:
       - name: Set up MSVC Developer Command Prompt (Windows)

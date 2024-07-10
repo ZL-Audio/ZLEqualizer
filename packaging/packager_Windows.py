@@ -54,7 +54,7 @@ Name: "custom"; Description: "Custom installation"; Flags: iscustom
     all_install_paths = [
         r'{commoncf64}\VST3',
         r'{commoncf64}\LV2',
-        r'"{commoncf64}\Avid\Audio\Plug-Ins', ]
+        r'{commoncf64}\Avid\Audio\Plug-Ins', ]
 
     plugin_formats, extensions, install_paths = [], [], []
     for plugin_format, extension, install_path in zip(
