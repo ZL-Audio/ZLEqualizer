@@ -1,0 +1,204 @@
+name: AAX Pre Release
+
+on:
+  workflow_dispatch:
+
+# When pushing new commits, cancel any running builds on that branch
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+  BUILD_DIR: Builds
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DISPLAY: :0 # linux pluginval needs this
+  CMAKE_BUILD_PARALLEL_LEVEL: 3 # Use up to 3 cpus to build juceaide, etc
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
+
+# jobs are run in paralell on different machines
+# all steps run in series
+jobs:
+  build_and_test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      matrix:
+        include:
+          - name: macOS
+            os: macos-14
+            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+            boost_platform_version: "11"
+            boost_toolset: "clang"
+            plugin_os_format: "AAX"
+          - name: Windows
+            os: windows-latest
+            pluginval-binary: ./pluginval.exe
+            boost_platform_version: "2022"
+            boost_toolset: "msvc"
+            plugin_os_format: "AAX"
+
+    steps:
+      - name: Set up MSVC Developer Command Prompt (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up Clang (Linux)
+        if: runner.os == 'Linux'
+        uses: egor-tensin/setup-clang@v1
+
+      # This also starts up our "fake" display Xvfb, needed for pluginval
+      - name: Install JUCE's Linux Deps
+        if: runner.os == 'Linux'
+        # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
+        run: |
+          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.0-dev libglu1-mesa-dev xvfb ninja-build
+          sudo /usr/bin/Xvfb $DISPLAY &
+
+      - name: Cache IPP (Windows)
+        if: runner.os == 'Windows'
+        id: cache-ipp
+        uses: actions/cache@v4
+        with:
+          key: ipp-v5
+          path: C:\Program Files (x86)\Intel
+
+      - name: Install IPP (Windows)
+        if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
+        shell: bash
+        run: |
+          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/b4adec02-353b-4144-aa21-f2087040f316/w_ipp_oneapi_p_2021.11.0.533_offline.exe
+          ./oneapi.exe -s -x -f oneapi
+          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+
+      - name: Save IPP cache (even on CI fail)
+        if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
+        uses: actions/cache/save@v4
+        with:
+          path: C:\Program Files (x86)\Intel
+          key: ipp-v5
+
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: choco install ninja
+
+      - name: Install macOS Deps
+        if: ${{ matrix.name == 'macOS' }}
+        run: brew install ninja osxutils
+
+      # This block can be removed once 15.1 is default (JUCE requires it when building on macOS 14)
+      - name: Use latest Xcode on system (macOS)
+        if: ${{ matrix.name == 'macOS' }}
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true # Get JUCE populated
+
+      - name: Install boost
+        uses: MarkusJx/install-boost@v2.4.5
+        id: install-boost
+        with:
+          boost_version: 1.80.0
+          platform_version: ${{ matrix.boost_platform_version }}
+          toolset: ${{ matrix.boost_toolset }}
+          link: "static"
+
+      - name: Cache the build
+        uses: mozilla-actions/sccache-action@v0.0.5
+
+      - name: Import Certificates (macOS)
+        uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
+        if: ${{ (matrix.name == 'macOS') && (env.p12-file-base64 != '')}}
+        with:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
+        env:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+
+      - name: Configure
+        shell: bash
+        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
+        env:
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
+
+      - name: Test
+        working-directory: ${{ env.BUILD_DIR }}
+        run: ctest --output-on-failure -j4 -VV
+
+      - name: Read in .env from CMake # see GitHubENV.cmake
+        shell: bash
+        run: |
+          cat .env # show us the config
+          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+
+      - name: Set additional env vars for next steps
+        shell: bash
+        run: |
+          ARTIFACTS_PATH=${{ env.BUILD_DIR }}/${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}
+          echo "ARTIFACTS_PATH=$ARTIFACTS_PATH" >> $GITHUB_ENV
+          echo "AAX_PATH=$ARTIFACTS_PATH/AAX/${{ env.PRODUCT_NAME }}.axxplugin" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
+
+      - name: Check AAX releases
+        shell: bash
+        run: |
+          ls "${{ env.ARTIFACTS_PATH }}/AAX"
+
+      - name: Upload AAX
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: "${{ env.ARTIFACTS_PATH }}/AAX/*.aaxplugin"
+
+  pre-release:
+    name: Release AAX
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    permissions:
+      contents: write
+
+    steps:
+    - name: Get artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Download AAX pre-release repo
+      uses: actions/checkout@v4
+      with:
+        repository: "ZL-Audio/ZLEqualizerAAX"
+        fetch-depth: 0
+        path: "release_repo"
+        ssh-key: ${{ secrets.AAX_RELEASE_DEPLOY_KEY }}
+
+    - name: Remove old AAX releases
+      run: |
+        rm -rf "release_repo/macOS"
+        rm -rf "release_repo/Windows"
+
+    - name: Move current AAX pre-releases
+      run: |
+        mv -v "macOS" "release_repo/macOS"
+        mv -v "Windows" "release_repo/Windows"
+
+    - name: Commit AAX pre-release repo
+      run: |
+        cd "release_repo"
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git checkout --orphan newBranch
+        git add -A
+        git commit -m "pre-release"
+        git branch -D main
+        git branch -m main
+        git push -f origin main
