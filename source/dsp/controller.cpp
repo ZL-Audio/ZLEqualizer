@@ -79,10 +79,10 @@ namespace zlDSP {
         delay.process(mainBuffer);
 
         if (isZeroLatency.load()) {
-            int startSample = 0, actualNumSample = 0;
+            int startSample = 0;
             const int samplePerBuffer = static_cast<int>(subBuffer.getSubSpec().maximumBlockSize);
             while (startSample < buffer.getNumSamples()) {
-                actualNumSample = std::min(samplePerBuffer, buffer.getNumSamples() - startSample);
+                const int actualNumSample = std::min(samplePerBuffer, buffer.getNumSamples() - startSample);
                 auto subMainBuffer = juce::AudioBuffer<FloatType>(mainBuffer.getArrayOfWritePointers(),
                                                                   2, startSample, actualNumSample);
                 auto subSideBuffer = juce::AudioBuffer<FloatType>(sideBuffer.getArrayOfWritePointers(),

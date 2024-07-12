@@ -23,6 +23,9 @@ namespace zlSplitter {
 
     template<typename FloatType>
     void MSSplitter<FloatType>::split(juce::AudioBuffer<FloatType> &buffer) {
+        mBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
+        sBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
+
         auto lBuffer = buffer.getReadPointer(0);
         auto rBuffer = buffer.getReadPointer(1);
         auto _mBuffer = mBuffer.getWritePointer(0);
@@ -31,8 +34,6 @@ namespace zlSplitter {
             _mBuffer[i] = FloatType(0.5) * (lBuffer[i] + rBuffer[i]);
             _sBuffer[i] = FloatType(0.5) * (lBuffer[i] - rBuffer[i]);
         }
-        mBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
-        sBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
     }
 
     template<typename FloatType>

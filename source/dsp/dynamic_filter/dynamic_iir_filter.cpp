@@ -32,7 +32,6 @@ namespace zlDynamicFilter {
         compressor.getComputer().setRatio(100);
         sBufferCopy.setSize(static_cast<int>(spec.numChannels),
                             static_cast<int>(spec.maximumBlockSize));
-        // isPerSample.store(false);
     }
 
     template<typename FloatType>
@@ -56,7 +55,6 @@ namespace zlDynamicFilter {
             if (!isPerSample.load()) {
                 mFilter.setGain((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(), false);
                 mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
-                // auto audioWriters = mBuffer.getArrayOfWritePointers();
 
                 mFilter.process(mBuffer, currentBypass);
             } else {
