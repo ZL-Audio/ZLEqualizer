@@ -23,9 +23,8 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void Detector<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        deltaT.store(static_cast<FloatType>(spec.maximumBlockSize / spec.sampleRate));
-        setAttack(getAttack());
-        setRelease(getRelease());
+        sampleRate.store(static_cast<FloatType>(spec.sampleRate));
+        setBufferSize(static_cast<int>(spec.maximumBlockSize));
     }
 
     template<typename FloatType>

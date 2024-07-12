@@ -66,7 +66,7 @@ namespace zlCompressor {
 
         inline FloatType getRelease() const { return release.load(); }
 
-        inline void setSmooth(FloatType v) {
+        inline void setSmooth(const FloatType v) {
             smooth.store(v);
             setAttack(attack.load());
             setRelease(release.load());
@@ -74,23 +74,36 @@ namespace zlCompressor {
 
         inline FloatType getSmooth() const { return smooth.load(); }
 
-        inline void setDeltaT(FloatType v) { deltaT.store(v); }
+        inline void setDeltaT(const FloatType v) { deltaT.store(v); }
 
         inline FloatType getDeltaT() const { return deltaT.load(); }
 
-        inline void setPhase(PhaseType idx) { phase.store(idx); }
+        inline void setPhase(const PhaseType idx) { phase.store(idx); }
+
+        inline void setBufferSize(const int x) {
+            if (x != bufferSize.load()) {
+                bufferSize.store(x);
+                deltaT.store(static_cast<FloatType>(x) / sampleRate.load());
+                setAttack(getAttack());
+                setRelease(getRelease());
+            }
+        }
+
+        inline int getBufferSize() const {
+            return bufferSize.load();
+        }
 
     private:
         std::atomic<size_t> aStyle, rStyle, phase;
-        std::atomic<FloatType> attack, release, aPara, rPara, smooth {0.f};
-        std::atomic<FloatType> deltaT = FloatType(1) / FloatType(44100);
+        std::atomic<FloatType> attack, release, aPara, rPara, smooth{0.f};
+        std::atomic<int> bufferSize{0};
+        std::atomic<FloatType> deltaT = FloatType(1) / FloatType(44100), sampleRate{48000};
         FloatType xC = 1.0, xS = 1.0;
 
         inline static FloatType sgn(FloatType val) {
             return static_cast<FloatType>(FloatType(0) < val) - static_cast<FloatType>(val < FloatType(0));
         }
     };
-
 } // zldetector
 
 #endif //ZLECOMP_DETECTOR_H

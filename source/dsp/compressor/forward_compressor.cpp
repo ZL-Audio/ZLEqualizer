@@ -28,6 +28,7 @@ namespace zlCompressor {
         auto x = tracker.getMomentaryLoudness() - baseLine.load();
         x = computer.process(x);
         x = juce::Decibels::decibelsToGain(x);
+        detector.setBufferSize(buffer.getNumSamples());
         x = detector.process(x);
         return x;
     }
