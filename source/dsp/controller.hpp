@@ -96,6 +96,11 @@ namespace zlDSP {
 
         bool getDynLink() const { return dynLink.load(); }
 
+        void setZeroLatency(const bool x) {
+            isZeroLatency.store(x);
+            triggerAsyncUpdate();
+        }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;

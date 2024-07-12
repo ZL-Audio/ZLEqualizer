@@ -416,6 +416,16 @@ namespace zlDSP {
         int static constexpr defaultI = 0;
     };
 
+    class zeroLatency : public ChoiceParameters<zeroLatency> {
+    public:
+        auto static constexpr ID = "zero_latency";
+        auto static constexpr name = "Zero Latency";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 0;
+    };
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         for (int i = 0; i < bandNUM; ++i) {
@@ -426,7 +436,7 @@ namespace zlDSP {
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
                    effectON::get(), staticAutoGain::get(), autoGain::get(),
                    scale::get(), outputGain::get(),
-                   filterStructure::get(), dynLink::get(), dynHQ::get());
+                   filterStructure::get(), dynLink::get(), dynHQ::get(), zeroLatency::get());
         return layout;
     }
 
