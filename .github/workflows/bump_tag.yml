@@ -13,7 +13,7 @@ jobs:
         fetch-depth: '0'
 
     - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@1.69.0 # Don't use @master or @v1 unless you're happy to test the latest version
+      uses: anothrNick/github-tag-action@1.70.0 # Don't use @master or @v1 unless you're happy to test the latest version
       env:
         DEFAULT_BUMP: patch
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
