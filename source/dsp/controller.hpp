@@ -139,9 +139,16 @@ namespace zlDSP {
 
         std::atomic<double> sampleRate{48000};
 
-        void processSolo();
+        std::atomic<bool> isZeroLatency{false};
 
-        void processDynamic();
+        void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
+                              juce::AudioBuffer<FloatType> &subSideBuffer);
+
+        void processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
+                         juce::AudioBuffer<FloatType> &subSideBuffer);
+
+        void processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
+                            juce::AudioBuffer<FloatType> &subSideBuffer);
 
         void updateTrackersON();
 

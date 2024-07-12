@@ -78,49 +78,65 @@ namespace zlDSP {
         // process lookahead
         delay.process(mainBuffer);
 
-        auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-        // const juce::ScopedReadLock scopedLock(paraUpdateLock);
-        // ---------------- start sub buffer
-        subBuffer.pushBlock(block);
-        while (subBuffer.isSubReady()) {
-            subBuffer.popSubBuffer();
-            auto subMainBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 0,
-                                                              2, subBuffer.subBuffer.getNumSamples());
-            auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
-                                                              2, subBuffer.subBuffer.getNumSamples());
-            fftAnalyzezr.pushPreFFTBuffer(subMainBuffer);
-            fftAnalyzezr.pushSideFFTBuffer(subSideBuffer);
-            conflictAnalyzer.pushRefBuffer(subSideBuffer);
-            if (isEffectON.load()) {
-                if (useSolo.load()) {
-                    processSolo();
-                } else {
-                    processDynamic();
-                }
+        if (isZeroLatency.load()) {
+            int startSample = 0, actualNumSample = 0;
+            const int samplePerBuffer = static_cast<int>(subBuffer.getSubSpec().maximumBlockSize);
+            while (startSample < buffer.getNumSamples()) {
+                actualNumSample = std::min(samplePerBuffer, buffer.getNumSamples() - startSample);
+                auto subMainBuffer = juce::AudioBuffer<FloatType>(mainBuffer.getArrayOfWritePointers(),
+                                                                  2, startSample, actualNumSample);
+                auto subSideBuffer = juce::AudioBuffer<FloatType>(sideBuffer.getArrayOfWritePointers(),
+                                                                  2, startSample, actualNumSample);
+                processSubBuffer(subMainBuffer, subSideBuffer);
+                startSample += samplePerBuffer;
             }
-            fftAnalyzezr.pushPostFFTBuffer(subMainBuffer);
-            fftAnalyzezr.process();
-            conflictAnalyzer.pushMainBuffer(subMainBuffer);
-            conflictAnalyzer.process();
-            subBuffer.pushSubBuffer();
+        } else {
+            auto block = juce::dsp::AudioBlock<FloatType>(buffer);
+            // ---------------- start sub buffer
+            subBuffer.pushBlock(block);
+            while (subBuffer.isSubReady()) {
+                subBuffer.popSubBuffer();
+                // create main sub buffer and side sub buffer
+                auto subMainBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 0,
+                                                                  2, subBuffer.subBuffer.getNumSamples());
+                auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
+                                                                  2, subBuffer.subBuffer.getNumSamples());
+                processSubBuffer(subMainBuffer, subSideBuffer);
+                subBuffer.pushSubBuffer();
+            }
+            subBuffer.popBlock(block);
+            // ---------------- end sub buffer
         }
-        subBuffer.popBlock(block);
-        // ---------------- end sub buffer
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processSolo() {
+    void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
+                                                 juce::AudioBuffer<FloatType> &subSideBuffer) {
+        fftAnalyzezr.pushPreFFTBuffer(subMainBuffer);
+        fftAnalyzezr.pushSideFFTBuffer(subSideBuffer);
+        conflictAnalyzer.pushRefBuffer(subSideBuffer);
+        if (isEffectON.load()) {
+            if (useSolo.load()) {
+                processSolo(subMainBuffer, subSideBuffer);
+            } else {
+                processDynamic(subMainBuffer, subSideBuffer);
+            }
+        }
+        fftAnalyzezr.pushPostFFTBuffer(subMainBuffer);
+        fftAnalyzezr.process();
+        conflictAnalyzer.pushMainBuffer(subMainBuffer);
+        conflictAnalyzer.process();
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
+                                            juce::AudioBuffer<FloatType> &subSideBuffer) {
         for (size_t i = 0; i < bandNUM; ++i) {
             filters[i].getBaseFilter().updateParas();
             filters[i].getMainFilter().updateParas();
             filters[i].getTargetFilter().updateParas();
             filters[i].getSideFilter().updateParas();
         }
-        // create main sub buffer and side sub buffer
-        auto subMainBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 0,
-                                                          2, subBuffer.subBuffer.getNumSamples());
-        auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
-                                                          2, subBuffer.subBuffer.getNumSamples());
         if (soloSide.load()) {
             subMainBuffer.makeCopyOf(subSideBuffer, true);
         }
@@ -161,12 +177,8 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processDynamic() {
-        // create main sub buffer and side sub buffer
-        auto subMainBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 0,
-                                                          2, subBuffer.subBuffer.getNumSamples());
-        auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
-                                                          2, subBuffer.subBuffer.getNumSamples());
+    void Controller<FloatType>::processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
+                                               juce::AudioBuffer<FloatType> &subSideBuffer) {
         autoGain.processPre(subMainBuffer);
         // stereo filters process
         FloatType baseLine = 0;
@@ -284,7 +296,6 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
-        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         filterLRs[idx].store(x);
         // update useLR and useMS
         useLR.store(false);
@@ -306,7 +317,6 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setDynamicON(const bool x, size_t idx) {
-        // const juce::ScopedWriteLock scopedLock(paraUpdateLock);
         filters[idx].setDynamicON(x);
         filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
         filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
@@ -327,8 +337,10 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::handleAsyncUpdate() {
-        const auto latency = static_cast<int>(subBuffer.getLatencySamples()) + static_cast<int>(delay.
-                                 getDelaySamples());
+        int latency = static_cast<int>(delay.getDelaySamples());
+        if (!isZeroLatency.load()) {
+            latency += static_cast<int>(subBuffer.getLatencySamples());
+        }
         processorRef.setLatencySamples(latency);
     }
 
