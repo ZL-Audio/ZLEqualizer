@@ -4,13 +4,28 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.3.3
+
+After installation, please load the plugin in an empty DAW session and check its functionality.
+
+**WARNING for Linux users**: If you build it locally, please build with `juce7` branch since JUCE 8 has some issues on Linux.
+
+**WARNING for Windows users**: You may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
+
+**WARNING for Pro Tools users**: This is the first AAX plugin from me. If Pro Tools cannot recognize the plugin (or display a error message), please reach out to me.
+
+- add zero latency mode
+- add AAX to macOS & Windows release
+
 ## 0.3.2
 
-**WARNING**: This is a **PRE RELEASE.**
+Several dependencies have been updated. After installation, please load the plugin in an empty DAW session and check its functionality.
 
-**WARNING for Windows users**: You have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).
+**WARNING for Linux users**: If you build it locally, please build with `juce7` branch since JUCE 8 has some issues on Linux.
 
-- bump to JUCE 8
+**WARNING for Windows users**: You may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
+
+- bump to JUCE 8 (except for Linux)
 - improve multi-band selection
 - improve GUI performance
 
