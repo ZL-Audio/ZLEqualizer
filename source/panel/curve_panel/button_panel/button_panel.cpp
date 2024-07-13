@@ -467,8 +467,6 @@ namespace zlPanel {
         for (size_t idx = 0; idx < panels.size(); ++idx) {
             const auto f1 = itemsSet.isSelected(idx);
             isSelected[idx].store(f1);
-            // previousGains[idx].store(
-            //     static_cast<float>(controllerRef.getFilter(idx).getBaseFilter().getGain()));
             const auto f2 = panels[idx]->getDragger().getLAF().getIsSelected();
             if (f1 != f2) {
                 panels[idx]->getDragger().getLAF().setIsSelected(f1);

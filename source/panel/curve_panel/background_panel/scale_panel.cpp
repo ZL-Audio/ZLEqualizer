@@ -24,6 +24,8 @@ namespace zlPanel {
     ScalePanel::~ScalePanel() = default;
 
     void ScalePanel::paint(juce::Graphics &g) {
+        g.fillAll(uiBase.getBackgroundColor());
+
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
 

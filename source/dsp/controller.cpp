@@ -77,7 +77,6 @@ namespace zlDSP {
         }
         // process lookahead
         delay.process(mainBuffer);
-
         if (isZeroLatency.load()) {
             int startSample = 0;
             const int samplePerBuffer = static_cast<int>(subBuffer.getSubSpec().maximumBlockSize);

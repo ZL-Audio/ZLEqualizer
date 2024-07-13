@@ -147,7 +147,6 @@ namespace zlPanel {
             width.load() * uiBase.getFontSize(),
             height.load() * uiBase.getFontSize()).withCentre({finalX, finalY});
         toUpdateBounds.store(true);
-        // setBounds(popUpBound.toNearestInt());
     }
 
     void ButtonPopUp::parameterChanged(const juce::String &parameterID, float newValue) {

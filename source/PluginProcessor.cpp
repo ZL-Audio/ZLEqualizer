@@ -109,9 +109,6 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
 }
 
 void PluginProcessor::releaseResources() {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
-    controller.reset();
 }
 
 bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
@@ -251,21 +248,15 @@ void PluginProcessor::processBlockBypassed(juce::AudioBuffer<double> &buffer, ju
     controller.processBypass();
 }
 
-//==============================================================================
 bool PluginProcessor::hasEditor() const {
     return true;
 }
 
 juce::AudioProcessorEditor *PluginProcessor::createEditor() {
     return new PluginEditor(*this);
-    // return new juce::GenericAudioProcessorEditor(*this);
 }
 
-//==============================================================================
 void PluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
     auto tempTree = juce::ValueTree("ZLEqualizerParaState");
     tempTree.appendChild(parameters.copyState(), nullptr);
     tempTree.appendChild(parametersNA.copyState(), nullptr);
@@ -274,8 +265,6 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
 }
 
 void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
     std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
     if (xmlState != nullptr && xmlState->hasTagName("ZLEqualizerParaState")) {
         auto tempTree = juce::ValueTree::fromXml(*xmlState);
@@ -286,8 +275,6 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
     }
 }
 
-//==============================================================================
-// This creates new instances of the plugin..
 juce::AudioProcessor *JUCE_CALLTYPE
 
 createPluginFilter() {

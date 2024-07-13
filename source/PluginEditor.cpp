@@ -22,7 +22,7 @@ PluginEditor::PluginEditor(PluginProcessor &p)
 
     // set size & size listener
     setResizeLimits(static_cast<int>(zlState::windowW::minV),
-        static_cast<int>(zlState::windowH::minV),
+                    static_cast<int>(zlState::windowH::minV),
                     static_cast<int>(zlState::windowW::maxV),
                     static_cast<int>(zlState::windowH::maxV));
     getConstrainer()->setFixedAspectRatio(

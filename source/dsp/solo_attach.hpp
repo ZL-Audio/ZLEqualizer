@@ -41,7 +41,8 @@ namespace zlDSP {
         };
 
         constexpr static std::array defaultVs{
-            float(solo::defaultV), float(sideSolo::defaultV)
+            static_cast<float>(solo::defaultV),
+            static_cast<float>(sideSolo::defaultV)
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;

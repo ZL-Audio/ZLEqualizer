@@ -12,7 +12,7 @@ After installation, please load the plugin in an empty DAW session and check its
 
 **WARNING for Windows users**: You may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
 
-**WARNING for Pro Tools users**: This is the first AAX plugin from me. If Pro Tools cannot recognize the plugin (or display a error message), please reach out to me.
+**WARNING for Pro Tools users**: This is the first AAX plugin from me. If Pro Tools cannot recognize the plugin (or display an error message), please reach out to me.
 
 - add zero latency mode
 - add AAX to macOS & Windows release

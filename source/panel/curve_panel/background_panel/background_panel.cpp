@@ -27,7 +27,6 @@ namespace zlPanel {
 
     void BackgroundPanel::paint(juce::Graphics &g) {
         juce::ignoreUnused(g);
-        g.fillAll(uiBase.getBackgroundColor());
     }
 
     void BackgroundPanel::resized() {
