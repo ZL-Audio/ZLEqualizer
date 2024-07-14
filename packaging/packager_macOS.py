@@ -47,7 +47,7 @@ def main():
         "/Library/Audio/Plug-Ins/Components",
         "/Library/Audio/Plug-Ins/LV2",
         "/Library/Audio/Plug-Ins/CLAP",
-        "/Library/Application Support/Avid/Plug-Ins"
+        "/Library/Application Support/Avid/Audio/Plug-Ins"
         ]
 
     print("Create packages")
