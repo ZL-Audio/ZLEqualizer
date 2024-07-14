@@ -112,6 +112,13 @@ jobs:
           ref: ${{ matrix.checkout_branch }}
           fetch-depth: 0
 
+      - name: Checkout JUCE 7 (Linux)
+        if: ${{ matrix.name == 'Linux' }}
+        shell: bash
+        run: |
+          cd JUCE
+          git checkout 7.0.12
+
       - name: Install boost
         uses: MarkusJx/install-boost@v2.4.5
         id: install-boost
