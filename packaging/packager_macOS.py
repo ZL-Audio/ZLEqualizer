@@ -58,7 +58,7 @@ def main():
         if plugin_format + "_PATH" in os.environ:
             plugin_path = os.environ[plugin_format + "_PATH"]
             if os.path.exists(plugin_path):
-                if developer_id_app != "" && extension != "aax":
+                if developer_id_app != "" and extension != "aax":
                     subprocess.run(
                         'codesign --force -s "{}" -v "{}" --deep --strict --options=runtime --timestamp'.format(
                             developer_id_app, plugin_path), shell=True)
