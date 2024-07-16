@@ -1,0 +1,40 @@
+name: Bug Report
+description: File a bug report.
+title: "[BUG]: "
+labels: ["bug"]
+assignees:
+  - zsliu98
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      value: |
+        - Plugin version:
+        - A clear and concise description of what the bug is:
+        - A clear and concise description of what you expected to happen:
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional information
+      description: Tell us your operation system and your DAW.
+      value: |
+        - Operating system (& version is applicable):
+        - DAW:
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
