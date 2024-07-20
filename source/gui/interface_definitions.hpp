@@ -17,6 +17,10 @@
 
 namespace zlInterface {
     enum colourIdx {
+        textColour,
+        backgroundColour,
+        shadowColour,
+        glowColour,
         preColour,
         postColour,
         sideColour,
@@ -25,7 +29,12 @@ namespace zlInterface {
         colourNum
     };
 
-    inline std::array<std::string, colourNum> colourNames {"pre", "post", "side", "grid", "tag"};
+    inline std::array<std::string, colourNum> colourNames{
+        "text", "background",
+        "shadow", "glow",
+        "pre", "post", "side",
+        "grid", "tag",
+    };
 
     static constexpr size_t ColorMap1Size = 10;
     static constexpr size_t ColorMap2Size = 6;
@@ -67,7 +76,7 @@ namespace zlInterface {
                 .BackgroundColor = juce::Colour((255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2),
                 .TextLightColor = juce::Colour(137, 125, 109),
                 .DarkShadowColor = juce::Colour(0, 0, 0),
-                .BrightShadowColor = juce::Colour(255 - 168, 255 - 172, 255 - 178).withMultipliedBrightness(.8f),
+                .BrightShadowColor = juce::Colour(70, 66, 63),
                 .ExtraColor1 = juce::Colour(255 - 139, 255, 255),
                 .ColorMap1 = {
                     juce::Colour(224, 136, 75),
@@ -182,23 +191,49 @@ namespace zlInterface {
 
         inline size_t getStyle() const { return styleID.load(); }
 
-        inline juce::Colour getTextColor() const { return styleColors[mainID.load()].TextColor; }
+        inline juce::Colour getTextColor() const {
+            const auto currentStyleID = styleID.load();
+            if (currentStyleID < 2) {
+                return styleColors[currentStyleID].TextColor;
+            } else {
+                return customColours[static_cast<size_t>(textColour)];
+            }
+        }
 
         inline juce::Colour getTextInactiveColor() const { return getTextColor().withAlpha(0.5f); }
 
         inline juce::Colour getTextHideColor() const { return getTextColor().withAlpha(0.25f); }
 
-        inline juce::Colour getBackgroundColor() const { return styleColors[mainID.load()].BackgroundColor; }
-
-        inline juce::Colour getTextLightColor() const { return styleColors[mainID.load()].TextLightColor; }
+        inline juce::Colour getBackgroundColor() const {
+            const auto currentStyleID = styleID.load();
+            if (currentStyleID < 2) {
+                return styleColors[currentStyleID].BackgroundColor;
+            } else {
+                return customColours[static_cast<size_t>(backgroundColour)];
+            }
+        }
 
         inline juce::Colour getBackgroundInactiveColor() const { return getBackgroundColor().withAlpha(0.8f); }
 
         inline juce::Colour getBackgroundHideColor() const { return getBackgroundColor().withAlpha(0.5f); }
 
-        inline juce::Colour getDarkShadowColor() const { return styleColors[mainID.load()].DarkShadowColor; }
+        inline juce::Colour getDarkShadowColor() const {
+            const auto currentStyleID = styleID.load();
+            if (currentStyleID < 2) {
+                return styleColors[currentStyleID].DarkShadowColor;
+            } else {
+                return customColours[static_cast<size_t>(shadowColour)];
+            }
+        }
 
-        inline juce::Colour getBrightShadowColor() const { return styleColors[mainID.load()].BrightShadowColor; }
+        inline juce::Colour getBrightShadowColor() const {
+            const auto currentStyleID = styleID.load();
+            if (currentStyleID < 2) {
+                return styleColors[currentStyleID].BrightShadowColor;
+            } else {
+                return customColours[static_cast<size_t>(glowColour)];
+            }
+        }
 
         inline juce::Colour getExtraColor1() const { return styleColors[mainID.load()].ExtraColor1; }
 
@@ -329,10 +364,10 @@ namespace zlInterface {
         std::atomic<float> fontSize{0};
         std::atomic<size_t> styleID{1}, mainID{1};
         std::array<juce::Colour, colourNum> customColours;
-        std::array<float, 2> wheelSensitivity {1.f, 0.12f};
-        size_t rotaryStyleId {0};
-        std::atomic<size_t> refreshRateId {2};
-        float rotaryDragSensitivity;
+        std::array<float, 2> wheelSensitivity{1.f, 0.12f};
+        size_t rotaryStyleId{0};
+        std::atomic<size_t> refreshRateId{2};
+        float rotaryDragSensitivity{1.f};
         std::atomic<float> fftExtraTilt{0.f}, fftExtraSpeed{1.f};
         std::atomic<float> singleCurveThickness{1.f}, sumCurveThickness{1.f};
 

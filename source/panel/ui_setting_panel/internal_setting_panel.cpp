@@ -13,6 +13,10 @@ namespace zlPanel {
     InternalSettingPanel::InternalSettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
         : pRef(p),
           uiBase(base), nameLAF(base),
+          textSelector(base, *this, false),
+          backgroundSelector(base, *this, false),
+          shadowSelector(base, *this, false),
+          glowSelector(base, *this, false),
           preSelector(base, *this),
           postSelector(base, *this),
           sideSelector(base, *this),
@@ -62,7 +66,8 @@ namespace zlPanel {
         fftTiltSlider.getSlider().setNormalisableRange(zlState::fftExtraTilt::doubleRange);
         fftTiltSlider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(zlState::fftExtraTilt::defaultV));
         fftSpeedSlider.getSlider().setNormalisableRange(zlState::fftExtraSpeed::doubleRange);
-        fftSpeedSlider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(zlState::fftExtraSpeed::defaultV));
+        fftSpeedSlider.getSlider().setDoubleClickReturnValue(
+            true, static_cast<double>(zlState::fftExtraSpeed::defaultV));
         addAndMakeVisible(fftTiltSlider);
         addAndMakeVisible(fftSpeedSlider);
         curveThickLabel.setText("Curve Thickness", juce::dontSendNotification);

@@ -254,15 +254,18 @@ namespace zlInterface {
         if (styleID.load() < 2) {
             switch (idx) {
                 case preColour:
-                    return getTextColor().withAlpha(0.1f);
                 case postColour:
                     return getTextColor().withAlpha(0.1f);
                 case sideColour:
                     return getColorMap2(1).withAlpha(0.1f);
                 case gridColour:
-                    return getTextLightColor();
+                    return getTextColor().withAlpha(0.45f);
                 case tagColour:
                     return getTextColor().withAlpha(customColours[static_cast<size_t>(idx)].getFloatAlpha());
+                case textColour:
+                case backgroundColour:
+                case shadowColour:
+                case glowColour:
                 case colourNum:
                 default:
                     return juce::Colours::white;
