@@ -32,6 +32,7 @@ namespace zlPanel {
         PluginProcessor &pRef;
         zlInterface::UIBase &uiBase;
         zlInterface::NameLookAndFeel nameLAF;
+        zlInterface::ColourOpacitySelector textSelector, backgroundSelector, shadowSelector, glowSelector;
         zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
         juce::Label wheelLabel;
         zlInterface::CompactLinearSlider roughWheelSlider, fineWheelSlider;
@@ -45,9 +46,13 @@ namespace zlPanel {
         juce::Label curveThickLabel;
         zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
 
-        static constexpr size_t numSelectors = 5;
+        static constexpr size_t numSelectors = 9;
         std::array<juce::Label, numSelectors> selectorLabels;
         std::array<zlInterface::ColourOpacitySelector*, numSelectors> selectors{
+            &textSelector,
+            &backgroundSelector,
+            &shadowSelector,
+            &glowSelector,
             &preSelector,
             &postSelector,
             &sideSelector,
@@ -55,6 +60,10 @@ namespace zlPanel {
             &tagSelector
         };
         std::array<std::string, numSelectors> selectorNames{
+            "Text Colour",
+            "Background Colour",
+            "Shadow Colour",
+            "Glow Colour",
             "Pre Colour",
             "Post Colour",
             "Side Colour",

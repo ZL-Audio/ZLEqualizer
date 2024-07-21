@@ -102,6 +102,8 @@ namespace zlFFT {
             currentPos = (currentPos + 1) % currentBuffer[0].size();
         }
         // write to the double buffer
+        skipCount = (skipCount + 1) % 4;
+        if (skipCount != 0) return;
         const auto dIdx = static_cast<size_t>(doubleBufferIdx.fetch_or(BIT_BUSY) & BIT_IDX);
         for (size_t z = 0; z < 2; ++z) {
             if (!isON[z].load()) {

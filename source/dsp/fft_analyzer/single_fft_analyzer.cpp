@@ -96,6 +96,8 @@ namespace zlFFT {
             currentPos = (currentPos + 1) % currentBuffer.size();
         }
         // write to the double buffer
+        skipCount = (skipCount + 1) % 4;
+        if (skipCount != 0) return;
         const auto dIdx = static_cast<size_t>(doubleBufferIdx.fetch_or(BIT_BUSY) & BIT_IDX);
         const auto audioWriter = audioBuffer[dIdx].getWritePointer(0);
         const auto audioReader = currentBuffer.data();

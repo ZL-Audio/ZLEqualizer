@@ -135,6 +135,7 @@ namespace zlFFT {
         }
 
         std::array<std::atomic<bool>, 2> isON{true, true};
+        int skipCount = 0;
     };
 } // zlFFT
 

@@ -25,7 +25,7 @@ namespace zlPanel {
         if (uiBase.getColourByIdx(zlInterface::gridColour).getFloatAlpha() <= 0.01f) {
             return;
         }
-        g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
+        g.setColour(uiBase.getTextInactiveColor());
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
             const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
             const auto textBound = juce::Rectangle<float>(x - uiBase.getFontSize() * 3 - uiBase.getFontSize() * 0.125f,
@@ -33,7 +33,7 @@ namespace zlPanel {
                                                           uiBase.getFontSize() * 3, uiBase.getFontSize() * 2);
             g.drawText(backgroundFreqsNames[i], textBound, juce::Justification::bottomRight);
         }
-
+        g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
         g.fillRectList(rectList);
     }
 

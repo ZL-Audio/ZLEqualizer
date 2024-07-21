@@ -122,6 +122,8 @@ namespace zlFFT {
             const auto db = juce::Decibels::gainToDecibels(bin, -240.f);
             return bounds.getY() + (db / infinity) * bounds.getHeight();
         }
+
+        int skipCount = 0;
     };
 } // zlFFT
 
