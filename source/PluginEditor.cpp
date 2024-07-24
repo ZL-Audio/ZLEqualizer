@@ -54,10 +54,13 @@ void PluginEditor::resized() {
 
 void PluginEditor::parameterChanged(const juce::String &parameterID, float newValue) {
     juce::ignoreUnused(parameterID, newValue);
+    isSizeChanged.store(parameterID == zlState::windowH::ID || parameterID == zlState::windowW::ID);
     triggerAsyncUpdate();
 }
 
 void PluginEditor::handleAsyncUpdate() {
     property.saveAPVTS(processorRef.state);
-    sendLookAndFeelChange();
+    if (!isSizeChanged.exchange(false)) {
+        sendLookAndFeelChange();
+    }
 }

@@ -33,6 +33,7 @@ private:
     // access the processor object that created it.
     PluginProcessor &processorRef;
     zlState::Property property;
+    std::atomic<bool> isSizeChanged{false};
 
     zlPanel::MainPanel mainPanel;
 
