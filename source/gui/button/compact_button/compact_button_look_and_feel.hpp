@@ -34,15 +34,17 @@ namespace zlInterface {
                 g.fillEllipse(bounds);
             }
             if (button.getToggleState()) {
-                const auto innerBound = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
-                uiBase.drawInnerShadowEllipse(g, innerBound, uiBase.getFontSize() * 0.375f, {
-                                                  .darkShadowColor = uiBase.getDarkShadowColor().
-                                                  withMultipliedAlpha(buttonDepth),
-                                                  .brightShadowColor = uiBase.getBrightShadowColor().
-                                                  withMultipliedAlpha(buttonDepth),
-                                                  .changeDark = true,
-                                                  .changeBright = true
-                                              });
+                if (withShadow.load()) {
+                    const auto innerBound = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
+                    uiBase.drawInnerShadowEllipse(g, innerBound, uiBase.getFontSize() * 0.375f, {
+                                                      .darkShadowColor = uiBase.getDarkShadowColor().
+                                                      withMultipliedAlpha(buttonDepth),
+                                                      .brightShadowColor = uiBase.getBrightShadowColor().
+                                                      withMultipliedAlpha(buttonDepth),
+                                                      .changeDark = true,
+                                                      .changeBright = true
+                                                  });
+                }
             }
             if (editable.load()) {
                 if (drawable == nullptr) {
