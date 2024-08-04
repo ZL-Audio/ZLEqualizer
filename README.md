@@ -10,7 +10,9 @@
 
 ZLEqualizer is an equalizer plugin.
 
-[![](https://drive.google.com/uc?export=view&id=1-hmRNQ351Uqc7sCrt_4JRD1LU_MlrZbg)](https://www.youtube.com/watch?v=bC-mBDumzvU)
+A short intro video is available at [here](https://www.youtube.com/watch?v=bC-mBDumzvU).
+
+<img src="https://drive.google.com/uc?export=view&id=1-hmRNQ351Uqc7sCrt_4JRD1LU_MlrZbg" style="width:750px; max-width: 100%; height: auto" />
 
 ## Usage
 
