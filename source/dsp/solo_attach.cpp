@@ -28,6 +28,7 @@ namespace zlDSP {
                 parameterRef.removeParameterListener(ID + suffix, this);
             }
         }
+        cancelPendingUpdate();
     }
 
     template<typename FloatType>
