@@ -115,9 +115,22 @@ namespace zlInterface {
 
         inline float getBoxAlpha() const { return boxAlpha.load(); }
 
+        void setOption(const juce::PopupMenu::Options &x) { option = x; }
+
+        juce::PopupMenu::Options getOptionsForComboBoxPopupMenu(juce::ComboBox &box, juce::Label &label) override {
+            return option.withParentComponent(box.getTopLevelComponent()->getChildComponent(0))
+                    .withTargetComponent(&box)
+                    .withItemThatMustBeVisible(box.getSelectedId())
+                    .withInitiallySelectedItem(box.getSelectedId())
+                    .withMinimumWidth(box.getWidth())
+                    .withMaximumNumColumns(1)
+                    .withStandardItemHeight(label.getHeight());
+        }
+
     private:
         std::atomic<bool> editable = true;
         std::atomic<float> boxAlpha, fontScale = 1.5f;
+        juce::PopupMenu::Options option{};
 
         UIBase *uiBase;
     };
