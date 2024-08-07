@@ -359,6 +359,10 @@ namespace zlInterface {
 
         void saveToAPVTS();
 
+        bool getIsBandSelected(const size_t x) const { return isBandSelected[x].load(); }
+
+        void setIsBandSelected(const size_t x, const bool f) { isBandSelected[x].store(f); }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         std::atomic<float> fontSize{0};
@@ -370,6 +374,7 @@ namespace zlInterface {
         float rotaryDragSensitivity{1.f};
         std::atomic<float> fftExtraTilt{0.f}, fftExtraSpeed{1.f};
         std::atomic<float> singleCurveThickness{1.f}, sumCurveThickness{1.f};
+        std::array<std::atomic<bool>, zlState::bandNUM> isBandSelected{};
 
         float loadPara(const std::string &id) const {
             return state.getRawParameterValue(id)->load();

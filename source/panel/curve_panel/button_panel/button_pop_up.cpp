@@ -40,6 +40,20 @@ namespace zlPanel {
                },
                parametersRef, buttonAttachments);
 
+        bypassC.getButton().onClick = [this]() {
+            const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
+            const auto currentBand = band.load();
+            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
+            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
+                    const auto activeID = zlState::appendSuffix(zlDSP::bypass::ID, idx);
+                    parametersRef.getParameter(activeID)->beginChangeGesture();
+                    parametersRef.getParameter(activeID)->setValueNotifyingHost(isByPassed);
+                    parametersRef.getParameter(activeID)->endChangeGesture();
+                }
+            }
+        };
+
         fTypeC.getLAF().setFontScale(1.25f);
         for (auto &c: {&fTypeC}) {
             addAndMakeVisible(c);
@@ -57,10 +71,16 @@ namespace zlPanel {
         addAndMakeVisible(pitchLabel);
 
         button.getButton().onClick = [this]() {
-            const auto activeID = zlState::appendSuffix(zlState::active::ID, band.load());
-            parametersNARef.getParameter(activeID)->beginChangeGesture();
-            parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
-            parametersNARef.getParameter(activeID)->endChangeGesture();
+            const auto currentBand = band.load();
+            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
+            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
+                    const auto activeID = zlState::appendSuffix(zlState::active::ID, idx);
+                    parametersNARef.getParameter(activeID)->beginChangeGesture();
+                    parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
+                    parametersNARef.getParameter(activeID)->endChangeGesture();
+                }
+            }
         };
         button.getLookAndFeel().setCurve(false, true, false, false);
         addAndMakeVisible(button);

@@ -339,9 +339,9 @@ namespace zlPanel {
             if (parameterID.startsWith(zlDSP::freq::ID)) {
                 const auto ratio = static_cast<float>(value / currentFreq.load());
                 currentFreq.store(value);
-                if (!isSelected[currentBand].load()) return;
-                for (size_t idx = 0; idx < isSelected.size(); ++idx) {
-                    if (idx != currentBand && isSelected[idx].load()) {
+                if (!uiBase.getIsBandSelected(currentBand)) return;
+                for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                    if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
                         auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, idx));
                         const auto shiftFreq = para->convertFrom0to1(para->getValue()) * ratio;
                         const auto legalFreq = zlDSP::freq::range.snapToLegalValue(shiftFreq);
@@ -351,12 +351,12 @@ namespace zlPanel {
                     }
                 }
             } else if (parameterID.startsWith(zlDSP::gain::ID)) {
-                if (!isSelected[currentBand].load()) return;
+                if (!uiBase.getIsBandSelected(currentBand)) return;
                 if (isLeftClick.load()) {
                     if (std::abs(previousGains[currentBand].load()) <= 0.1f) return;
                     const auto scale = newValue / previousGains[currentBand].load();
-                    for (size_t idx = 0; idx < isSelected.size(); ++idx) {
-                        if (idx != currentBand && isSelected[idx].load()) {
+                    for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                        if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
                             auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
                             const auto shiftGain = scale * previousGains[idx].load();
                             const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
@@ -367,8 +367,8 @@ namespace zlPanel {
                     }
                 } else {
                     const auto shift = newValue - previousGains[currentBand].load();
-                    for (size_t idx = 0; idx < isSelected.size(); ++idx) {
-                        if (idx != currentBand && isSelected[idx].load()) {
+                    for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                        if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
                             auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
                             const auto shiftGain = shift + previousGains[idx].load();
                             const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
@@ -381,9 +381,9 @@ namespace zlPanel {
             } else if (parameterID.startsWith(zlDSP::Q::ID)) {
                 const auto ratio = static_cast<float>(value / currentQ.load());
                 currentQ.store(value);
-                if (!isSelected[currentBand].load()) return;
-                for (size_t idx = 0; idx < isSelected.size(); ++idx) {
-                    if (idx != currentBand && isSelected[idx].load()) {
+                if (!uiBase.getIsBandSelected(currentBand)) return;
+                for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                    if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
                         auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::Q::ID, idx));
                         const auto shiftQ = para->convertFrom0to1(para->getValue()) * ratio;
                         const auto legalQ = zlDSP::Q::range.snapToLegalValue(shiftQ);
@@ -466,7 +466,7 @@ namespace zlPanel {
         juce::ignoreUnused(source);
         for (size_t idx = 0; idx < panels.size(); ++idx) {
             const auto f1 = itemsSet.isSelected(idx);
-            isSelected[idx].store(f1);
+            uiBase.setIsBandSelected(idx, f1);
             const auto f2 = panels[idx]->getDragger().getLAF().getIsSelected();
             if (f1 != f2) {
                 panels[idx]->getDragger().getLAF().setIsSelected(f1);

@@ -36,6 +36,20 @@ namespace zlPanel {
         juce::ignoreUnused(parametersNA, parametersNARef);
         bypassC.setDrawable(bypassDrawable.get());
         bypassC.getLAF().setReverse(true);
+        bypassC.getButton().onClick = [this]() {
+            const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
+            const auto currentBand = bandIdx.load();
+            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
+            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
+                    const auto activeID = zlState::appendSuffix(zlDSP::bypass::ID, idx);
+                    parametersRef.getParameter(activeID)->beginChangeGesture();
+                    parametersRef.getParameter(activeID)->setValueNotifyingHost(isByPassed);
+                    parametersRef.getParameter(activeID)->endChangeGesture();
+                }
+            }
+        };
+
         soloC.setDrawable(soloDrawable.get());
         dynONC.setDrawable(dynONDrawable.get());
         dynLC.setDrawable(dynLeDrawable.get());

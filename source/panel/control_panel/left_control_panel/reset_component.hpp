@@ -28,8 +28,6 @@ namespace zlPanel {
 
         void attachGroup(size_t idx);
 
-        void resetBand();
-
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
