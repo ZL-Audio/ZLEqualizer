@@ -34,6 +34,7 @@ namespace zlPanel {
           sideDrawable(juce::Drawable::createFromImageData(BinaryData::fadside_svg, BinaryData::fadside_svgSize)) {
         juce::ignoreUnused(parametersNA, parametersNARef);
         dynBypassC.setDrawable(bypassDrawable.get());
+        dynBypassC.getLAF().setReverse(true);
         dynSoloC.setDrawable(soloDrawable.get());
         dynRelativeC.setDrawable(relativeDrawable.get());
         sideChainC.setDrawable(sideDrawable.get());

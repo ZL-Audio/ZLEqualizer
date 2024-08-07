@@ -26,6 +26,7 @@ namespace zlPanel {
         juce::ignoreUnused(parametersNARef);
 
         bypassC.getLAF().enableShadow(false);
+        bypassC.getLAF().setReverse(true);
         soloC.getLAF().enableShadow(false);
         bypassC.setDrawable(bypassDrawable.get());
         soloC.setDrawable(soloDrawable.get());

@@ -15,14 +15,17 @@
 #include "../../interface_definitions.hpp"
 
 namespace zlInterface {
-    class CompactButtonLookAndFeel : public juce::LookAndFeel_V4 {
+    class CompactButtonLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
         explicit CompactButtonLookAndFeel(UIBase &base) : uiBase(base) {
         }
 
-        void drawToggleButton(juce::Graphics &g, juce::ToggleButton &button, bool shouldDrawButtonAsHighlighted,
+        void drawToggleButton(juce::Graphics &g,
+                              juce::ToggleButton &button,
+                              bool shouldDrawButtonAsHighlighted,
                               bool shouldDrawButtonAsDown) override {
             juce::ignoreUnused(shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
+            const auto isPressed = button.getToggleState() ^ reverse.load();
 
             auto bounds = button.getLocalBounds().toFloat();
             if (withShadow.load()) {
@@ -33,7 +36,7 @@ namespace zlInterface {
                 g.setColour(uiBase.getBackgroundColor());
                 g.fillEllipse(bounds);
             }
-            if (button.getToggleState()) {
+            if (isPressed) {
                 if (withShadow.load()) {
                     const auto innerBound = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
                     uiBase.drawInnerShadowEllipse(g, innerBound, uiBase.getFontSize() * 0.375f, {
@@ -49,7 +52,7 @@ namespace zlInterface {
             if (editable.load()) {
                 if (drawable == nullptr) {
                     const auto textBound = button.getLocalBounds().toFloat();
-                    if (button.getToggleState()) {
+                    if (isPressed) {
                         g.setColour(uiBase.getTextColor().withAlpha(1.f));
                     } else {
                         g.setColour(uiBase.getTextColor().withAlpha(0.5f));
@@ -61,7 +64,7 @@ namespace zlInterface {
                     tempDrawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
                     const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f;
                     const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
-                    if (button.getToggleState()) {
+                    if (isPressed) {
                         tempDrawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
                     } else {
                         tempDrawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
@@ -82,8 +85,10 @@ namespace zlInterface {
 
         void enableShadow(const bool f) { withShadow.store(f); }
 
+        void setReverse(const bool f) { reverse.store(f); }
+
     private:
-        std::atomic<bool> editable = true, withShadow = true;
+        std::atomic<bool> editable{true}, reverse{false}, withShadow{true};
         std::atomic<float> buttonDepth = 0.f;
         juce::Drawable *drawable = nullptr;
 
