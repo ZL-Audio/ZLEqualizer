@@ -4,17 +4,31 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.3.4
+
+After installation, please load the plugin in an empty DAW session and check its functionality.
+
+**WARNING for Linux users**: If you build it locally, please build with `juce7` branch.
+
+**WARNING for Windows users**: The C++ runtime is now statically linked. However, you may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
+
+- add text/background/shadow/glow colours to UI setting panel
+    - cause almost all colours are customized, the light & dark colour modes may get removed in the future
+- add multiband bypass/off
+- change bypass buttons LAF (now the light is off when the filter is bypassed)
+- slightly improve performance
+
 ## 0.3.3
 
 After installation, please load the plugin in an empty DAW session and check its functionality.
 
-**WARNING for Linux users**: If you build it locally, please build with `juce7` branch AND checkout tag 7.0.12 on submodule JUCE.
+**WARNING for Linux users**: If you build it locally, please build with `juce7` branch.
 
 **WARNING for Windows users**: The C++ runtime is now statically linked. However, you may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
 
 **WARNING for Pro Tools users**: This is the first AAX plugin from me. If Pro Tools cannot recognize the plugin (or display an error message), please reach out to me.
 
-- add zero latency mode
+- add more colours to UI setting panel
 - add AAX to macOS & Windows release
 
 ## 0.3.2
