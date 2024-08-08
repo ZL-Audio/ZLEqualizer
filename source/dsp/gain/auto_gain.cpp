@@ -31,7 +31,7 @@ namespace zlGain {
                 gain.store(FloatType(0));
                 toReset.store(false);
             }
-            preRMS = calculateRMS(block);
+            preRMS = std::max(calculateRMS(block), FloatType(0.000000001));
             isPreProcessed.store(true);
         }
     }
@@ -47,7 +47,7 @@ namespace zlGain {
         if (isON.load() && isPreProcessed.exchange(false)) {
             postRMS = std::max(calculateRMS(block), FloatType(0.000000001));
             const auto currentGain = preRMS / postRMS;
-            gain = gain.load() * FloatType(0.99) + currentGain * FloatType(0.01);
+            gain.store(gainDSP.getCurrentGainLinear());
             gainDSP.setGainLinear(currentGain);
             juce::dsp::ProcessContextReplacing<FloatType> context(block);
             gainDSP.process(context);

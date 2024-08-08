@@ -12,6 +12,8 @@
 
 #include <juce_dsp/juce_dsp.h>
 
+#include "origin_gain.hpp"
+
 namespace zlGain {
     /**
      * a lock free, thread safe auto-gain class
@@ -45,7 +47,7 @@ namespace zlGain {
         std::atomic<bool> isON{false}, toReset{false}, isPreProcessed{false};
         std::atomic<FloatType> gain;
         FloatType preRMS, postRMS;
-        juce::dsp::Gain<FloatType> gainDSP;
+        OriginGain<FloatType> gainDSP;
 
         FloatType calculateRMS(juce::dsp::AudioBlock<FloatType> block);
     };

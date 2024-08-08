@@ -162,7 +162,7 @@ namespace zlPanel {
     void OutputSettingPanel::lookAndFeelChanged() {
         if (uiBase.getColourByIdx(zlInterface::gainColour).getAlpha() > juce::uint8(0)) {
             showGain = true;
-            startTimerHz(1);
+            startTimer(1500);
         } else {
             stopTimer();
             showGain = false;
