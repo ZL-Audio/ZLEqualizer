@@ -21,16 +21,18 @@ namespace zlPanel {
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           button(drawable.get(), base) {
         juce::ignoreUnused(parametersRef, parametersNARef);
-        const auto currentBand = bandIdx.load();
-        const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-        for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-            if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                const auto activeID = zlState::appendSuffix(zlState::active::ID, idx);
-                parametersNARef.getParameter(activeID)->beginChangeGesture();
-                parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
-                parametersNARef.getParameter(activeID)->endChangeGesture();
+        button.getButton().onClick = [this]() {
+            const auto currentBand = bandIdx.load();
+            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
+            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
+                    const auto activeID = zlState::appendSuffix(zlState::active::ID, idx);
+                    parametersNARef.getParameter(activeID)->beginChangeGesture();
+                    parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
+                    parametersNARef.getParameter(activeID)->endChangeGesture();
+                }
             }
-        }
+        };
         button.getLookAndFeel().setCurve(false, true, false, false);
         addAndMakeVisible(button);
     }
