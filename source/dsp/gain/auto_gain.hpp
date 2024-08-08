@@ -37,8 +37,13 @@ namespace zlGain {
 
         void enable(bool f);
 
+        FloatType getGainDecibels() const {
+            return juce::Decibels::gainToDecibels(gain.load());
+        }
+
     private:
         std::atomic<bool> isON{false}, toReset{false}, isPreProcessed{false};
+        std::atomic<FloatType> gain;
         FloatType preRMS, postRMS;
         juce::dsp::Gain<FloatType> gainDSP;
 

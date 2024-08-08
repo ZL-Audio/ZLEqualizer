@@ -35,6 +35,10 @@ namespace zlGain {
             gain.store(juce::Decibels::decibelsToGain(x, FloatType(-240)));
         }
 
+        FloatType getGainDecibels() const {
+            return juce::Decibels::gainToDecibels(gain.load());
+        }
+
     private:
         std::atomic<FloatType> gain{FloatType(1)};
         juce::dsp::Gain<FloatType> gainDSP;

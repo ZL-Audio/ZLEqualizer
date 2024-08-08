@@ -30,7 +30,7 @@ namespace zlGain {
                 gainDSP.reset();
                 toReset.store(false);
             }
-            preRMS = juce::Decibels::gainToDecibels(calculateRMS(block), FloatType(-240));
+            preRMS = calculateRMS(block);
             isPreProcessed.store(true);
         }
     }
@@ -44,8 +44,10 @@ namespace zlGain {
     template<typename FloatType>
     void AutoGain<FloatType>::processPost(juce::dsp::AudioBlock<FloatType> block) {
         if (isON.load() && isPreProcessed.exchange(false)) {
-            postRMS = juce::Decibels::gainToDecibels(calculateRMS(block), FloatType(-240));
-            gainDSP.setGainDecibels(preRMS - postRMS);
+            postRMS = std::max(calculateRMS(block), FloatType(0.000000001));
+            const auto currentGain = preRMS / postRMS;
+            gain.store(currentGain);
+            gainDSP.setGainLinear(currentGain);
             juce::dsp::ProcessContextReplacing<FloatType> context(block);
             gainDSP.process(context);
             for (size_t channel = 0; channel < block.getNumChannels(); ++channel) {
@@ -82,6 +84,7 @@ namespace zlGain {
             isON.store(true);
         } else {
             isON.store(false);
+            gain.store(FloatType(0));
         }
     }
 
