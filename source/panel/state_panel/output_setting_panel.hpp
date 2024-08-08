@@ -12,32 +12,37 @@
 
 #include "../../state/state.hpp"
 #include "../../gui/gui.hpp"
+#include "../../PluginProcessor.hpp"
 #include "../panel_definitons.hpp"
 
 namespace zlPanel {
-    class OutputSettingPanel final : public juce::Component {
+    class OutputSettingPanel final : public juce::Component,
+                                     private juce::Timer {
     public:
-        explicit OutputSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base);
+        explicit OutputSettingPanel(PluginProcessor &p,
+                                    zlInterface::UIBase &base);
 
         ~OutputSettingPanel() override;
-
-        void resized() override;
 
         void paint(juce::Graphics &g) override;
 
         void mouseDown(const juce::MouseEvent &event) override;
 
     private:
+        PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        juce::Label name;
-        zlInterface::NameLookAndFeel nameLAF;
+        juce::String displayString {"Output"};
+        bool showGain{false};
+
         zlInterface::CallOutBoxLAF callOutBoxLAF;
         juce::Component::SafePointer<juce::CallOutBox> boxPointer;
 
         void openCallOutBox();
+
+        void timerCallback() override;
+
+        void lookAndFeelChanged() override;
     };
 } // zlPanel
 

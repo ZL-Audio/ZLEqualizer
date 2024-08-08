@@ -14,10 +14,8 @@ namespace zlPanel {
         : processorRef(p), state(p.state), uiBase(p.state),
           controlPanel(p.parameters, p.parametersNA, uiBase),
           curvePanel(p.parameters, p.parametersNA, uiBase, p.getController()),
-          statePanel(p.parameters, p.parametersNA, p.state, uiBase),
+          statePanel(p, uiBase),
           uiSettingPanel(p, uiBase), uiSettingButton(uiSettingPanel, uiBase) {
-        uiBase.setStyle(static_cast<size_t>(state.getRawParameterValue(zlState::uiStyle::ID)->load()));
-        uiBase.loadFromAPVTS();
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);

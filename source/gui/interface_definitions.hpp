@@ -26,6 +26,7 @@ namespace zlInterface {
         sideColour,
         gridColour,
         tagColour,
+        gainColour,
         colourNum
     };
 
@@ -33,7 +34,7 @@ namespace zlInterface {
         "text", "background",
         "shadow", "glow",
         "pre", "post", "side",
-        "grid", "tag",
+        "grid", "tag", "gain"
     };
 
     static constexpr size_t ColorMap1Size = 10;
@@ -171,10 +172,14 @@ namespace zlInterface {
     public:
         explicit UIBase(juce::AudioProcessorValueTreeState &apvts)
             : state(apvts), fontSize{0.f}, styleID{1} {
+            loadFromAPVTS();
+            setStyle(static_cast<size_t>(state.getRawParameterValue(zlState::uiStyle::ID)->load()));
         }
 
         UIBase(const float fSize, const size_t idx, juce::AudioProcessorValueTreeState &apvts)
             : state(apvts) {
+            loadFromAPVTS();
+            setStyle(static_cast<size_t>(state.getRawParameterValue(zlState::uiStyle::ID)->load()));
             fontSize.store(fSize);
             styleID.store(idx);
             mainID.store(std::min(static_cast<size_t>(1), idx));

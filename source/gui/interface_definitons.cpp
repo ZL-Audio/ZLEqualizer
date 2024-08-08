@@ -267,6 +267,7 @@ namespace zlInterface {
                 case shadowColour:
                 case glowColour:
                 case colourNum:
+                case gainColour:
                 default:
                     return juce::Colours::white;
             }

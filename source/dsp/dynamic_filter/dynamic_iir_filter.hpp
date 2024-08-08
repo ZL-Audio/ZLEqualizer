@@ -77,11 +77,19 @@ namespace zlDynamicFilter {
             sFilter.setSVFON(f);
         }
 
-        void setIsPerSample(const bool x) {isPerSample.store(x);}
+        void setIsPerSample(const bool x) { isPerSample.store(x); }
+
+        FloatType getSGC() const {
+            if (!active.load() || bypass.load()) {
+                return FloatType(0);
+            } else {
+                return compensation.getGainDecibels();
+            }
+        }
 
     private:
         zlIIR::Filter<FloatType> mFilter, bFilter, tFilter, sFilter;
-        zlIIR::StaticGainCompensation<FloatType> compensation {bFilter};
+        zlIIR::StaticGainCompensation<FloatType> compensation{bFilter};
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass{true}, active{false}, dynamicON{false}, dynamicBypass{false};

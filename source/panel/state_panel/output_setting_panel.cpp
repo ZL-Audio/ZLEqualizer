@@ -79,26 +79,18 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
     };
 
-    OutputSettingPanel::OutputSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                           juce::AudioProcessorValueTreeState &parametersNA,
+    OutputSettingPanel::OutputSettingPanel(PluginProcessor &p,
                                            zlInterface::UIBase &base)
-        : parametersRef(parameters),
-          parametersNARef(parametersNA),
+        : processorRef(p),
+          parametersRef(p.parameters),
+          parametersNARef(p.parametersNA),
           uiBase(base),
-          nameLAF(uiBase),
           callOutBoxLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
-        name.setText("Output", juce::sendNotification);
-        nameLAF.setFontScale(1.375f);
-        name.setLookAndFeel(&nameLAF);
-        name.setEditable(false);
-        name.setInterceptsMouseClicks(false, false);
-        addAndMakeVisible(name);
-        // setBufferedToImage(true);
+        lookAndFeelChanged();
     }
 
     OutputSettingPanel::~OutputSettingPanel() {
-        name.setLookAndFeel(nullptr);
         if (boxPointer.getComponent() != nullptr) {
             boxPointer->dismiss();
         }
@@ -114,15 +106,19 @@ namespace zlPanel {
                                  uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
                                  false, false, true, true);
         g.fillPath(path);
+
+        if (showGain) {
+            g.setColour(uiBase.getColourByIdx(zlInterface::gainColour));
+        } else {
+            g.setColour(uiBase.getTextColor());
+        }
+        g.setFont(uiBase.getFontSize() * 1.375f);
+        g.drawText(displayString, bound, juce::Justification::centred);
     }
 
     void OutputSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
         openCallOutBox();
-    }
-
-    void OutputSettingPanel::resized() {
-        name.setBounds(getLocalBounds());
     }
 
     void OutputSettingPanel::openCallOutBox() {
@@ -140,5 +136,38 @@ namespace zlPanel {
         box.setArrowSize(0);
         box.sendLookAndFeelChange();
         boxPointer = &box;
+    }
+
+    void OutputSettingPanel::timerCallback() {
+        const auto currentGain = processorRef.getController().getGainCompensation();
+        showGain = !showGain;
+        if (showGain) {
+            juce::String gainString;
+            if (currentGain <= -10.0) {
+                gainString = juce::String(currentGain, 1, false);
+            } else if (currentGain < 0.0) {
+                gainString = juce::String(currentGain, 1, false);
+            } else if (currentGain < 10.0) {
+                gainString = "+" + juce::String(currentGain, 1, false);
+            } else {
+                gainString = "+" + juce::String(currentGain, 1, false);
+            }
+            displayString = gainString;
+        } else {
+            displayString = "Output";
+        }
+        repaint();
+    }
+
+    void OutputSettingPanel::lookAndFeelChanged() {
+        if (uiBase.getColourByIdx(zlInterface::gainColour).getAlpha() > juce::uint8(0)) {
+            showGain = true;
+            startTimerHz(1);
+        } else {
+            stopTimer();
+            showGain = false;
+            displayString = "Output";
+            repaint();
+        }
     }
 } // zlPanel

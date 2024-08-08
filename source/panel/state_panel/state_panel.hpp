@@ -10,6 +10,7 @@
 #ifndef ZLEqualizer_STATE_PANEL_HPP
 #define ZLEqualizer_STATE_PANEL_HPP
 
+#include "../../PluginProcessor.hpp"
 #include "logo_panel.hpp"
 #include "fft_setting_panel.hpp"
 #include "comp_setting_panel.hpp"
@@ -18,22 +19,15 @@
 #include "general_setting_panel.hpp"
 
 namespace zlPanel {
-
     class StatePanel final : public juce::Component {
     public:
-        explicit StatePanel(juce::AudioProcessorValueTreeState &parameters,
-                           juce::AudioProcessorValueTreeState &parametersNA,
-                           juce::AudioProcessorValueTreeState &state,
-                           zlInterface::UIBase &base);
+        explicit StatePanel(PluginProcessor &p,
+                            zlInterface::UIBase &base);
 
         void resized() override;
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef;
-        juce::AudioProcessorValueTreeState &parametersNARef;
-        juce::AudioProcessorValueTreeState &stateRef;
         zlInterface::UIBase &uiBase;
-
         LogoPanel logoPanel;
         FFTSettingPanel fftSettingPanel;
         CompSettingPanel compSettingPanel;
@@ -41,7 +35,6 @@ namespace zlPanel {
         ConflictSettingPanel conflictSettingPanel;
         GeneralSettingPanel generalSettingPanel;
     };
-
 } // zlPanel
 
 #endif //ZLEqualizer_STATE_PANEL_HPP

@@ -13,12 +13,12 @@ namespace zlIIR {
     template<typename FloatType>
     StaticGainCompensation<FloatType>::StaticGainCompensation(Filter<FloatType> &filter)
         : target(filter) {
-        gain.setGainDecibels(0);
+        gainDSP.setGainDecibels(0);
     }
 
     template<typename FloatType>
     void StaticGainCompensation<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        gain.prepare(spec);
+        gainDSP.prepare(spec);
     }
 
     template<typename FloatType>
@@ -30,21 +30,27 @@ namespace zlIIR {
                 const auto f = target.getFreq();
                 const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
                 const auto q = juce::jlimit(FloatType(0.1), FloatType(5), target.getQ());
-                gain.setGainDecibels((FloatType(1) + portion * FloatType(0.75)) * getPeakEstimation(f, g, q));
+                const auto est = (FloatType(1) + portion * FloatType(0.75)) * getPeakEstimation(f, g, q);
+                gain.store(est);
+                gainDSP.setGainDecibels(est);
                 break;
             }
             case lowShelf: {
                 const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) / FloatType(18);
                 const auto f = target.getFreq();
                 const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
-                gain.setGainDecibels((FloatType(0.88) + portion * FloatType(0.66)) * getLowShelfEstimation(f, g));
+                const auto est = (FloatType(0.88) + portion * FloatType(0.66)) * getLowShelfEstimation(f, g);
+                gain.store(est);
+                gainDSP.setGainDecibels(est);
                 break;
             }
             case highShelf: {
                 const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) / FloatType(18);
                 const auto f = target.getFreq();
                 const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
-                gain.setGainDecibels((FloatType(0.5) + portion * FloatType(0.375)) * getHighShelfEstimation(f, g));
+                const auto est = (FloatType(0.5) + portion * FloatType(0.375)) * getHighShelfEstimation(f, g);
+                gain.store(est);
+                gainDSP.setGainDecibels(est);
                 break;
             }
             case tiltShelf:
@@ -54,7 +60,8 @@ namespace zlIIR {
             case notch:
             case bandPass:
             default:
-                gain.setGainDecibels(FloatType(0));
+                gainDSP.setGainLinear(FloatType(1));
+                gain.store(0);
                 break;
         }
     }
@@ -70,7 +77,7 @@ namespace zlIIR {
             update();
         }
         if (isON.load()) {
-            gain.process(juce::dsp::ProcessContextReplacing<FloatType>(block));
+            gainDSP.process(juce::dsp::ProcessContextReplacing<FloatType>(block));
         }
     }
 

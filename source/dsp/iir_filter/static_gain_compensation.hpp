@@ -29,11 +29,17 @@ namespace zlIIR {
         void enable(const bool f) {
             isON.store(f);
             if (f) toUpdate.store(true);
+            gain.store(FloatType(0));
+        }
+
+        FloatType getGainDecibels() const {
+            return gain.load();
         }
 
     private:
         Filter<FloatType> &target;
-        juce::dsp::Gain<FloatType> gain;
+        juce::dsp::Gain<FloatType> gainDSP;
+        std::atomic<FloatType> gain{FloatType(0)};
         std::atomic<bool> isON{false}, toUpdate{false};
 
         static inline FloatType integrateFQ(const FloatType f1, const FloatType f2) {

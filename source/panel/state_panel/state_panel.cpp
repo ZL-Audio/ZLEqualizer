@@ -10,20 +10,15 @@
 #include "state_panel.hpp"
 
 namespace zlPanel {
-    StatePanel::StatePanel(juce::AudioProcessorValueTreeState &parameters,
-                           juce::AudioProcessorValueTreeState &parametersNA,
-                           juce::AudioProcessorValueTreeState &state,
+    StatePanel::StatePanel(PluginProcessor &p,
                            zlInterface::UIBase &base)
-        : parametersRef(parameters), parametersNARef(parametersNA), stateRef(state),
-          uiBase(base),
-          logoPanel(state, base),
-          fftSettingPanel(parameters, parametersNA, base),
-          compSettingPanel(parameters, parametersNA, base),
-          outputSettingPanel(parameters, parametersNA, base),
-          conflictSettingPanel(parameters, parametersNA, base),
-          generalSettingPanel(parameters, parametersNA, base) {
-        juce::ignoreUnused(parametersRef, parametersNARef);
-        juce::ignoreUnused(stateRef, uiBase);
+        : uiBase(base),
+          logoPanel(p.state, base),
+          fftSettingPanel(p.parameters, p.parametersNA, base),
+          compSettingPanel(p, base),
+          outputSettingPanel(p, base),
+          conflictSettingPanel(p.parameters, p.parametersNA, base),
+          generalSettingPanel(p.parameters, p.parametersNA, base) {
         setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
         addAndMakeVisible(fftSettingPanel);

@@ -101,6 +101,14 @@ namespace zlDSP {
             triggerAsyncUpdate();
         }
 
+        FloatType getGainCompensation() const {
+            FloatType currentGain = outputGain.getGainDecibels() + autoGain.getGainDecibels();
+            for (const auto &f : filters) {
+                currentGain += f.getSGC();
+            }
+            return currentGain;
+        }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;

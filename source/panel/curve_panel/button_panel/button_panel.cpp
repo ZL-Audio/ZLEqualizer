@@ -138,8 +138,8 @@ namespace zlPanel {
 
     void ButtonPanel::drawFreq(juce::Graphics &g, const float freq, const juce::Rectangle<float> &bound,
                                const bool isTop) {
-        const auto freqString = freq < 100 ? juce::String(freq, 2, false) : juce::String(freq, 1, false);
         juce::ignoreUnused(isTop);
+        const auto freqString = freq < 100 ? juce::String(freq, 2, false) : juce::String(freq, 1, false);
         auto p = std::log(freq / 10.f) / std::log(2205.f);
         p = juce::jlimit(0.025f, 0.97f, p);
         auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 5, uiBase.getFontSize() * 1.5f);

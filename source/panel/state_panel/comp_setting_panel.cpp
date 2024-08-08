@@ -80,11 +80,10 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
     };
 
-    CompSettingPanel::CompSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                       juce::AudioProcessorValueTreeState &parametersNA,
+    CompSettingPanel::CompSettingPanel(PluginProcessor &p,
                                        zlInterface::UIBase &base)
-        : parametersRef(parameters),
-          parametersNARef(parametersNA),
+        : parametersRef(p.parameters),
+          parametersNARef(p.parametersNA),
           uiBase(base),
           nameLAF(uiBase),
           callOutBoxLAF(uiBase) {

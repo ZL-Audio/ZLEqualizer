@@ -12,14 +12,14 @@
 
 #include "../../state/state.hpp"
 #include "../../gui/gui.hpp"
+#include "../../PluginProcessor.hpp"
 #include "../panel_definitons.hpp"
 
 namespace zlPanel {
     class CompSettingPanel final : public juce::Component {
     public:
-        explicit CompSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base);
+        explicit CompSettingPanel(PluginProcessor &p,
+                                  zlInterface::UIBase &base);
 
         ~CompSettingPanel() override;
 
@@ -33,6 +33,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         juce::Label name;
+
         zlInterface::NameLookAndFeel nameLAF;
         zlInterface::CallOutBoxLAF callOutBoxLAF;
         juce::Component::SafePointer<juce::CallOutBox> boxPointer;
