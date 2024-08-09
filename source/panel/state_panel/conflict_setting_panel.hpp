@@ -10,16 +10,14 @@
 #ifndef ZLEqualizer_CONFLICT_SETTING_PANEL_HPP
 #define ZLEqualizer_CONFLICT_SETTING_PANEL_HPP
 
-#include "../../state/state.hpp"
 #include "../../gui/gui.hpp"
-#include "../panel_definitons.hpp"
+#include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
     class ConflictSettingPanel final : public juce::Component {
     public:
-        explicit ConflictSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base);
+        explicit ConflictSettingPanel(PluginProcessor &p,
+                                      zlInterface::UIBase &base);
 
         ~ConflictSettingPanel() override;
 

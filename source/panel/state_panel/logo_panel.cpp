@@ -10,8 +10,8 @@
 #include "logo_panel.hpp"
 
 namespace zlPanel {
-    LogoPanel::LogoPanel(juce::AudioProcessorValueTreeState &state, zlInterface::UIBase &base)
-        : stateRef(state),
+    LogoPanel::LogoPanel(PluginProcessor &p, zlInterface::UIBase &base)
+        : stateRef(p.state),
           uiBase(base),
           brandDrawable(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
           logoDrawable(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {

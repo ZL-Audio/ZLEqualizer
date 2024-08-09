@@ -10,17 +10,14 @@
 #ifndef ZLEqualizer_GENERAL_SETTING_PANEL_HPP
 #define ZLEqualizer_GENERAL_SETTING_PANEL_HPP
 
-#include "../../dsp/dsp.hpp"
-#include "../../state/state.hpp"
 #include "../../gui/gui.hpp"
-#include "../panel_definitons.hpp"
+#include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
     class GeneralSettingPanel final : public juce::Component {
     public:
-        explicit GeneralSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base);
+        explicit GeneralSettingPanel(PluginProcessor &p,
+                                     zlInterface::UIBase &base);
 
         ~GeneralSettingPanel() override;
 

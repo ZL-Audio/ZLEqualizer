@@ -9,6 +9,7 @@
 
 #include "conflict_setting_panel.hpp"
 #include "../../state/state.hpp"
+#include "../panel_definitons.hpp"
 
 namespace zlPanel {
     class ConflictCallOutBox final : public juce::Component {
@@ -72,11 +73,10 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
     };
 
-    ConflictSettingPanel::ConflictSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                               juce::AudioProcessorValueTreeState &parametersNA,
+    ConflictSettingPanel::ConflictSettingPanel(PluginProcessor &p,
                                                zlInterface::UIBase &base)
-        : parametersRef(parameters),
-          parametersNARef(parametersNA),
+        : parametersRef(p.parameters),
+          parametersNARef(p.parametersNA),
           uiBase(base),
           nameLAF(uiBase),
           callOutBoxLAF(uiBase) {

@@ -9,6 +9,8 @@
 
 #include "general_setting_panel.hpp"
 
+#include "../panel_definitons.hpp"
+
 namespace zlPanel {
     class GeneralCallOutBox final : public juce::Component {
     public:
@@ -67,11 +69,10 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
     };
 
-    GeneralSettingPanel::GeneralSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                             juce::AudioProcessorValueTreeState &parametersNA,
+    GeneralSettingPanel::GeneralSettingPanel(PluginProcessor &p,
                                              zlInterface::UIBase &base)
-        : parametersRef(parameters),
-          parametersNARef(parametersNA),
+        : parametersRef(p.parameters),
+          parametersNARef(p.parametersNA),
           uiBase(base),
           nameLAF(uiBase),
           callOutBoxLAF(uiBase) {

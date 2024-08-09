@@ -10,13 +10,13 @@
 #ifndef ZLEqualizer_LOGO_PANEL_HPP
 #define ZLEqualizer_LOGO_PANEL_HPP
 
-#include "../../state/state.hpp"
 #include "../../gui/gui.hpp"
+#include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
     class LogoPanel final : public juce::Component {
     public:
-        explicit LogoPanel(juce::AudioProcessorValueTreeState &state,
+        explicit LogoPanel(PluginProcessor &p,
                            zlInterface::UIBase &base);
 
         void paint(juce::Graphics &g) override;

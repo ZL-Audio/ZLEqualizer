@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "comp_setting_panel.hpp"
+#include "../panel_definitons.hpp"
 #include "../../dsp/dsp.hpp"
 
 namespace zlPanel {

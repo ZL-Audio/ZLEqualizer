@@ -13,12 +13,12 @@ namespace zlPanel {
     StatePanel::StatePanel(PluginProcessor &p,
                            zlInterface::UIBase &base)
         : uiBase(base),
-          logoPanel(p.state, base),
-          fftSettingPanel(p.parameters, p.parametersNA, base),
+          logoPanel(p, base),
+          fftSettingPanel(p, base),
           compSettingPanel(p, base),
           outputSettingPanel(p, base),
-          conflictSettingPanel(p.parameters, p.parametersNA, base),
-          generalSettingPanel(p.parameters, p.parametersNA, base) {
+          conflictSettingPanel(p, base),
+          generalSettingPanel(p, base) {
         setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
         addAndMakeVisible(fftSettingPanel);

@@ -9,6 +9,9 @@
 
 #include "fft_setting_panel.hpp"
 
+#include "../../state/state.hpp"
+#include "../panel_definitons.hpp"
+
 namespace zlPanel {
     class FFTCallOutBox final : public juce::Component {
     public:
@@ -75,11 +78,10 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
     };
 
-    FFTSettingPanel::FFTSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                     juce::AudioProcessorValueTreeState &parametersNA,
+    FFTSettingPanel::FFTSettingPanel(PluginProcessor &p,
                                      zlInterface::UIBase &base)
-        : parametersRef(parameters),
-          parametersNARef(parametersNA),
+        : parametersRef(p.parameters),
+          parametersNARef(p.parametersNA),
           uiBase(base),
           nameLAF(uiBase),
           callOutBoxLAF(uiBase) {

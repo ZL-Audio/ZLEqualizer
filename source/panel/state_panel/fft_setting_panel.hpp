@@ -10,15 +10,13 @@
 #ifndef ZLEqualizer_FFT_SETTING_PANEL_HPP
 #define ZLEqualizer_FFT_SETTING_PANEL_HPP
 
-#include "../../state/state.hpp"
 #include "../../gui/gui.hpp"
-#include "../panel_definitons.hpp"
+#include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
     class FFTSettingPanel final : public juce::Component {
     public:
-        explicit FFTSettingPanel(juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
+        explicit FFTSettingPanel(PluginProcessor &p,
                                  zlInterface::UIBase &base);
 
         ~FFTSettingPanel() override;

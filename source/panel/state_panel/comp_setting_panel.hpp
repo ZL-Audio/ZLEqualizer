@@ -10,10 +10,8 @@
 #ifndef ZLEqualizer_COMP_SETTING_PANEL_HPP
 #define ZLEqualizer_COMP_SETTING_PANEL_HPP
 
-#include "../../state/state.hpp"
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
-#include "../panel_definitons.hpp"
 
 namespace zlPanel {
     class CompSettingPanel final : public juce::Component {
