@@ -250,32 +250,6 @@ namespace zlInterface {
         return boxBounds;
     }
 
-    juce::Colour UIBase::getColourByIdx(const colourIdx idx) const {
-        if (styleID.load() < 2) {
-            switch (idx) {
-                case preColour:
-                case postColour:
-                    return getTextColor().withAlpha(0.1f);
-                case sideColour:
-                    return getColorMap2(1).withAlpha(0.1f);
-                case gridColour:
-                    return getTextColor().withAlpha(0.45f);
-                case tagColour:
-                    return getTextColor().withAlpha(customColours[static_cast<size_t>(idx)].getFloatAlpha());
-                case textColour:
-                case backgroundColour:
-                case shadowColour:
-                case glowColour:
-                case colourNum:
-                case gainColour:
-                default:
-                    return juce::Colours::white;
-            }
-        } else {
-            return customColours[static_cast<size_t>(idx)];
-        }
-    }
-
     void UIBase::loadFromAPVTS() {
         for (size_t i = 0; i < colourNum; ++i) {
             const auto r = static_cast<juce::uint8>(state.getRawParameterValue(colourNames[i] + "_r")->load());

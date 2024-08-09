@@ -15,6 +15,7 @@ namespace zlPanel {
           uiBase(base),
           brandDrawable(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
           logoDrawable(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
+        juce::ignoreUnused(stateRef);
     }
 
     void LogoPanel::paint(juce::Graphics &g) {
@@ -51,17 +52,6 @@ namespace zlPanel {
         tempLogo->setTransform(
             juce::AffineTransform::scale(bound.getHeight() / static_cast<float>(logoDrawable->getHeight())));
         tempLogo->drawAt(g, bound.getX() + bound.getHeight() * (widthOverHeight - logoWOH), bound.getY(), 1.0f);
-    }
-
-    void LogoPanel::mouseDoubleClick(const juce::MouseEvent &event) {
-        juce::ignoreUnused(event);
-        auto styleID = static_cast<size_t>(stateRef.getRawParameterValue(zlState::uiStyle::ID)->load());
-        styleID = (styleID + 1) % (static_cast<size_t>(zlState::uiStyle::maxV) + 1);
-        uiBase.setStyle(styleID);
-        auto *para = stateRef.getParameter(zlState::uiStyle::ID);
-        para->beginChangeGesture();
-        para->setValueNotifyingHost(zlState::uiStyle::convertTo01(static_cast<float>(styleID)));
-        para->endChangeGesture();
     }
 
     void LogoPanel::setJustification(const int justificationFlags) {

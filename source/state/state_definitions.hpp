@@ -208,16 +208,6 @@ namespace zlState {
         return s + suffix;
     }
 
-    class uiStyle : public FloatParameters<uiStyle> {
-    public:
-        auto static constexpr ID = "ui_style";
-        auto static constexpr name = "NA";
-        inline static constexpr float minV = 0.f;
-        inline static constexpr float maxV = 2.f;
-        inline static constexpr float defaultV = 1.f;
-        inline auto static const range = juce::NormalisableRange<float>(minV, maxV, 1.f);
-    };
-
     class windowW : public FloatParameters<windowW> {
     public:
         auto static constexpr ID = "window_w";
@@ -354,7 +344,7 @@ namespace zlState {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(uiStyle::get(), windowW::get(), windowH::get(),
+        layout.add(windowW::get(), windowH::get(),
                    wheelSensitivity::get(), wheelFineSensitivity::get(),
                    rotaryStyle::get(), rotaryDragSensitivity::get(),
                    refreshRate::get(),

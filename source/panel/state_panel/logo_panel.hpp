@@ -21,8 +21,6 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void mouseDoubleClick(const juce::MouseEvent &event) override;
-
         void setJustification(int justificationFlags);
 
     private:

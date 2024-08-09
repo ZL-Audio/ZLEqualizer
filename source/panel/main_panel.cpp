@@ -19,20 +19,17 @@ namespace zlPanel {
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
-        addChildComponent(uiSettingButton);
-        uiSettingButton.setVisible(uiBase.getStyle() == 2);
+        addAndMakeVisible(uiSettingButton);
         addChildComponent(uiSettingPanel);
 
         updateFFTs();
 
-        state.addParameterListener(zlState::uiStyle::ID, this);
         state.addParameterListener(zlState::fftExtraTilt::ID, this);
         state.addParameterListener(zlState::fftExtraSpeed::ID, this);
         state.addParameterListener(zlState::refreshRate::ID, this);
     }
 
     MainPanel::~MainPanel() {
-        state.removeParameterListener(zlState::uiStyle::ID, this);
         state.removeParameterListener(zlState::fftExtraTilt::ID, this);
         state.removeParameterListener(zlState::fftExtraSpeed::ID, this);
         state.removeParameterListener(zlState::refreshRate::ID, this);
@@ -65,7 +62,6 @@ namespace zlPanel {
     }
 
     void MainPanel::handleAsyncUpdate() {
-        uiSettingButton.setVisible(uiBase.getStyle() == 2);
         updateFFTs();
     }
 
@@ -84,5 +80,4 @@ namespace zlPanel {
             fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
     }
-
 }
