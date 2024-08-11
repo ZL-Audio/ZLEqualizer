@@ -38,6 +38,7 @@ namespace zlPanel {
 
     void UISettingButton::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
+        panel.loadSetting();
         panel.setVisible(true);
     }
 

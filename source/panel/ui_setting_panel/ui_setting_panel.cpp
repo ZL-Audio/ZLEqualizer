@@ -91,7 +91,7 @@ namespace zlPanel {
         versionLabel.setBounds(bound.toNearestInt());
     }
 
-    void UISettingPanel::visibilityChanged() {
+    void UISettingPanel::loadSetting() {
         internelPanel.loadSetting();
     }
 } // zlPanel

@@ -25,7 +25,7 @@ public:
 
     void resized() override;
 
-    void visibilityChanged() override;
+    void loadSetting();
 
 private:
     PluginProcessor &pRef;

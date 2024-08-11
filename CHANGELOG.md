@@ -12,6 +12,8 @@ After installation, please load the plugin in an empty DAW session and check its
 
 **WARNING for Windows users**: The C++ runtime is now statically linked. However, you may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
 
+**WARNING for Pro Tool users**: AAX is not updated in this version.
+
 - BREAKING: remove light/dark colour modes
 - add text/background/shadow/glow colours to UI setting panel
 - add multiband bypass/off
