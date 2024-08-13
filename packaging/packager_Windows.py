@@ -54,12 +54,13 @@ Name: "custom"; Description: "Custom installation"; Flags: iscustom
     all_install_paths = [
         r'{commoncf64}\VST3',
         r'{commoncf64}\LV2',
-        r'{commoncf64}\Avid\Audio\Plug-Ins', ]
+        r'{commoncf64}\Avid\Audio\Plug-Ins',
+        r'{commonpf64}\ZLAudio']
 
     plugin_formats, extensions, install_paths = [], [], []
     for plugin_format, extension, install_path in zip(
-            ["VST3", "LV2", "AAX"],
-            ["vst3", "lv2", "aaxplugin"],
+            ["VST3", "LV2", "AAX", "Standalone"],
+            ["vst3", "lv2", "aaxplugin", "standalone"],
             all_install_paths):
         if plugin_format + "_PATH" in os.environ:
             plugin_path = os.environ[plugin_format + "_PATH"]
@@ -86,12 +87,20 @@ Name: "custom"; Description: "Custom installation"; Flags: iscustom
 
     outfile.write("[Files]\n")
     for plugin_format, extension, install_path in zip(plugin_formats, extensions, install_paths):
-        outfile.write(
-            'Source: "..\\{}\\*"; DestDir: "{}"; Excludes: *.ilk; Flags: ignoreversion recursesubdirs; Components: {}'.format(
-                str(PureWindowsPath(os.environ[plugin_format + "_PATH"])),
-                install_path + '\\' + product_name + "." + extension + "\\",
-                extension)
-        )
+        if plugin_format == "Standalone":
+            outfile.write(
+                'Source: "..\\{}"; DestDir: "{}"; Excludes: *.ilk; Flags: ignoreversion; Components: {}'.format(
+                    str(PureWindowsPath(os.environ[plugin_format + "_PATH"])),
+                    install_path + '\\' + product_name,
+                    extension)
+            )
+        else:
+            outfile.write(
+                'Source: "..\\{}\\*"; DestDir: "{}"; Excludes: *.ilk; Flags: ignoreversion recursesubdirs; Components: {}'.format(
+                    str(PureWindowsPath(os.environ[plugin_format + "_PATH"])),
+                    install_path + '\\' + product_name + "." + extension + "\\",
+                    extension)
+                )
         outfile.write("\n")
 
     outfile.write("[Run]\n")
@@ -106,8 +115,6 @@ Name: "custom"; Description: "Custom installation"; Flags: iscustom
         outfile.write("\n")
 
     outfile.close()
-    return 0
-
 
 if __name__ == '__main__':
     sys.exit(main())
