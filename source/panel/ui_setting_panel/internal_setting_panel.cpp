@@ -196,5 +196,6 @@ namespace zlPanel {
         postSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
         sideSelector.setColour(getIntColour(252, 18, 197, .1f));
         gridSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .25f));
+        saveSetting();
     }
 } // zlPanel
