@@ -76,6 +76,7 @@ include(JUCEDefaults)
 # and later `git submodule update --remote --merge` to keep it up to date
 # On Github Actions, this is done as a part of actions/checkout
 add_subdirectory(JUCE)
+add_subdirectory(libs/clap-juce-extensions EXCLUDE_FROM_ALL)
 
 # Add any other modules you want modules here, before the juce_add_plugin call
 juce_add_module("${CMAKE_CURRENT_LIST_DIR}/modules/friz/Source/friz")
@@ -114,6 +115,10 @@ juce_add_plugin("${PROJECT_NAME}"
         # This can be different from PROJECT_NAME and can have spaces!
         # You might want to use v${MAJOR_VERSION} here once you go to v2...
         PRODUCT_NAME "${PRODUCT_NAME}")
+
+clap_juce_extensions_plugin(TARGET "${PROJECT_NAME}"
+  CLAP_ID "com.ToteBagLabs.Valentine"
+  CLAP_FEATURES "audio-effect")
 
 # This lets us use our code in both the JUCE targets and our Test target
 # Without running into ODR violations
