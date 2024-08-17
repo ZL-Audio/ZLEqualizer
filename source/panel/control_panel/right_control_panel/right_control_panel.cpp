@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "right_control_panel.hpp"
+#include "BinaryData.h"
 
 namespace zlPanel {
     RightControlPanel::RightControlPanel(PluginProcessor &p,

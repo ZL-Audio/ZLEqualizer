@@ -39,7 +39,7 @@ namespace zlPanel {
         zlInterface::CompactButton dynLinkC;
         juce::Rectangle<float> buttonBound;
         std::atomic<bool> buttonChanged{false};
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
         const std::unique_ptr<juce::Drawable> linkDrawable;
 
         std::atomic<size_t> bandIdx;

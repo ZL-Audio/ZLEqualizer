@@ -39,12 +39,12 @@ namespace zlPanel {
             const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
             const auto currentBand = bandIdx.load();
             const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlDSP::bypass::ID, idx);
-                    parametersRef.getParameter(activeID)->beginChangeGesture();
-                    parametersRef.getParameter(activeID)->setValueNotifyingHost(isByPassed);
-                    parametersRef.getParameter(activeID)->endChangeGesture();
+                    const auto paraBypass = parametersRef.getParameter(zlState::appendSuffix(zlDSP::bypass::ID, idx));
+                    paraBypass->beginChangeGesture();
+                    paraBypass->setValueNotifyingHost(isByPassed);
+                    paraBypass->endChangeGesture();
                 }
             }
         };
@@ -52,6 +52,8 @@ namespace zlPanel {
         soloC.setDrawable(soloDrawable.get());
         dynONC.setDrawable(dynONDrawable.get());
         dynONC.getButton().onClick = [this]() {
+            juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
+            logger.logMessage("clicked");
             const auto currentBand = bandIdx.load();
             if (dynONC.getButton().getToggleState()) {
                 processorRef.getFiltersAttach().turnOnDynamic(currentBand);

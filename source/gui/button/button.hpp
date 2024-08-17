@@ -13,5 +13,6 @@
 #include "compact_button/compact_button.hpp"
 #include "regular_button/regular_button.hpp"
 #include "click_button/click_button.hpp"
+#include "button_attachment.hpp"
 
 #endif //ZLINTERFACE_BUTTON_H

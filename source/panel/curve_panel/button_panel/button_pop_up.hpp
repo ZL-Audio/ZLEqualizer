@@ -52,7 +52,7 @@ namespace zlPanel {
         std::atomic<zlIIR::FilterType> fType;
 
         zlInterface::CompactButton bypassC, soloC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
         const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable;
 
         zlInterface::CompactCombobox fTypeC;

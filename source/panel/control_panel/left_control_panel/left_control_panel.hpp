@@ -39,7 +39,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
 
         zlInterface::CompactButton bypassC, soloC, dynONC, dynLC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
 
         zlInterface::CompactCombobox fTypeC, slopeC, stereoC;
         zlInterface::LeftRightCombobox lrBox;

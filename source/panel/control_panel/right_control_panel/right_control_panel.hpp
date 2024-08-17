@@ -10,8 +10,6 @@
 #ifndef ZLEqualizer_RIGHT_CONTROL_PANEL_HPP
 #define ZLEqualizer_RIGHT_CONTROL_PANEL_HPP
 
-#include "BinaryData.h"
-
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
@@ -37,7 +35,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
 
         zlInterface::CompactButton dynBypassC, dynSoloC, dynRelativeC, sideChainC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachments;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
 
         zlInterface::TwoValueRotarySlider sideFreqC, sideQC;
         zlInterface::CompactLinearSlider thresC, kneeC, attackC, releaseC;
