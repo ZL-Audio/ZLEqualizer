@@ -178,7 +178,23 @@ namespace zlPanel {
         uiBase.saveToAPVTS();
     }
 
+    static juce::Colour getIntColour(const int r, const int g, const int b, float alpha) {
+        return {
+            static_cast<juce::uint8>(r),
+            static_cast<juce::uint8>(g),
+            static_cast<juce::uint8>(b),
+            alpha
+        };
+    }
+
     void InternalSettingPanel::resetSetting() {
-        loadSetting();
+        textSelector.setColour(getIntColour(247, 246, 244, 1.f));
+        backgroundSelector.setColour(getIntColour((255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2, 1.f));
+        shadowSelector.setColour(getIntColour(0, 0, 0, 1.f));
+        glowSelector.setColour(getIntColour(70, 66, 62, 1.f));
+        preSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
+        postSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
+        sideSelector.setColour(getIntColour(252, 18, 197, .1f));
+        gridSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .25f));
     }
 } // zlPanel
