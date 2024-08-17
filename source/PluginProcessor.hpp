@@ -73,7 +73,9 @@ public:
 
     bool supportsDoublePrecisionProcessing() const override { return true; }
 
-    inline zlDSP::Controller<double>& getController() {return controller;}
+    inline zlDSP::Controller<double> &getController() { return controller; }
+
+    inline zlDSP::FiltersAttach<double> &getFiltersAttach() { return filtersAttach; }
 
 private:
     zlDSP::Controller<double> controller;
@@ -85,5 +87,5 @@ private:
     std::atomic<bool> isMono{false};
     std::atomic<int> mainInChannelNum{2}, auxInChannelNum{2};
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };

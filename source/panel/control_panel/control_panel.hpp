@@ -10,7 +10,7 @@
 #ifndef ZLEqualizer_CONTROL_PANEL_HPP
 #define ZLEqualizer_CONTROL_PANEL_HPP
 
-#include "../../dsp/dsp.hpp"
+#include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "left_control_panel/left_control_panel.hpp"
 #include "right_control_panel/right_control_panel.hpp"
@@ -20,8 +20,7 @@ namespace zlPanel {
                                private juce::AudioProcessorValueTreeState::Listener,
                                private juce::AsyncUpdater {
     public:
-        explicit ControlPanel(juce::AudioProcessorValueTreeState &parameters,
-                              juce::AudioProcessorValueTreeState &parametersNA,
+        explicit ControlPanel(PluginProcessor &p,
                               zlInterface::UIBase &base);
 
         ~ControlPanel() override;

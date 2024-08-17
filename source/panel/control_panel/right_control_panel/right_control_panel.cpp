@@ -10,12 +10,11 @@
 #include "right_control_panel.hpp"
 
 namespace zlPanel {
-    RightControlPanel::RightControlPanel(juce::AudioProcessorValueTreeState &parameters,
-                                         juce::AudioProcessorValueTreeState &parametersNA,
+    RightControlPanel::RightControlPanel(PluginProcessor &p,
                                          zlInterface::UIBase &base)
         : uiBase(base),
-          parametersRef(parameters),
-          parametersNARef(parametersNA),
+          parametersRef(p.parameters),
+          parametersNARef(p.parametersNA),
           dynBypassC("B", base),
           dynSoloC("S", base),
           dynRelativeC("R", base),
@@ -32,7 +31,7 @@ namespace zlPanel {
           relativeDrawable(juce::Drawable::createFromImageData(BinaryData::righttobracketsolid_svg,
                                                                BinaryData::righttobracketsolid_svgSize)),
           sideDrawable(juce::Drawable::createFromImageData(BinaryData::fadside_svg, BinaryData::fadside_svgSize)) {
-        juce::ignoreUnused(parametersNA, parametersNARef);
+        juce::ignoreUnused(parametersNARef);
         dynBypassC.setDrawable(bypassDrawable.get());
         dynBypassC.getLAF().setReverse(true);
         dynBypassC.getButton().onClick = [this]() {

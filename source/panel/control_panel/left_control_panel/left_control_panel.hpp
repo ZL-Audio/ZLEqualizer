@@ -12,10 +12,9 @@
 
 #include "BinaryData.h"
 
-#include "../../../dsp/dsp.hpp"
+#include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
-#include "../../../state/state_definitions.hpp"
 #include "reset_component.hpp"
 
 namespace zlPanel {
@@ -23,8 +22,7 @@ namespace zlPanel {
                                    private juce::AudioProcessorValueTreeState::Listener,
                                    private juce::AsyncUpdater {
     public:
-        explicit LeftControlPanel(juce::AudioProcessorValueTreeState &parameters,
-                                  juce::AudioProcessorValueTreeState &parametersNA,
+        explicit LeftControlPanel(PluginProcessor &p,
                                   zlInterface::UIBase &base);
 
         ~LeftControlPanel() override;
@@ -36,6 +34,7 @@ namespace zlPanel {
         void attachGroup(size_t idx);
 
     private:
+        PluginProcessor &processorRef;
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
 

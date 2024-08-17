@@ -12,12 +12,11 @@
 #include "../../state/state_definitions.hpp"
 
 namespace zlPanel {
-    ControlPanel::ControlPanel(juce::AudioProcessorValueTreeState &parameters,
-                               juce::AudioProcessorValueTreeState &parametersNA,
+    ControlPanel::ControlPanel(PluginProcessor &p,
                                zlInterface::UIBase &base)
-        : parametersNARef(parametersNA), uiBase(base),
-          leftControlPanel(parameters, parametersNA, base),
-          rightControlPanel(parameters, parametersNA, base) {
+        : parametersNARef(p.parametersNA), uiBase(base),
+          leftControlPanel(p, base),
+          rightControlPanel(p, base) {
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
         addAndMakeVisible(leftControlPanel);

@@ -12,7 +12,7 @@
 
 #include "BinaryData.h"
 
-#include "../../../dsp/dsp.hpp"
+#include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
 
@@ -21,8 +21,7 @@ namespace zlPanel {
                                     private juce::AudioProcessorValueTreeState::Listener,
                                     private juce::AsyncUpdater {
     public:
-        explicit RightControlPanel(juce::AudioProcessorValueTreeState &parameters,
-                                   juce::AudioProcessorValueTreeState &parametersNA,
+        explicit RightControlPanel(PluginProcessor &p,
                                    zlInterface::UIBase &base);
 
         ~RightControlPanel() override;

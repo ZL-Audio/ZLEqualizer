@@ -444,6 +444,12 @@ namespace zlDSP {
         const auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
         return s + suffix;
     }
+
+    inline void updateParaNotifyHost(juce::RangedAudioParameter* para, float value) {
+        para->beginChangeGesture();
+        para->setValueNotifyingHost(value);
+        para->endChangeGesture();
+    }
 }
 
 #endif //ZLEQUALIZER_DSP_DEFINITIONS_HPP

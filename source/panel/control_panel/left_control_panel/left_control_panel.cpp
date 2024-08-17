@@ -10,12 +10,11 @@
 #include "left_control_panel.hpp"
 
 namespace zlPanel {
-    LeftControlPanel::LeftControlPanel(juce::AudioProcessorValueTreeState &parameters,
-                                       juce::AudioProcessorValueTreeState &parametersNA,
+    LeftControlPanel::LeftControlPanel(PluginProcessor &p,
                                        zlInterface::UIBase &base)
-        : uiBase(base),
-          parametersRef(parameters),
-          parametersNARef(parametersNA),
+        : processorRef(p), uiBase(base),
+          parametersRef(p.parameters),
+          parametersNARef(p.parametersNA),
           bypassC("B", base),
           soloC("S", base), dynONC("D", base), dynLC("L", base),
           fTypeC("", zlDSP::fType::choices, base),
@@ -25,7 +24,7 @@ namespace zlPanel {
           freqC("FREQ", base),
           gainC("GAIN", base),
           qC("Q", base),
-          resetComponent(parameters, parametersNA, base),
+          resetComponent(p.parameters, p.parametersNA, base),
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
@@ -33,7 +32,7 @@ namespace zlPanel {
               juce::Drawable::createFromImageData(BinaryData::fadmodsine_svg, BinaryData::fadmodsine_svgSize)),
           dynLeDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpreseta_svg, BinaryData::fadpreseta_svgSize)) {
-        juce::ignoreUnused(parametersNA, parametersNARef);
+        juce::ignoreUnused(parametersNARef);
         bypassC.setDrawable(bypassDrawable.get());
         bypassC.getLAF().setReverse(true);
         bypassC.getButton().onClick = [this]() {
@@ -52,6 +51,15 @@ namespace zlPanel {
 
         soloC.setDrawable(soloDrawable.get());
         dynONC.setDrawable(dynONDrawable.get());
+        dynONC.getButton().onClick = [this]() {
+            const auto currentBand = bandIdx.load();
+            if (dynONC.getButton().getToggleState()) {
+                processorRef.getFiltersAttach().turnOnDynamic(currentBand);
+            } else {
+                processorRef.getFiltersAttach().turnOffDynamic(currentBand);
+            }
+        };
+
         dynLC.setDrawable(dynLeDrawable.get());
         for (auto &c: {&bypassC, &soloC, &dynONC, &dynLC}) {
             addAndMakeVisible(c);

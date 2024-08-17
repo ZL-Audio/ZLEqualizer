@@ -26,7 +26,13 @@ namespace zlDSP {
 
         void addListeners();
 
-        inline void enableDynamicONUpdateOthers(const bool x) { dynamicONUpdateOthers.store(x); }
+        void turnOnDynamic(size_t idx);
+
+        void turnOffDynamic(size_t idx);
+
+        void updateTargetFGQ(size_t idx);
+
+        void updateSideFQ(size_t idx);
 
     private:
         juce::AudioProcessor &processorRef;
@@ -67,13 +73,10 @@ namespace zlDSP {
 
         void initDefaultValues();
 
-        std::atomic<bool> dynamicONUpdateOthers = true;
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
 
         std::atomic<bool> gDynLink{false};
         std::array<std::atomic<bool>, bandNUM> sDynLink{};
-
-        void checkUpdateSide(size_t idx);
     };
 }
 
