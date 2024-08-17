@@ -52,8 +52,6 @@ namespace zlPanel {
         soloC.setDrawable(soloDrawable.get());
         dynONC.setDrawable(dynONDrawable.get());
         dynONC.getButton().onClick = [this]() {
-            juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
-            logger.logMessage("clicked");
             const auto currentBand = bandIdx.load();
             if (dynONC.getButton().getToggleState()) {
                 processorRef.getFiltersAttach().turnOnDynamic(currentBand);
@@ -63,6 +61,13 @@ namespace zlPanel {
         };
 
         dynLC.setDrawable(dynLeDrawable.get());
+        dynLC.getButton().onClick = [this]() {
+            const auto currentBand = bandIdx.load();
+            if (dynLC.getButton().getToggleState()) {
+                processorRef.getFiltersAttach().turnOnDynamicAuto(currentBand);
+            }
+        };
+
         for (auto &c: {&bypassC, &soloC, &dynONC, &dynLC}) {
             addAndMakeVisible(c);
         }

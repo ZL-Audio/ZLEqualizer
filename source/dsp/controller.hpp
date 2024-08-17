@@ -103,10 +103,14 @@ namespace zlDSP {
 
         FloatType getGainCompensation() const {
             FloatType currentGain = outputGain.getGainDecibels() + autoGain.getGainDecibels();
-            for (const auto &f : filters) {
+            for (const auto &f: filters) {
                 currentGain += f.getSGC();
             }
             return currentGain;
+        }
+
+        void setThreshold(const size_t idx, const FloatType x) {
+            currentThreshold[idx].store(x);
         }
 
     private:
@@ -129,7 +133,9 @@ namespace zlDSP {
         std::atomic<bool> useSolo = false, soloSide = false;
 
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> histograms;
-        std::array<std::atomic<bool>, bandNUM> isHistON;
+        std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> subHistograms;
+        std::array<std::atomic<bool>, bandNUM> isHistON{};
+        std::array<std::atomic<FloatType>, bandNUM> currentThreshold{};
 
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;

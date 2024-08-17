@@ -13,6 +13,10 @@ namespace zlDSP {
     template<typename FloatType>
     Controller<FloatType>::Controller(juce::AudioProcessor &processor)
         : processorRef(processor) {
+        for(size_t i = 0; i < bandNUM; ++i) {
+            histograms[i].setDecayRate(FloatType(0.99999));
+            subHistograms[i].setDecayRate(FloatType(0.9995));
+        }
     }
 
     template<typename FloatType>
@@ -179,6 +183,20 @@ namespace zlDSP {
     void Controller<FloatType>::processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                juce::AudioBuffer<FloatType> &subSideBuffer) {
         autoGain.processPre(subMainBuffer);
+        // set threshold
+        for (size_t i = 0; i < bandNUM; ++i) {
+            if (filters[i].getDynamicON()) {
+                if (isHistON[i].load()) {
+                    const auto depThres =
+                        currentThreshold[i].load() + FloatType(40) +
+                            static_cast<FloatType>(threshold::range.snapToLegalValue(
+                                static_cast<float>(-subHistograms[i].getPercentile(FloatType(0.5)))));
+                    filters[i].getCompressor().getComputer().setThreshold(depThres);
+                } else {
+                    filters[i].getCompressor().getComputer().setThreshold(currentThreshold[i].load());
+                }
+            }
+        }
         // stereo filters process
         FloatType baseLine = 0;
         if (useTrackers[0].load()) {
@@ -278,8 +296,11 @@ namespace zlDSP {
             if (filters[i].getDynamicON() && isHistON[i].load()) {
                 auto &compressor = filters[i].getCompressor();
                 const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
-                const auto histIdx = juce::jlimit(0, 80, juce::roundToInt(diff));
-                histograms[i].push(static_cast<size_t>(histIdx));
+                if (diff <= 100) {
+                    const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
+                    histograms[i].push(static_cast<size_t>(histIdx));
+                    subHistograms[i].push(static_cast<size_t>(histIdx));
+                }
             }
         }
         autoGain.processPost(subMainBuffer);
@@ -420,6 +441,7 @@ namespace zlDSP {
     void Controller<FloatType>::setLearningHist(const size_t idx, const bool isLearning) {
         if (isLearning) {
             histograms[idx].reset();
+            subHistograms[idx].reset(FloatType(12.5));
         }
         isHistON[idx].store(isLearning);
     }

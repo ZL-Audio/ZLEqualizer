@@ -51,6 +51,10 @@ namespace zlDSP {
         updateParaNotifyHost(paraDynBypass, 0.f);
         const auto paraDynLink = parameterRef.getParameter(zlDSP::appendSuffix(singleDynLink::ID, idx));
         updateParaNotifyHost(paraDynLink, static_cast<float>(controllerRef.getDynLink()));
+        const auto paraDynLearn = parameterRef.getParameter(zlDSP::appendSuffix(dynamicLearn::ID, idx));
+        updateParaNotifyHost(paraDynLearn, 1.f);
+        const auto paraThreshold = parameterRef.getParameter(zlDSP::appendSuffix(threshold::ID, idx));
+        updateParaNotifyHost(paraThreshold, .5f);
     }
 
     template<typename FloatType>
@@ -58,12 +62,18 @@ namespace zlDSP {
         controllerRef.setDynamicON(false, idx);
         const auto paraDynBypass = parameterRef.getParameter(zlDSP::appendSuffix(dynamicBypass::ID, idx));
         updateParaNotifyHost(paraDynBypass, 1.f);
-        const auto paraDynLearn = parameterRef.getParameter(zlDSP::appendSuffix(zlDSP::dynamicLearn::ID, idx));
+        const auto paraDynLearn = parameterRef.getParameter(zlDSP::appendSuffix(dynamicLearn::ID, idx));
         updateParaNotifyHost(paraDynLearn, 0.f);
         const auto paraDynRelative = parameterRef.getParameter(zlDSP::appendSuffix(dynamicRelative::ID, idx));
         updateParaNotifyHost(paraDynRelative, 0.f);
         const auto paraSideSolo = parameterRef.getParameter(zlDSP::appendSuffix(sideSolo::ID, idx));
         updateParaNotifyHost(paraSideSolo, 0.f);
+    }
+
+    template<typename FloatType>
+    void FiltersAttach<FloatType>::turnOnDynamicAuto(const size_t idx) {
+        const auto paraThreshold = parameterRef.getParameter(zlDSP::appendSuffix(threshold::ID, idx));
+        updateParaNotifyHost(paraThreshold, .5f);
     }
 
     template<typename FloatType>
@@ -209,6 +219,7 @@ namespace zlDSP {
         } else if (parameterID.startsWith(targetQ::ID)) {
             filtersRef[idx].getTargetFilter().setQ(value);
         } else if (parameterID.startsWith(threshold::ID)) {
+            controllerRef.setThreshold(idx, value);
             filtersRef[idx].getCompressor().getComputer().setThreshold(value);
         } else if (parameterID.startsWith(kneeW::ID)) {
             filtersRef[idx].getCompressor().getComputer().setKneeW(kneeW::formatV(value));

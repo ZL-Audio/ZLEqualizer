@@ -30,6 +30,8 @@ namespace zlDSP {
 
         void turnOffDynamic(size_t idx);
 
+        void turnOnDynamicAuto(size_t idx);
+
         void updateTargetFGQ(size_t idx);
 
         void updateSideFQ(size_t idx);

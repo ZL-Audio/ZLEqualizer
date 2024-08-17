@@ -24,11 +24,11 @@ namespace zlHistogram {
         Histogram() = default;
 
         /**
-         * reset all counts to zero
+         * reset all counts
          */
-        void reset() {
+        void reset(const FloatType x = FloatType(0)) {
             for (auto &hit: hits) {
-                hit.store(FloatType(0));
+                hit.store(FloatType(x));
             }
         }
 
@@ -38,7 +38,8 @@ namespace zlHistogram {
          * add one to bin x
          * @param x bin idx
          */
-        void push(const size_t x) {
+        void push(size_t x) {
+            x = std::min(x, Size - 1);
             for (auto &hit: hits) {
                 hit.store(hit.load() * decayRate);
             }
@@ -69,7 +70,7 @@ namespace zlHistogram {
 
     private:
         std::array<std::atomic<FloatType>, Size> hits;
-        FloatType decayRate{FloatType(0.9999)};
+        FloatType decayRate{FloatType(0.9997697679981565)}; // np.power(0.1, 1/10000)
     };
 }
 
