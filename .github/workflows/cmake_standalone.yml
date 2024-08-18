@@ -3,7 +3,6 @@ name: Standalone
 on:
   workflow_dispatch:
 
-# When pushing new commits, cancel any running builds on that branch
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
@@ -29,22 +28,22 @@ jobs:
         include:
           - name: Linux
             os: ubuntu-22.04
-            pluginval-binary: ./pluginval
             boost_platform_version: "22.04"
             boost_toolset: "gcc"
             plugin_os_format: "Standalone"
+            app_suffix: ""
           - name: macOS
             os: macos-14
-            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"
-            plugin_os_format: "AU"
+            plugin_os_format: "Standalone"
+            app_suffix: "app"
           - name: Windows
             os: windows-latest
-            pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
             boost_toolset: "msvc"
             plugin_os_format: "Standalone"
+            app_suffix: "exe"
 
     steps:
       - name: Set up MSVC Developer Command Prompt (Windows)
@@ -157,7 +156,7 @@ jobs:
           echo "VST3_PATH=$ARTIFACTS_PATH/VST3/${{ env.PRODUCT_NAME }}.vst3" >> $GITHUB_ENV
           echo "AU_PATH=$ARTIFACTS_PATH/AU/${{ env.PRODUCT_NAME }}.component" >> $GITHUB_ENV
           echo "LV2_PATH=$ARTIFACTS_PATH/LV2/${{ env.PRODUCT_NAME }}.lv2" >> $GITHUB_ENV
-          echo "Standalone_PATH=$ARTIFACTS_PATH/Standalone/${{ env.PRODUCT_NAME }}.exe" >> $GITHUB_ENV
+          echo "Standalone_PATH=$ARTIFACTS_PATH/Standalone/${{ env.PRODUCT_NAME }}.${{ matrix.app_suffix }}" >> $GITHUB_ENV
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
 
       - name: Codesign and Create Individual Packages (macOS)
@@ -199,7 +198,7 @@ jobs:
         if: ${{ matrix.name == 'macOS' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.dmg
+          name: ${{ env.ARTIFACT_NAME }}-Standalone.dmg
           path: "${{ env.ARTIFACT_NAME }}.dmg"
 
       - name: Generate InnoScript (Windows)
@@ -220,7 +219,7 @@ jobs:
         if: ${{ matrix.name == 'Windows' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.exe
+          name: ${{ env.ARTIFACT_NAME }}-Standalone.exe
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
 
       - name: Generate Zip (Linux)
@@ -232,5 +231,5 @@ jobs:
         if: ${{ matrix.name == 'Linux' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.zip
+          name: ${{ env.ARTIFACT_NAME }}-Standalone.zip
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
