@@ -32,22 +32,25 @@ jobs:
             pluginval-binary: ./pluginval
             boost_platform_version: "22.04"
             boost_toolset: "gcc"
-            plugin_os_format: "VST3;LV2"
+            plugin_os_format: "VST3;LV2;Standalone"
             checkout_branch: "juce7"
+            app_suffix: ""
           - name: macOS
             os: macos-14
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"
-            plugin_os_format: "VST3;AU"
+            plugin_os_format: "VST3;AU;Standalone"
             checkout_branch: "main"
+            app_suffix: ".app"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
             boost_toolset: "msvc"
-            plugin_os_format: "VST3;LV2"
+            plugin_os_format: "VST3;LV2;Standalone"
             checkout_branch: "main"
+            app_suffix: ".exe"
 
     steps:
       - name: Set up MSVC Developer Command Prompt (Windows)
@@ -178,6 +181,7 @@ jobs:
           echo "AU_PATH=$ARTIFACTS_PATH/AU/${{ env.PRODUCT_NAME }}.component" >> $GITHUB_ENV
           echo "LV2_PATH=$ARTIFACTS_PATH/LV2/${{ env.PRODUCT_NAME }}.lv2" >> $GITHUB_ENV
           echo "AAX_PATH=aax_releases/${{ matrix.name }}/${{ env.PRODUCT_NAME }}.aaxplugin" >> $GITHUB_ENV
+          echo "Standalone_PATH=$ARTIFACTS_PATH/Standalone/${{ env.PRODUCT_NAME }}${{ matrix.app_suffix }}" >> $GITHUB_ENV
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
 
       - name: Pluginval setup

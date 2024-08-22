@@ -4,6 +4,21 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.3.5
+
+After installation, please load the plugin in an empty DAW session and check its functionality.
+
+**WARNING for Linux users**: If you build it locally, please build with `juce7` branch.
+
+**WARNING for Windows users**: The C++ runtime is now statically linked. However, you may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
+
+**WARNING for Pro Tool users**: AAX is updated in this version. If Pro Tools cannot recognize the plugin (or display an error message), please open a discussion.
+
+- BREAKING: add auto dynamic threshold. When you press the dynamic threshold learning button, it will not only start the threshold learning but also automatically adjust the threshold. See the manual for more information.
+- BREAKING: fix the reset button in the UI setting panel. When you press the reset button, it will reset colours to defaults.
+- add standalone to releases
+- change the plugin logo
+
 ## 0.3.4
 
 After installation, please load the plugin in an empty DAW session and check its functionality.
