@@ -98,7 +98,11 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
                                                                getMainBusNumOutputChannels()));
     isMono.store(channels == 1);
     mainInChannelNum.store(getMainBusNumInputChannels());
-    auxInChannelNum.store(getChannelCountOfBus(true, 1));
+    if (!getBus(true, 1)->isEnabled()) {
+        auxInChannelNum.store(0);
+    } else {
+        auxInChannelNum.store(getChannelCountOfBus(true, 1));
+    }
     const juce::dsp::ProcessSpec spec{
         sampleRate,
         static_cast<juce::uint32>(samplesPerBlock),
@@ -114,17 +118,16 @@ void PluginProcessor::releaseResources() {
 bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
     if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::stereo() &&
         layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo() &&
-        (layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono() ||
+        (layouts.getChannelSet(true, 1).isDisabled() ||
+         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono() ||
          layouts.getChannelSet(true, 1) == juce::AudioChannelSet::stereo())) {
         return true;
     }
     if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::mono() &&
         layouts.getMainOutputChannelSet() == juce::AudioChannelSet::mono() &&
-        layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono()) {
+        (layouts.getChannelSet(true, 1).isDisabled() ||
+         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono())) {
         return true;
-    }
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet()) {
-        return false;
     }
     return false;
 }
@@ -135,13 +138,25 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     juce::ScopedNoDenormals noDenormals;
     const auto mINum = mainInChannelNum.load();
     const auto aINum = auxInChannelNum.load();
-    if (mINum == 1 && aINum == 1) {
+    if (mINum == 1) {
         doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-        for (int chan = 0; chan < 4; ++chan) {
-            auto *dest = doubleBuffer.getWritePointer(chan);
-            auto *src = buffer.getReadPointer(chan / 2);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = static_cast<double>(src[i]);
+        if (aINum == 0) {
+            for (int chan = 0; chan < 2; ++chan) {
+                auto *dest = doubleBuffer.getWritePointer(chan);
+                auto sideDest = doubleBuffer.getWritePointer(chan + 2);
+                auto *src = buffer.getReadPointer(chan / 2);
+                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                    dest[i] = static_cast<double>(src[i]);
+                    sideDest[i] = static_cast<double>(src[i]);
+                }
+            }
+        } else if (aINum == 1) {
+            for (int chan = 0; chan < 4; ++chan) {
+                auto *dest = doubleBuffer.getWritePointer(chan);
+                auto *src = buffer.getReadPointer(chan / 2);
+                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                    dest[i] = static_cast<double>(src[i]);
+                }
             }
         }
         controller.process(doubleBuffer); {
@@ -151,32 +166,37 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                 dest[i] = static_cast<float>(src[i]);
             }
         }
-    } else if (mINum == 2 && aINum == 1) {
-        doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-        for (int chan = 0; chan < 2; ++chan) {
-            auto *dest = doubleBuffer.getWritePointer(chan);
-            auto *src = buffer.getReadPointer(chan);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = static_cast<double>(src[i]);
+    } else if (mINum == 2) {
+        if (aINum == 0) {
+            doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+            for (int chan = 0; chan < 2; ++chan) {
+                auto *dest = doubleBuffer.getWritePointer(chan);
+                auto *sideDest = doubleBuffer.getWritePointer(chan + 2);
+                auto *src = buffer.getReadPointer(chan);
+                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                    dest[i] = static_cast<double>(src[i]);
+                    sideDest[i] = static_cast<double>(src[i]);
+                }
             }
-        }
-        for (int chan = 2; chan < 4; ++chan) {
-            auto *dest = doubleBuffer.getWritePointer(chan);
-            auto *src = buffer.getReadPointer(2);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = static_cast<double>(src[i]);
+        } else if (aINum == 1) {
+            doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+            for (int chan = 0; chan < 2; ++chan) {
+                auto *dest = doubleBuffer.getWritePointer(chan);
+                auto *src = buffer.getReadPointer(chan);
+                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                    dest[i] = static_cast<double>(src[i]);
+                }
             }
-        }
-        controller.process(doubleBuffer);
-        for (int chan = 0; chan < 2; ++chan) {
-            auto *dest = buffer.getWritePointer(chan);
-            auto *src = doubleBuffer.getReadPointer(chan);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = static_cast<float>(src[i]);
+            for (int chan = 2; chan < 4; ++chan) {
+                auto *dest = doubleBuffer.getWritePointer(chan);
+                auto *src = buffer.getReadPointer(2);
+                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+                    dest[i] = static_cast<double>(src[i]);
+                }
             }
+        } else if (aINum == 2) {
+            doubleBuffer.makeCopyOf(buffer, true);
         }
-    } else if (mINum == 2 && aINum == 2) {
-        doubleBuffer.makeCopyOf(buffer, true);
         controller.process(doubleBuffer);
         for (int chan = 0; chan < 2; ++chan) {
             auto *dest = buffer.getWritePointer(chan);
@@ -193,13 +213,18 @@ void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::Midi
     juce::ScopedNoDenormals noDenormals;
     const auto mINum = mainInChannelNum.load();
     const auto aINum = auxInChannelNum.load();
-    if (mINum == 1 && aINum == 1) {
+    if (mINum == 1) {
         doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-        for (int chan = 0; chan < 4; ++chan) {
-            auto *dest = doubleBuffer.getWritePointer(chan);
-            auto *src = buffer.getReadPointer(chan / 2);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = src[i];
+        if (aINum == 0) {
+            for (int chan = 0; chan < 4; ++chan) {
+                doubleBuffer.copyFrom(chan, 0, buffer, 0, 0, buffer.getNumSamples());
+            }
+        } else if (aINum == 1) {
+            for (int chan = 0; chan < 2; ++chan) {
+                doubleBuffer.copyFrom(chan, 0, buffer, 0, 0, buffer.getNumSamples());
+            }
+            for (int chan = 2; chan < 4; ++chan) {
+                doubleBuffer.copyFrom(chan, 0, buffer, 1, 0, buffer.getNumSamples());
             }
         }
         controller.process(doubleBuffer); {
@@ -209,32 +234,34 @@ void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::Midi
                 dest[i] = src[i];
             }
         }
-    } else if (mINum == 2 && aINum == 1) {
-        doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-        for (int chan = 0; chan < 2; ++chan) {
-            auto *dest = doubleBuffer.getWritePointer(chan);
-            auto *src = buffer.getReadPointer(chan);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = src[i];
+    } else if (mINum == 2) {
+        if (aINum == 0) {
+            doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+            for (int chan = 0; chan < 2; ++chan) {
+                doubleBuffer.copyFrom(chan, 0, buffer, chan, 0, buffer.getNumSamples());
             }
-        }
-        for (int chan = 2; chan < 4; ++chan) {
-            auto *dest = doubleBuffer.getWritePointer(chan);
-            auto *src = buffer.getReadPointer(2);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = src[i];
+            for (int chan = 2; chan < 4; ++chan) {
+                doubleBuffer.copyFrom(chan, 0, buffer, chan - 2, 0, buffer.getNumSamples());
             }
-        }
-        controller.process(doubleBuffer);
-        for (int chan = 0; chan < 2; ++chan) {
-            auto *dest = buffer.getWritePointer(chan);
-            auto *src = doubleBuffer.getReadPointer(chan);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = src[i];
+            controller.process(doubleBuffer);
+            for (int chan = 0; chan < 2; ++chan) {
+                buffer.copyFrom(chan, 0, doubleBuffer, chan, 0, doubleBuffer.getNumSamples());
             }
+        } else if (aINum == 1) {
+            doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+            for (int chan = 0; chan < 2; ++chan) {
+                doubleBuffer.copyFrom(chan, 0, buffer, chan, 0, buffer.getNumSamples());
+            }
+            for (int chan = 2; chan < 4; ++chan) {
+                doubleBuffer.copyFrom(chan, 0, buffer, 2, 0, buffer.getNumSamples());
+            }
+            controller.process(doubleBuffer);
+            for (int chan = 0; chan < 2; ++chan) {
+                buffer.copyFrom(chan, 0, doubleBuffer, chan, 0, doubleBuffer.getNumSamples());
+            }
+        } else if (aINum == 2) {
+            controller.process(buffer);
         }
-    } else if (mINum == 2 && aINum == 2) {
-        controller.process(buffer);
     }
 }
 
