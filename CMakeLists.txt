@@ -40,7 +40,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     if (DEFINED ENV{PLUGIN_OS_FORMAT})
         set(FORMATS "$ENV{PLUGIN_OS_FORMAT}")
     else ()
-        set(FORMATS AU VST3 AAX Standalone)
+        set(FORMATS AU VST3 Standalone)
     endif()
     if (DEFINED ENV{GITHUB_TOKEN})
         set(JUCE_AAX_COPY_DIR "/Users/runner/Library/Audio/Plug-Ins/AAX")
@@ -156,6 +156,7 @@ target_compile_definitions(SharedCode
         PRODUCT_NAME_WITHOUT_VERSION="${PRODUCT_NAME}"
         #        JUCE_COREGRAPHICS_RENDER_WITH_MULTIPLE_PAINT_CALLS=1
         JUCE_SILENCE_XCODE_15_LINKER_WARNING=1
+        USE_JUCE7_INSTEAD_OF_LATEST=${USE_JUCE7_INSTEAD_OF_LATEST}
 )
 
 # Link to any other modules you added (with juce_add_module) here!

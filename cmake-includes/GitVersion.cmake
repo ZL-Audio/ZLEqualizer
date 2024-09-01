@@ -11,7 +11,7 @@ if (GIT_EXECUTABLE)
     )
     if (NOT GIT_DESCRIBE_ERROR_CODE)
         set(FOOBAR_VERSION ${GIT_DESCRIBE_VERSION})
-        message(WARNING "Using the version \"${FOOBAR_VERSION}\".")
+        message(STATUS "Using the version \"${FOOBAR_VERSION}\".")
     endif ()
     execute_process(
             COMMAND ${GIT_EXECUTABLE} log -1 --format=%h

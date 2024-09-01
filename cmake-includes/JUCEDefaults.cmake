@@ -18,3 +18,20 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     add_compile_options(-fcolor-diagnostics)
 endif ()
+
+# Checkout JUCE version
+if ((CMAKE_SYSTEM_NAME STREQUAL "Linux" OR "$ENV{JUCE_BRANCH}" STREQUAL "juce7") AND GIT_EXECUTABLE)
+    execute_process(
+            COMMAND "${GIT_EXECUTABLE}" checkout "fd933dfac612fcb0bbb1443395da3b5b289604f4"
+            RESULT_VARIABLE RES
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/JUCE
+    )
+    if (NOT RES EQUAL 0)
+        message(FATAL_ERROR "Failed to check out JUCE 7")
+    else ()
+        message(STATUS "Check out JUCE 7")
+    endif ()
+    set(USE_JUCE7_INSTEAD_OF_LATEST true CACHE BOOL "")
+else ()
+    set(USE_JUCE7_INSTEAD_OF_LATEST false CACHE BOOL "")
+endif ()

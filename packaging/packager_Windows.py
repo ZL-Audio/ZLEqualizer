@@ -22,13 +22,14 @@ def main():
 #define ProjectName GetEnv('PROJECT_NAME')
 #define ProductName GetEnv('PRODUCT_NAME')
 #define Publisher GetEnv('COMPANY_NAME')
+#define ArtifactName GetEnv('ARTIFACT_NAME')
 #define Year GetDateTimeString("yyyy","","")
 
 [Setup]
 ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x64
 AppName={#ProductName}
-OutputBaseFilename={#ProductName}-{#Version}-Windows
+OutputBaseFilename={#ArtifactName}
 AppCopyright=Copyright (C) {#Year} {#Publisher}
 AppPublisher={#Publisher}
 AppVersion={#Version}

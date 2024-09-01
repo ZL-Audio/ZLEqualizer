@@ -96,12 +96,12 @@ jobs:
         run: choco install ninja
 
       - name: Install macOS Deps
-        if: ${{ matrix.name == 'macOS' }}
+        if: ${{ runner.os == 'macOS' }}
         run: brew install ninja osxutils
 
       # This block can be removed once 15.1 is default (JUCE requires it when building on macOS 14)
       - name: Use latest Xcode on system (macOS)
-        if: ${{ matrix.name == 'macOS' }}
+        if: ${{ runner.os == 'macOS' }}
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
@@ -109,7 +109,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
+          fetch-depth: 0
 
       - name: Install boost
         uses: MarkusJx/install-boost@v2.4.5
@@ -125,7 +126,7 @@ jobs:
 
       - name: Import Certificates (macOS)
         uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
-        if: ${{ (matrix.name == 'macOS') && (env.p12-file-base64 != '')}}
+        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '')}}
         with:
           p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
           p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
@@ -166,8 +167,8 @@ jobs:
       - name: Pluginval setup
         shell: bash
         run: |
-          curl -LO "https://github.com/Tracktion/pluginval/releases/download/v1.0.3/pluginval_${{ matrix.name }}.zip"
-          7z x pluginval_${{ matrix.name }}.zip
+          curl -LO "https://github.com/Tracktion/pluginval/releases/download/v1.0.3/pluginval_${{ runner.os }}.zip"
+          7z x pluginval_${{ runner.os }}.zip
           echo "PLUGINVAL_DISABLED=Plugin state restoration" >> $GITHUB_ENV
 
       - name: Setup Pluginval random seed
@@ -177,7 +178,7 @@ jobs:
           format: YYYYMMDD
 
       - name: Pluginval VST3 validations
-        if: ${{ matrix.name != 'macOS' }}
+        if: ${{ runner.os != 'macOS' }}
         shell: bash
         run: |
           ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
@@ -188,7 +189,7 @@ jobs:
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
       - name: Pluginval AU validations (macOS)
-        if: ${{ matrix.name == 'macOS' }}
+        if: ${{ runner.os == 'macOS' }}
         shell: bash
         run: |
           sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
@@ -201,26 +202,26 @@ jobs:
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
       - name: Codesign and Create Individual Packages (macOS)
-        if: ${{ matrix.name == 'macOS' }}
+        if: ${{ runner.os == 'macOS' }}
         run: |
           python3 -u packaging/packager_macOS.py
         env:
           DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
 
       - name: Sign Final Package (macOS)
-        if: ${{ (matrix.name == 'macOS') && (env.APPLE_INSTALLER_DEV != '') }}
+        if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV != '') }}
         run: productsign --sign "${{ secrets.APPLE_INSTALLER_DEV }}" "${{ env.ARTIFACT_NAME }}_unsigned.pkg" "${{ env.ARTIFACT_NAME }}.pkg"
         env:
           APPLE_INSTALLER_DEV: ${{ secrets.APPLE_INSTALLER_DEV }}
 
       - name: Rename Final Package (macOS)
-        if: ${{ (matrix.name == 'macOS') && (env.APPLE_INSTALLER_DEV == '') }}
+        if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV == '') }}
         run: mv "${{ env.ARTIFACT_NAME }}_unsigned.pkg" "${{ env.ARTIFACT_NAME }}.pkg"
         env:
           APPLE_INSTALLER_DEV: ${{ secrets.APPLE_INSTALLER_DEV }}
 
       - name: Notarize and Staple PKG (macOS)
-        if: ${{ (matrix.name == 'macOS') && (env.NOTARIZATION_USERNAME != '')}}
+        if: ${{ (runner.os == 'macOS') && (env.NOTARIZATION_USERNAME != '')}}
         run: |
           xcrun notarytool submit "${{ env.ARTIFACT_NAME }}.pkg" --apple-id ${{ secrets.NOTARIZATION_USERNAME }} --password ${{ secrets.NOTARIZATION_PASSWORD }} --team-id ${{ secrets.TEAM_ID }} --wait
           xcrun stapler staple "${{ env.ARTIFACT_NAME }}.pkg"
@@ -228,7 +229,7 @@ jobs:
           NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
 
       - name: Create DMG (macOS)
-        if: ${{ matrix.name == 'macOS' }}
+        if: ${{ runner.os == 'macOS' }}
         run: |
           mkdir "${{ env.ARTIFACTS_PATH }}/dmgtmp"
           mv "${{ env.ARTIFACT_NAME }}.pkg" "${{ env.ARTIFACTS_PATH }}/dmgtmp"
@@ -236,40 +237,40 @@ jobs:
           hdiutil convert "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -format UDZO -o "${{ env.ARTIFACT_NAME }}.dmg"
 
       - name: Upload DMG (macOS)
-        if: ${{ matrix.name == 'macOS' }}
+        if: ${{ runner.os == 'macOS' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}.dmg
           path: "${{ env.ARTIFACT_NAME }}.dmg"
 
       - name: Generate InnoScript (Windows)
-        if: ${{ matrix.name == 'Windows' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: |
           python3 -u packaging/packager_Windows.py
           cat "packaging\installer.iss"
 
       - name: Generate Installer (Windows)
-        if: ${{ matrix.name == 'Windows' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: |
           iscc "packaging\installer.iss"
           mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
 
       - name: Upload Exe (Windows)
-        if: ${{ matrix.name == 'Windows' }}
+        if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}.exe
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
 
       - name: Generate Zip (Linux)
-        if: ${{ matrix.name == 'Linux' }}
+        if: ${{ runner.os == 'Linux' }}
         working-directory: ${{ env.ARTIFACTS_PATH }}
         run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" "-xr!lib${{ env.PRODUCT_NAME }}_SharedCode.a" .
 
       - name: Upload Zip (Linux)
-        if: ${{ matrix.name == 'Linux' }}
+        if: ${{ runner.os == 'Linux' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}.zip

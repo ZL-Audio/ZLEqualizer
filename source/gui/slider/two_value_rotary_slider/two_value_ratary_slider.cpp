@@ -247,7 +247,11 @@ namespace zlInterface {
         editor.setJustification(juce::Justification::centred);
         editor.setColour(juce::TextEditor::outlineColourId, uiBase.getTextColor());
         editor.setColour(juce::TextEditor::highlightedTextColourId, uiBase.getTextColor());
+#if (USE_JUCE7_INSTEAD_OF_LATEST)
+        editor.applyFontToAllText(uiBase.getFontSize() * FontHuge);
+#else
         editor.applyFontToAllText(juce::FontOptions{uiBase.getFontSize() * FontHuge});
+#endif
         editor.applyColourToAllText(uiBase.getTextColor(), true);
     }
 
