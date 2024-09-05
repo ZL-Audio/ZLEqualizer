@@ -21,19 +21,6 @@ namespace zlFilter {
     class DesignFilter {
     public:
         /**
-         * get a vector of 2nd order filter coeffs
-         * @param filterType filter type
-         * @param f frequency
-         * @param fs sample rate
-         * @param gDB gain
-         * @param q Q
-         * @param n filter order
-         * @return a vector of 2nd order filter coeffs
-         */
-        static std::vector<coeff33> getCoeff(FilterType filterType,
-                                             double f, double fs, double gDB, double q, size_t n);
-
-        /**
          * update an array of 2nd order filter coeffs
          * @param filterType filter type
          * @param f frequency
@@ -48,26 +35,6 @@ namespace zlFilter {
                                   double f, double fs, double gDB, double q, size_t n, std::array<coeff33, 16> &coeffs);
 
     private:
-        static std::vector<coeff33> getLowPass(size_t n, double w0, double q);
-
-        static std::vector<coeff33> getHighPass(size_t n, double w0, double q);
-
-        static std::vector<coeff33> getTiltShelf(size_t n, double w0, double g, double q);
-
-        static std::vector<coeff33> getLowShelf(size_t n, double w0, double g, double q);
-
-        static std::vector<coeff33> getHighShelf(size_t n, double w0, double g, double q);
-
-        static std::vector<coeff33> getBandPass(size_t n, double w0, double q);
-
-        static std::vector<coeff33> getNotch(size_t n, double w0, double q);
-
-        static std::vector<coeff33> getPeak(double w0, double g, double q);
-
-        static std::vector<coeff33> getBandShelf(size_t n, double w0, double g, double q);
-
-        static std::vector<double> getQs(size_t n, double q0);
-
         static size_t updateLowPass(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
 
         static size_t updateHighPass(size_t n, double w0, double q, std::array<coeff33, 16> &coeffs, size_t startIdx);
