@@ -7,48 +7,40 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-//
-// Created by Zishu Liu on 12/17/23.
-//
-
-#ifndef ZLEQUALIZER_HELPERS_HPP
-#define ZLEQUALIZER_HELPERS_HPP
+#ifndef ZLFILTER_HELPERS_HPP
+#define ZLFILTER_HELPERS_HPP
 
 #include <cmath>
 #include <array>
-#include <numbers>
 #include <numeric>
-#include <vector>
-#include <tuple>
+#include <numbers>
 
 namespace zlFilter {
+    constexpr static double pi = std::numbers::pi;
+    constexpr static double ppi = 2 * std::numbers::pi;
+
     enum FilterType {
         peak, lowShelf, lowPass, highShelf, highPass,
         notch, bandPass, tiltShelf, bandShelf,
     };
 
-    using coeff2 = std::array<double, 2>;
-    using coeff3 = std::array<double, 3>;
-    using coeff22 = std::tuple<coeff2, coeff2>;
-    using coeff33 = std::tuple<coeff3, coeff3>;
-
-    inline double dot_product(coeff3 x, coeff3 y) {
+    inline double dot_product(const std::array<double, 3> &x, const std::array<double, 3> &y) {
         return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
     }
 
-    inline double gain_to_db(double gain) {
-        return std::log10(gain) * 20;
+    inline double gain_to_db(const double gain) {
+        return std::log10(std::max(std::abs(gain), 1e-16)) * 20;
     }
 
-    inline double db_to_gain(double db) {
+    inline double db_to_gain(const double db) {
         return std::pow(10, db * 0.05);
     }
 
-    inline std::tuple<double, double> get_bandwidth(double w0, double q) {
-        auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
-        auto scale = std::pow(2, bw / 2);
+    inline std::array<double, 2> get_bandwidth(const double w0, const double q) {
+        const auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
+        const auto scale = std::pow(2, bw / 2);
         return {w0 / scale, w0 * scale};
     }
 }
 
-#endif //ZLEQUALIZER_HELPERS_HPP
+#endif //ZLFILTER_HELPERS_HPP

@@ -11,7 +11,8 @@
 #define ZLEQUALIZER_SINGLE_FILTER_HPP
 
 #include <juce_dsp/juce_dsp.h>
-#include "coeff/design_filter.hpp"
+#include "../filter_design/filter_design.hpp"
+#include "coeff/martin_coeff.hpp"
 #include "static_frequency_array.hpp"
 #include "iir_base.hpp"
 #include "svf_base.hpp"
@@ -191,13 +192,27 @@ namespace zlFilter {
 
         std::atomic<bool> toUpdatePara = false, toReset = false;
 
-        std::array<coeff33, 16> coeffs;
-        farbot::RealtimeObject<std::array<coeff33, 16>, farbot::RealtimeObjectOptions::realtimeMutatable> recentCoeffs;
+        std::array<std::array<double, 6>, 16> coeffs{};
+        farbot::RealtimeObject<std::array<std::array<double, 6>, 16>, farbot::RealtimeObjectOptions::realtimeMutatable>
+        recentCoeffs;
 
         std::atomic<bool> useSVF{false};
         bool currentUseSVF{false};
         std::array<SVFBase<FloatType>, 16> svfFilters{};
         std::atomic<bool> bypassNextBlock{false};
+
+        static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
+                                      const double f, const double fs, const double g0, const double q0,
+                                      std::array<std::array<double, 6>, 16> &coeffs) {
+            return FilterDesign::updateCoeffs<16,
+                MartinCoeff::get1LowShelf, MartinCoeff::get1HighShelf, MartinCoeff::get1TiltShelf,
+                MartinCoeff::get1LowPass, MartinCoeff::get1HighPass,
+                MartinCoeff::get2Peak,
+                MartinCoeff::get2LowShelf, MartinCoeff::get2HighShelf, MartinCoeff::get2TiltShelf,
+                MartinCoeff::get2LowPass, MartinCoeff::get2HighPass,
+                MartinCoeff::get2BandPass, MartinCoeff::get2Notch>(
+                filterType, n, f, fs, g0, q0, coeffs);
+        }
     };
 }
 

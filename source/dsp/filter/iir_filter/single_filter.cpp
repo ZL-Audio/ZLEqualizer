@@ -118,11 +118,11 @@ namespace zlFilter {
     template<typename FloatType>
     bool IIR<FloatType>::updateParas() {
         if (toUpdatePara.exchange(false)) {
-            filterNum.store(DesignFilter::updateCoeff(filterType.load(),
-                                                      freq.load(), processSpec.sampleRate,
-                                                      gain.load(), q.load(), order.load(), coeffs)); {
+            filterNum.store(updateIIRCoeffs(filterType.load(), order.load(),
+                                            freq.load(), processSpec.sampleRate,
+                                            gain.load(), q.load(), coeffs)); {
                 farbot::RealtimeObject<
-                    std::array<coeff33, 16>,
+                    std::array<std::array<double, 6>, 16>,
                     farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                     farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
                 *rrcentCoeffs = coeffs;
@@ -145,11 +145,11 @@ namespace zlFilter {
     template<typename FloatType>
     bool IIR<FloatType>::updateParasForDBOnly() {
         if (toUpdatePara.exchange(false)) {
-            filterNum.store(DesignFilter::updateCoeff(filterType.load(),
-                                                      freq.load(), processSpec.sampleRate,
-                                                      gain.load(), q.load(), order.load(), coeffs)); {
+            filterNum.store(updateIIRCoeffs(filterType.load(), order.load(),
+                                            freq.load(), processSpec.sampleRate,
+                                            gain.load(), q.load(), coeffs)); {
                 farbot::RealtimeObject<
-                    std::array<coeff33, 16>,
+                    std::array<std::array<double, 6>, 16>,
                     farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
                     farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
                 *rrcentCoeffs = coeffs;
@@ -181,17 +181,17 @@ namespace zlFilter {
         std::array<double, frequencies.size()> singleMagnitudes{};
         juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
         farbot::RealtimeObject<
-            std::array<coeff33, 16>,
+            std::array<std::array<double, 6>, 16>,
             farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
             farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
         for (size_t i = 0; i < filterNum.load(); i++) {
             dummyCoeff = {
-                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[0]),
-                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[1]),
-                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[2]),
-                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[0]),
-                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[1]),
-                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[2])
+                static_cast<FloatType>((*rrcentCoeffs)[i][3]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][4]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][5]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][0]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][1]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][2]),
             };
             dummyCoeff.getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
                                                      frequencies.size(), sampleRate.load());
@@ -219,17 +219,17 @@ namespace zlFilter {
         double g{FloatType(1)};
         juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
         farbot::RealtimeObject<
-            std::array<coeff33, 16>,
+            std::array<std::array<double, 6>, 16>,
             farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
             farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
         for (size_t i = 0; i < filterNum.load(); i++) {
             dummyCoeff = {
-                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[0]),
-                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[1]),
-                static_cast<FloatType>(std::get<1>((*rrcentCoeffs)[i])[2]),
-                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[0]),
-                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[1]),
-                static_cast<FloatType>(std::get<0>((*rrcentCoeffs)[i])[2])
+                static_cast<FloatType>((*rrcentCoeffs)[i][3]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][4]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][5]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][0]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][1]),
+                static_cast<FloatType>((*rrcentCoeffs)[i][2]),
             };
             g *= dummyCoeff.getMagnitudeForFrequency(static_cast<double>(f), sampleRate.load());
         }

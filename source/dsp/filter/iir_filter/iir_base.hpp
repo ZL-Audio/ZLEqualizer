@@ -10,8 +10,6 @@
 #ifndef IIR_BASE_HPP
 #define IIR_BASE_HPP
 
-#include "coeff/design_filter.hpp"
-
 namespace zlFilter {
     template<typename SampleType>
     class IIRBase {
@@ -80,15 +78,13 @@ namespace zlFilter {
             return outputValue;
         }
 
-        void updateFromBiquad(const coeff33 &coeffs) {
-            const auto a = std::get<0>(coeffs);
-            const auto b = std::get<1>(coeffs);
-            const auto a0Inv = 1.0 / a[0];
-            coeff[0] = static_cast<SampleType>(b[0] * a0Inv);
-            coeff[1] = static_cast<SampleType>(b[1] * a0Inv);
-            coeff[2] = static_cast<SampleType>(b[2] * a0Inv);
-            coeff[3] = static_cast<SampleType>(a[1] * a0Inv);
-            coeff[4] = static_cast<SampleType>(a[2] * a0Inv);
+        void updateFromBiquad(const std::array<double, 6>& coeffs) {
+            const auto a0Inv = 1.0 / coeffs[0];
+            coeff[0] = static_cast<SampleType>(coeffs[3] * a0Inv);
+            coeff[1] = static_cast<SampleType>(coeffs[4] * a0Inv);
+            coeff[2] = static_cast<SampleType>(coeffs[5] * a0Inv);
+            coeff[3] = static_cast<SampleType>(coeffs[1] * a0Inv);
+            coeff[4] = static_cast<SampleType>(coeffs[2] * a0Inv);
         }
 
     private:

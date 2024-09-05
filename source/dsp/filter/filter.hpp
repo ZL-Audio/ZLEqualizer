@@ -12,5 +12,6 @@
 
 #include "iir_filter/iir_filter.hpp"
 #include "dynamic_filter/dynamic_filter.hpp"
+#include "filter_design/filter_design.hpp"
 
 #endif //ZL_FILTER_HPP

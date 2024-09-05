@@ -10,8 +10,6 @@
 #ifndef SVF_BASE_HPP
 #define SVF_BASE_HPP
 
-#include "coeff/design_filter.hpp"
-
 namespace zlFilter {
     template<typename SampleType>
     class SVFBase {
@@ -95,18 +93,16 @@ namespace zlFilter {
             return yHP - R2 * yBP + yLP;
         }
 
-        void updateFromBiquad(const coeff33 &coeffs) {
-            const auto a = std::get<0>(coeffs);
-            const auto b = std::get<1>(coeffs);
-            const auto temp1 = std::sqrt(std::abs((-a[0] - a[1] - a[2])));
-            const auto temp2 = std::sqrt(std::abs((-a[0] + a[1] - a[2])));
+        void updateFromBiquad(const std::array<double, 6>& coeffs) {
+            const auto temp1 = std::sqrt(std::abs((-coeffs[0] - coeffs[1] - coeffs[2])));
+            const auto temp2 = std::sqrt(std::abs((-coeffs[0] + coeffs[1] - coeffs[2])));
             g = static_cast<SampleType>(temp1 / temp2);
-            R2 = static_cast<SampleType>(2 * (a[0] - a[2]) / (temp1 * temp2));
+            R2 = static_cast<SampleType>(2 * (coeffs[0] - coeffs[2]) / (temp1 * temp2));
             h = static_cast<SampleType>(1) / (g * (R2 + g) + static_cast<SampleType>(1));
 
-            chp = static_cast<SampleType>((b[0] - b[1] + b[2]) / (a[0] - a[1] + a[2]));
-            cbp = static_cast<SampleType>(2 * (b[2] - b[0]) / (temp1 * temp2));
-            clp = static_cast<SampleType>((b[0] + b[1] + b[2]) / (a[0] + a[1] + a[2]));
+            chp = static_cast<SampleType>((coeffs[3] - coeffs[4] + coeffs[5]) / (coeffs[0] - coeffs[1] + coeffs[2]));
+            cbp = static_cast<SampleType>(2 * (coeffs[5] - coeffs[3]) / (temp1 * temp2));
+            clp = static_cast<SampleType>((coeffs[3] + coeffs[4] + coeffs[5]) / (coeffs[0] + coeffs[1] + coeffs[2]));
         }
 
     private:

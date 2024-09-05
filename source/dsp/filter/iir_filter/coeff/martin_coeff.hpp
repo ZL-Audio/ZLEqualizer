@@ -7,54 +7,60 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_MARTIN_COEFFS_H
-#define ZLEQUALIZER_MARTIN_COEFFS_H
+#ifndef ZLFILTER_MARTIN_COEFFS_H
+#define ZLFILTER_MARTIN_COEFFS_H
 
-#include "helpers.hpp"
+#include "../../helpers.hpp"
 #include "analog_func.hpp"
+#include "numbers"
 
 namespace zlFilter {
     class MartinCoeff {
     public:
-        static coeff22 get1LowPass(double w0);
+        static std::array<double, 4> get1LowPass(double w0);
 
-        static coeff22 get1HighPass(double w0);
+        static std::array<double, 4> get1HighPass(double w0);
 
-        static coeff22 get1TiltShelf(double w0, double g);
+        static std::array<double, 4> get1TiltShelf(double w0, double g);
 
-        static coeff22 get1LowShelf(double w0, double g);
+        static std::array<double, 4> get1LowShelf(double w0, double g);
 
-        static coeff22 get1HighShelf(double w0, double g);
+        static std::array<double, 4> get1HighShelf(double w0, double g);
 
-        static coeff33 get2LowPass(double w0, double q);
+        static std::array<double, 6> get2LowPass(double w0, double q);
 
-        static coeff33 get2HighPass(double w0, double q);
+        static std::array<double, 6> get2HighPass(double w0, double q);
 
-        static coeff33 get2BandPass(double w0, double q);
+        static std::array<double, 6> get2BandPass(double w0, double q);
 
-        static coeff33 get2Notch(double w0, double q);
+        static std::array<double, 6> get2Notch(double w0, double q);
 
-        static coeff33 get2Peak(double w0, double g, double q);
+        static std::array<double, 6> get2Peak(double w0, double g, double q);
 
-        static coeff33 get2TiltShelf(double w0, double g, double q);
+        static std::array<double, 6> get2TiltShelf(double w0, double g, double q);
 
-        static coeff33 get2LowShelf(double w0, double g, double q);
+        static std::array<double, 6> get2LowShelf(double w0, double g, double q);
 
-        static coeff33 get2HighShelf(double w0, double g, double q);
+        static std::array<double, 6> get2HighShelf(double w0, double g, double q);
 
     private:
-        static coeff3 solve_a(double w0, double b, double c=1);
+        constexpr static double piHalf = std::numbers::pi * 0.5;
+        constexpr static double pi = std::numbers::pi;
+        constexpr static double pi2 = std::numbers::pi * std::numbers::pi;
 
-        static coeff3 get_AB(coeff3 a);
+        static std::array<double, 3> solve_a(double w0, double b, double c = 1);
 
-        static bool check_AB(coeff3 A);
+        static std::array<double, 3> get_AB(const std::array<double, 3> &a);
 
-        static coeff3 get_ab(coeff3 A);
+        static bool check_AB(const std::array<double, 3> &A);
 
-        static coeff3 get_phi(double w);
+        static std::array<double, 3> get_ab(const std::array<double, 3> &A);
 
-        static coeff3 linear_solve(std::array<coeff3, 3> A, coeff3 b);
+        static std::array<double, 3> get_phi(double w);
+
+        static std::array<double, 3> linear_solve(const std::array<std::array<double, 3>, 3> &A,
+                                                  const std::array<double, 3> &b);
     };
 }
 
-#endif //ZLEQUALIZER_MARTIN_COEFFS_H
+#endif //ZLFILTER_MARTIN_COEFFS_H

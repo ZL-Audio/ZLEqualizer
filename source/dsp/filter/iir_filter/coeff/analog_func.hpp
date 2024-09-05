@@ -12,14 +12,9 @@
 
 #include <cmath>
 #include <array>
-#include "helpers.hpp"
+#include "../../helpers.hpp"
 
 namespace zlFilter {
-    using coeff2  = std::array<double, 2>;
-    using coeff3 = std::array<double, 3>;
-    using coeff22 = std::tuple<coeff2, coeff2>;
-    using coeff33 = std::tuple<coeff3, coeff3>;
-
     class AnalogFunc {
     public:
         static double get2LowPassMagnitude2(double w0, double q, double w);
