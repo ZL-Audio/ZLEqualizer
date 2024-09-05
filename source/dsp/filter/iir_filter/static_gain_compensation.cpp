@@ -9,9 +9,9 @@
 
 #include "static_gain_compensation.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     template<typename FloatType>
-    StaticGainCompensation<FloatType>::StaticGainCompensation(Filter<FloatType> &filter)
+    StaticGainCompensation<FloatType>::StaticGainCompensation(IIR<FloatType> &filter)
         : target(filter) {
         gainDSP.setGainDecibels(0);
     }

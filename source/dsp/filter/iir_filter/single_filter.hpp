@@ -15,9 +15,9 @@
 #include "static_frequency_array.hpp"
 #include "iir_base.hpp"
 #include "svf_base.hpp"
-#include "../farbot/RealtimeObject.hpp"
+#include "../../farbot/RealtimeObject.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     /**
      * a lock free, thread safe static IIR filter
      * it processes audio the the real-time thread, and the response curve can be accessed in another non-realtime thread
@@ -26,9 +26,9 @@ namespace zlIIR {
      * @tparam FloatType
      */
     template<typename FloatType>
-    class Filter {
+    class IIR {
     public:
-        Filter() = default;
+        IIR() = default;
 
         void reset();
 

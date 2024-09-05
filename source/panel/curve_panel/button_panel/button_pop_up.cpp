@@ -139,21 +139,21 @@ namespace zlPanel {
         const auto shiftYPortion = shiftY / (compParentBound.getHeight() - uiBase.getFontSize()) * 2;
         auto direction = -1.f;
         switch (fType.load()) {
-            case zlIIR::FilterType::peak:
-            case zlIIR::FilterType::bandShelf: {
+            case zlFilter::FilterType::peak:
+            case zlFilter::FilterType::bandShelf: {
                 direction = (shiftYPortion > 0.f && shiftYPortion < 0.5f) || (shiftYPortion < -0.5f) ? 1.f : -1.f;
                 break;
             }
-            case zlIIR::FilterType::lowShelf:
-            case zlIIR::FilterType::highShelf:
-            case zlIIR::FilterType::tiltShelf: {
+            case zlFilter::FilterType::lowShelf:
+            case zlFilter::FilterType::highShelf:
+            case zlFilter::FilterType::tiltShelf: {
                 direction = (shiftYPortion > 0.f) ? 1.f : -1.f;
                 break;
             }
-            case zlIIR::FilterType::notch:
-            case zlIIR::FilterType::lowPass:
-            case zlIIR::FilterType::highPass:
-            case zlIIR::FilterType::bandPass: {
+            case zlFilter::FilterType::notch:
+            case zlFilter::FilterType::lowPass:
+            case zlFilter::FilterType::highPass:
+            case zlFilter::FilterType::bandPass: {
                 break;
             }
         }

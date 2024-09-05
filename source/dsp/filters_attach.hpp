@@ -40,7 +40,7 @@ namespace zlDSP {
         juce::AudioProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
         Controller<FloatType> &controllerRef;
-        std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> &filtersRef;
+        std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> &filtersRef;
 
         constexpr static std::array IDs{
             bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,

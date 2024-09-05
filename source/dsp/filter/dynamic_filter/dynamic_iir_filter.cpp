@@ -9,9 +9,9 @@
 
 #include "dynamic_iir_filter.hpp"
 
-namespace zlDynamicFilter {
+namespace zlFilter {
     template<typename FloatType>
-    void IIRFilter<FloatType>::reset() {
+    void DynamicIIR<FloatType>::reset() {
         mFilter.reset();
         tFilter.reset();
         sFilter.reset();
@@ -19,12 +19,12 @@ namespace zlDynamicFilter {
     }
 
     template<typename FloatType>
-    void IIRFilter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+    void DynamicIIR<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         mFilter.prepare(spec);
         bFilter.prepare(spec);
         tFilter.prepare(spec);
         sFilter.setOrder(2, false);
-        sFilter.setFilterType(zlIIR::FilterType::bandPass, false);
+        sFilter.setFilterType(zlFilter::FilterType::bandPass, false);
         sFilter.prepare(spec);
         compressor.prepare(spec);
         compensation.prepare(spec);
@@ -35,7 +35,7 @@ namespace zlDynamicFilter {
     }
 
     template<typename FloatType>
-    void IIRFilter<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
+    void DynamicIIR<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
         if (!active.load()) { return; }
         if (bFilter.updateParasForDBOnly()) {
             compensation.update();
@@ -82,7 +82,7 @@ namespace zlDynamicFilter {
     }
 
     template<typename FloatType>
-    void IIRFilter<FloatType>::processBypass() {
+    void DynamicIIR<FloatType>::processBypass() {
         if (bFilter.updateParas()) {
             compensation.update();
         }
@@ -92,8 +92,8 @@ namespace zlDynamicFilter {
     }
 
     template
-    class IIRFilter<float>;
+    class DynamicIIR<float>;
 
     template
-    class IIRFilter<double>;
+    class DynamicIIR<double>;
 }

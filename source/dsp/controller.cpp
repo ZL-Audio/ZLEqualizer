@@ -56,7 +56,7 @@ namespace zlDSP {
             f.prepare(subSpec);
         }
 
-        soloFilter.setFilterType(zlIIR::FilterType::bandPass, false);
+        soloFilter.setFilterType(zlFilter::FilterType::bandPass, false);
         soloFilter.prepare(subSpec);
         lrMainSplitter.prepare(subSpec);
         lrSideSplitter.prepare(subSpec);
@@ -365,10 +365,10 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    std::tuple<FloatType, FloatType> Controller<FloatType>::getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter) {
+    std::tuple<FloatType, FloatType> Controller<FloatType>::getSoloFilterParas(zlFilter::IIR<FloatType> &baseFilter) {
         switch (baseFilter.getFilterType()) {
-            case zlIIR::FilterType::highPass:
-            case zlIIR::FilterType::lowShelf: {
+            case zlFilter::FilterType::highPass:
+            case zlFilter::FilterType::lowShelf: {
                 auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(baseFilter.getFreq()));
                 auto scale = soloFreq;
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
@@ -377,8 +377,8 @@ namespace zlDSP {
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
             }
-            case zlIIR::FilterType::lowPass:
-            case zlIIR::FilterType::highShelf: {
+            case zlFilter::FilterType::lowPass:
+            case zlFilter::FilterType::highShelf: {
                 auto soloFreq = static_cast<FloatType>(std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(
                                                            baseFilter.getFreq()));
                 auto scale = soloFreq / baseFilter.getFreq();
@@ -388,13 +388,13 @@ namespace zlDSP {
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
             }
-            case zlIIR::FilterType::tiltShelf: {
+            case zlFilter::FilterType::tiltShelf: {
                 return {baseFilter.getFreq(), FloatType(0.025)};
             }
-            case zlIIR::FilterType::peak:
-            case zlIIR::FilterType::notch:
-            case zlIIR::FilterType::bandPass:
-            case zlIIR::FilterType::bandShelf:
+            case zlFilter::FilterType::peak:
+            case zlFilter::FilterType::notch:
+            case zlFilter::FilterType::bandPass:
+            case zlFilter::FilterType::bandShelf:
             default: {
                 return {baseFilter.getFreq(), baseFilter.getQ()};
             }

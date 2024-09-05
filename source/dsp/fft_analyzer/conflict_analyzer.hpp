@@ -64,13 +64,13 @@ namespace zlFFT {
     private:
         SyncFFTAnalyzer<FloatType> syncAnalyzer;
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
-        std::array<float, zlIIR::frequencies.size() / 2> mainDB{}, refDB{};
+        std::array<float, zlFilter::frequencies.size() / 2> mainDB{}, refDB{};
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
         std::atomic<bool> isON{false}, isConflictReady{false}, toReset{false};
 
         std::atomic<float> x1{0.f}, x2{1.f};
-        std::array<float, zlIIR::frequencies.size() / 8> conflicts{};
-        std::array<std::atomic<float>, zlIIR::frequencies.size() / 8> conflictsP{};
+        std::array<float, zlFilter::frequencies.size() / 8> conflicts{};
+        std::array<std::atomic<float>, zlFilter::frequencies.size() / 8> conflictsP{};
 
         const juce::Colour gColour = juce::Colours::red;
 

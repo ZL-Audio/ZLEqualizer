@@ -40,7 +40,7 @@ namespace zlPanel {
 
         void componentMovedOrResized(Component &component, bool wasMoved, bool wasResized) override;
 
-        void setFType(const zlIIR::FilterType f) {
+        void setFType(const zlFilter::FilterType f) {
             fType.store(f);
         }
 
@@ -49,7 +49,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         std::atomic<float> width{7.7916666f}, height{4.16667f};
-        std::atomic<zlIIR::FilterType> fType;
+        std::atomic<zlFilter::FilterType> fType;
 
         zlInterface::CompactButton bypassC, soloC;
         juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;

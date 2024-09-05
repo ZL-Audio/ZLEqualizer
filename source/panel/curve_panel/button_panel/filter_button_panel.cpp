@@ -114,21 +114,21 @@ namespace zlPanel {
             return;
         }
         if (parameterID.startsWith(zlDSP::fType::ID)) {
-            fType.store(static_cast<zlIIR::FilterType>(newValue));
+            fType.store(static_cast<zlFilter::FilterType>(newValue));
             buttonPopUp.setFType(fType.load());
             switch (fType.load()) {
-                case zlIIR::FilterType::peak:
-                case zlIIR::FilterType::bandShelf:
-                case zlIIR::FilterType::lowShelf:
-                case zlIIR::FilterType::highShelf:
-                case zlIIR::FilterType::tiltShelf: {
+                case zlFilter::FilterType::peak:
+                case zlFilter::FilterType::bandShelf:
+                case zlFilter::FilterType::lowShelf:
+                case zlFilter::FilterType::highShelf:
+                case zlFilter::FilterType::tiltShelf: {
                     isFilterTypeHasTarget.store(true);
                     break;
                 }
-                case zlIIR::FilterType::notch:
-                case zlIIR::FilterType::lowPass:
-                case zlIIR::FilterType::highPass:
-                case zlIIR::FilterType::bandPass: {
+                case zlFilter::FilterType::notch:
+                case zlFilter::FilterType::lowPass:
+                case zlFilter::FilterType::highPass:
+                case zlFilter::FilterType::bandPass: {
                     isFilterTypeHasTarget.store(false);
                     break;
                 }
@@ -197,11 +197,11 @@ namespace zlPanel {
         const auto maxDB = maximumDB.load();
         const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
         switch (fType.load()) {
-            case zlIIR::FilterType::peak:
-            case zlIIR::FilterType::bandShelf:
-            case zlIIR::FilterType::lowShelf:
-            case zlIIR::FilterType::highShelf:
-            case zlIIR::FilterType::tiltShelf: {
+            case zlFilter::FilterType::peak:
+            case zlFilter::FilterType::bandShelf:
+            case zlFilter::FilterType::lowShelf:
+            case zlFilter::FilterType::highShelf:
+            case zlFilter::FilterType::tiltShelf: {
                 auto *para1 = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, band.load()));
                 auto *para2 = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, band.load()));
                 attachment = std::make_unique<zlInterface::DraggerParameterAttach>(
@@ -213,10 +213,10 @@ namespace zlPanel {
                 attachment->sendInitialUpdate();
                 break;
             }
-            case zlIIR::FilterType::notch:
-            case zlIIR::FilterType::lowPass:
-            case zlIIR::FilterType::highPass:
-            case zlIIR::FilterType::bandPass: {
+            case zlFilter::FilterType::notch:
+            case zlFilter::FilterType::lowPass:
+            case zlFilter::FilterType::highPass:
+            case zlFilter::FilterType::bandPass: {
                 auto *para1 = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, band.load()));
                 auto *para2 = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, band.load()));
                 attachment = std::make_unique<zlInterface::DraggerParameterAttach>(
@@ -243,8 +243,8 @@ namespace zlPanel {
         sideDragger.setPadding(0.f, uiBase.getFontSize() * scale * .5f, uiBase.getFontSize() * scale * .5f,
                                uiBase.getFontSize() * scale * .5f);
         switch (fType.load()) {
-            case zlIIR::FilterType::peak:
-            case zlIIR::FilterType::bandShelf: {
+            case zlFilter::FilterType::peak:
+            case zlFilter::FilterType::bandShelf: {
                 dragger.setBounds(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
@@ -255,9 +255,9 @@ namespace zlPanel {
                         bound.getHeight() - (2 - scale) * uiBase.getFontSize()).toNearestInt());
                 break;
             }
-            case zlIIR::FilterType::lowShelf:
-            case zlIIR::FilterType::highShelf:
-            case zlIIR::FilterType::tiltShelf: {
+            case zlFilter::FilterType::lowShelf:
+            case zlFilter::FilterType::highShelf:
+            case zlFilter::FilterType::tiltShelf: {
                 dragger.setBounds(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
@@ -268,10 +268,10 @@ namespace zlPanel {
                         bound.getHeight() * .5f - (1 - scale) * uiBase.getFontSize()).toNearestInt());
                 break;
             }
-            case zlIIR::FilterType::notch:
-            case zlIIR::FilterType::lowPass:
-            case zlIIR::FilterType::highPass:
-            case zlIIR::FilterType::bandPass: {
+            case zlFilter::FilterType::notch:
+            case zlFilter::FilterType::lowPass:
+            case zlFilter::FilterType::highPass:
+            case zlFilter::FilterType::bandPass: {
                 dragger.setBounds(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),

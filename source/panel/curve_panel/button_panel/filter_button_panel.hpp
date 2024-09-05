@@ -57,7 +57,7 @@ namespace zlPanel {
         ButtonPopUp buttonPopUp;
         std::unique_ptr<zlInterface::DraggerParameterAttach> attachment, targetAttach, sideAttach;
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
-        std::atomic<zlIIR::FilterType> fType;
+        std::atomic<zlFilter::FilterType> fType;
         std::atomic<zlDSP::lrType::lrTypes> lrType;
         std::atomic<size_t> band;
         std::atomic<bool> isFilterTypeHasTarget{false}, isDynamicHasTarget{false},

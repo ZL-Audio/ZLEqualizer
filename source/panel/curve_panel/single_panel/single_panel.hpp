@@ -54,8 +54,8 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         std::atomic<bool> dynON, selected, actived;
         zlDSP::Controller<double> &controllerRef;
-        zlDynamicFilter::IIRFilter<double> &filter;
-        zlIIR::Filter<double> &baseF, &targetF;
+        zlFilter::DynamicIIR<double> &filter;
+        zlFilter::IIR<double> &baseF, &targetF;
         std::atomic<float> maximumDB;
         std::atomic<float> xx{-100.f}, yy{-100.f}, width{.1f}, height{.1f};
 
@@ -75,19 +75,19 @@ namespace zlPanel {
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void drawCurve(juce::Path &path,
-                       const std::array<double, zlIIR::frequencies.size()> &dBs,
+                       const std::array<double, zlFilter::frequencies.size()> &dBs,
                        juce::Rectangle<float> bound,
                        bool reverse = false,
                        bool startPath = true);
 
         inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
             return static_cast<float>(i) /
-                   static_cast<float>(zlIIR::frequencies.size() - 1) * bound.getWidth() + bound.getX();
+                   static_cast<float>(zlFilter::frequencies.size() - 1) * bound.getWidth() + bound.getX();
         }
 
         inline static float freqToX(const double freq, const juce::Rectangle<float> bound) {
-            const auto portion = std::log(freq / zlIIR::frequencies.front()) / std::log(
-                                     zlIIR::frequencies.back() / zlIIR::frequencies.front());
+            const auto portion = std::log(freq / zlFilter::frequencies.front()) / std::log(
+                                     zlFilter::frequencies.back() / zlFilter::frequencies.front());
             return static_cast<float>(portion) * bound.getWidth() + bound.getX();
         }
 

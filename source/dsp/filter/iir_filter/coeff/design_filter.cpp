@@ -16,8 +16,8 @@
 const static double pi = std::numbers::pi;
 const static double ppi = 2 * std::numbers::pi;
 
-namespace zlIIR {
-    std::vector<coeff33> DesignFilter::getCoeff(zlIIR::FilterType filterType,
+namespace zlFilter {
+    std::vector<coeff33> DesignFilter::getCoeff(zlFilter::FilterType filterType,
                                                 double f, double fs, double gDB, double q, size_t n) {
         auto w0 = ppi * f / fs;
         auto g = db_to_gain(gDB);

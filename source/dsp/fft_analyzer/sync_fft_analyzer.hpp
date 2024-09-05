@@ -15,8 +15,7 @@
 
 #include <boost/circular_buffer.hpp>
 
-#include "../iir_filter/single_filter.hpp"
-#include "../iir_filter/coeff/design_filter.hpp"
+#include "../filter/filter.hpp"
 
 namespace zlFFT {
     /**
@@ -87,7 +86,7 @@ namespace zlFFT {
             }
         }
 
-        std::array<std::atomic<float>, zlIIR::frequencies.size() / 2> &getInterplotDBs(const size_t z) { return interplotDBs[z]; }
+        std::array<std::atomic<float>, zlFilter::frequencies.size() / 2> &getInterplotDBs(const size_t z) { return interplotDBs[z]; }
 
         void setON(const bool x0, const bool x1) {
             isON[0].store(x0);
@@ -107,8 +106,8 @@ namespace zlFFT {
         std::array<std::vector<float>, 2> smoothedDBs;
         std::vector<float> smoothedDBX;
         static constexpr size_t preScale = 5;
-        std::array<std::array<float, zlIIR::frequencies.size() / preScale + 2>, 2> preInterplotDBs{};
-        std::array<std::array<std::atomic<float>, zlIIR::frequencies.size() / 2>, 2> interplotDBs{};
+        std::array<std::array<float, zlFilter::frequencies.size() / preScale + 2>, 2> preInterplotDBs{};
+        std::array<std::array<std::atomic<float>, zlFilter::frequencies.size() / 2>, 2> interplotDBs{};
         std::atomic<float> deltaT, decayRate, refreshRate{60}, tiltSlope;
         std::array<std::atomic<float>, 2> decayRates{}, actualDecayRate{};
         std::atomic<float> extraTilt{0.f}, extraSpeed{1.f};

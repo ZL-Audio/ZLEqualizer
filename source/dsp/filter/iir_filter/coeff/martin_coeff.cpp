@@ -17,7 +17,7 @@ const static double piHalf = std::numbers::pi * 0.5;
 const static double pi = std::numbers::pi;
 const static double pi2 = std::numbers::pi * std::numbers::pi;
 
-namespace zlIIR {
+namespace zlFilter {
     coeff22 MartinCoeff::get1LowPass(double w0) {
         coeff2 a{}, b{};
         auto fc = w0 / pi;
@@ -306,7 +306,7 @@ namespace zlIIR {
         return A;
     }
 
-    bool MartinCoeff::check_AB(zlIIR::coeff3 A) {
+    bool MartinCoeff::check_AB(zlFilter::coeff3 A) {
         return A[0] > 0 && A[1] > 0 && std::pow(0.5 * (std::sqrt(A[0]) + std::sqrt(A[1])), 2) + A[2] > 0;
     }
 

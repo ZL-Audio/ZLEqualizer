@@ -21,7 +21,7 @@
 #include <vector>
 #include <tuple>
 
-namespace zlIIR {
+namespace zlFilter {
     enum FilterType {
         peak, lowShelf, lowPass, highShelf, highPass,
         notch, bandPass, tiltShelf, bandShelf,

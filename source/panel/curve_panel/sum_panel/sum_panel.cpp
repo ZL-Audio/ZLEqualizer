@@ -16,7 +16,7 @@ namespace zlPanel {
         : parametersRef(parameters),
           uiBase(base), c(controller) {
         for (auto &path: paths) {
-            path.preallocateSpace(static_cast<int>(zlIIR::frequencies.size() * 3));
+            path.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3));
         }
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             for (const auto &idx: changeIDs) {
@@ -94,14 +94,14 @@ namespace zlPanel {
 
             const auto maxDB = maximumDB.load();
             auto y0 = 0.f;
-            for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
-                const auto x = static_cast<float>(i) / static_cast<float>(zlIIR::frequencies.size() - 1) * bound.
+            for (size_t i = 0; i < zlFilter::frequencies.size(); ++i) {
+                const auto x = static_cast<float>(i) / static_cast<float>(zlFilter::frequencies.size() - 1) * bound.
                                getWidth();
                 const auto y = static_cast<float>(-dBs[i]) / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
                 if (i == 0) {
                     paths[j].startNewSubPath(x, y);
                     y0 = y;
-                } else if (std::abs(y - y0) >= 0.125f || i == zlIIR::frequencies.size() - 1) {
+                } else if (std::abs(y - y0) >= 0.125f || i == zlFilter::frequencies.size() - 1) {
                     paths[j].lineTo(x, y);
                     y0 = y;
                 }

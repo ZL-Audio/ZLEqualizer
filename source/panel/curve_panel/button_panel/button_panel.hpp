@@ -77,8 +77,8 @@ namespace zlPanel {
         inline static float xtoFreq(const float x, const juce::Rectangle<float> bound) {
             const auto portion = (x - bound.getX()) / bound.getWidth();
             return std::exp(portion *
-                            static_cast<float>(std::log(zlIIR::frequencies.back() / zlIIR::frequencies.front()))) *
-                   static_cast<float>(zlIIR::frequencies.front());
+                            static_cast<float>(std::log(zlFilter::frequencies.back() / zlFilter::frequencies.front()))) *
+                   static_cast<float>(zlFilter::frequencies.front());
         }
 
         inline static float yToDB(const float y, const float maxDB, const juce::Rectangle<float> bound) {
@@ -103,7 +103,7 @@ namespace zlPanel {
 
         void attachGroup(size_t idx);
 
-        inline void drawFilterParas(juce::Graphics &g, const zlIIR::Filter<double> &f, const juce::Rectangle<float> &bound);
+        inline void drawFilterParas(juce::Graphics &g, const zlFilter::IIR<double> &f, const juce::Rectangle<float> &bound);
 
         inline void drawFreq(juce::Graphics &g, float freq, const juce::Rectangle<float> &bound, bool isTop);
 

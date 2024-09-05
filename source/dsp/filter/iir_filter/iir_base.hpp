@@ -12,7 +12,7 @@
 
 #include "coeff/design_filter.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     template<typename SampleType>
     class IIRBase {
     public:

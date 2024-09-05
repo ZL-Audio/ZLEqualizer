@@ -12,7 +12,7 @@
 
 #include <juce_dsp/juce_dsp.h>
 
-namespace zlIIR {
+namespace zlFilter {
     /** stl does not support constexpr log/pow, np.logspace(1, np.log10(22000), 800) */
     constexpr std::array<double, 800> frequencies = {
         1.00000000e+01, 1.00967885e+01, 1.01945137e+01, 1.02931849e+01,

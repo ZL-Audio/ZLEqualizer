@@ -13,7 +13,7 @@
 #include "helpers.hpp"
 #include "analog_func.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     class MartinCoeff {
     public:
         static coeff22 get1LowPass(double w0);

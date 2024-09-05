@@ -21,9 +21,9 @@ namespace zlPanel {
           baseF(controller.getFilter(idx).getBaseFilter()),
           targetF(controller.getFilter(idx).getTargetFilter()),
           sidePanel(bandIdx, parameters, parametersNA, base, controller) {
-        curvePath.preallocateSpace(static_cast<int>(zlIIR::frequencies.size() * 3 + 12));
-        shadowPath.preallocateSpace(static_cast<int>(zlIIR::frequencies.size() * 3 + 12));
-        dynPath.preallocateSpace(static_cast<int>(zlIIR::frequencies.size() * 6 + 12));
+        curvePath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
+        shadowPath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
+        dynPath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 6 + 12));
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         juce::ignoreUnused(controllerRef);
@@ -103,27 +103,27 @@ namespace zlPanel {
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
             g.setColour(colour);
             switch (baseF.getFilterType()) {
-                case zlIIR::FilterType::peak:
-                case zlIIR::FilterType::bandShelf: {
+                case zlFilter::FilterType::peak:
+                case zlFilter::FilterType::bandShelf: {
                     const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(baseGain.load()), maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, linkThickness);
                     break;
                 }
-                case zlIIR::FilterType::lowShelf:
-                case zlIIR::FilterType::highShelf:
-                case zlIIR::FilterType::tiltShelf: {
+                case zlFilter::FilterType::lowShelf:
+                case zlFilter::FilterType::highShelf:
+                case zlFilter::FilterType::tiltShelf: {
                     const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(baseGain.load()) / 2, maximumDB.load(), bound);
                     g.drawLine(x1, y1, x1, y2, linkThickness);
                     break;
                 }
-                case zlIIR::FilterType::notch:
-                case zlIIR::FilterType::lowPass:
-                case zlIIR::FilterType::highPass:
-                case zlIIR::FilterType::bandPass: {
+                case zlFilter::FilterType::notch:
+                case zlFilter::FilterType::lowPass:
+                case zlFilter::FilterType::highPass:
+                case zlFilter::FilterType::bandPass: {
                     const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);
@@ -158,7 +158,7 @@ namespace zlPanel {
     }
 
     void SinglePanel::drawCurve(juce::Path &path,
-                                const std::array<double, zlIIR::frequencies.size()> &dBs,
+                                const std::array<double, zlFilter::frequencies.size()> &dBs,
                                 juce::Rectangle<float> bound,
                                 const bool reverse,
                                 const bool startPath) {
@@ -166,11 +166,11 @@ namespace zlPanel {
         const auto maxDB = maximumDB.load();
         if (reverse) {
             auto y0 = 0.f;
-            for (size_t j = zlIIR::frequencies.size(); j > 0; --j) {
+            for (size_t j = zlFilter::frequencies.size(); j > 0; --j) {
                 const auto i = j - 1;
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
-                if (i == zlIIR::frequencies.size() - 1 && startPath) {
+                if (i == zlFilter::frequencies.size() - 1 && startPath) {
                     path.startNewSubPath(x, y);
                     y0 = y;
                 } else if (std::abs(y - y0) >= 0.125f || i == 0) {
@@ -180,13 +180,13 @@ namespace zlPanel {
             }
         } else {
             auto y0 = 0.f;
-            for (size_t i = 0; i < zlIIR::frequencies.size(); ++i) {
+            for (size_t i = 0; i < zlFilter::frequencies.size(); ++i) {
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
                 if (i == 0 && startPath) {
                     path.startNewSubPath(x, y);
                     y0 = y;
-                } else if (std::abs(y - y0) >= 0.125f || i == zlIIR::frequencies.size() - 1) {
+                } else if (std::abs(y - y0) >= 0.125f || i == zlFilter::frequencies.size() - 1) {
                     path.lineTo(x, y);
                     y0 = y;
                 }
@@ -238,20 +238,20 @@ namespace zlPanel {
             }
             if (actived.load() && selected.load()) {
                 switch (baseF.getFilterType()) {
-                    case zlIIR::FilterType::peak:
-                    case zlIIR::FilterType::lowShelf:
-                    case zlIIR::FilterType::highShelf:
-                    case zlIIR::FilterType::notch:
-                    case zlIIR::FilterType::bandShelf:
-                    case zlIIR::FilterType::tiltShelf: {
+                    case zlFilter::FilterType::peak:
+                    case zlFilter::FilterType::lowShelf:
+                    case zlFilter::FilterType::highShelf:
+                    case zlFilter::FilterType::notch:
+                    case zlFilter::FilterType::bandShelf:
+                    case zlFilter::FilterType::tiltShelf: {
                         shadowPath.lineTo(bound.getRight(), bound.getCentreY());
                         shadowPath.lineTo(bound.getX(), bound.getCentreY());
                         shadowPath.closeSubPath();
                         break;
                     }
-                    case zlIIR::FilterType::lowPass:
-                    case zlIIR::FilterType::highPass:
-                    case zlIIR::FilterType::bandPass: {
+                    case zlFilter::FilterType::lowPass:
+                    case zlFilter::FilterType::highPass:
+                    case zlFilter::FilterType::bandPass: {
                         shadowPath.lineTo(bound.getBottomRight());
                         shadowPath.lineTo(bound.getBottomLeft());
                         shadowPath.closeSubPath();

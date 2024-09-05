@@ -12,11 +12,11 @@
 
 #include "single_filter.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     template<typename FloatType>
     class StaticGainCompensation {
     public:
-        explicit StaticGainCompensation(Filter<FloatType> &filter);
+        explicit StaticGainCompensation(IIR<FloatType> &filter);
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
@@ -37,7 +37,7 @@ namespace zlIIR {
         }
 
     private:
-        Filter<FloatType> &target;
+        IIR<FloatType> &target;
         juce::dsp::Gain<FloatType> gainDSP;
         std::atomic<FloatType> gain{FloatType(0)};
         std::atomic<bool> isON{false}, toUpdate{false};

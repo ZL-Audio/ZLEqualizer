@@ -185,36 +185,36 @@ namespace zlPanel {
     void LeftControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         if (parameterID.startsWith(zlDSP::fType::ID)) {
-            switch (static_cast<zlIIR::FilterType>(newValue)) {
-                case zlIIR::FilterType::peak:
-                case zlIIR::FilterType::lowShelf:
-                case zlIIR::FilterType::highShelf:
-                case zlIIR::FilterType::bandShelf:
-                case zlIIR::FilterType::tiltShelf: {
+            switch (static_cast<zlFilter::FilterType>(newValue)) {
+                case zlFilter::FilterType::peak:
+                case zlFilter::FilterType::lowShelf:
+                case zlFilter::FilterType::highShelf:
+                case zlFilter::FilterType::bandShelf:
+                case zlFilter::FilterType::tiltShelf: {
                     gainCEditable.store(true);
                     break;
                 }
-                case zlIIR::FilterType::lowPass:
-                case zlIIR::FilterType::highPass:
-                case zlIIR::FilterType::bandPass:
-                case zlIIR::FilterType::notch: {
+                case zlFilter::FilterType::lowPass:
+                case zlFilter::FilterType::highPass:
+                case zlFilter::FilterType::bandPass:
+                case zlFilter::FilterType::notch: {
                     gainCEditable.store(false);
                     break;
                 }
             }
-            switch (static_cast<zlIIR::FilterType>(newValue)) {
-                case zlIIR::FilterType::lowPass:
-                case zlIIR::FilterType::highPass:
-                case zlIIR::FilterType::lowShelf:
-                case zlIIR::FilterType::highShelf:
-                case zlIIR::FilterType::bandShelf:
-                case zlIIR::FilterType::tiltShelf: {
+            switch (static_cast<zlFilter::FilterType>(newValue)) {
+                case zlFilter::FilterType::lowPass:
+                case zlFilter::FilterType::highPass:
+                case zlFilter::FilterType::lowShelf:
+                case zlFilter::FilterType::highShelf:
+                case zlFilter::FilterType::bandShelf:
+                case zlFilter::FilterType::tiltShelf: {
                     slopCEnable.store(true);
                     break;
                 }
-                case zlIIR::FilterType::peak:
-                case zlIIR::FilterType::bandPass:
-                case zlIIR::FilterType::notch: {
+                case zlFilter::FilterType::peak:
+                case zlFilter::FilterType::bandPass:
+                case zlFilter::FilterType::notch: {
                     slopCEnable.store(false);
                     break;
                 }

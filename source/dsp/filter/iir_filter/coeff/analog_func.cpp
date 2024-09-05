@@ -9,7 +9,7 @@
 
 #include "analog_func.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     double AnalogFunc::get2Magnitude2(std::array<double, 6> coeff, double w) {
         auto w_2 = w * w;
         auto denominator = std::pow(coeff[1], 2) * w_2 + std::pow(coeff[2] - coeff[0] * w_2, 2);

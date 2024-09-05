@@ -106,30 +106,30 @@ namespace zlPanel {
         }
     }
 
-    void ButtonPanel::drawFilterParas(juce::Graphics &g, const zlIIR::Filter<double> &f,
+    void ButtonPanel::drawFilterParas(juce::Graphics &g, const zlFilter::IIR<double> &f,
                                       const juce::Rectangle<float> &bound) {
         switch (f.getFilterType()) {
-            case zlIIR::FilterType::peak:
-            case zlIIR::FilterType::bandShelf: {
+            case zlFilter::FilterType::peak:
+            case zlFilter::FilterType::bandShelf: {
                 drawGain(g, static_cast<float>(f.getGain()), bound, static_cast<float>(f.getFreq()) <= 500.f);
                 break;
             }
-            case zlIIR::FilterType::lowShelf: {
+            case zlFilter::FilterType::lowShelf: {
                 drawGain(g, static_cast<float>(f.getGain()), bound, true);
                 break;
             }
-            case zlIIR::FilterType::highShelf: {
+            case zlFilter::FilterType::highShelf: {
                 drawGain(g, static_cast<float>(f.getGain()), bound, false);
                 break;
             }
-            case zlIIR::FilterType::tiltShelf: {
+            case zlFilter::FilterType::tiltShelf: {
                 drawGain(g, static_cast<float>(f.getGain()) * .5f, bound, false);
                 break;
             }
-            case zlIIR::FilterType::notch:
-            case zlIIR::FilterType::lowPass:
-            case zlIIR::FilterType::highPass:
-            case zlIIR::FilterType::bandPass: {
+            case zlFilter::FilterType::notch:
+            case zlFilter::FilterType::lowPass:
+            case zlFilter::FilterType::highPass:
+            case zlFilter::FilterType::bandPass: {
                 break;
             }
         }
@@ -268,31 +268,31 @@ namespace zlPanel {
 
         if (freq < 20.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::highPass));
+            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::highPass));
         } else if (freq < 50.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::lowShelf));
+            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::lowShelf));
             initIDs.emplace_back(zlDSP::gain::ID);
             initValues.emplace_back(zlDSP::gain::convertTo01(
                 juce::jlimit(-maximumDB.load(), maximumDB.load(), 2 * db)
             ));
         } else if (freq < 5000.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::peak));
+            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::peak));
             initIDs.emplace_back(zlDSP::gain::ID);
             initValues.emplace_back(zlDSP::gain::convertTo01(
                 juce::jlimit(-maximumDB.load(), maximumDB.load(), db)
             ));
         } else if (freq < 15000.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::highShelf));
+            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::highShelf));
             initIDs.emplace_back(zlDSP::gain::ID);
             initValues.emplace_back(zlDSP::gain::convertTo01(
                 juce::jlimit(-maximumDB.load(), maximumDB.load(), 2 * db)
             ));
         } else {
             initIDs.emplace_back(zlDSP::fType::ID);
-            initValues.emplace_back(zlDSP::fType::convertTo01(zlIIR::FilterType::lowPass));
+            initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::lowPass));
         }
         initIDs.emplace_back(zlDSP::freq::ID);
         initValues.emplace_back(zlDSP::freq::convertTo01(freq));

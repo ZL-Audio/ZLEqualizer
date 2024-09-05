@@ -80,8 +80,8 @@ namespace zlDSP {
     void FiltersAttach<FloatType>::updateTargetFGQ(const size_t idx) {
         auto tGain = static_cast<float>(filtersRef[idx].getBaseFilter().getGain());
         switch (filtersRef[idx].getBaseFilter().getFilterType()) {
-            case zlIIR::FilterType::peak:
-            case zlIIR::FilterType::bandShelf: {
+            case zlFilter::FilterType::peak:
+            case zlFilter::FilterType::bandShelf: {
                 const auto maxDB = maximumDB.load();
                 if (tGain < -maxDB * .5f) {
                     tGain = juce::jlimit(-maxDB, maxDB, tGain -= maxDB * .125f);
@@ -94,9 +94,9 @@ namespace zlDSP {
                 }
                 break;
             }
-            case zlIIR::FilterType::lowShelf:
-            case zlIIR::FilterType::highShelf:
-            case zlIIR::FilterType::tiltShelf: {
+            case zlFilter::FilterType::lowShelf:
+            case zlFilter::FilterType::highShelf:
+            case zlFilter::FilterType::tiltShelf: {
                 if (tGain < 0) {
                     tGain += maximumDB.load() * .25f;
                 } else {
@@ -104,10 +104,10 @@ namespace zlDSP {
                 }
                 break;
             }
-            case zlIIR::FilterType::lowPass:
-            case zlIIR::FilterType::highPass:
-            case zlIIR::FilterType::notch:
-            case zlIIR::FilterType::bandPass:
+            case zlFilter::FilterType::lowPass:
+            case zlFilter::FilterType::highPass:
+            case zlFilter::FilterType::notch:
+            case zlFilter::FilterType::bandPass:
             default: {
                 break;
             }
@@ -143,10 +143,10 @@ namespace zlDSP {
         if (parameterID.startsWith(bypass::ID)) {
             filtersRef[idx].setBypass(static_cast<bool>(value));
         } else if (parameterID.startsWith(fType::ID)) {
-            filtersRef[idx].getBaseFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
-            filtersRef[idx].getMainFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
+            filtersRef[idx].getBaseFilter().setFilterType(static_cast<zlFilter::FilterType>(value));
+            filtersRef[idx].getMainFilter().setFilterType(static_cast<zlFilter::FilterType>(value));
             if (filtersRef[idx].getDynamicON()) {
-                filtersRef[idx].getTargetFilter().setFilterType(static_cast<zlIIR::FilterType>(value));
+                filtersRef[idx].getTargetFilter().setFilterType(static_cast<zlFilter::FilterType>(value));
             }
         } else if (parameterID.startsWith(slope::ID)) {
             filtersRef[idx].getBaseFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);

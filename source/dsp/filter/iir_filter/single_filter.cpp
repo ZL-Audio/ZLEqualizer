@@ -9,9 +9,9 @@
 
 #include "single_filter.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     template<typename FloatType>
-    void Filter<FloatType>::reset() {
+    void IIR<FloatType>::reset() {
         if (toReset.exchange(false)) {
             for (size_t i = 0; i < filterNum.load(); ++i) {
                 filters[i].reset();
@@ -24,7 +24,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
+    void IIR<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         processSpec = spec;
         numChannels.store(spec.numChannels);
         sampleRate.store(static_cast<float>(spec.sampleRate));
@@ -38,7 +38,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed) {
+    void IIR<FloatType>::process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed) {
         const auto nextUseSVF = useSVF.load();
         if (currentUseSVF != nextUseSVF) {
             currentUseSVF = nextUseSVF;
@@ -62,7 +62,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setFreq(const FloatType x, const bool update) {
+    void IIR<FloatType>::setFreq(const FloatType x, const bool update) {
         const auto diff = std::max(static_cast<double>(x), freq.load()) /
                           std::min(static_cast<double>(x), freq.load());
         if (std::log10(diff) >= 2 && update && !useSVF.load()) {
@@ -73,7 +73,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setGain(const FloatType x, const bool update) {
+    void IIR<FloatType>::setGain(const FloatType x, const bool update) {
         gain.store(static_cast<double>(x));
         switch (filterType.load()) {
             case peak:
@@ -94,20 +94,20 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setQ(const FloatType x, const bool update) {
+    void IIR<FloatType>::setQ(const FloatType x, const bool update) {
         q.store(static_cast<double>(x));
         if (update) { toUpdatePara.store(true); }
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setFilterType(const FilterType x, const bool update) {
+    void IIR<FloatType>::setFilterType(const FilterType x, const bool update) {
         toReset.store(true);
         filterType.store(x);
         if (update) { toUpdatePara.store(true); }
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::setOrder(const size_t x, const bool update) {
+    void IIR<FloatType>::setOrder(const size_t x, const bool update) {
         order.store(x);
         if (update) {
             toReset.store(true);
@@ -116,7 +116,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    bool Filter<FloatType>::updateParas() {
+    bool IIR<FloatType>::updateParas() {
         if (toUpdatePara.exchange(false)) {
             filterNum.store(DesignFilter::updateCoeff(filterType.load(),
                                                       freq.load(), processSpec.sampleRate,
@@ -143,7 +143,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    bool Filter<FloatType>::updateParasForDBOnly() {
+    bool IIR<FloatType>::updateParasForDBOnly() {
         if (toUpdatePara.exchange(false)) {
             filterNum.store(DesignFilter::updateCoeff(filterType.load(),
                                                       freq.load(), processSpec.sampleRate,
@@ -161,19 +161,19 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::addDBs(std::array<double, frequencies.size()> &x, FloatType scale) {
+    void IIR<FloatType>::addDBs(std::array<double, frequencies.size()> &x, FloatType scale) {
         std::transform(x.begin(), x.end(), dBs.begin(), x.begin(),
                        [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::addGains(std::array<double, frequencies.size()> &x, FloatType scale) {
+    void IIR<FloatType>::addGains(std::array<double, frequencies.size()> &x, FloatType scale) {
         std::transform(x.begin(), x.end(), gains.begin(), x.begin(),
                        [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
     }
 
     template<typename FloatType>
-    void Filter<FloatType>::updateDBs() {
+    void IIR<FloatType>::updateDBs() {
         if (!magOutdated.exchange(false)) {
             return;
         }
@@ -215,7 +215,7 @@ namespace zlIIR {
     }
 
     template<typename FloatType>
-    FloatType Filter<FloatType>::getDB(FloatType f) {
+    FloatType IIR<FloatType>::getDB(FloatType f) {
         double g{FloatType(1)};
         juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
         farbot::RealtimeObject<
@@ -237,8 +237,8 @@ namespace zlIIR {
     }
 
     template
-    class Filter<float>;
+    class IIR<float>;
 
     template
-    class Filter<double>;
+    class IIR<double>;
 }

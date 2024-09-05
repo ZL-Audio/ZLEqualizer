@@ -180,10 +180,10 @@ namespace zlFFT {
             const auto spline = makima(std::move(x), std::move(y),
                                        1.f, -1.f);
 
-            preInterplotDBs[z].front() = spline(static_cast<float>(zlIIR::frequencies.front()));
-            preInterplotDBs[z].back() = spline(static_cast<float>(zlIIR::frequencies.back()));
+            preInterplotDBs[z].front() = spline(static_cast<float>(zlFilter::frequencies.front()));
+            preInterplotDBs[z].back() = spline(static_cast<float>(zlFilter::frequencies.back()));
             for (size_t i = 0; i < preInterplotDBs[0].size() - 2; ++i) {
-                preInterplotDBs[z][i + 1] = spline(static_cast<float>(zlIIR::frequencies[i * preScale]));
+                preInterplotDBs[z][i + 1] = spline(static_cast<float>(zlFilter::frequencies[i * preScale]));
             }
         }
         // use cardinal interpolate dB and apply tilt
@@ -201,7 +201,7 @@ namespace zlFFT {
         for (size_t i = 0; i < interplotDBs[0].size(); ++i) {
             for (const auto &z: isONVector) {
                 interplotDBs[z][i].store(splines[z](static_cast<float>(i * 2)) + static_cast<float>(std::log2(
-                                             zlIIR::frequencies[i * 2] / 1000)) * tilt);
+                                             zlFilter::frequencies[i * 2] / 1000)) * tilt);
             }
         }
     }
@@ -224,7 +224,7 @@ namespace zlFFT {
         const std::array<std::reference_wrapper<juce::Path>, 2> paths{path1, path2};
 
         for (size_t i = 0; i < interplotDBs[0].size(); ++i) {
-            const auto x = static_cast<float>(2 * i) / static_cast<float>(zlIIR::frequencies.size() - 1) *
+            const auto x = static_cast<float>(2 * i) / static_cast<float>(zlFilter::frequencies.size() - 1) *
                            bound.getWidth();
             for (const auto &z: isONVector) {
                 const auto y = interplotDBs[z][i].load() / minDB * bound.getHeight() + bound.getY();

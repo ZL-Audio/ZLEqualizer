@@ -14,9 +14,9 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include "../iir_filter/iir_filter.hpp"
-#include "../compressor/compressor.hpp"
+#include "../../compressor/compressor.hpp"
 
-namespace zlDynamicFilter {
+namespace zlFilter {
     /**
      * a dynamic IIR filter which holds a main filter, a base filter, a target filter and a side filter
      * the output signal is filtered by the main filter, whose gain and Q is set by the mix of base/target filters'
@@ -24,9 +24,9 @@ namespace zlDynamicFilter {
      * @tparam FloatType
      */
     template<typename FloatType>
-    class IIRFilter {
+    class DynamicIIR {
     public:
-        IIRFilter() = default;
+        DynamicIIR() = default;
 
         void reset();
 
@@ -41,13 +41,13 @@ namespace zlDynamicFilter {
 
         void processBypass();
 
-        inline zlIIR::Filter<FloatType> &getMainFilter() { return mFilter; }
+        inline zlFilter::IIR<FloatType> &getMainFilter() { return mFilter; }
 
-        inline zlIIR::Filter<FloatType> &getBaseFilter() { return bFilter; }
+        inline zlFilter::IIR<FloatType> &getBaseFilter() { return bFilter; }
 
-        inline zlIIR::Filter<FloatType> &getTargetFilter() { return tFilter; }
+        inline zlFilter::IIR<FloatType> &getTargetFilter() { return tFilter; }
 
-        inline zlIIR::Filter<FloatType> &getSideFilter() { return sFilter; }
+        inline zlFilter::IIR<FloatType> &getSideFilter() { return sFilter; }
 
         inline zlCompressor::ForwardCompressor<FloatType> &getCompressor() { return compressor; }
 
@@ -88,8 +88,8 @@ namespace zlDynamicFilter {
         }
 
     private:
-        zlIIR::Filter<FloatType> mFilter, bFilter, tFilter, sFilter;
-        zlIIR::StaticGainCompensation<FloatType> compensation{bFilter};
+        zlFilter::IIR<FloatType> mFilter, bFilter, tFilter, sFilter;
+        zlFilter::StaticGainCompensation<FloatType> compensation{bFilter};
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass{true}, active{false}, dynamicON{false}, dynamicBypass{false};

@@ -14,7 +14,7 @@
 #include <array>
 #include "helpers.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     using coeff2  = std::array<double, 2>;
     using coeff3 = std::array<double, 3>;
     using coeff22 = std::tuple<coeff2, coeff2>;

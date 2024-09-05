@@ -15,7 +15,7 @@
 
 #include "dsp_definitions.hpp"
 #include "audio_buffer/audio_buffer.hpp"
-#include "dynamic_filter/dynamic_filter.hpp"
+#include "filter/filter.hpp"
 #include "splitter/splitter.hpp"
 #include "fft_analyzer/fft_analyzer.hpp"
 #include "histogram/histogram.hpp"
@@ -36,9 +36,9 @@ namespace zlDSP {
 
         void processBypass();
 
-        inline zlDynamicFilter::IIRFilter<FloatType> &getFilter(const size_t idx) { return filters[idx]; }
+        inline zlFilter::DynamicIIR<FloatType> &getFilter(const size_t idx) { return filters[idx]; }
 
-        inline std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> &getFilters() { return filters; }
+        inline std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> &getFilters() { return filters; }
 
         void setFilterLRs(lrType::lrTypes x, size_t idx);
 
@@ -46,7 +46,7 @@ namespace zlDSP {
 
         void setDynamicON(bool x, size_t idx);
 
-        inline std::array<double, zlIIR::frequencies.size()> &getDBs() { return dBs; }
+        inline std::array<double, zlFilter::frequencies.size()> &getDBs() { return dBs; }
 
         void updateDBs(lrType::lrTypes lr);
 
@@ -64,9 +64,9 @@ namespace zlDSP {
 
         inline bool getSoloIsSide() const { return soloSide.load(); }
 
-        inline zlIIR::Filter<FloatType> &getSoloFilter() { return soloFilter; }
+        inline zlFilter::IIR<FloatType> &getSoloFilter() { return soloFilter; }
 
-        std::tuple<FloatType, FloatType> getSoloFilterParas(zlIIR::Filter<FloatType> &baseFilter);
+        std::tuple<FloatType, FloatType> getSoloFilterParas(zlFilter::IIR<FloatType> &baseFilter);
 
         inline void setSideChain(const bool x) { sideChain.store(x); }
 
@@ -115,7 +115,7 @@ namespace zlDSP {
 
     private:
         juce::AudioProcessor &processorRef;
-        std::array<zlDynamicFilter::IIRFilter<FloatType>, bandNUM> filters;
+        std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> filters;
 
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
@@ -128,7 +128,7 @@ namespace zlDSP {
 
         std::atomic<bool> sideChain;
 
-        zlIIR::Filter<FloatType> soloFilter;
+        zlFilter::IIR<FloatType> soloFilter;
         std::atomic<size_t> soloIdx;
         std::atomic<bool> useSolo = false, soloSide = false;
 
@@ -140,7 +140,7 @@ namespace zlDSP {
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
 
-        std::array<double, zlIIR::frequencies.size()> dBs{};
+        std::array<double, zlFilter::frequencies.size()> dBs{};
 
         zlDelay::SampleDelay<FloatType> delay;
 

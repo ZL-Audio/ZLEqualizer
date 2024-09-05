@@ -17,7 +17,7 @@
 #include "helpers.hpp"
 #include "martin_coeff.hpp"
 
-namespace zlIIR {
+namespace zlFilter {
     class DesignFilter {
     public:
         /**
