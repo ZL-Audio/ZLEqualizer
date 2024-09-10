@@ -34,7 +34,7 @@ namespace zlFilter {
             const auto denominator = coeff[1] * coeff[1] * w_2 + t1 * t1;
             const auto t2 = coeff[5] - coeff[3] * w_2;
             const auto numerator = coeff[4] * coeff[4] * w_2 + t2 * t2;
-            return numerator / denominator;
+            return std::sqrt(numerator / denominator);
         }
 
     private:

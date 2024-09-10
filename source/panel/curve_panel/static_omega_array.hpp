@@ -13,7 +13,7 @@
 #include <array>
 
 namespace zlPanel {
-    constexpr std::array<double, 800> ws = {
+    const static std::vector<double> ws = {
         1.30899694e-03, 1.32166652e-03, 1.33445873e-03, 1.34737475e-03,
        1.36041578e-03, 1.37358303e-03, 1.38687773e-03, 1.40030111e-03,
        1.41385441e-03, 1.42753889e-03, 1.44135582e-03, 1.45530648e-03,

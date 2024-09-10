@@ -54,8 +54,8 @@ namespace zlFilter {
 
     std::array<double, 6> IdealCoeff::get2Peak(const double w0, const double g, const double q) {
         const auto w02 = w0 * w0;
-        const auto gq = std::sqrt(g) / q;
-        return {1, w0 / gq, w02, 1, w0 * gq, w02};
+        const auto A = std::sqrt(g);
+        return {1.0, w0 / A / q, w02, 1, w0 * A / q, w02};
     }
 
     std::array<double, 6> IdealCoeff::get2TiltShelf(const double w0, const double g, const double q) {
@@ -69,7 +69,7 @@ namespace zlFilter {
         const auto A = std::sqrt(g);
         const auto Awq = std::sqrt(A) * w0 / q;
         const auto w02 = w0 * w0;
-        return {A, Awq, A * w02, A, A * Awq, A * w02};
+        return {A, Awq,  w02, A, A * Awq, A * A * w02};
     }
 
     std::array<double, 6> IdealCoeff::get2HighShelf(const double w0, const double g, const double q) {

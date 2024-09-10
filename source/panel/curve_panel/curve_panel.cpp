@@ -15,7 +15,7 @@ namespace zlPanel {
                            zlInterface::UIBase &base,
                            zlDSP::Controller<double> &c)
         : Thread("curve panel"),
-          parametersNARef(parametersNA), uiBase(base),
+          parametersRef(parameters), parametersNARef(parametersNA), uiBase(base),
           controllerRef(c),
           backgroundPanel(parameters, parametersNA, base),
           fftPanel(c.getAnalyzer(), base),
@@ -25,27 +25,27 @@ namespace zlPanel {
           buttonPanel(parameters, parametersNA, base, c),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
-        for (auto &f : baseFilters) {
-            f.prepareDBSize(ws.size());
-        }
-        for (auto &f : targetFilters) {
-            f.prepareDBSize(ws.size());
-        }
-        for (auto &f : mainFilters) {
-            f.prepareDBSize(ws.size());
+        for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {
+            for (auto &f: *filters) {
+                f.prepare(48000.0);
+                f.prepareDBSize(ws.size());
+            }
         }
         addAndMakeVisible(backgroundPanel);
         addAndMakeVisible(fftPanel);
         addAndMakeVisible(conflictPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i] = std::make_unique<
-                SinglePanel>(zlState::bandNUM - i - 1, parameters, parametersNA, base, c);
+                SinglePanel>(zlState::bandNUM - i - 1, parameters, parametersNA, base, c, baseFilters[i],
+                             targetFilters[i]);
             addAndMakeVisible(*singlePanels[i]);
         }
         addAndMakeVisible(sumPanel);
         addAndMakeVisible(soloPanel);
         addAndMakeVisible(buttonPanel);
-        parameterChanged(zlState::maximumDB::ID, parametersNA.getRawParameterValue(zlState::maximumDB::ID)->load());
+        parameterChanged(zlDSP::scale::ID, parametersRef.getRawParameterValue(zlDSP::scale::ID)->load());
+        parametersRef.addParameterListener(zlDSP::scale::ID, this);
+        parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
         startThread(juce::Thread::Priority::low);
     }
@@ -54,6 +54,7 @@ namespace zlPanel {
         if (isThreadRunning()) {
             stopThread(-1);
         }
+        parametersRef.removeParameterListener(zlDSP::scale::ID, this);
         parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
     }
 
@@ -89,6 +90,11 @@ namespace zlPanel {
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 singlePanels[i]->setMaximumDB(maxDB);
             }
+        } else if (parameterID == zlDSP::scale::ID) {
+            const auto scale = static_cast<double>(zlDSP::scale::formatV(newValue));
+            for (size_t i = 0; i < zlState::bandNUM; ++i) {
+                singlePanels[i]->setScale(scale);
+            }
         }
     }
 
@@ -97,7 +103,7 @@ namespace zlPanel {
         const juce::Time nowT = juce::Time::getCurrentTime();
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
             if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
-            && analyzer.getPathReady()) {
+                && analyzer.getPathReady()) {
                 fftPanel.updatePaths();
             }
             buttonPanel.updateDraggers();

@@ -25,7 +25,9 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
                              zlInterface::UIBase &base,
-                             zlDSP::Controller<double> &controller);
+                             zlDSP::Controller<double> &controller,
+                             zlFilter::Ideal<double, 16> &baseFilter,
+                             zlFilter::Ideal<double, 16> &targetFilter);
 
         ~SinglePanel() override;
 
@@ -42,20 +44,28 @@ namespace zlPanel {
 
         bool willRepaint() const;
 
+        void setScale(const double x) {
+            scale.store(x);
+            baseF.setGain(static_cast<double>(zlDSP::gain::range.snapToLegalValue(
+                static_cast<float>(currentBaseGain.load() * x))));
+            targetF.setGain(static_cast<double>(zlDSP::targetGain::range.snapToLegalValue(
+                static_cast<float>(currentBaseGain.load() * x))));
+        }
+
         void run();
 
     private:
         juce::Path curvePath, shadowPath, dynPath;
-        farbot::RealtimeObject<juce::Path, farbot::RealtimeObjectOptions::realtimeMutatable>
-                recentCurvePath, recentShadowPath, recentDynPath;
+        juce::Path recentCurvePath, recentShadowPath, recentDynPath;
+        juce::SpinLock curveLock, shadowLock, dynLock;
 
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+
         zlInterface::UIBase &uiBase;
         std::atomic<bool> dynON, selected, actived;
         zlDSP::Controller<double> &controllerRef;
-        zlFilter::DynamicIIR<double> &filter;
-        zlFilter::IIR<double> &baseF, &targetF;
+        zlFilter::Ideal<double, 16> &baseF, &targetF;
         std::atomic<float> maximumDB;
         std::atomic<float> xx{-100.f}, yy{-100.f}, width{.1f}, height{.1f};
 
@@ -65,9 +75,17 @@ namespace zlPanel {
         SidePanel sidePanel;
         std::atomic<float> centeredDB{0.f};
         std::atomic<double> baseFreq{1000.0}, baseGain{0.0};
+        std::atomic<double> currentBaseGain{0.0}, currentTargetGain{0.0};
+        std::atomic<double> scale{1.0};
 
         static constexpr std::array changeIDs{
             zlDSP::bypass::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID
+        };
+
+        static constexpr std::array paraIDs{
+        zlDSP::fType::ID, zlDSP::slope::ID,
+            zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID,
+            zlDSP::targetGain::ID, zlDSP::targetQ::ID
         };
 
         juce::Colour colour;
@@ -75,10 +93,10 @@ namespace zlPanel {
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void drawCurve(juce::Path &path,
-                       const std::array<double, zlFilter::frequencies.size()> &dBs,
+                       const std::vector<double> &dBs,
                        juce::Rectangle<float> bound,
                        bool reverse = false,
-                       bool startPath = true);
+                       bool startPath = true) const;
 
         inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
             return static_cast<float>(i) /

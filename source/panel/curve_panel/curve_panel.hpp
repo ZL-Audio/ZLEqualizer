@@ -38,7 +38,7 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        juce::AudioProcessorValueTreeState &parametersNARef;
+        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &controllerRef;
         std::array<zlFilter::Ideal<double, 16>, 16> baseFilters, targetFilters, mainFilters;
