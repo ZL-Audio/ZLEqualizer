@@ -13,7 +13,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include "../filter_design/filter_design.hpp"
 #include "coeff/martin_coeff.hpp"
-#include "static_frequency_array.hpp"
+#include "../static_frequency_array.hpp"
 #include "iir_base.hpp"
 #include "svf_base.hpp"
 #include "../../farbot/RealtimeObject.hpp"

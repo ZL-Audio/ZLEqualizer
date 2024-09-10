@@ -10,10 +10,12 @@
 #include "analog_func.hpp"
 
 namespace zlFilter {
-    double AnalogFunc::get2Magnitude2(std::array<double, 6> coeff, double w) {
-        auto w_2 = w * w;
-        auto denominator = std::pow(coeff[1], 2) * w_2 + std::pow(coeff[2] - coeff[0] * w_2, 2);
-        auto numerator = std::pow(coeff[4], 2) * w_2 + std::pow(coeff[5] - coeff[3] * w_2, 2);
+    double AnalogFunc::get2Magnitude2(const std::array<double, 6> &coeff, const double w) {
+        const auto w_2 = w * w;
+        const auto t1 = coeff[2] - coeff[0] * w_2;
+        const auto denominator = coeff[1] * coeff[1] * w_2 + t1 * t1;
+        const auto t2 = coeff[5] - coeff[3] * w_2;
+        const auto numerator = coeff[4] * coeff[4] * w_2 + t2 * t2;
         return numerator / denominator;
     }
 
@@ -38,17 +40,7 @@ namespace zlFilter {
     }
 
     double AnalogFunc::get2TiltShelfMagnitude2(double w0, double g, double q, double w) {
-        auto A = std::sqrt(g);
+        const auto A = std::sqrt(g);
         return get2Magnitude2({1, std::sqrt(A) * w0 / q, A * w0 * w0, A, std::sqrt(A) * w0 / q, w0 * w0}, w);
     }
-
-//    double AnalogFunc::get2LowShelfMagnitude2(double w0, double g, double q, double w) {
-//        auto A = std::sqrt(g);
-//        return get2Magnitude2({A, A * std::sqrt(A) * w0 / q, A * A * w0 * w0, A, std::sqrt(A) * w0 / q, A * w0 * w0}, w);
-//    }
-//
-//    double AnalogFunc::get2HighShelfMagnitude2(double w0, double g, double q, double w) {
-//        auto A = std::sqrt(g);
-//        return get2Magnitude2({1, std::sqrt(A) * w0 / q, w0 * w0, A * A, A * std::sqrt(A) * w0 / q, A * w0 * w0}, w);
-//    }
 }

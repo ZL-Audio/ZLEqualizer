@@ -12,6 +12,7 @@
 // Matched Second Order Digital Filters, Martin Vicanek
 
 #include "martin_coeff.hpp"
+#include "../../helpers.hpp"
 
 namespace zlFilter {
     std::array<double, 4> MartinCoeff::get1LowPass(const double w0) {

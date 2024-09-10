@@ -7,10 +7,8 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef STATIC_FREQUENCY_ARRAY_H
-#define STATIC_FREQUENCY_ARRAY_H
-
-#include <juce_dsp/juce_dsp.h>
+#ifndef ZLFILTER_STATIC_FREQUENCY_ARRAY_H
+#define ZLFILTER_STATIC_FREQUENCY_ARRAY_H
 
 namespace zlFilter {
     /** stl does not support constexpr log/pow, np.logspace(1, np.log10(22000), 800) */
@@ -218,4 +216,4 @@ namespace zlFilter {
     };
 }
 
-#endif //STATIC_FREQUENCY_ARRAY_H
+#endif //ZLFILTER_STATIC_FREQUENCY_ARRAY_H

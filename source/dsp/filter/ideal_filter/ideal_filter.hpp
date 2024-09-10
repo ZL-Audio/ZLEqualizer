@@ -7,12 +7,9 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_FILTER_HPP
-#define ZL_FILTER_HPP
+#ifndef ZLFILTER_IDEAL_FILTER_HPP
+#define ZLFILTER_IDEAL_FILTER_HPP
 
-#include "iir_filter/iir_filter.hpp"
-#include "ideal_filter/ideal_filter.hpp"
-#include "dynamic_filter/dynamic_filter.hpp"
-#include "filter_design/filter_design.hpp"
+#include "single_filter.hpp"
 
-#endif //ZL_FILTER_HPP
+#endif //ZLFILTER_IDEAL_FILTER_HPP
