@@ -14,6 +14,7 @@
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
+#include "../static_omega_array.hpp"
 #include "../../../dsp/farbot/RealtimeObject.hpp"
 
 namespace zlPanel {

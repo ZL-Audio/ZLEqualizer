@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "ideal_coeff.hpp"
+#include <cmath>
 
 namespace zlFilter {
     std::array<double, 4> IdealCoeff::get1LowPass(const double w0) {

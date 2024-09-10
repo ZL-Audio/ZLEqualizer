@@ -41,6 +41,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &controllerRef;
+        std::array<zlFilter::Ideal<double, 16>, 16> baseFilters, targetFilters, mainFilters;
         BackgroundPanel backgroundPanel;
         FFTPanel fftPanel;
         ConflictPanel conflictPanel;

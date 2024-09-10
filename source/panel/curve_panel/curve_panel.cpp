@@ -25,6 +25,15 @@ namespace zlPanel {
           buttonPanel(parameters, parametersNA, base, c),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
+        for (auto &f : baseFilters) {
+            f.prepareDBSize(ws.size());
+        }
+        for (auto &f : targetFilters) {
+            f.prepareDBSize(ws.size());
+        }
+        for (auto &f : mainFilters) {
+            f.prepareDBSize(ws.size());
+        }
         addAndMakeVisible(backgroundPanel);
         addAndMakeVisible(fftPanel);
         addAndMakeVisible(conflictPanel);

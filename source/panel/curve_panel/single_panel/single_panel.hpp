@@ -13,7 +13,7 @@
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../../dsp/farbot/RealtimeObject.hpp"
-
+#include "../static_omega_array.hpp"
 #include "../../../state/state_definitions.hpp"
 #include "side_panel.hpp"
 

@@ -55,6 +55,8 @@ namespace zlFilter {
             gains.resize(x);
         }
 
+        bool getToUpdatePara() const { return toUpdatePara.load(); }
+
         void updateMagnidue(const std::vector<FloatType> &ws) {
             if (toUpdatePara.exchange(false)) {
                 updateParas();
