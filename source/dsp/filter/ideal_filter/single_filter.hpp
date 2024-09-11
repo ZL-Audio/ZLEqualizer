@@ -18,7 +18,7 @@ namespace zlFilter {
     template<typename FloatType, size_t FilterSize>
     class Ideal {
     public:
-        Ideal() = default;
+        explicit Ideal() = default;
 
         void prepare(const double sampleRate) {
             fs.store(sampleRate);

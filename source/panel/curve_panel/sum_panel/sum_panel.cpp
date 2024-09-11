@@ -12,9 +12,13 @@
 namespace zlPanel {
     SumPanel::SumPanel(juce::AudioProcessorValueTreeState &parameters,
                        zlInterface::UIBase &base,
-                       zlDSP::Controller<double> &controller)
+                       zlDSP::Controller<double> &controller,
+                       std::array<zlFilter::Ideal<double, 16>, 16> &baseFilters,
+                       std::array<zlFilter::Ideal<double, 16>, 16> &mainFilters)
         : parametersRef(parameters),
-          uiBase(base), c(controller) {
+          uiBase(base), c(controller),
+          mBaseFilters(baseFilters), mMainFilters(mainFilters) {
+        dBs.resize(ws.size());
         for (auto &path: paths) {
             path.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3));
         }
@@ -23,7 +27,6 @@ namespace zlPanel {
                 parametersRef.addParameterListener(zlDSP::appendSuffix(idx, i), this);
             }
         }
-        juce::ignoreUnused(parametersRef);
     }
 
     SumPanel::~SumPanel() {
@@ -45,12 +48,12 @@ namespace zlPanel {
         for (size_t j = 0; j < useLRMS.size(); ++j) {
             if (!useLRMS[j]) { continue; }
             g.setColour(uiBase.getColorMap2(j));
-            farbot::RealtimeObject<
-                juce::Path,
-                farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-                farbot::ThreadType::nonRealtime> pathLock(recentPaths[j]);
-            g.strokePath(*pathLock, juce::PathStrokeType(uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness(),
-                                                         juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+            const juce::GenericScopedTryLock lock(pathLocks[j]);
+            if (lock.isLocked()) {
+                g.strokePath(recentPaths[j], juce::PathStrokeType(
+                                 uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness(),
+                                 juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+            }
         }
     }
 
@@ -70,8 +73,9 @@ namespace zlPanel {
         juce::ScopedNoDenormals noDenormals;
         std::array<bool, 5> useLRMS{false, false, false, false, false};
         constexpr std::array<zlDSP::lrType::lrTypes, 5> lrTypes{
-            zlDSP::lrType::stereo, zlDSP::lrType::left, zlDSP::lrType::right, zlDSP::lrType::mid,
-            zlDSP::lrType::side
+            zlDSP::lrType::stereo,
+            zlDSP::lrType::left, zlDSP::lrType::right,
+            zlDSP::lrType::mid, zlDSP::lrType::side
         };
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             const auto idx = static_cast<size_t>(c.getFilterLRs(i));
@@ -86,33 +90,31 @@ namespace zlPanel {
                 continue;
             }
 
-            c.updateDBs(lrTypes[j]);
-            const auto &dBs = c.getDBs();
-
-            juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()};
-            bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-
-            const auto maxDB = maximumDB.load();
-            auto y0 = 0.f;
-            for (size_t i = 0; i < zlFilter::frequencies.size(); ++i) {
-                const auto x = static_cast<float>(i) / static_cast<float>(zlFilter::frequencies.size() - 1) * bound.
-                               getWidth();
-                const auto y = static_cast<float>(-dBs[i]) / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
-                if (i == 0) {
-                    paths[j].startNewSubPath(x, y);
-                    y0 = y;
-                } else if (std::abs(y - y0) >= 0.125f || i == zlFilter::frequencies.size() - 1) {
-                    paths[j].lineTo(x, y);
-                    y0 = y;
+            std::fill(dBs.begin(), dBs.end(), 0.0);
+            for (size_t i = 0; i < zlState::bandNUM; i++) {
+                auto &filter{c.getFilter(i)};
+                if (c.getFilterLRs(i) == lrTypes[j] && !filter.getBypass()) {
+                    if (filter.getDynamicON()) {
+                        mMainFilters[i].setGain(filter.getMainFilter().getGain());
+                        mMainFilters[i].setQ(filter.getMainFilter().getQ());
+                        mMainFilters[i].updateMagnidue(ws);
+                        mMainFilters[i].addDBs(dBs);
+                    } else {
+                        mBaseFilters[i].addDBs(dBs);
+                    }
                 }
             }
+
+            const juce::Rectangle<float> bound{
+                xx.load(), yy.load() + uiBase.getFontSize(),
+                width.load(), height.load() - 2 * uiBase.getFontSize()
+            };
+
+            drawCurve(paths[j], dBs, maximumDB.load(), bound, false, true);
         }
         for (size_t j = 0; j < useLRMS.size(); ++j) {
-            farbot::RealtimeObject<
-                juce::Path,
-                farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-                farbot::ThreadType::realtime> pathLock(recentPaths[j]);
-            *pathLock = paths[j];
+            juce::GenericScopedLock lock(pathLocks[j]);
+            recentPaths[j] = paths[j];
         }
     }
 

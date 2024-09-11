@@ -16,11 +16,11 @@ namespace zlPanel {
                              zlInterface::UIBase &base,
                              zlDSP::Controller<double> &controller,
                              zlFilter::Ideal<double, 16> &baseFilter,
-                             zlFilter::Ideal<double, 16> &targetFilter)
+                             zlFilter::Ideal<double, 16> &targetFilter,
+                             zlFilter::Ideal<double, 16> &mainFilter)
         : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), controllerRef(controller),
-          baseF(baseFilter),
-          targetF(targetFilter),
+          baseF(baseFilter), targetF(targetFilter), mainF(mainFilter),
           sidePanel(bandIdx, parameters, parametersNA, base, controller) {
         curvePath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
         shadowPath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
@@ -30,22 +30,23 @@ namespace zlPanel {
         juce::ignoreUnused(controllerRef);
 
         skipRepaint.store(true);
-        parameterChanged(zlDSP::dynamicON::ID + suffix,
-                         parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
         parameterChanged(zlState::active::ID + suffix,
                          parametersNARef.getRawParameterValue(zlState::active::ID + suffix)->load());
-
-        for (auto &id: changeIDs) {
-            parametersRef.addParameterListener(id + suffix, this);
-        }
-        for (auto &id: paraIDs) {
-            parametersRef.addParameterListener(id + suffix, this);
-        }
-        parametersRef.addParameterListener(zlDSP::scale::ID, this);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
+
+        for (auto &id: changeIDs) {
+            const auto paraId = id + suffix;
+            parameterChanged(paraId, parametersRef.getRawParameterValue(paraId)->load());
+            parametersRef.addParameterListener(paraId, this);
+        }
+        for (auto &id: paraIDs) {
+            const auto paraId = id + suffix;
+            parameterChanged(paraId, parametersRef.getRawParameterValue(paraId)->load());
+            parametersRef.addParameterListener(paraId, this);
+        }
 
         setInterceptsMouseClicks(false, false);
         addAndMakeVisible(sidePanel);
@@ -60,7 +61,6 @@ namespace zlPanel {
         for (auto &id: paraIDs) {
             parametersRef.removeParameterListener(id + suffix, this);
         }
-        parametersRef.removeParameterListener(zlDSP::scale::ID, this);
         parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
         parametersNARef.removeParameterListener(zlState::active::ID + suffix, this);
     }
@@ -78,7 +78,7 @@ namespace zlPanel {
             const juce::GenericScopedTryLock lock(curveLock);
             if (lock.isLocked()) {
                 g.strokePath(recentCurvePath, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
-                                                             juce::PathStrokeType::rounded));
+                                                                   juce::PathStrokeType::rounded));
             }
         }
         // draw shadow
@@ -162,43 +162,6 @@ namespace zlPanel {
         return sidePanel.checkRepaint();
     }
 
-    void SinglePanel::drawCurve(juce::Path &path,
-                                const std::vector<double> &dBs,
-                                juce::Rectangle<float> bound,
-                                const bool reverse,
-                                const bool startPath) const {
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-        const auto maxDB = maximumDB.load();
-        if (reverse) {
-            auto y0 = 0.f;
-            for (size_t j = zlFilter::frequencies.size(); j > 0; --j) {
-                const auto i = j - 1;
-                const auto x = indexToX(i, bound);
-                const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
-                if (i == zlFilter::frequencies.size() - 1 && startPath) {
-                    path.startNewSubPath(x, y);
-                    y0 = y;
-                } else if (std::abs(y - y0) >= 0.125f || i == 0) {
-                    path.lineTo(x, y);
-                    y0 = y;
-                }
-            }
-        } else {
-            auto y0 = 0.f;
-            for (size_t i = 0; i < zlFilter::frequencies.size(); ++i) {
-                const auto x = indexToX(i, bound);
-                const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
-                if (i == 0 && startPath) {
-                    path.startNewSubPath(x, y);
-                    y0 = y;
-                } else if (std::abs(y - y0) >= 0.125f || i == zlFilter::frequencies.size() - 1) {
-                    path.lineTo(x, y);
-                    y0 = y;
-                }
-            }
-        }
-    }
-
     void SinglePanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
             selected.store(static_cast<size_t>(newValue) == idx);
@@ -211,13 +174,16 @@ namespace zlPanel {
                 dynON.store(static_cast<bool>(newValue));
             } else if (parameterID.startsWith(zlDSP::fType::ID)) {
                 baseF.setFilterType(static_cast<zlFilter::FilterType>(newValue));
+                mainF.setFilterType(static_cast<zlFilter::FilterType>(newValue));
                 targetF.setFilterType(static_cast<zlFilter::FilterType>(newValue));
-            }else if (parameterID.startsWith(zlDSP::slope::ID)) {
+            } else if (parameterID.startsWith(zlDSP::slope::ID)) {
                 const auto order = zlDSP::slope::orderArray[static_cast<size_t>(newValue)];
                 baseF.setOrder(order);
+                mainF.setOrder(order);
                 targetF.setOrder(order);
             } else if (parameterID.startsWith(zlDSP::freq::ID)) {
                 baseF.setFreq(static_cast<double>(newValue));
+                mainF.setFreq(static_cast<double>(newValue));
                 targetF.setFreq(static_cast<double>(newValue));
             } else if (parameterID.startsWith(zlDSP::gain::ID)) {
                 currentBaseGain.store(static_cast<double>(newValue));
@@ -238,27 +204,32 @@ namespace zlPanel {
 
     void SinglePanel::run() {
         juce::ScopedNoDenormals noDenormals;
-        const juce::Rectangle<float> bound{xx.load(), yy.load(), width.load(), height.load()};
+        const juce::Rectangle<float> bound{
+            xx.load(), yy.load() + uiBase.getFontSize(),
+            width.load(), height.load() - 2 * uiBase.getFontSize()
+        };
+        const juce::Point<float> bottomLeft{xx.load(), yy.load() + height.load()};
+        const juce::Point<float> bottomRight{xx.load() + width.load(), yy.load() + height.load()};
+        const auto maxDB = maximumDB.load();
         // draw curve
         baseFreq.store(static_cast<double>(baseF.getFreq()));
-        baseGain.store(static_cast<double>(baseF.getGain()));
-        {
+        baseGain.store(static_cast<double>(baseF.getGain())); {
             baseF.updateMagnidue(ws);
             curvePath.clear();
             if (actived.load()) {
-                drawCurve(curvePath, baseF.getDBs(), bound);
+                drawCurve(curvePath, baseF.getDBs(), maxDB, bound);
                 centeredDB.store(static_cast<float>(baseF.getDB(0.0001308996938995747 * baseFreq.load())));
             } else {
                 centeredDB.store(0.f);
             }
-            juce::GenericScopedLock<juce::SpinLock> lock(curveLock);
+            juce::GenericScopedLock lock(curveLock);
             recentCurvePath = curvePath;
         }
         // draw shadow
         {
             shadowPath.clear();
             if (actived.load()) {
-                drawCurve(shadowPath, baseF.getDBs(), bound);
+                drawCurve(shadowPath, baseF.getDBs(), maxDB, bound);
             }
             if (actived.load() && selected.load()) {
                 switch (baseF.getFilterType()) {
@@ -276,26 +247,26 @@ namespace zlPanel {
                     case zlFilter::FilterType::lowPass:
                     case zlFilter::FilterType::highPass:
                     case zlFilter::FilterType::bandPass: {
-                        shadowPath.lineTo(bound.getBottomRight());
-                        shadowPath.lineTo(bound.getBottomLeft());
+                        shadowPath.lineTo(bottomRight);
+                        shadowPath.lineTo(bottomLeft);
                         shadowPath.closeSubPath();
                         break;
                     }
                 }
             }
-            juce::GenericScopedLock<juce::SpinLock> lock(shadowLock);
+            juce::GenericScopedLock lock(shadowLock);
             recentShadowPath = shadowPath;
         }
         // draw dynamic shadow
         {
             dynPath.clear();
             if (dynON.load() && actived.load()) {
-                drawCurve(dynPath, baseF.getDBs(), bound);
+                drawCurve(dynPath, baseF.getDBs(), maxDB, bound);
                 targetF.updateMagnidue(ws);
-                drawCurve(dynPath, targetF.getDBs(), bound, true, false);
+                drawCurve(dynPath, targetF.getDBs(), maxDB, bound, true, false);
                 dynPath.closeSubPath();
             }
-            juce::GenericScopedLock<juce::SpinLock> lock(dynLock);
+            juce::GenericScopedLock lock(dynLock);
             recentDynPath = dynPath;
         }
     }

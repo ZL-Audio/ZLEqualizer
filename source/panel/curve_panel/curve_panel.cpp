@@ -20,7 +20,7 @@ namespace zlPanel {
           backgroundPanel(parameters, parametersNA, base),
           fftPanel(c.getAnalyzer(), base),
           conflictPanel(c.getConflictAnalyzer(), base),
-          sumPanel(parameters, base, c),
+          sumPanel(parameters, base, c, baseFilters, mainFilters),
           soloPanel(parameters, parametersNA, base, c),
           buttonPanel(parameters, parametersNA, base, c),
           currentT(juce::Time::getCurrentTime()),
@@ -35,9 +35,10 @@ namespace zlPanel {
         addAndMakeVisible(fftPanel);
         addAndMakeVisible(conflictPanel);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            singlePanels[i] = std::make_unique<
-                SinglePanel>(zlState::bandNUM - i - 1, parameters, parametersNA, base, c, baseFilters[i],
-                             targetFilters[i]);
+            const auto idx = zlState::bandNUM - i - 1;
+            singlePanels[i] =
+                    std::make_unique<SinglePanel>(idx, parameters, parametersNA, base, c,
+                                                  baseFilters[idx], targetFilters[idx], mainFilters[idx]);
             addAndMakeVisible(*singlePanels[i]);
         }
         addAndMakeVisible(sumPanel);

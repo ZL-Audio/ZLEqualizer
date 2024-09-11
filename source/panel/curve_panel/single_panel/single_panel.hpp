@@ -12,8 +12,7 @@
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
-#include "../../../dsp/farbot/RealtimeObject.hpp"
-#include "../static_omega_array.hpp"
+#include "../helpers.hpp"
 #include "../../../state/state_definitions.hpp"
 #include "side_panel.hpp"
 
@@ -27,7 +26,8 @@ namespace zlPanel {
                              zlInterface::UIBase &base,
                              zlDSP::Controller<double> &controller,
                              zlFilter::Ideal<double, 16> &baseFilter,
-                             zlFilter::Ideal<double, 16> &targetFilter);
+                             zlFilter::Ideal<double, 16> &targetFilter,
+                             zlFilter::Ideal<double, 16> &mainFilter);
 
         ~SinglePanel() override;
 
@@ -49,7 +49,7 @@ namespace zlPanel {
             baseF.setGain(static_cast<double>(zlDSP::gain::range.snapToLegalValue(
                 static_cast<float>(currentBaseGain.load() * x))));
             targetF.setGain(static_cast<double>(zlDSP::targetGain::range.snapToLegalValue(
-                static_cast<float>(currentBaseGain.load() * x))));
+                static_cast<float>(currentTargetGain.load() * x))));
         }
 
         void run();
@@ -65,7 +65,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         std::atomic<bool> dynON, selected, actived;
         zlDSP::Controller<double> &controllerRef;
-        zlFilter::Ideal<double, 16> &baseF, &targetF;
+        zlFilter::Ideal<double, 16> &baseF, &targetF, &mainF;
         std::atomic<float> maximumDB;
         std::atomic<float> xx{-100.f}, yy{-100.f}, width{.1f}, height{.1f};
 
@@ -79,11 +79,12 @@ namespace zlPanel {
         std::atomic<double> scale{1.0};
 
         static constexpr std::array changeIDs{
-            zlDSP::bypass::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID
+            zlDSP::bypass::ID, zlDSP::lrType::ID,
+            zlDSP::dynamicON::ID
         };
 
         static constexpr std::array paraIDs{
-        zlDSP::fType::ID, zlDSP::slope::ID,
+            zlDSP::fType::ID, zlDSP::slope::ID,
             zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID,
             zlDSP::targetGain::ID, zlDSP::targetQ::ID
         };
@@ -91,27 +92,6 @@ namespace zlPanel {
         juce::Colour colour;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
-
-        void drawCurve(juce::Path &path,
-                       const std::vector<double> &dBs,
-                       juce::Rectangle<float> bound,
-                       bool reverse = false,
-                       bool startPath = true) const;
-
-        inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
-            return static_cast<float>(i) /
-                   static_cast<float>(zlFilter::frequencies.size() - 1) * bound.getWidth() + bound.getX();
-        }
-
-        inline static float freqToX(const double freq, const juce::Rectangle<float> bound) {
-            const auto portion = std::log(freq / zlFilter::frequencies.front()) / std::log(
-                                     zlFilter::frequencies.back() / zlFilter::frequencies.front());
-            return static_cast<float>(portion) * bound.getWidth() + bound.getX();
-        }
-
-        inline static float dbToY(const float db, const float maxDB, const juce::Rectangle<float> bound) {
-            return -db / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
-        }
     };
 } // zlPanel
 

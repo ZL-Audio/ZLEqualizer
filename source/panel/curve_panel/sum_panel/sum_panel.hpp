@@ -14,7 +14,7 @@
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
-#include "../static_omega_array.hpp"
+#include "../helpers.hpp"
 #include "../../../dsp/farbot/RealtimeObject.hpp"
 
 namespace zlPanel {
@@ -23,7 +23,9 @@ namespace zlPanel {
     public:
         explicit SumPanel(juce::AudioProcessorValueTreeState &parameters,
                           zlInterface::UIBase &base,
-                          zlDSP::Controller<double> &controller);
+                          zlDSP::Controller<double> &controller,
+                          std::array<zlFilter::Ideal<double, 16>, 16> &baseFilters,
+                          std::array<zlFilter::Ideal<double, 16>, 16> &mainFilters);
 
         ~SumPanel() override;
 
@@ -41,17 +43,20 @@ namespace zlPanel {
         void run();
 
     private:
-        std::array<juce::Path, 5> paths;
-        std::array<farbot::RealtimeObject<juce::Path, farbot::RealtimeObjectOptions::realtimeMutatable>, 5> recentPaths;
+        std::array<juce::Path, 5> paths, recentPaths;
+        std::array<juce::SpinLock, 5> pathLocks;
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &c;
+        std::array<zlFilter::Ideal<double, 16>, 16> &mBaseFilters, &mMainFilters;
         std::atomic<float> maximumDB;
+        std::vector<double> dBs{};
         std::atomic<float> xx{-100.f}, yy{-100.f}, width{.1f}, height{.1f};
 
         static constexpr std::array changeIDs{
             zlDSP::bypass::ID, zlDSP::lrType::ID
         };
+
         std::atomic<bool> toRepaint{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
