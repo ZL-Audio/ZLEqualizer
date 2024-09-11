@@ -14,9 +14,7 @@
 #include "../../../gui/gui.hpp"
 
 namespace zlPanel {
-    class SoloPanel final : public juce::Component,
-                            private juce::AudioProcessorValueTreeState::Listener,
-                            private juce::AsyncUpdater {
+    class SoloPanel final : public juce::Component {
     public:
         SoloPanel(juce::AudioProcessorValueTreeState &parameters,
                   juce::AudioProcessorValueTreeState &parametersNA,
@@ -27,8 +25,6 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void checkRepaint();
-
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
@@ -37,13 +33,7 @@ namespace zlPanel {
         std::atomic<float> scale1{.5f}, scale2{.5f};
         std::atomic<bool> toRepaint{false};
 
-        static constexpr std::array changeIDs{
-            zlDSP::solo::ID, zlDSP::sideSolo::ID
-        };
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
-
-        void handleAsyncUpdate() override;
+        void handleAsyncUpdate();
     };
 } // zlPanel
 

@@ -10,13 +10,14 @@
 #ifndef STATIC_GAIN_COMPENSATION_HPP
 #define STATIC_GAIN_COMPENSATION_HPP
 
-#include "single_filter.hpp"
+#include "../ideal_filter/empty_filter.hpp"
+#include <juce_dsp/juce_dsp.h>
 
 namespace zlFilter {
     template<typename FloatType>
     class StaticGainCompensation {
     public:
-        explicit StaticGainCompensation(IIR<FloatType> &filter);
+        explicit StaticGainCompensation(Empty<FloatType> &filter);
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
@@ -37,7 +38,7 @@ namespace zlFilter {
         }
 
     private:
-        IIR<FloatType> &target;
+        Empty<FloatType> &target;
         juce::dsp::Gain<FloatType> gainDSP;
         std::atomic<FloatType> gain{FloatType(0)};
         std::atomic<bool> isON{false}, toUpdate{false};

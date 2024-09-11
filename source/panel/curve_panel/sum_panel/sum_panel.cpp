@@ -59,7 +59,7 @@ namespace zlPanel {
 
     bool SumPanel::checkRepaint() {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            if (c.getFilter(i).getMainFilter().getMagOutdated()) {
+            if (mMainFilters[i].getMagOutdated()) {
                 return true;
             }
         }

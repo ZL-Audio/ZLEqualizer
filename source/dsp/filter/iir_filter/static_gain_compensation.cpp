@@ -11,7 +11,7 @@
 
 namespace zlFilter {
     template<typename FloatType>
-    StaticGainCompensation<FloatType>::StaticGainCompensation(IIR<FloatType> &filter)
+    StaticGainCompensation<FloatType>::StaticGainCompensation(Empty<FloatType> &filter)
         : target(filter) {
         gainDSP.setGainDecibels(0);
     }

@@ -103,7 +103,8 @@ namespace zlPanel {
 
         void attachGroup(size_t idx);
 
-        inline void drawFilterParas(juce::Graphics &g, const zlFilter::IIR<double> &f, const juce::Rectangle<float> &bound);
+        inline void drawFilterParas(juce::Graphics &g, zlFilter::FilterType fType,
+            double freq, double gain, const juce::Rectangle<float> &bound);
 
         inline void drawFreq(juce::Graphics &g, float freq, const juce::Rectangle<float> &bound, bool isTop);
 

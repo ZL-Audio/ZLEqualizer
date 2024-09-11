@@ -16,7 +16,6 @@
 #include "../static_frequency_array.hpp"
 #include "iir_base.hpp"
 #include "svf_base.hpp"
-#include "../../farbot/RealtimeObject.hpp"
 
 namespace zlFilter {
     /**
@@ -93,50 +92,10 @@ namespace zlFilter {
         bool updateParas();
 
         /**
-         * update filter coefficients for dB calculation
-         * DO NOT call it unless you are sure what you are doing
-         * @return where coefficients have been updated
-         */
-        bool updateParasForDBOnly();
-
-        /**
          * get the number of 2nd order filters
          * @return
          */
         size_t getFilterNum() const { return filterNum.load(); }
-
-        /**
-         * add response curve (dB) of this filter (multiplied by the scale) to an input array
-         * @param x input array
-         * @param scale
-         */
-        void addDBs(std::array<double, frequencies.size()> &x, FloatType scale = 1.0);
-
-        /**
-         * add response curve (gain) of this filter (multiplied by the scale) to an input array
-         * @param x input array
-         * @param scale
-         */
-        void addGains(std::array<double, frequencies.size()> &x, FloatType scale = 1.0);
-
-        /**
-         * return the array of response curve (dB)
-         * @return
-         */
-        inline std::array<double, frequencies.size()> &getDBs() { return dBs; }
-
-        /**
-         * get the response (dB) at a specific frequency
-         * @param f frequency
-         * @return
-         */
-        FloatType getDB(FloatType f);
-
-        /**
-        * return the array of response curve (dB)
-        * @return
-        */
-        inline std::array<double, frequencies.size()> &getGains() { return gains; }
 
         /**
          * get the num of channels
@@ -145,34 +104,10 @@ namespace zlFilter {
         inline juce::uint32 getNumChannels() const { return numChannels.load(); }
 
         /**
-         * update current response curve
-         */
-        void updateDBs();
-
-        /**
          * get the array of 2nd order filters
          * @return
          */
         std::array<IIRBase<FloatType>, 16> &getFilters() { return filters; }
-
-        /**
-         * get whether the response curve is outdated
-         * @return
-         */
-        inline bool getMagOutdated() const { return magOutdated.load(); }
-
-        /**
-         * get whether the response curve is outdated, and set it to x atomically
-         * @param x
-         * @return
-         */
-        inline bool getMagOutdated(const bool x) { return magOutdated.exchange(x); }
-
-        /**
-         * set the outdated flag to f
-         * @param f
-         */
-        void setMagOutdated(const bool f) { magOutdated.store(f); }
 
         void setSVFON(const bool f) { useSVF.store(f); }
 
@@ -187,14 +122,9 @@ namespace zlFilter {
         std::atomic<float> sampleRate{48000};
         std::atomic<juce::uint32> numChannels;
 
-        std::array<double, frequencies.size()> dBs{}, gains{};
-        std::atomic<bool> magOutdated = false;
-
         std::atomic<bool> toUpdatePara = false, toReset = false;
 
         std::array<std::array<double, 6>, 16> coeffs{};
-        farbot::RealtimeObject<std::array<std::array<double, 6>, 16>, farbot::RealtimeObjectOptions::realtimeMutatable>
-        recentCoeffs;
 
         std::atomic<bool> useSVF{false};
         bool currentUseSVF{false};

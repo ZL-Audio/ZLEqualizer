@@ -98,32 +98,35 @@ namespace zlPanel {
         }
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
         if (p->getDragger().getButton().getToggleState()) {
-            drawFilterParas(g, controllerRef.getFilter(idx).getBaseFilter(), bound);
+            const auto &f{controllerRef.getFilter(idx).getBaseFilter()};
+            drawFilterParas(g, f.getFilterType(), f.getFreq(), f.getGain(), bound);
         } else if (p->getTargetDragger().getButton().getToggleState()) {
-            drawFilterParas(g, controllerRef.getFilter(idx).getTargetFilter(), bound);
+            const auto &f{controllerRef.getFilter(idx).getTargetFilter()};
+            drawFilterParas(g, f.getFilterType(), f.getFreq(), f.getGain(), bound);
         } else if (p->getSideDragger().getButton().getToggleState()) {
-            drawFilterParas(g, controllerRef.getFilter(idx).getSideFilter(), bound);
+            const auto &f{controllerRef.getFilter(idx).getSideFilter()};
+            drawFilterParas(g, f.getFilterType(), f.getFreq(), f.getGain(), bound);
         }
     }
 
-    void ButtonPanel::drawFilterParas(juce::Graphics &g, const zlFilter::IIR<double> &f,
-                                      const juce::Rectangle<float> &bound) {
-        switch (f.getFilterType()) {
+    void ButtonPanel::drawFilterParas(juce::Graphics &g, const zlFilter::FilterType fType,
+        const double freq, const double gain, const juce::Rectangle<float> &bound) {
+        switch (fType) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
-                drawGain(g, static_cast<float>(f.getGain()), bound, static_cast<float>(f.getFreq()) <= 500.f);
+                drawGain(g, static_cast<float>(gain), bound, static_cast<float>(freq) <= 500.f);
                 break;
             }
             case zlFilter::FilterType::lowShelf: {
-                drawGain(g, static_cast<float>(f.getGain()), bound, true);
+                drawGain(g, static_cast<float>(gain), bound, true);
                 break;
             }
             case zlFilter::FilterType::highShelf: {
-                drawGain(g, static_cast<float>(f.getGain()), bound, false);
+                drawGain(g, static_cast<float>(gain), bound, false);
                 break;
             }
             case zlFilter::FilterType::tiltShelf: {
-                drawGain(g, static_cast<float>(f.getGain()) * .5f, bound, false);
+                drawGain(g, static_cast<float>(gain) * .5f, bound, false);
                 break;
             }
             case zlFilter::FilterType::notch:
@@ -133,7 +136,7 @@ namespace zlPanel {
                 break;
             }
         }
-        drawFreq(g, static_cast<float>(f.getFreq()), bound, false);
+        drawFreq(g, static_cast<float>(freq), bound, false);
     }
 
     void ButtonPanel::drawFreq(juce::Graphics &g, const float freq, const juce::Rectangle<float> &bound,

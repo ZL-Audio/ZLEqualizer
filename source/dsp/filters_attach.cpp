@@ -112,9 +112,9 @@ namespace zlDSP {
                 break;
             }
         }
-        filtersRef[idx].getTargetFilter().setFreq(filtersRef[idx].getBaseFilter().getFreq(), false);
-        filtersRef[idx].getTargetFilter().setFilterType(filtersRef[idx].getBaseFilter().getFilterType(), false);
-        filtersRef[idx].getTargetFilter().setOrder(filtersRef[idx].getBaseFilter().getOrder(), true);
+        filtersRef[idx].getTargetFilter().setFreq(filtersRef[idx].getBaseFilter().getFreq());
+        filtersRef[idx].getTargetFilter().setFilterType(filtersRef[idx].getBaseFilter().getFilterType());
+        filtersRef[idx].getTargetFilter().setOrder(filtersRef[idx].getBaseFilter().getOrder());
         const auto paraGain = parameterRef.getParameter(zlDSP::appendSuffix(targetGain::ID, idx));
         updateParaNotifyHost(paraGain, targetGain::convertTo01(tGain));
         const auto paraQ = parameterRef.getParameter(zlDSP::appendSuffix(targetQ::ID, idx));
@@ -123,7 +123,9 @@ namespace zlDSP {
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::updateSideFQ(const size_t idx) {
-        auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(filtersRef[idx].getBaseFilter());
+        const auto &f{filtersRef[idx].getBaseFilter()};
+        auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(
+            f.getFilterType(), f.getFreq(), f.getQ());
         const auto soloFreq01 = sideFreq::convertTo01(static_cast<float>(soloFreq));
         const auto soloQ01 = sideQ::convertTo01(static_cast<float>(soloQ));
         const auto paraFreq = parameterRef.getParameter(zlDSP::appendSuffix(sideFreq::ID, idx));

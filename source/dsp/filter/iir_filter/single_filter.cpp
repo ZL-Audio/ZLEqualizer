@@ -120,14 +120,7 @@ namespace zlFilter {
         if (toUpdatePara.exchange(false)) {
             filterNum.store(updateIIRCoeffs(filterType.load(), order.load(),
                                             freq.load(), processSpec.sampleRate,
-                                            gain.load(), q.load(), coeffs)); {
-                farbot::RealtimeObject<
-                    std::array<std::array<double, 6>, 16>,
-                    farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-                    farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
-                *rrcentCoeffs = coeffs;
-            }
-            magOutdated.store(true);
+                                            gain.load(), q.load(), coeffs));
             if (!currentUseSVF) {
                 for (size_t i = 0; i < filterNum.load(); i++) {
                     filters[i].updateFromBiquad(coeffs[i]);
@@ -140,100 +133,6 @@ namespace zlFilter {
             return true;
         }
         return false;
-    }
-
-    template<typename FloatType>
-    bool IIR<FloatType>::updateParasForDBOnly() {
-        if (toUpdatePara.exchange(false)) {
-            filterNum.store(updateIIRCoeffs(filterType.load(), order.load(),
-                                            freq.load(), processSpec.sampleRate,
-                                            gain.load(), q.load(), coeffs)); {
-                farbot::RealtimeObject<
-                    std::array<std::array<double, 6>, 16>,
-                    farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-                    farbot::ThreadType::realtime> rrcentCoeffs(recentCoeffs);
-                *rrcentCoeffs = coeffs;
-            }
-            magOutdated.store(true);
-            return true;
-        }
-        return false;
-    }
-
-    template<typename FloatType>
-    void IIR<FloatType>::addDBs(std::array<double, frequencies.size()> &x, FloatType scale) {
-        std::transform(x.begin(), x.end(), dBs.begin(), x.begin(),
-                       [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
-    }
-
-    template<typename FloatType>
-    void IIR<FloatType>::addGains(std::array<double, frequencies.size()> &x, FloatType scale) {
-        std::transform(x.begin(), x.end(), gains.begin(), x.begin(),
-                       [&scale](auto &c1, auto &c2) { return c1 + c2 * scale; });
-    }
-
-    template<typename FloatType>
-    void IIR<FloatType>::updateDBs() {
-        if (!magOutdated.exchange(false)) {
-            return;
-        }
-        gains.fill(FloatType(1));
-        std::array<double, frequencies.size()> singleMagnitudes{};
-        juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
-        farbot::RealtimeObject<
-            std::array<std::array<double, 6>, 16>,
-            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-            farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
-        for (size_t i = 0; i < filterNum.load(); i++) {
-            dummyCoeff = {
-                static_cast<FloatType>((*rrcentCoeffs)[i][3]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][4]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][5]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][0]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][1]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][2]),
-            };
-            dummyCoeff.getMagnitudeForFrequencyArray(&frequencies[0], &singleMagnitudes[0],
-                                                     frequencies.size(), sampleRate.load());
-            std::transform(gains.begin(), gains.end(), singleMagnitudes.begin(), gains.begin(),
-                           std::multiplies<double>());
-        }
-        std::transform(gains.begin(), gains.end(), dBs.begin(),
-                       [](auto &c) { return juce::Decibels::gainToDecibels(c, -240.0); });
-        if (filterType.load() == FilterType::notch && order.load() >= 2) {
-            auto freqIdx = static_cast<size_t>(std::floor(std::log(freq.load() / 10) / std::log(2200) *
-                                                          static_cast<double>(frequencies.size())));
-            if (freqIdx < frequencies.size()) {
-                const auto dBl = dBs[freqIdx];
-                dBs[freqIdx] = -90;
-                freqIdx += 1;
-                if (freqIdx < frequencies.size()) {
-                    dBs[freqIdx] = -90 + dBl - dBs[freqIdx];
-                }
-            }
-        }
-    }
-
-    template<typename FloatType>
-    FloatType IIR<FloatType>::getDB(FloatType f) {
-        double g{FloatType(1)};
-        juce::dsp::IIR::Coefficients<FloatType> dummyCoeff;
-        farbot::RealtimeObject<
-            std::array<std::array<double, 6>, 16>,
-            farbot::RealtimeObjectOptions::realtimeMutatable>::ScopedAccess<
-            farbot::ThreadType::nonRealtime> rrcentCoeffs(recentCoeffs);
-        for (size_t i = 0; i < filterNum.load(); i++) {
-            dummyCoeff = {
-                static_cast<FloatType>((*rrcentCoeffs)[i][3]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][4]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][5]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][0]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][1]),
-                static_cast<FloatType>((*rrcentCoeffs)[i][2]),
-            };
-            g *= dummyCoeff.getMagnitudeForFrequency(static_cast<double>(f), sampleRate.load());
-        }
-        return juce::Decibels::gainToDecibels(static_cast<FloatType>(g), FloatType(-240));
     }
 
     template

@@ -135,9 +135,7 @@ namespace zlDSP {
     void Controller<FloatType>::processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
                                             juce::AudioBuffer<FloatType> &subSideBuffer) {
         for (size_t i = 0; i < bandNUM; ++i) {
-            filters[i].getBaseFilter().updateParas();
             filters[i].getMainFilter().updateParas();
-            filters[i].getTargetFilter().updateParas();
             filters[i].getSideFilter().updateParas();
         }
         if (soloSide.load()) {
@@ -343,19 +341,6 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::updateDBs(const lrType::lrTypes lr) {
-        dBs.fill(FloatType(0));
-        for (size_t i = 0; i < bandNUM; i++) {
-            if (filterLRs[i].load() == lr && !filters[i].getBypass()) {
-                filters[i].getMainFilter().updateDBs();
-                std::transform(dBs.begin(), dBs.end(),
-                               filters[i].getMainFilter().getDBs().begin(),
-                               dBs.begin(), std::plus<double>());
-            }
-        }
-    }
-
-    template<typename FloatType>
     void Controller<FloatType>::handleAsyncUpdate() {
         int latency = static_cast<int>(delay.getDelaySamples());
         if (!isZeroLatency.load()) {
@@ -365,11 +350,12 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    std::tuple<FloatType, FloatType> Controller<FloatType>::getSoloFilterParas(zlFilter::IIR<FloatType> &baseFilter) {
-        switch (baseFilter.getFilterType()) {
+    std::tuple<FloatType, FloatType> Controller<FloatType>::getSoloFilterParas(
+        const zlFilter::FilterType fType, const FloatType freq, const FloatType q) {
+        switch (fType) {
             case zlFilter::FilterType::highPass:
             case zlFilter::FilterType::lowShelf: {
-                auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(baseFilter.getFreq()));
+                auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(freq));
                 auto scale = soloFreq;
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
                 auto bw = std::max(std::log2(scale) * 2, FloatType(0.01));
@@ -379,9 +365,9 @@ namespace zlDSP {
             }
             case zlFilter::FilterType::lowPass:
             case zlFilter::FilterType::highShelf: {
-                auto soloFreq = static_cast<FloatType>(std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(
-                                                           baseFilter.getFreq()));
-                auto scale = soloFreq / baseFilter.getFreq();
+                auto soloFreq = static_cast<FloatType>(
+                    std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(freq));
+                auto scale = soloFreq / freq;
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
                 auto bw = std::max(std::log2(scale) * 2, FloatType(0.01));
                 auto soloQ = 1 / (2 * std::sinh(std::log(FloatType(2)) / 2 * bw));
@@ -389,14 +375,14 @@ namespace zlDSP {
                 return {soloFreq, soloQ};
             }
             case zlFilter::FilterType::tiltShelf: {
-                return {baseFilter.getFreq(), FloatType(0.025)};
+                return {freq, FloatType(0.025)};
             }
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::notch:
             case zlFilter::FilterType::bandPass:
             case zlFilter::FilterType::bandShelf:
             default: {
-                return {baseFilter.getFreq(), baseFilter.getQ()};
+                return {freq, q};
             }
         }
     }
@@ -405,9 +391,13 @@ namespace zlDSP {
     void Controller<FloatType>::setSolo(const size_t idx, const bool isSide) {
         FloatType freq, q;
         if (!isSide) {
-            std::tie(freq, q) = getSoloFilterParas(filters[idx].getMainFilter());
+            const auto &f{filters[idx].getMainFilter()};
+            std::tie(freq, q) = getSoloFilterParas(
+                f.getFilterType(), f.getFreq(), f.getQ());
         } else {
-            std::tie(freq, q) = getSoloFilterParas(filters[idx].getSideFilter());
+            const auto &f{filters[idx].getSideFilter()};
+            std::tie(freq, q) = getSoloFilterParas(
+                f.getFilterType(), f.getFreq(), f.getQ());
         }
         soloFilter.setFreq(freq, false);
         soloFilter.setQ(q, true);
@@ -415,6 +405,7 @@ namespace zlDSP {
         soloIdx.store(idx);
         soloSide.store(isSide);
 
+        isSoloUpdated.store(true);
         useSolo.store(true);
     }
 

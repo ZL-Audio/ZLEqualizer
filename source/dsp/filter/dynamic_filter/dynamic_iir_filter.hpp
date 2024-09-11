@@ -7,13 +7,14 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_DYNAMIC_IIR_FILTER_HPP
-#define ZLEQUALIZER_DYNAMIC_IIR_FILTER_HPP
+#ifndef ZLFILTER_DYNAMIC_IIR_FILTER_HPP
+#define ZLFILTER_DYNAMIC_IIR_FILTER_HPP
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
 #include "../iir_filter/iir_filter.hpp"
+#include "../ideal_filter/empty_filter.hpp"
 #include "../../compressor/compressor.hpp"
 
 namespace zlFilter {
@@ -41,13 +42,13 @@ namespace zlFilter {
 
         void processBypass();
 
-        inline zlFilter::IIR<FloatType> &getMainFilter() { return mFilter; }
+        IIR<FloatType> &getMainFilter() { return mFilter; }
 
-        inline zlFilter::IIR<FloatType> &getBaseFilter() { return bFilter; }
+        Empty<FloatType> &getBaseFilter() { return bFilter; }
 
-        inline zlFilter::IIR<FloatType> &getTargetFilter() { return tFilter; }
+        Empty<FloatType> &getTargetFilter() { return tFilter; }
 
-        inline zlFilter::IIR<FloatType> &getSideFilter() { return sFilter; }
+        IIR<FloatType> &getSideFilter() { return sFilter; }
 
         inline zlCompressor::ForwardCompressor<FloatType> &getCompressor() { return compressor; }
 
@@ -88,7 +89,8 @@ namespace zlFilter {
         }
 
     private:
-        zlFilter::IIR<FloatType> mFilter, bFilter, tFilter, sFilter;
+        zlFilter::IIR<FloatType> mFilter, sFilter;
+        zlFilter::Empty<FloatType> bFilter, tFilter;
         zlFilter::StaticGainCompensation<FloatType> compensation{bFilter};
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
@@ -99,4 +101,4 @@ namespace zlFilter {
 }
 
 
-#endif //ZLEQUALIZER_DYNAMIC_IIR_FILTER_HPP
+#endif //ZLFILTER_DYNAMIC_IIR_FILTER_HPP

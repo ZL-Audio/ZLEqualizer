@@ -18,32 +18,17 @@ namespace zlPanel {
         : parametersRef(parameters), uiBase(base),
           soloF(controller.getSoloFilter()),
           controllerRef(controller) {
-        juce::ignoreUnused(parametersNA);
-        for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-            const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
-            for (auto &id: changeIDs) {
-                parametersRef.addParameterListener(id + suffix, this);
-            }
-        }
-        triggerAsyncUpdate();
+        juce::ignoreUnused(parametersRef, parametersNA);
+        handleAsyncUpdate();
     }
 
-    SoloPanel::~SoloPanel() {
-        for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-            const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
-            for (auto &id: changeIDs) {
-                parametersRef.removeParameterListener(id + suffix, this);
-            }
-        }
-    }
-
+    SoloPanel::~SoloPanel() = default;
     void SoloPanel::paint(juce::Graphics &g) {
         if (!controllerRef.getSolo()) {
             return;
         }
-        if (soloF.getMagOutdated(false)) {
-            handleAsyncUpdate();
-        } else if (toRepaint.exchange(false)) {
+        if (controllerRef.exchangeSoloUpdated(false)) {
+            toRepaint.store(false);
             handleAsyncUpdate();
         }
         auto bound = getLocalBounds().toFloat();
@@ -66,23 +51,6 @@ namespace zlPanel {
         g.fillRect(leftArea);
         g.fillRect(rightArea);
         g.restoreState();
-    }
-
-    void SoloPanel::checkRepaint() {
-        if (soloF.getMagOutdated()) {
-            soloF.setMagOutdated(false);
-            handleAsyncUpdate();
-            repaint();
-        } else if (toRepaint.load()) {
-            toRepaint.store(false);
-            handleAsyncUpdate();
-            repaint();
-        }
-    }
-
-    void SoloPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        juce::ignoreUnused(parameterID, newValue);
-        toRepaint.store(true);
     }
 
     void SoloPanel::handleAsyncUpdate() {

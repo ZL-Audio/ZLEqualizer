@@ -15,7 +15,6 @@
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 #include "../helpers.hpp"
-#include "../../../dsp/farbot/RealtimeObject.hpp"
 
 namespace zlPanel {
     class SumPanel final : public juce::Component,

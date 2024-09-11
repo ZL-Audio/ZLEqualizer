@@ -11,5 +11,6 @@
 #define ZLFILTER_IDEAL_FILTER_HPP
 
 #include "single_filter.hpp"
+#include "empty_filter.hpp"
 
 #endif //ZLFILTER_IDEAL_FILTER_HPP

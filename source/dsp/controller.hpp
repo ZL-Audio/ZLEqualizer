@@ -46,10 +46,6 @@ namespace zlDSP {
 
         void setDynamicON(bool x, size_t idx);
 
-        inline std::array<double, zlFilter::frequencies.size()> &getDBs() { return dBs; }
-
-        void updateDBs(lrType::lrTypes lr);
-
         void handleAsyncUpdate() override;
 
         void setSolo(size_t idx, bool isSide);
@@ -58,7 +54,10 @@ namespace zlDSP {
 
         inline void clearSolo() {
             useSolo.store(false);
+            isSoloUpdated.store(true);
         }
+
+        bool exchangeSoloUpdated(const bool x) { return isSoloUpdated.exchange(x); }
 
         inline size_t getSoloIdx() const { return soloIdx.load(); }
 
@@ -66,7 +65,7 @@ namespace zlDSP {
 
         inline zlFilter::IIR<FloatType> &getSoloFilter() { return soloFilter; }
 
-        std::tuple<FloatType, FloatType> getSoloFilterParas(zlFilter::IIR<FloatType> &baseFilter);
+        std::tuple<FloatType, FloatType> getSoloFilterParas(zlFilter::FilterType fType, FloatType freq, FloatType q);
 
         inline void setSideChain(const bool x) { sideChain.store(x); }
 
@@ -140,8 +139,6 @@ namespace zlDSP {
         static inline double subBufferLength = 0.001;
         zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
 
-        std::array<double, zlFilter::frequencies.size()> dBs{};
-
         zlDelay::SampleDelay<FloatType> delay;
 
         zlGain::Gain<FloatType> outputGain;
@@ -159,6 +156,8 @@ namespace zlDSP {
         std::atomic<double> sampleRate{48000};
 
         std::atomic<bool> isZeroLatency{false};
+
+        std::atomic<bool> isSoloUpdated{false};
 
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);
