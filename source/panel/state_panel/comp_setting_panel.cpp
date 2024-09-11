@@ -55,7 +55,7 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(44))};
+            grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(44))};
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
@@ -131,7 +131,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<CompCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
-                         juce::roundToInt(uiBase.getFontSize() * 11.5201933f));
+                         juce::roundToInt(uiBase.getFontSize() * 11.2f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

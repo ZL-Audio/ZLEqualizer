@@ -64,7 +64,7 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(80)), Track(Fr(60)), Track(Fr(80)), Track(Fr(60))};
+            grid.templateRows = {Track(Fr(70)), Track(Fr(60)), Track(Fr(70)), Track(Fr(60))};
             grid.templateColumns = {Track(Fr(50)), Track(Fr(50))};
 
             grid.items = {
