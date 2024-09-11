@@ -7,13 +7,17 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef BUTTON_ATTACHMENT_HPP
-#define BUTTON_ATTACHMENT_HPP
+#ifndef ZLGUI_BUTTON_CUS_ATTACHMENT_HPP
+#define ZLGUI_BUTTON_CUS_ATTACHMENT_HPP
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace zlInterface {
+    /**
+     * customized button attachment
+     * @tparam sendClickNotification whether send click notification to button when para changes
+     */
     template<bool sendClickNotification>
     class ButtonCusAttachment final : private juce::Button::Listener {
     public:
@@ -33,9 +37,6 @@ namespace zlInterface {
             button.removeListener(this);
         }
 
-        /** Call this after setting up your combo box in the case where you need to do
-            extra setup after constructing this attachment.
-        */
         void sendInitialUpdate() {
             attachment.sendInitialUpdate();
         }
@@ -64,4 +65,4 @@ namespace zlInterface {
     };
 }
 
-#endif //BUTTON_ATTACHMENT_HPP
+#endif //ZLGUI_BUTTON_CUS_ATTACHMENT_HPP

@@ -29,10 +29,10 @@ namespace zlInterface {
 
             auto bounds = button.getLocalBounds().toFloat();
             if (withShadow.load()) {
-                bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f, {});
-                bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f, {.flip = true});
+                bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f * shrinkScale.load(), {});
+                bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f * shrinkScale.load(), {.flip = true});
             } else {
-                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.3f, {});
+                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.3f * shrinkScale.load(), {});
                 g.setColour(uiBase.getBackgroundColor());
                 g.fillEllipse(bounds);
             }
@@ -57,7 +57,7 @@ namespace zlInterface {
                     } else {
                         g.setColour(uiBase.getTextColor().withAlpha(0.5f));
                     }
-                    g.setFont(uiBase.getFontSize() * FontLarge);
+                    g.setFont(uiBase.getFontSize() * fontScale.load());
                     g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
                     const auto tempDrawable = drawable->createCopy();
@@ -87,9 +87,13 @@ namespace zlInterface {
 
         void setReverse(const bool f) { reverse.store(f); }
 
+        void setLabelScale(const float x) { fontScale.store(x); }
+
+        void setShrinkScale(const float x) { shrinkScale.store(x); }
+
     private:
         std::atomic<bool> editable{true}, reverse{false}, withShadow{true};
-        std::atomic<float> buttonDepth = 0.f;
+        std::atomic<float> buttonDepth = 0.f, fontScale{1.f}, shrinkScale{1.f};
         juce::Drawable *drawable = nullptr;
 
         UIBase &uiBase;

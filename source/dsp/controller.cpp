@@ -110,6 +110,7 @@ namespace zlDSP {
             subBuffer.popBlock(block);
             // ---------------- end sub buffer
         }
+        phaseFlipper.process(mainBuffer);
     }
 
     template<typename FloatType>

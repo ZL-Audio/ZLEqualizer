@@ -308,6 +308,16 @@ namespace zlDSP {
         int static constexpr defaultI = 1;
     };
 
+    class phaseFlip : public ChoiceParameters<phaseFlip> {
+    public:
+        auto static constexpr ID = "phase_flip";
+        auto static constexpr name = "Phase Flip";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 0;
+    };
+
     class autoGain : public ChoiceParameters<autoGain> {
     public:
         auto static constexpr ID = "auto_gain";
@@ -434,7 +444,7 @@ namespace zlDSP {
         }
         layout.add(sideChain::get(),
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
-                   effectON::get(), staticAutoGain::get(), autoGain::get(),
+                   effectON::get(), phaseFlip::get(), staticAutoGain::get(), autoGain::get(),
                    scale::get(), outputGain::get(),
                    filterStructure::get(), dynLink::get(), dynHQ::get(), zeroLatency::get());
         return layout;

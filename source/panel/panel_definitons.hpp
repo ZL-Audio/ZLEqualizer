@@ -27,6 +27,17 @@ namespace zlPanel {
     inline void attach(const std::vector<juce::Button *> &buttons,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,
+                       juce::OwnedArray<zlInterface::ButtonCusAttachment<true>> &attachments) {
+        for (size_t i = 0; i < buttons.size(); ++i) {
+            attachments.add(
+                std::make_unique<zlInterface::ButtonCusAttachment<true>>(
+                    parameters, ids[i], *buttons[i]));
+        }
+    }
+
+    inline void attach(const std::vector<juce::Button *> &buttons,
+                       const std::vector<std::string> &ids,
+                       juce::AudioProcessorValueTreeState &parameters,
                        juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> &attachments) {
         for (size_t i = 0; i < buttons.size(); ++i) {
             attachments.add(

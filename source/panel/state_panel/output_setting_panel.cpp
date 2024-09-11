@@ -17,15 +17,27 @@ namespace zlPanel {
                                   zlInterface::UIBase &base)
             : parametersRef(parameters),
               uiBase(base),
-              effectC("ALL:", zlDSP::effectON::choices, uiBase),
-              sgcC("SGC:", zlDSP::staticAutoGain::choices, uiBase),
-              agcC("AGC:", zlDSP::autoGain::choices, uiBase),
+              effectC("all", uiBase),
+              phaseC("phase", uiBase),
+              sgcC("S", uiBase),
+              agcC("A", uiBase),
               scaleS("Scale", uiBase),
-              outGainS("Out Gain", uiBase) {
-            for (auto &c: {&effectC, &sgcC, &agcC}) {
-                c->getLabelLAF().setFontScale(1.5f);
-                c->setLabelScale(.5f);
-                c->setLabelPos(zlInterface::ClickCombobox::left);
+              outGainS("Out Gain", uiBase),
+              effectDrawable(
+                  juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg,
+                                                      BinaryData::fadpowerswitch_svgSize)),
+              phaseDrawable(
+                  juce::Drawable::createFromImageData(BinaryData::fadphase_svg,
+                                                      BinaryData::fadphase_svgSize)) {
+            effectC.setDrawable(effectDrawable.get());
+            phaseC.setDrawable(phaseDrawable.get());
+
+            effectC.getLAF().enableShadow(false);
+            addAndMakeVisible(effectC);
+            for (auto &c: {&phaseC, &sgcC, &agcC}) {
+                c->getLAF().setLabelScale(2.f);
+                c->getLAF().enableShadow(false);
+                c->getLAF().setShrinkScale(.0f);
                 addAndMakeVisible(c);
             }
             for (auto &c: {&scaleS, &outGainS}) {
@@ -33,12 +45,13 @@ namespace zlPanel {
                 addAndMakeVisible(c);
             }
             attach({
-                       &effectC.getCompactBox().getBox(),
-                       &sgcC.getCompactBox().getBox(),
-                       &agcC.getCompactBox().getBox()
+                       &effectC.getButton(),
+                       &phaseC.getButton(),
+                       &sgcC.getButton(),
+                       &agcC.getButton()
                    },
-                   {zlDSP::effectON::ID, zlDSP::staticAutoGain::ID, zlDSP::autoGain::ID},
-                   parametersRef, boxAttachments);
+                   {zlDSP::effectON::ID, zlDSP::phaseFlip::ID, zlDSP::staticAutoGain::ID, zlDSP::autoGain::ID},
+                   parametersRef, buttonAttachments);
             attach({&scaleS.getSlider(), &outGainS.getSlider()},
                    {zlDSP::scale::ID, zlDSP::outputGain::ID},
                    parametersRef, sliderAttachments);
@@ -51,18 +64,19 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(44)), Track(Fr(60)), Track(Fr(44)), Track(Fr(44)), Track(Fr(60))};
-            grid.templateColumns = {Track(Fr(50))};
+            grid.templateRows = {Track(Fr(80)), Track(Fr(60)), Track(Fr(80)), Track(Fr(60))};
+            grid.templateColumns = {Track(Fr(50)), Track(Fr(50))};
 
             grid.items = {
                 juce::GridItem(effectC).withArea(1, 1),
-                juce::GridItem(scaleS).withArea(2, 1),
+                juce::GridItem(phaseC).withArea(1, 2),
+                juce::GridItem(scaleS).withArea(2, 1, 3, 3),
                 juce::GridItem(sgcC).withArea(3, 1),
-                juce::GridItem(agcC).withArea(4, 1),
-                juce::GridItem(outGainS).withArea(5, 1)
+                juce::GridItem(agcC).withArea(3, 2),
+                juce::GridItem(outGainS).withArea(4, 1, 5, 3)
             };
 
-            grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
+            grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .2125f));
             auto bound = getLocalBounds().toFloat();
             bound.removeFromTop(uiBase.getFontSize() * .2f);
             grid.performLayout(bound.toNearestInt());
@@ -72,11 +86,13 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
 
-        zlInterface::ClickCombobox effectC, sgcC, agcC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
+        zlInterface::CompactButton effectC, phaseC, sgcC, agcC;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > buttonAttachments{};
 
         zlInterface::CompactLinearSlider scaleS, outGainS;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
+
+        const std::unique_ptr<juce::Drawable> effectDrawable, phaseDrawable;
     };
 
     OutputSettingPanel::OutputSettingPanel(PluginProcessor &p,
@@ -127,7 +143,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<OutputCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
-                         juce::roundToInt(uiBase.getFontSize() * 13.19303f));
+                         juce::roundToInt(uiBase.getFontSize() * 11.2f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

@@ -1,0 +1,34 @@
+// Copyright (C) 2024 - zsliu98
+// This file is part of ZLEqualizer
+//
+// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+//
+// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+
+#include "phase_flip.hpp"
+
+namespace zlPhase {
+    template<typename FloatType>
+    void PhaseFlip<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+        process(juce::dsp::AudioBlock<FloatType>(buffer));
+    }
+
+    template<typename FloatType>
+    void PhaseFlip<FloatType>::process(juce::dsp::AudioBlock<FloatType> block) {
+        if (isON.load()) {
+            const auto numSamples = block.getNumSamples();
+            const auto numChannels = block.getNumChannels();
+            for (size_t chan = 0; chan < numChannels; ++chan) {
+                juce::FloatVectorOperations::multiply(block.getChannelPointer(chan), FloatType(-1.f), numSamples);
+            }
+        }
+    }
+
+    template
+    class PhaseFlip<float>;
+
+    template
+    class PhaseFlip<double>;
+} // zlPhase

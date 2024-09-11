@@ -21,6 +21,7 @@
 #include "histogram/histogram.hpp"
 #include "gain/gain.hpp"
 #include "delay/delay.hpp"
+#include "phase/phase.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -112,6 +113,8 @@ namespace zlDSP {
             currentThreshold[idx].store(x);
         }
 
+        zlPhase::PhaseFlip<FloatType> &getPhaseFlipper() { return phaseFlipper; }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> filters;
@@ -158,6 +161,8 @@ namespace zlDSP {
         std::atomic<bool> isZeroLatency{false};
 
         std::atomic<bool> isSoloUpdated{false};
+
+        zlPhase::PhaseFlip<FloatType> phaseFlipper;
 
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);

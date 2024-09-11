@@ -58,7 +58,9 @@ namespace zlDSP {
             }
         } else if (parameterID == effectON::ID) {
             controllerRef.setEffectON(static_cast<bool>(newValue));
-        } else if (parameterID == staticAutoGain::ID) {
+        } else if (parameterID == phaseFlip::ID) {
+            controllerRef.getPhaseFlipper().setON(static_cast<bool>(newValue));
+        }else if (parameterID == staticAutoGain::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
                 controllerRef.getFilter(i).setCompoensationON(static_cast<bool>(newValue));
             }
