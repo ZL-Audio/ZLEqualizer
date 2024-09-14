@@ -39,9 +39,8 @@ namespace zlFilter {
 
     template<typename FloatType>
     void IIR<FloatType>::process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed) {
-        const auto nextUseSVF = useSVF.load();
-        if (currentUseSVF != nextUseSVF) {
-            currentUseSVF = nextUseSVF;
+        if (currentUseSVF != useSVF.load()) {
+            currentUseSVF = useSVF.load();
             toReset.store(true);
             toUpdatePara.store(true);
         }

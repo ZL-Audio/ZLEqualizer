@@ -13,10 +13,11 @@ namespace zlDSP {
     template<typename FloatType>
     Controller<FloatType>::Controller(juce::AudioProcessor &processor)
         : processorRef(processor) {
-        for(size_t i = 0; i < bandNUM; ++i) {
+        for (size_t i = 0; i < bandNUM; ++i) {
             histograms[i].setDecayRate(FloatType(0.99999));
             subHistograms[i].setDecayRate(FloatType(0.9995));
         }
+        soloFilter.setSVFON(true);
     }
 
     template<typename FloatType>
@@ -73,6 +74,10 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+        if (filterStructure.load() != currentFtilerStructure) {
+            currentFtilerStructure = filterStructure.load();
+            updateFilterStructure();
+        }
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
         juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
         // if no side chain, copy the main buffer into the side buffer
@@ -187,7 +192,7 @@ namespace zlDSP {
             if (filters[i].getDynamicON()) {
                 if (isHistON[i].load()) {
                     const auto depThres =
-                        currentThreshold[i].load() + FloatType(40) +
+                            currentThreshold[i].load() + FloatType(40) +
                             static_cast<FloatType>(threshold::range.snapToLegalValue(
                                 static_cast<float>(-subHistograms[i].getPercentile(FloatType(0.5)))));
                     filters[i].getCompressor().getComputer().setThreshold(depThres);
@@ -449,6 +454,29 @@ namespace zlDSP {
         const auto rmsMs = x / static_cast<FloatType>(1000);
         for (auto &f: filters) {
             f.getCompressor().getTracker().setMomentarySeconds(rmsMs);
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateFilterStructure() {
+        switch (currentFtilerStructure) {
+            case filterStructure::minimum:
+            case filterStructure::matched:
+            case filterStructure::mixed: {
+                for (auto &f: filters) {
+                    f.setSVFON(false);
+                }
+                break;
+            }
+            case filterStructure::svf: {
+                for (auto &f: filters) {
+                    f.setSVFON(true);
+                }
+                break;
+            }
+            case filterStructure::parallel:
+            case filterStructure::linear: {
+            }
         }
     }
 

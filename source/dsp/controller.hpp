@@ -119,6 +119,10 @@ namespace zlDSP {
 
         zlPhase::PhaseFlip<FloatType> &getPhaseFlipper() { return phaseFlipper; }
 
+        void setFilterStructure(const filterStructure::FilterStructure x) {
+            filterStructure.store(x);
+        }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> filters;
@@ -168,6 +172,9 @@ namespace zlDSP {
 
         zlPhase::PhaseFlip<FloatType> phaseFlipper;
 
+        std::atomic<filterStructure::FilterStructure> filterStructure{filterStructure::minimum};
+        filterStructure::FilterStructure currentFtilerStructure{filterStructure::minimum};
+
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);
 
@@ -180,6 +187,8 @@ namespace zlDSP {
         void updateTrackersON();
 
         void updateSubBuffer();
+
+        void updateFilterStructure();
     };
 }
 
