@@ -42,15 +42,23 @@ namespace zlPanel {
             for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
                     const auto activeID = zlState::appendSuffix(zlDSP::dynamicBypass::ID, idx);
-                    parametersRef.getParameter(activeID)->beginChangeGesture();
-                    parametersRef.getParameter(activeID)->setValueNotifyingHost(isByPassed);
-                    parametersRef.getParameter(activeID)->endChangeGesture();
+                    const auto para = parametersRef.getParameter(activeID);
+                    para->beginChangeGesture();
+                    para->setValueNotifyingHost(isByPassed);
+                    para->endChangeGesture();
                 }
             }
         };
         dynSoloC.setDrawable(soloDrawable.get());
         dynRelativeC.setDrawable(relativeDrawable.get());
         sideChainC.setDrawable(sideDrawable.get());
+        sideChainC.getButton().onClick = [this]() {
+            const auto isSideOn = static_cast<int>(sideChainC.getButton().getToggleState());
+            const auto para = parametersNARef.getParameter(zlState::fftSideON::ID);
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(zlState::fftSideON::convertTo01(isSideOn));
+            para->endChangeGesture();
+        };
         for (auto &c: {&dynBypassC, &dynSoloC, &dynRelativeC, &sideChainC}) {
             addAndMakeVisible(c);
         }
