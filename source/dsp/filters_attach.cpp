@@ -193,9 +193,10 @@ namespace zlDSP {
             if (!f && controllerRef.getLearningHistON(idx)) {
                 controllerRef.setLearningHist(idx, false);
                 const auto &hist = controllerRef.getLearningHist(idx);
-                const auto thresholdV = static_cast<float>(-hist.getPercentile(FloatType(0.5)));
-                const auto kneeV = static_cast<float>(hist.getPercentile(FloatType(0.95)) -
-                                                      hist.getPercentile(FloatType(0.05))) / 120.f;
+                const auto thresholdV = static_cast<float>(
+                    -hist.getPercentile(FloatType(0.5)) + controllerRef.getThreshold(idx) + FloatType(40));
+                const auto kneeV = static_cast<float>(
+                    hist.getPercentile(FloatType(0.95)) - hist.getPercentile(FloatType(0.05))) / 120.f;
                 const std::array dynamicLearnValues{
                     threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)),
                     kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV))

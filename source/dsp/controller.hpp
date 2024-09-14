@@ -113,6 +113,10 @@ namespace zlDSP {
             currentThreshold[idx].store(x);
         }
 
+        FloatType getThreshold (const size_t idx) const {
+            return currentThreshold[idx].load();
+        }
+
         zlPhase::PhaseFlip<FloatType> &getPhaseFlipper() { return phaseFlipper; }
 
     private:
