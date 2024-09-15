@@ -61,6 +61,8 @@ namespace zlInterface {
         label2.setInterceptsMouseClicks(true, false);
         label1.setEditable(false, true);
         label2.setEditable(false, true);
+        label1.addMouseListener(this, false);
+        label2.addMouseListener(this, false);
 
         label1.setJustificationType(juce::Justification::centred);
         label2.setJustificationType(juce::Justification::centred);
@@ -151,6 +153,9 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseEnter(const juce::MouseEvent &event) {
+        if (event.originalComponent == &label1 || event.originalComponent == &label2) {
+            return;
+        }
         slider1.mouseEnter(event);
         slider2.mouseEnter(event);
         mouseOver.store(true);
@@ -164,6 +169,9 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseExit(const juce::MouseEvent &event) {
+        if (event.originalComponent == &label1 || event.originalComponent == &label2) {
+            return;
+        }
         slider1.mouseExit(event);
         slider2.mouseExit(event);
 
@@ -197,7 +205,9 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseDoubleClick(const juce::MouseEvent &event) {
-        juce::ignoreUnused(event);
+        if (event.originalComponent == &label1 || event.originalComponent == &label2) {
+            return;
+        }
         if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseDoubleClick(event);
         } else {
@@ -207,6 +217,9 @@ namespace zlInterface {
 
     void TwoValueRotarySlider::mouseWheelMove(const juce::MouseEvent &event,
                                               const juce::MouseWheelDetails &wheel) {
+        if (event.originalComponent == &label1 || event.originalComponent == &label2) {
+            return;
+        }
         if (!showSlider2.load()) {
             slider1.mouseWheelMove(event, wheel);
         } else {
