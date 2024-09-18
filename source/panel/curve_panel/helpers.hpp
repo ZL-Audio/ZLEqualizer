@@ -218,6 +218,33 @@ namespace zlPanel {
         2.79776698e+00, 2.82484613e+00, 2.85218738e+00, 2.87979327e+00
     };
 
+    class AtomicBound {
+    public:
+        AtomicBound() = default;
+
+        void update(const juce::Rectangle<float> &bound) {
+            x.store(bound.getX());
+            y.store(bound.getY());
+            width.store(bound.getWidth());
+            height.store(bound.getHeight());
+        }
+
+        juce::Rectangle<float> get() const {
+            return {x.load(), y.load(), width.load(), height.load()};
+        }
+
+        float getX() const { return x.load(); }
+
+        float getY() const { return y.load(); }
+
+        float getWidth() const { return width.load(); }
+
+        float getHeight() const { return height.load(); }
+
+    private:
+        std::atomic<float> x{0.f}, y{0.f}, width{0.f}, height{0.f};
+    };
+
     inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
         return static_cast<float>(i) /
                static_cast<float>(zlFilter::frequencies.size() - 1) * bound.getWidth() + bound.getX();

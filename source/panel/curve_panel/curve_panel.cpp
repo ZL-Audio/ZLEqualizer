@@ -100,13 +100,8 @@ namespace zlPanel {
     }
 
     void CurvePanel::repaintCallBack() {
-        const auto &analyzer = controllerRef.getAnalyzer();
         const juce::Time nowT = juce::Time::getCurrentTime();
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
-            if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
-                && analyzer.getPathReady()) {
-                fftPanel.updatePaths();
-            }
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
             repaint();
@@ -119,6 +114,11 @@ namespace zlPanel {
         while (!threadShouldExit()) {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
+            const auto &analyzer = controllerRef.getAnalyzer();
+            if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
+                && analyzer.getPathReady()) {
+                fftPanel.updatePaths();
+            }
             for (const auto &sP: singlePanels) {
                 if (sP->checkRepaint()) {
                     sP->run();

@@ -22,24 +22,26 @@ namespace zlPanel {
     }
 
     void FFTPanel::paint(juce::Graphics &g) {
-        if (analyzerRef.getPreON() && !path1.isEmpty()) {
+        juce::GenericScopedTryLock lock{pathLock};
+        if (!lock.isLocked()) { return; }
+        if (analyzerRef.getPreON() && !recentPath1.isEmpty()) {
             g.setColour(uiBase.getColourByIdx(zlInterface::preColour));
-            g.fillPath(path1);
+            g.fillPath(recentPath1);
         }
 
-        if (analyzerRef.getPostON() && !path2.isEmpty()) {
+        if (analyzerRef.getPostON() && !recentPath2.isEmpty()) {
             g.setColour(uiBase.getTextColor().withAlpha(0.5f));
             const auto thickness = uiBase.getFontSize() * 0.1f;
-            g.strokePath(path2, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
-                                                    juce::PathStrokeType::rounded));
+            g.strokePath(recentPath2,
+                         juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 
             g.setColour(uiBase.getColourByIdx(zlInterface::postColour));
-            g.fillPath(path2);
+            g.fillPath(recentPath2);
         }
 
-        if (analyzerRef.getSideON() && !path3.isEmpty()) {
+        if (analyzerRef.getSideON() && !recentPath3.isEmpty()) {
             g.setColour(uiBase.getColourByIdx(zlInterface::sideColour));
-            g.fillPath(path3);
+            g.fillPath(recentPath3);
         }
     }
 
@@ -47,16 +49,26 @@ namespace zlPanel {
         const auto bound = getLocalBounds().toFloat();
         leftCorner = {bound.getX() * 0.9f, bound.getBottom() * 1.1f};
         rightCorner = {bound.getRight() * 1.1f, bound.getBottom() * 1.1f};
+        atomicBound.update(bound);
     }
 
     void FFTPanel::updatePaths() {
-        analyzerRef.updatePaths(path1, path2, path3, getLocalBounds().toFloat());
-        for (auto &path : {&path1, &path2, &path3}) {
+        analyzerRef.updatePaths(path1, path2, path3, atomicBound.get());
+        for (auto &path: {&path1, &path2, &path3}) {
             if (!path->isEmpty()) {
                 path->lineTo(rightCorner);
                 path->lineTo(leftCorner);
                 path->closeSubPath();
             }
+        }
+        {
+            juce::GenericScopedLock lock{pathLock};
+            recentPath1 = path1;
+            recentPath2 = path2;
+        }
+        {
+            juce::GenericScopedLock lock{pathLock};
+            recentPath3 = path3;
         }
     }
 } // zlPanel

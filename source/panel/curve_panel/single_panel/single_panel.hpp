@@ -67,7 +67,7 @@ namespace zlPanel {
         zlDSP::Controller<double> &controllerRef;
         zlFilter::Ideal<double, 16> &baseF, &targetF, &mainF;
         std::atomic<float> maximumDB;
-        std::atomic<float> xx{-100.f}, yy{-100.f}, width{.1f}, height{.1f};
+        AtomicBound atomicBound;
 
         std::atomic<bool> skipRepaint{false};
         std::atomic<bool> toRepaint{false};

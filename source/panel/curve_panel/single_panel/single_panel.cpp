@@ -141,10 +141,7 @@ namespace zlPanel {
 
     void SinglePanel::resized() {
         const auto bound = getLocalBounds().toFloat();
-        xx.store(bound.getX());
-        yy.store(bound.getY());
-        width.store(bound.getWidth());
-        height.store(bound.getHeight());
+        atomicBound.update(bound);
         sidePanel.setBounds(getLocalBounds());
         toRepaint.store(true);
     }
@@ -205,11 +202,15 @@ namespace zlPanel {
     void SinglePanel::run() {
         juce::ScopedNoDenormals noDenormals;
         const juce::Rectangle<float> bound{
-            xx.load(), yy.load() + uiBase.getFontSize(),
-            width.load(), height.load() - 2 * uiBase.getFontSize()
+            atomicBound.getX(), atomicBound.getY() + uiBase.getFontSize(),
+            atomicBound.getWidth(), atomicBound.getHeight() - 2 * uiBase.getFontSize()
         };
-        const juce::Point<float> bottomLeft{xx.load(), yy.load() + height.load()};
-        const juce::Point<float> bottomRight{xx.load() + width.load(), yy.load() + height.load()};
+        const juce::Point<float> bottomLeft{
+            atomicBound.getX(), atomicBound.getY() + atomicBound.getHeight()
+        };
+        const juce::Point<float> bottomRight{
+            atomicBound.getX() + atomicBound.getWidth(), atomicBound.getY() + atomicBound.getHeight()
+        };
         const auto maxDB = maximumDB.load();
         // draw curve
         baseFreq.store(static_cast<double>(baseF.getFreq()));

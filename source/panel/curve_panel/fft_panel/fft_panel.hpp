@@ -12,6 +12,7 @@
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
+#include "../helpers.hpp"
 
 namespace zlPanel {
     class FFTPanel final : public juce::Component {
@@ -31,7 +32,10 @@ namespace zlPanel {
         zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
         zlInterface::UIBase &uiBase;
         juce::Path path1{}, path2{}, path3{};
+        juce::Path recentPath1{}, recentPath2{}, recentPath3{};
+        juce::SpinLock pathLock;
         juce::Point<float> leftCorner, rightCorner;
+        AtomicBound atomicBound;
         std::atomic<bool> firstPath = true;
     };
 } // zlPanel
