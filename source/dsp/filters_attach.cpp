@@ -145,44 +145,37 @@ namespace zlDSP {
         if (parameterID.startsWith(bypass::ID)) {
             filtersRef[idx].setBypass(static_cast<bool>(value));
         } else if (parameterID.startsWith(fType::ID)) {
-            filtersRef[idx].getBaseFilter().setFilterType(static_cast<zlFilter::FilterType>(value));
-            filtersRef[idx].getMainFilter().setFilterType(static_cast<zlFilter::FilterType>(value));
-            if (filtersRef[idx].getDynamicON()) {
-                filtersRef[idx].getTargetFilter().setFilterType(static_cast<zlFilter::FilterType>(value));
-            }
+            const auto fType = static_cast<zlFilter::FilterType>(value);
+            filtersRef[idx].getBaseFilter().setFilterType(fType);
+            filtersRef[idx].getMainFilter().setFilterType(fType);
+            filtersRef[idx].getTargetFilter().setFilterType(fType);
+            controllerRef.getMainFilter(idx).setFilterType(fType);
         } else if (parameterID.startsWith(slope::ID)) {
-            filtersRef[idx].getBaseFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
-            filtersRef[idx].getMainFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
-            if (filtersRef[idx].getDynamicON()) {
-                filtersRef[idx].getTargetFilter().setOrder(slope::orderArray[static_cast<size_t>(value)]);
-            }
+            const auto newOrder = slope::orderArray[static_cast<size_t>(value)];
+            filtersRef[idx].getBaseFilter().setOrder(newOrder);
+            filtersRef[idx].getMainFilter().setOrder(newOrder);
+            filtersRef[idx].getTargetFilter().setOrder(newOrder);
+            controllerRef.getMainFilter(idx).setOrder(newOrder);
         } else if (parameterID.startsWith(freq::ID)) {
             filtersRef[idx].getBaseFilter().setFreq(value);
             filtersRef[idx].getMainFilter().setFreq(value);
-            if (filtersRef[idx].getDynamicON()) {
-                filtersRef[idx].getTargetFilter().setFreq(value);
-                if (sDynLink[idx].load()) {
-                    updateSideFQ(idx);
-                }
+            filtersRef[idx].getTargetFilter().setFreq(value);
+            controllerRef.getMainFilter(idx).setFreq(value);
+            if (sDynLink[idx].load()) {
+                updateSideFQ(idx);
             }
         } else if (parameterID.startsWith(gain::ID)) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
             value = gain::range.snapToLegalValue(static_cast<float>(value));
-            if (filtersRef[idx].getDynamicON()) {
-                filtersRef[idx].getBaseFilter().setGain(value);
-            } else {
-                filtersRef[idx].getBaseFilter().setGain(value);
-                filtersRef[idx].getMainFilter().setGain(value);
-            }
+            filtersRef[idx].getBaseFilter().setGain(value);
+            filtersRef[idx].getMainFilter().setGain(value);
+            controllerRef.getMainFilter(idx).setGain(value);
         } else if (parameterID.startsWith(Q::ID)) {
-            if (filtersRef[idx].getDynamicON()) {
-                filtersRef[idx].getBaseFilter().setQ(value);
-                if (sDynLink[idx].load()) {
-                    updateSideFQ(idx);
-                }
-            } else {
-                filtersRef[idx].getBaseFilter().setQ(value);
-                filtersRef[idx].getMainFilter().setQ(value);
+            filtersRef[idx].getBaseFilter().setQ(value);
+            filtersRef[idx].getMainFilter().setQ(value);
+            controllerRef.getMainFilter(idx).setQ(value);
+            if (sDynLink[idx].load()) {
+                updateSideFQ(idx);
             }
         } else if (parameterID.startsWith(lrType::ID)) {
             controllerRef.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
@@ -196,7 +189,8 @@ namespace zlDSP {
                 const auto thresholdV = static_cast<float>(
                     -hist.getPercentile(FloatType(0.5)) + controllerRef.getThreshold(idx) + FloatType(40));
                 const auto kneeV = static_cast<float>(
-                    hist.getPercentile(FloatType(0.95)) - hist.getPercentile(FloatType(0.05))) / 120.f;
+                                       hist.getPercentile(FloatType(0.95)) - hist.getPercentile(FloatType(0.05))
+                                   ) / 120.f;
                 const std::array dynamicLearnValues{
                     threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)),
                     kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV))

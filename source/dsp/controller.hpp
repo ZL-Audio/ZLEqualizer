@@ -39,6 +39,8 @@ namespace zlDSP {
 
         inline zlFilter::DynamicIIR<FloatType> &getFilter(const size_t idx) { return filters[idx]; }
 
+        inline zlFilter::Empty<FloatType> &getMainFilter(const size_t idx) { return mainFilters[idx]; }
+
         inline std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> &getFilters() { return filters; }
 
         void setFilterLRs(lrType::lrTypes x, size_t idx);
@@ -126,6 +128,7 @@ namespace zlDSP {
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> filters;
+        std::array<zlFilter::Empty<FloatType>, bandNUM> mainFilters;
 
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;

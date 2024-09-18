@@ -24,7 +24,9 @@ namespace zlPanel {
         }
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             for (const auto &idx: changeIDs) {
-                parametersRef.addParameterListener(zlDSP::appendSuffix(idx, i), this);
+                const auto paraID = zlDSP::appendSuffix(idx, i);
+                parameterChanged(paraID, parametersRef.getRawParameterValue(paraID)->load());
+                parametersRef.addParameterListener(paraID, this);
             }
         }
     }
@@ -72,14 +74,9 @@ namespace zlPanel {
     void SumPanel::run() {
         juce::ScopedNoDenormals noDenormals;
         std::array<bool, 5> useLRMS{false, false, false, false, false};
-        constexpr std::array<zlDSP::lrType::lrTypes, 5> lrTypes{
-            zlDSP::lrType::stereo,
-            zlDSP::lrType::left, zlDSP::lrType::right,
-            zlDSP::lrType::mid, zlDSP::lrType::side
-        };
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
-            const auto idx = static_cast<size_t>(c.getFilterLRs(i));
-            if (!c.getFilter(i).getBypass()) {
+            const auto idx = static_cast<size_t>(lrTypes[i].load());
+            if (!isBypassed[i].load()) {
                 useLRMS[idx] = true;
             }
         }
@@ -92,11 +89,11 @@ namespace zlPanel {
 
             std::fill(dBs.begin(), dBs.end(), 0.0);
             for (size_t i = 0; i < zlState::bandNUM; i++) {
-                auto &filter{c.getFilter(i)};
-                if (c.getFilterLRs(i) == lrTypes[j] && !filter.getBypass()) {
-                    if (filter.getDynamicON()) {
-                        mMainFilters[i].setGain(filter.getMainFilter().getGain());
-                        mMainFilters[i].setQ(filter.getMainFilter().getQ());
+                auto &filter{c.getMainFilter(i)};
+                if (lrTypes[i].load() == static_cast<zlDSP::lrType::lrTypes>(j) && !isBypassed[i].load()) {
+                    if (filter.exchangeParaOutdated(false)) {
+                        mMainFilters[i].setGain(filter.getGain());
+                        mMainFilters[i].setQ(filter.getQ());
                         mMainFilters[i].updateMagnidue(ws);
                         mMainFilters[i].addDBs(dBs);
                     } else {
@@ -106,8 +103,8 @@ namespace zlPanel {
             }
 
             const juce::Rectangle<float> bound{
-                xx.load(), yy.load() + uiBase.getFontSize(),
-                width.load(), height.load() - 2 * uiBase.getFontSize()
+                atomicBound.getX(), atomicBound.getY() + uiBase.getFontSize(),
+                atomicBound.getWidth(), atomicBound.getHeight() - 2 * uiBase.getFontSize()
             };
 
             drawCurve(paths[j], dBs, maximumDB.load(), bound, false, true);
@@ -119,16 +116,17 @@ namespace zlPanel {
     }
 
     void SumPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        juce::ignoreUnused(parameterID, newValue);
+        const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
+        if (parameterID.startsWith(zlDSP::bypass::ID)) {
+            isBypassed[idx].store(static_cast<bool>(newValue));
+        } else if (parameterID.startsWith(zlDSP::lrType::ID)) {
+            lrTypes[idx].store(static_cast<zlDSP::lrType::lrTypes>(newValue));
+        }
         toRepaint.store(true);
     }
 
     void SumPanel::resized() {
-        const auto bound = getLocalBounds().toFloat();
-        xx.store(bound.getX());
-        yy.store(bound.getY());
-        width.store(bound.getWidth());
-        height.store(bound.getHeight());
+        atomicBound.update(getLocalBounds().toFloat());
         toRepaint.store(true);
     }
 } // zlPanel

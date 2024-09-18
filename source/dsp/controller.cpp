@@ -187,7 +187,7 @@ namespace zlDSP {
     void Controller<FloatType>::processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                juce::AudioBuffer<FloatType> &subSideBuffer) {
         autoGain.processPre(subMainBuffer);
-        // set threshold
+        // set auto threshold
         for (size_t i = 0; i < bandNUM; ++i) {
             if (filters[i].getDynamicON()) {
                 if (isHistON[i].load()) {
@@ -297,13 +297,17 @@ namespace zlDSP {
             msMainSplitter.combine(subMainBuffer);
         }
         for (size_t i = 0; i < bandNUM; ++i) {
-            if (filters[i].getDynamicON() && isHistON[i].load()) {
-                auto &compressor = filters[i].getCompressor();
-                const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
-                if (diff <= 100) {
-                    const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
-                    histograms[i].push(static_cast<size_t>(histIdx));
-                    subHistograms[i].push(static_cast<size_t>(histIdx));
+            if (filters[i].getDynamicON() ) {
+                mainFilters[i].setGain(filters[i].getMainFilter().getGain());
+                mainFilters[i].setQ(filters[i].getMainFilter().getQ());
+                if (isHistON[i].load()) {
+                    auto &compressor = filters[i].getCompressor();
+                    const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
+                    if (diff <= 100) {
+                        const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
+                        histograms[i].push(static_cast<size_t>(histIdx));
+                        subHistograms[i].push(static_cast<size_t>(histIdx));
+                    }
                 }
             }
         }
