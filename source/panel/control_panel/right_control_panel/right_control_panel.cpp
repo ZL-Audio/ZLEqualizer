@@ -68,6 +68,7 @@ namespace zlPanel {
         for (auto &c: {&thresC, &kneeC, &attackC, &releaseC}) {
             addAndMakeVisible(c);
         }
+        lookAndFeelChanged();
     }
 
     RightControlPanel::~RightControlPanel() {
@@ -80,14 +81,6 @@ namespace zlPanel {
     void RightControlPanel::paint(juce::Graphics &g) {
         const auto bound = getLocalBounds().toFloat();
         uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
-        const auto style = uiBase.getRotaryStyle();
-        const auto sensitivity = juce::roundToInt(uiBase.getRotaryDragSensitivity() * uiBase.getFontSize());
-        for (auto &c: {&sideFreqC, &sideQC}) {
-            c->getSlider1().setSliderStyle(style);
-            c->getSlider1().setMouseDragSensitivity(sensitivity);
-            c->getSlider2().setSliderStyle(style);
-            c->getSlider2().setMouseDragSensitivity(sensitivity);
-        }
     }
 
     void RightControlPanel::resized() {
@@ -124,6 +117,11 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
         grid.performLayout(bound.toNearestInt());
+        updateMouseDragSensitivity();
+    }
+
+    void RightControlPanel::lookAndFeelChanged() {
+        updateMouseDragSensitivity();
     }
 
     void RightControlPanel::attachGroup(size_t idx) {
@@ -183,5 +181,15 @@ namespace zlPanel {
         dynSoloC.repaint();
         dynRelativeC.repaint();
         repaint();
+    }
+
+    void RightControlPanel::updateMouseDragSensitivity() {
+        const auto style = uiBase.getRotaryStyle();
+        const auto sensitivity = juce::roundToInt(uiBase.getRotaryDragSensitivity() * uiBase.getFontSize());
+        for (auto &c: {&sideFreqC, &sideQC}) {
+            c->getSlider1().setSliderStyle(style);
+            c->getSlider2().setSliderStyle(style);
+            c->setMouseDragSensitivity(sensitivity);
+        }
     }
 }

@@ -242,7 +242,7 @@ namespace zlState {
     public:
         auto static constexpr ID = "wheel_fine_sensitivity";
         auto static constexpr name = "";
-        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        inline auto static const range = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
         auto static constexpr defaultV = .12f;
     };
 
@@ -258,7 +258,7 @@ namespace zlState {
     public:
         auto static constexpr ID = "drag_fine_sensitivity";
         auto static constexpr name = "";
-        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        inline auto static const range = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
         auto static constexpr defaultV = .25f;
     };
 

@@ -142,6 +142,11 @@ namespace zlInterface {
         } else {
             slider2.mouseDown(event);
         }
+        const auto currentShiftPressed = event.mods.isShiftDown();
+        if (currentShiftPressed != isShiftPressed) {
+            isShiftPressed = currentShiftPressed;
+            updateDragDistance();
+        }
     }
 
     void TwoValueRotarySlider::mouseDrag(const juce::MouseEvent &event) {

@@ -31,6 +31,8 @@ namespace zlPanel {
 
         void resized() override;
 
+        void lookAndFeelChanged() override;
+
         void attachGroup(size_t idx);
 
     private:
@@ -59,6 +61,8 @@ namespace zlPanel {
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void handleAsyncUpdate() override;
+
+        void updateMouseDragSensitivity();
     };
 }
 

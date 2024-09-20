@@ -92,14 +92,6 @@ namespace zlPanel {
     void LeftControlPanel::paint(juce::Graphics &g) {
         const auto bound = getLocalBounds().toFloat();
         uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
-        const auto style = uiBase.getRotaryStyle();
-        const auto sensitivity = juce::roundToInt(uiBase.getRotaryDragSensitivity() * uiBase.getFontSize());
-        for (auto &c: {&freqC, &gainC, &qC}) {
-            c->getSlider1().setSliderStyle(style);
-            c->getSlider1().setMouseDragSensitivity(sensitivity);
-            c->getSlider2().setSliderStyle(style);
-            c->getSlider2().setMouseDragSensitivity(sensitivity);
-        }
     }
 
     void LeftControlPanel::resized() {
@@ -139,6 +131,11 @@ namespace zlPanel {
                                                        bound.getTopRight().getY(),
                                                        1.25f * uiBase.getFontSize(), 1.25f * uiBase.getFontSize());
         resetComponent.setBounds(resetBound.toNearestInt());
+        updateMouseDragSensitivity();
+    }
+
+    void LeftControlPanel::lookAndFeelChanged() {
+        updateMouseDragSensitivity();
     }
 
     void LeftControlPanel::attachGroup(const size_t idx) {
@@ -239,5 +236,15 @@ namespace zlPanel {
         gainC.setShowSlider2(gainS2Editable.load());
         qC.setShowSlider2(qS2Editable.load());
         repaint();
+    }
+
+    void LeftControlPanel::updateMouseDragSensitivity() {
+        const auto style = uiBase.getRotaryStyle();
+        const auto sensitivity = juce::roundToInt(uiBase.getRotaryDragSensitivity() * uiBase.getFontSize());
+        for (auto &c: {&freqC, &gainC, &qC}) {
+            c->getSlider1().setSliderStyle(style);
+            c->getSlider2().setSliderStyle(style);
+            c->setMouseDragSensitivity(sensitivity);
+        }
     }
 }

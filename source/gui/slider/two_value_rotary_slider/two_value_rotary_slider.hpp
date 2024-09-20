@@ -21,7 +21,7 @@
 
 namespace zlInterface {
     class TwoValueRotarySlider final : public juce::Component,
-    private juce::Label::Listener, private juce::Slider::Listener {
+                                       private juce::Label::Listener, private juce::Slider::Listener {
     public:
         explicit TwoValueRotarySlider(const juce::String &labelText, UIBase &base);
 
@@ -66,6 +66,11 @@ namespace zlInterface {
 
         inline bool getEditable() const { return editable.load(); }
 
+        void setMouseDragSensitivity(const int x) {
+            dragDistance = x;
+            updateDragDistance();
+        }
+
     private:
         UIBase &uiBase;
 
@@ -85,6 +90,9 @@ namespace zlInterface {
         friz::Animator animator;
         static constexpr int animationId = 1;
 
+        int dragDistance {10};
+        bool isShiftPressed {false};
+
         static juce::String getDisplayValue(juce::Slider &s);
 
         void labelTextChanged(juce::Label *labelThatHasChanged) override;
@@ -94,6 +102,19 @@ namespace zlInterface {
         void editorHidden(juce::Label *l, juce::TextEditor &editor) override;
 
         void sliderValueChanged(juce::Slider *slider) override;
+
+        void updateDragDistance() {
+            int actualDragDistance;
+            if (isShiftPressed) {
+                actualDragDistance = juce::roundToInt(
+                    static_cast<float>(dragDistance) / uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
+            } else {
+                actualDragDistance = juce::roundToInt(
+                    static_cast<float>(dragDistance) / uiBase.getSensitivity(sensitivityIdx::mouseDrag));
+            }
+            slider1.setMouseDragSensitivity(actualDragDistance);
+            slider2.setMouseDragSensitivity(actualDragDistance);
+        }
     };
 }
 
