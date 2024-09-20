@@ -246,7 +246,17 @@ namespace zlState {
         auto static constexpr defaultV = .12f;
     };
 
-    class dragSensitivity : public FloatParameters<wheelSensitivity> {
+    class wheelShiftReverse : public ChoiceParameters<wheelShiftReverse> {
+    public:
+        auto static constexpr ID = "wheel_shift_reverse";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "No Change", "Reverse"
+        };
+        int static constexpr defaultI = 0;
+    };
+
+    class dragSensitivity : public FloatParameters<dragSensitivity> {
     public:
         auto static constexpr ID = "drag_sensitivity";
         auto static constexpr name = "";
@@ -254,7 +264,7 @@ namespace zlState {
         auto static constexpr defaultV = 1.f;
     };
 
-    class dragFineSensitivity : public FloatParameters<wheelFineSensitivity> {
+    class dragFineSensitivity : public FloatParameters<dragFineSensitivity> {
     public:
         auto static constexpr ID = "drag_fine_sensitivity";
         auto static constexpr name = "";
@@ -361,7 +371,7 @@ namespace zlState {
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(windowW::get(), windowH::get(),
-                   wheelSensitivity::get(), wheelFineSensitivity::get(),
+                   wheelSensitivity::get(), wheelFineSensitivity::get(), wheelShiftReverse::get(),
                    dragSensitivity::get(), dragFineSensitivity::get(),
                    rotaryStyle::get(), rotaryDragSensitivity::get(),
                    refreshRate::get(),

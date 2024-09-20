@@ -260,6 +260,10 @@ namespace zlInterface {
         }
         wheelSensitivity[0] = state.getRawParameterValue(zlState::wheelSensitivity::ID)->load();
         wheelSensitivity[1] = state.getRawParameterValue(zlState::wheelFineSensitivity::ID)->load();
+        wheelSensitivity[2] = state.getRawParameterValue(zlState::dragSensitivity::ID)->load();
+        wheelSensitivity[3] = state.getRawParameterValue(zlState::dragFineSensitivity::ID)->load();
+        isMouseWheelShiftReverse.store(
+            static_cast<bool>(state.getRawParameterValue(zlState::wheelShiftReverse::ID)->load()));
         rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlState::rotaryStyle::ID)->load());
         rotaryDragSensitivity = state.getRawParameterValue(zlState::rotaryDragSensitivity::ID)->load();
         refreshRateId.store(static_cast<size_t>(state.getRawParameterValue(zlState::refreshRate::ID)->load()));
@@ -287,9 +291,18 @@ namespace zlInterface {
                 savePara(ID[j], rgbo[j]);
             }
         }
-        savePara(zlState::wheelSensitivity::ID, wheelSensitivity[0]);
-        savePara(zlState::wheelFineSensitivity::ID, wheelSensitivity[1]);
-        savePara(zlState::rotaryStyle::ID, zlState::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
+        savePara(zlState::wheelSensitivity::ID,
+                 zlState::wheelSensitivity::convertTo01(wheelSensitivity[0]));
+        savePara(zlState::wheelFineSensitivity::ID,
+                 zlState::wheelFineSensitivity::convertTo01(wheelSensitivity[1]));
+        savePara(zlState::dragSensitivity::ID,
+                 zlState::dragSensitivity::convertTo01(wheelSensitivity[2]));
+        savePara(zlState::dragFineSensitivity::ID,
+                 zlState::dragFineSensitivity::convertTo01(wheelSensitivity[3]));
+        savePara(zlState::wheelShiftReverse::ID,
+                 zlState::wheelShiftReverse::convertTo01(static_cast<int>(isMouseWheelShiftReverse.load())));
+        savePara(zlState::rotaryStyle::ID,
+                 zlState::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
         savePara(zlState::rotaryDragSensitivity::ID,
                  zlState::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
         savePara(zlState::refreshRate::ID, zlState::refreshRate::convertTo01(static_cast<int>(refreshRateId.load())));

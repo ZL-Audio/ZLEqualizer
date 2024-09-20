@@ -23,12 +23,15 @@ namespace zlPanel {
           gridSelector(base, *this),
           tagSelector(base, *this),
           gainSelector(base, *this),
-          sensitivitySliders{{
-              zlInterface::CompactLinearSlider("Rough", base),
-              zlInterface::CompactLinearSlider("Fine", base),
-              zlInterface::CompactLinearSlider("Rough", base),
-              zlInterface::CompactLinearSlider("Fine", base)
-          }},
+          sensitivitySliders{
+              {
+                  zlInterface::CompactLinearSlider("Rough", base),
+                  zlInterface::CompactLinearSlider("Fine", base),
+                  zlInterface::CompactLinearSlider("Rough", base),
+                  zlInterface::CompactLinearSlider("Fine", base)
+              }
+          },
+          wheelReverseBox("", zlState::wheelShiftReverse::choices, base),
           rotaryStyleBox("", zlState::rotaryStyle::choices, base),
           rotaryDragSensitivitySlider("Distance", base),
           refreshRateBox("", zlState::refreshRate::choices, base),
@@ -55,6 +58,7 @@ namespace zlPanel {
             s.getSlider().setRange(0.0, 1.0, 0.01);
             addAndMakeVisible(s);
         }
+        addAndMakeVisible(wheelReverseBox);
         sensitivitySliders[0].getSlider().setDoubleClickReturnValue(true, 1.0);
         sensitivitySliders[1].getSlider().setDoubleClickReturnValue(true, 0.12);
         sensitivitySliders[2].getSlider().setDoubleClickReturnValue(true, 1.0);
@@ -119,6 +123,8 @@ namespace zlPanel {
             sensitivitySliders[0].setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
             localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
             sensitivitySliders[1].setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            wheelReverseBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
             bound.removeFromTop(uiBase.getFontSize());
             auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
@@ -173,6 +179,7 @@ namespace zlPanel {
             sensitivitySliders[i].getSlider().setValue(static_cast<double>(uiBase.getSensitivity(
                 static_cast<zlInterface::sensitivityIdx>(i))));
         }
+        wheelReverseBox.getBox().setSelectedId(static_cast<int>(uiBase.getIsMouseWheelShiftReverse()) + 1);
         rotaryStyleBox.getBox().setSelectedId(static_cast<int>(uiBase.getRotaryStyleID()) + 1);
         rotaryDragSensitivitySlider.getSlider().setValue(static_cast<double>(uiBase.getRotaryDragSensitivity()));
         refreshRateBox.getBox().setSelectedId(static_cast<int>(uiBase.getRefreshRateID()) + 1);
@@ -188,8 +195,9 @@ namespace zlPanel {
         }
         for (size_t i = 0; i < sensitivitySliders.size(); ++i) {
             uiBase.setSensitivity(static_cast<float>(sensitivitySliders[i].getSlider().getValue()),
-                static_cast<zlInterface::sensitivityIdx>(i));
+                                  static_cast<zlInterface::sensitivityIdx>(i));
         }
+        uiBase.setIsMouseWheelShiftReverse(static_cast<bool>(wheelReverseBox.getBox().getSelectedId() - 1));
         uiBase.setRotaryStyleID(static_cast<size_t>(rotaryStyleBox.getBox().getSelectedId() - 1));
         uiBase.setRotaryDragSensitivity(static_cast<float>(rotaryDragSensitivitySlider.getSlider().getValue()));
         uiBase.setRefreshRateID(static_cast<size_t>(refreshRateBox.getBox().getSelectedId() - 1));

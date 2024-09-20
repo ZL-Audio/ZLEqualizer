@@ -22,9 +22,10 @@ namespace zlInterface {
             w = wheel;
             w.deltaX *= uiBase.getSensitivity(mouseWheel);
             w.deltaY *= uiBase.getSensitivity(mouseWheel);
-            if (e.mods.isCommandDown()) {
-                w.deltaX *= uiBase.getSensitivity(mouseWheelFine);
-                w.deltaY *= uiBase.getSensitivity(mouseWheelFine);
+            if (e.mods.isShiftDown()) {
+                const auto dir = uiBase.getIsMouseWheelShiftReverse() ? -1.f : 1.f;
+                w.deltaX *= uiBase.getSensitivity(mouseWheelFine) * dir;
+                w.deltaY *= uiBase.getSensitivity(mouseWheelFine) * dir;
             }
             Slider::mouseWheelMove(e, w);
         }

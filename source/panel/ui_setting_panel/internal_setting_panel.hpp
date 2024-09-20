@@ -38,6 +38,7 @@ namespace zlPanel {
         juce::Label wheelLabel;
         juce::Label dragLabel;
         std::array<zlInterface::CompactLinearSlider, 4> sensitivitySliders;
+        zlInterface::CompactCombobox wheelReverseBox;
         juce::Label rotaryStyleLabel;
         zlInterface::CompactCombobox rotaryStyleBox;
         zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
