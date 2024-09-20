@@ -28,9 +28,9 @@ namespace zlFFT {
     void SingleFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         sampleRate.store(static_cast<float>(spec.sampleRate));
         int extraOrder = 0;
-        if (sampleRate >= 50000) {
+        if (spec.sampleRate >= 50000) {
             extraOrder = 1;
-        } else if (sampleRate >= 100000) {
+        } else if (spec.sampleRate >= 100000) {
             extraOrder = 2;
         }
         setOrder(extraOrder + zlState::ffTOrder::orders[static_cast<size_t>(zlState::ffTOrder::defaultI)]);
@@ -138,7 +138,7 @@ namespace zlFFT {
         }
 
         fftBuffer.copyFrom(0, 0, audioBuffer[dIdx],
-            0, 0, audioBuffer[dIdx].getNumSamples());
+                           0, 0, audioBuffer[dIdx].getNumSamples());
 
         // calculate fft
         window->multiplyWithWindowingTable(fftBuffer.getWritePointer(0), fftSize.load());
@@ -181,7 +181,7 @@ namespace zlFFT {
         const auto tilt = tiltSlope.load() + extraTilt.load();
         for (size_t i = 0; i < interplotDBs.size(); ++i) {
             interplotDBs[i].store(spline2(static_cast<float>(i * 2)) + static_cast<float>(std::log2(
-                                  zlFilter::frequencies[i * 2] / 1000)) * tilt);
+                                      zlFilter::frequencies[i * 2] / 1000)) * tilt);
         }
     }
 

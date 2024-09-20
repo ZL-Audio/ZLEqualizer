@@ -13,7 +13,6 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "../interface_definitions.hpp"
-#include "../slider/extra_slider/snapping_slider.h"
 #include "dragger_look_and_feel.hpp"
 #include "dragger_constrainer.hpp"
 
@@ -82,7 +81,10 @@ namespace zlInterface {
     private:
         UIBase &uiBase;
 
-        juce::ToggleButton button, dummyButton;
+        juce::Component preButton, dummyButton;
+        juce::Rectangle<int> preBound, dummyBound;
+        bool isShiftDown;
+        juce::ToggleButton button;
         std::atomic<bool> dummyButtonChanged{false};
         DraggerLookAndFeel draggerLAF;
         juce::ComponentDragger dragger;

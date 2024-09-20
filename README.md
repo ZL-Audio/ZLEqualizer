@@ -52,6 +52,9 @@ JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
 [Friz](https://github.com/bgporter/animator) by [bgporter](https://github.com/bgporter)
 
+[fft-juce](https://github.com/hollance/fft-juce) by [
+Matthijs Hollemans](https://github.com/hollance)
+
 [fontaudio](https://github.com/fefanto/fontaudio) by [fefanto](https://github.com/fefanto)
 
 [RemixIcon](https://github.com/Remix-Design/RemixIcon) by [Remix Design](https://github.com/Remix-Design)

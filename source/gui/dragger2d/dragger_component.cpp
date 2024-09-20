@@ -38,7 +38,9 @@ namespace zlInterface {
     void Dragger::mouseDown(const juce::MouseEvent &event) {
         isSelected.store(true);
         button.setToggleState(true, juce::NotificationType::sendNotificationSync);
-        dragger.startDraggingComponent(&dummyButton, event);
+        preBound = preButton.getBounds();
+        dummyBound = dummyButton.getBounds();
+        dragger.startDraggingComponent(&preButton, event);
 
         const BailOutChecker checker(this);
         listeners.callChecked(checker, [&](Dragger::Listener &l) { l.dragStarted(this); });
@@ -65,8 +67,24 @@ namespace zlInterface {
                 constrainer.setXON(true);
                 constrainer.setYON(true);
             }
+            const auto currentShiftDown = event.mods.isShiftDown();
+            if (currentShiftDown != isShiftDown) {
+                preBound = preButton.getBounds();
+                dummyBound = dummyButton.getBounds();
+                isShiftDown = currentShiftDown;
+            }
+            dragger.dragComponent(&preButton, event, nullptr);
+            const auto shift = (preButton.getBounds().getPosition() - preBound.getPosition()).toFloat();
+            juce::Point<float> actualShift;
 
-            dragger.dragComponent(&dummyButton, event, &constrainer);
+            if (isShiftDown) {
+                actualShift.setX(shift.getX() * uiBase.getWheelSensitivity(1));
+                actualShift.setY(shift.getY() * uiBase.getWheelSensitivity(1));
+            } else {
+                actualShift.setX(shift.getX() * uiBase.getWheelSensitivity(0));
+                actualShift.setY(shift.getY() * uiBase.getWheelSensitivity(0));
+            }
+            constrainer.setBoundsForComponent(&dummyButton, dummyBound + actualShift.roundToInt(), false, false, false, false);
             const auto buttonBound = dummyButton.getBoundsInParent().toFloat();
             xPortion.store((buttonBound.getCentreX() - buttonArea.getX()) / buttonArea.getWidth());
             yPortion.store((buttonArea.getBottom() - buttonBound.getCentreY()) / buttonArea.getHeight());
@@ -85,6 +103,7 @@ namespace zlInterface {
                                                   uiBase.getFontSize() * scale.load());
         buttonBound.setCentre(buttonArea.getX() + xPortion.load() * buttonArea.getWidth(),
                               buttonArea.getBottom() - yPortion.load() * buttonArea.getHeight());
+        preButton.setBounds(buttonBound.toNearestInt());
         dummyButton.setBounds(buttonBound.toNearestInt());
         dummyButtonChanged.store(true);
         // set constrainer
@@ -108,6 +127,7 @@ namespace zlInterface {
         auto buttonBound = dummyButton.getBoundsInParent().toFloat();
         buttonBound.setCentre(buttonArea.getX() + x * buttonArea.getWidth(),
                               buttonBound.getCentreY());
+        preButton.setBounds(buttonBound.toNearestInt());
         dummyButton.setBounds(buttonBound.toNearestInt());
         dummyButtonChanged.store(true);
     }
@@ -117,6 +137,7 @@ namespace zlInterface {
         auto buttonBound = dummyButton.getBoundsInParent().toFloat();
         buttonBound.setCentre(buttonBound.getCentreX(),
                               buttonArea.getBottom() - y * buttonArea.getHeight());
+        preButton.setBounds(buttonBound.toNearestInt());
         dummyButton.setBounds(buttonBound.toNearestInt());
         dummyButtonChanged.store(true);
     }

@@ -13,9 +13,6 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
-#include "../iir_filter/single_filter.hpp"
-#include "../iir_filter/coeff/design_filter.hpp"
-
 namespace zlFFT {
 }
 
