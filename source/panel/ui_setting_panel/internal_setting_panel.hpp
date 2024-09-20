@@ -36,7 +36,8 @@ namespace zlPanel {
         zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
         zlInterface::ColourOpacitySelector gainSelector;
         juce::Label wheelLabel;
-        zlInterface::CompactLinearSlider roughWheelSlider, fineWheelSlider;
+        juce::Label dragLabel;
+        std::array<zlInterface::CompactLinearSlider, 4> sensitivitySliders;
         juce::Label rotaryStyleLabel;
         zlInterface::CompactCombobox rotaryStyleBox;
         zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;

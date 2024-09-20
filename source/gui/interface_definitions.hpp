@@ -30,6 +30,14 @@ namespace zlInterface {
         colourNum
     };
 
+    enum sensitivityIdx {
+        mouseWheel,
+        mouseWheelFine,
+        mouseDrag,
+        mouseDragFine,
+        sensitivityNum
+    };
+
     inline std::array<std::string, colourNum> colourNames{
         "text", "background",
         "shadow", "glow",
@@ -253,12 +261,12 @@ namespace zlInterface {
             customColours[static_cast<size_t>(idx)] = colour;
         }
 
-        inline float getWheelSensitivity(const size_t x) const {
-            return wheelSensitivity[x];
+        inline float getSensitivity(const sensitivityIdx idx) const {
+            return wheelSensitivity[static_cast<size_t>(idx)];
         }
 
-        void setWheelSensitivity(const float v, const size_t x) {
-            wheelSensitivity[x] = v;
+        void setSensitivity(const float v, const sensitivityIdx idx) {
+            wheelSensitivity[static_cast<size_t>(idx)] = v;
         }
 
         size_t getRotaryStyleID() const {
@@ -337,7 +345,7 @@ namespace zlInterface {
         juce::AudioProcessorValueTreeState &state;
         std::atomic<float> fontSize{0};
         std::array<juce::Colour, colourNum> customColours;
-        std::array<float, 2> wheelSensitivity{1.f, 0.12f};
+        std::array<float, sensitivityNum> wheelSensitivity{1.f, 0.12f, 1.f, .25f};
         size_t rotaryStyleId{0};
         std::atomic<size_t> refreshRateId{2};
         float rotaryDragSensitivity{1.f};

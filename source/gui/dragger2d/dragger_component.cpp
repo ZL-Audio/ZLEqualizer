@@ -78,11 +78,11 @@ namespace zlInterface {
             juce::Point<float> actualShift;
 
             if (isShiftDown) {
-                actualShift.setX(shift.getX() * uiBase.getWheelSensitivity(1));
-                actualShift.setY(shift.getY() * uiBase.getWheelSensitivity(1));
+                actualShift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
+                actualShift.setY(shift.getY() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
             } else {
-                actualShift.setX(shift.getX() * uiBase.getWheelSensitivity(0));
-                actualShift.setY(shift.getY() * uiBase.getWheelSensitivity(0));
+                actualShift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDrag));
+                actualShift.setY(shift.getY() * uiBase.getSensitivity(sensitivityIdx::mouseDrag));
             }
             constrainer.setBoundsForComponent(&dummyButton, dummyBound + actualShift.roundToInt(), false, false, false, false);
             const auto buttonBound = dummyButton.getBoundsInParent().toFloat();

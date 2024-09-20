@@ -69,7 +69,7 @@ namespace zlPanel {
 
         internelPanel.setBounds(0, 0,
                                 juce::roundToInt(bound.getWidth()),
-                                juce::roundToInt(bound.getHeight() * 1.45f));
+                                juce::roundToInt(bound.getHeight() * 1.55f));
         viewPort.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
         const auto leftBound = bound.removeFromLeft(
             bound.getWidth() * .3333333f).withSizeKeepingCentre(

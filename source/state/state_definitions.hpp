@@ -246,6 +246,22 @@ namespace zlState {
         auto static constexpr defaultV = .12f;
     };
 
+    class dragSensitivity : public FloatParameters<wheelSensitivity> {
+    public:
+        auto static constexpr ID = "drag_sensitivity";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        auto static constexpr defaultV = 1.f;
+    };
+
+    class dragFineSensitivity : public FloatParameters<wheelFineSensitivity> {
+    public:
+        auto static constexpr ID = "drag_fine_sensitivity";
+        auto static constexpr name = "";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        auto static constexpr defaultV = .25f;
+    };
+
     class rotaryStyle : public ChoiceParameters<rotaryStyle> {
     public:
         auto static constexpr ID = "rotary_style";
@@ -346,6 +362,7 @@ namespace zlState {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(windowW::get(), windowH::get(),
                    wheelSensitivity::get(), wheelFineSensitivity::get(),
+                   dragSensitivity::get(), dragFineSensitivity::get(),
                    rotaryStyle::get(), rotaryDragSensitivity::get(),
                    refreshRate::get(),
                    fftExtraTilt::get(), fftExtraSpeed::get(),
