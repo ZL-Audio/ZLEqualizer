@@ -19,19 +19,13 @@ namespace zlPanel {
 
     void GridPanel::paint(juce::Graphics &g) {
         g.fillAll(uiBase.getBackgroundColor());
-        const auto bound = getLocalBounds().toFloat();
-
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
         if (uiBase.getColourByIdx(zlInterface::gridColour).getFloatAlpha() <= 0.01f) {
             return;
         }
         g.setColour(uiBase.getTextInactiveColor());
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
-            const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
-            const auto textBound = juce::Rectangle<float>(x - uiBase.getFontSize() * 3 - uiBase.getFontSize() * 0.125f,
-                                                          bound.getBottom() - uiBase.getFontSize() * 2,
-                                                          uiBase.getFontSize() * 3, uiBase.getFontSize() * 2);
-            g.drawText(backgroundFreqsNames[i], textBound, juce::Justification::bottomRight);
+            g.drawText(backgroundFreqsNames[i], textBounds[i], juce::Justification::bottomRight);
         }
         g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
         g.fillRectList(rectList);
@@ -43,12 +37,15 @@ namespace zlPanel {
         const auto thickness = uiBase.getFontSize() * 0.1f;
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
             const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
-            rectList.add({x - thickness * .5f, bound.getY(),thickness, bound.getHeight()});
+            rectList.add({x - thickness * .5f, bound.getY(), thickness, bound.getHeight()});
+            textBounds[i] = juce::Rectangle<float>(x - uiBase.getFontSize() * 3 - uiBase.getFontSize() * 0.125f,
+                                                   bound.getBottom() - uiBase.getFontSize() * 2,
+                                                   uiBase.getFontSize() * 3, uiBase.getFontSize() * 2);
         }
 
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
 
-        for (auto &d:backgroundDBs) {
+        for (auto &d: backgroundDBs) {
             const auto y = d * bound.getHeight() + bound.getY();
             rectList.add({bound.getX(), y - thickness * .5f, bound.getWidth(), thickness});
         }
