@@ -13,5 +13,6 @@
 #include "single_fft_analyzer.hpp"
 #include "pre_post_fft_analyzer.hpp"
 #include "conflict_analyzer.hpp"
+#include "multiple_fft_analyzer.hpp"
 
 #endif //ZLEqualizer_FFT_ANALYZER_HPP

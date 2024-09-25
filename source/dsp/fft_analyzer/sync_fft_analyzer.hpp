@@ -102,7 +102,6 @@ namespace zlFFT {
         std::array<std::array<juce::AudioBuffer<float>, 2>, 2> audioBuffer;
 
         juce::AudioBuffer<float> fftBuffer;
-
         std::array<std::vector<float>, 2> smoothedDBs;
         std::vector<float> smoothedDBX;
         static constexpr size_t preScale = 5;
