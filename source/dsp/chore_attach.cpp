@@ -98,13 +98,13 @@ namespace zlDSP {
                     if (isFFTON[0].load() == 0) {
                         controllerRef.getAnalyzer().setPreON(true);
                     }
-                    controllerRef.getAnalyzer().getSyncFFT().setDecayRate(0, decaySpeed.load());
+                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(0, decaySpeed.load());
                     break;
                 case 2:
                     if (isFFTON[0].load() == 0) {
                         controllerRef.getAnalyzer().setPreON(true);
                     }
-                    controllerRef.getAnalyzer().getSyncFFT().setDecayRate(0, 1.f);
+                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(0, 1.f);
                     break;
                 default: {
                 }
@@ -119,13 +119,13 @@ namespace zlDSP {
                     if (isFFTON[1].load() == 0) {
                         controllerRef.getAnalyzer().setPostON(true);
                     }
-                    controllerRef.getAnalyzer().getSyncFFT().setDecayRate(1, decaySpeed.load());
+                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(1, decaySpeed.load());
                     break;
                 case 2:
                     if (isFFTON[1].load() == 0) {
                         controllerRef.getAnalyzer().setPostON(true);
                     }
-                    controllerRef.getAnalyzer().getSyncFFT().setDecayRate(1, 1.f);
+                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(1, 1.f);
                     break;
                 default: {
                 }
@@ -140,13 +140,13 @@ namespace zlDSP {
                     if (isFFTON[2].load() == 0) {
                         controllerRef.getAnalyzer().setSideON(true);
                     }
-                    controllerRef.getAnalyzer().getSideFFT().setDecayRate(decaySpeed.load());
+                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(2, decaySpeed.load());
                     break;
                 case 2:
                     if (isFFTON[2].load() == 0) {
                         controllerRef.getAnalyzer().setSideON(true);
                     }
-                    controllerRef.getAnalyzer().getSideFFT().setDecayRate(1.f);
+                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(2, 1.f);
                     break;
                 default: {
                 }
@@ -156,13 +156,12 @@ namespace zlDSP {
             const auto idx = static_cast<size_t>(newValue);
             const auto speed = zlState::ffTSpeed::speeds[idx];
             decaySpeed.store(speed);
-            if (isFFTON[0].load() != 2) controllerRef.getAnalyzer().getSyncFFT().setDecayRate(0, speed);
-            if (isFFTON[1].load() != 2) controllerRef.getAnalyzer().getSyncFFT().setDecayRate(1, speed);
-            if (isFFTON[2].load() != 2) controllerRef.getAnalyzer().getSideFFT().setDecayRate(speed);
+            if (isFFTON[0].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(0, speed);
+            if (isFFTON[1].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(1, speed);
+            if (isFFTON[2].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(2, speed);
         } else if (parameterID == zlState::ffTTilt::ID) {
             const auto idx = static_cast<size_t>(newValue);
-            controllerRef.getAnalyzer().getSyncFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
-            controllerRef.getAnalyzer().getSideFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
+            controllerRef.getAnalyzer().getMultipleFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
         } else if (parameterID == zlState::conflictON::ID) {
             const auto f = static_cast<bool>(newValue);
             controllerRef.getConflictAnalyzer().setON(f);

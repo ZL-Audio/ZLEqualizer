@@ -17,6 +17,7 @@ namespace zlFFT {
         std::fill(refDB.begin(), refDB.end(), -144.f);
         syncAnalyzer.setDecayRate(0, 0.985f);
         syncAnalyzer.setDecayRate(1, 0.985f);
+        syncAnalyzer.setON({true, true});
     }
 
     template<typename FloatType>
@@ -42,18 +43,23 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::pushMainBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        mainBuffer.makeCopyOf(buffer, true);
+        currentIsON = isON.load();
+        if (currentIsON) {
+            mainBuffer.makeCopyOf(buffer, true);
+        }
     }
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::pushRefBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        refBuffer.makeCopyOf(buffer, true);
+        if (currentIsON) {
+            refBuffer.makeCopyOf(buffer, true);
+        }
     }
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::process() {
-        if (isON.load()) {
-            syncAnalyzer.process(mainBuffer, refBuffer);
+        if (currentIsON) {
+            syncAnalyzer.process({mainBuffer, refBuffer});
             if (!isConflictReady.load()) {
                 triggerAsyncUpdate();
             }

@@ -13,7 +13,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
-#include "sync_fft_analyzer.hpp"
+#include "multiple_fft_analyzer.hpp"
 
 namespace zlFFT {
     /**
@@ -23,6 +23,7 @@ namespace zlFFT {
     template<typename FloatType>
     class ConflictAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
+        static constexpr size_t pointNum = 400;
         explicit ConflictAnalyzer();
 
         ~ConflictAnalyzer() override;
@@ -59,18 +60,19 @@ namespace zlFFT {
 
         void updateGradient(juce::ColourGradient &gradient);
 
-        SyncFFTAnalyzer<FloatType> &getSyncFFT() { return syncAnalyzer; }
+        MultipleFFTAnalyzer<FloatType, 2, pointNum> &getSyncFFT() { return syncAnalyzer; }
 
     private:
-        SyncFFTAnalyzer<FloatType> syncAnalyzer;
+        MultipleFFTAnalyzer<FloatType, 2, pointNum> syncAnalyzer;
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
-        std::array<float, zlFilter::frequencies.size() / 2> mainDB{}, refDB{};
+        std::array<float, pointNum> mainDB{}, refDB{};
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
         std::atomic<bool> isON{false}, isConflictReady{false}, toReset{false};
+        bool currentIsON{false};
 
         std::atomic<float> x1{0.f}, x2{1.f};
-        std::array<float, zlFilter::frequencies.size() / 8> conflicts{};
-        std::array<std::atomic<float>, zlFilter::frequencies.size() / 8> conflictsP{};
+        std::array<float, pointNum / 4> conflicts{};
+        std::array<std::atomic<float>, pointNum / 4> conflictsP{};
 
         const juce::Colour gColour = juce::Colours::red;
 

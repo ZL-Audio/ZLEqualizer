@@ -66,12 +66,7 @@ namespace zlPanel {
     }
 
     void MainPanel::updateFFTs() {
-        for (auto &fft : {&processorRef.getController().getAnalyzer().getSideFFT()}) {
-            fft->setExtraTilt(uiBase.getFFTExtraTilt());
-            fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
-            fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
-        }
-        for (auto &fft : {&processorRef.getController().getAnalyzer().getSyncFFT()}) {
+        for (auto &fft : {&processorRef.getController().getAnalyzer().getMultipleFFT()}) {
             fft->setExtraTilt(uiBase.getFFTExtraTilt());
             fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
             fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);

@@ -13,12 +13,12 @@ namespace zlFFT {
     template<typename FloatType>
     PrePostFFTAnalyzer<FloatType>::PrePostFFTAnalyzer()
         : Thread("pre_post_analyzer") {
+        fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        syncFFT.prepare(spec);
-        sideFFT.prepare(spec);
+        fftAnalyzer.prepare(spec);
         preBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
         postBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
         sideBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
@@ -26,17 +26,27 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        preBuffer.makeCopyOf(buffer, true);
+        currentON = isON.load();
+        if (currentON) {
+            currentPreON = isPreON.load();
+            currentPostON = isPostON.load();
+            currentSideON = isSideON.load();
+        }
+        if (currentPreON) {
+            preBuffer.makeCopyOf(buffer, true);
+        }
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        postBuffer.makeCopyOf(buffer, true);
+        if (currentPostON) {
+            postBuffer.makeCopyOf(buffer, true);
+        }
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        if (isSideON.load()) {
+        if (currentSideON) {
             sideBuffer.makeCopyOf(buffer, true);
         }
     }
@@ -44,14 +54,10 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::process() {
         if (toReset.exchange(false)) {
-            syncFFT.reset();
-            sideFFT.reset();
+            fftAnalyzer.reset();
         }
-        if (isON.load()) {
-            syncFFT.process(preBuffer, postBuffer);
-            if (isSideON.load()) {
-                sideFFT.process(sideBuffer);
-            }
+        if (currentON) {
+            fftAnalyzer.process({preBuffer, postBuffer, sideBuffer});
             if (!isPathReady.load()) {
                 triggerAsyncUpdate();
             }
@@ -67,20 +73,21 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPreON(const bool x) {
         isPreON.store(x);
-        syncFFT.setON(x, isPostON.load());
+        fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
         toReset.store(true);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPostON(const bool x) {
         isPostON.store(x);
-        syncFFT.setON(isPreON.load(), x);
+        fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
         toReset.store(true);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setSideON(const bool x) {
         isSideON.store(x);
+        fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
         toReset.store(true);
     }
 
@@ -88,10 +95,7 @@ namespace zlFFT {
     void PrePostFFTAnalyzer<FloatType>::run() {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
-            syncFFT.run();
-            if (isSideON.load()) {
-                sideFFT.run();
-            }
+            fftAnalyzer.run();
             isPathReady.store(true);
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
@@ -116,12 +120,7 @@ namespace zlFFT {
         prePath_.clear();
         postPath_.clear();
         sidePath_.clear();
-        if (isPreON.load() || isPostON.load()) {
-            syncFFT.createPath(prePath_, postPath_, bound);
-        }
-        if (isSideON.load()) {
-            sideFFT.createPath(sidePath_, bound);
-        }
+        fftAnalyzer.createPath({prePath_, postPath_, sidePath_}, bound);
         isPathReady.store(false);
     }
 

@@ -10,9 +10,9 @@
 #ifndef ZLFFT_MULTIPLE_FFT_ANALYZER_HPP
 #define ZLFFT_MULTIPLE_FFT_ANALYZER_HPP
 
+#include "../../state/state_definitions.hpp"
 #include <boost/math/interpolators/cardinal_quintic_b_spline.hpp>
 #include <boost/math/interpolators/makima.hpp>
-#include "../../state/state_definitions.hpp"
 
 namespace zlFFT {
     /**
@@ -44,7 +44,7 @@ namespace zlFFT {
             } else if (spec.sampleRate >= 100000) {
                 extraOrder = 2;
             }
-            setOrder(extraOrder + defaultFFTOrder);
+            setOrder(extraOrder + static_cast<int>(defaultFFTOrder));
             reset();
             isPrepared.store(true);
         }
@@ -70,9 +70,13 @@ namespace zlFFT {
             deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
             decayRate.store(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]);
 
-            smoothedFreqs[0] = deltaT.load() * (-.5f);
+            const auto currentDeltaT = deltaT.load();
+            smoothedFreqs[0] = currentDeltaT * (-.5f);
             for (size_t idx = 1; idx < smoothedFreqs.size(); ++idx) {
-                smoothedFreqs[idx] = smoothedFreqs[idx - 1] + deltaT.load();
+                smoothedFreqs[idx] = smoothedFreqs[idx - 1] + currentDeltaT;
+            }
+            for (size_t i = 0; i < FFTNum; ++i) {
+                std::fill(smoothedDBs[i].begin(), smoothedDBs[i].end(), minDB * 2.f);
             }
 
             const auto tempSize = fft->getSize();
@@ -89,19 +93,23 @@ namespace zlFFT {
          * @param buffers
          */
         void process(std::array<std::reference_wrapper<juce::AudioBuffer<FloatType> >, FFTNum> buffers) {
-            const int freeSpace = std::min(abstractFIFO.getFreeSpace(), buffers[0].get().getNumSamples());
+            int freeSpace = abstractFIFO.getFreeSpace();
+            for (size_t i = 0; i < FFTNum; ++i) {
+                if (!isON[i].load()) continue;
+                freeSpace = std::min(freeSpace, buffers[i].get().getNumSamples());
+            }
             if (freeSpace == 0) { return; }
             const auto scope = abstractFIFO.write(freeSpace);
             for (size_t i = 0; i < FFTNum; ++i) {
                 if (!isON[i].load()) continue;
                 int j = 0;
                 const auto &buffer{buffers[i]};
-                const FloatType avgScale = FloatType(1) / static_cast<FloatType>(buffer.getNumChannels());
+                const FloatType avgScale = FloatType(1) / static_cast<FloatType>(buffer.get().getNumChannels());
                 int shift = 0;
                 for (; j < scope.blockSize1; ++j) {
                     FloatType sample{0};
                     for (int channel = 0; channel < buffer.get().getNumChannels(); ++channel) {
-                        sample += std::abs(buffer.get().getSample(channel, j));
+                        sample += buffer.get().getSample(channel, j);
                     }
                     sample *= avgScale;
                     sampleFIFOs[i][static_cast<size_t>(shift + scope.startIndex1)] = static_cast<float>(sample);
@@ -110,8 +118,8 @@ namespace zlFFT {
                 shift = 0;
                 for (; j < scope.blockSize1 + scope.blockSize2; ++j) {
                     FloatType sample{0};
-                    for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
-                        sample += buffer.getSample(channel, j);
+                    for (int channel = 0; channel < buffer.get().getNumChannels(); ++channel) {
+                        sample += buffer.get().getSample(channel, j);
                     }
                     sample *= avgScale;
                     sampleFIFOs[i][static_cast<size_t>(shift + scope.startIndex2)] = static_cast<float>(sample);
@@ -124,6 +132,7 @@ namespace zlFFT {
          * run the forward FFT
          */
         void run() {
+            juce::GenericScopedLock lock(spinLock);
             if (!isPrepared.load()) {
                 return;
             }
@@ -137,8 +146,8 @@ namespace zlFFT {
                 const auto scope = abstractFIFO.read(numReady);
                 const size_t numReplace = circularBuffers[0].size() - static_cast<size_t>(numReady);
                 for (const auto &i: isONVector) {
-                    const auto &circularBuffer{circularBuffers[i]};
-                    const auto &sampleFIFO{sampleFIFOs[i]};
+                    auto &circularBuffer{circularBuffers[i]};
+                    auto &sampleFIFO{sampleFIFOs[i]};
                     size_t j = 0;
                     for (; j < numReplace; ++j) {
                         circularBuffer[j] = circularBuffer[j + static_cast<size_t>(numReady)];
@@ -160,22 +169,21 @@ namespace zlFFT {
                     window->multiplyWithWindowingTable(fftBuffer.data(), fftSize.load());
                     fft->performFrequencyOnlyForwardTransform(fftBuffer.data());
                     const auto decay = actualDecayRate[i].load();
-                    const auto &smoothedDB{smoothedDBs[i]};
+                    auto &smoothedDB{smoothedDBs[i]};
                     for (size_t j = 0; j < smoothedFreqs.size(); ++j) {
                         const auto currentDB = juce::Decibels::gainToDecibels(
-                            fftBuffer[j] / static_cast<float>(fftBuffer.size()), -240.f);
+                            2.f * fftBuffer[j] / static_cast<float>(fftBuffer.size()), -240.f);
                         smoothedDB[j + 1] = currentDB < smoothedDB[j + 1]
                                                 ? smoothedDB[j + 1] * decay + currentDB * (1 - decay)
                                                 : currentDB;
                     }
-                    smoothedDB[0] = smoothedDB[1] * 2.f;
-                    smoothedDB[smoothedDB.size() - 1] = smoothedDB[smoothedDB.size() - 2] * 2.f;
+                    smoothedDB[0] = smoothedDB[1] * 1.1f;
+                    smoothedDB[smoothedDB.size() - 1] = smoothedDB[smoothedDB.size() - 2] * 1.1f;
 
                     std::vector<float> x{smoothedFreqs.begin(), smoothedFreqs.end()};
-                    std::vector<float> y = smoothedDB;
+                    std::vector<float> y{smoothedDB.begin(), smoothedDB.end()};
                     using boost::math::interpolators::makima;
-                    const auto spline = makima(std::move(x), std::move(y),
-                                               1.f, -1.f);
+                    const auto spline = makima(std::move(x), std::move(y), 1.f, -1.f);
 
                     preInterplotDBs[i].front() = spline(minFreq);
                     preInterplotDBs[i].back() = spline(maxFreq);
@@ -184,24 +192,18 @@ namespace zlFFT {
                     }
                 }
             } {
-                std::vector<std::unique_ptr<boost::math::interpolators::cardinal_quintic_b_spline<float> > > splines;
-                for (const auto &i: isONVector) {
-                    splines.push_back(std::make_unique<boost::math::interpolators::cardinal_quintic_b_spline<float> >(
-                        preInterplotDBs[i].data(), preInterplotDBs[i].size(),
-                        0.f, 2.f, {0.f, 0.f}, {0.f, 0.f}));
-                }
                 const float totalTilt = tiltSlope.load() + extraTilt.load();
                 const float tiltShiftTotal = (maxFreqLog2 - minFreqLog2) * totalTilt;
                 const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(PointNum - 1);
-                float tiltShift = tiltShiftTotal * .5f;
-                for (size_t idx = 0; idx < PointNum; ++idx) {
-                    size_t splineIdx = 0;
-                    for (const auto &i: isONVector) {
-                        const auto &spline{splines[splineIdx]};
-                        splineIdx += 1;
-                        interplotDBs[i][idx].store(tiltShift + spline->operator()(static_cast<float>(idx)));
+                for (const auto &i: isONVector) {
+                    auto spline = boost::math::interpolators::cardinal_quintic_b_spline<float>(
+                        preInterplotDBs[i].data(), preInterplotDBs[i].size(),
+                        0.f, 2.f, {0.f, 0.f}, {0.f, 0.f});
+                    float tiltShift = -tiltShiftTotal * .5f;
+                    for (size_t idx = 0; idx < PointNum; ++idx) {
+                        interplotDBs[i][idx].store(tiltShift + spline(static_cast<float>(idx)));
+                        tiltShift += tiltShiftDelta;
                     }
-                    tiltShift += tiltShiftDelta;
                 }
             }
         }
@@ -226,6 +228,42 @@ namespace zlFFT {
                 }
             }
         }
+
+        void setON(std::array<bool, FFTNum> fs) {
+            for (size_t i = 0; i < FFTNum; ++i) {
+                isON[i].store(fs[i]);
+            }
+        }
+
+        inline size_t getFFTSize() const { return fftSize.load(); }
+
+        void setDecayRate(const size_t idx, const float x) {
+            decayRates[idx].store(x);
+            updateActualDecayRate();
+        }
+
+        void setRefreshRate(const float x) {
+            refreshRate.store(x);
+            updateActualDecayRate();
+        }
+
+        void setTiltSlope(const float x) { tiltSlope.store(x); }
+
+        void setExtraTilt(const float x) { extraTilt.store(x); }
+
+        void setExtraSpeed(const float x) {
+            extraSpeed.store(x);
+            updateActualDecayRate();
+        }
+
+        void updateActualDecayRate() {
+            for (size_t i = 0; i < FFTNum; ++i) {
+                const auto x = 1 - (1 - decayRates[i].load()) * extraSpeed.load();
+                actualDecayRate[i].store(std::pow(x, 23.4375f / refreshRate.load()));
+            }
+        }
+
+        std::array<std::atomic<float>, PointNum> &getInterplotDBs(const size_t i) { return interplotDBs[i]; }
 
     private:
         juce::SpinLock spinLock;

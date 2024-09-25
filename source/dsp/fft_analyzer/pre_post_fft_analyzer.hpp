@@ -10,13 +10,13 @@
 #ifndef ZLEqualizer_PRE_POST_FFT_ANALYZER_HPP
 #define ZLEqualizer_PRE_POST_FFT_ANALYZER_HPP
 
-#include "single_fft_analyzer.hpp"
-#include "sync_fft_analyzer.hpp"
+#include "multiple_fft_analyzer.hpp"
 
 namespace zlFFT {
     template<typename FloatType>
     class PrePostFFTAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
+        static constexpr size_t pointNum = 400;
         explicit PrePostFFTAnalyzer();
 
         void prepare(const juce::dsp::ProcessSpec &spec);
@@ -29,9 +29,7 @@ namespace zlFFT {
 
         void process();
 
-        SyncFFTAnalyzer<FloatType> &getSyncFFT() { return syncFFT; }
-
-        SingleFFTAnalyzer<FloatType> &getSideFFT() { return sideFFT; }
+        MultipleFFTAnalyzer<FloatType, 3, pointNum> &getMultipleFFT() { return fftAnalyzer; }
 
         void setON(bool x);
 
@@ -49,14 +47,15 @@ namespace zlFFT {
 
         bool getPathReady() const { return isPathReady.load(); }
 
-        void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_, juce::Rectangle<float> bound);
+        void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
+                         juce::Rectangle<float> bound);
 
     private:
-        SyncFFTAnalyzer<FloatType> syncFFT{};
-        SingleFFTAnalyzer<FloatType> sideFFT{};
+        MultipleFFTAnalyzer<FloatType, 3, pointNum> fftAnalyzer;
         juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
         std::atomic<bool> isON{false};
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
+        bool currentON{false}, currentPreON{true}, currentPostON{true}, currentSideON{false};
         std::atomic<float> xx, yy, width, height;
         std::atomic<bool> isBoundReady{false};
         std::atomic<bool> isPathReady{false};
