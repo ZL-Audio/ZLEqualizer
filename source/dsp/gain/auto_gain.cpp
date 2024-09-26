@@ -24,15 +24,14 @@ namespace zlGain {
 
     template<typename FloatType>
     void AutoGain<FloatType>::processPre(juce::dsp::AudioBlock<FloatType> block) {
-        if (isON.load()) {
-            if (toReset.load()) {
-                gainDSP.setGainLinear(1);
-                gainDSP.reset();
-                gain.store(FloatType(1));
-                toReset.store(false);
-            }
+        if (isON.load() != currentIsON) {
+            currentIsON = isON.load();
+            gainDSP.setGainLinear(1);
+            gainDSP.reset();
+            gain.store(FloatType(1));
+        }
+        if (currentIsON) {
             preRMS = std::max(calculateRMS(block), FloatType(0.000000001));
-            isPreProcessed.store(true);
         }
     }
 
@@ -44,10 +43,12 @@ namespace zlGain {
 
     template<typename FloatType>
     void AutoGain<FloatType>::processPost(juce::dsp::AudioBlock<FloatType> block) {
-        if (isON.load() && isPreProcessed.exchange(false)) {
-            postRMS = std::max(calculateRMS(block), FloatType(0.000000001));
-            gain.store(gainDSP.getCurrentGainLinear());
-            gainDSP.setGainLinear(preRMS / postRMS);
+        if (currentIsON) {
+            if (preRMS > FloatType(0.00001)) {
+                postRMS = std::max(calculateRMS(block), FloatType(0.000000001));
+                gain.store(gainDSP.getCurrentGainLinear());
+                gainDSP.setGainLinear(preRMS / postRMS);
+            }
             juce::dsp::ProcessContextReplacing<FloatType> context(block);
             gainDSP.process(context);
             for (size_t channel = 0; channel < block.getNumChannels(); ++channel) {
@@ -80,7 +81,6 @@ namespace zlGain {
     template<typename FloatType>
     void AutoGain<FloatType>::enable(const bool f) {
         if (f) {
-            toReset.store(true);
             isON.store(true);
         } else {
             isON.store(false);

@@ -44,7 +44,8 @@ namespace zlGain {
         }
 
     private:
-        std::atomic<bool> isON{false}, toReset{false}, isPreProcessed{false};
+        std::atomic<bool> isON{false};
+        bool currentIsON{false};
         std::atomic<FloatType> gain;
         FloatType preRMS, postRMS;
         OriginGain<FloatType> gainDSP;
