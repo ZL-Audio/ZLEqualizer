@@ -55,7 +55,9 @@ namespace zlFilter {
         }
         // sFilter.updateParas();
         currentBypass = bypass.load();
+        mFilter.processPre(mBuffer);
         if (dynamicON.load()) {
+            if (mFilter.getShouldNotBeParallel()) { return; }
             sBufferCopy.makeCopyOf(sBuffer, true);
             sFilter.process(sBufferCopy);
             auto reducedLoudness = juce::Decibels::gainToDecibels(compressor.process(sBufferCopy));
@@ -64,17 +66,22 @@ namespace zlFilter {
             if (dynamicBypass.load()) {
                 portion = 0;
             }
-            if (!isPerSample.load() || currentFilterStructure == FilterStructure::parallel) {
+            if (!isPerSample.load()) {
                 mFilter.setGain((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(), false);
                 mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
-
-                mFilter.process(mBuffer, currentBypass);
+                if (mFilter.getShouldBeParallel()) {
+                    mFilter.process(mFilter.getParallelBuffer(), currentBypass);
+                } else {
+                    mFilter.process(mBuffer, currentBypass);
+                }
             } else {
                 const auto oldGain = mFilter.getGain();
                 const auto oldQ = mFilter.getQ();
                 const auto newGain = (1 - portion) * bFilter.getGain() + portion * tFilter.getGain();
                 const auto newQ = (1 - portion) * bFilter.getQ() + portion * tFilter.getQ();
-                auto audioWriters = mBuffer.getArrayOfWritePointers();
+                auto audioWriters = mFilter.getShouldBeParallel()
+                                        ? mFilter.getParallelBuffer().getArrayOfWritePointers()
+                                        : mBuffer.getArrayOfWritePointers();
                 for (int i = 0; i < mBuffer.getNumSamples(); ++i) {
                     const auto pp = static_cast<FloatType>(i) / static_cast<FloatType>(mBuffer.getNumSamples());
                     const auto currentGain = newGain * pp + oldGain * (1 - pp);
@@ -86,7 +93,11 @@ namespace zlFilter {
                 }
             }
         } else {
-            mFilter.process(mBuffer, currentBypass);
+            if (mFilter.getShouldBeParallel()) {
+                mFilter.process(mFilter.getParallelBuffer(), currentBypass);
+            } else {
+                mFilter.process(mBuffer, currentBypass);
+            }
         }
         if (!currentBypass) {
             compensation.process(mBuffer);

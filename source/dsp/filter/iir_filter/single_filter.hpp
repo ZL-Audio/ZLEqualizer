@@ -34,6 +34,12 @@ namespace zlFilter {
         void prepare(const juce::dsp::ProcessSpec &spec);
 
         /**
+         * prepare for processing the incoming audio buffer
+         * @param buffer
+         */
+        void processPre(juce::AudioBuffer<FloatType> &buffer);
+
+        /**
          * process the incoming audio buffer
          * @param buffer
          * @param isBypassed
@@ -120,15 +126,18 @@ namespace zlFilter {
 
         void setFilterStructure(const FilterStructure x) {
             filterStructure.store(x);
-            toUpdatePara.store(true);
         }
 
         bool getShouldBeParallel() const { return shouldBeParallel; }
+
+        bool getShouldNotBeParallel() const { return shouldNotBeParallel; }
 
         void updateParallelGain(double x) {
             gain.store(x);
             parallelMultiplier = juce::Decibels::decibelsToGain<FloatType>(static_cast<FloatType>(x)) - FloatType(1);
         }
+
+        juce::AudioBuffer<FloatType> &getParallelBuffer() { return parallelBuffer; }
 
     private:
         std::array<IIRBase<FloatType>, 16> filters{};
@@ -155,7 +164,7 @@ namespace zlFilter {
 
         std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
         FilterStructure currentFilterStructure{FilterStructure::iir};
-        bool shouldBeParallel{false};
+        bool shouldBeParallel{false}, shouldNotBeParallel{false};
         FloatType parallelMultiplier;
 
         static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,

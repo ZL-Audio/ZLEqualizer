@@ -40,15 +40,29 @@ namespace zlFilter {
     }
 
     template<typename FloatType>
-    void IIR<FloatType>::process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed) {
-        if (currentFilterStructure != filterStructure.load()) {
+    void IIR<FloatType>::processPre(juce::AudioBuffer<FloatType> &buffer) {
+        if (currentFilterStructure != filterStructure.load() || currentFilterType != filterType.load()) {
             currentFilterStructure = filterStructure.load();
+            currentFilterType = filterType.load();
+            shouldBeParallel = (currentFilterType == FilterType::peak) || (
+                                   currentFilterType == FilterType::lowShelf) || (
+                                   currentFilterType == FilterType::highShelf) || (
+                                   currentFilterType == FilterType::bandShelf);
+            shouldNotBeParallel = !shouldBeParallel;
+            shouldBeParallel = shouldBeParallel && (currentFilterStructure == FilterStructure::parallel);
+            shouldNotBeParallel = shouldNotBeParallel && (currentFilterStructure == FilterStructure::parallel);
             toReset.store(true);
             toUpdatePara.store(true);
         }
+        if (shouldBeParallel) {
+            parallelBuffer.makeCopyOf(buffer);
+        }
+    }
+
+    template<typename FloatType>
+    void IIR<FloatType>::process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed) {
         reset();
         updateParas();
-
         switch (currentFilterStructure) {
             case FilterStructure::iir: {
                 auto block = juce::dsp::AudioBlock<FloatType>(buffer);
@@ -70,14 +84,13 @@ namespace zlFilter {
             }
             case FilterStructure::parallel: {
                 if (shouldBeParallel) {
-                    parallelBuffer.makeCopyOf(buffer, true);
-                    auto block = juce::dsp::AudioBlock<FloatType>(parallelBuffer);
+                    auto block = juce::dsp::AudioBlock<FloatType>(buffer);
                     auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
                     context.isBypassed = isBypassed || bypassNextBlock.exchange(false);
                     for (size_t i = 0; i < filterNum.load(); ++i) {
                         filters[i].process(context);
                     }
-                    parallelBuffer.applyGain(parallelMultiplier);
+                    buffer.applyGain(parallelMultiplier);
                     break;
                 }
             }
@@ -163,12 +176,6 @@ namespace zlFilter {
     template<typename FloatType>
     bool IIR<FloatType>::updateParas() {
         if (toUpdatePara.exchange(false)) {
-            currentFilterType = filterType.load();
-            shouldBeParallel = (currentFilterType == FilterType::peak) || (
-                                   currentFilterType == FilterType::lowShelf) || (
-                                   currentFilterType == FilterType::highShelf) || (
-                                   currentFilterType == FilterType::bandShelf);
-            shouldBeParallel = shouldBeParallel && (currentFilterStructure == FilterStructure::parallel);
             if (!shouldBeParallel) {
                 filterNum.store(updateIIRCoeffs(currentFilterType, order.load(),
                                                 freq.load(), processSpec.sampleRate,
