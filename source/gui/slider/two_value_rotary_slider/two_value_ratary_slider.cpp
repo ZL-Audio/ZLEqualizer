@@ -222,9 +222,6 @@ namespace zlInterface {
 
     void TwoValueRotarySlider::mouseWheelMove(const juce::MouseEvent &event,
                                               const juce::MouseWheelDetails &wheel) {
-        if (event.originalComponent == &label1 || event.originalComponent == &label2) {
-            return;
-        }
         if (!showSlider2.load()) {
             slider1.mouseWheelMove(event, wheel);
         } else {
