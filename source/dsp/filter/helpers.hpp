@@ -24,6 +24,10 @@ namespace zlFilter {
         notch, bandPass, tiltShelf, bandShelf,
     };
 
+    enum FilterStructure {
+        iir, svf, parallel
+    };
+
     inline double dot_product(const std::array<double, 3> &x, const std::array<double, 3> &y) {
         return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
     }

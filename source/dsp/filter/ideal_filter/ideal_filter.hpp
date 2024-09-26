@@ -12,5 +12,6 @@
 
 #include "single_filter.hpp"
 #include "empty_filter.hpp"
+#include "static_gain_compensation.hpp"
 
 #endif //ZLFILTER_IDEAL_FILTER_HPP

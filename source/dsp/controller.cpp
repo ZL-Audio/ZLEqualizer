@@ -17,7 +17,7 @@ namespace zlDSP {
             histograms[i].setDecayRate(FloatType(0.99999));
             subHistograms[i].setDecayRate(FloatType(0.9995));
         }
-        soloFilter.setSVFON(true);
+        soloFilter.setFilterStructure(zlFilter::FilterStructure::svf);
     }
 
     template<typename FloatType>
@@ -78,6 +78,16 @@ namespace zlDSP {
             currentFtilerStructure = filterStructure.load();
             updateFilterStructure();
         }
+        if (toUpdateLRs.exchange(false)) {
+            useLR = false;
+            useMS = false;
+            for (size_t i = 0; i < bandNUM; ++i) {
+                currentFilterLRs[i] = filterLRs[i].load();
+                useLR = useLR || (currentFilterLRs[i] == lrType::left || currentFilterLRs[i] == lrType::right);
+                useMS = useMS || (currentFilterLRs[i] == lrType::mid || currentFilterLRs[i] == lrType::side);
+            }
+            updateTrackersON();
+        }
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
         juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
         // if no side chain, copy the main buffer into the side buffer
@@ -129,6 +139,9 @@ namespace zlDSP {
                 processSolo(subMainBuffer, subSideBuffer);
             } else {
                 processDynamic(subMainBuffer, subSideBuffer);
+                if (currentFtilerStructure == filterStructure::parallel) {
+                    processParallelPost(subMainBuffer);
+                }
             }
         }
         fftAnalyzezr.pushPostFFTBuffer(subMainBuffer);
@@ -221,7 +234,7 @@ namespace zlDSP {
             }
         }
         // LR filters process
-        if (useLR.load()) {
+        if (useLR) {
             FloatType lBaseLine = 0, rBaseLine = 0;
             lrMainSplitter.split(subMainBuffer);
             lrSideSplitter.split(subSideBuffer);
@@ -259,7 +272,7 @@ namespace zlDSP {
             lrMainSplitter.combine(subMainBuffer);
         }
         // MS filters process
-        if (useMS.load()) {
+        if (useMS) {
             FloatType mBaseLine = 0, sBaseLine = 0;
             msMainSplitter.split(subMainBuffer);
             msSideSplitter.split(subSideBuffer);
@@ -316,6 +329,44 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
+    void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer) {
+        for (const auto &f : {true, false}) {
+            for (size_t i = 0; i < bandNUM; ++i) {
+                if (filters[i].getMainFilter().getShouldBeParallel() == f && filterLRs[i].load() == lrType::stereo) {
+                    filters[i].processParallelPost(subMainBuffer);
+                }
+            }
+            if (useLR) {
+                lrMainSplitter.split(subMainBuffer);
+                for (size_t i = 0; i < bandNUM; ++i) {
+                    if (filters[i].getMainFilter().getShouldBeParallel() == f) {
+                        if (filterLRs[i].load() == lrType::left) {
+                            filters[i].processParallelPost(lrMainSplitter.getLBuffer());
+                        } else if (filterLRs[i].load() == lrType::right) {
+                            filters[i].processParallelPost(lrMainSplitter.getRBuffer());
+                        }
+                    }
+                }
+                lrMainSplitter.combine(subMainBuffer);
+            }
+            if (useMS) {
+                msMainSplitter.split(subMainBuffer);
+                for (size_t i = 0; i < bandNUM; ++i) {
+                    if (filters[i].getMainFilter().getShouldBeParallel() == f) {
+                        if (filterLRs[i].load() == lrType::mid) {
+                            filters[i].processParallelPost(msMainSplitter.getMBuffer());
+                        } else if (filterLRs[i].load() == lrType::side) {
+                            filters[i].processParallelPost(msMainSplitter.getSBuffer());
+                        }
+                    }
+                }
+                msMainSplitter.combine(subMainBuffer);
+            }
+        }
+    }
+
+
+    template<typename FloatType>
     void Controller<FloatType>::processBypass() {
         for (size_t i = 0; i < bandNUM; ++i) {
             filters[i].processBypass();
@@ -326,21 +377,8 @@ namespace zlDSP {
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
         filterLRs[idx].store(x);
         // update useLR and useMS
-        useLR.store(false);
-        for (auto &lr: filterLRs) {
-            if (lr.load() == lrType::left || lr.load() == lrType::right) {
-                useLR.store(true);
-                break;
-            }
-        }
-        useMS.store(false);
-        for (auto &lr: filterLRs) {
-            if (lr.load() == lrType::mid || lr.load() == lrType::side) {
-                useMS.store(true);
-                break;
-            }
-        }
-        updateTrackersON();
+        toUpdateLRs.store(true);
+
     }
 
     template<typename FloatType>
@@ -468,17 +506,22 @@ namespace zlDSP {
             case filterStructure::matched:
             case filterStructure::mixed: {
                 for (auto &f: filters) {
-                    f.setSVFON(false);
+                    f.setFilterStructure(zlFilter::FilterStructure::iir);
                 }
                 break;
             }
             case filterStructure::svf: {
                 for (auto &f: filters) {
-                    f.setSVFON(true);
+                    f.setFilterStructure(zlFilter::FilterStructure::svf);
                 }
                 break;
             }
-            case filterStructure::parallel:
+            case filterStructure::parallel: {
+                for (auto &f: filters) {
+                    f.setFilterStructure(zlFilter::FilterStructure::parallel);
+                }
+                break;
+            }
             case filterStructure::linear: {
             }
         }

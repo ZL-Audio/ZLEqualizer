@@ -33,12 +33,28 @@ namespace zlFilter {
 
     template<typename FloatType>
     void DynamicIIR<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
-        if (!active.load()) { return; }
+        currentActive = active.load();
+        if (!currentActive) { return; }
         if (bFilter.exchangeParaOutdated(false)) {
             compensation.update();
         }
-        sFilter.updateParas();
-        const auto currentBypass = bypass.load();
+        if (currentFilterStructure != filterStructure.load()) {
+            currentFilterStructure = filterStructure.load();
+            switch (currentFilterStructure) {
+                case FilterStructure::iir:
+                case FilterStructure::svf: {
+                    mFilter.setFilterStructure(currentFilterStructure);
+                    sFilter.setFilterStructure(currentFilterStructure);
+                    break;
+                }
+                case FilterStructure::parallel: {
+                    mFilter.setFilterStructure(currentFilterStructure);
+                    sFilter.setFilterStructure(FilterStructure::iir);
+                }
+            }
+        }
+        // sFilter.updateParas();
+        currentBypass = bypass.load();
         if (dynamicON.load()) {
             sBufferCopy.makeCopyOf(sBuffer, true);
             sFilter.process(sBufferCopy);
@@ -48,7 +64,7 @@ namespace zlFilter {
             if (dynamicBypass.load()) {
                 portion = 0;
             }
-            if (!isPerSample.load()) {
+            if (!isPerSample.load() || currentFilterStructure == FilterStructure::parallel) {
                 mFilter.setGain((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(), false);
                 mFilter.setQ((1 - portion) * bFilter.getQ() + portion * tFilter.getQ(), true);
 
@@ -75,6 +91,12 @@ namespace zlFilter {
         if (!currentBypass) {
             compensation.process(mBuffer);
         }
+    }
+
+    template<typename FloatType>
+    void DynamicIIR<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &buffer) {
+        if (!currentActive) { return; }
+        mFilter.processParallelPost(buffer, currentBypass);
     }
 
     template<typename FloatType>

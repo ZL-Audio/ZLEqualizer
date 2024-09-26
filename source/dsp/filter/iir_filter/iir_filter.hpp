@@ -11,6 +11,5 @@
 #define ZLEQUALIZER_IIR_FILTER_HPP
 
 #include "single_filter.hpp"
-#include "static_gain_compensation.hpp"
 
 #endif //ZLEQUALIZER_IIR_FILTER_HPP

@@ -10,11 +10,10 @@
 #ifndef ZLFILTER_DYNAMIC_IIR_FILTER_HPP
 #define ZLFILTER_DYNAMIC_IIR_FILTER_HPP
 
-#include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
 #include "../iir_filter/iir_filter.hpp"
-#include "../ideal_filter/empty_filter.hpp"
+#include "../ideal_filter/ideal_filter.hpp"
 #include "../../compressor/compressor.hpp"
 
 namespace zlFilter {
@@ -39,6 +38,8 @@ namespace zlFilter {
          * @param sBuffer side chain audio buffer
          */
         void process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer);
+
+        void processParallelPost(juce::AudioBuffer<FloatType> &buffer);
 
         void processBypass();
 
@@ -73,9 +74,8 @@ namespace zlFilter {
 
         inline void setCompoensationON(const bool x) { compensation.enable(x); }
 
-        void setSVFON(const bool f) {
-            mFilter.setSVFON(f);
-            sFilter.setSVFON(f);
+        void setFilterStructure(const FilterStructure x) {
+            filterStructure.store(x);
         }
 
         void setIsPerSample(const bool x) { isPerSample.store(x); }
@@ -95,6 +95,9 @@ namespace zlFilter {
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass{true}, active{false}, dynamicON{false}, dynamicBypass{false};
+        bool currentActive, currentBypass;
+        std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
+        FilterStructure currentFilterStructure{FilterStructure::iir};
         juce::AudioBuffer<FloatType> sampleBuffer;
         std::atomic<bool> isPerSample{false};
     };

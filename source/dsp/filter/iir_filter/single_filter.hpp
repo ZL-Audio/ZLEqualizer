@@ -13,15 +13,12 @@
 #include <juce_dsp/juce_dsp.h>
 #include "../filter_design/filter_design.hpp"
 #include "coeff/martin_coeff.hpp"
-#include "../static_frequency_array.hpp"
 #include "iir_base.hpp"
 #include "svf_base.hpp"
 
 namespace zlFilter {
     /**
-     * a lock free, thread safe static IIR filter
-     * it processes audio the the real-time thread, and the response curve can be accessed in another non-realtime thread
-     * make sure there is at most one non-realtime thread accessing the response curve data
+     * an IIR filter which processes audio on the real-time thread
      * the maximum modulation rate of parameters is once per block
      * @tparam FloatType
      */
@@ -36,7 +33,19 @@ namespace zlFilter {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        /**
+         * process the incoming audio buffer
+         * @param buffer
+         * @param isBypassed
+         */
         void process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed = false);
+
+        /**
+         * add the processed parallel buffer to the incoming audio buffer
+         * @param buffer
+         * @param isBypassed
+         */
+        void processParallelPost(juce::AudioBuffer<FloatType> &buffer, bool isBypassed = false);
 
         /**
          * set the frequency of the filter
@@ -109,15 +118,28 @@ namespace zlFilter {
          */
         std::array<IIRBase<FloatType>, 16> &getFilters() { return filters; }
 
-        void setSVFON(const bool f) { useSVF.store(f); }
+        void setFilterStructure(const FilterStructure x) {
+            filterStructure.store(x);
+            toUpdatePara.store(true);
+        }
+
+        bool getShouldBeParallel() const { return shouldBeParallel; }
+
+        void updateParallelGain(double x) {
+            gain.store(x);
+            parallelMultiplier = juce::Decibels::decibelsToGain<FloatType>(static_cast<FloatType>(x)) - FloatType(1);
+        }
 
     private:
         std::array<IIRBase<FloatType>, 16> filters{};
+        juce::AudioBuffer<FloatType> parallelBuffer;
 
         std::atomic<size_t> filterNum{1};
         std::atomic<double> freq = 1000, gain = 0, q = 0.707;
         std::atomic<size_t> order = 2;
-        std::atomic<FilterType> filterType = FilterType::peak;
+        std::atomic<FilterType> filterType{FilterType::peak};
+        FilterType currentFilterType{FilterType::peak};
+
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
         std::atomic<float> sampleRate{48000};
         std::atomic<juce::uint32> numChannels;
@@ -130,6 +152,11 @@ namespace zlFilter {
         bool currentUseSVF{false};
         std::array<SVFBase<FloatType>, 16> svfFilters{};
         std::atomic<bool> bypassNextBlock{false};
+
+        std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
+        FilterStructure currentFilterStructure{FilterStructure::iir};
+        bool shouldBeParallel{false};
+        FloatType parallelMultiplier;
 
         static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,

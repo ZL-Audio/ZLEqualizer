@@ -10,8 +10,8 @@
 #ifndef STATIC_GAIN_COMPENSATION_HPP
 #define STATIC_GAIN_COMPENSATION_HPP
 
-#include "../ideal_filter/empty_filter.hpp"
 #include <juce_dsp/juce_dsp.h>
+#include "empty_filter.hpp"
 
 namespace zlFilter {
     template<typename FloatType>

@@ -131,9 +131,12 @@ namespace zlDSP {
         std::array<zlFilter::Empty<FloatType>, bandNUM> mainFilters;
 
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
+        std::array<lrType::lrTypes, bandNUM> currentFilterLRs;
+        std::atomic<bool> toUpdateLRs;
+        bool useLR, useMS;
+
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
-        std::atomic<bool> useLR, useMS;
 
         std::array<std::atomic<bool>, bandNUM> dynRelatives;
         zlCompressor::RMSTracker<FloatType> tracker, lTracker, rTracker, mTracker, sTracker;
@@ -186,6 +189,8 @@ namespace zlDSP {
 
         void processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                             juce::AudioBuffer<FloatType> &subSideBuffer);
+
+        void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void updateTrackersON();
 
