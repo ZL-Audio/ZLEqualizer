@@ -23,6 +23,7 @@ namespace zlFFT {
     class MultipleFFTAnalyzer final {
     public:
         explicit MultipleFFTAnalyzer() {
+            static_assert(PointNum % 2 == 1);
             tiltSlope.store(zlState::ffTTilt::slopes[static_cast<size_t>(zlState::ffTTilt::defaultI)]);
             interplotFreqs[0] = minFreq;
             for (size_t i = 1; i < PointNum; ++i) {
@@ -71,7 +72,7 @@ namespace zlFFT {
             decayRate.store(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]);
 
             const auto currentDeltaT = deltaT.load();
-            smoothedFreqs[0] = currentDeltaT * (-.5f);
+            smoothedFreqs[0] = 0.f;
             for (size_t idx = 1; idx < smoothedFreqs.size(); ++idx) {
                 smoothedFreqs[idx] = smoothedFreqs[idx - 1] + currentDeltaT;
             }
@@ -170,24 +171,20 @@ namespace zlFFT {
                     fft->performFrequencyOnlyForwardTransform(fftBuffer.data());
                     const auto decay = actualDecayRate[i].load();
                     auto &smoothedDB{smoothedDBs[i]};
+                    const auto ampScale = 2.f / static_cast<float>(fftBuffer.size());
                     for (size_t j = 0; j < smoothedFreqs.size(); ++j) {
-                        const auto currentDB = juce::Decibels::gainToDecibels(
-                            2.f * fftBuffer[j] / static_cast<float>(fftBuffer.size()), -240.f);
-                        smoothedDB[j + 1] = currentDB < smoothedDB[j + 1]
-                                                ? smoothedDB[j + 1] * decay + currentDB * (1 - decay)
-                                                : currentDB;
+                        const auto currentDB = juce::Decibels::gainToDecibels(ampScale * fftBuffer[j], -240.f);
+                        smoothedDB[j] = currentDB < smoothedDB[j]
+                                            ? smoothedDB[j] * decay + currentDB * (1 - decay)
+                                            : currentDB;
                     }
-                    smoothedDB[0] = smoothedDB[1] * 1.1f;
-                    smoothedDB[smoothedDB.size() - 1] = smoothedDB[smoothedDB.size() - 2] * 1.1f;
 
                     std::vector<float> x{smoothedFreqs.begin(), smoothedFreqs.end()};
                     std::vector<float> y{smoothedDB.begin(), smoothedDB.end()};
                     using boost::math::interpolators::makima;
-                    const auto spline = makima(std::move(x), std::move(y), 1.f, -1.f);
+                    const auto spline = makima(std::move(x), std::move(y), 0.f, 0.f);
 
-                    preInterplotDBs[i].front() = spline(minFreq);
-                    preInterplotDBs[i].back() = spline(maxFreq);
-                    for (size_t j = 1; j < preInterplotDBs[i].size() - 1; ++j) {
+                    for (size_t j = 0; j < preInterplotDBs[i].size(); ++j) {
                         preInterplotDBs[i][j] = spline(interplotFreqs[j * 2]);
                     }
                 }
@@ -277,8 +274,8 @@ namespace zlFFT {
         juce::AbstractFifo abstractFIFO{1};
 
         std::vector<float> fftBuffer;
-        std::array<float, (1 << defaultFFTOrder) + 2> smoothedFreqs{};
-        std::array<std::array<float, (1 << defaultFFTOrder) + 2>, FFTNum> smoothedDBs{};
+        std::array<float, (1 << defaultFFTOrder) + 1> smoothedFreqs{};
+        std::array<std::array<float, (1 << defaultFFTOrder) + 1>, FFTNum> smoothedDBs{};
         std::array<float, PointNum> interplotFreqs{};
         std::array<std::array<float, PointNum / 2 + 1>, FFTNum> preInterplotDBs{};
         std::array<std::array<std::atomic<float>, PointNum>, FFTNum> interplotDBs{};
