@@ -10,19 +10,19 @@
 #include "curve_panel.hpp"
 
 namespace zlPanel {
-    CurvePanel::CurvePanel(juce::AudioProcessorValueTreeState &parameters,
-                           juce::AudioProcessorValueTreeState &parametersNA,
+    CurvePanel::CurvePanel(PluginProcessor &processor,
                            zlInterface::UIBase &base,
                            zlDSP::Controller<double> &c)
         : Thread("curve panel"),
-          parametersRef(parameters), parametersNARef(parametersNA), uiBase(base),
+          processorRef(processor),
+          parametersRef(processor.parameters), parametersNARef(processor.parametersNA), uiBase(base),
           controllerRef(c),
-          backgroundPanel(parameters, parametersNA, base),
+          backgroundPanel(parametersRef, parametersNARef, base),
           fftPanel(c.getAnalyzer(), base),
           conflictPanel(c.getConflictAnalyzer(), base),
-          sumPanel(parameters, base, c, baseFilters, mainFilters),
-          soloPanel(parameters, parametersNA, base, c),
-          buttonPanel(parameters, parametersNA, base, c),
+          sumPanel(parametersRef, base, c, baseFilters, mainFilters),
+          soloPanel(parametersRef, parametersNARef, base, c),
+          buttonPanel(processorRef, base, c),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
         for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {
@@ -37,7 +37,7 @@ namespace zlPanel {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             const auto idx = zlState::bandNUM - i - 1;
             singlePanels[i] =
-                    std::make_unique<SinglePanel>(idx, parameters, parametersNA, base, c,
+                    std::make_unique<SinglePanel>(idx, parametersRef, parametersNARef, base, c,
                                                   baseFilters[idx], targetFilters[idx], mainFilters[idx]);
             addAndMakeVisible(*singlePanels[i]);
         }

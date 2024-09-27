@@ -10,11 +10,11 @@
 #include "button_panel.hpp"
 
 namespace zlPanel {
-    ButtonPanel::ButtonPanel(juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
+    ButtonPanel::ButtonPanel(PluginProcessor &processor,
                              zlInterface::UIBase &base,
                              zlDSP::Controller<double> &c)
-        : parametersRef(parameters), parametersNARef(parametersNA),
+        : processorRef(processor),
+          parametersRef(processor.parameters), parametersNARef(processor.parametersNA),
           uiBase(base), controllerRef(c),
           wheelSlider{
               zlInterface::SnappingSlider{base},
@@ -22,8 +22,8 @@ namespace zlPanel {
               zlInterface::SnappingSlider{base}
           } {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            panels[i] = std::make_unique<FilterButtonPanel>(i, parameters, parametersNA, base);
-            linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parameters, parametersNA, base);
+            panels[i] = std::make_unique<FilterButtonPanel>(i, processorRef, base);
+            linkButtons[i] = std::make_unique<LinkButtonPanel>(i, parametersRef, parametersNARef, base);
             // when main dragger is clicked, de-select target & side dragger
             panels[i]->getDragger().getButton().onStateChange = [this]() {
                 const auto idx = selectBandIdx.load();
@@ -110,7 +110,7 @@ namespace zlPanel {
     }
 
     void ButtonPanel::drawFilterParas(juce::Graphics &g, const zlFilter::FilterType fType,
-        const double freq, const double gain, const juce::Rectangle<float> &bound) {
+                                      const double freq, const double gain, const juce::Rectangle<float> &bound) {
         switch (fType) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
@@ -156,7 +156,8 @@ namespace zlPanel {
 
     void ButtonPanel::drawGain(juce::Graphics &g, const float gain, const juce::Rectangle<float> &bound,
                                const bool isLeft) {
-        const auto tempBound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        const auto tempBound = bound.withSizeKeepingCentre(bound.getWidth(),
+                                                           bound.getHeight() - 2 * uiBase.getFontSize());
         const auto gString = std::abs(gain) < 10 ? juce::String(gain, 2, false) : juce::String(gain, 1, false);
         const auto p = juce::jlimit(-0.5f, 0.5f, -.5f * gain / maximumDB.load());
         auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 2.7f, uiBase.getFontSize() * 1.5f);
@@ -303,6 +304,11 @@ namespace zlPanel {
         initValues.emplace_back(zlDSP::Q::convertTo01(zlDSP::Q::defaultV));
         initIDs.emplace_back(zlDSP::bypass::ID);
         initValues.emplace_back(zlDSP::bypass::convertTo01(false));
+        // turn on dynamic is command is down
+        if (event.mods.isCommandDown()) {
+            initIDs.emplace_back(zlDSP::dynamicON::ID);
+            initValues.emplace_back(zlDSP::dynamicON::convertTo01(true));
+        }
 
         for (size_t i = 0; i < initIDs.size(); ++i) {
             const auto paraID = zlDSP::appendSuffix(initIDs[i], idx);
@@ -310,6 +316,10 @@ namespace zlPanel {
             _para->beginChangeGesture();
             _para->setValueNotifyingHost(initValues[i]);
             _para->endChangeGesture();
+        }
+
+        if (event.mods.isCommandDown()) {
+            processorRef.getFiltersAttach().turnOnDynamic(idx);
         }
 
         if (idx != selectBandIdx.load()) {

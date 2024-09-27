@@ -13,6 +13,7 @@
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../../state/state.hpp"
+#include "../../../PluginProcessor.hpp"
 
 #include "button_pop_up.hpp"
 
@@ -21,8 +22,7 @@ namespace zlPanel {
                                     private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit FilterButtonPanel(size_t bandIdx,
-                                   juce::AudioProcessorValueTreeState &parameters,
-                                   juce::AudioProcessorValueTreeState &parametersNA,
+                                   PluginProcessor &processor,
                                    zlInterface::UIBase &base);
 
         ~FilterButtonPanel() override;
@@ -50,7 +50,10 @@ namespace zlPanel {
             buttonPopUp.updateBounds();
         }
 
+        void mouseDoubleClick(const juce::MouseEvent &event) override;
+
     private:
+        PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlInterface::Dragger dragger, targetDragger, sideDragger;

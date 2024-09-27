@@ -13,7 +13,7 @@ namespace zlPanel {
     MainPanel::MainPanel(PluginProcessor &p)
         : processorRef(p), state(p.state), uiBase(p.state),
           controlPanel(p, uiBase),
-          curvePanel(p.parameters, p.parametersNA, uiBase, p.getController()),
+          curvePanel(p, uiBase, p.getController()),
           statePanel(p, uiBase),
           uiSettingPanel(p, uiBase), uiSettingButton(uiSettingPanel, uiBase) {
         addAndMakeVisible(curvePanel);

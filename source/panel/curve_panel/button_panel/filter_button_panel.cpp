@@ -10,14 +10,15 @@
 #include "filter_button_panel.hpp"
 
 namespace zlPanel {
-    FilterButtonPanel::FilterButtonPanel(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
-                                         juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
-        : parametersRef(parameters), parametersNARef(parametersNA),
+    FilterButtonPanel::FilterButtonPanel(const size_t bandIdx, PluginProcessor &processor, zlInterface::UIBase &base)
+        : processorRef(processor),
+          parametersRef(processor.parameters), parametersNARef(processor.parametersNA),
           uiBase(base),
           dragger(base), targetDragger(base), sideDragger(base),
-          buttonPopUp(bandIdx, parameters, parametersNA, base),
+          buttonPopUp(bandIdx, parametersRef, parametersNARef, base),
           band{bandIdx} {
         dragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
+        dragger.addMouseListener(this, true);
         targetDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::upDownArrow);
         targetDragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
         sideDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::rectangle);
@@ -346,6 +347,22 @@ namespace zlPanel {
         }
         if (!f) {
             removeChildComponent(&buttonPopUp);
+        }
+    }
+
+    void FilterButtonPanel::mouseDoubleClick(const juce::MouseEvent &event) {
+        if (event.mods.isCommandDown()) {
+            const auto paraID = zlDSP::appendSuffix(zlDSP::dynamicON::ID, band.load());
+            const auto newValue = 1.f - parametersRef.getRawParameterValue(paraID)->load();
+            auto *para = parametersRef.getParameter(paraID);
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(newValue);
+            para->endChangeGesture();
+            if (newValue > 0.5f) {
+                processorRef.getFiltersAttach().turnOnDynamic(band.load());
+            } else {
+                processorRef.getFiltersAttach().turnOffDynamic(band.load());
+            }
         }
     }
 } // zlPanel

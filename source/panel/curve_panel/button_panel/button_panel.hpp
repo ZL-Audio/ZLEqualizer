@@ -14,6 +14,7 @@
 #include "link_button_panel.hpp"
 #include "../../../dsp/dsp.hpp"
 #include "../../../state/state.hpp"
+#include "../../../PluginProcessor.hpp"
 
 namespace zlPanel {
     class ButtonPanel final : public juce::Component,
@@ -22,8 +23,7 @@ namespace zlPanel {
                               private juce::AsyncUpdater,
                               private juce::ChangeListener {
     public:
-        explicit ButtonPanel(juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
+        explicit ButtonPanel(PluginProcessor &processor,
                              zlInterface::UIBase &base,
                              zlDSP::Controller<double> &c);
 
@@ -32,7 +32,7 @@ namespace zlPanel {
         void paint(juce::Graphics &g) override;
 
         void updateDraggers() const {
-            for (const auto &p : panels) {
+            for (const auto &p: panels) {
                 p->getDragger().updateButton();
                 p->getTargetDragger().updateButton();
                 p->getSideDragger().updateButton();
@@ -56,6 +56,7 @@ namespace zlPanel {
         std::array<std::unique_ptr<FilterButtonPanel>, zlState::bandNUM> panels;
         std::array<std::unique_ptr<LinkButtonPanel>, zlState::bandNUM> linkButtons;
 
+        PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &controllerRef;
@@ -77,7 +78,8 @@ namespace zlPanel {
         inline static float xtoFreq(const float x, const juce::Rectangle<float> bound) {
             const auto portion = (x - bound.getX()) / bound.getWidth();
             return std::exp(portion *
-                            static_cast<float>(std::log(zlFilter::frequencies.back() / zlFilter::frequencies.front()))) *
+                            static_cast<float>(std::log(zlFilter::frequencies.back() / zlFilter::frequencies.front())))
+                   *
                    static_cast<float>(zlFilter::frequencies.front());
         }
 
@@ -104,7 +106,7 @@ namespace zlPanel {
         void attachGroup(size_t idx);
 
         inline void drawFilterParas(juce::Graphics &g, zlFilter::FilterType fType,
-            double freq, double gain, const juce::Rectangle<float> &bound);
+                                    double freq, double gain, const juce::Rectangle<float> &bound);
 
         inline void drawFreq(juce::Graphics &g, float freq, const juce::Rectangle<float> &bound, bool isTop);
 

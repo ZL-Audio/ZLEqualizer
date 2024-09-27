@@ -10,6 +10,7 @@
 #ifndef ZLEqualizer_CURVE_PANEL_HPP
 #define ZLEqualizer_CURVE_PANEL_HPP
 
+#include "../../PluginProcessor.hpp"
 #include "../../dsp/dsp.hpp"
 #include "background_panel/background_panel.hpp"
 #include "fft_panel/fft_panel.hpp"
@@ -24,8 +25,7 @@ namespace zlPanel {
                              private juce::AudioProcessorValueTreeState::Listener,
                              private juce::Thread {
     public:
-        explicit CurvePanel(juce::AudioProcessorValueTreeState &parameters,
-                            juce::AudioProcessorValueTreeState &parametersNA,
+        explicit CurvePanel(PluginProcessor &processor,
                             zlInterface::UIBase &base,
                             zlDSP::Controller<double> &c);
 
@@ -33,11 +33,12 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void paintOverChildren (juce::Graphics &g) override;
+        void paintOverChildren(juce::Graphics &g) override;
 
         void resized() override;
 
     private:
+        PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &controllerRef;
