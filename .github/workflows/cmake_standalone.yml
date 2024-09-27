@@ -116,7 +116,7 @@ jobs:
           link: "static"
 
       - name: Cache the build
-        uses: mozilla-actions/sccache-action@v0.0.5
+        uses: mozilla-actions/sccache-action@v0.0.6
 
       - name: Import Certificates (macOS)
         uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
