@@ -16,7 +16,7 @@ namespace zlFFT {
     template<typename FloatType>
     class PrePostFFTAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
-        static constexpr size_t pointNum = 400;
+        static constexpr size_t pointNum = 401;
         explicit PrePostFFTAnalyzer();
 
         void prepare(const juce::dsp::ProcessSpec &spec);
