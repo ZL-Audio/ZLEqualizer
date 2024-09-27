@@ -19,7 +19,7 @@ namespace zlFilter {
             for (size_t i = 0; i < filterNum.load(); ++i) {
                 svfFilters[i].reset();
             }
-            bypassNextBlock.store(true);
+            bypassNextBlock = true;
         }
     }
 
@@ -57,18 +57,21 @@ namespace zlFilter {
         if (shouldBeParallel) {
             parallelBuffer.makeCopyOf(buffer);
         }
+        reset();
+        if (toUpdatePara.exchange(false)) {
+            updateCoeffs();
+        }
     }
 
     template<typename FloatType>
     void IIR<FloatType>::process(juce::AudioBuffer<FloatType> &buffer, bool isBypassed) {
-        reset();
-        updateParas();
         switch (currentFilterStructure) {
             case FilterStructure::iir: {
                 auto block = juce::dsp::AudioBlock<FloatType>(buffer);
                 auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
-                context.isBypassed = isBypassed || bypassNextBlock.exchange(false);
-                for (size_t i = 0; i < filterNum.load(); ++i) {
+                context.isBypassed = isBypassed || bypassNextBlock;
+                bypassNextBlock = false;
+                for (size_t i = 0; i < currentFilterNum; ++i) {
                     filters[i].process(context);
                 }
                 break;
@@ -76,8 +79,9 @@ namespace zlFilter {
             case FilterStructure::svf: {
                 auto block = juce::dsp::AudioBlock<FloatType>(buffer);
                 auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
-                context.isBypassed = isBypassed || bypassNextBlock.exchange(false);
-                for (size_t i = 0; i < filterNum.load(); ++i) {
+                context.isBypassed = isBypassed || bypassNextBlock;
+                bypassNextBlock = false;
+                for (size_t i = 0; i < currentFilterNum; ++i) {
                     svfFilters[i].process(context);
                 }
                 break;
@@ -86,8 +90,9 @@ namespace zlFilter {
                 if (shouldBeParallel) {
                     auto block = juce::dsp::AudioBlock<FloatType>(buffer);
                     auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
-                    context.isBypassed = isBypassed || bypassNextBlock.exchange(false);
-                    for (size_t i = 0; i < filterNum.load(); ++i) {
+                    context.isBypassed = isBypassed || bypassNextBlock;
+                    bypassNextBlock = false;
+                    for (size_t i = 0; i < currentFilterNum; ++i) {
                         filters[i].process(context);
                     }
                     buffer.applyGain(parallelMultiplier);
@@ -152,9 +157,48 @@ namespace zlFilter {
     }
 
     template<typename FloatType>
+    void IIR<FloatType>::setGainNow(FloatType x) {
+        gain.store(static_cast<double>(x));
+        switch (currentFilterStructure) {
+            case FilterStructure::iir:
+            case FilterStructure::svf: {
+                updateCoeffs();
+                break;
+            }
+            case FilterStructure::parallel: {
+                updateParallelGain(x);
+            }
+        }
+    }
+
+    template<typename FloatType>
     void IIR<FloatType>::setQ(const FloatType x, const bool update) {
         q.store(static_cast<double>(x));
         if (update) { toUpdatePara.store(true); }
+    }
+
+    template<typename FloatType>
+    void IIR<FloatType>::setGainAndQNow(FloatType g1, FloatType q1) {
+        bool shouldUpdateCoeffs{false};
+        if (std::abs(static_cast<double>(q1) - q.load()) >= 0.00001) {
+            q.store(static_cast<double>(q1));
+            shouldUpdateCoeffs = true;
+        }
+        gain.store(static_cast<double>(g1));
+        switch (currentFilterStructure) {
+            case FilterStructure::iir:
+            case FilterStructure::svf: {
+                updateCoeffs();
+                break;
+            }
+            case FilterStructure::parallel: {
+                if (shouldUpdateCoeffs) {
+                    updateCoeffs();
+                } else {
+                    updateParallelGain(g1);
+                }
+            }
+        }
     }
 
     template<typename FloatType>
@@ -174,42 +218,39 @@ namespace zlFilter {
     }
 
     template<typename FloatType>
-    bool IIR<FloatType>::updateParas() {
-        if (toUpdatePara.exchange(false)) {
-            if (!shouldBeParallel) {
-                filterNum.store(updateIIRCoeffs(currentFilterType, order.load(),
-                                                freq.load(), processSpec.sampleRate,
-                                                gain.load(), q.load(), coeffs));
-            } else {
-                FilterType actualType{FilterType::bandPass};
-                if (currentFilterType == FilterType::lowShelf) {
-                    actualType = FilterType::lowPass;
-                } else if (currentFilterType == FilterType::highShelf) {
-                    actualType = FilterType::highPass;
-                }
-                filterNum.store(updateIIRCoeffs(actualType,
-                                                std::min(order.load(), static_cast<size_t>(2)),
-                                                freq.load(), processSpec.sampleRate,
-                                                gain.load(), q.load(), coeffs));
-                updateParallelGain(gain.load());
+    void IIR<FloatType>::updateCoeffs() {
+        if (!shouldBeParallel) {
+            filterNum.store(updateIIRCoeffs(currentFilterType, order.load(),
+                                            freq.load(), processSpec.sampleRate,
+                                            gain.load(), q.load(), coeffs));
+        } else {
+            FilterType actualType{FilterType::bandPass};
+            if (currentFilterType == FilterType::lowShelf) {
+                actualType = FilterType::lowPass;
+            } else if (currentFilterType == FilterType::highShelf) {
+                actualType = FilterType::highPass;
             }
-            switch (currentFilterStructure) {
-                case FilterStructure::iir:
-                case FilterStructure::parallel: {
-                    for (size_t i = 0; i < filterNum.load(); i++) {
-                        filters[i].updateFromBiquad(coeffs[i]);
-                    }
-                    break;
-                }
-                case FilterStructure::svf: {
-                    for (size_t i = 0; i < filterNum.load(); i++) {
-                        svfFilters[i].updateFromBiquad(coeffs[i]);
-                    }
-                }
-            }
-            return true;
+            filterNum.store(updateIIRCoeffs(actualType,
+                                            std::min(order.load(), static_cast<size_t>(2)),
+                                            freq.load(), processSpec.sampleRate,
+                                            gain.load(), q.load(), coeffs));
+            updateParallelGain(gain.load());
         }
-        return false;
+        currentFilterNum = filterNum.load();
+        switch (currentFilterStructure) {
+            case FilterStructure::iir:
+            case FilterStructure::parallel: {
+                for (size_t i = 0; i < currentFilterNum; i++) {
+                    filters[i].updateFromBiquad(coeffs[i]);
+                }
+                break;
+            }
+            case FilterStructure::svf: {
+                for (size_t i = 0; i < currentFilterNum; i++) {
+                    svfFilters[i].updateFromBiquad(coeffs[i]);
+                }
+            }
+        }
     }
 
     template

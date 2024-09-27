@@ -154,8 +154,7 @@ namespace zlDSP {
     void Controller<FloatType>::processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
                                             juce::AudioBuffer<FloatType> &subSideBuffer) {
         for (size_t i = 0; i < bandNUM; ++i) {
-            filters[i].getMainFilter().updateParas();
-            filters[i].getSideFilter().updateParas();
+            filters[i].processBypass();
         }
         if (soloSide.load()) {
             subMainBuffer.makeCopyOf(subSideBuffer, true);

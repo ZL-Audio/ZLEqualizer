@@ -35,12 +35,14 @@ namespace zlFilter {
 
         /**
          * prepare for processing the incoming audio buffer
+         * call it when you want to update filter parameters
          * @param buffer
          */
         void processPre(juce::AudioBuffer<FloatType> &buffer);
 
         /**
          * process the incoming audio buffer
+         * for parallel filter, call it with the internal parallel buffer
          * @param buffer
          * @param isBypassed
          */
@@ -72,6 +74,8 @@ namespace zlFilter {
 
         inline FloatType getGain() const { return static_cast<FloatType>(gain.load()); }
 
+         void setGainNow(FloatType x);
+
         /**
          * set the Q value of the filter
          * @param x Q value
@@ -80,6 +84,8 @@ namespace zlFilter {
         void setQ(FloatType x, bool update = true);
 
         inline FloatType getQ() const { return static_cast<FloatType>(q.load()); }
+
+        void setGainAndQNow(FloatType g1, FloatType q1);
 
         /**
          * set the type of the filter, the filter will always reset
@@ -102,9 +108,8 @@ namespace zlFilter {
         /**
          * update filter coefficients
          * DO NOT call it unless you are sure what you are doing
-         * @return where coefficients have been updated
          */
-        bool updateParas();
+        void updateCoeffs();
 
         /**
          * get the number of 2nd order filters
@@ -132,10 +137,6 @@ namespace zlFilter {
 
         bool getShouldNotBeParallel() const { return shouldNotBeParallel; }
 
-        void updateParallelGain(double x) {
-            gain.store(x);
-            parallelMultiplier = juce::Decibels::decibelsToGain<FloatType>(static_cast<FloatType>(x)) - FloatType(1);
-        }
 
         juce::AudioBuffer<FloatType> &getParallelBuffer() { return parallelBuffer; }
 
@@ -144,10 +145,12 @@ namespace zlFilter {
         juce::AudioBuffer<FloatType> parallelBuffer;
 
         std::atomic<size_t> filterNum{1};
+        size_t currentFilterNum{1};
         std::atomic<double> freq = 1000, gain = 0, q = 0.707;
-        std::atomic<size_t> order = 2;
+        std::atomic<size_t> order{2};
         std::atomic<FilterType> filterType{FilterType::peak};
         FilterType currentFilterType{FilterType::peak};
+        bool bypassNextBlock{false};
 
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
         std::atomic<float> sampleRate{48000};
@@ -160,7 +163,6 @@ namespace zlFilter {
         std::atomic<bool> useSVF{false};
         bool currentUseSVF{false};
         std::array<SVFBase<FloatType>, 16> svfFilters{};
-        std::atomic<bool> bypassNextBlock{false};
 
         std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
         FilterStructure currentFilterStructure{FilterStructure::iir};
@@ -178,6 +180,10 @@ namespace zlFilter {
                 MartinCoeff::get2LowPass, MartinCoeff::get2HighPass,
                 MartinCoeff::get2BandPass, MartinCoeff::get2Notch>(
                 filterType, n, f, fs, g0, q0, coeffs);
+        }
+
+        void updateParallelGain(double x) {
+            parallelMultiplier = juce::Decibels::decibelsToGain<FloatType>(static_cast<FloatType>(x)) - FloatType(1);
         }
     };
 }

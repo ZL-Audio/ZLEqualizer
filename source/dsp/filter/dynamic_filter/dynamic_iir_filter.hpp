@@ -88,6 +88,10 @@ namespace zlFilter {
             }
         }
 
+        void updateIsCurrentDynamicChangeQ() {
+            isDynamicChangeQ.store(std::abs(bFilter.getQ() - tFilter.getQ()) >= FloatType(0.00001));
+        }
+
     private:
         zlFilter::IIR<FloatType> mFilter, sFilter;
         zlFilter::Empty<FloatType> bFilter, tFilter;
@@ -96,6 +100,8 @@ namespace zlFilter {
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass{true}, active{false}, dynamicON{false}, dynamicBypass{false};
         bool currentActive, currentBypass;
+        std::atomic<bool> isDynamicChangeQ{false};
+        bool currentIsDynamicChangeQ{false};
         std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
         FilterStructure currentFilterStructure{FilterStructure::iir};
         juce::AudioBuffer<FloatType> sampleBuffer;
