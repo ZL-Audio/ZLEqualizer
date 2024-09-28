@@ -94,7 +94,7 @@ namespace zlPanel {
                     if (filter.exchangeParaOutdated(false)) {
                         mMainFilters[i].setGain(filter.getGain());
                         mMainFilters[i].setQ(filter.getQ());
-                        mMainFilters[i].updateMagnidue(ws);
+                        mMainFilters[i].updateMagnitude(ws);
                         mMainFilters[i].addDBs(dBs);
                     } else {
                         mBaseFilters[i].addDBs(dBs);

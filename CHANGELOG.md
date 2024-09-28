@@ -4,6 +4,19 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.4.0
+
+- add parallel filter structure
+- add & change shortcuts
+  - fine-adjust dragger with Shift
+  - find-adjust slider with Shift (changed from Ctrl/Command)
+  - add a dynamic filter with Ctrl/Command + mouse double-clicking
+  - turn on/off dynamic with Ctrl/Command + mouse double-clicking on the dragger
+- change real curves to ideal curves
+- add phase-flip button and change the `output` panel layout
+- improve DSP & GUI stability
+- improve DSP & GUI performance
+
 ## 0.3.5
 
 After installation, please load the plugin in an empty DAW session and check its functionality.

@@ -215,7 +215,7 @@ namespace zlPanel {
         // draw curve
         baseFreq.store(static_cast<double>(baseF.getFreq()));
         baseGain.store(static_cast<double>(baseF.getGain())); {
-            baseF.updateMagnidue(ws);
+            baseF.updateMagnitude(ws);
             curvePath.clear();
             if (actived.load()) {
                 drawCurve(curvePath, baseF.getDBs(), maxDB, bound);
@@ -263,7 +263,7 @@ namespace zlPanel {
             dynPath.clear();
             if (dynON.load() && actived.load()) {
                 drawCurve(dynPath, baseF.getDBs(), maxDB, bound);
-                targetF.updateMagnidue(ws);
+                targetF.updateMagnitude(ws);
                 drawCurve(dynPath, targetF.getDBs(), maxDB, bound, true, false);
                 dynPath.closeSubPath();
             }

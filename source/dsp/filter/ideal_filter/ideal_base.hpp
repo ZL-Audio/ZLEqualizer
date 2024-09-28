@@ -11,6 +11,7 @@
 #define ZLFILTER_IDEAL_BASE_HPP
 
 #include <array>
+#include <complex>
 
 namespace zlFilter {
     template<typename SampleType>
@@ -18,13 +19,19 @@ namespace zlFilter {
     public:
         IdealBase() = default;
 
-        void updateFromIdeal(const std::array<double, 6>& coeffs) {
+        void updateFromIdeal(const std::array<double, 6> &coeffs) {
             coeff = coeffs;
         }
 
-        void updateMagnidue(const std::vector<SampleType> &ws, std::vector<SampleType> &gains) {
+        void updateMagnitude(const std::vector<SampleType> &ws, std::vector<SampleType> &gains) {
             for (size_t idx = 0; idx < ws.size(); ++idx) {
                 gains[idx] *= getMagnitude(ws[idx]);
+            }
+        }
+
+        void updateResponse(const std::vector<SampleType> &ws, std::vector<SampleType> &response) {
+            for (size_t idx = 0; idx < ws.size(); ++idx) {
+                response[idx] *= getResponse(ws[idx]);
             }
         }
 
@@ -37,10 +44,15 @@ namespace zlFilter {
             return std::sqrt(numerator / denominator);
         }
 
+        std::complex<SampleType> getResponse(const SampleType w) {
+            const auto wi = std::complex<SampleType>(SampleType(0), w);
+            const auto wi2 = wi * wi;
+            return (coeff[3] * wi2 + coeff[4] * wi + coeff[5]) / (coeff[0] * wi2 + coeff[1] * w + coeff[2]);
+        }
+
     private:
         std::array<SampleType, 6> coeff{};
     };
-
 }
 
 #endif //ZLFILTER_IDEAL_BASE_HPP

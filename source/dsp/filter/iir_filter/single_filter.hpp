@@ -74,7 +74,7 @@ namespace zlFilter {
 
         inline FloatType getGain() const { return static_cast<FloatType>(gain.load()); }
 
-         void setGainNow(FloatType x);
+        void setGainNow(FloatType x);
 
         /**
          * set the Q value of the filter

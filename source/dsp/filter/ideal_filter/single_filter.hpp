@@ -56,20 +56,35 @@ namespace zlFilter {
             toUpdatePara.store(true);
         }
 
-        void prepareDBSize(size_t x) {
+        void prepareResponseSize(const size_t x) {
+            response.resize(x);
+        }
+
+        void prepareDBSize(const size_t x) {
             dBs.resize(x);
             gains.resize(x);
         }
 
         bool getMagOutdated() const { return toUpdatePara.load(); }
 
-        bool updateMagnidue(const std::vector<FloatType> &ws) {
+        bool updateResponse(const std::vector<FloatType> &ws) {
             if (toUpdatePara.exchange(false)) {
                 updateParas();
+                std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
+                for (size_t i = 0; i < currentFilterNum; ++i) {
+                    filters[i].updateResponse(ws, gains);
+                }
+                return true;
+            }
+            return false;
+        }
 
+        bool updateMagnitude(const std::vector<FloatType> &ws) {
+            if (toUpdatePara.exchange(false)) {
+                updateParas();
                 std::fill(gains.begin(), gains.end(), FloatType(1));
-                for (size_t i = 0; i < filterNum.load(); ++i) {
-                    filters[i].updateMagnidue(ws, gains);
+                for (size_t i = 0; i < currentFilterNum; ++i) {
+                    filters[i].updateMagnitude(ws, gains);
                 }
                 std::transform(gains.begin(), gains.end(), dBs.begin(),
                                [](auto &g) {
@@ -91,27 +106,31 @@ namespace zlFilter {
 
         FloatType getDB(FloatType w) {
             double g0 = 1.0;
-            for (size_t i = 0; i < filterNum.load(); ++i) {
+            for (size_t i = 0; i < currentFilterNum; ++i) {
                 g0 *= filters[i].getMagnitude(w);
             }
             return g0 > FloatType(0) ? std::log10(g0) * FloatType(20) : FloatType(-480);
         }
 
+        std::vector<std::complex<FloatType> > &getResponse() { return response; }
+
     private:
         std::array<IdealBase<FloatType>, FilterSize> filters{};
         std::array<std::array<double, 6>, FilterSize> coeffs{};
         std::atomic<bool> toUpdatePara{true};
-        std::atomic<size_t> filterNum{1}, order{2};
+        std::atomic<size_t> order{2};
+        size_t currentFilterNum;
         std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
         std::atomic<double> fs{48000.0};
         std::atomic<FilterType> filterType = FilterType::peak;
         std::vector<FloatType> dBs{}, gains{};
+        std::vector<std::complex<FloatType> > response{};
 
         void updateParas() {
-            filterNum.store(updateIIRCoeffs(filterType.load(), order.load(),
-                                            freq.load(), fs.load(),
-                                            gain.load(), q.load(), coeffs));
-            for (size_t i = 0; i < filterNum.load(); ++i) {
+            currentFilterNum = updateIIRCoeffs(filterType.load(), order.load(),
+                                               freq.load(), fs.load(),
+                                               gain.load(), q.load(), coeffs);
+            for (size_t i = 0; i < currentFilterNum; ++i) {
                 filters[i].updateFromIdeal(coeffs[i]);
             }
         }
