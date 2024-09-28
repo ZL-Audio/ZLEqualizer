@@ -112,12 +112,6 @@ namespace zlFilter {
         void updateCoeffs();
 
         /**
-         * get the number of 2nd order filters
-         * @return
-         */
-        size_t getFilterNum() const { return filterNum.load(); }
-
-        /**
          * get the num of channels
          * @return
          */
@@ -137,14 +131,12 @@ namespace zlFilter {
 
         bool getShouldNotBeParallel() const { return shouldNotBeParallel; }
 
-
         juce::AudioBuffer<FloatType> &getParallelBuffer() { return parallelBuffer; }
 
     private:
         std::array<IIRBase<FloatType>, 16> filters{};
         juce::AudioBuffer<FloatType> parallelBuffer;
 
-        std::atomic<size_t> filterNum{1};
         size_t currentFilterNum{1};
         std::atomic<double> freq = 1000, gain = 0, q = 0.707;
         std::atomic<size_t> order{2};

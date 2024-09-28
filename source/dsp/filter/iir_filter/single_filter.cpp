@@ -13,10 +13,10 @@ namespace zlFilter {
     template<typename FloatType>
     void IIR<FloatType>::reset() {
         if (toReset.exchange(false)) {
-            for (size_t i = 0; i < filterNum.load(); ++i) {
+            for (size_t i = 0; i < currentFilterNum; ++i) {
                 filters[i].reset();
             }
-            for (size_t i = 0; i < filterNum.load(); ++i) {
+            for (size_t i = 0; i < currentFilterNum; ++i) {
                 svfFilters[i].reset();
             }
             bypassNextBlock = true;
@@ -117,7 +117,7 @@ namespace zlFilter {
             auto block = juce::dsp::AudioBlock<FloatType>(buffer);
             auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
             context.isBypassed = isBypassed;
-            for (size_t i = 0; i < filterNum.load(); ++i) {
+            for (size_t i = 0; i < currentFilterNum; ++i) {
                 filters[i].process(context);
             }
         }
@@ -220,23 +220,29 @@ namespace zlFilter {
     template<typename FloatType>
     void IIR<FloatType>::updateCoeffs() {
         if (!shouldBeParallel) {
-            filterNum.store(updateIIRCoeffs(currentFilterType, order.load(),
-                                            freq.load(), processSpec.sampleRate,
-                                            gain.load(), q.load(), coeffs));
+            currentFilterNum = updateIIRCoeffs(currentFilterType, order.load(),
+                                               freq.load(), processSpec.sampleRate,
+                                               gain.load(), q.load(), coeffs);
         } else {
-            FilterType actualType{FilterType::bandPass};
-            if (currentFilterType == FilterType::lowShelf) {
-                actualType = FilterType::lowPass;
+            if (currentFilterType == FilterType::peak) {
+                currentFilterNum = updateIIRCoeffs(FilterType::bandPass,
+                                                   std::min(static_cast<size_t>(4), order.load()),
+                                                   freq.load(), processSpec.sampleRate,
+                                                   gain.load(), q.load(), coeffs);
+            } else if (currentFilterType == FilterType::lowShelf) {
+                currentFilterNum = updateIIRCoeffs(FilterType::lowPass,
+                                                   std::min(static_cast<size_t>(2), order.load()),
+                                                   freq.load(), processSpec.sampleRate,
+                                                   gain.load(), q.load(), coeffs);
             } else if (currentFilterType == FilterType::highShelf) {
-                actualType = FilterType::highPass;
+                currentFilterNum = updateIIRCoeffs(FilterType::highPass,
+                                                   std::min(static_cast<size_t>(2), order.load()),
+                                                   freq.load(), processSpec.sampleRate,
+                                                   gain.load(), q.load(), coeffs);
             }
-            filterNum.store(updateIIRCoeffs(actualType,
-                                            std::min(order.load(), static_cast<size_t>(2)),
-                                            freq.load(), processSpec.sampleRate,
-                                            gain.load(), q.load(), coeffs));
+
             updateParallelGain(gain.load());
         }
-        currentFilterNum = filterNum.load();
         switch (currentFilterStructure) {
             case FilterStructure::iir:
             case FilterStructure::parallel: {
