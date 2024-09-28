@@ -13,7 +13,8 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
   - add a dynamic filter with Ctrl/Command + mouse double-clicking
   - turn on/off dynamic with Ctrl/Command + mouse double-clicking on the dragger
 - change real curves to ideal curves
-- add phase-flip button and change the `output` panel layout
+- add phase-flip button and change the `Output` panel layout
+- add more freedom to the plugin window size
 - improve DSP & GUI stability
 - improve DSP & GUI performance
 

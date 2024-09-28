@@ -41,18 +41,21 @@ namespace zlPanel {
 
     void MainPanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        uiBase.setFontSize(bound.getWidth() * 0.014287762237762238f);
+        if (bound.getHeight() < 0.47f * bound.getWidth()) {
+            return;
+        }
+        const auto fontSize = bound.getWidth() * 0.014287762237762238f;
+        uiBase.setFontSize(fontSize);
 
-        auto stateBound = bound.removeFromTop(bound.getHeight() * .06f);
+        auto stateBound = bound.removeFromTop(fontSize * 2.625381664859529f);
         statePanel.setBounds(stateBound.toNearestInt());
         stateBound = stateBound.removeFromRight(stateBound.getHeight());
-        stateBound.removeFromBottom(uiBase.getFontSize() * .5f);
+        stateBound.removeFromBottom(fontSize * .5f);
         uiSettingButton.setBounds(stateBound.toNearestInt());
         uiSettingPanel.setBounds(getLocalBounds());
 
-        const auto controlBound = bound.removeFromBottom(bound.getWidth() * 0.105f);
+        const auto controlBound = bound.removeFromBottom(fontSize * 7.348942487176095f);
         controlPanel.setBounds(controlBound.toNearestInt());
-
         curvePanel.setBounds(bound.toNearestInt());
     }
 
