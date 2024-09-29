@@ -22,10 +22,11 @@
 #include "gain/gain.hpp"
 #include "delay/delay.hpp"
 #include "phase/phase.hpp"
+#include "container/container.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
-    class Controller : public juce::AsyncUpdater {
+    class Controller final : public juce::AsyncUpdater {
     public:
         explicit Controller(juce::AudioProcessor &processor);
 
@@ -86,7 +87,7 @@ namespace zlDSP {
 
         void setEffectON(const bool x) { isEffectON.store(x); }
 
-        zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzezr; }
+        zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzer; }
 
         zlFFT::ConflictAnalyzer<FloatType> &getConflictAnalyzer() { return conflictAnalyzer; }
 
@@ -115,7 +116,7 @@ namespace zlDSP {
             currentThreshold[idx].store(x);
         }
 
-        FloatType getThreshold (const size_t idx) const {
+        FloatType getThreshold(const size_t idx) const {
             return currentThreshold[idx].load();
         }
 
@@ -131,16 +132,16 @@ namespace zlDSP {
         std::array<zlFilter::Empty<FloatType>, bandNUM> mainFilters;
 
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
-        std::array<lrType::lrTypes, bandNUM> currentFilterLRs;
-        std::atomic<bool> toUpdateLRs;
+        std::array<zlContainer::FixedMaxSizeArray<size_t, bandNUM>, 5> filterLRIndices;
+        std::atomic<bool> toUpdateLRs{true};
         bool useLR, useMS;
 
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
 
         std::array<std::atomic<bool>, bandNUM> dynRelatives;
-        zlCompressor::RMSTracker<FloatType> tracker, lTracker, rTracker, mTracker, sTracker;
-        std::array<std::atomic<bool>, 5> useTrackers;
+        std::array<zlCompressor::RMSTracker<FloatType>, 5> trackers;
+        std::array<bool, 5> useTrackers{};
 
         std::atomic<bool> sideChain;
 
@@ -164,7 +165,7 @@ namespace zlDSP {
 
         std::atomic<bool> isEffectON{true};
 
-        zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzezr{};
+        zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzer{};
 
         zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer{};
 
@@ -179,7 +180,7 @@ namespace zlDSP {
         zlPhase::PhaseFlip<FloatType> phaseFlipper;
 
         std::atomic<filterStructure::FilterStructure> filterStructure{filterStructure::minimum};
-        filterStructure::FilterStructure currentFtilerStructure{filterStructure::minimum};
+        filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
 
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);
@@ -190,7 +191,13 @@ namespace zlDSP {
         void processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                             juce::AudioBuffer<FloatType> &subSideBuffer);
 
+        void processDynamicLRMS(size_t lrIdx,
+                                juce::AudioBuffer<FloatType> &subMainBuffer,
+                                juce::AudioBuffer<FloatType> &subSideBuffer);
+
         void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer);
+
+        void updateLRs();
 
         void updateTrackersON();
 

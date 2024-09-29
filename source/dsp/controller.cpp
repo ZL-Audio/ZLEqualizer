@@ -65,27 +65,21 @@ namespace zlDSP {
         msSideSplitter.prepare(subSpec);
         outputGain.prepare(subSpec);
         autoGain.prepare(subSpec);
-        fftAnalyzezr.prepare(subSpec);
+        fftAnalyzer.prepare(subSpec);
         conflictAnalyzer.prepare(subSpec);
-        for (auto &t: {&tracker, &lTracker, &rTracker, &mTracker, &sTracker}) {
-            t->prepare(subSpec);
+        for (auto &t: trackers) {
+            t.prepare(subSpec);
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        if (filterStructure.load() != currentFtilerStructure) {
-            currentFtilerStructure = filterStructure.load();
+        if (filterStructure.load() != currentFilterStructure) {
+            currentFilterStructure = filterStructure.load();
             updateFilterStructure();
         }
         if (toUpdateLRs.exchange(false)) {
-            useLR = false;
-            useMS = false;
-            for (size_t i = 0; i < bandNUM; ++i) {
-                currentFilterLRs[i] = filterLRs[i].load();
-                useLR = useLR || (currentFilterLRs[i] == lrType::left || currentFilterLRs[i] == lrType::right);
-                useMS = useMS || (currentFilterLRs[i] == lrType::mid || currentFilterLRs[i] == lrType::side);
-            }
+            updateLRs();
             updateTrackersON();
         }
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
@@ -131,21 +125,21 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                  juce::AudioBuffer<FloatType> &subSideBuffer) {
-        fftAnalyzezr.pushPreFFTBuffer(subMainBuffer);
-        fftAnalyzezr.pushSideFFTBuffer(subSideBuffer);
+        fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
+        fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
         conflictAnalyzer.pushRefBuffer(subSideBuffer);
         if (isEffectON.load()) {
             if (useSolo.load()) {
                 processSolo(subMainBuffer, subSideBuffer);
             } else {
                 processDynamic(subMainBuffer, subSideBuffer);
-                if (currentFtilerStructure == filterStructure::parallel) {
+                if (currentFilterStructure == filterStructure::parallel) {
                     processParallelPost(subMainBuffer);
                 }
             }
         }
-        fftAnalyzezr.pushPostFFTBuffer(subMainBuffer);
-        fftAnalyzezr.process();
+        fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
+        fftAnalyzer.process();
         conflictAnalyzer.pushMainBuffer(subMainBuffer);
         conflictAnalyzer.process();
     }
@@ -214,102 +208,29 @@ namespace zlDSP {
             }
         }
         // stereo filters process
-        FloatType baseLine = 0;
-        if (useTrackers[0].load()) {
-            tracker.process(subSideBuffer);
-            baseLine = tracker.getMomentaryLoudness();
-            if (baseLine <= tracker.minusInfinityDB + 1) {
-                baseLine = tracker.minusInfinityDB * FloatType(0.5);
-            }
-        }
-        for (size_t i = 0; i < bandNUM; ++i) {
-            if (dynRelatives[i].load()) {
-                filters[i].getCompressor().setBaseLine(baseLine);
-            } else {
-                filters[i].getCompressor().setBaseLine(0);
-            }
-            if (filterLRs[i].load() == lrType::stereo) {
-                filters[i].process(subMainBuffer, subSideBuffer);
-            }
-        }
+        processDynamicLRMS(0, subMainBuffer, subSideBuffer);
         // LR filters process
         if (useLR) {
-            FloatType lBaseLine = 0, rBaseLine = 0;
             lrMainSplitter.split(subMainBuffer);
             lrSideSplitter.split(subSideBuffer);
-            if (useTrackers[1].load()) {
-                lTracker.process(lrSideSplitter.getLBuffer());
-                lBaseLine = lTracker.getMomentaryLoudness();
-                if (lBaseLine <= lTracker.minusInfinityDB + 1) {
-                    lBaseLine = lTracker.minusInfinityDB * FloatType(0.5);
-                }
-            }
-            if (useTrackers[2].load()) {
-                rTracker.process(lrSideSplitter.getRBuffer());
-                rBaseLine = rTracker.getMomentaryLoudness();
-                if (rBaseLine <= rTracker.minusInfinityDB + 1) {
-                    rBaseLine = rTracker.minusInfinityDB * FloatType(0.5);
-                }
-            }
-            for (size_t i = 0; i < bandNUM; ++i) {
-                if (filterLRs[i].load() == lrType::left) {
-                    if (dynRelatives[i].load()) {
-                        filters[i].getCompressor().setBaseLine(lBaseLine);
-                    } else {
-                        filters[i].getCompressor().setBaseLine(0);
-                    }
-                    filters[i].process(lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
-                } else if (filterLRs[i].load() == lrType::right) {
-                    if (dynRelatives[i].load()) {
-                        filters[i].getCompressor().setBaseLine(rBaseLine);
-                    } else {
-                        filters[i].getCompressor().setBaseLine(0);
-                    }
-                    filters[i].process(lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
-                }
-            }
+            processDynamicLRMS(1, lrMainSplitter.getLBuffer(),
+                lrSideSplitter.getLBuffer());
+            processDynamicLRMS(2, lrMainSplitter.getRBuffer(),
+                lrSideSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         // MS filters process
         if (useMS) {
-            FloatType mBaseLine = 0, sBaseLine = 0;
             msMainSplitter.split(subMainBuffer);
             msSideSplitter.split(subSideBuffer);
-            if (useTrackers[3].load()) {
-                mTracker.process(msSideSplitter.getMBuffer());
-                mBaseLine = mTracker.getMomentaryLoudness();
-                if (mBaseLine <= mTracker.minusInfinityDB + 1) {
-                    mBaseLine = mTracker.minusInfinityDB * FloatType(0.5);
-                }
-            }
-            if (useTrackers[4].load()) {
-                sTracker.process(msSideSplitter.getSBuffer());
-                sBaseLine = sTracker.getMomentaryLoudness();
-                if (sBaseLine <= sTracker.minusInfinityDB + 1) {
-                    sBaseLine = sTracker.minusInfinityDB * FloatType(0.5);
-                }
-            }
-            for (size_t i = 0; i < bandNUM; ++i) {
-                if (filterLRs[i].load() == lrType::mid) {
-                    if (dynRelatives[i].load()) {
-                        filters[i].getCompressor().setBaseLine(mBaseLine);
-                    } else {
-                        filters[i].getCompressor().setBaseLine(0);
-                    }
-                    filters[i].process(msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
-                } else if (filterLRs[i].load() == lrType::side) {
-                    if (dynRelatives[i].load()) {
-                        filters[i].getCompressor().setBaseLine(sBaseLine);
-                    } else {
-                        filters[i].getCompressor().setBaseLine(0);
-                    }
-                    filters[i].process(msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
-                }
-            }
+            processDynamicLRMS(3, msMainSplitter.getMBuffer(),
+                msSideSplitter.getMBuffer());
+            processDynamicLRMS(4, msMainSplitter.getSBuffer(),
+                msSideSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
         for (size_t i = 0; i < bandNUM; ++i) {
-            if (filters[i].getDynamicON() ) {
+            if (filters[i].getDynamicON()) {
                 mainFilters[i].setGain(filters[i].getMainFilter().getGain());
                 mainFilters[i].setQ(filters[i].getMainFilter().getQ());
                 if (isHistON[i].load()) {
@@ -328,8 +249,33 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
+    void Controller<FloatType>::processDynamicLRMS(const size_t lrIdx,
+                                                   juce::AudioBuffer<FloatType> &subMainBuffer,
+                                                   juce::AudioBuffer<FloatType> &subSideBuffer) {
+        auto &tracker{trackers[lrIdx]};
+        const auto &indices{filterLRIndices[lrIdx]};
+        FloatType baseLine = 0;
+        if (useTrackers[lrIdx]) {
+            tracker.process(subSideBuffer);
+            baseLine = tracker.getMomentaryLoudness();
+            if (baseLine <= tracker.minusInfinityDB + 1) {
+                baseLine = tracker.minusInfinityDB * FloatType(0.5);
+            }
+        }
+        for (size_t idx = 0; idx < indices.size; ++idx) {
+            const auto i = indices.data[idx];
+            if (dynRelatives[i].load()) {
+                filters[i].getCompressor().setBaseLine(baseLine);
+            } else {
+                filters[i].getCompressor().setBaseLine(0);
+            }
+            filters[i].process(subMainBuffer, subSideBuffer);
+        }
+    }
+
+    template<typename FloatType>
     void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        for (const auto &f : {true, false}) {
+        for (const auto &f: {true, false}) {
             for (size_t i = 0; i < bandNUM; ++i) {
                 if (filters[i].getMainFilter().getShouldBeParallel() == f && filterLRs[i].load() == lrType::stereo) {
                     filters[i].processParallelPost(subMainBuffer);
@@ -375,9 +321,7 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
         filterLRs[idx].store(x);
-        // update useLR and useMS
         toUpdateLRs.store(true);
-
     }
 
     template<typename FloatType>
@@ -463,14 +407,52 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::updateTrackersON() {
-        for (auto &f: useTrackers) {
-            f.store(false);
+    void Controller<FloatType>::updateLRs() {
+        useLR = false;
+        useMS = false;
+        for (auto &x: filterLRIndices) {
+            x.clear();
         }
-        for (size_t i = 0; i < filterLRs.size(); ++i) {
-            if (dynRelatives[i].load()) {
-                const auto idx = static_cast<size_t>(filterLRs[i].load());
-                useTrackers[idx].store(true);
+        for (size_t i = 0; i < bandNUM; ++i) {
+            switch (filterLRs[i].load()) {
+                case lrType::stereo: {
+                    filterLRIndices[0].push(i);
+                    break;
+                }
+                case lrType::left: {
+                    filterLRIndices[1].push(i);
+                    useLR = true;
+                    break;
+                }
+                case lrType::right: {
+                    filterLRIndices[2].push(i);
+                    useLR = true;
+                    break;
+                }
+                case lrType::mid: {
+                    filterLRIndices[3].push(i);
+                    useMS = true;
+                    break;
+                }
+                case lrType::side: {
+                    filterLRIndices[4].push(i);
+                    useMS = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateTrackersON() {
+        std::fill(useTrackers.begin(), useTrackers.end(), false);
+        for (size_t idx = 0; idx < 5; ++idx) {
+            const auto &indices{filterLRIndices[idx]};
+            for (size_t i = 0; i < indices.size; ++i) {
+                if (dynRelatives[indices.data[i]].load()) {
+                    useTrackers[idx] = true;
+                    break;
+                }
             }
         }
     }
@@ -500,7 +482,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::updateFilterStructure() {
-        switch (currentFtilerStructure) {
+        switch (currentFilterStructure) {
             case filterStructure::minimum:
             case filterStructure::matched:
             case filterStructure::mixed: {

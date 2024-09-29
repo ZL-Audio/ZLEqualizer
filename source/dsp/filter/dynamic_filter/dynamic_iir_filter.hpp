@@ -99,7 +99,7 @@ namespace zlFilter {
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass{true}, active{false}, dynamicON{false}, dynamicBypass{false};
-        bool currentActive, currentBypass;
+        bool currentActive{false}, currentBypass{true};
         std::atomic<bool> isDynamicChangeQ{false};
         bool currentIsDynamicChangeQ{false};
         std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
