@@ -44,7 +44,6 @@ namespace zlDSP {
             }
         } else if (parameterID.startsWith(zlState::active::ID)) {
             const auto active = static_cast<bool>(newValue);
-            controllerRef.getFilter(idx).setActive(active);
             if (!static_cast<bool>(newValue)) {
                 const auto suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
                 for (size_t j = 0; j < resetDefaultVs.size(); ++j) {
@@ -54,6 +53,7 @@ namespace zlDSP {
                     parameterRef.getParameter(resetID)->endChangeGesture();
                 }
             }
+            controllerRef.setIsActive(idx, active);
         }
     }
 

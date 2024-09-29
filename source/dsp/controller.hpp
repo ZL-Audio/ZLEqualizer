@@ -126,6 +126,12 @@ namespace zlDSP {
             filterStructure.store(x);
         }
 
+        void setIsActive(const size_t idx, const bool flag) {
+            filters[idx].setActive(flag);
+            isActive[idx].store(flag);
+            toUpdateLRs.store(true);
+        }
+
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> filters;
@@ -135,6 +141,8 @@ namespace zlDSP {
         std::array<zlContainer::FixedMaxSizeArray<size_t, bandNUM>, 5> filterLRIndices;
         std::atomic<bool> toUpdateLRs{true};
         bool useLR, useMS;
+
+        std::array<std::atomic<bool>, bandNUM> isActive{};
 
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;

@@ -414,30 +414,32 @@ namespace zlDSP {
             x.clear();
         }
         for (size_t i = 0; i < bandNUM; ++i) {
-            switch (filterLRs[i].load()) {
-                case lrType::stereo: {
-                    filterLRIndices[0].push(i);
-                    break;
-                }
-                case lrType::left: {
-                    filterLRIndices[1].push(i);
-                    useLR = true;
-                    break;
-                }
-                case lrType::right: {
-                    filterLRIndices[2].push(i);
-                    useLR = true;
-                    break;
-                }
-                case lrType::mid: {
-                    filterLRIndices[3].push(i);
-                    useMS = true;
-                    break;
-                }
-                case lrType::side: {
-                    filterLRIndices[4].push(i);
-                    useMS = true;
-                    break;
+            if (isActive[i].load()) {
+                switch (filterLRs[i].load()) {
+                    case lrType::stereo: {
+                        filterLRIndices[0].push(i);
+                        break;
+                    }
+                    case lrType::left: {
+                        filterLRIndices[1].push(i);
+                        useLR = true;
+                        break;
+                    }
+                    case lrType::right: {
+                        filterLRIndices[2].push(i);
+                        useLR = true;
+                        break;
+                    }
+                    case lrType::mid: {
+                        filterLRIndices[3].push(i);
+                        useMS = true;
+                        break;
+                    }
+                    case lrType::side: {
+                        filterLRIndices[4].push(i);
+                        useMS = true;
+                        break;
+                    }
                 }
             }
         }
