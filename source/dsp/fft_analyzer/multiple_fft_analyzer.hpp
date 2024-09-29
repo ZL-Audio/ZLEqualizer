@@ -21,6 +21,13 @@ namespace zlFFT {
      */
     template<typename FloatType, size_t FFTNum, size_t PointNum>
     class MultipleFFTAnalyzer final {
+    private:
+        juce::SpinLock spinLock;
+        static constexpr size_t defaultFFTOrder = 12;
+        static constexpr float minFreq = 10.f, maxFreq = 22000.f, minDB = -72.f;
+        static constexpr float minFreqLog2 = 3.321928094887362f;
+        static constexpr float maxFreqLog2 = 14.425215903299383f;
+
     public:
         explicit MultipleFFTAnalyzer() {
             static_assert(PointNum % 2 == 1);
@@ -263,12 +270,6 @@ namespace zlFFT {
         std::array<std::atomic<float>, PointNum> &getInterplotDBs(const size_t i) { return interplotDBs[i]; }
 
     private:
-        juce::SpinLock spinLock;
-        static constexpr size_t defaultFFTOrder = 11;
-        static constexpr float minFreq = 10.f, maxFreq = 22000.f, minDB = -72.f;
-        static constexpr float minFreqLog2 = 3.321928094887362f;
-        static constexpr float maxFreqLog2 = 14.425215903299383f;
-
         std::array<std::vector<float>, FFTNum> sampleFIFOs;
         std::array<std::vector<float>, FFTNum> circularBuffers;
         juce::AbstractFifo abstractFIFO{1};
