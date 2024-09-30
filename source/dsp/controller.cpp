@@ -214,9 +214,9 @@ namespace zlDSP {
             lrMainSplitter.split(subMainBuffer);
             lrSideSplitter.split(subSideBuffer);
             processDynamicLRMS(1, lrMainSplitter.getLBuffer(),
-                lrSideSplitter.getLBuffer());
+                               lrSideSplitter.getLBuffer());
             processDynamicLRMS(2, lrMainSplitter.getRBuffer(),
-                lrSideSplitter.getRBuffer());
+                               lrSideSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         // MS filters process
@@ -224,9 +224,9 @@ namespace zlDSP {
             msMainSplitter.split(subMainBuffer);
             msSideSplitter.split(subSideBuffer);
             processDynamicLRMS(3, msMainSplitter.getMBuffer(),
-                msSideSplitter.getMBuffer());
+                               msSideSplitter.getMBuffer());
             processDynamicLRMS(4, msMainSplitter.getSBuffer(),
-                msSideSplitter.getSBuffer());
+                               msSideSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
         for (size_t i = 0; i < bandNUM; ++i) {
@@ -275,41 +275,34 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        for (const auto &f: {true, false}) {
-            for (size_t i = 0; i < bandNUM; ++i) {
-                if (filters[i].getMainFilter().getShouldBeParallel() == f && filterLRs[i].load() == lrType::stereo) {
-                    filters[i].processParallelPost(subMainBuffer);
-                }
-            }
+        for (auto &f : {true, false}) { // add parallel filters first
+            processParallelPostLRMS(0, f, subMainBuffer);
             if (useLR) {
                 lrMainSplitter.split(subMainBuffer);
-                for (size_t i = 0; i < bandNUM; ++i) {
-                    if (filters[i].getMainFilter().getShouldBeParallel() == f) {
-                        if (filterLRs[i].load() == lrType::left) {
-                            filters[i].processParallelPost(lrMainSplitter.getLBuffer());
-                        } else if (filterLRs[i].load() == lrType::right) {
-                            filters[i].processParallelPost(lrMainSplitter.getRBuffer());
-                        }
-                    }
-                }
+                processParallelPostLRMS(1, f, lrMainSplitter.getLBuffer());
+                processParallelPostLRMS(2, f, lrMainSplitter.getRBuffer());
                 lrMainSplitter.combine(subMainBuffer);
             }
             if (useMS) {
                 msMainSplitter.split(subMainBuffer);
-                for (size_t i = 0; i < bandNUM; ++i) {
-                    if (filters[i].getMainFilter().getShouldBeParallel() == f) {
-                        if (filterLRs[i].load() == lrType::mid) {
-                            filters[i].processParallelPost(msMainSplitter.getMBuffer());
-                        } else if (filterLRs[i].load() == lrType::side) {
-                            filters[i].processParallelPost(msMainSplitter.getSBuffer());
-                        }
-                    }
-                }
+                processParallelPostLRMS(3, f, msMainSplitter.getMBuffer());
+                processParallelPostLRMS(4, f, msMainSplitter.getSBuffer());
                 msMainSplitter.combine(subMainBuffer);
             }
         }
     }
 
+    template<typename FloatType>
+    void Controller<FloatType>::processParallelPostLRMS(const size_t lrIdx, const bool shouldParallel,
+                                                        juce::AudioBuffer<FloatType> &subMainBuffer) {
+        const auto &indices{filterLRIndices[lrIdx]};
+        for (size_t idx = 0; idx < indices.size; ++idx) {
+            const auto i = indices.data[idx];
+            if (filters[i].getMainFilter().getShouldBeParallel() == shouldParallel) {
+                filters[i].processParallelPost(subMainBuffer);
+            }
+        }
+    }
 
     template<typename FloatType>
     void Controller<FloatType>::processBypass() {

@@ -72,7 +72,7 @@ namespace zlFilter {
 
         inline bool getDynamicBypass() const { return dynamicBypass.load(); }
 
-        inline void setCompoensationON(const bool x) { compensation.enable(x); }
+        inline void setCompensationON(const bool x) { compensation.enable(x); }
 
         void setFilterStructure(const FilterStructure x) {
             filterStructure.store(x);
@@ -99,7 +99,7 @@ namespace zlFilter {
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> bypass{true}, active{false}, dynamicON{false}, dynamicBypass{false};
-        bool currentActive{false}, currentBypass{true};
+        bool currentBypass{true};
         std::atomic<bool> isDynamicChangeQ{false};
         bool currentIsDynamicChangeQ{false};
         std::atomic<FilterStructure> filterStructure{FilterStructure::iir};

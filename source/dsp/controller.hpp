@@ -203,6 +203,10 @@ namespace zlDSP {
                                 juce::AudioBuffer<FloatType> &subMainBuffer,
                                 juce::AudioBuffer<FloatType> &subSideBuffer);
 
+        void processParallelPostLRMS(size_t lrIdx,
+                                     bool shouldParallel,
+                                     juce::AudioBuffer<FloatType> &subMainBuffer);
+
         void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void updateLRs();

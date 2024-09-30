@@ -62,7 +62,7 @@ namespace zlDSP {
             controllerRef.getPhaseFlipper().setON(static_cast<bool>(newValue));
         }else if (parameterID == staticAutoGain::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
-                controllerRef.getFilter(i).setCompoensationON(static_cast<bool>(newValue));
+                controllerRef.getFilter(i).setCompensationON(static_cast<bool>(newValue));
             }
         } else if (parameterID == autoGain::ID) {
             controllerRef.getAutoGain().enable(static_cast<bool>(newValue));

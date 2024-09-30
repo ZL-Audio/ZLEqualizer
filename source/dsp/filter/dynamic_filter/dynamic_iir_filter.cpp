@@ -33,8 +33,6 @@ namespace zlFilter {
 
     template<typename FloatType>
     void DynamicIIR<FloatType>::process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
-        currentActive = active.load();
-        if (!currentActive) { return; }
         if (bFilter.exchangeParaOutdated(false)) {
             compensation.update();
         }
@@ -53,7 +51,6 @@ namespace zlFilter {
                 }
             }
         }
-        // sFilter.updateParas();
         currentBypass = bypass.load();
         mFilter.processPre(mBuffer);
         if (dynamicON.load()) {
@@ -126,7 +123,6 @@ namespace zlFilter {
 
     template<typename FloatType>
     void DynamicIIR<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &buffer) {
-        if (!currentActive) { return; }
         mFilter.processParallelPost(buffer, currentBypass);
     }
 
@@ -135,8 +131,6 @@ namespace zlFilter {
         if (bFilter.exchangeParaOutdated(false)) {
             compensation.update();
         }
-        // mFilter.updateParas();
-        // sFilter.updateParas();
     }
 
     template
