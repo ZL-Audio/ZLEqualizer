@@ -4,7 +4,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
-## 0.4.0
+## 0.3.6
 
 - add parallel filter structure
 - add & change shortcuts
@@ -13,6 +13,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
   - add a dynamic filter with Ctrl/Command + mouse double-clicking
   - turn on/off dynamic with Ctrl/Command + mouse double-clicking on the dragger
 - change real curves to ideal curves
+- change default FFT order to 12 to increase low-frequency details
 - add phase-flip button and change the `Output` panel layout
 - add more freedom to the plugin window size
 - improve DSP & GUI stability
