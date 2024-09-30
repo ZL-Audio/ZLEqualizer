@@ -17,7 +17,6 @@ env:
   BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DISPLAY: :0 # linux pluginval needs this
-  CMAKE_BUILD_PARALLEL_LEVEL: 3 # Use up to 3 cpus to build juceaide, etc
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   SCCACHE_GHA_ENABLED: true
   SCCACHE_CACHE_MULTIARCH: 1
@@ -45,6 +44,7 @@ jobs:
             boost_platform_version: "11"
             boost_toolset: "clang"
             plugin_os_format: "AU"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
@@ -137,7 +137,7 @@ jobs:
 
       - name: Configure
         shell: bash
-        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
+        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ${{ matrix.extra-flags }} .
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
