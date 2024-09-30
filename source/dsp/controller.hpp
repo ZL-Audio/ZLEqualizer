@@ -131,7 +131,6 @@ namespace zlDSP {
             isActive[idx].store(flag);
             toUpdateLRs.store(true);
         }
-
     private:
         juce::AudioProcessor &processorRef;
         std::array<zlFilter::DynamicIIR<FloatType>, bandNUM> filters;
@@ -140,7 +139,10 @@ namespace zlDSP {
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
         std::array<zlContainer::FixedMaxSizeArray<size_t, bandNUM>, 5> filterLRIndices;
         std::atomic<bool> toUpdateLRs{true};
-        bool useLR, useMS;
+        bool useLR{false}, useMS{false};
+
+        zlContainer::FixedMaxSizeArray<size_t, bandNUM> dynamicONIndices;
+        std::atomic<bool> toUpdateDynamicON{true};
 
         std::array<std::atomic<bool>, bandNUM> isActive{};
 
@@ -210,6 +212,8 @@ namespace zlDSP {
         void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void updateLRs();
+
+        void updateDynamicONs();
 
         void updateTrackersON();
 

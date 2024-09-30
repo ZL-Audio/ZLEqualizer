@@ -78,6 +78,9 @@ namespace zlDSP {
             currentFilterStructure = filterStructure.load();
             updateFilterStructure();
         }
+        if (toUpdateDynamicON.exchange(false)) {
+            updateDynamicONs();
+        }
         if (toUpdateLRs.exchange(false)) {
             updateLRs();
             updateTrackersON();
@@ -194,17 +197,16 @@ namespace zlDSP {
                                                juce::AudioBuffer<FloatType> &subSideBuffer) {
         autoGain.processPre(subMainBuffer);
         // set auto threshold
-        for (size_t i = 0; i < bandNUM; ++i) {
-            if (filters[i].getDynamicON()) {
-                if (isHistON[i].load()) {
-                    const auto depThres =
-                            currentThreshold[i].load() + FloatType(40) +
-                            static_cast<FloatType>(threshold::range.snapToLegalValue(
-                                static_cast<float>(-subHistograms[i].getPercentile(FloatType(0.5)))));
-                    filters[i].getCompressor().getComputer().setThreshold(depThres);
-                } else {
-                    filters[i].getCompressor().getComputer().setThreshold(currentThreshold[i].load());
-                }
+        for (size_t idx = 0; idx < dynamicONIndices.size; ++idx) {
+            const auto i = dynamicONIndices.data[idx];
+            if (isHistON[i].load()) {
+                const auto depThres =
+                        currentThreshold[i].load() + FloatType(40) +
+                        static_cast<FloatType>(threshold::range.snapToLegalValue(
+                            static_cast<float>(-subHistograms[i].getPercentile(FloatType(0.5)))));
+                filters[i].getCompressor().getComputer().setThreshold(depThres);
+            } else {
+                filters[i].getCompressor().getComputer().setThreshold(currentThreshold[i].load());
             }
         }
         // stereo filters process
@@ -229,18 +231,18 @@ namespace zlDSP {
                                msSideSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
-        for (size_t i = 0; i < bandNUM; ++i) {
-            if (filters[i].getDynamicON()) {
-                mainFilters[i].setGain(filters[i].getMainFilter().getGain());
-                mainFilters[i].setQ(filters[i].getMainFilter().getQ());
-                if (isHistON[i].load()) {
-                    auto &compressor = filters[i].getCompressor();
-                    const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
-                    if (diff <= 100) {
-                        const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
-                        histograms[i].push(static_cast<size_t>(histIdx));
-                        subHistograms[i].push(static_cast<size_t>(histIdx));
-                    }
+        // set main filter gain & Q and update histograms
+        for (size_t idx = 0; idx < dynamicONIndices.size; ++idx) {
+            const auto i = dynamicONIndices.data[idx];
+            mainFilters[i].setGain(filters[i].getMainFilter().getGain());
+            mainFilters[i].setQ(filters[i].getMainFilter().getQ());
+            if (isHistON[i].load()) {
+                auto &compressor = filters[i].getCompressor();
+                const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
+                if (diff <= 100) {
+                    const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
+                    histograms[i].push(static_cast<size_t>(histIdx));
+                    subHistograms[i].push(static_cast<size_t>(histIdx));
                 }
             }
         }
@@ -275,7 +277,8 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        for (auto &f : {true, false}) { // add parallel filters first
+        for (auto &f: {true, false}) {
+            // add parallel filters first
             processParallelPostLRMS(0, f, subMainBuffer);
             if (useLR) {
                 lrMainSplitter.split(subMainBuffer);
@@ -322,6 +325,7 @@ namespace zlDSP {
         filters[idx].setDynamicON(x);
         filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
         filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
+        toUpdateDynamicON.store(true);
     }
 
     template<typename FloatType>
@@ -397,6 +401,16 @@ namespace zlDSP {
     void Controller<FloatType>::setRelative(const size_t idx, const bool isRelative) {
         dynRelatives[idx].store(isRelative);
         updateTrackersON();
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateDynamicONs() {
+        dynamicONIndices.clear();
+        for (size_t i = 0; i < bandNUM; ++i) {
+            if (filters[i].getDynamicON()) {
+                dynamicONIndices.push(i);
+            }
+        }
     }
 
     template<typename FloatType>
@@ -500,6 +514,10 @@ namespace zlDSP {
             }
             case filterStructure::linear: {
             }
+        }
+        for (size_t idx = 0; idx < bandNUM; ++idx) {
+            filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
+            filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
         }
     }
 
