@@ -47,7 +47,7 @@ namespace zlDSP {
     template<typename FloatType>
     void ChoreAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == sideChain::ID) {
-            controllerRef.setSideChain(static_cast<bool>(newValue));
+            controllerRef.setSideChain(newValue > .5f);
         } else if (parameterID == dynLookahead::ID) {
             controllerRef.setLookAhead(static_cast<FloatType>(newValue));
         } else if (parameterID == dynRMS::ID) {
@@ -57,13 +57,13 @@ namespace zlDSP {
                 controllerRef.getFilter(i).getCompressor().getDetector().setSmooth(static_cast<FloatType>(newValue));
             }
         } else if (parameterID == effectON::ID) {
-            controllerRef.setEffectON(static_cast<bool>(newValue));
+            controllerRef.setEffectON(newValue > .5f);
         } else if (parameterID == phaseFlip::ID) {
-            controllerRef.getPhaseFlipper().setON(static_cast<bool>(newValue));
+            controllerRef.getPhaseFlipper().setON(newValue > .5f);
         }else if (parameterID == staticAutoGain::ID) {
-            controllerRef.setSgcON(static_cast<bool>(newValue));
+            controllerRef.setSgcON(newValue > .5f);
         } else if (parameterID == autoGain::ID) {
-            controllerRef.getAutoGain().enable(static_cast<bool>(newValue));
+            controllerRef.getAutoGain().enable(newValue > .5f);
         } else if (parameterID == scale::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
                 const auto baseGain = parameterRef.getRawParameterValue(appendSuffix(gain::ID, i))->load();
@@ -80,13 +80,13 @@ namespace zlDSP {
         } else if (parameterID == filterStructure::ID) {
             controllerRef.setFilterStructure(static_cast<filterStructure::FilterStructure>(newValue));
         } else if (parameterID == dynLink::ID) {
-            controllerRef.setDynLink(static_cast<bool>(newValue));
+            controllerRef.setDynLink(newValue > .5f);
         } else if (parameterID == dynHQ::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
-                controllerRef.getFilter(i).setIsPerSample(static_cast<bool>(newValue));
+                controllerRef.getFilter(i).setIsPerSample(newValue > .5f);
             }
         } else if (parameterID == zeroLatency::ID) {
-            controllerRef.setZeroLatency(static_cast<bool>(newValue));
+            controllerRef.setZeroLatency(newValue > .5f);
         } else if (parameterID == zlState::fftPreON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
@@ -161,7 +161,7 @@ namespace zlDSP {
             const auto idx = static_cast<size_t>(newValue);
             controllerRef.getAnalyzer().getMultipleFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
         } else if (parameterID == zlState::conflictON::ID) {
-            const auto f = static_cast<bool>(newValue);
+            const auto f = newValue > .5f;
             controllerRef.getConflictAnalyzer().setON(f);
         } else if (parameterID == zlState::conflictStrength::ID) {
             controllerRef.getConflictAnalyzer().setStrength(

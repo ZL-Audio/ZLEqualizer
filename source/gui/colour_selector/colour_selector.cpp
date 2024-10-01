@@ -12,8 +12,8 @@
 namespace zlInterface {
     class SelectorBox final : public juce::Component {
     public:
-        explicit SelectorBox(const int flags, zlInterface::UIBase &base)
-            : selector(flags,
+        explicit SelectorBox(const int selectorFlags, zlInterface::UIBase &base)
+            : selector(selectorFlags,
                        juce::roundToInt(base.getFontSize() * 0.5f),
                        juce::roundToInt(base.getFontSize() * 0.33f)),
               uiBase(base) {

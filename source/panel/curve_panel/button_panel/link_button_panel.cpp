@@ -59,7 +59,7 @@ namespace zlPanel {
         if (parameterID.startsWith(zlDSP::sideFreq::ID)) {
             sideFreq.store(newValue);
         } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
-            isDynamicON.store(static_cast<bool>(newValue));
+            isDynamicON.store(newValue > .5f);
         } else if (parameterID.startsWith(zlState::selectedBandIdx::ID)) {
             isSelected.store(static_cast<size_t>(newValue) == bandIdx.load());
         }

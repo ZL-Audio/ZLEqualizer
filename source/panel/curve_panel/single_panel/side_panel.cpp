@@ -78,9 +78,9 @@ namespace zlPanel {
             selected.store(static_cast<size_t>(newValue) == idx);
         } else {
             if (parameterID.startsWith(zlState::active::ID)) {
-                actived.store(static_cast<bool>(newValue));
+                actived.store(newValue > .5f);
             } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
-                dynON.store(static_cast<bool>(newValue));
+                dynON.store(newValue > .5f);
             } else if (parameterID.startsWith(zlDSP::sideFreq::ID)) {
                 sideFreq.store(newValue);
                 toUpdate.store(true);

@@ -143,7 +143,7 @@ namespace zlDSP {
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         auto value = static_cast<FloatType>(newValue);
         if (parameterID.startsWith(bypass::ID)) {
-            controllerRef.setBypass(idx, static_cast<bool>(value));
+            controllerRef.setBypass(idx, newValue > .5f);
         } else if (parameterID.startsWith(fType::ID)) {
             const auto fType = static_cast<zlFilter::FilterType>(value);
             controllerRef.getBaseFilter(idx).setFilterType(fType);
@@ -185,9 +185,9 @@ namespace zlDSP {
         } else if (parameterID.startsWith(lrType::ID)) {
             controllerRef.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
         } else if (parameterID.startsWith(dynamicON::ID)) {
-            controllerRef.setDynamicON(static_cast<bool>(value), idx);
+            controllerRef.setDynamicON(newValue > .5f, idx);
         } else if (parameterID.startsWith(dynamicLearn::ID)) {
-            const auto f = static_cast<bool>(newValue);
+            const auto f = newValue > .5f;
             if (!f && controllerRef.getLearningHistON(idx)) {
                 controllerRef.setLearningHist(idx, false);
                 const auto &hist = controllerRef.getLearningHist(idx);
@@ -211,9 +211,9 @@ namespace zlDSP {
                 controllerRef.setLearningHist(idx, f);
             }
         } else if (parameterID.startsWith(dynamicBypass::ID)) {
-            filtersRef[idx].setDynamicBypass(static_cast<bool>(value));
+            filtersRef[idx].setDynamicBypass(newValue > .5f);
         } else if (parameterID.startsWith(dynamicRelative::ID)) {
-            controllerRef.setRelative(idx, static_cast<bool>(value));
+            controllerRef.setRelative(idx, newValue > .5f);
         } else if (parameterID.startsWith(targetGain::ID)) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
             value = targetGain::range.snapToLegalValue(static_cast<float>(value));
@@ -235,7 +235,7 @@ namespace zlDSP {
         } else if (parameterID.startsWith(sideQ::ID)) {
             filtersRef[idx].getSideFilter().setQ(value);
         } else if (parameterID.startsWith(singleDynLink::ID)) {
-            sDynLink[idx].store(static_cast<bool>(newValue));
+            sDynLink[idx].store(newValue > .5f);
             if (sDynLink[idx].load()) {
                 updateSideFQ(idx);
             }

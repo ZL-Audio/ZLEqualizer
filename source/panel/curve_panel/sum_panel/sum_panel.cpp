@@ -118,7 +118,7 @@ namespace zlPanel {
     void SumPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         if (parameterID.startsWith(zlDSP::bypass::ID)) {
-            isBypassed[idx].store(static_cast<bool>(newValue));
+            isBypassed[idx].store(newValue > .5f);
         } else if (parameterID.startsWith(zlDSP::lrType::ID)) {
             lrTypes[idx].store(static_cast<zlDSP::lrType::lrTypes>(newValue));
         }

@@ -41,7 +41,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(FORMATS "$ENV{PLUGIN_OS_FORMAT}")
     else ()
         set(FORMATS AU VST3 Standalone)
-    endif()
+    endif ()
     if (DEFINED ENV{GITHUB_TOKEN})
         set(JUCE_AAX_COPY_DIR "/Users/runner/Library/Audio/Plug-Ins/AAX")
     else ()
@@ -52,12 +52,12 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         set(FORMATS "$ENV{PLUGIN_OS_FORMAT}")
     else ()
         set(FORMATS LV2 VST3 AAX)
-    endif()
+    endif ()
     set(JUCE_AAX_COPY_DIR "C:/Program Files/Common Files/Avid/Audio/Plug-Ins")
 else ()
     if (DEFINED ENV{PLUGIN_OS_FORMAT})
         set(FORMATS "$ENV{PLUGIN_OS_FORMAT}")
-    else()
+    else ()
         set(FORMATS LV2 VST3)
     endif ()
 endif ()
@@ -176,7 +176,8 @@ target_link_libraries(SharedCode
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
         friz
-        Boost::boost)
+        Boost::boost
+)
 
 # Link the JUCE plugin targets our SharedCode target
 target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)

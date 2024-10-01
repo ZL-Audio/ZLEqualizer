@@ -139,12 +139,12 @@ namespace zlPanel {
             toUpdateBounds.store(true);
             toUpdateDraggers.store(true);
         } else if (parameterID.startsWith(zlState::active::ID)) {
-            const auto f = static_cast<bool>(newValue);
+            const auto f = newValue > .5f;
             isActiveTarget.store(f);
             toUpdateTargetAttachment.store(true);
             toUpdateDraggers.store(true);
         } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
-            isDynamicHasTarget.store(static_cast<bool>(newValue));
+            isDynamicHasTarget.store(newValue > .5f);
             toUpdateTargetAttachment.store(true);
             toUpdateDraggers.store(true);
         } else if (parameterID.startsWith(zlDSP::lrType::ID)) {

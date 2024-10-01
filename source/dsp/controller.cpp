@@ -77,8 +77,8 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        if (filterStructure.load() != currentFilterStructure) {
-            currentFilterStructure = filterStructure.load();
+        if (mFilterStructure.load() != currentFilterStructure) {
+            currentFilterStructure = mFilterStructure.load();
             updateFilterStructure();
         }
         if (toUpdateDynamicON.exchange(false)) {

@@ -30,6 +30,9 @@ namespace zlState {
         void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override {
         }
 
+        void processBlock(juce::AudioBuffer<double> &, juce::MidiBuffer &) override {
+        }
+
         juce::AudioProcessorEditor *createEditor() override { return nullptr; }
 
         bool hasEditor() const override { return false; }

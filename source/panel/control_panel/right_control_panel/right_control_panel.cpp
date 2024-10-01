@@ -160,7 +160,7 @@ namespace zlPanel {
         const auto id = parameterID.dropLastCharacters(2);
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         if (id == zlDSP::dynamicON::ID) {
-            const auto f = static_cast<bool>(newValue);
+            const auto f = newValue > .5f;
             dynBypassC.setEditable(f);
             dynSoloC.setEditable(f);
             dynRelativeC.setEditable(f);

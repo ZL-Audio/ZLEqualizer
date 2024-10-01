@@ -13,7 +13,6 @@ env:
   BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DISPLAY: :0 # linux pluginval needs this
-  CMAKE_BUILD_PARALLEL_LEVEL: 3 # Use up to 3 cpus to build juceaide, etc
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
 
@@ -33,6 +32,7 @@ jobs:
             boost_platform_version: "11"
             boost_toolset: "clang"
             plugin_os_format: "AAX"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
@@ -41,21 +41,11 @@ jobs:
             plugin_os_format: "AAX"
 
     steps:
-      - name: Set up MSVC Developer Command Prompt (Windows)
+      - name: Set up Clang (Windows)
         if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Set up Clang (Linux)
-        if: runner.os == 'Linux'
-        uses: egor-tensin/setup-clang@v1
-
-      # This also starts up our "fake" display Xvfb, needed for pluginval
-      - name: Install JUCE's Linux Deps
-        if: runner.os == 'Linux'
-        # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
-        run: |
-          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.0-dev libglu1-mesa-dev xvfb ninja-build
-          sudo /usr/bin/Xvfb $DISPLAY &
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "17.0.6"
 
       - name: Cache IPP (Windows)
         if: runner.os == 'Windows'
@@ -124,7 +114,7 @@ jobs:
 
       - name: Configure
         shell: bash
-        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
+        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}

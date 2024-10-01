@@ -450,7 +450,7 @@ namespace zlPanel {
     size_t ButtonPanel::findAvailableBand() const {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             const auto idx = zlState::appendSuffix(zlState::active::ID, i);
-            const auto isActive = static_cast<bool>(parametersNARef.getRawParameterValue(idx)->load());
+            const auto isActive = parametersNARef.getRawParameterValue(idx)->load() > .5f;
             if (!isActive) { return i; }
         }
         return zlState::bandNUM;
@@ -459,8 +459,8 @@ namespace zlPanel {
     void ButtonPanel::findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) {
         juce::ignoreUnused(itemsFound, area);
         for (size_t idx = 0; idx < panels.size(); ++idx) {
-            if (static_cast<bool>(parametersNARef.getRawParameterValue(
-                zlState::appendSuffix(zlState::active::ID, idx))->load())) {
+            if (parametersNARef.getRawParameterValue(
+                zlState::appendSuffix(zlState::active::ID, idx))->load() > .5f) {
                 auto bCenter = panels[idx]->getDragger().getButton().getBounds().toFloat().getCentre();
                 const auto dPosition = panels[idx]->getDragger().getPosition().toFloat();
                 bCenter = bCenter.translated(dPosition.getX(), dPosition.getY());

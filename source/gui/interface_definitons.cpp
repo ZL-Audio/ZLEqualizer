@@ -262,8 +262,7 @@ namespace zlInterface {
         wheelSensitivity[1] = state.getRawParameterValue(zlState::wheelFineSensitivity::ID)->load();
         wheelSensitivity[2] = state.getRawParameterValue(zlState::dragSensitivity::ID)->load();
         wheelSensitivity[3] = state.getRawParameterValue(zlState::dragFineSensitivity::ID)->load();
-        isMouseWheelShiftReverse.store(
-            static_cast<bool>(state.getRawParameterValue(zlState::wheelShiftReverse::ID)->load()));
+        isMouseWheelShiftReverse.store(state.getRawParameterValue(zlState::wheelShiftReverse::ID)->load() > .5f);
         rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlState::rotaryStyle::ID)->load());
         rotaryDragSensitivity = state.getRawParameterValue(zlState::rotaryDragSensitivity::ID)->load();
         refreshRateId.store(static_cast<size_t>(state.getRawParameterValue(zlState::refreshRate::ID)->load()));

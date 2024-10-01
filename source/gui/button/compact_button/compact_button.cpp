@@ -41,19 +41,19 @@ namespace zlInterface {
         if (button.getToggleState() && lookAndFeel.getDepth() < 0.1f) {
             if (animator.getAnimation(animationId) != nullptr)
                 return;
-            auto effect{
+            auto frizEffect{
                 friz::makeAnimation<friz::Parametric, static_cast<int>(1)>(
                     // ID of the animation
                     animationId, {0.f}, {1.f}, animationDuration, friz::Parametric::kLinear)
             };
-            effect->updateFn = [this](int id, const auto &vals) {
+            frizEffect->updateFn = [this](int id, const auto &vals) {
                 juce::ignoreUnused(id);
                 lookAndFeel.setDepth(vals[0]);
                 repaint();
             };
 
             // pass the animation object to the animator, which will start running it immediately.
-            animator.addAnimation(std::move(effect));
+            animator.addAnimation(std::move(frizEffect));
         } else if (!button.getToggleState()) {
             lookAndFeel.setDepth(0.f);
             animator.cancelAnimation(animationId, false);

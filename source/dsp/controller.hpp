@@ -126,7 +126,7 @@ namespace zlDSP {
         zlPhase::PhaseFlip<FloatType> &getPhaseFlipper() { return phaseFlipper; }
 
         void setFilterStructure(const filterStructure::FilterStructure x) {
-            filterStructure.store(x);
+            mFilterStructure.store(x);
         }
 
         void setIsActive(const size_t idx, const bool flag) {
@@ -236,7 +236,7 @@ namespace zlDSP {
 
         zlPhase::PhaseFlip<FloatType> phaseFlipper;
 
-        std::atomic<filterStructure::FilterStructure> filterStructure{filterStructure::minimum};
+        std::atomic<filterStructure::FilterStructure> mFilterStructure{filterStructure::minimum};
         filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
 
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,

@@ -13,7 +13,6 @@ env:
   BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DISPLAY: :0 # linux pluginval needs this
-  CMAKE_BUILD_PARALLEL_LEVEL: 3 # Use up to 3 cpus to build juceaide, etc
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
 
@@ -35,6 +34,7 @@ jobs:
             plugin_os_format: "VST3;LV2;Standalone"
             juce_branch: "juce7"
             app_suffix: ""
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
           - name: macOS
             os: macos-14
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
@@ -43,6 +43,7 @@ jobs:
             plugin_os_format: "VST3;AU;Standalone"
             juce_branch: "main"
             app_suffix: ".app"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
@@ -59,15 +60,15 @@ jobs:
             plugin_os_format: "VST3;LV2;Standalone"
             juce_branch: "juce7"
             app_suffix: ".exe"
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 
     steps:
-      - name: Set up MSVC Developer Command Prompt (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Set up Clang (Linux)
         if: runner.os == 'Linux'
-        uses: egor-tensin/setup-clang@v1
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 17
 
       # This also starts up our "fake" display Xvfb, needed for pluginval
       - name: Install JUCE's Linux Deps
@@ -76,6 +77,12 @@ jobs:
         run: |
           sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev xvfb ninja-build
           sudo /usr/bin/Xvfb $DISPLAY &
+
+      - name: Set up Clang (Windows)
+        if: runner.os == 'Windows'
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "17.0.6"
 
       - name: Cache IPP (Windows)
         if: runner.os == 'Windows'
@@ -131,9 +138,6 @@ jobs:
           toolset: ${{ matrix.boost_toolset }}
           link: "static"
 
-      - name: Cache the build
-        uses: mozilla-actions/sccache-action@v0.0.6
-
       - name: Import Certificates (macOS)
         uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
         if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '') }}
@@ -145,7 +149,7 @@ jobs:
 
       - name: Configure
         shell: bash
-        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.ccache }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" .
+        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}

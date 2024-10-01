@@ -188,11 +188,11 @@ namespace zlInterface {
 
         if (animator.getAnimation(animationId) != nullptr)
             return;
-        auto effect{
+        auto frizEffect{
             friz::makeAnimation<friz::Parametric, 1>(
                 animationId, {1.5f}, {0.f}, 1000, friz::Parametric::kLinear)
         };
-        effect->updateFn = [this](int, const auto &vals) {
+        frizEffect->updateFn = [this](int, const auto &vals) {
             auto val = juce::jmin(vals[0], 1.0f);
             labelLookAndFeel.setAlpha(1 - val);
             labelLookAndFeel1.setAlpha(val);
@@ -202,7 +202,7 @@ namespace zlInterface {
             }
         };
 
-        animator.addAnimation(std::move(effect));
+        animator.addAnimation(std::move(frizEffect));
     }
 
     void TwoValueRotarySlider::mouseMove(const juce::MouseEvent &event) {

@@ -220,7 +220,7 @@ namespace zlPanel {
                 triggerAsyncUpdate();
             }
         } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
-            const auto f = static_cast<bool>(newValue); {
+            const auto f = newValue > .5f; {
                 gainS2Editable.store(gainCEditable.load() && f);
                 qS2Editable.store(f);
             }
