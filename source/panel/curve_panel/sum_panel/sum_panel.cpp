@@ -43,7 +43,7 @@ namespace zlPanel {
         std::array<bool, 5> useLRMS{false, false, false, false, false};
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             const auto idx = static_cast<size_t>(c.getFilterLRs(i));
-            if (!c.getFilter(i).getBypass()) {
+            if (!c.getBypass(i)) {
                 useLRMS[idx] = true;
             }
         }

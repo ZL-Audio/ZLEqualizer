@@ -14,29 +14,42 @@ namespace zlContainer {
     template<typename T, size_t N>
     class FixedMaxSizeArray {
     public:
-        std::array<T, N> data{};
-        size_t size = 0;
-
         FixedMaxSizeArray() = default;
 
         FixedMaxSizeArray &operator =(const FixedMaxSizeArray<T, N> &that) {
-            for (size_t i = 0; i < size; ++i) {
+            for (size_t i = 0; i < mSize; ++i) {
                 data[i] = that.data[i];
             }
             return *this;
         }
 
+        T operator [](const size_t idx) const {
+            return data[idx];
+        }
+
         void push(const T x) {
-            if (size == N) {
-                size = 0;
+            if (mSize == N) {
+                mSize = 0;
             }
-            data[size] = x;
-            size++;
+            data[mSize] = x;
+            mSize++;
         }
 
         void clear() {
-            size = 0;
+            mSize = 0;
         }
+
+        [[nodiscard]] size_t size() const {
+            return mSize;
+        }
+
+        [[nodiscard]] static size_t capacity() {
+            return N;
+        }
+
+    private:
+        std::array<T, N> data{};
+        size_t mSize = 0;
     };
 }
 

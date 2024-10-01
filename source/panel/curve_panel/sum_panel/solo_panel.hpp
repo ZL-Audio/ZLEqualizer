@@ -28,7 +28,7 @@ namespace zlPanel {
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
-        zlFilter::IIR<double> &soloF;
+        zlFilter::IIR<double, zlDSP::Controller<double>::FilterSize> &soloF;
         zlDSP::Controller<double> &controllerRef;
         std::atomic<float> scale1{.5f}, scale2{.5f};
         std::atomic<bool> toRepaint{false};

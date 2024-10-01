@@ -36,7 +36,7 @@ namespace zlPanel {
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        zlFilter::IIR<double> &sideF;
+        zlFilter::IIR<double, zlDSP::Controller<double>::FilterSize> &sideF;
         std::atomic<bool> dynON, selected, actived;
         std::atomic<bool> toRepaint{false};
 

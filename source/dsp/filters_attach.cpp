@@ -78,8 +78,8 @@ namespace zlDSP {
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::updateTargetFGQ(const size_t idx) {
-        auto tGain = static_cast<float>(filtersRef[idx].getBaseFilter().getGain());
-        switch (filtersRef[idx].getBaseFilter().getFilterType()) {
+        auto tGain = static_cast<float>(controllerRef.getBaseFilter(idx).getGain());
+        switch (controllerRef.getBaseFilter(idx).getFilterType()) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
                 const auto maxDB = maximumDB.load();
@@ -112,18 +112,18 @@ namespace zlDSP {
                 break;
             }
         }
-        filtersRef[idx].getTargetFilter().setFreq(filtersRef[idx].getBaseFilter().getFreq());
-        filtersRef[idx].getTargetFilter().setFilterType(filtersRef[idx].getBaseFilter().getFilterType());
-        filtersRef[idx].getTargetFilter().setOrder(filtersRef[idx].getBaseFilter().getOrder());
+        controllerRef.getTargetFilter(idx).setFreq(controllerRef.getBaseFilter(idx).getFreq());
+        controllerRef.getTargetFilter(idx).setFilterType(controllerRef.getBaseFilter(idx).getFilterType());
+        controllerRef.getTargetFilter(idx).setOrder(controllerRef.getBaseFilter(idx).getOrder());
         const auto paraGain = parameterRef.getParameter(zlDSP::appendSuffix(targetGain::ID, idx));
         updateParaNotifyHost(paraGain, targetGain::convertTo01(tGain));
         const auto paraQ = parameterRef.getParameter(zlDSP::appendSuffix(targetQ::ID, idx));
-        updateParaNotifyHost(paraQ, targetQ::convertTo01(static_cast<float>(filtersRef[idx].getBaseFilter().getQ())));
+        updateParaNotifyHost(paraQ, targetQ::convertTo01(static_cast<float>(controllerRef.getBaseFilter(idx).getQ())));
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::updateSideFQ(const size_t idx) {
-        const auto &f{filtersRef[idx].getBaseFilter()};
+        const auto &f{controllerRef.getBaseFilter(idx)};
         auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(
             f.getFilterType(), f.getFreq(), f.getQ());
         const auto soloFreq01 = sideFreq::convertTo01(static_cast<float>(soloFreq));
@@ -143,41 +143,45 @@ namespace zlDSP {
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         auto value = static_cast<FloatType>(newValue);
         if (parameterID.startsWith(bypass::ID)) {
-            filtersRef[idx].setBypass(static_cast<bool>(value));
+            controllerRef.setBypass(idx, static_cast<bool>(value));
         } else if (parameterID.startsWith(fType::ID)) {
             const auto fType = static_cast<zlFilter::FilterType>(value);
-            filtersRef[idx].getBaseFilter().setFilterType(fType);
+            controllerRef.getBaseFilter(idx).setFilterType(fType);
             filtersRef[idx].getMainFilter().setFilterType(fType);
-            filtersRef[idx].getTargetFilter().setFilterType(fType);
+            controllerRef.getTargetFilter(idx).setFilterType(fType);
             controllerRef.getMainFilter(idx).setFilterType(fType);
+            controllerRef.updateSgc(idx);
         } else if (parameterID.startsWith(slope::ID)) {
             const auto newOrder = slope::orderArray[static_cast<size_t>(value)];
-            filtersRef[idx].getBaseFilter().setOrder(newOrder);
+            controllerRef.getBaseFilter(idx).setOrder(newOrder);
             filtersRef[idx].getMainFilter().setOrder(newOrder);
-            filtersRef[idx].getTargetFilter().setOrder(newOrder);
+            controllerRef.getTargetFilter(idx).setOrder(newOrder);
             controllerRef.getMainFilter(idx).setOrder(newOrder);
         } else if (parameterID.startsWith(freq::ID)) {
-            filtersRef[idx].getBaseFilter().setFreq(value);
+            controllerRef.getBaseFilter(idx).setFreq(value);
             filtersRef[idx].getMainFilter().setFreq(value);
-            filtersRef[idx].getTargetFilter().setFreq(value);
+            controllerRef.getTargetFilter(idx).setFreq(value);
             controllerRef.getMainFilter(idx).setFreq(value);
             if (sDynLink[idx].load()) {
                 updateSideFQ(idx);
             }
+            controllerRef.updateSgc(idx);
         } else if (parameterID.startsWith(gain::ID)) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
             value = gain::range.snapToLegalValue(static_cast<float>(value));
-            filtersRef[idx].getBaseFilter().setGain(value);
+            controllerRef.getBaseFilter(idx).setGain(value);
             filtersRef[idx].getMainFilter().setGain(value);
             controllerRef.getMainFilter(idx).setGain(value);
+            controllerRef.updateSgc(idx);
         } else if (parameterID.startsWith(Q::ID)) {
-            filtersRef[idx].getBaseFilter().setQ(value);
+            controllerRef.getBaseFilter(idx).setQ(value);
             filtersRef[idx].getMainFilter().setQ(value);
             filtersRef[idx].updateIsCurrentDynamicChangeQ();
             controllerRef.getMainFilter(idx).setQ(value);
             if (sDynLink[idx].load()) {
                 updateSideFQ(idx);
             }
+            controllerRef.updateSgc(idx);
         } else if (parameterID.startsWith(lrType::ID)) {
             controllerRef.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
         } else if (parameterID.startsWith(dynamicON::ID)) {
@@ -213,9 +217,9 @@ namespace zlDSP {
         } else if (parameterID.startsWith(targetGain::ID)) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
             value = targetGain::range.snapToLegalValue(static_cast<float>(value));
-            filtersRef[idx].getTargetFilter().setGain(value);
+            controllerRef.getTargetFilter(idx).setGain(value);
         } else if (parameterID.startsWith(targetQ::ID)) {
-            filtersRef[idx].getTargetFilter().setQ(value);
+            controllerRef.getTargetFilter(idx).setQ(value);
             filtersRef[idx].updateIsCurrentDynamicChangeQ();
         } else if (parameterID.startsWith(threshold::ID)) {
             controllerRef.setThreshold(idx, value);

@@ -57,7 +57,7 @@ namespace zlDSP {
             f.prepare(subSpec);
         }
 
-        soloFilter.setFilterType(zlFilter::FilterType::bandPass, false);
+        soloFilter.setFilterType(zlFilter::FilterType::bandPass);
         soloFilter.prepare(subSpec);
         lrMainSplitter.prepare(subSpec);
         lrSideSplitter.prepare(subSpec);
@@ -65,6 +65,9 @@ namespace zlDSP {
         msSideSplitter.prepare(subSpec);
         outputGain.prepare(subSpec);
         autoGain.prepare(subSpec);
+        for (auto &g: compensationGains) {
+            g.prepare(subSpec);
+        }
         fftAnalyzer.prepare(subSpec);
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: trackers) {
@@ -84,7 +87,23 @@ namespace zlDSP {
         if (toUpdateLRs.exchange(false)) {
             updateLRs();
             updateTrackersON();
+            toUpdateSgc.store(true);
         }
+        if (toUpdateBypass.exchange(false)) {
+            for (size_t i = 0; i < bandNUM; ++i) {
+                currentIsBypass[i] = isBypass[i].load();
+            }
+            toUpdateSgc.store(true);
+        }
+        if (currentIsSgcON != isSgcON.load()) {
+            currentIsSgcON = isSgcON.load();
+        }
+        if (currentIsSgcON) {
+            if (toUpdateSgc.exchange(false)) {
+                updateSgcValues();
+            }
+        }
+
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
         juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
         // if no side chain, copy the main buffer into the side buffer
@@ -197,8 +216,8 @@ namespace zlDSP {
                                                juce::AudioBuffer<FloatType> &subSideBuffer) {
         autoGain.processPre(subMainBuffer);
         // set auto threshold
-        for (size_t idx = 0; idx < dynamicONIndices.size; ++idx) {
-            const auto i = dynamicONIndices.data[idx];
+        for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
+            const auto i = dynamicONIndices[idx];
             if (isHistON[i].load()) {
                 const auto depThres =
                         currentThreshold[i].load() + FloatType(40) +
@@ -232,8 +251,8 @@ namespace zlDSP {
             msMainSplitter.combine(subMainBuffer);
         }
         // set main filter gain & Q and update histograms
-        for (size_t idx = 0; idx < dynamicONIndices.size; ++idx) {
-            const auto i = dynamicONIndices.data[idx];
+        for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
+            const auto i = dynamicONIndices[idx];
             mainFilters[i].setGain(filters[i].getMainFilter().getGain());
             mainFilters[i].setQ(filters[i].getMainFilter().getQ());
             if (isHistON[i].load()) {
@@ -264,34 +283,55 @@ namespace zlDSP {
                 baseLine = tracker.minusInfinityDB * FloatType(0.5);
             }
         }
-        for (size_t idx = 0; idx < indices.size; ++idx) {
-            const auto i = indices.data[idx];
+        for (size_t idx = 0; idx < indices.size(); ++idx) {
+            const auto i = indices[idx];
             if (dynRelatives[i].load()) {
                 filters[i].getCompressor().setBaseLine(baseLine);
             } else {
                 filters[i].getCompressor().setBaseLine(0);
             }
-            filters[i].process(subMainBuffer, subSideBuffer);
+            if (currentIsBypass[i]) {
+                filters[i].template process<true>(subMainBuffer, subSideBuffer);
+            } else {
+                filters[i].template process<false>(subMainBuffer, subSideBuffer);
+            }
+        }
+        if (currentIsSgcON && currentFilterStructure != filterStructure::parallel) {
+            compensationGains[lrIdx].process(subMainBuffer);
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        for (auto &f: {true, false}) {
-            // add parallel filters first
-            processParallelPostLRMS(0, f, subMainBuffer);
-            if (useLR) {
-                lrMainSplitter.split(subMainBuffer);
-                processParallelPostLRMS(1, f, lrMainSplitter.getLBuffer());
-                processParallelPostLRMS(2, f, lrMainSplitter.getRBuffer());
-                lrMainSplitter.combine(subMainBuffer);
-            }
-            if (useMS) {
-                msMainSplitter.split(subMainBuffer);
-                processParallelPostLRMS(3, f, msMainSplitter.getMBuffer());
-                processParallelPostLRMS(4, f, msMainSplitter.getSBuffer());
-                msMainSplitter.combine(subMainBuffer);
-            }
+        // add parallel filters first
+        processParallelPostLRMS(0, true, subMainBuffer);
+        if (useLR) {
+            processParallelPostLRMS(1, true, lrMainSplitter.getLBuffer());
+            processParallelPostLRMS(2, true, lrMainSplitter.getRBuffer());
+            lrMainSplitter.combine(subMainBuffer);
+        }
+        if (useMS) {
+            processParallelPostLRMS(3, true, msMainSplitter.getMBuffer());
+            processParallelPostLRMS(4, true, msMainSplitter.getSBuffer());
+            msMainSplitter.combine(subMainBuffer);
+        }
+        processParallelPostLRMS(0, false, subMainBuffer);
+        if (currentIsSgcON) {
+            compensationGains[0].process(subMainBuffer);
+        }
+        if (useLR) {
+            processParallelPostLRMS(1, false, lrMainSplitter.getLBuffer());
+            processParallelPostLRMS(2, false, lrMainSplitter.getRBuffer());
+            compensationGains[1].process(lrMainSplitter.getLBuffer());
+            compensationGains[2].process(lrMainSplitter.getRBuffer());
+            lrMainSplitter.combine(subMainBuffer);
+        }
+        if (useMS) {
+            processParallelPostLRMS(3, false, msMainSplitter.getMBuffer());
+            processParallelPostLRMS(4, false, msMainSplitter.getSBuffer());
+            compensationGains[3].process(msMainSplitter.getMBuffer());
+            compensationGains[4].process(msMainSplitter.getSBuffer());
+            msMainSplitter.combine(subMainBuffer);
         }
     }
 
@@ -299,10 +339,14 @@ namespace zlDSP {
     void Controller<FloatType>::processParallelPostLRMS(const size_t lrIdx, const bool shouldParallel,
                                                         juce::AudioBuffer<FloatType> &subMainBuffer) {
         const auto &indices{filterLRIndices[lrIdx]};
-        for (size_t idx = 0; idx < indices.size; ++idx) {
-            const auto i = indices.data[idx];
+        for (size_t idx = 0; idx < indices.size(); ++idx) {
+            const auto i = indices[idx];
             if (filters[i].getMainFilter().getShouldBeParallel() == shouldParallel) {
-                filters[i].processParallelPost(subMainBuffer);
+                if (currentIsBypass[i]) {
+                    filters[i].template processParallelPost<true>(subMainBuffer);
+                } else {
+                    filters[i].template processParallelPost<false>(subMainBuffer);
+                }
             }
         }
     }
@@ -323,8 +367,8 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::setDynamicON(const bool x, size_t idx) {
         filters[idx].setDynamicON(x);
-        filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
-        filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
+        filters[idx].getMainFilter().template setGain<false>(bFilters[idx].getGain());
+        filters[idx].getMainFilter().template setQ<true>(bFilters[idx].getQ());
         toUpdateDynamicON.store(true);
     }
 
@@ -387,8 +431,8 @@ namespace zlDSP {
             std::tie(freq, q) = getSoloFilterParas(
                 f.getFilterType(), f.getFreq(), f.getQ());
         }
-        soloFilter.setFreq(freq, false);
-        soloFilter.setQ(q, true);
+        soloFilter.setFreq(freq);
+        soloFilter.setQ(q);
 
         soloIdx.store(idx);
         soloSide.store(isSide);
@@ -457,8 +501,8 @@ namespace zlDSP {
         std::fill(useTrackers.begin(), useTrackers.end(), false);
         for (size_t idx = 0; idx < 5; ++idx) {
             const auto &indices{filterLRIndices[idx]};
-            for (size_t i = 0; i < indices.size; ++i) {
-                if (dynRelatives[indices.data[i]].load()) {
+            for (size_t i = 0; i < indices.size(); ++i) {
+                if (dynRelatives[indices[i]].load()) {
                     useTrackers[idx] = true;
                     break;
                 }
@@ -516,8 +560,23 @@ namespace zlDSP {
             }
         }
         for (size_t idx = 0; idx < bandNUM; ++idx) {
-            filters[idx].getMainFilter().setGain(filters[idx].getBaseFilter().getGain(), false);
-            filters[idx].getMainFilter().setQ(filters[idx].getBaseFilter().getQ(), true);
+            filters[idx].getMainFilter().template setGain<false>(bFilters[idx].getGain());
+            filters[idx].getMainFilter().template setQ<true>(bFilters[idx].getQ());
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateSgcValues() {
+        for (size_t lr = 0; lr < 5; ++lr) {
+            auto &indices{filterLRIndices[lr]};
+            FloatType currentSgc{FloatType(1)};
+            for (size_t idx = 0; idx < indices.size(); ++idx) {
+                const auto i = indices[idx];
+                if (!currentIsBypass[i]) {
+                    currentSgc *= compensations[i].getGain();
+                }
+            }
+            compensationGains[lr].setGainLinear(currentSgc);
         }
     }
 

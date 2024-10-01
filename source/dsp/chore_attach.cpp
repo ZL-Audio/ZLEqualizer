@@ -61,20 +61,18 @@ namespace zlDSP {
         } else if (parameterID == phaseFlip::ID) {
             controllerRef.getPhaseFlipper().setON(static_cast<bool>(newValue));
         }else if (parameterID == staticAutoGain::ID) {
-            for (size_t i = 0; i < bandNUM; ++i) {
-                controllerRef.getFilter(i).setCompensationON(static_cast<bool>(newValue));
-            }
+            controllerRef.setSgcON(static_cast<bool>(newValue));
         } else if (parameterID == autoGain::ID) {
             controllerRef.getAutoGain().enable(static_cast<bool>(newValue));
         } else if (parameterID == scale::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
                 const auto baseGain = parameterRef.getRawParameterValue(appendSuffix(gain::ID, i))->load();
                 const auto targetGain = parameterRef.getRawParameterValue(appendSuffix(targetGain::ID, i))->load();
-                controllerRef.getFilter(i).getBaseFilter().setGain(
+                controllerRef.getBaseFilter(i).setGain(
                     zlDSP::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue)));
                 controllerRef.getFilter(i).getMainFilter().setGain(
                     zlDSP::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue)));
-                controllerRef.getFilter(i).getTargetFilter().setGain(
+                controllerRef.getTargetFilter(i).setGain(
                     zlDSP::targetGain::range.snapToLegalValue(targetGain * scale::formatV(newValue)));
             }
         } else if (parameterID == outputGain::ID) {

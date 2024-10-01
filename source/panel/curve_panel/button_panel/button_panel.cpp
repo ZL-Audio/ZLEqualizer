@@ -98,10 +98,10 @@ namespace zlPanel {
         }
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
         if (p->getDragger().getButton().getToggleState()) {
-            const auto &f{controllerRef.getFilter(idx).getBaseFilter()};
+            const auto &f{controllerRef.getBaseFilter(idx)};
             drawFilterParas(g, f.getFilterType(), f.getFreq(), f.getGain(), bound);
         } else if (p->getTargetDragger().getButton().getToggleState()) {
-            const auto &f{controllerRef.getFilter(idx).getTargetFilter()};
+            const auto &f{controllerRef.getTargetFilter(idx)};
             drawFilterParas(g, f.getFilterType(), f.getFreq(), f.getGain(), bound);
         } else if (p->getSideDragger().getButton().getToggleState()) {
             const auto &f{controllerRef.getFilter(idx).getSideFilter()};
@@ -193,7 +193,7 @@ namespace zlPanel {
             isLeftClick.store(!event.mods.isRightButtonDown());
             for (size_t idx = 0; idx < panels.size(); ++idx) {
                 previousGains[idx].store(
-                    static_cast<float>(controllerRef.getFilter(idx).getBaseFilter().getGain()));
+                    static_cast<float>(controllerRef.getBaseFilter(idx).getGain()));
             }
             return;
         }

@@ -23,56 +23,149 @@ namespace zlFilter {
      * the mix portion is controlled by a compressor on the signal from the side filter (on the side chain)
      * @tparam FloatType
      */
-    template<typename FloatType>
+    template<typename FloatType, size_t FilterSize>
     class DynamicIIR {
     public:
-        DynamicIIR() = default;
+        DynamicIIR(zlFilter::Empty<FloatType> &b, zlFilter::Empty<FloatType> &t)
+            : bFilter(b), tFilter(t) {
+        }
 
-        void reset();
+        void reset() {
+            mFilter.reset();
+            sFilter.reset();
+            compressor.reset();
+        }
 
-        void prepare(const juce::dsp::ProcessSpec &spec);
+        void prepare(const juce::dsp::ProcessSpec &spec) {
+            mFilter.prepare(spec);
+            sFilter.template setOrder<false>(2);
+            sFilter.template setFilterType<false>(zlFilter::FilterType::bandPass);
+            sFilter.prepare(spec);
+            compressor.prepare(spec);
+
+            compressor.getComputer().setRatio(100);
+            sBufferCopy.setSize(static_cast<int>(spec.numChannels),
+                                static_cast<int>(spec.maximumBlockSize));
+        }
 
         /**
          * process the audio buffer
          * @param mBuffer main chain audio buffer
          * @param sBuffer side chain audio buffer
          */
-        void process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer);
+        template <bool isBypassed=false>
+        void process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
+            if (currentFilterStructure != filterStructure.load()) {
+                currentFilterStructure = filterStructure.load();
+                switch (currentFilterStructure) {
+                    case FilterStructure::iir:
+                    case FilterStructure::svf: {
+                        mFilter.setFilterStructure(currentFilterStructure);
+                        sFilter.setFilterStructure(currentFilterStructure);
+                        break;
+                    }
+                    case FilterStructure::parallel: {
+                        mFilter.setFilterStructure(currentFilterStructure);
+                        sFilter.setFilterStructure(FilterStructure::iir);
+                    }
+                }
+            }
+            mFilter.processPre(mBuffer);
+            if (dynamicON.load()) {
+                if (mFilter.getShouldNotBeParallel()) { return; }
+                currentIsDynamicChangeQ = isDynamicChangeQ.load();
+                sBufferCopy.makeCopyOf(sBuffer, true);
+                sFilter.processPre(sBufferCopy);
+                sFilter.process(sBufferCopy);
+                auto reducedLoudness = juce::Decibels::gainToDecibels(compressor.process(sBufferCopy));
+                auto maximumReduction = compressor.getComputer().getReductionAtKnee();
+                auto portion = std::min(reducedLoudness / maximumReduction, FloatType(1));
+                if (dynamicBypass.load()) {
+                    portion = 0;
+                }
+                if (!isPerSample.load()) {
+                    if (currentIsDynamicChangeQ) {
+                        mFilter.setGainAndQNow((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(),
+                                               (1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
+                    } else {
+                        mFilter.setGainNow((1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
+                    }
+                    if (mFilter.getShouldBeParallel()) {
+                        mFilter.template process<isBypassed>(mFilter.getParallelBuffer());
+                    } else {
+                        mFilter.template process<isBypassed>(mBuffer);
+                    }
+                } else {
+                    if (currentIsDynamicChangeQ) {
+                        const auto oldGain = mFilter.getGain();
+                        const auto oldQ = mFilter.getQ();
+                        const auto newGain = (1 - portion) * bFilter.getGain() + portion * tFilter.getGain();
+                        const auto newQ = (1 - portion) * bFilter.getQ() + portion * tFilter.getQ();
+                        auto audioWriters = mFilter.getShouldBeParallel()
+                                                ? mFilter.getParallelBuffer().getArrayOfWritePointers()
+                                                : mBuffer.getArrayOfWritePointers();
+                        for (int i = 0; i < mBuffer.getNumSamples(); ++i) {
+                            const auto pp = static_cast<FloatType>(i) / static_cast<FloatType>(mBuffer.getNumSamples());
+                            const auto currentGain = newGain * pp + oldGain * (1 - pp);
+                            const auto currentQ = newQ * pp + oldQ * (1 - pp);
+                            mFilter.setGainAndQNow(currentGain, currentQ);
+                            sampleBuffer.setDataToReferTo(audioWriters, static_cast<int>(mBuffer.getNumChannels()), i,
+                                                          1);
+                            mFilter.template process<isBypassed>(sampleBuffer);
+                        }
+                    } else {
+                        const auto oldGain = mFilter.getGain();
+                        const auto newGain = (1 - portion) * bFilter.getGain() + portion * tFilter.getGain();
+                        auto audioWriters = mFilter.getShouldBeParallel()
+                                                ? mFilter.getParallelBuffer().getArrayOfWritePointers()
+                                                : mBuffer.getArrayOfWritePointers();
+                        for (int i = 0; i < mBuffer.getNumSamples(); ++i) {
+                            const auto pp = static_cast<FloatType>(i) / static_cast<FloatType>(mBuffer.getNumSamples());
+                            const auto currentGain = newGain * pp + oldGain * (1 - pp);
+                            mFilter.setGainNow(currentGain);
+                            sampleBuffer.setDataToReferTo(audioWriters, static_cast<int>(mBuffer.getNumChannels()), i,
+                                                          1);
+                            mFilter.template process<isBypassed>(sampleBuffer);
+                        }
+                    }
+                }
+            } else {
+                if (mFilter.getShouldBeParallel()) {
+                    mFilter.template process<isBypassed>(mFilter.getParallelBuffer());
+                } else {
+                    mFilter.template process<isBypassed>(mBuffer);
+                }
+            }
+        }
 
-        void processParallelPost(juce::AudioBuffer<FloatType> &buffer);
+        template <bool isBypassed=false>
+        void processParallelPost(juce::AudioBuffer<FloatType> &buffer) {
+            mFilter.template processParallelPost<isBypassed>(buffer);
+        }
 
-        void processBypass();
+        static void processBypass() {
+        }
 
-        IIR<FloatType> &getMainFilter() { return mFilter; }
+        IIR<FloatType, FilterSize> &getMainFilter() { return mFilter; }
 
-        Empty<FloatType> &getBaseFilter() { return bFilter; }
+        IIR<FloatType, FilterSize> &getSideFilter() { return sFilter; }
 
-        Empty<FloatType> &getTargetFilter() { return tFilter; }
+        zlCompressor::ForwardCompressor<FloatType> &getCompressor() { return compressor; }
 
-        IIR<FloatType> &getSideFilter() { return sFilter; }
-
-        inline zlCompressor::ForwardCompressor<FloatType> &getCompressor() { return compressor; }
-
-        inline void setBypass(const bool x) { bypass.store(x); }
-
-        inline bool getBypass() const { return bypass.load(); }
-
-        inline void setActive(const bool x) {
+        void setActive(const bool x) {
             if (x) {
                 mFilter.setToRest();
             }
             active.store(x);
         }
 
-        inline void setDynamicON(const bool x) { dynamicON.store(x); }
+        void setDynamicON(const bool x) { dynamicON.store(x); }
 
-        inline bool getDynamicON() const { return dynamicON.load(); }
+        bool getDynamicON() const { return dynamicON.load(); }
 
-        inline void setDynamicBypass(const bool x) { dynamicBypass.store(x); }
+        void setDynamicBypass(const bool x) { dynamicBypass.store(x); }
 
-        inline bool getDynamicBypass() const { return dynamicBypass.load(); }
-
-        inline void setCompensationON(const bool x) { compensation.enable(x); }
+        bool getDynamicBypass() const { return dynamicBypass.load(); }
 
         void setFilterStructure(const FilterStructure x) {
             filterStructure.store(x);
@@ -80,26 +173,16 @@ namespace zlFilter {
 
         void setIsPerSample(const bool x) { isPerSample.store(x); }
 
-        FloatType getSGC() const {
-            if (!active.load() || bypass.load()) {
-                return FloatType(0);
-            } else {
-                return compensation.getGainDecibels();
-            }
-        }
-
         void updateIsCurrentDynamicChangeQ() {
             isDynamicChangeQ.store(std::abs(bFilter.getQ() - tFilter.getQ()) >= FloatType(0.00001));
         }
 
     private:
-        zlFilter::IIR<FloatType> mFilter, sFilter;
-        zlFilter::Empty<FloatType> bFilter, tFilter;
-        zlFilter::StaticGainCompensation<FloatType> compensation{bFilter};
+        zlFilter::IIR<FloatType, FilterSize> mFilter, sFilter;
+        zlFilter::Empty<FloatType> &bFilter, &tFilter;
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
-        std::atomic<bool> bypass{true}, active{false}, dynamicON{false}, dynamicBypass{false};
-        bool currentBypass{true};
+        std::atomic<bool> active{false}, dynamicON{false}, dynamicBypass{false};
         std::atomic<bool> isDynamicChangeQ{false};
         bool currentIsDynamicChangeQ{false};
         std::atomic<FilterStructure> filterStructure{FilterStructure::iir};

@@ -17,30 +17,23 @@ namespace zlFilter {
     template<typename FloatType>
     class StaticGainCompensation {
     public:
-        explicit StaticGainCompensation(Empty<FloatType> &filter);
+        explicit StaticGainCompensation(Empty<FloatType> &filter)
+            : target(filter) {}
 
-        void prepare(const juce::dsp::ProcessSpec &spec);
-
-        void update();
-
-        void process(juce::AudioBuffer<FloatType> &buffer);
-
-        void process(juce::dsp::AudioBlock<FloatType> block);
-
-        void enable(const bool f) {
-            isON.store(f);
-            if (f) toUpdate.store(true);
-            gain.store(FloatType(0));
+        FloatType getGain() {
+            if (toUpdate.exchange(false)) {
+                update();
+            }
+            return juce::Decibels::decibelsToGain(gainDB);
         }
 
-        FloatType getGainDecibels() const {
-            return gain.load();
+        void setToUpdate() {
+            toUpdate.store(true);
         }
 
     private:
         Empty<FloatType> &target;
-        juce::dsp::Gain<FloatType> gainDSP;
-        std::atomic<FloatType> gain{FloatType(0)};
+        FloatType gainDB;
         std::atomic<bool> isON{false}, toUpdate{false};
 
         static inline FloatType integrateFQ(const FloatType f1, const FloatType f2) {
@@ -127,6 +120,41 @@ namespace zlFilter {
         static FloatType getEstimation(FloatType fq_effect, FloatType bw, FloatType g,
                                        const std::array<FloatType, 3> &x) {
             return (x[0] * fq_effect + x[1] * bw) * g * x[2];
+        }
+
+        void update() {
+            switch (target.getFilterType()) {
+                case peak: {
+                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) / FloatType(18);
+                    const auto f = target.getFreq();
+                    const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
+                    const auto q = juce::jlimit(FloatType(0.1), FloatType(5), target.getQ());
+                    gainDB = (FloatType(1) + portion * FloatType(0.75)) * getPeakEstimation(f, g, q);
+                    break;
+                }
+                case lowShelf: {
+                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) / FloatType(18);
+                    const auto f = target.getFreq();
+                    const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
+                    gainDB = (FloatType(0.88) + portion * FloatType(0.66)) * getLowShelfEstimation(f, g);
+                    break;
+                }
+                case highShelf: {
+                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) / FloatType(18);
+                    const auto f = target.getFreq();
+                    const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
+                    gainDB = (FloatType(0.5) + portion * FloatType(0.375)) * getHighShelfEstimation(f, g);
+                    break;
+                }
+                case tiltShelf:
+                case bandShelf:
+                case lowPass:
+                case highPass:
+                case notch:
+                case bandPass:
+                default:
+                    break;
+            }
         }
     };
 } // zlIIR
