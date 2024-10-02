@@ -402,7 +402,7 @@ namespace zlDSP {
         auto static constexpr name = "Filter Structure";
         inline auto static const choices = juce::StringArray{
             "Minimum Phase", "State Variable", "Parallel",
-            // "Prototype", "Mixed Phase", "Linear Phase"
+            "Matched Phase"//, "Mixed Phase", "Linear Phase"
         };
         enum FilterStructure {
             minimum, svf, parallel, matched, mixed, linear

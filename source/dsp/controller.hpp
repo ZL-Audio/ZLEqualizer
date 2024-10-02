@@ -29,6 +29,7 @@ namespace zlDSP {
     class Controller final : public juce::AsyncUpdater {
     public:
         static constexpr size_t FilterSize = 16;
+
         explicit Controller(juce::AudioProcessor &processor);
 
         void reset();
@@ -108,10 +109,10 @@ namespace zlDSP {
         FloatType getGainCompensation() const {
             FloatType currentGain = outputGain.getGainDecibels() + autoGain.getGainDecibels();
             currentGain += compensationGains[0].getGainDecibels() +
-                FloatType(0.5) * (compensationGains[1].getGainDecibels() +
-                    compensationGains[2].getGainDecibels()) +
-                        FloatType(0.95) * compensationGains[3].getGainDecibels() +
-                            FloatType(0.05) * compensationGains[4].getGainDecibels();
+                    FloatType(0.5) * (compensationGains[1].getGainDecibels() +
+                                      compensationGains[2].getGainDecibels()) +
+                    FloatType(0.95) * compensationGains[3].getGainDecibels() +
+                    FloatType(0.05) * compensationGains[4].getGainDecibels();
             return currentGain;
         }
 
@@ -166,9 +167,11 @@ namespace zlDSP {
         std::array<zlFilter::Empty<FloatType>, bandNUM> bFilters, tFilters;
 
         std::array<zlFilter::DynamicIIR<FloatType, FilterSize>, bandNUM> filters =
-            [&]<size_t... Is>(std::index_sequence<Is...>) {
-            return std::array{zlFilter::DynamicIIR<FloatType, FilterSize>{std::get<Is>(bFilters), std::get<Is>(tFilters)}...};
-        }(std::make_index_sequence<std::tuple_size_v<decltype(bFilters)> >());
+                [&]<size_t... Is>(std::index_sequence<Is...>) {
+                    return std::array{
+                        zlFilter::DynamicIIR<FloatType, FilterSize>{std::get<Is>(bFilters), std::get<Is>(tFilters)}...
+                    };
+                }(std::make_index_sequence<std::tuple_size_v<decltype(bFilters)> >());
 
         std::array<zlFilter::Empty<FloatType>, bandNUM> mainFilters;
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
@@ -180,9 +183,9 @@ namespace zlDSP {
         std::atomic<bool> toUpdateDynamicON{true};
 
         std::array<zlFilter::StaticGainCompensation<FloatType>, bandNUM> compensations =
-            [&]<size_t... Is>(std::index_sequence<Is...>) {
-                return std::array{zlFilter::StaticGainCompensation<FloatType>{std::get<Is>(bFilters)}...};
-            }(std::make_index_sequence<std::tuple_size_v<decltype(bFilters)> >());
+                [&]<size_t... Is>(std::index_sequence<Is...>) {
+                    return std::array{zlFilter::StaticGainCompensation<FloatType>{std::get<Is>(bFilters)}...};
+                }(std::make_index_sequence<std::tuple_size_v<decltype(bFilters)> >());
 
         std::array<zlGain::Gain<FloatType>, 5> compensationGains;
         std::atomic<bool> isSgcON{false}, toUpdateSgc{false};
@@ -192,6 +195,20 @@ namespace zlDSP {
         std::array<std::atomic<bool>, bandNUM> isBypass{};
         std::array<bool, bandNUM> currentIsBypass{};
         std::atomic<bool> toUpdateBypass;
+
+        std::array<zlFilter::IIRIdle<FloatType, FilterSize>, bandNUM> mainIIRs;
+        std::array<zlFilter::Ideal<FloatType, FilterSize>, bandNUM> mainIdeals;
+
+        std::array<zlFilter::PrototypeCorrection<FloatType, bandNUM, FilterSize>, 5> prototypeCorrections =
+                [&]<size_t... Is>(std::index_sequence<Is...>) {
+                    return std::array{
+                        zlFilter::PrototypeCorrection<FloatType, bandNUM, FilterSize>{
+                            mainIIRs, mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass
+                        }...
+                    };
+                }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
+
+        std::atomic<int> latency{0};
 
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
@@ -252,11 +269,15 @@ namespace zlDSP {
                                 juce::AudioBuffer<FloatType> &subMainBuffer,
                                 juce::AudioBuffer<FloatType> &subSideBuffer);
 
+        void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer);
+
         void processParallelPostLRMS(size_t lrIdx,
                                      bool shouldParallel,
                                      juce::AudioBuffer<FloatType> &subMainBuffer);
 
-        void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer);
+        void processPrototypeCorrection(juce::AudioBuffer<FloatType> &subMainBuffer);
+
+        void processPrototypeCorrectionLRMS(size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void updateLRs();
 
@@ -269,6 +290,8 @@ namespace zlDSP {
         void updateSubBuffer();
 
         void updateFilterStructure();
+
+        void updateCorrections();
     };
 }
 

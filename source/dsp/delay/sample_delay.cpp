@@ -14,6 +14,7 @@ namespace zlDelay {
     void SampleDelay<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         delayDSP.prepare(spec);
         sampleRate.store(spec.sampleRate);
+        toUpdateDelay.store(true);
     }
 
     template<typename FloatType>
@@ -24,11 +25,11 @@ namespace zlDelay {
 
     template<typename FloatType>
     void SampleDelay<FloatType>::process(juce::dsp::AudioBlock<FloatType> block) {
-        const auto delaySamples = static_cast<int>(static_cast<double>(delaySeconds.load()) * sampleRate.load());
-        if (delaySamples == 0) { return; }
-        if (static_cast<int>(delayDSP.getDelay()) != delaySamples) {
-            delayDSP.setDelay(static_cast<FloatType>(delaySamples));
+        if (toUpdateDelay.exchange(false)) {
+            currentDelaySamples = delaySamples.load();
+            delayDSP.setDelay(static_cast<FloatType>(currentDelaySamples));
         }
+        if (currentDelaySamples == 0) { return; }
         juce::dsp::ProcessContextReplacing<FloatType> context(block);
         delayDSP.process(context);
     }

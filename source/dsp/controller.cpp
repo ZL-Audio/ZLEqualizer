@@ -56,6 +56,16 @@ namespace zlDSP {
         for (auto &f: filters) {
             f.prepare(subSpec);
         }
+        for (auto &f: mainIIRs) {
+            f.prepare(subSpec.sampleRate);
+        }
+        for (auto &f: mainIdeals) {
+            f.prepare(subSpec.sampleRate);
+        }
+        prototypeCorrections[0].prepare(subSpec);
+        for (size_t i = 1; i < 5; ++i) {
+            prototypeCorrections[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
+        }
 
         soloFilter.setFilterType(zlFilter::FilterType::bandPass);
         soloFilter.prepare(subSpec);
@@ -87,12 +97,14 @@ namespace zlDSP {
         if (toUpdateLRs.exchange(false)) {
             updateLRs();
             updateTrackersON();
+            updateCorrections();
             toUpdateSgc.store(true);
         }
         if (toUpdateBypass.exchange(false)) {
             for (size_t i = 0; i < bandNUM; ++i) {
                 currentIsBypass[i] = isBypass[i].load();
             }
+            updateCorrections();
             toUpdateSgc.store(true);
         }
         if (currentIsSgcON != isSgcON.load()) {
@@ -374,11 +386,12 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::handleAsyncUpdate() {
-        int latency = static_cast<int>(delay.getDelaySamples());
+        int currentLatency = static_cast<int>(delay.getDelaySamples());
         if (!isZeroLatency.load()) {
-            latency += static_cast<int>(subBuffer.getLatencySamples());
+            currentLatency += static_cast<int>(subBuffer.getLatencySamples());
         }
-        processorRef.setLatencySamples(latency);
+        currentLatency += latency.load();
+        processorRef.setLatencySamples(currentLatency);
     }
 
     template<typename FloatType>
@@ -494,6 +507,29 @@ namespace zlDSP {
                 }
             }
         }
+        int newLatency = 0;
+        switch (currentFilterStructure) {
+            case filterStructure::minimum:
+            case filterStructure::svf:
+            case filterStructure::parallel: {
+                break;
+            }
+            case filterStructure::matched: {
+                const auto singleLatency = prototypeCorrections[0].getLatency();
+                newLatency = singleLatency
+                             + static_cast<int>(useLR) * singleLatency
+                             + static_cast<int>(useMS) * singleLatency;
+                break;
+            }
+            case filterStructure::mixed:
+            case filterStructure::linear: {
+                break;
+            }
+        }
+        if (newLatency += latency.load()) {
+            latency.store(newLatency);
+            triggerAsyncUpdate();
+        }
     }
 
     template<typename FloatType>
@@ -577,6 +613,13 @@ namespace zlDSP {
                 }
             }
             compensationGains[lr].setGainLinear(currentSgc);
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateCorrections() {
+        for (auto &c: prototypeCorrections) {
+            c.setToUpdate();
         }
     }
 

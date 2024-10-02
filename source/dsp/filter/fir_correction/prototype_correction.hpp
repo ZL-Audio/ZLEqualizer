@@ -20,19 +20,21 @@ namespace zlFilter {
     public:
         static constexpr size_t defaultFFTOrder = 9;
 
-        PrototypeCorrection(std::array<IIR<FloatType, FilterSize>, FilterNum> &iir,
+        PrototypeCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
                             std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
-                            zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices)
-            : iirFs(iir), idealFs(ideal), filterIndices(indices) {
+                            zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices,
+                            std::array<bool, FilterNum> &mask)
+
+            : iirFs(iir), idealFs(ideal), filterIndices(indices), bypassMask(mask) {
         }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
             if (spec.sampleRate <= 50000) {
-                setOrder(defaultFFTOrder);
+                setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder);
             } else if (spec.sampleRate <= 100000) {
-                setOrder(defaultFFTOrder + 1);
+                setOrder(static_cast<size_t>(spec.numChannels),defaultFFTOrder + 1);
             } else {
-                setOrder(defaultFFTOrder + 2);
+                setOrder(static_cast<size_t>(spec.numChannels),defaultFFTOrder + 2);
             }
             const auto delta = pi / static_cast<double>(corrections.size() - 1);
             double w = 0.f;
@@ -46,9 +48,12 @@ namespace zlFilter {
         void process(juce::AudioBuffer<FloatType> &buffer) {
             auto writePointer = buffer.getWritePointer(0);
             for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
-                inputFifo[pos] = static_cast<float>(writePointer[i]);
-                writePointer[i] = static_cast<FloatType>(outputFifo[pos]);
-                outputFifo[pos] = FloatType(0);
+                for (size_t channel = 0; channel < static_cast<size_t>(buffer.getNumChannels()); ++channel) {
+                    inputFIFOs[channel][pos] = static_cast<float>(writePointer[i]);
+                    writePointer[i] = static_cast<FloatType>(outputFIFOs[channel][pos]);
+                    outputFIFOs[channel][pos] = FloatType(0);
+                }
+
                 pos += 1;
                 if (pos == fftSize) {
                     pos = 0;
@@ -69,6 +74,7 @@ namespace zlFilter {
         std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iirFs;
         std::array<Ideal<FloatType, FilterSize>, FilterNum> &idealFs;
         zlContainer::FixedMaxSizeArray<size_t, FilterNum> &filterIndices;
+        std::array<bool, FilterNum> bypassMask;
         std::atomic<bool> toUpdate{true};
 
         std::vector<std::complex<FloatType> > iirTotalResponse, idealTotalResponse;
@@ -90,14 +96,14 @@ namespace zlFilter {
         // write position in input FIFO and read position in output FIFO.
         size_t pos = 0;
         // circular buffers for incoming and outgoing audio data.
-        std::vector<float> inputFifo, outputFifo;
+        std::vector<std::vector<float>> inputFIFOs, outputFIFOs;
         // circular FFT working space which contains interleaved complex numbers.
         std::vector<float> fftData;
         size_t fftDataPos = 0;
 
         std::atomic<int> latency{0};
 
-        void setOrder(const size_t order) {
+        void setOrder(const size_t channelNum, const size_t order) {
             fftOrder = order;
             fftSize = static_cast<size_t>(1) << fftOrder;
             numBins = fftSize / 2 + 1;
@@ -108,10 +114,16 @@ namespace zlFilter {
             window = std::make_unique<juce::dsp::WindowingFunction<float> >(
                 fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
 
-            inputFifo.resize(fftSize);
-            std::fill(inputFifo.begin(), inputFifo.end(), 0.f);
-            outputFifo.resize(fftSize);
-            std::fill(outputFifo.begin(), outputFifo.end(), 0.f);
+            inputFIFOs.resize(channelNum);
+            for (auto &fifo : inputFIFOs) {
+                fifo.resize(fftSize);
+                std::fill(fifo.begin(), fifo.end(), 0.f);
+            }
+            outputFIFOs.resize(channelNum);
+            for (auto &fifo : outputFIFOs) {
+                fifo.resize(fftSize);
+                std::fill(fifo.begin(), fifo.end(), 0.f);
+            }
 
             fftData.resize(fftSize << 1);
             std::fill(fftData.begin(), fftData.end(), 0.f);
@@ -122,32 +134,34 @@ namespace zlFilter {
         }
 
         void processFrame() {
-            const auto *inputPtr = inputFifo.data();
-            auto *fftPtr = fftData.data();
+            for (size_t idx = 0; idx < inputFIFOs.size(); ++idx) {
+                const auto *inputPtr = inputFIFOs[idx].data();
+                auto *fftPtr = fftData.data();
 
-            // Copy the input FIFO into the FFT working space in two parts.
-            std::memcpy(fftPtr, inputPtr + pos, (fftSize - pos) * sizeof(float));
-            if (pos > 0) {
-                std::memcpy(fftPtr + fftSize - pos, inputPtr, pos * sizeof(float));
-            }
+                // Copy the input FIFO into the FFT working space in two parts.
+                std::memcpy(fftPtr, inputPtr + pos, (fftSize - pos) * sizeof(float));
+                if (pos > 0) {
+                    std::memcpy(fftPtr + fftSize - pos, inputPtr, pos * sizeof(float));
+                }
 
-            window->multiplyWithWindowingTable(fftPtr, fftSize);
+                window->multiplyWithWindowingTable(fftPtr, fftSize);
 
-            fft->performRealOnlyForwardTransform(fftPtr, true);
-            processSpectrum();
-            fft->performRealOnlyInverseTransform(fftPtr);
+                fft->performRealOnlyForwardTransform(fftPtr, true);
+                processSpectrum();
+                fft->performRealOnlyInverseTransform(fftPtr);
 
-            window->multiplyWithWindowingTable(fftPtr, fftSize);
+                window->multiplyWithWindowingTable(fftPtr, fftSize);
 
-            for (size_t i = 0; i < fftSize; ++i) {
-                fftPtr[i] *= windowCorrection;
-            }
+                for (size_t i = 0; i < fftSize; ++i) {
+                    fftPtr[i] *= windowCorrection;
+                }
 
-            for (size_t i = 0; i < pos; ++i) {
-                outputFifo[i] += fftData[i + fftSize - pos];
-            }
-            for (size_t i = 0; i < fftSize - pos; ++i) {
-                outputFifo[i + pos] += fftData[i];
+                for (size_t i = 0; i < pos; ++i) {
+                    outputFIFOs[idx][i] += fftData[i + fftSize - pos];
+                }
+                for (size_t i = 0; i < fftSize - pos; ++i) {
+                    outputFIFOs[idx][i + pos] += fftData[i];
+                }
             }
         }
 

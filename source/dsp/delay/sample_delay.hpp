@@ -36,15 +36,19 @@ namespace zlDelay {
 
         void setDelaySeconds(const FloatType x) {
             delaySeconds.store(x);
+            delaySamples.store(static_cast<int>(static_cast<double>(x) * sampleRate.load()));
         }
 
         int getDelaySamples() const {
-            return static_cast<int>(static_cast<double>(delaySeconds.load()) * sampleRate.load());
+            return delaySamples.load();
         }
 
     private:
-        std::atomic<double> sampleRate{44100};
+        std::atomic<double> sampleRate{44100.0};
         std::atomic<FloatType> delaySeconds{0};
+        std::atomic<int> delaySamples{0};
+        int currentDelaySamples{0};
+        std::atomic<bool> toUpdateDelay{false};
         juce::dsp::DelayLine<FloatType> delayDSP;
     };
 } // zlDelay
