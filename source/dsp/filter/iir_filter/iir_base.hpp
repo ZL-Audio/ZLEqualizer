@@ -10,10 +10,29 @@
 #ifndef IIR_BASE_HPP
 #define IIR_BASE_HPP
 
+#include <numbers>
+
 namespace zlFilter {
     template<typename SampleType>
     class IIRBase {
     public:
+        // w should be an array of std::exp(-2pi * f / samplerate * i)
+        static void updateResponse(
+            const std::array<double, 6> &coeff,
+            const std::vector<std::complex<SampleType> > &wis, std::vector<std::complex<SampleType> > &response) {
+            for (size_t idx = 0; idx < wis.size(); ++idx) {
+                response[idx] *= getResponse(coeff, wis[idx]);
+            }
+        }
+
+        // w should be std::exp(-2pi * f / samplerate * i)
+        // const auto wi = std::exp(std::complex<SampleType>(SampleType(0), w))
+        static std::complex<SampleType> getResponse(const std::array<double, 6> &coeff,
+                                                    const std::complex<SampleType> &wi) {
+            const auto wi2 = wi * wi;
+            return (coeff[3] + coeff[4] * wi + coeff[5] * wi2) / (coeff[0] + coeff[1] * wi + coeff[2] * wi2);
+        }
+
         IIRBase() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
@@ -72,23 +91,23 @@ namespace zlFilter {
         }
 
         SampleType processSample(const size_t channel, SampleType inputValue) {
-            const auto outputValue = inputValue * coeff[0] + s1[channel];
-            s1[channel] = (inputValue * coeff[1]) - (outputValue * coeff[3]) + s2[channel];
-            s2[channel] = (inputValue * coeff[2]) - (outputValue * coeff[4]);
+            const auto outputValue = inputValue * mCoeff[0] + s1[channel];
+            s1[channel] = (inputValue * mCoeff[1]) - (outputValue * mCoeff[3]) + s2[channel];
+            s2[channel] = (inputValue * mCoeff[2]) - (outputValue * mCoeff[4]);
             return outputValue;
         }
 
-        void updateFromBiquad(const std::array<double, 6>& coeffs) {
-            const auto a0Inv = 1.0 / coeffs[0];
-            coeff[0] = static_cast<SampleType>(coeffs[3] * a0Inv);
-            coeff[1] = static_cast<SampleType>(coeffs[4] * a0Inv);
-            coeff[2] = static_cast<SampleType>(coeffs[5] * a0Inv);
-            coeff[3] = static_cast<SampleType>(coeffs[1] * a0Inv);
-            coeff[4] = static_cast<SampleType>(coeffs[2] * a0Inv);
+        void updateFromBiquad(const std::array<double, 6> &coeff) {
+            const auto a0Inv = 1.0 / coeff[0];
+            mCoeff[0] = static_cast<SampleType>(coeff[3] * a0Inv);
+            mCoeff[1] = static_cast<SampleType>(coeff[4] * a0Inv);
+            mCoeff[2] = static_cast<SampleType>(coeff[5] * a0Inv);
+            mCoeff[3] = static_cast<SampleType>(coeff[1] * a0Inv);
+            mCoeff[4] = static_cast<SampleType>(coeff[2] * a0Inv);
         }
 
     private:
-        std::array<SampleType, 5> coeff{0, 0, 0, 0, 0};
+        std::array<SampleType, 5> mCoeff{0, 0, 0, 0, 0};
         SampleType g, R2, h, chp, cbp, clp;
         std::vector<SampleType> s1, s2;
     };

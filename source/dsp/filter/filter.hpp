@@ -15,5 +15,6 @@
 #include "dynamic_filter/dynamic_filter.hpp"
 #include "filter_design/filter_design.hpp"
 #include "static_frequency_array.hpp"
+#include "fir_correction/fir_correction.hpp"
 
 #endif //ZL_FILTER_HPP

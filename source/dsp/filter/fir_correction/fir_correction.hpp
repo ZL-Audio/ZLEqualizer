@@ -7,10 +7,9 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_IIR_FILTER_HPP
-#define ZLEQUALIZER_IIR_FILTER_HPP
+#ifndef ZLFILTER_FIR_CORRECTION_HPP
+#define ZLFILTER_FIR_CORRECTION_HPP
 
-#include "single_filter.hpp"
-#include "single_idle_filter.hpp"
+#include "prototype_correction.hpp"
 
-#endif //ZLEQUALIZER_IIR_FILTER_HPP
+#endif //ZLFILTER_FIR_CORRECTION_HPP

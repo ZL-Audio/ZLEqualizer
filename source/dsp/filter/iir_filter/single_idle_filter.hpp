@@ -7,18 +7,19 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_IDEAL_SINGLE_FILTER_HPP
-#define ZLFILTER_IDEAL_SINGLE_FILTER_HPP
+#ifndef ZLFILTER_IDLEIIR_HPP
+#define ZLFILTER_IDLEIIR_HPP
 
-#include "ideal_base.hpp"
-#include "coeff/ideal_coeff.hpp"
 #include "../filter_design/filter_design.hpp"
+#include "coeff/martin_coeff.hpp"
+#include "iir_base.hpp"
+#include "svf_base.hpp"
 
 namespace zlFilter {
     template<typename FloatType, size_t FilterSize>
-    class Ideal {
+    class IIRIdle {
     public:
-        explicit Ideal() = default;
+        IIRIdle() = default;
 
         void prepare(const double sampleRate) {
             fs.store(sampleRate);
@@ -60,56 +61,16 @@ namespace zlFilter {
             response.resize(x);
         }
 
-        void prepareDBSize(const size_t x) {
-            dBs.resize(x);
-            gains.resize(x);
-        }
-
-        bool getMagOutdated() const { return toUpdatePara.load(); }
-
         bool updateResponse(const std::vector<std::complex<FloatType>> &wis) {
             if (toUpdatePara.exchange(false)) {
                 updateParas();
                 std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
                 for (size_t i = 0; i < currentFilterNum; ++i) {
-                    IdealBase<FloatType>::updateResponse(coeffs[i], wis, response);
+                    IIRBase<FloatType>::updateResponse(coeffs[i], wis, response);
                 }
                 return true;
             }
             return false;
-        }
-
-        bool updateMagnitude(const std::vector<FloatType> &ws) {
-            if (toUpdatePara.exchange(false)) {
-                updateParas();
-                std::fill(gains.begin(), gains.end(), FloatType(1));
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    IdealBase<FloatType>::updateMagnitude(coeffs[i], ws, gains);
-                }
-                std::transform(gains.begin(), gains.end(), dBs.begin(),
-                               [](auto &g) {
-                                   return g > FloatType(0) ? std::log10(g) * FloatType(20) : FloatType(-480);
-                               });
-                return true;
-            }
-            return false;
-        }
-
-        void addDBs(std::vector<FloatType> &x) {
-            std::transform(x.begin(), x.end(), dBs.begin(), x.begin(),
-                           [](auto &c1, auto &c2) { return c1 + c2; });
-        }
-
-        std::vector<FloatType> &getDBs() {
-            return dBs;
-        }
-
-        FloatType getDB(FloatType w) {
-            double g0 = 1.0;
-            for (size_t i = 0; i < currentFilterNum; ++i) {
-                g0 *= IdealBase<FloatType>::getMagnitude(coeffs[i], w);
-            }
-            return g0 > FloatType(0) ? std::log10(g0) * FloatType(20) : FloatType(-480);
         }
 
         std::vector<std::complex<FloatType> > &getResponse() { return response; }
@@ -122,7 +83,6 @@ namespace zlFilter {
         std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
         std::atomic<double> fs{48000.0};
         std::atomic<FilterType> filterType = FilterType::peak;
-        std::vector<FloatType> dBs{}, gains{};
         std::vector<std::complex<FloatType> > response{};
 
         void updateParas() {
@@ -133,17 +93,17 @@ namespace zlFilter {
 
         static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 6>, 16> &coeffs) {
-            return FilterDesign::updateCoeffs<16,
-                IdealCoeff::get1LowShelf, IdealCoeff::get1HighShelf, IdealCoeff::get1TiltShelf,
-                IdealCoeff::get1LowPass, IdealCoeff::get1HighPass,
-                IdealCoeff::get2Peak,
-                IdealCoeff::get2LowShelf, IdealCoeff::get2HighShelf, IdealCoeff::get2TiltShelf,
-                IdealCoeff::get2LowPass, IdealCoeff::get2HighPass,
-                IdealCoeff::get2BandPass, IdealCoeff::get2Notch>(
+                                      std::array<std::array<double, 6>, FilterSize> &coeffs) {
+            return FilterDesign::updateCoeffs<FilterSize,
+                MartinCoeff::get1LowShelf, MartinCoeff::get1HighShelf, MartinCoeff::get1TiltShelf,
+                MartinCoeff::get1LowPass, MartinCoeff::get1HighPass,
+                MartinCoeff::get2Peak,
+                MartinCoeff::get2LowShelf, MartinCoeff::get2HighShelf, MartinCoeff::get2TiltShelf,
+                MartinCoeff::get2LowPass, MartinCoeff::get2HighPass,
+                MartinCoeff::get2BandPass, MartinCoeff::get2Notch>(
                 filterType, n, f, fs, g0, q0, coeffs);
         }
     };
 }
 
-#endif //ZLFILTER_IDEAL_SINGLE_FILTER_HPP
+#endif //ZLFILTER_IDLEIIR_HPP
