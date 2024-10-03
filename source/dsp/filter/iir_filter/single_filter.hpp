@@ -123,6 +123,15 @@ namespace zlFilter {
                         }
                         buffer.applyGain(parallelMultiplier);
                         break;
+                    } else {
+                        auto block = juce::dsp::AudioBlock<FloatType>(buffer);
+                        auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
+                        context.isBypassed = isBypassed || bypassNextBlock;
+                        bypassNextBlock = false;
+                        for (size_t i = 0; i < currentFilterNum; ++i) {
+                            filters[i].process(context);
+                        }
+                        break;
                     }
                 }
             }
@@ -134,21 +143,12 @@ namespace zlFilter {
          */
         template <bool isBypassed=false>
         void processParallelPost(juce::AudioBuffer<FloatType> &buffer) {
-            if (shouldBeParallel) {
-                if (isBypassed) return;
-                for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
-                    auto *dest = buffer.getWritePointer(channel);
-                    auto *source = parallelBuffer.getWritePointer(channel);
-                    for (size_t idx = 0; idx < static_cast<size_t>(buffer.getNumSamples()); ++idx) {
-                        dest[idx] = dest[idx] + source[idx];
-                    }
-                }
-            } else {
-                auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-                auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
-                context.isBypassed = isBypassed;
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    filters[i].process(context);
+            if (isBypassed) return;
+            for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
+                auto *dest = buffer.getWritePointer(channel);
+                auto *source = parallelBuffer.getWritePointer(channel);
+                for (size_t idx = 0; idx < static_cast<size_t>(buffer.getNumSamples()); ++idx) {
+                    dest[idx] = dest[idx] + source[idx];
                 }
             }
         }
@@ -207,7 +207,11 @@ namespace zlFilter {
                     break;
                 }
                 case FilterStructure::parallel: {
-                    updateParallelGain(x);
+                    if (shouldBeParallel) {
+                        updateParallelGain(x);
+                    } else {
+                        updateCoeffs();
+                    }
                 }
             }
         }
@@ -225,26 +229,9 @@ namespace zlFilter {
         inline FloatType getQ() const { return static_cast<FloatType>(q.load()); }
 
         void setGainAndQNow(FloatType g1, FloatType q1) {
-            bool shouldUpdateCoeffs{false};
-            if (std::abs(static_cast<double>(q1) - q.load()) >= 0.00001) {
-                q.store(static_cast<double>(q1));
-                shouldUpdateCoeffs = true;
-            }
             gain.store(static_cast<double>(g1));
-            switch (currentFilterStructure) {
-                case FilterStructure::iir:
-                case FilterStructure::svf: {
-                    updateCoeffs();
-                    break;
-                }
-                case FilterStructure::parallel: {
-                    if (shouldUpdateCoeffs) {
-                        updateCoeffs();
-                    } else {
-                        updateParallelGain(g1);
-                    }
-                }
-            }
+            q.store(static_cast<double>(q1));
+            updateCoeffs();
         }
 
         /**

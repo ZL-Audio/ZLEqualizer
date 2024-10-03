@@ -171,10 +171,14 @@ namespace zlDSP {
             if (useSolo.load()) {
                 processSolo(subMainBuffer, subSideBuffer);
             } else {
+                autoGain.processPre(subMainBuffer);
                 processDynamic(subMainBuffer, subSideBuffer);
                 if (currentFilterStructure == filterStructure::parallel) {
-                    processParallelPost(subMainBuffer);
-                } else if (currentFilterStructure == filterStructure::matched) {
+                    processParallelPost(subMainBuffer, subSideBuffer);
+                }
+                autoGain.processPost(subMainBuffer);
+                outputGain.process(subMainBuffer);
+                if (currentFilterStructure == filterStructure::matched) {
                     processPrototypeCorrection(subMainBuffer);
                 }
             }
@@ -233,7 +237,7 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                juce::AudioBuffer<FloatType> &subSideBuffer) {
-        autoGain.processPre(subMainBuffer);
+
         // set auto threshold
         for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
             const auto i = dynamicONIndices[idx];
@@ -286,8 +290,6 @@ namespace zlDSP {
                 }
             }
         }
-        autoGain.processPost(subMainBuffer);
-        outputGain.process(subMainBuffer);
     }
 
     template<typename FloatType>
@@ -323,35 +325,36 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer) {
+    void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer,
+        juce::AudioBuffer<FloatType> &subSideBuffer) {
         // add parallel filters first
-        processParallelPostLRMS(0, true, subMainBuffer);
+        processParallelPostLRMS(0, true, subMainBuffer, subSideBuffer);
         if (useLR) {
-            processParallelPostLRMS(1, true, lrMainSplitter.getLBuffer());
-            processParallelPostLRMS(2, true, lrMainSplitter.getRBuffer());
+            processParallelPostLRMS(1, true, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
+            processParallelPostLRMS(2, true, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
-            processParallelPostLRMS(3, true, msMainSplitter.getMBuffer());
-            processParallelPostLRMS(4, true, msMainSplitter.getSBuffer());
+            processParallelPostLRMS(3, true, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
+            processParallelPostLRMS(4, true, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
-        processParallelPostLRMS(0, false, subMainBuffer);
+        processParallelPostLRMS(0, false, subMainBuffer, subSideBuffer);
         if (currentIsSgcON) {
             compensationGains[0].process(subMainBuffer);
         }
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
-            processParallelPostLRMS(1, false, lrMainSplitter.getLBuffer());
-            processParallelPostLRMS(2, false, lrMainSplitter.getRBuffer());
+            processParallelPostLRMS(1, false, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
+            processParallelPostLRMS(2, false, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
             compensationGains[1].process(lrMainSplitter.getLBuffer());
             compensationGains[2].process(lrMainSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
-            processParallelPostLRMS(3, false, msMainSplitter.getMBuffer());
-            processParallelPostLRMS(4, false, msMainSplitter.getSBuffer());
+            processParallelPostLRMS(3, false, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
+            processParallelPostLRMS(4, false, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
             compensationGains[3].process(msMainSplitter.getMBuffer());
             compensationGains[4].process(msMainSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
@@ -360,15 +363,16 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::processParallelPostLRMS(const size_t lrIdx, const bool shouldParallel,
-                                                        juce::AudioBuffer<FloatType> &subMainBuffer) {
+                                                        juce::AudioBuffer<FloatType> &subMainBuffer,
+                                                        juce::AudioBuffer<FloatType> &subSideBuffer) {
         const auto &indices{filterLRIndices[lrIdx]};
         for (size_t idx = 0; idx < indices.size(); ++idx) {
             const auto i = indices[idx];
             if (filters[i].getMainFilter().getShouldBeParallel() == shouldParallel) {
                 if (currentIsBypass[i]) {
-                    filters[i].template processParallelPost<true>(subMainBuffer);
+                    filters[i].template processParallelPost<true>(subMainBuffer, subSideBuffer);
                 } else {
-                    filters[i].template processParallelPost<false>(subMainBuffer);
+                    filters[i].template processParallelPost<false>(subMainBuffer, subSideBuffer);
                 }
             }
         }
