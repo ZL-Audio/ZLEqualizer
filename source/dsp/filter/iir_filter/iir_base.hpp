@@ -30,7 +30,12 @@ namespace zlFilter {
         static std::complex<SampleType> getResponse(const std::array<double, 6> &coeff,
                                                     const std::complex<SampleType> &wi) {
             const auto wi2 = wi * wi;
-            return (coeff[3] + coeff[4] * wi + coeff[5] * wi2) / (coeff[0] + coeff[1] * wi + coeff[2] * wi2);
+            return (static_cast<SampleType>(coeff[3]) +
+                static_cast<SampleType>(coeff[4]) * wi +
+                static_cast<SampleType>(coeff[5]) * wi2) / (
+                    static_cast<SampleType>(coeff[0]) +
+                    static_cast<SampleType>(coeff[1]) * wi +
+                    static_cast<SampleType>(coeff[2]) * wi2);
         }
 
         IIRBase() = default;

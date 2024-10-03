@@ -10,6 +10,8 @@
 #ifndef ZLFILTER_PROTOTYPE_CORRECTION_HPP
 #define ZLFILTER_PROTOTYPE_CORRECTION_HPP
 
+#include <cmath>
+
 #include "../iir_filter/iir_filter.hpp"
 #include "../ideal_filter/ideal_filter.hpp"
 #include "../../container/array.hpp"
@@ -32,9 +34,9 @@ namespace zlFilter {
             if (spec.sampleRate <= 50000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder);
             } else if (spec.sampleRate <= 100000) {
-                setOrder(static_cast<size_t>(spec.numChannels),defaultFFTOrder + 1);
+                setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 1);
             } else {
-                setOrder(static_cast<size_t>(spec.numChannels),defaultFFTOrder + 2);
+                setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 2);
             }
             const auto delta = pi / static_cast<double>(corrections.size() - 1);
             double w = 0.f;
@@ -46,11 +48,11 @@ namespace zlFilter {
         }
 
         void process(juce::AudioBuffer<FloatType> &buffer) {
-            auto writePointer = buffer.getWritePointer(0);
             for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
                 for (size_t channel = 0; channel < static_cast<size_t>(buffer.getNumChannels()); ++channel) {
-                    inputFIFOs[channel][pos] = static_cast<float>(writePointer[i]);
-                    writePointer[i] = static_cast<FloatType>(outputFIFOs[channel][pos]);
+                    auto writePointer = buffer.getWritePointer(static_cast<int>(channel), static_cast<int>(i));
+                    inputFIFOs[channel][pos] = static_cast<float>(*writePointer);
+                    *writePointer = static_cast<FloatType>(outputFIFOs[channel][pos]);
                     outputFIFOs[channel][pos] = FloatType(0);
                 }
 
@@ -70,6 +72,8 @@ namespace zlFilter {
 
         void setToUpdate() { toUpdate.store(true); }
 
+        size_t getCorrectionSize() const { return corrections.size(); }
+
     private:
         std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iirFs;
         std::array<Ideal<FloatType, FilterSize>, FilterNum> &idealFs;
@@ -79,7 +83,7 @@ namespace zlFilter {
 
         std::vector<std::complex<FloatType> > iirTotalResponse, idealTotalResponse;
         // prototype corrections
-        std::vector<std::complex<FloatType> > corrections;
+        std::vector<std::complex<float> > corrections{};
         std::vector<std::complex<FloatType> > wis1, wis2;
 
         std::unique_ptr<juce::dsp::FFT> fft;
@@ -96,7 +100,7 @@ namespace zlFilter {
         // write position in input FIFO and read position in output FIFO.
         size_t pos = 0;
         // circular buffers for incoming and outgoing audio data.
-        std::vector<std::vector<float>> inputFIFOs, outputFIFOs;
+        std::vector<std::vector<float> > inputFIFOs, outputFIFOs;
         // circular FFT working space which contains interleaved complex numbers.
         std::vector<float> fftData;
         size_t fftDataPos = 0;
@@ -114,18 +118,20 @@ namespace zlFilter {
             window = std::make_unique<juce::dsp::WindowingFunction<float> >(
                 fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
 
+            pos = 0;
+            count = 0;
             inputFIFOs.resize(channelNum);
-            for (auto &fifo : inputFIFOs) {
+            for (auto &fifo: inputFIFOs) {
                 fifo.resize(fftSize);
                 std::fill(fifo.begin(), fifo.end(), 0.f);
             }
             outputFIFOs.resize(channelNum);
-            for (auto &fifo : outputFIFOs) {
+            for (auto &fifo: outputFIFOs) {
                 fifo.resize(fftSize);
                 std::fill(fifo.begin(), fifo.end(), 0.f);
             }
 
-            fftData.resize(fftSize << 1);
+            fftData.resize(fftSize * 2);
             std::fill(fftData.begin(), fftData.end(), 0.f);
 
             corrections.resize(numBins);
@@ -166,32 +172,42 @@ namespace zlFilter {
         }
 
         void processSpectrum() {
-            if (toUpdate.exchange(false)) {
-                update();
-            }
-            size_t idx = 0;
-            for (size_t i = 0; i < corrections.size(); ++i) {
-                fftData[idx] *= static_cast<float>(corrections[i].real());
-                idx += 1;
-                fftData[idx] *= static_cast<float>(corrections[i].imag());
-                idx += 1;
+            update();
+            auto *cdata = reinterpret_cast<std::complex<float> *>(fftData.data());
+            for (size_t i = (corrections.size() >> 5); i < corrections.size(); ++i) {
+                cdata[i] = cdata[i] * corrections[i];
             }
         }
 
         void update() {
-            std::fill(corrections.begin(), corrections.end(), 1.f);
+            // check whether a filter has been updated
+            bool needToUpdate{false};
             for (size_t idx = 0; idx < filterIndices.size(); ++idx) {
                 const auto i = filterIndices[idx];
-                idealFs[i].updateResponse(wis1);
-                const auto &idealResponse = idealFs[i].getResponse();
-                for (size_t j = 0; j < corrections.size(); ++j) {
-                    corrections[j] *= idealResponse[j];
+                if (!bypassMask[i]) {
+                    needToUpdate = needToUpdate || idealFs[i].updateResponse(wis1);
+                    needToUpdate = needToUpdate || iirFs[i].template updateResponse<false>(wis2);
                 }
-                iirFs[i].updateResponse(wis2);
-                const auto &iirResponse = iirFs[i].getResponse();
-                for (size_t j = 0; j < corrections.size(); ++j) {
-                    corrections[j] /= iirResponse[j];
+            }
+            // if a filter has been updated or the correction has to be updated
+            if (needToUpdate || toUpdate.exchange(false)) {
+                std::fill(corrections.begin(), corrections.end(), std::complex(1.f, 0.f));
+                for (size_t idx = 0; idx < filterIndices.size(); ++idx) {
+                    const auto i = filterIndices[idx];
+                    if (!bypassMask[i]) {
+                        const auto &idealResponse = idealFs[i].getResponse();
+                        const auto &iirResponse = iirFs[i].getResponse();
+                        for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
+                            corrections[j] *= static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
+                        }
+                    }
                 }
+                for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
+                    if (std::isinf(corrections[j].real()) || std::isinf(corrections[j].imag())) {
+                        corrections[j] = std::complex(1.f, 0.f);
+                    }
+                }
+                corrections.end()[-1] *= std::abs(corrections.end()[-2]);
             }
         }
     };

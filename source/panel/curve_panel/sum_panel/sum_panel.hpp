@@ -47,7 +47,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &c;
-        std::array<zlFilter::Ideal<double, 16>, zlState::bandNUM> &mBaseFilters, &mMainFilters;
+        std::array<zlFilter::Ideal<double, 16>, zlState::bandNUM> &mMainFilters;
         std::atomic<float> maximumDB;
         std::vector<double> dBs{};
         AtomicBound atomicBound;

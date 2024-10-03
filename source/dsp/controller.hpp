@@ -40,15 +40,17 @@ namespace zlDSP {
 
         void processBypass();
 
-        inline zlFilter::DynamicIIR<FloatType, FilterSize> &getFilter(const size_t idx) { return filters[idx]; }
+        zlFilter::DynamicIIR<FloatType, FilterSize> &getFilter(const size_t idx) { return filters[idx]; }
 
-        inline zlFilter::Empty<FloatType> &getMainFilter(const size_t idx) { return mainFilters[idx]; }
+        zlFilter::Ideal<FloatType, FilterSize> &getMainIdealFilter(const size_t idx) { return mainIdeals[idx]; }
 
-        inline std::array<zlFilter::DynamicIIR<FloatType, FilterSize>, bandNUM> &getFilters() { return filters; }
+        zlFilter::IIRIdle<FloatType, FilterSize> &getMainIIRFilter(const size_t idx) { return mainIIRs[idx]; }
+
+        std::array<zlFilter::DynamicIIR<FloatType, FilterSize>, bandNUM> &getFilters() { return filters; }
 
         void setFilterLRs(lrType::lrTypes x, size_t idx);
 
-        inline lrType::lrTypes getFilterLRs(const size_t idx) const { return filterLRs[idx].load(); }
+        lrType::lrTypes getFilterLRs(const size_t idx) const { return filterLRs[idx].load(); }
 
         void setDynamicON(bool x, size_t idx);
 
@@ -173,8 +175,8 @@ namespace zlDSP {
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(bFilters)> >());
 
-        std::array<zlFilter::Empty<FloatType>, bandNUM> mainFilters;
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
+        std::array<lrType::lrTypes, bandNUM> currentFilterLRs{};
         std::array<zlContainer::FixedMaxSizeArray<size_t, bandNUM>, 5> filterLRIndices;
         std::atomic<bool> toUpdateLRs{true};
         bool useLR{false}, useMS{false};

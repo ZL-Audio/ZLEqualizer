@@ -33,16 +33,22 @@ namespace zlFilter {
         FloatType getFreq() const { return static_cast<FloatType>(freq.load()); }
 
         void setGain(const FloatType x) {
-            gain.store(x);
-            toUpdatePara.store(true);
+            if (std::abs(static_cast<double>(x) - gain.load()) > 1e-6) {
+                gain.store(x);
+                toUpdatePara.store(true);
+            }
         }
 
         FloatType getGain() const { return static_cast<FloatType>(gain.load()); }
 
         void setQ(const FloatType x) {
-            q.store(x);
-            toUpdatePara.store(true);
+            if (std::abs(static_cast<double>(x) - q.load()) > 1e-6) {
+                q.store(x);
+                toUpdatePara.store(true);
+            }
         }
+
+        FloatType getQ() const { return static_cast<FloatType>(q.load()); }
 
         void setFilterType(const FilterType x) {
             filterType.store(x);
@@ -58,6 +64,7 @@ namespace zlFilter {
 
         void prepareResponseSize(const size_t x) {
             response.resize(x);
+            std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
         }
 
         void prepareDBSize(const size_t x) {

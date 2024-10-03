@@ -46,7 +46,12 @@ namespace zlFilter {
         static std::complex<SampleType> getResponse(const std::array<double, 6> &coeff,
                                                     const std::complex<SampleType> &wi) {
             const auto wi2 = wi * wi;
-            return (coeff[3] * wi2 + coeff[4] * wi + coeff[5]) / (coeff[0] * wi2 + coeff[1] * wi + coeff[2]);
+            return (static_cast<SampleType>(coeff[3]) * wi2 +
+                    static_cast<SampleType>(coeff[4]) * wi +
+                    static_cast<SampleType>(coeff[5])) / (
+                       static_cast<SampleType>(coeff[0]) * wi2 +
+                       static_cast<SampleType>(coeff[1]) * wi +
+                       static_cast<SampleType>(coeff[2]));
         }
     };
 }

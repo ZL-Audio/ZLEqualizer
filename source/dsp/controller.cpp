@@ -56,15 +56,19 @@ namespace zlDSP {
         for (auto &f: filters) {
             f.prepare(subSpec);
         }
-        for (auto &f: mainIIRs) {
-            f.prepare(subSpec.sampleRate);
-        }
-        for (auto &f: mainIdeals) {
-            f.prepare(subSpec.sampleRate);
-        }
+
         prototypeCorrections[0].prepare(subSpec);
         for (size_t i = 1; i < 5; ++i) {
             prototypeCorrections[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
+        }
+
+        for (auto &f: mainIIRs) {
+            f.prepare(subSpec.sampleRate);
+            f.prepareResponseSize(prototypeCorrections[0].getCorrectionSize());
+        }
+        for (auto &f: mainIdeals) {
+            f.prepare(subSpec.sampleRate);
+            f.prepareResponseSize(prototypeCorrections[0].getCorrectionSize());
         }
 
         soloFilter.setFilterType(zlFilter::FilterType::bandPass);
@@ -90,6 +94,7 @@ namespace zlDSP {
         if (mFilterStructure.load() != currentFilterStructure) {
             currentFilterStructure = mFilterStructure.load();
             updateFilterStructure();
+            toUpdateLRs.store(true);
         }
         if (toUpdateDynamicON.exchange(false)) {
             updateDynamicONs();
@@ -169,6 +174,8 @@ namespace zlDSP {
                 processDynamic(subMainBuffer, subSideBuffer);
                 if (currentFilterStructure == filterStructure::parallel) {
                     processParallelPost(subMainBuffer);
+                } else if (currentFilterStructure == filterStructure::matched) {
+                    processPrototypeCorrection(subMainBuffer);
                 }
             }
         }
@@ -265,8 +272,10 @@ namespace zlDSP {
         // set main filter gain & Q and update histograms
         for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
             const auto i = dynamicONIndices[idx];
-            mainFilters[i].setGain(filters[i].getMainFilter().getGain());
-            mainFilters[i].setQ(filters[i].getMainFilter().getQ());
+            mainIdeals[i].setGain(filters[i].getMainFilter().getGain());
+            mainIdeals[i].setQ(filters[i].getMainFilter().getQ());
+            mainIIRs[i].setGain(filters[i].getMainFilter().getGain());
+            mainIIRs[i].setQ(filters[i].getMainFilter().getQ());
             if (isHistON[i].load()) {
                 auto &compressor = filters[i].getCompressor();
                 const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
@@ -332,6 +341,7 @@ namespace zlDSP {
             compensationGains[0].process(subMainBuffer);
         }
         if (useLR) {
+            lrMainSplitter.split(subMainBuffer);
             processParallelPostLRMS(1, false, lrMainSplitter.getLBuffer());
             processParallelPostLRMS(2, false, lrMainSplitter.getRBuffer());
             compensationGains[1].process(lrMainSplitter.getLBuffer());
@@ -339,6 +349,7 @@ namespace zlDSP {
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
+            msMainSplitter.split(subMainBuffer);
             processParallelPostLRMS(3, false, msMainSplitter.getMBuffer());
             processParallelPostLRMS(4, false, msMainSplitter.getSBuffer());
             compensationGains[3].process(msMainSplitter.getMBuffer());
@@ -361,6 +372,28 @@ namespace zlDSP {
                 }
             }
         }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::processPrototypeCorrection(juce::AudioBuffer<FloatType> &subMainBuffer) {
+        processPrototypeCorrectionLRMS(0, subMainBuffer);
+        if (useLR) {
+            lrMainSplitter.split(subMainBuffer);
+            processPrototypeCorrectionLRMS(1, lrMainSplitter.getLBuffer());
+            processPrototypeCorrectionLRMS(2, lrMainSplitter.getRBuffer());
+            lrMainSplitter.combine(subMainBuffer);
+        }
+        if (useMS) {
+            msMainSplitter.split(subMainBuffer);
+            processPrototypeCorrectionLRMS(3, msMainSplitter.getMBuffer());
+            processPrototypeCorrectionLRMS(4, msMainSplitter.getSBuffer());
+            msMainSplitter.combine(subMainBuffer);
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::processPrototypeCorrectionLRMS(const size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer) {
+        prototypeCorrections[lrIdx].process(subMainBuffer);
     }
 
     template<typename FloatType>
@@ -479,7 +512,8 @@ namespace zlDSP {
         }
         for (size_t i = 0; i < bandNUM; ++i) {
             if (isActive[i].load()) {
-                switch (filterLRs[i].load()) {
+                currentFilterLRs[i] = filterLRs[i].load();
+                switch (currentFilterLRs[i]) {
                     case lrType::stereo: {
                         filterLRIndices[0].push(i);
                         break;
@@ -512,6 +546,7 @@ namespace zlDSP {
             case filterStructure::minimum:
             case filterStructure::svf:
             case filterStructure::parallel: {
+                newLatency = 0;
                 break;
             }
             case filterStructure::matched: {
@@ -526,7 +561,7 @@ namespace zlDSP {
                 break;
             }
         }
-        if (newLatency += latency.load()) {
+        if (newLatency != latency.load()) {
             latency.store(newLatency);
             triggerAsyncUpdate();
         }

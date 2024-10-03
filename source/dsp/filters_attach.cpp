@@ -149,19 +149,22 @@ namespace zlDSP {
             controllerRef.getBaseFilter(idx).setFilterType(fType);
             filtersRef[idx].getMainFilter().setFilterType(fType);
             controllerRef.getTargetFilter(idx).setFilterType(fType);
-            controllerRef.getMainFilter(idx).setFilterType(fType);
+            controllerRef.getMainIdealFilter(idx).setFilterType(fType);
+            controllerRef.getMainIIRFilter(idx).setFilterType(fType);
             controllerRef.updateSgc(idx);
         } else if (parameterID.startsWith(slope::ID)) {
             const auto newOrder = slope::orderArray[static_cast<size_t>(value)];
             controllerRef.getBaseFilter(idx).setOrder(newOrder);
             filtersRef[idx].getMainFilter().setOrder(newOrder);
             controllerRef.getTargetFilter(idx).setOrder(newOrder);
-            controllerRef.getMainFilter(idx).setOrder(newOrder);
+            controllerRef.getMainIdealFilter(idx).setOrder(newOrder);
+            controllerRef.getMainIIRFilter(idx).setOrder(newOrder);
         } else if (parameterID.startsWith(freq::ID)) {
             controllerRef.getBaseFilter(idx).setFreq(value);
             filtersRef[idx].getMainFilter().setFreq(value);
             controllerRef.getTargetFilter(idx).setFreq(value);
-            controllerRef.getMainFilter(idx).setFreq(value);
+            controllerRef.getMainIdealFilter(idx).setFreq(value);
+            controllerRef.getMainIIRFilter(idx).setFreq(value);
             if (sDynLink[idx].load()) {
                 updateSideFQ(idx);
             }
@@ -171,13 +174,15 @@ namespace zlDSP {
             value = gain::range.snapToLegalValue(static_cast<float>(value));
             controllerRef.getBaseFilter(idx).setGain(value);
             filtersRef[idx].getMainFilter().setGain(value);
-            controllerRef.getMainFilter(idx).setGain(value);
+            controllerRef.getMainIdealFilter(idx).setGain(value);
+            controllerRef.getMainIIRFilter(idx).setGain(value);
             controllerRef.updateSgc(idx);
         } else if (parameterID.startsWith(Q::ID)) {
             controllerRef.getBaseFilter(idx).setQ(value);
             filtersRef[idx].getMainFilter().setQ(value);
             filtersRef[idx].updateIsCurrentDynamicChangeQ();
-            controllerRef.getMainFilter(idx).setQ(value);
+            controllerRef.getMainIdealFilter(idx).setQ(value);
+            controllerRef.getMainIIRFilter(idx).setQ(value);
             if (sDynLink[idx].load()) {
                 updateSideFQ(idx);
             }

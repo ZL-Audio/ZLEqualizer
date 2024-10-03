@@ -17,7 +17,8 @@ namespace zlPanel {
                        std::array<zlFilter::Ideal<double, 16>, 16> &mainFilters)
         : parametersRef(parameters),
           uiBase(base), c(controller),
-          mBaseFilters(baseFilters), mMainFilters(mainFilters) {
+          mMainFilters(mainFilters) {
+        juce::ignoreUnused(baseFilters);
         dBs.resize(ws.size());
         for (auto &path: paths) {
             path.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3));
@@ -89,16 +90,12 @@ namespace zlPanel {
 
             std::fill(dBs.begin(), dBs.end(), 0.0);
             for (size_t i = 0; i < zlState::bandNUM; i++) {
-                auto &filter{c.getMainFilter(i)};
+                auto &filter{c.getMainIdealFilter(i)};
                 if (lrTypes[i].load() == static_cast<zlDSP::lrType::lrTypes>(j) && !isBypassed[i].load()) {
-                    if (filter.exchangeParaOutdated(false)) {
-                        mMainFilters[i].setGain(filter.getGain());
-                        mMainFilters[i].setQ(filter.getQ());
-                        mMainFilters[i].updateMagnitude(ws);
-                        mMainFilters[i].addDBs(dBs);
-                    } else {
-                        mBaseFilters[i].addDBs(dBs);
-                    }
+                    mMainFilters[i].setGain(filter.getGain());
+                    mMainFilters[i].setQ(filter.getQ());
+                    mMainFilters[i].updateMagnitude(ws);
+                    mMainFilters[i].addDBs(dBs);
                 }
             }
 
