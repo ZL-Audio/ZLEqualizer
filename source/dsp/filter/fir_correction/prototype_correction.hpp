@@ -20,7 +20,8 @@ namespace zlFilter {
     template<typename FloatType, size_t FilterNum, size_t FilterSize>
     class PrototypeCorrection {
     public:
-        static constexpr size_t defaultFFTOrder = 9;
+        static constexpr size_t defaultFFTOrder = 10;
+        static constexpr size_t startDecay = 256, endDecay = 64;
 
         PrototypeCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
                             std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
@@ -84,6 +85,8 @@ namespace zlFilter {
         // prototype corrections
         std::vector<std::complex<float> > corrections{};
         std::vector<std::complex<FloatType> > &wis1, &wis2;
+        size_t startDecayIdx{0}, endDecayIdx{0};
+        float deltaDecay{0.f};
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;
@@ -136,6 +139,10 @@ namespace zlFilter {
             corrections.resize(numBins);
             wis1.resize(numBins);
             wis2.resize(numBins);
+            startDecayIdx = corrections.size() / startDecay;
+            endDecayIdx = corrections.size() / endDecay;
+
+            deltaDecay = 1.f / static_cast<float>(endDecayIdx - startDecayIdx);
         }
 
         void processFrame() {
@@ -173,7 +180,7 @@ namespace zlFilter {
         void processSpectrum() {
             update();
             auto *cdata = reinterpret_cast<std::complex<float> *>(fftData.data());
-            for (size_t i = (corrections.size() >> 5); i < corrections.size(); ++i) {
+            for (size_t i = startDecayIdx; i < corrections.size(); ++i) {
                 cdata[i] = cdata[i] * corrections[i];
             }
         }
@@ -197,12 +204,12 @@ namespace zlFilter {
                         const auto &idealResponse = idealFs[i].getResponse();
                         const auto &iirResponse = iirFs[i].getResponse();
                         if (!hasBeenUpdated) {
-                            for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
+                            for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
                                 corrections[j] = static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
                             }
                             hasBeenUpdated = true;
                         } else {
-                            for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
+                            for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
                                 corrections[j] *= static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
                             }
                         }
@@ -212,10 +219,16 @@ namespace zlFilter {
                     std::fill(corrections.begin(), corrections.end(), std::complex(1.f, 0.f));
                 } else {
                     // remove all infinity & NaN
-                    for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
+                    for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
                         if (!std::isfinite(corrections[j].real()) || !std::isfinite(corrections[j].imag())) {
                             corrections[j] = std::complex(1.f, 0.f);
                         }
+                    }
+                    float decay = 0.f;
+                    for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
+                        corrections[j].real(corrections[j].real() * decay + (1.f - decay));
+                        corrections[j].imag(corrections[j].imag() * decay);
+                        decay += deltaDecay;
                     }
                     corrections.end()[-1] = std::abs(corrections.end()[-2]);
                 }
