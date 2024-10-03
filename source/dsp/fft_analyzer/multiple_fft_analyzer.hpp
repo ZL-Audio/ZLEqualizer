@@ -46,13 +46,15 @@ namespace zlFFT {
         void prepare(const juce::dsp::ProcessSpec &spec) {
             juce::GenericScopedLock lock(spinLock);
             sampleRate.store(static_cast<float>(spec.sampleRate));
-            int extraOrder = 0;
-            if (spec.sampleRate >= 50000) {
-                extraOrder = 1;
-            } else if (spec.sampleRate >= 100000) {
-                extraOrder = 2;
+            if (spec.sampleRate <= 50000) {
+                setOrder(static_cast<int>(defaultFFTOrder));
+            } else if (spec.sampleRate <= 100000) {
+                setOrder(static_cast<int>(defaultFFTOrder) + 1);
+            } else if (spec.sampleRate <= 200000) {
+                setOrder(static_cast<int>(defaultFFTOrder) + 2);
+            } else {
+                setOrder(static_cast<int>(defaultFFTOrder) + 3);
             }
-            setOrder(extraOrder + static_cast<int>(defaultFFTOrder));
             reset();
             isPrepared.store(true);
         }

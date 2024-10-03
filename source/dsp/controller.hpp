@@ -201,11 +201,12 @@ namespace zlDSP {
         std::array<zlFilter::IIRIdle<FloatType, FilterSize>, bandNUM> mainIIRs;
         std::array<zlFilter::Ideal<FloatType, FilterSize>, bandNUM> mainIdeals;
 
+        std::vector<std::complex<FloatType> > prototypeW1, prototypeW2;
         std::array<zlFilter::PrototypeCorrection<FloatType, bandNUM, FilterSize>, 5> prototypeCorrections =
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
                     return std::array{
                         zlFilter::PrototypeCorrection<FloatType, bandNUM, FilterSize>{
-                            mainIIRs, mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass
+                            mainIIRs, mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, prototypeW1, prototypeW2
                         }...
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());

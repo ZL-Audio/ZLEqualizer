@@ -11,5 +11,6 @@
 #define ZLFILTER_FIR_CORRECTION_HPP
 
 #include "prototype_correction.hpp"
+#include "correction_helper.hpp"
 
 #endif //ZLFILTER_FIR_CORRECTION_HPP

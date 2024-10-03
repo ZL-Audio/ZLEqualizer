@@ -85,6 +85,8 @@ namespace zlFilter {
 
         std::vector<std::complex<FloatType> > &getResponse() { return response; }
 
+        void setToUpdate() {toUpdatePara.store(true);}
+
     private:
         std::array<std::array<double, 6>, FilterSize> coeffs{};
         std::atomic<bool> toUpdatePara{true};

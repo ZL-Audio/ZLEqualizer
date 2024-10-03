@@ -25,9 +25,13 @@ namespace zlFilter {
         PrototypeCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
                             std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
                             zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices,
-                            std::array<bool, FilterNum> &mask)
+                            std::array<bool, FilterNum> &mask,
+                            std::vector<std::complex<FloatType> > &w1,
+                            std::vector<std::complex<FloatType> > &w2)
 
-            : iirFs(iir), idealFs(ideal), filterIndices(indices), bypassMask(mask) {
+            : iirFs(iir), idealFs(ideal),
+              filterIndices(indices), bypassMask(mask),
+              wis1(w1), wis2(w2) {
         }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
@@ -35,15 +39,10 @@ namespace zlFilter {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder);
             } else if (spec.sampleRate <= 100000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 1);
-            } else {
+            } else if (spec.sampleRate <= 200000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 2);
-            }
-            const auto delta = pi / static_cast<double>(corrections.size() - 1);
-            double w = 0.f;
-            for (size_t i = 0; i < corrections.size(); ++i) {
-                wis1[i] = std::complex<float>(0.f, static_cast<float>(w));
-                wis2[i] = std::exp(std::complex<float>(0.f, -static_cast<float>(w)));
-                w += delta;
+            } else {
+                setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 3);
             }
         }
 
@@ -84,7 +83,7 @@ namespace zlFilter {
         std::vector<std::complex<FloatType> > iirTotalResponse, idealTotalResponse;
         // prototype corrections
         std::vector<std::complex<float> > corrections{};
-        std::vector<std::complex<FloatType> > wis1, wis2;
+        std::vector<std::complex<FloatType> > &wis1, &wis2;
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;

@@ -61,6 +61,10 @@ namespace zlDSP {
         for (size_t i = 1; i < 5; ++i) {
             prototypeCorrections[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
         }
+        prototypeW1.resize(prototypeCorrections[0].getCorrectionSize());
+        prototypeW2.resize(prototypeCorrections[0].getCorrectionSize());
+        zlFilter::calculateWsForPrototype<FloatType>(prototypeW1);
+        zlFilter::calculateWsForBiquad<FloatType>(prototypeW2);
 
         for (auto &f: mainIIRs) {
             f.prepare(subSpec.sampleRate);
