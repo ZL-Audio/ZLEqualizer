@@ -37,6 +37,7 @@ namespace zlDelay {
         void setDelaySeconds(const FloatType x) {
             delaySeconds.store(x);
             delaySamples.store(static_cast<int>(static_cast<double>(x) * sampleRate.load()));
+            toUpdateDelay.store(true);
         }
 
         int getDelaySamples() const {

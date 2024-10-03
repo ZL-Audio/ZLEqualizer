@@ -11,12 +11,14 @@
 #define ZLEqualizer_PRE_POST_FFT_ANALYZER_HPP
 
 #include "multiple_fft_analyzer.hpp"
+#include "../delay/delay.hpp"
 
 namespace zlFFT {
     template<typename FloatType>
     class PrePostFFTAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
         static constexpr size_t pointNum = 401;
+
         explicit PrePostFFTAnalyzer();
 
         void prepare(const juce::dsp::ProcessSpec &spec);
@@ -50,6 +52,8 @@ namespace zlFFT {
         void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
                          juce::Rectangle<float> bound);
 
+        zlDelay::SampleDelay<FloatType> &getPreDelay() { return delay; }
+
     private:
         MultipleFFTAnalyzer<FloatType, 3, pointNum> fftAnalyzer;
         juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
@@ -60,6 +64,7 @@ namespace zlFFT {
         std::atomic<bool> isBoundReady{false};
         std::atomic<bool> isPathReady{false};
         std::atomic<bool> toReset{false};
+        zlDelay::SampleDelay<FloatType> delay;
 
         void run() override;
 

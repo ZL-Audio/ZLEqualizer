@@ -34,6 +34,7 @@ namespace zlFFT {
         }
         if (currentPreON) {
             preBuffer.makeCopyOf(buffer, true);
+            delay.process(preBuffer);
         }
     }
 

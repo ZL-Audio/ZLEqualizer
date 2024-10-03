@@ -87,6 +87,8 @@ namespace zlDSP {
             g.prepare(subSpec);
         }
         fftAnalyzer.prepare(subSpec);
+        fftAnalyzer.getPreDelay().setMaximumDelayInSamples(prototypeCorrections[0].getLatency() * 4);
+        fftAnalyzer.getPreDelay().prepare(subSpec);
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: trackers) {
             t.prepare(subSpec);
@@ -169,8 +171,7 @@ namespace zlDSP {
     void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                  juce::AudioBuffer<FloatType> &subSideBuffer) {
         fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
-        fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
-        conflictAnalyzer.pushRefBuffer(subSideBuffer);
+
         if (isEffectON.load()) {
             if (useSolo.load()) {
                 processSolo(subMainBuffer, subSideBuffer);
@@ -187,9 +188,11 @@ namespace zlDSP {
                 }
             }
         }
+        fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
         fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
         fftAnalyzer.process();
         conflictAnalyzer.pushMainBuffer(subMainBuffer);
+        conflictAnalyzer.pushRefBuffer(subSideBuffer);
         conflictAnalyzer.process();
     }
 
@@ -571,6 +574,8 @@ namespace zlDSP {
             }
         }
         if (newLatency != latency.load()) {
+            fftAnalyzer.getPreDelay().setDelaySeconds(
+                static_cast<FloatType>(newLatency) / static_cast<FloatType>(sampleRate.load()));
             latency.store(newLatency);
             triggerAsyncUpdate();
         }

@@ -211,9 +211,9 @@ namespace zlFilter {
                 if (!hasBeenUpdated) {
                     std::fill(corrections.begin(), corrections.end(), std::complex(1.f, 0.f));
                 } else {
-                    // remove all infs
+                    // remove all infinity & NaN
                     for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
-                        if (std::isinf(corrections[j].real()) || std::isinf(corrections[j].imag())) {
+                        if (!std::isfinite(corrections[j].real()) || !std::isfinite(corrections[j].imag())) {
                             corrections[j] = std::complex(1.f, 0.f);
                         }
                     }

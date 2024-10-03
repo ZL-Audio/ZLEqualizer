@@ -14,6 +14,7 @@ namespace zlDelay {
     void SampleDelay<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         delayDSP.prepare(spec);
         sampleRate.store(spec.sampleRate);
+        delaySamples.store(static_cast<int>(static_cast<double>(delaySeconds.load()) * spec.sampleRate));
         toUpdateDelay.store(true);
     }
 
