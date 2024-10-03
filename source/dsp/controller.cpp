@@ -392,7 +392,8 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processPrototypeCorrectionLRMS(const size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer) {
+    void Controller<FloatType>::processPrototypeCorrectionLRMS(const size_t lrIdx,
+                                                               juce::AudioBuffer<FloatType> &subMainBuffer) {
         prototypeCorrections[lrIdx].process(subMainBuffer);
     }
 
@@ -653,8 +654,10 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::updateCorrections() {
-        for (auto &c: prototypeCorrections) {
-            c.setToUpdate();
+        if (currentFilterStructure == filterStructure::matched) {
+            for (auto &c: prototypeCorrections) {
+                c.setToUpdate();
+            }
         }
     }
 

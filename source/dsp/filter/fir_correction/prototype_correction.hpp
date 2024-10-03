@@ -191,23 +191,35 @@ namespace zlFilter {
             }
             // if a filter has been updated or the correction has to be updated
             if (needToUpdate || toUpdate.exchange(false)) {
-                std::fill(corrections.begin(), corrections.end(), std::complex(1.f, 0.f));
+                bool hasBeenUpdated = false;
                 for (size_t idx = 0; idx < filterIndices.size(); ++idx) {
                     const auto i = filterIndices[idx];
                     if (!bypassMask[i]) {
                         const auto &idealResponse = idealFs[i].getResponse();
                         const auto &iirResponse = iirFs[i].getResponse();
-                        for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
-                            corrections[j] *= static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
+                        if (!hasBeenUpdated) {
+                            for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
+                                corrections[j] = static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
+                            }
+                            hasBeenUpdated = true;
+                        } else {
+                            for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
+                                corrections[j] *= static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
+                            }
                         }
                     }
                 }
-                for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
-                    if (std::isinf(corrections[j].real()) || std::isinf(corrections[j].imag())) {
-                        corrections[j] = std::complex(1.f, 0.f);
+                if (!hasBeenUpdated) {
+                    std::fill(corrections.begin(), corrections.end(), std::complex(1.f, 0.f));
+                } else {
+                    // remove all infs
+                    for (size_t j = (corrections.size() >> 5); j < corrections.size() - 1; ++j) {
+                        if (std::isinf(corrections[j].real()) || std::isinf(corrections[j].imag())) {
+                            corrections[j] = std::complex(1.f, 0.f);
+                        }
                     }
+                    corrections.end()[-1] = std::abs(corrections.end()[-2]);
                 }
-                corrections.end()[-1] *= std::abs(corrections.end()[-2]);
             }
         }
     };
