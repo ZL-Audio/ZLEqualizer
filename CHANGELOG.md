@@ -7,6 +7,9 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 ## 0.3.6
 
 - add parallel filter structure
+- add match-phase filter structure
+- add mixed-phase filter structure
+- add linear-phase filter structure
 - add & change shortcuts
   - fine-adjust dragger with Shift
   - find-adjust slider with Shift (changed from Ctrl/Command)
