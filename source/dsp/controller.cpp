@@ -458,16 +458,21 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::processLinear(juce::AudioBuffer<FloatType> &subMainBuffer) {
         linearFilters[0].process(subMainBuffer);
+        compensationGains[0].process(subMainBuffer);
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
             linearFilters[1].process(lrMainSplitter.getLBuffer());
+            compensationGains[1].process(lrMainSplitter.getLBuffer());
             linearFilters[2].process(lrMainSplitter.getRBuffer());
+            compensationGains[2].process(lrMainSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
             linearFilters[3].process(msMainSplitter.getMBuffer());
+            compensationGains[3].process(msMainSplitter.getMBuffer());
             linearFilters[4].process(msMainSplitter.getSBuffer());
+            compensationGains[4].process(msMainSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
     }
