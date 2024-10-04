@@ -80,21 +80,6 @@ namespace zlFilter {
                     processFrame();
                 }
             }
-            // juce::dsp::AudioBlock<FloatType> blockToCheck{buffer};
-            // auto numChans = blockToCheck.getNumChannels();
-            // auto numSamps = blockToCheck.getNumSamples();
-            // for (auto c = 0; c < numChans; ++c) {
-            //     for (auto s = 0; s < numSamps; ++s) {
-            //         auto sample = blockToCheck.getSample(c, s);
-            //         if (std::isnan(sample) || std::isnan(sample)) {
-            //             for (size_t i = startDecayIdx; i < corrections.size(); ++i) {
-            //                 DBG(corrections[i].real() << " " << corrections[i].imag());
-            //             }
-            //             DBG("\n");
-            //             return;
-            //         }
-            //     }
-            // }
         }
 
         int getLatency() const { return latency.load(); }
@@ -156,8 +141,6 @@ namespace zlFilter {
 
             corrections.resize(numBins);
             correctionMix.resize(numBins);
-            wis1.resize(numBins);
-            wis2.resize(numBins);
             startDecayIdx = corrections.size() / startDecay;
             endDecayIdx = corrections.size() / endDecay;
 
@@ -258,15 +241,28 @@ namespace zlFilter {
                     }
                     double phaseShift = 0.0;
                     auto previousPhase = std::arg(corrections[startDecayIdx]);
-                    for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
-                        const auto decay = correctionMix[j];
-                        const auto currentPhase = std::arg(corrections[j]);
-                        if (previousPhase > 0 && currentPhase < 0) {
-                            phaseShift += pi * 2;
+                    if (previousPhase > 0.f) {
+                        for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
+                            const auto decay = correctionMix[j];
+                            const auto currentPhase = std::arg(corrections[j]);
+                            if (previousPhase > 0.f && currentPhase < -1.5f) {
+                                phaseShift += pi * 2;
+                            }
+                            corrections[j] = std::polar<float>(std::abs(corrections[j]) * decay + (1.f - decay),
+                                                               (currentPhase + static_cast<float>(phaseShift)) * decay);
+                            previousPhase = currentPhase;
                         }
-                        corrections[j] = std::polar<float>(std::abs(corrections[j]) * decay + (1.f - decay),
-                                                           (currentPhase + static_cast<float>(phaseShift)) * decay);
-                        previousPhase = currentPhase;
+                    } else {
+                        for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
+                            const auto decay = correctionMix[j];
+                            const auto currentPhase = std::arg(corrections[j]);
+                            if (previousPhase < 0.f && currentPhase > 1.5f) {
+                                phaseShift -= pi * 2;
+                            }
+                            corrections[j] = std::polar<float>(std::abs(corrections[j]) * decay + (1.f - decay),
+                                                               (currentPhase + static_cast<float>(phaseShift)) * decay);
+                            previousPhase = currentPhase;
+                        }
                     }
                     corrections.end()[-1] = std::abs(corrections.end()[-2]);
                 }

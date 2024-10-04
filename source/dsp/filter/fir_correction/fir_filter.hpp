@@ -7,8 +7,8 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_PROTOTYPE_CORRECTION_HPP
-#define ZLFILTER_PROTOTYPE_CORRECTION_HPP
+#ifndef ZLFILTER_FIR_FILTER_HPP
+#define ZLFILTER_FIR_FILTER_HPP
 
 #include <cmath>
 
@@ -18,21 +18,18 @@
 
 namespace zlFilter {
     template<typename FloatType, size_t FilterNum, size_t FilterSize>
-    class PrototypeCorrection {
+    class FIR {
     public:
-        static constexpr size_t defaultFFTOrder = 10;
-        static constexpr size_t startDecay = 256, endDecay = 64;
+        static constexpr size_t defaultFFTOrder = 15;
 
-        PrototypeCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
-                            std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
+        FIR(std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
                             zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices,
                             std::array<bool, FilterNum> &mask,
-                            std::vector<std::complex<FloatType> > &w1,
-                            std::vector<std::complex<FloatType> > &w2)
+                            std::vector<std::complex<FloatType> > &w1)
 
-            : iirFs(iir), idealFs(ideal),
+            : idealFs(ideal),
               filterIndices(indices), bypassMask(mask),
-              wis1(w1), wis2(w2) {
+              wis1(w1) {
         }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
@@ -89,18 +86,15 @@ namespace zlFilter {
         size_t getCorrectionSize() const { return corrections.size(); }
 
     private:
-        std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iirFs;
         std::array<Ideal<FloatType, FilterSize>, FilterNum> &idealFs;
         zlContainer::FixedMaxSizeArray<size_t, FilterNum> &filterIndices;
         std::array<bool, FilterNum> bypassMask;
         std::atomic<bool> toUpdate{true};
 
-        std::vector<std::complex<FloatType> > iirTotalResponse, idealTotalResponse;
-        // prototype corrections
-        std::vector<std::complex<float> > corrections{};
-        std::vector<std::complex<FloatType> > &wis1, &wis2;
-        size_t startDecayIdx{0}, endDecayIdx{0};
-        float deltaDecay{0.f};
+        std::vector<std::complex<FloatType> > idealTotalResponse;
+
+        std::vector<float> corrections{};
+        std::vector<std::complex<FloatType> > &wis1;
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;
@@ -139,11 +133,6 @@ namespace zlFilter {
             fftData.resize(fftSize * 2);
 
             corrections.resize(numBins);
-            startDecayIdx = corrections.size() / startDecay;
-            endDecayIdx = corrections.size() / endDecay;
-
-            deltaDecay = 1.f / static_cast<float>(endDecayIdx - startDecayIdx);
-
             reset();
         }
 
@@ -182,8 +171,8 @@ namespace zlFilter {
         void processSpectrum() {
             update();
             auto *cdata = reinterpret_cast<std::complex<float> *>(fftData.data());
-            for (size_t i = startDecayIdx; i < corrections.size(); ++i) {
-                cdata[i] = cdata[i] * corrections[i];
+            for (size_t i = 1; i < corrections.size(); ++i) {
+                cdata[i] *= corrections[i];
             }
         }
 
@@ -193,8 +182,7 @@ namespace zlFilter {
             for (size_t idx = 0; idx < filterIndices.size(); ++idx) {
                 const auto i = filterIndices[idx];
                 if (!bypassMask[i]) {
-                    needToUpdate = needToUpdate || idealFs[i].updateResponse(wis1);
-                    needToUpdate = needToUpdate || iirFs[i].updateResponse(wis2);
+                    needToUpdate = needToUpdate || idealFs[i].updateZeroPhaseResponse(wis1);
                 }
             }
             // if a filter has been updated or the correction has to be updated
@@ -204,40 +192,24 @@ namespace zlFilter {
                     const auto i = filterIndices[idx];
                     if (!bypassMask[i]) {
                         const auto &idealResponse = idealFs[i].getResponse();
-                        const auto &iirResponse = iirFs[i].getResponse();
                         if (!hasBeenUpdated) {
-                            for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
-                                corrections[j] = static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
+                            for (size_t j = 1; j < corrections.size(); ++j) {
+                                corrections[j] = static_cast<float>(idealResponse[j].real());
                             }
                             hasBeenUpdated = true;
                         } else {
-                            for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
-                                corrections[j] *= static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
+                            for (size_t j = 1; j < corrections.size(); ++j) {
+                                corrections[j] *= static_cast<float>(idealResponse[j].real());
                             }
                         }
                     }
                 }
                 if (!hasBeenUpdated) {
-                    std::fill(corrections.begin(), corrections.end(), std::complex(1.f, 0.f));
-                } else {
-                    // remove all infinity & NaN
-                    for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
-                        if (!std::isfinite(corrections[j].real()) || !std::isfinite(corrections[j].imag())
-                            || std::abs(corrections[j].real()) > 10000.f || std::abs(corrections[j].imag()) > 10000.f) {
-                            corrections[j] = std::complex(1.f, 0.f);
-                        }
-                    }
-                    float decay = 0.f;
-                    for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
-                        corrections[j] = std::polar<float>(std::abs(corrections[j]) * decay + (1.f - decay),
-                                                           std::arg(corrections[j]) * decay);
-                        decay += deltaDecay;
-                    }
-                    corrections.end()[-1] = std::abs(corrections.end()[-2]);
+                    std::fill(corrections.begin(), corrections.end(), 1.f);
                 }
             }
         }
     };
 }
 
-#endif //ZLFILTER_PROTOTYPE_CORRECTION_HPP
+#endif //ZLFILTER_FIR_FILTER_HPP

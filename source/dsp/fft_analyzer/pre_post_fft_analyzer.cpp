@@ -34,7 +34,7 @@ namespace zlFFT {
         }
         if (currentPreON) {
             preBuffer.makeCopyOf(buffer, true);
-            delay.process(preBuffer);
+            preDelay.process(preBuffer);
         }
     }
 
@@ -49,6 +49,7 @@ namespace zlFFT {
     void PrePostFFTAnalyzer<FloatType>::pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
         if (currentSideON) {
             sideBuffer.makeCopyOf(buffer, true);
+            sideDelay.process(sideBuffer);
         }
     }
 

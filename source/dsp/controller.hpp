@@ -221,6 +221,17 @@ namespace zlDSP {
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
 
+        std::vector<std::complex<FloatType> > linearW1;
+        std::array<zlFilter::FIR<FloatType, bandNUM, FilterSize>, 5> linearFilters =
+            [&]<size_t... Is>(std::index_sequence<Is...>) {
+                return std::array{
+                    zlFilter::FIR<FloatType, bandNUM, FilterSize>{
+                        mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, linearW1
+                    }...
+                };
+            }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
+
+
         std::atomic<int> latency{0};
 
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
@@ -234,7 +245,8 @@ namespace zlDSP {
 
         zlFilter::IIR<FloatType, FilterSize> soloFilter;
         std::atomic<size_t> soloIdx;
-        std::atomic<bool> useSolo = false, soloSide = false;
+        std::atomic<bool> useSolo{false}, soloSide{false};
+        bool currentUseSolo{false};
 
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> histograms;
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> subHistograms;
@@ -297,6 +309,8 @@ namespace zlDSP {
         void processMixedCorrection(juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void processMixedCorrectionLRMS(size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer);
+
+        void processLinear(juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void updateLRs();
 

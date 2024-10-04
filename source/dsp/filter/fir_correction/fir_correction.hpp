@@ -13,5 +13,6 @@
 #include "correction_helper.hpp"
 #include "prototype_correction.hpp"
 #include "mixed_correction.hpp"
+#include "fir_filter.hpp"
 
 #endif //ZLFILTER_FIR_CORRECTION_HPP

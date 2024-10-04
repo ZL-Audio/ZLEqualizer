@@ -52,7 +52,9 @@ namespace zlFFT {
         void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
                          juce::Rectangle<float> bound);
 
-        zlDelay::SampleDelay<FloatType> &getPreDelay() { return delay; }
+        zlDelay::SampleDelay<FloatType> &getPreDelay() { return preDelay; }
+
+        zlDelay::SampleDelay<FloatType> &getSideDelay() { return sideDelay; }
 
     private:
         MultipleFFTAnalyzer<FloatType, 3, pointNum> fftAnalyzer;
@@ -64,7 +66,7 @@ namespace zlFFT {
         std::atomic<bool> isBoundReady{false};
         std::atomic<bool> isPathReady{false};
         std::atomic<bool> toReset{false};
-        zlDelay::SampleDelay<FloatType> delay;
+        zlDelay::SampleDelay<FloatType> preDelay, sideDelay;
 
         void run() override;
 

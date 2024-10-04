@@ -75,13 +75,20 @@ namespace zlDSP {
         zlFilter::calculateWsForPrototype<FloatType>(mixedW1);
         zlFilter::calculateWsForBiquad<FloatType>(mixedW2);
 
+        linearFilters[0].prepare(subSpec);
+        for (size_t i = 1; i < 5; ++i) {
+            linearFilters[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
+        }
+        linearW1.resize(linearFilters[0].getCorrectionSize());
+        zlFilter::calculateWsForPrototype<FloatType>(linearW1);
+
         for (auto &f: mainIIRs) {
             f.prepare(subSpec.sampleRate);
             f.prepareResponseSize(mixedCorrections[0].getCorrectionSize());
         }
         for (auto &f: mainIdeals) {
             f.prepare(subSpec.sampleRate);
-            f.prepareResponseSize(mixedCorrections[0].getCorrectionSize());
+            f.prepareResponseSize(linearFilters[0].getCorrectionSize());
         }
 
         soloFilter.setFilterType(zlFilter::FilterType::bandPass);
@@ -96,8 +103,11 @@ namespace zlDSP {
             g.prepare(subSpec);
         }
         fftAnalyzer.prepare(subSpec);
-        fftAnalyzer.getPreDelay().setMaximumDelayInSamples(mixedCorrections[0].getLatency() * 4);
+        fftAnalyzer.getPreDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
         fftAnalyzer.getPreDelay().prepare(subSpec);
+        fftAnalyzer.getSideDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
+        fftAnalyzer.getSideDelay().prepare(subSpec);
+
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: trackers) {
             t.prepare(subSpec);
@@ -135,6 +145,7 @@ namespace zlDSP {
                 updateSgcValues();
             }
         }
+        currentUseSolo = useSolo.load();
 
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
         juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
@@ -182,21 +193,25 @@ namespace zlDSP {
         fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
 
         if (isEffectON.load()) {
-            if (useSolo.load()) {
+            if (currentUseSolo) {
                 processSolo(subMainBuffer, subSideBuffer);
             } else {
-                autoGain.processPre(subMainBuffer);
-                processDynamic(subMainBuffer, subSideBuffer);
-                if (currentFilterStructure == filterStructure::parallel) {
-                    processParallelPost(subMainBuffer, subSideBuffer);
+                if (currentFilterStructure == filterStructure::linear) {
+                    processLinear(subMainBuffer);
+                } else {
+                    autoGain.processPre(subMainBuffer);
+                    processDynamic(subMainBuffer, subSideBuffer);
+                    if (currentFilterStructure == filterStructure::parallel) {
+                        processParallelPost(subMainBuffer, subSideBuffer);
+                    }
+                    autoGain.processPost(subMainBuffer);
+                    if (currentFilterStructure == filterStructure::matched) {
+                        processPrototypeCorrection(subMainBuffer);
+                    } else if (currentFilterStructure == filterStructure::mixed) {
+                        processMixedCorrection(subMainBuffer);
+                    }
                 }
-                autoGain.processPost(subMainBuffer);
                 outputGain.process(subMainBuffer);
-                if (currentFilterStructure == filterStructure::matched) {
-                    processPrototypeCorrection(subMainBuffer);
-                } else if (currentFilterStructure == filterStructure::mixed) {
-                    processMixedCorrection(subMainBuffer);
-                }
             }
         }
         fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
@@ -441,6 +456,24 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
+    void Controller<FloatType>::processLinear(juce::AudioBuffer<FloatType> &subMainBuffer) {
+        linearFilters[0].process(subMainBuffer);
+        if (useLR) {
+            lrMainSplitter.split(subMainBuffer);
+            linearFilters[1].process(lrMainSplitter.getLBuffer());
+            linearFilters[2].process(lrMainSplitter.getRBuffer());
+            lrMainSplitter.combine(subMainBuffer);
+        }
+        if (useMS) {
+            msMainSplitter.split(subMainBuffer);
+            linearFilters[3].process(msMainSplitter.getMBuffer());
+            linearFilters[4].process(msMainSplitter.getSBuffer());
+            msMainSplitter.combine(subMainBuffer);
+        }
+    }
+
+
+    template<typename FloatType>
     void Controller<FloatType>::processBypass() {
         for (size_t i = 0; i < bandNUM; ++i) {
             filters[i].processBypass();
@@ -608,12 +641,17 @@ namespace zlDSP {
                 break;
             }
             case filterStructure::linear: {
+                const auto singleLatency = linearFilters[0].getLatency();
+                newLatency = singleLatency
+                             + static_cast<int>(useLR) * singleLatency
+                             + static_cast<int>(useMS) * singleLatency;
                 break;
             }
         }
         if (newLatency != latency.load()) {
-            fftAnalyzer.getPreDelay().setDelaySeconds(
-                static_cast<FloatType>(newLatency) / static_cast<FloatType>(sampleRate.load()));
+            const auto delayInSeconds = static_cast<FloatType>(newLatency) / static_cast<FloatType>(sampleRate.load());
+            fftAnalyzer.getPreDelay().setDelaySeconds(delayInSeconds);
+            fftAnalyzer.getSideDelay().setDelaySeconds(delayInSeconds);
             latency.store(newLatency);
             triggerAsyncUpdate();
         }
@@ -708,6 +746,13 @@ namespace zlDSP {
                 break;
             }
             case filterStructure::linear: {
+                for (auto &f: mainIdeals) {
+                    f.setToUpdate();
+                }
+                for (auto &c: linearFilters) {
+                    c.reset();
+                }
+                break;
             }
         }
         for (size_t idx = 0; idx < bandNUM; ++idx) {
@@ -739,6 +784,10 @@ namespace zlDSP {
             }
         } else if (currentFilterStructure == filterStructure::mixed) {
             for (auto &c: mixedCorrections) {
+                c.setToUpdate();
+            }
+        } else if (currentFilterStructure == filterStructure::linear) {
+            for (auto &c: linearFilters) {
                 c.setToUpdate();
             }
         }
