@@ -74,12 +74,27 @@ namespace zlFilter {
 
         bool getMagOutdated() const { return toUpdatePara.load(); }
 
-        bool updateResponse(const std::vector<std::complex<FloatType>> &wis) {
+        bool updateResponse(const std::vector<std::complex<FloatType> > &wis) {
             if (toUpdatePara.exchange(false)) {
                 updateParas();
                 std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
                 for (size_t i = 0; i < currentFilterNum; ++i) {
                     IdealBase<FloatType>::updateResponse(coeffs[i], wis, response);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        bool updateZeroPhaseResponse(const std::vector<std::complex<FloatType> > &wis) {
+            if (toUpdatePara.exchange(false)) {
+                updateParas();
+                std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
+                for (size_t i = 0; i < currentFilterNum; ++i) {
+                    IdealBase<FloatType>::updateResponse(coeffs[i], wis, response);
+                }
+                for (size_t i = 0; i < response.size(); ++i) {
+                    response[i] = std::complex<FloatType>(std::abs(response[i]), FloatType(0));
                 }
                 return true;
             }
@@ -121,7 +136,7 @@ namespace zlFilter {
 
         std::vector<std::complex<FloatType> > &getResponse() { return response; }
 
-        void setToUpdate() {toUpdatePara.store(true);}
+        void setToUpdate() { toUpdatePara.store(true); }
 
     private:
         std::array<std::array<double, 6>, FilterSize> coeffs{};

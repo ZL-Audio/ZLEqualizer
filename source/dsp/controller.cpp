@@ -66,13 +66,22 @@ namespace zlDSP {
         zlFilter::calculateWsForPrototype<FloatType>(prototypeW1);
         zlFilter::calculateWsForBiquad<FloatType>(prototypeW2);
 
+        mixedCorrections[0].prepare(subSpec);
+        for (size_t i = 1; i < 5; ++i) {
+            mixedCorrections[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
+        }
+        mixedW1.resize(mixedCorrections[0].getCorrectionSize());
+        mixedW2.resize(mixedCorrections[0].getCorrectionSize());
+        zlFilter::calculateWsForPrototype<FloatType>(mixedW1);
+        zlFilter::calculateWsForBiquad<FloatType>(mixedW2);
+
         for (auto &f: mainIIRs) {
             f.prepare(subSpec.sampleRate);
-            f.prepareResponseSize(prototypeCorrections[0].getCorrectionSize());
+            f.prepareResponseSize(mixedCorrections[0].getCorrectionSize());
         }
         for (auto &f: mainIdeals) {
             f.prepare(subSpec.sampleRate);
-            f.prepareResponseSize(prototypeCorrections[0].getCorrectionSize());
+            f.prepareResponseSize(mixedCorrections[0].getCorrectionSize());
         }
 
         soloFilter.setFilterType(zlFilter::FilterType::bandPass);
@@ -87,7 +96,7 @@ namespace zlDSP {
             g.prepare(subSpec);
         }
         fftAnalyzer.prepare(subSpec);
-        fftAnalyzer.getPreDelay().setMaximumDelayInSamples(prototypeCorrections[0].getLatency() * 4);
+        fftAnalyzer.getPreDelay().setMaximumDelayInSamples(mixedCorrections[0].getLatency() * 4);
         fftAnalyzer.getPreDelay().prepare(subSpec);
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: trackers) {
@@ -185,6 +194,8 @@ namespace zlDSP {
                 outputGain.process(subMainBuffer);
                 if (currentFilterStructure == filterStructure::matched) {
                     processPrototypeCorrection(subMainBuffer);
+                } else if (currentFilterStructure == filterStructure::mixed) {
+                    processMixedCorrection(subMainBuffer);
                 }
             }
         }
@@ -244,7 +255,6 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                juce::AudioBuffer<FloatType> &subSideBuffer) {
-
         // set auto threshold
         for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
             const auto i = dynamicONIndices[idx];
@@ -333,7 +343,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer,
-        juce::AudioBuffer<FloatType> &subSideBuffer) {
+                                                    juce::AudioBuffer<FloatType> &subSideBuffer) {
         // add parallel filters first
         processParallelPostLRMS(0, true, subMainBuffer, subSideBuffer);
         if (useLR) {
@@ -406,6 +416,28 @@ namespace zlDSP {
     void Controller<FloatType>::processPrototypeCorrectionLRMS(const size_t lrIdx,
                                                                juce::AudioBuffer<FloatType> &subMainBuffer) {
         prototypeCorrections[lrIdx].process(subMainBuffer);
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::processMixedCorrection(juce::AudioBuffer<FloatType> &subMainBuffer) {
+        processMixedCorrectionLRMS(0, subMainBuffer);
+        if (useLR) {
+            lrMainSplitter.split(subMainBuffer);
+            processMixedCorrectionLRMS(1, lrMainSplitter.getLBuffer());
+            processMixedCorrectionLRMS(2, lrMainSplitter.getRBuffer());
+            lrMainSplitter.combine(subMainBuffer);
+        }
+        if (useMS) {
+            msMainSplitter.split(subMainBuffer);
+            processMixedCorrectionLRMS(3, msMainSplitter.getMBuffer());
+            processMixedCorrectionLRMS(4, msMainSplitter.getSBuffer());
+            msMainSplitter.combine(subMainBuffer);
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::processMixedCorrectionLRMS(size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer) {
+        mixedCorrections[lrIdx].process(subMainBuffer);
     }
 
     template<typename FloatType>
@@ -568,7 +600,13 @@ namespace zlDSP {
                              + static_cast<int>(useMS) * singleLatency;
                 break;
             }
-            case filterStructure::mixed:
+            case filterStructure::mixed: {
+                const auto singleLatency = mixedCorrections[0].getLatency();
+                newLatency = singleLatency
+                             + static_cast<int>(useLR) * singleLatency
+                             + static_cast<int>(useMS) * singleLatency;
+                break;
+            }
             case filterStructure::linear: {
                 break;
             }
@@ -621,9 +659,7 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::updateFilterStructure() {
         switch (currentFilterStructure) {
-            case filterStructure::minimum:
-            case filterStructure::matched:
-            case filterStructure::mixed: {
+            case filterStructure::minimum: {
                 for (auto &f: filters) {
                     f.setFilterStructure(zlFilter::FilterStructure::iir);
                 }
@@ -638,6 +674,36 @@ namespace zlDSP {
             case filterStructure::parallel: {
                 for (auto &f: filters) {
                     f.setFilterStructure(zlFilter::FilterStructure::parallel);
+                }
+                break;
+            }
+            case filterStructure::matched: {
+                for (auto &f: filters) {
+                    f.setFilterStructure(zlFilter::FilterStructure::iir);
+                }
+                for (auto &f: mainIIRs) {
+                    f.setToUpdate();
+                }
+                for (auto &f: mainIdeals) {
+                    f.setToUpdate();
+                }
+                for (auto &c: prototypeCorrections) {
+                    c.reset();
+                }
+                break;
+            }
+            case filterStructure::mixed: {
+                for (auto &f: filters) {
+                    f.setFilterStructure(zlFilter::FilterStructure::iir);
+                }
+                for (auto &f: mainIIRs) {
+                    f.setToUpdate();
+                }
+                for (auto &f: mainIdeals) {
+                    f.setToUpdate();
+                }
+                for (auto &c: mixedCorrections) {
+                    c.reset();
                 }
                 break;
             }
@@ -669,6 +735,10 @@ namespace zlDSP {
     void Controller<FloatType>::updateCorrections() {
         if (currentFilterStructure == filterStructure::matched) {
             for (auto &c: prototypeCorrections) {
+                c.setToUpdate();
+            }
+        } else if (currentFilterStructure == filterStructure::mixed) {
+            for (auto &c: mixedCorrections) {
                 c.setToUpdate();
             }
         }

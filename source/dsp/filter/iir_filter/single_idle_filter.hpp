@@ -62,21 +62,12 @@ namespace zlFilter {
             std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
         }
 
-        template<bool removeZeros=true>
         bool updateResponse(const std::vector<std::complex<FloatType>> &wis) {
             if (toUpdatePara.exchange(false)) {
                 updateParas();
                 std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
                 for (size_t i = 0; i < currentFilterNum; ++i) {
                     IIRBase<FloatType>::updateResponse(coeffs[i], wis, response);
-                }
-                if (removeZeros) {
-                    for (auto &r:response) {
-                        if (std::abs(r.real()) < FloatType(1e-6) || std::abs(r.imag()) < FloatType(1e-6)) {
-                            r.real(FloatType(1e-6));
-                            r.imag(FloatType(1e-6));
-                        }
-                    }
                 }
                 return true;
             }

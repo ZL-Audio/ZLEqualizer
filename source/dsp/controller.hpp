@@ -211,6 +211,16 @@ namespace zlDSP {
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
 
+        std::vector<std::complex<FloatType> > mixedW1, mixedW2;
+        std::array<zlFilter::MixedCorrection<FloatType, bandNUM, FilterSize>, 5> mixedCorrections =
+                [&]<size_t... Is>(std::index_sequence<Is...>) {
+                    return std::array{
+                        zlFilter::MixedCorrection<FloatType, bandNUM, FilterSize>{
+                            mainIIRs, mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, mixedW1, mixedW2
+                        }...
+                    };
+                }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
+
         std::atomic<int> latency{0};
 
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
@@ -283,6 +293,10 @@ namespace zlDSP {
         void processPrototypeCorrection(juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void processPrototypeCorrectionLRMS(size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer);
+
+        void processMixedCorrection(juce::AudioBuffer<FloatType> &subMainBuffer);
+
+        void processMixedCorrectionLRMS(size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void updateLRs();
 

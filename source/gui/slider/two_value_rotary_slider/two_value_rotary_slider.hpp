@@ -112,6 +112,7 @@ namespace zlInterface {
                 actualDragDistance = juce::roundToInt(
                     static_cast<float>(dragDistance) / uiBase.getSensitivity(sensitivityIdx::mouseDrag));
             }
+            actualDragDistance = std::max(actualDragDistance, 1);
             slider1.setMouseDragSensitivity(actualDragDistance);
             slider2.setMouseDragSensitivity(actualDragDistance);
         }
