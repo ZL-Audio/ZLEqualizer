@@ -488,9 +488,18 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setDynamicON(const bool x, size_t idx) {
+        const auto bGain = bFilters[idx].getGain();
+        const auto bQ = bFilters[idx].getQ();
+
         filters[idx].setDynamicON(x);
         filters[idx].getMainFilter().template setGain<false>(bFilters[idx].getGain());
         filters[idx].getMainFilter().template setQ<true>(bFilters[idx].getQ());
+
+        mainIIRs[idx].setGain(bGain);
+        mainIIRs[idx].setQ(bQ);
+        mainIdeals[idx].setGain(bGain);
+        mainIdeals[idx].setQ(bQ);
+
         toUpdateDynamicON.store(true);
     }
 

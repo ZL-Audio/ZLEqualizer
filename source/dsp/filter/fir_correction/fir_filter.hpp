@@ -20,7 +20,7 @@ namespace zlFilter {
     template<typename FloatType, size_t FilterNum, size_t FilterSize>
     class FIR {
     public:
-        static constexpr size_t defaultFFTOrder = 15;
+        static constexpr size_t defaultFFTOrder = 14;
 
         FIR(std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
                             zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices,
@@ -171,7 +171,7 @@ namespace zlFilter {
         void processSpectrum() {
             update();
             auto *cdata = reinterpret_cast<std::complex<float> *>(fftData.data());
-            for (size_t i = 1; i < corrections.size(); ++i) {
+            for (size_t i = 0; i < corrections.size(); ++i) {
                 cdata[i] *= corrections[i];
             }
         }
@@ -203,6 +203,7 @@ namespace zlFilter {
                             }
                         }
                     }
+                    corrections[0] = corrections[1];
                 }
                 if (!hasBeenUpdated) {
                     std::fill(corrections.begin(), corrections.end(), 1.f);
