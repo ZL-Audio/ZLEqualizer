@@ -4,7 +4,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
-## 0.3.6
+## 0.4.0
 
 - add parallel filter structure
 - add match-phase filter structure

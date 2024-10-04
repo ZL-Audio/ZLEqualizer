@@ -21,7 +21,7 @@ namespace zlFilter {
     class MixedCorrection {
     public:
         static constexpr size_t defaultFFTOrder = 11;
-        static constexpr size_t startDecay = 512, endDecay = 2;
+        static constexpr size_t startDecay = 256, endDecay = 2;
 
         MixedCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
                         std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
@@ -36,14 +36,29 @@ namespace zlFilter {
         }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
+            auto decayMultiplier = 0.98;
             if (spec.sampleRate <= 50000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder);
             } else if (spec.sampleRate <= 100000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 1);
+                decayMultiplier = 0.9899494936611666;
             } else if (spec.sampleRate <= 200000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 2);
+                decayMultiplier = 0.9949620563926881;
             } else {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 3);
+                decayMultiplier = 0.9974778475699037;
+            }
+            double mix = decayMultiplier;
+            for (size_t i = 0; i < startDecayIdx; ++i) {
+                correctionMix[i] = 0.f;
+            }
+            for (size_t i = startDecayIdx; i < endDecayIdx; ++i) {
+                correctionMix[i] = 1.f - static_cast<float>(mix);
+                mix *= decayMultiplier;
+            }
+            for (size_t i = endDecayIdx; i < correctionMix.size(); ++i) {
+                correctionMix[i] = 1.f;
             }
         }
 
@@ -101,7 +116,6 @@ namespace zlFilter {
         std::vector<std::complex<FloatType> > &wis1, &wis2;
         size_t startDecayIdx{0}, endDecayIdx{0};
         std::vector<float> correctionMix{};
-        float deltaDecay{0.f};
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;
@@ -144,18 +158,6 @@ namespace zlFilter {
             startDecayIdx = corrections.size() / startDecay;
             endDecayIdx = corrections.size() / endDecay;
 
-            deltaDecay = 1.f / static_cast<float>(endDecayIdx - startDecayIdx);
-            float mix = 1.f;
-            for (size_t i = 0; i < startDecayIdx; ++i) {
-                correctionMix[i] = 0.f;
-            }
-            for (size_t i = startDecayIdx; i < endDecayIdx; ++i) {
-                correctionMix[i] = 1.f - mix;
-                mix *= .985f;
-            }
-            for (size_t i = endDecayIdx; i < correctionMix.size(); ++i) {
-                correctionMix[i] = 1.f;
-            }
             reset();
         }
 
@@ -205,7 +207,11 @@ namespace zlFilter {
             for (size_t idx = 0; idx < filterIndices.size(); ++idx) {
                 const auto i = filterIndices[idx];
                 if (!bypassMask[i]) {
-                    needToUpdate = needToUpdate || idealFs[i].updateZeroPhaseResponse(wis1);
+                    if (idealFs[i].getFilterType() != zlFilter::highPass) {
+                        needToUpdate = needToUpdate || idealFs[i].updateZeroPhaseResponse(wis1);
+                    } else {
+                        needToUpdate = needToUpdate || idealFs[i].updateResponse(wis1);
+                    }
                     needToUpdate = needToUpdate || iirFs[i].updateResponse(wis2);
                 }
             }
@@ -245,7 +251,7 @@ namespace zlFilter {
                         for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
                             const auto decay = correctionMix[j];
                             const auto currentPhase = std::arg(corrections[j]);
-                            if (previousPhase > 0.f && currentPhase < -1.5f) {
+                            if (previousPhase > 1.5f && currentPhase < -1.5f) {
                                 phaseShift += pi * 2;
                             }
                             corrections[j] = std::polar<float>(std::abs(corrections[j]) * decay + (1.f - decay),
@@ -256,7 +262,7 @@ namespace zlFilter {
                         for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
                             const auto decay = correctionMix[j];
                             const auto currentPhase = std::arg(corrections[j]);
-                            if (previousPhase < 0.f && currentPhase > 1.5f) {
+                            if (previousPhase < -1.5f && currentPhase > 1.5f) {
                                 phaseShift -= pi * 2;
                             }
                             corrections[j] = std::polar<float>(std::abs(corrections[j]) * decay + (1.f - decay),

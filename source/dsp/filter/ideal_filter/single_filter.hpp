@@ -62,6 +62,8 @@ namespace zlFilter {
             toUpdatePara.store(true);
         }
 
+        size_t getOrder() const { return order.load(); }
+
         void prepareResponseSize(const size_t x) {
             response.resize(x);
             std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
