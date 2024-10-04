@@ -83,7 +83,7 @@ namespace zlInterface {
 
         juce::Component preButton, dummyButton;
         juce::Rectangle<int> preBound, dummyBound;
-        bool isShiftDown;
+        bool isShiftDown{false};
         juce::ToggleButton button;
         std::atomic<bool> dummyButtonChanged{false};
         DraggerLookAndFeel draggerLAF;

@@ -17,6 +17,7 @@ namespace zlInterface {
         button.setClickingTogglesState(false);
         button.setLookAndFeel(&draggerLAF);
         addAndMakeVisible(button);
+        addChildComponent(preButton);
         addChildComponent(dummyButton);
     }
 
@@ -40,6 +41,7 @@ namespace zlInterface {
         button.setToggleState(true, juce::NotificationType::sendNotificationSync);
         preBound = preButton.getBounds();
         dummyBound = dummyButton.getBounds();
+        isShiftDown = event.mods.isShiftDown();
         dragger.startDraggingComponent(&preButton, event);
 
         const BailOutChecker checker(this);
@@ -67,16 +69,22 @@ namespace zlInterface {
                 constrainer.setXON(true);
                 constrainer.setYON(true);
             }
-            const auto currentShiftDown = event.mods.isShiftDown();
-            if (currentShiftDown != isShiftDown) {
+            if (!isShiftDown && event.mods.isShiftDown()) {
                 preBound = preButton.getBounds();
                 dummyBound = dummyButton.getBounds();
-                isShiftDown = currentShiftDown;
+                isShiftDown = true;
             }
+            // if (currentShiftDown && !isShiftDown) {
+            //     dragger.startDraggingComponent(&preButton, event);
+            //     preBound = preButton.getBounds();
+            //     dummyBound = dummyButton.getBounds();
+            //     isShiftDown = currentShiftDown;
+            // }
+
             dragger.dragComponent(&preButton, event, nullptr);
             const auto shift = (preButton.getBounds().getPosition() - preBound.getPosition()).toFloat();
-            juce::Point<float> actualShift;
 
+            juce::Point<float> actualShift;
             if (isShiftDown) {
                 actualShift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
                 actualShift.setY(shift.getY() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
@@ -84,7 +92,9 @@ namespace zlInterface {
                 actualShift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDrag));
                 actualShift.setY(shift.getY() * uiBase.getSensitivity(sensitivityIdx::mouseDrag));
             }
-            constrainer.setBoundsForComponent(&dummyButton, dummyBound + actualShift.roundToInt(), false, false, false, false);
+
+            constrainer.setBoundsForComponent(&dummyButton, dummyBound + actualShift.roundToInt(),
+                                              false, false, false, false);
             const auto buttonBound = dummyButton.getBoundsInParent().toFloat();
             xPortion.store((buttonBound.getCentreX() - buttonArea.getX()) / buttonArea.getWidth());
             yPortion.store((buttonArea.getBottom() - buttonBound.getCentreY()) / buttonArea.getHeight());
