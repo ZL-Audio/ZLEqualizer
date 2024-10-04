@@ -752,12 +752,22 @@ namespace zlDSP {
                 for (auto &c: linearFilters) {
                     c.reset();
                 }
+                for (size_t idx = 0; idx < bandNUM; ++idx) {
+                    const auto bGain = bFilters[idx].getGain();
+                    const auto bQ = bFilters[idx].getQ();
+                    mainIIRs[idx].setGain(bGain);
+                    mainIIRs[idx].setQ(bQ);
+                    mainIdeals[idx].setGain(bGain);
+                    mainIdeals[idx].setQ(bQ);
+                }
                 break;
             }
         }
         for (size_t idx = 0; idx < bandNUM; ++idx) {
-            filters[idx].getMainFilter().template setGain<false>(bFilters[idx].getGain());
-            filters[idx].getMainFilter().template setQ<true>(bFilters[idx].getQ());
+            const auto bGain = bFilters[idx].getGain();
+            const auto bQ = bFilters[idx].getQ();
+            filters[idx].getMainFilter().template setGain<false>(bGain);
+            filters[idx].getMainFilter().template setQ<true>(bQ);
         }
     }
 
