@@ -379,16 +379,20 @@ namespace zlDSP {
             lrMainSplitter.split(subMainBuffer);
             processParallelPostLRMS(1, false, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
             processParallelPostLRMS(2, false, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
-            compensationGains[1].process(lrMainSplitter.getLBuffer());
-            compensationGains[2].process(lrMainSplitter.getRBuffer());
+            if (currentIsSgcON) {
+                compensationGains[1].process(lrMainSplitter.getLBuffer());
+                compensationGains[2].process(lrMainSplitter.getRBuffer());
+            }
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
             processParallelPostLRMS(3, false, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
             processParallelPostLRMS(4, false, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
-            compensationGains[3].process(msMainSplitter.getMBuffer());
-            compensationGains[4].process(msMainSplitter.getSBuffer());
+            if (currentIsSgcON) {
+                compensationGains[3].process(msMainSplitter.getMBuffer());
+                compensationGains[4].process(msMainSplitter.getSBuffer());
+            }
             msMainSplitter.combine(subMainBuffer);
         }
     }
@@ -458,21 +462,27 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::processLinear(juce::AudioBuffer<FloatType> &subMainBuffer) {
         linearFilters[0].process(subMainBuffer);
-        compensationGains[0].process(subMainBuffer);
+        if (currentIsSgcON) {
+            compensationGains[0].process(subMainBuffer);
+        }
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
             linearFilters[1].process(lrMainSplitter.getLBuffer());
-            compensationGains[1].process(lrMainSplitter.getLBuffer());
             linearFilters[2].process(lrMainSplitter.getRBuffer());
-            compensationGains[2].process(lrMainSplitter.getRBuffer());
+            if (currentIsSgcON) {
+                compensationGains[1].process(lrMainSplitter.getLBuffer());
+                compensationGains[2].process(lrMainSplitter.getRBuffer());
+            }
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
             linearFilters[3].process(msMainSplitter.getMBuffer());
-            compensationGains[3].process(msMainSplitter.getMBuffer());
             linearFilters[4].process(msMainSplitter.getSBuffer());
-            compensationGains[4].process(msMainSplitter.getSBuffer());
+            if (currentIsSgcON) {
+                compensationGains[3].process(msMainSplitter.getMBuffer());
+                compensationGains[4].process(msMainSplitter.getSBuffer());
+            }
             msMainSplitter.combine(subMainBuffer);
         }
     }
