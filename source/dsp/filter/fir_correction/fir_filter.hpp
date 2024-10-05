@@ -88,7 +88,7 @@ namespace zlFilter {
     private:
         std::array<Ideal<FloatType, FilterSize>, FilterNum> &idealFs;
         zlContainer::FixedMaxSizeArray<size_t, FilterNum> &filterIndices;
-        std::array<bool, FilterNum> bypassMask;
+        std::array<bool, FilterNum> &bypassMask;
         std::atomic<bool> toUpdate{true};
 
         std::vector<std::complex<FloatType> > idealTotalResponse;
