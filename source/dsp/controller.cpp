@@ -93,6 +93,7 @@ namespace zlDSP {
 
         soloFilter.setFilterType(zlFilter::FilterType::bandPass);
         soloFilter.prepare(subSpec);
+
         lrMainSplitter.prepare(subSpec);
         lrSideSplitter.prepare(subSpec);
         msMainSplitter.prepare(subSpec);
@@ -107,6 +108,9 @@ namespace zlDSP {
         fftAnalyzer.getPreDelay().prepare(subSpec);
         fftAnalyzer.getSideDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
         fftAnalyzer.getSideDelay().prepare(subSpec);
+
+        soloDelay.setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
+        soloDelay.prepare(subSpec);
 
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: trackers) {
@@ -145,7 +149,10 @@ namespace zlDSP {
                 updateSgcValues();
             }
         }
-        currentUseSolo = useSolo.load();
+        if (toUpdateSolo.exchange(false)) {
+            currentUseSolo = useSolo.load();
+            updateSolo();
+        }
 
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
         juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
@@ -225,13 +232,12 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
                                             juce::AudioBuffer<FloatType> &subSideBuffer) {
-        for (size_t i = 0; i < bandNUM; ++i) {
-            filters[i].processBypass();
-        }
-        if (soloSide.load()) {
+        if (currentSoloSide) {
             subMainBuffer.makeCopyOf(subSideBuffer, true);
         }
-        switch (filterLRs[soloIdx.load()].load()) {
+        soloDelay.process(subMainBuffer);
+        soloFilter.processPre(subMainBuffer);
+        switch (currentFilterLRs[currentSoloIdx]) {
             case lrType::stereo: {
                 soloFilter.process(subMainBuffer);
                 break;
@@ -568,24 +574,21 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::setSolo(const size_t idx, const bool isSide) {
-        FloatType freq, q;
-        if (!isSide) {
-            const auto &f{filters[idx].getMainFilter()};
-            std::tie(freq, q) = getSoloFilterParas(
-                f.getFilterType(), f.getFreq(), f.getQ());
-        } else {
-            const auto &f{filters[idx].getSideFilter()};
-            std::tie(freq, q) = getSoloFilterParas(
-                f.getFilterType(), f.getFreq(), f.getQ());
-        }
-        soloFilter.setFreq(freq);
-        soloFilter.setQ(q);
-
         soloIdx.store(idx);
         soloSide.store(isSide);
 
-        isSoloUpdated.store(true);
         useSolo.store(true);
+        toUpdateSolo.store(true);
+        isSoloUpdate.store(true);
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::clearSolo(const size_t idx, const bool isSide) {
+        if (idx == soloIdx.load() && isSide == soloSide.load()) {
+            useSolo.store(false);
+            toUpdateSolo.store(true);
+            isSoloUpdate.store(true);
+        }
     }
 
     template<typename FloatType>
@@ -676,6 +679,7 @@ namespace zlDSP {
             const auto delayInSeconds = static_cast<FloatType>(newLatency) / static_cast<FloatType>(sampleRate.load());
             fftAnalyzer.getPreDelay().setDelaySeconds(delayInSeconds);
             fftAnalyzer.getSideDelay().setDelaySeconds(delayInSeconds);
+            soloDelay.setDelaySeconds(delayInSeconds);
             latency.store(newLatency);
             triggerAsyncUpdate();
         }
@@ -825,6 +829,29 @@ namespace zlDSP {
                 c.setToUpdate();
             }
         }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateSolo() {
+        if (currentUseSolo) {
+            currentSoloIdx = soloIdx.load();
+            currentSoloSide = soloSide.load();
+        } else {
+            soloFilter.reset();
+        }
+
+        FloatType freq, q;
+        if (!currentSoloSide) {
+            const auto &f{bFilters[currentSoloIdx]};
+            std::tie(freq, q) = getSoloFilterParas(
+                f.getFilterType(), f.getFreq(), f.getQ());
+        } else {
+            const auto &f{filters[currentSoloIdx].getSideFilter()};
+            std::tie(freq, q) = getSoloFilterParas(
+                f.getFilterType(), f.getFreq(), f.getQ());
+        }
+        soloFilter.setFreq(freq);
+        soloFilter.setQ(q);
     }
 
     template

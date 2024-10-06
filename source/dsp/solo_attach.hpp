@@ -14,8 +14,7 @@
 
 namespace zlDSP {
     template<typename FloatType>
-    class SoloAttach final : private juce::AudioProcessorValueTreeState::Listener,
-                             private juce::AsyncUpdater {
+    class SoloAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SoloAttach(juce::AudioProcessor &processor,
                             juce::AudioProcessorValueTreeState &parameters,
@@ -36,6 +35,9 @@ namespace zlDSP {
             solo::ID, sideSolo::ID
         };
 
+        std::atomic<size_t> soloIdx{0};
+        std::atomic<bool> soloIsSide{false};
+
         constexpr static std::array initIDs{
             solo::ID, sideSolo::ID
         };
@@ -46,8 +48,6 @@ namespace zlDSP {
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
-
-        void handleAsyncUpdate() override;
 
         void initDefaultValues();
     };

@@ -27,7 +27,7 @@ namespace zlPanel {
         if (!controllerRef.getSolo()) {
             return;
         }
-        if (controllerRef.exchangeSoloUpdated(false)) {
+        if (controllerRef.getSoloUpdated()) {
             toRepaint.store(false);
             handleAsyncUpdate();
         }

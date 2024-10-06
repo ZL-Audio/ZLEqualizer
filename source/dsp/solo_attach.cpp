@@ -28,7 +28,6 @@ namespace zlDSP {
                 parameterRef.removeParameterListener(ID + suffix, this);
             }
         }
-        cancelPendingUpdate();
     }
 
     template<typename FloatType>
@@ -47,34 +46,30 @@ namespace zlDSP {
         if (parameterID.startsWith(solo::ID) || parameterID.startsWith(sideSolo::ID)) {
             const auto isSide = parameterID.startsWith(sideSolo::ID);
             if (newValue > .5f) {
-                if (controllerRef.getSolo() && (idx != controllerRef.getSoloIdx() ||
-                                                isSide != controllerRef.getSoloIsSide())) {
-                    const auto oldIdx = controllerRef.getSoloIdx();
+                if (idx != soloIdx.load() || isSide != soloIsSide.load()) {
+                    const auto oldIdx = soloIdx.load();
                     const auto oldSuffix = oldIdx < 10 ? "0" + std::to_string(oldIdx) : std::to_string(oldIdx);
-                    auto initID = controllerRef.getSoloIsSide()
+                    const auto initID = soloIsSide.load()
                                       ? sideSolo::ID + oldSuffix
                                       : solo::ID + oldSuffix;
-                    parameterRef.getParameter(initID)->beginChangeGesture();
-                    parameterRef.getParameter(initID)->setValueNotifyingHost(static_cast<float>(false));
-                    parameterRef.getParameter(initID)->endChangeGesture();
+
+                    auto *para =  parameterRef.getParameter(initID);
+                    para->beginChangeGesture();
+                    para->setValueNotifyingHost(0.f);
+                    para->endChangeGesture();
+
+                    soloIdx.store(idx);
+                    soloIsSide.store(isSide);
                 }
-                controllerRef.getSoloFilter().setToRest();
                 controllerRef.setSolo(idx, isSide);
             } else {
-                if (idx == controllerRef.getSoloIdx() && isSide == controllerRef.getSoloIsSide()) {
-                    controllerRef.clearSolo();
-                }
+                controllerRef.clearSolo(idx, isSide);
             }
         } else {
-            if (controllerRef.getSolo()) {
-                triggerAsyncUpdate();
+            if (controllerRef.getSolo() && idx == soloIdx.load()) {
+                controllerRef.setSolo(soloIdx.load(), soloIsSide.load());
             }
         }
-    }
-
-    template<typename FloatType>
-    void SoloAttach<FloatType>::handleAsyncUpdate() {
-        controllerRef.setSolo(controllerRef.getSoloIdx(), controllerRef.getSoloIsSide());
     }
 
     template<typename FloatType>

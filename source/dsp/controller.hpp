@@ -60,16 +60,9 @@ namespace zlDSP {
 
         inline bool getSolo() const { return useSolo.load(); }
 
-        inline void clearSolo() {
-            useSolo.store(false);
-            isSoloUpdated.store(true);
-        }
+        inline void clearSolo(size_t idx, bool isSide);
 
-        bool exchangeSoloUpdated(const bool x) { return isSoloUpdated.exchange(x); }
-
-        inline size_t getSoloIdx() const { return soloIdx.load(); }
-
-        inline bool getSoloIsSide() const { return soloSide.load(); }
+        bool getSoloUpdated() { return isSoloUpdate.exchange(false); }
 
         inline zlFilter::IIR<FloatType, FilterSize> &getSoloFilter() { return soloFilter; }
 
@@ -245,8 +238,11 @@ namespace zlDSP {
 
         zlFilter::IIR<FloatType, FilterSize> soloFilter;
         std::atomic<size_t> soloIdx;
+        std::atomic<bool> toUpdateSolo{false}, isSoloUpdate{false};
         std::atomic<bool> useSolo{false}, soloSide{false};
-        bool currentUseSolo{false};
+        bool currentUseSolo{false}, currentSoloSide{false};
+        size_t currentSoloIdx{0};
+        zlDelay::SampleDelay<FloatType> soloDelay;
 
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> histograms;
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> subHistograms;
@@ -273,8 +269,6 @@ namespace zlDSP {
         std::atomic<double> sampleRate{48000};
 
         std::atomic<bool> isZeroLatency{false};
-
-        std::atomic<bool> isSoloUpdated{false};
 
         zlPhase::PhaseFlip<FloatType> phaseFlipper;
 
@@ -325,6 +319,10 @@ namespace zlDSP {
         void updateFilterStructure();
 
         void updateCorrections();
+
+        void updateSolo();
+
+        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), ""};
     };
 }
 
