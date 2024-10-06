@@ -477,14 +477,28 @@ namespace zlPanel {
 
     void ButtonPanel::changeListenerCallback(juce::ChangeBroadcaster *source) {
         juce::ignoreUnused(source);
+        int currentSelectedNum = 0;
+        int currentFirstSelectIdx = 0;
         for (size_t idx = 0; idx < panels.size(); ++idx) {
             const auto f1 = itemsSet.isSelected(idx);
+            if (f1) {
+                if (currentSelectedNum == 0) {
+                    currentFirstSelectIdx = static_cast<int>(idx);
+                }
+                currentSelectedNum += 1;
+            }
             uiBase.setIsBandSelected(idx, f1);
             const auto f2 = panels[idx]->getDragger().getLAF().getIsSelected();
             if (f1 != f2) {
                 panels[idx]->getDragger().getLAF().setIsSelected(f1);
                 panels[idx]->repaint();
             }
+        }
+        if (currentSelectedNum == 1 && currentFirstSelectIdx != selectBandIdx.load()) {
+            auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(currentFirstSelectIdx));
+            para->endChangeGesture();
         }
     }
 } // zlPanel
