@@ -111,6 +111,7 @@ namespace zlDSP {
 
         soloDelay.setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
         soloDelay.prepare(subSpec);
+        soloBuffer.setSize(static_cast<int>(subSpec.numChannels), static_cast<int>(subSpec.maximumBlockSize));
 
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: trackers) {
@@ -153,6 +154,7 @@ namespace zlDSP {
             currentUseSolo = useSolo.load();
             updateSolo();
         }
+        currentIsEffectON = isEffectON.load();
 
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
         juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
@@ -198,27 +200,28 @@ namespace zlDSP {
     void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                  juce::AudioBuffer<FloatType> &subSideBuffer) {
         fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
-
-        if (isEffectON.load()) {
+        if (currentIsEffectON) {
             if (currentUseSolo) {
-                processSolo(subMainBuffer, subSideBuffer);
+                processSoloPre(subMainBuffer, subSideBuffer);
+            }
+            if (currentFilterStructure == filterStructure::linear) {
+                processLinear(subMainBuffer);
             } else {
-                if (currentFilterStructure == filterStructure::linear) {
-                    processLinear(subMainBuffer);
-                } else {
-                    autoGain.processPre(subMainBuffer);
-                    processDynamic(subMainBuffer, subSideBuffer);
-                    if (currentFilterStructure == filterStructure::parallel) {
-                        processParallelPost(subMainBuffer, subSideBuffer);
-                    }
-                    autoGain.processPost(subMainBuffer);
-                    if (currentFilterStructure == filterStructure::matched) {
-                        processPrototypeCorrection(subMainBuffer);
-                    } else if (currentFilterStructure == filterStructure::mixed) {
-                        processMixedCorrection(subMainBuffer);
-                    }
+                autoGain.processPre(subMainBuffer);
+                processDynamic(subMainBuffer, subSideBuffer);
+                if (currentFilterStructure == filterStructure::parallel) {
+                    processParallelPost(subMainBuffer, subSideBuffer);
                 }
-                outputGain.process(subMainBuffer);
+                autoGain.processPost(subMainBuffer);
+                if (currentFilterStructure == filterStructure::matched) {
+                    processPrototypeCorrection(subMainBuffer);
+                } else if (currentFilterStructure == filterStructure::mixed) {
+                    processMixedCorrection(subMainBuffer);
+                }
+            }
+            outputGain.process(subMainBuffer);
+            if (currentUseSolo) {
+                processSoloPost(subMainBuffer);
             }
         }
         fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
@@ -230,46 +233,55 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
-                                            juce::AudioBuffer<FloatType> &subSideBuffer) {
+    void Controller<FloatType>::processSoloPre(juce::AudioBuffer<FloatType> &subMainBuffer,
+                                               juce::AudioBuffer<FloatType> &subSideBuffer) {
         if (currentSoloSide) {
-            subMainBuffer.makeCopyOf(subSideBuffer, true);
+            soloBuffer.makeCopyOf(subSideBuffer, true);
+        } else {
+            soloBuffer.makeCopyOf(subMainBuffer, true);
         }
-        soloDelay.process(subMainBuffer);
-        soloFilter.processPre(subMainBuffer);
+        soloDelay.process(soloBuffer);
+        soloFilter.processPre(soloBuffer);
         switch (currentFilterLRs[currentSoloIdx]) {
             case lrType::stereo: {
-                soloFilter.process(subMainBuffer);
+                soloFilter.process(soloBuffer);
                 break;
             }
             case lrType::left: {
-                lrMainSplitter.split(subMainBuffer);
+                lrMainSplitter.split(soloBuffer);
                 soloFilter.process(lrMainSplitter.getLBuffer());
                 lrMainSplitter.getRBuffer().applyGain(0);
-                lrMainSplitter.combine(subMainBuffer);
+                lrMainSplitter.combine(soloBuffer);
                 break;
             }
             case lrType::right: {
-                lrMainSplitter.split(subMainBuffer);
+                lrMainSplitter.split(soloBuffer);
                 soloFilter.process(lrMainSplitter.getRBuffer());
                 lrMainSplitter.getLBuffer().applyGain(0);
-                lrMainSplitter.combine(subMainBuffer);
+                lrMainSplitter.combine(soloBuffer);
                 break;
             }
             case lrType::mid: {
-                msMainSplitter.split(subMainBuffer);
+                msMainSplitter.split(soloBuffer);
                 soloFilter.process(msMainSplitter.getMBuffer());
                 msMainSplitter.getSBuffer().applyGain(0);
-                msMainSplitter.combine(subMainBuffer);
+                msMainSplitter.combine(soloBuffer);
                 break;
             }
             case lrType::side: {
-                msMainSplitter.split(subMainBuffer);
+                msMainSplitter.split(soloBuffer);
                 soloFilter.process(msMainSplitter.getSBuffer());
                 msMainSplitter.getMBuffer().applyGain(0);
-                msMainSplitter.combine(subMainBuffer);
+                msMainSplitter.combine(soloBuffer);
                 break;
             }
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::processSoloPost(juce::AudioBuffer<FloatType> &subMainBuffer) {
+        for (int i = 0; i < subMainBuffer.getNumChannels(); ++i) {
+            subMainBuffer.copyFrom(i, 0, soloBuffer, i, 0, subMainBuffer.getNumSamples());
         }
     }
 
@@ -837,7 +849,9 @@ namespace zlDSP {
             currentSoloIdx = soloIdx.load();
             currentSoloSide = soloSide.load();
         } else {
-            soloFilter.reset();
+            soloFilter.setToRest();
+            soloDelay.reset();
+            return;
         }
 
         FloatType freq, q;

@@ -26,6 +26,8 @@ namespace zlDelay {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        void reset() { delayDSP.reset(); }
+
         void setMaximumDelayInSamples(const int maxDelayInSamples) {
             delayDSP.setMaximumDelayInSamples(maxDelayInSamples);
         }

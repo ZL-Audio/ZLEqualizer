@@ -199,7 +199,8 @@ namespace zlDSP {
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
                     return std::array{
                         zlFilter::PrototypeCorrection<FloatType, bandNUM, FilterSize>{
-                            mainIIRs, mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, prototypeW1, prototypeW2
+                            mainIIRs, mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, prototypeW1,
+                            prototypeW2
                         }...
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
@@ -216,13 +217,13 @@ namespace zlDSP {
 
         std::vector<std::complex<FloatType> > linearW1;
         std::array<zlFilter::FIR<FloatType, bandNUM, FilterSize>, 5> linearFilters =
-            [&]<size_t... Is>(std::index_sequence<Is...>) {
-                return std::array{
-                    zlFilter::FIR<FloatType, bandNUM, FilterSize>{
-                        mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, linearW1
-                    }...
-                };
-            }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
+                [&]<size_t... Is>(std::index_sequence<Is...>) {
+                    return std::array{
+                        zlFilter::FIR<FloatType, bandNUM, FilterSize>{
+                            mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, linearW1
+                        }...
+                    };
+                }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
 
 
         std::atomic<int> latency{0};
@@ -243,6 +244,7 @@ namespace zlDSP {
         bool currentUseSolo{false}, currentSoloSide{false};
         size_t currentSoloIdx{0};
         zlDelay::SampleDelay<FloatType> soloDelay;
+        juce::AudioBuffer<FloatType> soloBuffer;
 
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> histograms;
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> subHistograms;
@@ -259,6 +261,7 @@ namespace zlDSP {
         zlGain::AutoGain<FloatType> autoGain;
 
         std::atomic<bool> isEffectON{true};
+        bool currentIsEffectON{true};
 
         zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzer{};
 
@@ -278,8 +281,10 @@ namespace zlDSP {
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);
 
-        void processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
-                         juce::AudioBuffer<FloatType> &subSideBuffer);
+        void processSoloPre(juce::AudioBuffer<FloatType> &subMainBuffer,
+                            juce::AudioBuffer<FloatType> &subSideBuffer);
+
+        void processSoloPost(juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                             juce::AudioBuffer<FloatType> &subSideBuffer);
@@ -289,7 +294,7 @@ namespace zlDSP {
                                 juce::AudioBuffer<FloatType> &subSideBuffer);
 
         void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer,
-            juce::AudioBuffer<FloatType> &subSideBuffer);
+                                 juce::AudioBuffer<FloatType> &subSideBuffer);
 
         void processParallelPostLRMS(size_t lrIdx,
                                      bool shouldParallel,
