@@ -109,10 +109,6 @@ namespace zlDSP {
         fftAnalyzer.getSideDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
         fftAnalyzer.getSideDelay().prepare(subSpec);
 
-        soloDelay.setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
-        soloDelay.prepare(subSpec);
-        soloBuffer.setSize(static_cast<int>(subSpec.numChannels), static_cast<int>(subSpec.maximumBlockSize));
-
         conflictAnalyzer.prepare(subSpec);
         for (auto &t: trackers) {
             t.prepare(subSpec);
@@ -187,7 +183,27 @@ namespace zlDSP {
                                                                   2, subBuffer.subBuffer.getNumSamples());
                 auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
                                                                   2, subBuffer.subBuffer.getNumSamples());
-                processSubBuffer(subMainBuffer, subSideBuffer);
+
+                fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
+
+                if (currentIsEffectON) {
+                    if (currentUseSolo) {
+                        processSubBuffer<true>(subMainBuffer, subSideBuffer);
+                        processSolo(subMainBuffer, subSideBuffer);
+                    } else {
+                        processSubBuffer<false>(subMainBuffer, subSideBuffer);
+                    }
+                } else {
+                    processSubBuffer<true>(subMainBuffer, subSideBuffer);
+                }
+
+                fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
+                fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
+                fftAnalyzer.process();
+                conflictAnalyzer.pushMainBuffer(subMainBuffer);
+                conflictAnalyzer.pushRefBuffer(subSideBuffer);
+                conflictAnalyzer.process();
+
                 subBuffer.pushSubBuffer();
             }
             subBuffer.popBlock(block);
@@ -197,152 +213,134 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
+    template<bool isBypassed>
     void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                  juce::AudioBuffer<FloatType> &subSideBuffer) {
-        fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
-        if (currentIsEffectON) {
-            if (currentUseSolo) {
-                processSoloPre(subMainBuffer, subSideBuffer);
+        if (currentFilterStructure == filterStructure::linear) {
+            processLinear<isBypassed>(subMainBuffer);
+        } else {
+            autoGain.processPre(subMainBuffer);
+            processDynamic<isBypassed>(subMainBuffer, subSideBuffer);
+            if (currentFilterStructure == filterStructure::parallel) {
+                processParallelPost<isBypassed>(subMainBuffer, subSideBuffer);
             }
-            if (currentFilterStructure == filterStructure::linear) {
-                processLinear(subMainBuffer);
-            } else {
-                autoGain.processPre(subMainBuffer);
-                processDynamic(subMainBuffer, subSideBuffer);
-                if (currentFilterStructure == filterStructure::parallel) {
-                    processParallelPost(subMainBuffer, subSideBuffer);
-                }
-                autoGain.processPost(subMainBuffer);
-                if (currentFilterStructure == filterStructure::matched) {
-                    processPrototypeCorrection(subMainBuffer);
-                } else if (currentFilterStructure == filterStructure::mixed) {
-                    processMixedCorrection(subMainBuffer);
-                }
-            }
-            outputGain.process(subMainBuffer);
-            if (currentUseSolo) {
-                processSoloPost(subMainBuffer);
+            autoGain.template processPost<isBypassed>(subMainBuffer);
+            if (currentFilterStructure == filterStructure::matched) {
+                processPrototypeCorrection<isBypassed>(subMainBuffer);
+            } else if (currentFilterStructure == filterStructure::mixed) {
+                processMixedCorrection<isBypassed>(subMainBuffer);
             }
         }
-        fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
-        fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
-        fftAnalyzer.process();
-        conflictAnalyzer.pushMainBuffer(subMainBuffer);
-        conflictAnalyzer.pushRefBuffer(subSideBuffer);
-        conflictAnalyzer.process();
+        outputGain.template process<isBypassed>(subMainBuffer);
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processSoloPre(juce::AudioBuffer<FloatType> &subMainBuffer,
-                                               juce::AudioBuffer<FloatType> &subSideBuffer) {
+    void Controller<FloatType>::processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
+                                            juce::AudioBuffer<FloatType> &subSideBuffer) {
         if (currentSoloSide) {
-            soloBuffer.makeCopyOf(subSideBuffer, true);
-        } else {
-            soloBuffer.makeCopyOf(subMainBuffer, true);
+            subMainBuffer.makeCopyOf(subSideBuffer, true);
         }
-        soloDelay.process(soloBuffer);
-        soloFilter.processPre(soloBuffer);
+        soloFilter.processPre(subMainBuffer);
         switch (currentFilterLRs[currentSoloIdx]) {
             case lrType::stereo: {
-                soloFilter.process(soloBuffer);
+                soloFilter.process(subMainBuffer);
                 break;
             }
             case lrType::left: {
-                lrMainSplitter.split(soloBuffer);
+                lrMainSplitter.split(subMainBuffer);
                 soloFilter.process(lrMainSplitter.getLBuffer());
                 lrMainSplitter.getRBuffer().applyGain(0);
-                lrMainSplitter.combine(soloBuffer);
+                lrMainSplitter.combine(subMainBuffer);
                 break;
             }
             case lrType::right: {
-                lrMainSplitter.split(soloBuffer);
+                lrMainSplitter.split(subMainBuffer);
                 soloFilter.process(lrMainSplitter.getRBuffer());
                 lrMainSplitter.getLBuffer().applyGain(0);
-                lrMainSplitter.combine(soloBuffer);
+                lrMainSplitter.combine(subMainBuffer);
                 break;
             }
             case lrType::mid: {
-                msMainSplitter.split(soloBuffer);
+                msMainSplitter.split(subMainBuffer);
                 soloFilter.process(msMainSplitter.getMBuffer());
                 msMainSplitter.getSBuffer().applyGain(0);
-                msMainSplitter.combine(soloBuffer);
+                msMainSplitter.combine(subMainBuffer);
                 break;
             }
             case lrType::side: {
-                msMainSplitter.split(soloBuffer);
+                msMainSplitter.split(subMainBuffer);
                 soloFilter.process(msMainSplitter.getSBuffer());
                 msMainSplitter.getMBuffer().applyGain(0);
-                msMainSplitter.combine(soloBuffer);
+                msMainSplitter.combine(subMainBuffer);
                 break;
             }
         }
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processSoloPost(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        for (int i = 0; i < subMainBuffer.getNumChannels(); ++i) {
-            subMainBuffer.copyFrom(i, 0, soloBuffer, i, 0, subMainBuffer.getNumSamples());
-        }
-    }
-
-    template<typename FloatType>
+    template<bool isBypassed>
     void Controller<FloatType>::processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                juce::AudioBuffer<FloatType> &subSideBuffer) {
         // set auto threshold
-        for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
-            const auto i = dynamicONIndices[idx];
-            if (isHistON[i].load()) {
-                const auto depThres =
-                        currentThreshold[i].load() + FloatType(40) +
-                        static_cast<FloatType>(threshold::range.snapToLegalValue(
-                            static_cast<float>(-subHistograms[i].getPercentile(FloatType(0.5)))));
-                filters[i].getCompressor().getComputer().setThreshold(depThres);
-            } else {
-                filters[i].getCompressor().getComputer().setThreshold(currentThreshold[i].load());
+        if (!isBypassed) {
+            for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
+                const auto i = dynamicONIndices[idx];
+                if (isHistON[i].load()) {
+                    const auto depThres =
+                            currentThreshold[i].load() + FloatType(40) +
+                            static_cast<FloatType>(threshold::range.snapToLegalValue(
+                                static_cast<float>(-subHistograms[i].getPercentile(FloatType(0.5)))));
+                    filters[i].getCompressor().getComputer().setThreshold(depThres);
+                } else {
+                    filters[i].getCompressor().getComputer().setThreshold(currentThreshold[i].load());
+                }
             }
         }
         // stereo filters process
-        processDynamicLRMS(0, subMainBuffer, subSideBuffer);
+        processDynamicLRMS<isBypassed>(0, subMainBuffer, subSideBuffer);
         // LR filters process
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
             lrSideSplitter.split(subSideBuffer);
-            processDynamicLRMS(1, lrMainSplitter.getLBuffer(),
-                               lrSideSplitter.getLBuffer());
-            processDynamicLRMS(2, lrMainSplitter.getRBuffer(),
-                               lrSideSplitter.getRBuffer());
+            processDynamicLRMS<isBypassed>(1, lrMainSplitter.getLBuffer(),
+                                           lrSideSplitter.getLBuffer());
+            processDynamicLRMS<isBypassed>(2, lrMainSplitter.getRBuffer(),
+                                           lrSideSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         // MS filters process
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
             msSideSplitter.split(subSideBuffer);
-            processDynamicLRMS(3, msMainSplitter.getMBuffer(),
-                               msSideSplitter.getMBuffer());
-            processDynamicLRMS(4, msMainSplitter.getSBuffer(),
-                               msSideSplitter.getSBuffer());
+            processDynamicLRMS<isBypassed>(3, msMainSplitter.getMBuffer(),
+                                           msSideSplitter.getMBuffer());
+            processDynamicLRMS<isBypassed>(4, msMainSplitter.getSBuffer(),
+                                           msSideSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
         // set main filter gain & Q and update histograms
-        for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
-            const auto i = dynamicONIndices[idx];
-            mainIdeals[i].setGain(filters[i].getMainFilter().getGain());
-            mainIdeals[i].setQ(filters[i].getMainFilter().getQ());
-            mainIIRs[i].setGain(filters[i].getMainFilter().getGain());
-            mainIIRs[i].setQ(filters[i].getMainFilter().getQ());
-            if (isHistON[i].load()) {
-                auto &compressor = filters[i].getCompressor();
-                const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
-                if (diff <= 100) {
-                    const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
-                    histograms[i].push(static_cast<size_t>(histIdx));
-                    subHistograms[i].push(static_cast<size_t>(histIdx));
+        if (!isBypassed) {
+            for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
+                const auto i = dynamicONIndices[idx];
+                mainIdeals[i].setGain(filters[i].getMainFilter().getGain());
+                mainIdeals[i].setQ(filters[i].getMainFilter().getQ());
+                mainIIRs[i].setGain(filters[i].getMainFilter().getGain());
+                mainIIRs[i].setQ(filters[i].getMainFilter().getQ());
+                if (isHistON[i].load()) {
+                    auto &compressor = filters[i].getCompressor();
+                    const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
+                    if (diff <= 100) {
+                        const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
+                        histograms[i].push(static_cast<size_t>(histIdx));
+                        subHistograms[i].push(static_cast<size_t>(histIdx));
+                    }
                 }
             }
         }
     }
 
     template<typename FloatType>
+    template<bool isBypassed>
     void Controller<FloatType>::processDynamicLRMS(const size_t lrIdx,
                                                    juce::AudioBuffer<FloatType> &subMainBuffer,
                                                    juce::AudioBuffer<FloatType> &subSideBuffer) {
@@ -363,59 +361,61 @@ namespace zlDSP {
             } else {
                 filters[i].getCompressor().setBaseLine(0);
             }
-            if (currentIsBypass[i]) {
+            if (currentIsBypass[i] || isBypassed) {
                 filters[i].template process<true>(subMainBuffer, subSideBuffer);
             } else {
                 filters[i].template process<false>(subMainBuffer, subSideBuffer);
             }
         }
         if (currentIsSgcON && currentFilterStructure != filterStructure::parallel) {
-            compensationGains[lrIdx].process(subMainBuffer);
+            compensationGains[lrIdx].template process<isBypassed>(subMainBuffer);
         }
     }
 
     template<typename FloatType>
+    template<bool isBypassed>
     void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                     juce::AudioBuffer<FloatType> &subSideBuffer) {
         // add parallel filters first
-        processParallelPostLRMS(0, true, subMainBuffer, subSideBuffer);
+        processParallelPostLRMS<isBypassed>(0, true, subMainBuffer, subSideBuffer);
         if (useLR) {
-            processParallelPostLRMS(1, true, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
-            processParallelPostLRMS(2, true, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
+            processParallelPostLRMS<isBypassed>(1, true, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
+            processParallelPostLRMS<isBypassed>(2, true, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
-            processParallelPostLRMS(3, true, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
-            processParallelPostLRMS(4, true, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
+            processParallelPostLRMS<isBypassed>(3, true, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
+            processParallelPostLRMS<isBypassed>(4, true, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
-        processParallelPostLRMS(0, false, subMainBuffer, subSideBuffer);
+        processParallelPostLRMS<isBypassed>(0, false, subMainBuffer, subSideBuffer);
         if (currentIsSgcON) {
-            compensationGains[0].process(subMainBuffer);
+            compensationGains[0].template process<isBypassed>(subMainBuffer);
         }
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
-            processParallelPostLRMS(1, false, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
-            processParallelPostLRMS(2, false, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
+            processParallelPostLRMS<isBypassed>(1, false, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
+            processParallelPostLRMS<isBypassed>(2, false, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
             if (currentIsSgcON) {
-                compensationGains[1].process(lrMainSplitter.getLBuffer());
-                compensationGains[2].process(lrMainSplitter.getRBuffer());
+                compensationGains[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
+                compensationGains[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
             }
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
-            processParallelPostLRMS(3, false, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
-            processParallelPostLRMS(4, false, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
+            processParallelPostLRMS<isBypassed>(3, false, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
+            processParallelPostLRMS<isBypassed>(4, false, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
             if (currentIsSgcON) {
-                compensationGains[3].process(msMainSplitter.getMBuffer());
-                compensationGains[4].process(msMainSplitter.getSBuffer());
+                compensationGains[3].template process<isBypassed>(msMainSplitter.getMBuffer());
+                compensationGains[4].template process<isBypassed>(msMainSplitter.getSBuffer());
             }
             msMainSplitter.combine(subMainBuffer);
         }
     }
 
     template<typename FloatType>
+    template<bool isBypassed>
     void Controller<FloatType>::processParallelPostLRMS(const size_t lrIdx, const bool shouldParallel,
                                                         juce::AudioBuffer<FloatType> &subMainBuffer,
                                                         juce::AudioBuffer<FloatType> &subSideBuffer) {
@@ -423,7 +423,7 @@ namespace zlDSP {
         for (size_t idx = 0; idx < indices.size(); ++idx) {
             const auto i = indices[idx];
             if (filters[i].getMainFilter().getShouldBeParallel() == shouldParallel) {
-                if (currentIsBypass[i]) {
+                if (currentIsBypass[i] || isBypassed) {
                     filters[i].template processParallelPost<true>(subMainBuffer, subSideBuffer);
                 } else {
                     filters[i].template processParallelPost<false>(subMainBuffer, subSideBuffer);
@@ -433,83 +433,67 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
+    template<bool isBypassed>
     void Controller<FloatType>::processPrototypeCorrection(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        processPrototypeCorrectionLRMS(0, subMainBuffer);
+        prototypeCorrections[0].template process<isBypassed>(subMainBuffer);
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
-            processPrototypeCorrectionLRMS(1, lrMainSplitter.getLBuffer());
-            processPrototypeCorrectionLRMS(2, lrMainSplitter.getRBuffer());
+            prototypeCorrections[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
+            prototypeCorrections[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
-            processPrototypeCorrectionLRMS(3, msMainSplitter.getMBuffer());
-            processPrototypeCorrectionLRMS(4, msMainSplitter.getSBuffer());
+            prototypeCorrections[3].template process<isBypassed>(msMainSplitter.getMBuffer());
+            prototypeCorrections[4].template process<isBypassed>(msMainSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processPrototypeCorrectionLRMS(const size_t lrIdx,
-                                                               juce::AudioBuffer<FloatType> &subMainBuffer) {
-        prototypeCorrections[lrIdx].process(subMainBuffer);
-    }
-
-    template<typename FloatType>
+    template<bool isBypassed>
     void Controller<FloatType>::processMixedCorrection(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        processMixedCorrectionLRMS(0, subMainBuffer);
+        mixedCorrections[0].template process<isBypassed>(subMainBuffer);
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
-            processMixedCorrectionLRMS(1, lrMainSplitter.getLBuffer());
-            processMixedCorrectionLRMS(2, lrMainSplitter.getRBuffer());
+            mixedCorrections[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
+            mixedCorrections[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
-            processMixedCorrectionLRMS(3, msMainSplitter.getMBuffer());
-            processMixedCorrectionLRMS(4, msMainSplitter.getSBuffer());
+            mixedCorrections[3].template process<isBypassed>(msMainSplitter.getMBuffer());
+            mixedCorrections[4].template process<isBypassed>(msMainSplitter.getSBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processMixedCorrectionLRMS(size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer) {
-        mixedCorrections[lrIdx].process(subMainBuffer);
-    }
-
-    template<typename FloatType>
+    template<bool isBypassed>
     void Controller<FloatType>::processLinear(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        linearFilters[0].process(subMainBuffer);
+        linearFilters[0].template process<isBypassed>(subMainBuffer);
         if (currentIsSgcON) {
-            compensationGains[0].process(subMainBuffer);
+            compensationGains[0].template process<isBypassed>(subMainBuffer);
         }
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
-            linearFilters[1].process(lrMainSplitter.getLBuffer());
-            linearFilters[2].process(lrMainSplitter.getRBuffer());
+            linearFilters[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
+            linearFilters[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
             if (currentIsSgcON) {
-                compensationGains[1].process(lrMainSplitter.getLBuffer());
-                compensationGains[2].process(lrMainSplitter.getRBuffer());
+                compensationGains[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
+                compensationGains[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
             }
             lrMainSplitter.combine(subMainBuffer);
         }
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
-            linearFilters[3].process(msMainSplitter.getMBuffer());
-            linearFilters[4].process(msMainSplitter.getSBuffer());
+            linearFilters[3].template process<isBypassed>(msMainSplitter.getMBuffer());
+            linearFilters[4].template process<isBypassed>(msMainSplitter.getSBuffer());
             if (currentIsSgcON) {
-                compensationGains[3].process(msMainSplitter.getMBuffer());
-                compensationGains[4].process(msMainSplitter.getSBuffer());
+                compensationGains[3].template process<isBypassed>(msMainSplitter.getMBuffer());
+                compensationGains[4].template process<isBypassed>(msMainSplitter.getSBuffer());
             }
             msMainSplitter.combine(subMainBuffer);
-        }
-    }
-
-
-    template<typename FloatType>
-    void Controller<FloatType>::processBypass() {
-        for (size_t i = 0; i < bandNUM; ++i) {
-            filters[i].processBypass();
         }
     }
 
@@ -691,7 +675,6 @@ namespace zlDSP {
             const auto delayInSeconds = static_cast<FloatType>(newLatency) / static_cast<FloatType>(sampleRate.load());
             fftAnalyzer.getPreDelay().setDelaySeconds(delayInSeconds);
             fftAnalyzer.getSideDelay().setDelaySeconds(delayInSeconds);
-            soloDelay.setDelaySeconds(delayInSeconds);
             latency.store(newLatency);
             triggerAsyncUpdate();
         }
@@ -850,7 +833,6 @@ namespace zlDSP {
             currentSoloSide = soloSide.load();
         } else {
             soloFilter.setToRest();
-            soloDelay.reset();
             return;
         }
 

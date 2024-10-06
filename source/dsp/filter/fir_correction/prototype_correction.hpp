@@ -61,6 +61,7 @@ namespace zlFilter {
             std::fill(fftData.begin(), fftData.end(), 0.f);
         }
 
+        template<bool isBypassed = false>
         void process(juce::AudioBuffer<FloatType> &buffer) {
             for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
                 for (size_t channel = 0; channel < static_cast<size_t>(buffer.getNumChannels()); ++channel) {
@@ -77,7 +78,7 @@ namespace zlFilter {
                 count += 1;
                 if (count == hopSize) {
                     count = 0;
-                    processFrame();
+                    processFrame<isBypassed>();
                 }
             }
         }
@@ -111,6 +112,7 @@ namespace zlFilter {
         size_t overlap = 4; // 75% overlap
         size_t hopSize = fftSize / overlap;
         static constexpr float windowCorrection = 2.0f / 3.0f;
+        static constexpr float bypassCorrection = 1.0f / 4.0f;
         // counts up until the next hop.
         size_t count = 0;
         // write position in input FIFO and read position in output FIFO.
@@ -147,6 +149,7 @@ namespace zlFilter {
             reset();
         }
 
+        template<bool isBypassed = false>
         void processFrame() {
             for (size_t idx = 0; idx < inputFIFOs.size(); ++idx) {
                 const auto *inputPtr = inputFIFOs[idx].data();
@@ -158,16 +161,21 @@ namespace zlFilter {
                     std::memcpy(fftPtr + fftSize - pos, inputPtr, pos * sizeof(float));
                 }
 
-                window->multiplyWithWindowingTable(fftPtr, fftSize);
+                if (!isBypassed) {
+                    window->multiplyWithWindowingTable(fftPtr, fftSize);
 
-                fft->performRealOnlyForwardTransform(fftPtr, true);
-                processSpectrum();
-                fft->performRealOnlyInverseTransform(fftPtr);
+                    fft->performRealOnlyForwardTransform(fftPtr, true);
+                    processSpectrum();
+                    fft->performRealOnlyInverseTransform(fftPtr);
 
-                window->multiplyWithWindowingTable(fftPtr, fftSize);
-
-                for (size_t i = 0; i < fftSize; ++i) {
-                    fftPtr[i] *= windowCorrection;
+                    window->multiplyWithWindowingTable(fftPtr, fftSize);
+                    for (size_t i = 0; i < fftSize; ++i) {
+                        fftPtr[i] *= windowCorrection;
+                    }
+                } else {
+                    for (size_t i = 0; i < fftSize; ++i) {
+                        fftPtr[i] *= bypassCorrection;
+                    }
                 }
 
                 for (size_t i = 0; i < pos; ++i) {

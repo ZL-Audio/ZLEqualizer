@@ -38,8 +38,6 @@ namespace zlDSP {
 
         void process(juce::AudioBuffer<FloatType> &buffer);
 
-        void processBypass();
-
         zlFilter::DynamicIIR<FloatType, FilterSize> &getFilter(const size_t idx) { return filters[idx]; }
 
         zlFilter::Ideal<FloatType, FilterSize> &getMainIdealFilter(const size_t idx) { return mainIdeals[idx]; }
@@ -243,8 +241,6 @@ namespace zlDSP {
         std::atomic<bool> useSolo{false}, soloSide{false};
         bool currentUseSolo{false}, currentSoloSide{false};
         size_t currentSoloIdx{0};
-        zlDelay::SampleDelay<FloatType> soloDelay;
-        juce::AudioBuffer<FloatType> soloBuffer;
 
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> histograms;
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> subHistograms;
@@ -278,37 +274,39 @@ namespace zlDSP {
         std::atomic<filterStructure::FilterStructure> mFilterStructure{filterStructure::minimum};
         filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
 
+        template<bool isBypassed = false>
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);
 
-        void processSoloPre(juce::AudioBuffer<FloatType> &subMainBuffer,
-                            juce::AudioBuffer<FloatType> &subSideBuffer);
+        void processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
+                         juce::AudioBuffer<FloatType> &subSideBuffer);
 
-        void processSoloPost(juce::AudioBuffer<FloatType> &subMainBuffer);
-
+        template<bool isBypassed = false>
         void processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                             juce::AudioBuffer<FloatType> &subSideBuffer);
 
+        template<bool isBypassed = false>
         void processDynamicLRMS(size_t lrIdx,
                                 juce::AudioBuffer<FloatType> &subMainBuffer,
                                 juce::AudioBuffer<FloatType> &subSideBuffer);
 
+        template<bool isBypassed = false>
         void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer,
                                  juce::AudioBuffer<FloatType> &subSideBuffer);
 
+        template<bool isBypassed = false>
         void processParallelPostLRMS(size_t lrIdx,
                                      bool shouldParallel,
                                      juce::AudioBuffer<FloatType> &subMainBuffer,
                                      juce::AudioBuffer<FloatType> &subSideBuffer);
 
+        template<bool isBypassed = false>
         void processPrototypeCorrection(juce::AudioBuffer<FloatType> &subMainBuffer);
 
-        void processPrototypeCorrectionLRMS(size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer);
-
+        template<bool isBypassed = false>
         void processMixedCorrection(juce::AudioBuffer<FloatType> &subMainBuffer);
 
-        void processMixedCorrectionLRMS(size_t lrIdx, juce::AudioBuffer<FloatType> &subMainBuffer);
-
+        template<bool isBypassed = false>
         void processLinear(juce::AudioBuffer<FloatType> &subMainBuffer);
 
         void updateLRs();

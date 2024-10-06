@@ -267,12 +267,10 @@ void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::Midi
 
 void PluginProcessor::processBlockBypassed(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(buffer, midiMessages);
-    controller.processBypass();
 }
 
 void PluginProcessor::processBlockBypassed(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(buffer, midiMessages);
-    controller.processBypass();
 }
 
 bool PluginProcessor::hasEditor() const {

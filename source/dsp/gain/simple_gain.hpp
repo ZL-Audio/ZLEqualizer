@@ -23,11 +23,25 @@ namespace zlGain {
     public:
         Gain() = default;
 
-        void prepare(const juce::dsp::ProcessSpec &spec);
+        void prepare(const juce::dsp::ProcessSpec &spec) {
+            gainDSP.prepare(spec);
+        }
 
-        void process(juce::AudioBuffer<FloatType> &buffer);
+        template<bool isBypassed=false>
+        void process(juce::AudioBuffer<FloatType> &buffer) {
+            if (isBypassed) { return; }
+            auto block = juce::dsp::AudioBlock<FloatType>(buffer);
+            process(block);
+        }
 
-        void process(juce::dsp::AudioBlock<FloatType> block);
+        template<bool isBypassed=false>
+        void process(juce::dsp::AudioBlock<FloatType> block) {
+            if (isBypassed) { return; }
+            if (std::abs(gain.load() - 1) <= FloatType(1e-6)) { return; }
+            gainDSP.setGainLinear(gain.load());
+            juce::dsp::ProcessContextReplacing<FloatType> context(block);
+            gainDSP.process(context);
+        }
 
         void setGainLinear(const FloatType x) { gain.store(x); }
 
