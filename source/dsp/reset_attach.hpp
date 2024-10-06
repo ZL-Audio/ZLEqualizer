@@ -30,7 +30,7 @@ namespace zlDSP {
         Controller<FloatType> &controllerRef;
 
         constexpr static std::array resetIDs{
-            zlDSP::solo::ID,
+            zlDSP::solo::ID, zlDSP::sideSolo::ID,
             zlDSP::dynamicON::ID, zlDSP::dynamicLearn::ID,
             zlDSP::threshold::ID, zlDSP::kneeW::ID, zlDSP::attack::ID, zlDSP::release::ID,
             zlDSP::bypass::ID, zlDSP::fType::ID, zlDSP::slope::ID, zlDSP::lrType::ID
@@ -38,6 +38,7 @@ namespace zlDSP {
 
         inline const static std::array resetDefaultVs{
             zlDSP::solo::convertTo01(zlDSP::solo::defaultV),
+            zlDSP::sideSolo::convertTo01(zlDSP::sideSolo::defaultV),
             zlDSP::dynamicON::convertTo01(zlDSP::dynamicON::defaultV),
             zlDSP::dynamicLearn::convertTo01(zlDSP::dynamicLearn::defaultV),
             zlDSP::threshold::convertTo01(zlDSP::threshold::defaultV),
@@ -51,8 +52,6 @@ namespace zlDSP {
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
-
-        // void initDefaultValues();
     };
 } // zlDSP
 

@@ -44,7 +44,7 @@ namespace zlDSP {
             }
         } else if (parameterID.startsWith(zlState::active::ID)) {
             const auto active = newValue > .5f;
-            if (newValue < .5f) {
+            if (!active) {
                 const auto suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
                 for (size_t j = 0; j < resetDefaultVs.size(); ++j) {
                     const auto resetID = resetIDs[j] + suffix;

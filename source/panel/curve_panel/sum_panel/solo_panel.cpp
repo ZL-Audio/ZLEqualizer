@@ -28,7 +28,6 @@ namespace zlPanel {
             return;
         }
         if (controllerRef.getSoloUpdated()) {
-            toRepaint.store(false);
             handleAsyncUpdate();
         }
         auto bound = getLocalBounds().toFloat();
