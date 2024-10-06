@@ -60,7 +60,7 @@ namespace zlDSP {
 
         inline bool getSolo() const { return useSolo.load(); }
 
-        inline void clearSolo(size_t idx, bool isSide);
+        void clearSolo(size_t idx, bool isSide);
 
         bool getSoloUpdated() { return isSoloUpdate.exchange(false); }
 

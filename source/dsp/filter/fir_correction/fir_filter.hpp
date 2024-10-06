@@ -17,15 +17,13 @@
 #include "../../container/array.hpp"
 
 namespace zlFilter {
-    template<typename FloatType, size_t FilterNum, size_t FilterSize>
+    template<typename FloatType, size_t FilterNum, size_t FilterSize, size_t defaultFFTOrder=13>
     class FIR {
     public:
-        static constexpr size_t defaultFFTOrder = 14;
-
         FIR(std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
-                            zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices,
-                            std::array<bool, FilterNum> &mask,
-                            std::vector<std::complex<FloatType> > &w1)
+            zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices,
+            std::array<bool, FilterNum> &mask,
+            std::vector<std::complex<FloatType> > &w1)
 
             : idealFs(ideal),
               filterIndices(indices), bypassMask(mask),
@@ -93,7 +91,7 @@ namespace zlFilter {
 
         std::vector<std::complex<FloatType> > idealTotalResponse;
 
-        std::vector<float> corrections{};
+        std::vector<float> corrections{}, dummyCorrections{};
         std::vector<std::complex<FloatType> > &wis1;
 
         std::unique_ptr<juce::dsp::FFT> fft;
@@ -133,6 +131,7 @@ namespace zlFilter {
             fftData.resize(fftSize * 2);
 
             corrections.resize(numBins);
+            dummyCorrections.resize(numBins << 1);
             reset();
         }
 
@@ -170,10 +169,9 @@ namespace zlFilter {
 
         void processSpectrum() {
             update();
-            auto *cdata = reinterpret_cast<std::complex<float> *>(fftData.data());
-            for (size_t i = 0; i < corrections.size(); ++i) {
-                cdata[i] *= corrections[i];
-            }
+            juce::FloatVectorOperations::multiply(fftData.data(),
+                                                  dummyCorrections.data(),
+                                                  dummyCorrections.size());
         }
 
         void update() {
@@ -203,10 +201,15 @@ namespace zlFilter {
                             }
                         }
                     }
-                    corrections[0] = corrections[1];
                 }
                 if (!hasBeenUpdated) {
-                    std::fill(corrections.begin(), corrections.end(), 1.f);
+                    std::fill(dummyCorrections.begin(), dummyCorrections.end(), 1.f);
+                } else {
+                    corrections[0] = corrections[1];
+                    for (size_t j = 0; j < corrections.size(); ++j) {
+                        dummyCorrections[j << 1] = corrections[j];
+                        dummyCorrections[(j << 1) + 1] = corrections[j];
+                    }
                 }
             }
         }

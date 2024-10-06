@@ -494,7 +494,7 @@ namespace zlPanel {
                 panels[idx]->repaint();
             }
         }
-        if (currentSelectedNum == 1 && currentFirstSelectIdx != selectBandIdx.load()) {
+        if (currentSelectedNum == 1 && currentFirstSelectIdx != static_cast<int>(selectBandIdx.load())) {
             auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
             para->beginChangeGesture();
             para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(currentFirstSelectIdx));
