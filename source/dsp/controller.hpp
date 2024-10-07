@@ -274,8 +274,11 @@ namespace zlDSP {
         std::atomic<filterStructure::FilterStructure> mFilterStructure{filterStructure::minimum};
         filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
 
-        template<bool isBypassed = false>
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
+                            juce::AudioBuffer<FloatType> &subSideBuffer);
+
+        template<bool isBypassed = false>
+        void processSubBufferOnOff(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);
 
         void processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,

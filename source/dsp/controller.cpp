@@ -183,27 +183,7 @@ namespace zlDSP {
                                                                   2, subBuffer.subBuffer.getNumSamples());
                 auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
                                                                   2, subBuffer.subBuffer.getNumSamples());
-
-                fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
-
-                if (currentIsEffectON) {
-                    if (currentUseSolo) {
-                        processSubBuffer<true>(subMainBuffer, subSideBuffer);
-                        processSolo(subMainBuffer, subSideBuffer);
-                    } else {
-                        processSubBuffer<false>(subMainBuffer, subSideBuffer);
-                    }
-                } else {
-                    processSubBuffer<true>(subMainBuffer, subSideBuffer);
-                }
-
-                fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
-                fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
-                fftAnalyzer.process();
-                conflictAnalyzer.pushMainBuffer(subMainBuffer);
-                conflictAnalyzer.pushRefBuffer(subSideBuffer);
-                conflictAnalyzer.process();
-
+                processSubBuffer(subMainBuffer, subSideBuffer);
                 subBuffer.pushSubBuffer();
             }
             subBuffer.popBlock(block);
@@ -213,9 +193,33 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    template<bool isBypassed>
     void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                  juce::AudioBuffer<FloatType> &subSideBuffer) {
+        fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
+
+        if (currentIsEffectON) {
+            if (currentUseSolo) {
+                processSubBufferOnOff<true>(subMainBuffer, subSideBuffer);
+                processSolo(subMainBuffer, subSideBuffer);
+            } else {
+                processSubBufferOnOff<false>(subMainBuffer, subSideBuffer);
+            }
+        } else {
+            processSubBufferOnOff<true>(subMainBuffer, subSideBuffer);
+        }
+
+        fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
+        fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
+        fftAnalyzer.process();
+        conflictAnalyzer.pushMainBuffer(subMainBuffer);
+        conflictAnalyzer.pushRefBuffer(subSideBuffer);
+        conflictAnalyzer.process();
+    }
+
+    template<typename FloatType>
+    template<bool isBypassed>
+    void Controller<FloatType>::processSubBufferOnOff(juce::AudioBuffer<FloatType> &subMainBuffer,
+                                                      juce::AudioBuffer<FloatType> &subSideBuffer) {
         if (currentFilterStructure == filterStructure::linear) {
             processLinear<isBypassed>(subMainBuffer);
         } else {
