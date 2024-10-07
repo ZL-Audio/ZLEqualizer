@@ -47,7 +47,12 @@ namespace zlInterface {
     }
 
     void ColourSelector::paint(juce::Graphics &g) {
-        g.fillAll(colour);
+        g.fillAll(uiBase.getTextColor().withAlpha(.875f));
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth() - uiBase.getFontSize() * .375f,
+                                            bound.getHeight() - uiBase.getFontSize() * .375f);
+        g.setColour(colour);
+        g.fillRect(bound);
     }
 
     void ColourSelector::mouseDown(const juce::MouseEvent &event) {
