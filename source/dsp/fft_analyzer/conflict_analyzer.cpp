@@ -53,6 +53,7 @@ namespace zlFFT {
     void ConflictAnalyzer<FloatType>::pushRefBuffer(juce::AudioBuffer<FloatType> &buffer) {
         if (currentIsON) {
             refBuffer.makeCopyOf(buffer, true);
+            sideDelay.process(refBuffer);
         }
     }
 

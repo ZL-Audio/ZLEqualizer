@@ -14,6 +14,7 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include "multiple_fft_analyzer.hpp"
+#include "../delay/delay.hpp"
 
 namespace zlFFT {
     /**
@@ -62,6 +63,8 @@ namespace zlFFT {
 
         MultipleFFTAnalyzer<FloatType, 2, pointNum> &getSyncFFT() { return syncAnalyzer; }
 
+        zlDelay::SampleDelay<FloatType> &getSideDelay() { return sideDelay; }
+
     private:
         MultipleFFTAnalyzer<FloatType, 2, pointNum> syncAnalyzer;
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
@@ -73,6 +76,7 @@ namespace zlFFT {
         std::atomic<float> x1{0.f}, x2{1.f};
         std::array<float, pointNum / 4> conflicts{};
         std::array<std::atomic<float>, pointNum / 4> conflictsP{};
+        zlDelay::SampleDelay<FloatType> sideDelay;
 
         const juce::Colour gColour = juce::Colours::red;
 

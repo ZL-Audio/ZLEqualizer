@@ -110,6 +110,8 @@ namespace zlDSP {
         fftAnalyzer.getSideDelay().prepare(subSpec);
 
         conflictAnalyzer.prepare(subSpec);
+        conflictAnalyzer.getSideDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
+        conflictAnalyzer.getSideDelay().prepare(subSpec);
         for (auto &t: trackers) {
             t.prepare(subSpec);
         }
@@ -679,6 +681,7 @@ namespace zlDSP {
             const auto delayInSeconds = static_cast<FloatType>(newLatency) / static_cast<FloatType>(sampleRate.load());
             fftAnalyzer.getPreDelay().setDelaySeconds(delayInSeconds);
             fftAnalyzer.getSideDelay().setDelaySeconds(delayInSeconds);
+            conflictAnalyzer.getSideDelay().setDelaySeconds(delayInSeconds);
             latency.store(newLatency);
             triggerAsyncUpdate();
         }
