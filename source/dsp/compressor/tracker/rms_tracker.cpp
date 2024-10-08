@@ -17,7 +17,7 @@ namespace zlCompressor {
 
     template<typename FloatType>
     void RMSTracker<FloatType>::reset() {
-        mLoudness.store(0);
+        mLoudness = FloatType(0);
         loudnessBuffer.clear();
     }
 
@@ -41,13 +41,13 @@ namespace zlCompressor {
 
         _ms = _ms / static_cast<FloatType>(buffer.getNumSamples());
 
-        while (loudnessBuffer.size() >= currentSize.load()) {
-            mLoudness.store(mLoudness.load() - loudnessBuffer.front());
-            loudnessBuffer.pop_front();
+        const auto nowCurrentSize = currentSize.load();
+        while (loudnessBuffer.size() >= nowCurrentSize) {
+            mLoudness = mLoudness - loudnessBuffer.pop_front();
         }
 
         loudnessBuffer.push_back(_ms);
-        mLoudness.store(mLoudness.load() + _ms);
+        mLoudness += _ms;
     }
 
     template<typename FloatType>
@@ -70,7 +70,7 @@ namespace zlCompressor {
 
     template<typename FloatType>
     FloatType RMSTracker<FloatType>::getMomentaryLoudness() {
-        FloatType meanSquare = mLoudness.load() / static_cast<FloatType>(currentSize.load());
+        FloatType meanSquare = mLoudness / static_cast<FloatType>(currentSize.load());
         return juce::Decibels::gainToDecibels(meanSquare, minusInfinityDB * 2) * static_cast<FloatType>(0.5);
     }
 

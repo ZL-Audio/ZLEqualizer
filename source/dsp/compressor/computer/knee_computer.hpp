@@ -12,9 +12,6 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-#include <boost/circular_buffer.hpp>
-#include <boost/math/interpolators/cubic_hermite.hpp>
-
 #include "virtual_computer.hpp"
 
 namespace zlCompressor {
@@ -89,7 +86,6 @@ namespace zlCompressor {
         std::atomic<FloatType> bound{60};
         std::atomic<FloatType> tempA {0}, tempB{0}, tempC{0};
         std::atomic<FloatType> reductionAtKnee{0};
-        std::unique_ptr<boost::math::interpolators::cubic_hermite<std::array<FloatType, 3>>> cubic;
 
         void interpolate();
     };

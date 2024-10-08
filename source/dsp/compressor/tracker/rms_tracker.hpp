@@ -10,8 +10,9 @@
 #ifndef ZLECOMP_RMS_TRACKER_H
 #define ZLECOMP_RMS_TRACKER_H
 
-#include <boost/circular_buffer.hpp>
 #include <juce_dsp/juce_dsp.h>
+
+#include "../../container/container.hpp"
 
 namespace zlCompressor {
     /**
@@ -46,14 +47,13 @@ namespace zlCompressor {
         FloatType getMomentaryLoudness();
 
     private:
-        std::atomic<FloatType> mLoudness {0};
-        boost::circular_buffer<FloatType> loudnessBuffer{1};
+        FloatType mLoudness {0};
+        zlContainer::CircularBuffer<FloatType> loudnessBuffer{1};
 
         std::atomic<double> sampleRate{44100};
         std::atomic<FloatType> currentSeconds{0};
         std::atomic<size_t> currentSize{1};
     };
-
 } // zldetector
 
 #endif //ZLECOMP_RMS_TRACKER_H

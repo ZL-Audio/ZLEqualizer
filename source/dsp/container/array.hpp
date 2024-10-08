@@ -7,8 +7,10 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLCONTAINER_FIXED_MAX_SIZE_ARRAY_HPP
-#define ZLCONTAINER_FIXED_MAX_SIZE_ARRAY_HPP
+#ifndef ZL_CONTAINER_FIXED_MAX_SIZE_ARRAY_HPP
+#define ZL_CONTAINER_FIXED_MAX_SIZE_ARRAY_HPP
+
+#include <array>
 
 namespace zlContainer {
     template<typename T, size_t N>
@@ -53,4 +55,4 @@ namespace zlContainer {
     };
 }
 
-#endif //ZLCONTAINER_FIXED_MAX_SIZE_ARRAY_HPP
+#endif //ZL_CONTAINER_FIXED_MAX_SIZE_ARRAY_HPP

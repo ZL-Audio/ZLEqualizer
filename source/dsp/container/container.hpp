@@ -7,9 +7,10 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLCONTAINER_HPP
-#define ZLCONTAINER_HPP
+#ifndef ZL_CONTAINER_HPP
+#define ZL_CONTAINER_HPP
 
 #include "array.hpp"
+#include "circular_buffer.hpp"
 
-#endif //ZLCONTAINER_HPP
+#endif //ZL_CONTAINER_HPP
