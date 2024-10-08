@@ -71,6 +71,8 @@ Redmon, Nigel. *Cascading filters*. (2016).
 
 Wishnick, Aaron. *Time-Varying Filters for Musical Applications*. DAFx. (2014).
 
+Moler, Cleve. [*Makima Piecewise Cubic Interpolation*](https://blogs.mathworks.com/cleve/2019/04/29/makima-piecewise-cubic-interpolation/). MathWorks Blogs. (2019).
+
 [Equalize It](https://github.com/suroge/equalize_it) by [suroge](https://github.com/suroge)
 
 [Frequalizer](https://github.com/ffAudio/Frequalizer) by [ffAudio](https://github.com/ffAudio)
