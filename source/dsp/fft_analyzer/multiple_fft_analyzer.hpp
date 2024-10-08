@@ -215,14 +215,24 @@ namespace zlFFT {
             for (size_t i = 0; i < FFTNum; ++i) {
                 if (isON[i].load()) isONVector.push_back(i);
             }
+            constexpr auto cubicNum = (PointNum / 7) * 6;
             const float width = bound.getWidth(), height = bound.getHeight(), boundY = bound.getY();
             for (const auto &i: isONVector) {
                 const auto &path{paths[i]};
                 path.get().startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
-                for (size_t idx = 0; idx < PointNum; ++idx) {
+                for (size_t idx = 0; idx < PointNum - cubicNum; ++idx) {
                     const auto x = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
                     const auto y = interplotDBs[i][idx].load() / minDB * height + boundY;
                     path.get().lineTo(x, y);
+                }
+                for (size_t idx = PointNum - cubicNum; idx < PointNum; idx += 3) {
+                    const auto x1 = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
+                    const auto y1 = interplotDBs[i][idx].load() / minDB * height + boundY;\
+                    const auto x2 = static_cast<float>(idx + 1) / static_cast<float>(PointNum - 1) * width;
+                    const auto y2 = interplotDBs[i][idx + 1].load() / minDB * height + boundY;
+                    const auto x3 = static_cast<float>(idx + 2) / static_cast<float>(PointNum - 1) * width;
+                    const auto y3 = interplotDBs[i][idx + 2].load() / minDB * height + boundY;
+                    path.get().cubicTo(x1, y1, x2, y2, x3, y3);
                 }
             }
         }
