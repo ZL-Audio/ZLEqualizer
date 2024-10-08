@@ -11,8 +11,7 @@
 #define ZLFFT_MULTIPLE_FFT_ANALYZER_HPP
 
 #include "../../state/state_definitions.hpp"
-#include <boost/math/interpolators/cardinal_quintic_b_spline.hpp>
-#include <boost/math/interpolators/makima.hpp>
+#include "../interpolation/interpolation.hpp"
 
 namespace zlFFT {
     /**
@@ -188,28 +187,21 @@ namespace zlFFT {
                                             : currentDB;
                     }
 
-                    std::vector<float> x{smoothedFreqs.begin(), smoothedFreqs.end()};
-                    std::vector<float> y{smoothedDB.begin(), smoothedDB.end()};
-                    using boost::math::interpolators::makima;
-                    const auto spline = makima(std::move(x), std::move(y), 0.f, 0.f);
-
-                    for (size_t j = 0; j < preInterplotDBs[i].size(); ++j) {
-                        preInterplotDBs[i][j] = spline(interplotFreqs[j * 2]);
-                    }
+                    auto &spline(seqAkimas[i]);
+                    spline.prepare();
+                    spline.eval(interplotFreqs.data(), preInterplotDBs[i].data(), PointNum);
                 }
             } {
                 const float totalTilt = tiltSlope.load() + extraTilt.load();
                 const float tiltShiftTotal = (maxFreqLog2 - minFreqLog2) * totalTilt;
                 const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(PointNum - 1);
-                for (const auto &i: isONVector) {
-                    auto spline = boost::math::interpolators::cardinal_quintic_b_spline<float>(
-                        preInterplotDBs[i].data(), preInterplotDBs[i].size(),
-                        0.f, 2.f, {0.f, 0.f}, {0.f, 0.f});
-                    float tiltShift = -tiltShiftTotal * .5f;
-                    for (size_t idx = 0; idx < PointNum; ++idx) {
-                        interplotDBs[i][idx].store(tiltShift + spline(static_cast<float>(idx)));
-                        tiltShift += tiltShiftDelta;
+
+                float tiltShift = -tiltShiftTotal * .5f;
+                for (size_t idx = 0; idx < PointNum; ++idx) {
+                    for (const auto &i: isONVector) {
+                        interplotDBs[i][idx].store(tiltShift + preInterplotDBs[i][idx]);
                     }
+                    tiltShift += tiltShiftDelta;
                 }
             }
         }
@@ -279,8 +271,17 @@ namespace zlFFT {
         std::vector<float> fftBuffer;
         std::array<float, (1 << defaultFFTOrder) + 1> smoothedFreqs{};
         std::array<std::array<float, (1 << defaultFFTOrder) + 1>, FFTNum> smoothedDBs{};
+        std::array<zlInterpolation::SeqMakima<float>, FFTNum> seqAkimas =
+                [&]<size_t... Is>(std::index_sequence<Is...>) {
+                    return std::array{
+                        zlInterpolation::SeqMakima<float>{
+                            smoothedFreqs.data(), std::get<Is>(smoothedDBs).data(), (1 << defaultFFTOrder) + 1, 0.f, 0.f
+                        }...
+                    };
+                }(std::make_index_sequence<std::tuple_size_v<decltype(smoothedDBs)> >());
+
         std::array<float, PointNum> interplotFreqs{};
-        std::array<std::array<float, PointNum / 2 + 1>, FFTNum> preInterplotDBs{};
+        std::array<std::array<float, PointNum>, FFTNum> preInterplotDBs{};
         std::array<std::array<std::atomic<float>, PointNum>, FFTNum> interplotDBs{};
         std::atomic<float> deltaT, decayRate, refreshRate{60}, tiltSlope;
         std::array<std::atomic<float>, FFTNum> decayRates{}, actualDecayRate{};
