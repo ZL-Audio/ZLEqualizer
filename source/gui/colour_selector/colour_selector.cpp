@@ -51,6 +51,8 @@ namespace zlInterface {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth() - uiBase.getFontSize() * .375f,
                                             bound.getHeight() - uiBase.getFontSize() * .375f);
+        g.setColour(uiBase.getBackgroundColor());
+        g.fillRect(bound);
         g.setColour(colour);
         g.fillRect(bound);
     }
