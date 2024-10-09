@@ -34,9 +34,7 @@ See the releases for the latest version.
 
 2. Populate all submodules by running `git submodule update --init` in your repository directory.
 
-3. Install [Boost](https://www.boost.org/).
-
-4. Follow the [JUCE CMake API](https://github.com/juce-framework/JUCE/blob/master/docs/CMake%20API.md) to build the source.
+3. Follow the [JUCE CMake API](https://github.com/juce-framework/JUCE/blob/master/docs/CMake%20API.md) to build the source.
 
 ## License
 

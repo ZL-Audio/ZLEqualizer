@@ -129,15 +129,6 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.5
-        id: install-boost
-        with:
-          boost_version: 1.80.0
-          platform_version: ${{ matrix.boost_platform_version }}
-          toolset: ${{ matrix.boost_toolset }}
-          link: "static"
-
       - name: Import Certificates (macOS)
         uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
         if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '') }}
@@ -151,7 +142,6 @@ jobs:
         shell: bash
         run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
         env:
-          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
           JUCE_BRANCH: ${{ matrix.juce_branch }}
 

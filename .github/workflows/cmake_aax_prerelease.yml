@@ -91,15 +91,6 @@ jobs:
         with:
           submodules: true # Get JUCE populated
 
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.5
-        id: install-boost
-        with:
-          boost_version: 1.80.0
-          platform_version: ${{ matrix.boost_platform_version }}
-          toolset: ${{ matrix.boost_toolset }}
-          link: "static"
-
       - name: Cache the build
         uses: mozilla-actions/sccache-action@v0.0.6
 
@@ -116,7 +107,6 @@ jobs:
         shell: bash
         run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
         env:
-          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
 
       - name: Build
