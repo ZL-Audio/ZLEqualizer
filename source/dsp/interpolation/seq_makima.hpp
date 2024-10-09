@@ -46,17 +46,17 @@ namespace zlInterpolation {
         void eval(FloatType *x, FloatType *y, const size_t pointNum) {
             size_t currentPos = 0;
             size_t startIdx = 0, endIdx = pointNum - 1;
-            while (x[startIdx] <= xs[0]) {
+            while (startIdx <= endIdx && x[startIdx] <= xs[0]) {
                 y[startIdx] = ys[0];
                 startIdx += 1;
             }
-            while (x[endIdx] >= xs[inputSize - 1]) {
+            while (endIdx > startIdx && x[endIdx] >= xs[inputSize - 1]) {
                 y[endIdx] = ys[inputSize - 1];
                 endIdx -= 1;
             }
             for (size_t i = startIdx; i <= endIdx; ++i) {
-                if (currentPos + 1 < inputSize) {
-                    while (currentPos + 1 < inputSize && x[i] >= xs[currentPos + 1]) {
+                if (currentPos + 2 < inputSize) {
+                    while (currentPos + 2 < inputSize && x[i] >= xs[currentPos + 1]) {
                         currentPos += 1;
                     }
                 }
