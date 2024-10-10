@@ -7,12 +7,16 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPHASE_PHASE_FLIP_HPP
-#define ZLPHASE_PHASE_FLIP_HPP
+#ifndef ZL_PHASE_PHASE_FLIP_HPP
+#define ZL_PHASE_PHASE_FLIP_HPP
 
 #include <juce_dsp/juce_dsp.h>
 
 namespace zlPhase {
+    /**
+     * phase-flip the input audio buffer
+     * @tparam FloatType the float type of input audio buffer
+     */
     template<typename FloatType>
     class PhaseFlip {
     public:
@@ -27,4 +31,4 @@ namespace zlPhase {
     };
 } // zlPhase
 
-#endif //PHASE_FLIP_HPP
+#endif //ZL_PHASE_PHASE_FLIP_HPP

@@ -14,6 +14,10 @@
 #include <atomic>
 
 namespace zlFilter {
+    /**
+     * an empty filter which holds filter parameters
+     * @tparam FloatType the float type of input audio buffer
+     */
     template<typename FloatType>
     class Empty {
     public:

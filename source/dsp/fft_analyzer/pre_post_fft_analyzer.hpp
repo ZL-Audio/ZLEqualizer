@@ -14,6 +14,10 @@
 #include "../delay/delay.hpp"
 
 namespace zlFFT {
+    /**
+     * a fft analyzer which process pre, post and side audio buffers
+     * @tparam FloatType the float type of input audio buffers
+     */
     template<typename FloatType>
     class PrePostFFTAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:

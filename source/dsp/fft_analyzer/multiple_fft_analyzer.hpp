@@ -16,7 +16,9 @@
 namespace zlFFT {
     /**
      * a fft analyzer which make sure that multiple FFTs are synchronized in time
-     * @tparam FloatType
+     * @tparam FloatType the float type of input audio buffers
+     * @tparam FFTNum the number of FFTs
+     * @tparam PointNum the number of output points
      */
     template<typename FloatType, size_t FFTNum, size_t PointNum>
     class MultipleFFTAnalyzer final {
@@ -225,7 +227,7 @@ namespace zlFFT {
                     const auto y = interplotDBs[i][idx].load() / minDB * height + boundY;
                     path.get().lineTo(x, y);
                 }
-                for (size_t idx = PointNum - cubicNum; idx < PointNum; idx += 3) {
+                for (size_t idx = PointNum - cubicNum; idx < PointNum - 2; idx += 3) {
                     const auto x1 = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
                     const auto y1 = interplotDBs[i][idx].load() / minDB * height + boundY;\
                     const auto x2 = static_cast<float>(idx + 1) / static_cast<float>(PointNum - 1) * width;

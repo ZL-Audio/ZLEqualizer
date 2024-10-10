@@ -13,6 +13,11 @@
 #include <array>
 
 namespace zlContainer {
+    /**
+     * an array which has a fixed maximum size (capacity)
+     * @tparam T the type of elements
+     * @tparam N the capacity of array
+     */
     template<typename T, size_t N>
     class FixedMaxSizeArray {
     public:

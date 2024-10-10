@@ -15,6 +15,11 @@
 #include "../filter_design/filter_design.hpp"
 
 namespace zlFilter {
+    /**
+     * an ideal prototype filter which holds coeffs for calculating responses
+     * @tparam FloatType the float type of input audio buffer
+     * @tparam FilterSize the number of cascading filters
+     */
     template<typename FloatType, size_t FilterSize>
     class Ideal {
     public:

@@ -17,6 +17,13 @@
 #include "../../container/array.hpp"
 
 namespace zlFilter {
+    /**
+     * an FIR which corrects the magnitude responses of IIR filters to prototype filters
+     * and minimizes phase responses at high-end
+     * @tparam FloatType the float type of input audio buffer
+     * @tparam FilterNum the number of filters
+     * @tparam FilterSize the size of each filter
+     */
     template<typename FloatType, size_t FilterNum, size_t FilterSize>
     class MixedCorrection {
     public:

@@ -16,6 +16,11 @@
 #include "svf_base.hpp"
 
 namespace zlFilter {
+    /**
+     * an idle IIR filter which holds coeffs for calculating responses
+     * @tparam FloatType the float type of input audio buffer
+     * @tparam FilterSize the number of cascading filters
+     */
     template<typename FloatType, size_t FilterSize>
     class IIRIdle {
     public:

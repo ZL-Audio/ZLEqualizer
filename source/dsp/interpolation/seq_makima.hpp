@@ -13,9 +13,21 @@
 #include <vector>
 
 namespace zlInterpolation {
+    /**
+     * modified Akima spline interpolation with increasing input/output X
+     * @tparam FloatType the float type of input/output
+     */
     template<typename FloatType>
     class SeqMakima {
     public:
+        /**
+         *
+         * @param x input X pointer
+         * @param y input Y pointer
+         * @param pointNum number of input points
+         * @param leftDerivative left derivative
+         * @param rightDerivative right derivative
+         */
         explicit SeqMakima(FloatType *x, FloatType *y, size_t pointNum,
                            FloatType leftDerivative, FloatType rightDerivative)
             : xs(x), ys(y), inputSize(pointNum),
@@ -24,6 +36,9 @@ namespace zlInterpolation {
             deltas.resize(pointNum - 1);
         }
 
+        /**
+         * call this to update derivatives if input has been updated
+         */
         void prepare() {
             for (size_t i = 0; i < deltas.size(); ++i) {
                 deltas[i] = (ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]);
@@ -43,6 +58,12 @@ namespace zlInterpolation {
             derivatives.end()[-2] = calculateD(deltas.end()[-3], deltas.end()[-2], deltas.end()[-1], rightDelta);
         }
 
+        /**
+         * evaluate the spline at output X
+         * @param x output X pointer
+         * @param y output Y pointer
+         * @param pointNum number of output points
+         */
         void eval(FloatType *x, FloatType *y, const size_t pointNum) {
             size_t currentPos = 0;
             size_t startIdx = 0, endIdx = pointNum - 1;

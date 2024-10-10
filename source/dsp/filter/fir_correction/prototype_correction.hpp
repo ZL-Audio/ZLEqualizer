@@ -17,6 +17,12 @@
 #include "../../container/array.hpp"
 
 namespace zlFilter {
+    /**
+     * an FIR which corrects the responses of IIR filters to prototype filters
+     * @tparam FloatType the float type of input audio buffer
+     * @tparam FilterNum the number of filters
+     * @tparam FilterSize the size of each filter
+     */
     template<typename FloatType, size_t FilterNum, size_t FilterSize>
     class PrototypeCorrection {
     public:

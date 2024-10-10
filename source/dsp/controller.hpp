@@ -327,8 +327,6 @@ namespace zlDSP {
         void updateCorrections();
 
         void updateSolo();
-
-        juce::FileLogger logger{juce::File("/Volumes/Ramdisk/log.txt"), ""};
     };
 }
 

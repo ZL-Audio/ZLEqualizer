@@ -7,9 +7,9 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPHASE_PHASE_HPP
-#define ZLPHASE_PHASE_HPP
+#ifndef ZL_PHASE_PHASE_HPP
+#define ZL_PHASE_PHASE_HPP
 
 #include "phase_flip.hpp"
 
-#endif //ZLPHASE_PHASE_HPP
+#endif //ZL_PHASE_PHASE_HPP

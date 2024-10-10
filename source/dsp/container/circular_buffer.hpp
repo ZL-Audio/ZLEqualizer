@@ -13,6 +13,10 @@
 #include <vector>
 
 namespace zlContainer {
+    /**
+     * a circular buffer
+     * @tparam T the type of elements
+     */
     template<typename T>
     class CircularBuffer {
     public:

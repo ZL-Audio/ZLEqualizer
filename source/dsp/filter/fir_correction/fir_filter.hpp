@@ -17,6 +17,13 @@
 #include "../../container/array.hpp"
 
 namespace zlFilter {
+    /**
+     * an FIR which has the magnitude responses of prototype filters and zero phase responses
+     * @tparam FloatType the float type of input audio buffer
+     * @tparam FilterNum the number of filters
+     * @tparam FilterSize the size of each filter
+     * @tparam defaultFFTOrder the default FFT order for 44100/48000 Hz input
+     */
     template<typename FloatType, size_t FilterNum, size_t FilterSize, size_t defaultFFTOrder = 13>
     class FIR {
     public:

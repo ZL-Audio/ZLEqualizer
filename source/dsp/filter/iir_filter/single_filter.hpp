@@ -20,7 +20,8 @@ namespace zlFilter {
     /**
      * an IIR filter which processes audio on the real-time thread
      * the maximum modulation rate of parameters is once per block
-     * @tparam FloatType
+     * @tparam FloatType the float type of input audio buffer
+     * @tparam FilterSize the number of cascading filters
      */
     template<typename FloatType, size_t FilterSize>
     class IIR {
@@ -198,6 +199,10 @@ namespace zlFilter {
 
         FloatType getGain() const { return static_cast<FloatType>(gain.load()); }
 
+        /**
+         * set gain and update coeffs immediately
+         * @param x gain
+         */
         void setGainNow(FloatType x) {
             gain.store(static_cast<double>(x));
             switch (currentFilterStructure) {
@@ -228,6 +233,11 @@ namespace zlFilter {
 
         inline FloatType getQ() const { return static_cast<FloatType>(q.load()); }
 
+        /**
+         * set gain & Q and update coeffs immediately
+         * @param g1 gain
+         * @param q1 Q value
+         */
         void setGainAndQNow(FloatType g1, FloatType q1) {
             gain.store(static_cast<double>(g1));
             q.store(static_cast<double>(q1));
