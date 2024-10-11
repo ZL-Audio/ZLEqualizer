@@ -45,7 +45,6 @@ namespace zlContainer {
 
         T pop_front() {
             const auto frontPos = (pos - currentNum + static_cast<int>(data.size())) % static_cast<int>(data.size());
-            std::cout << pos << " " << frontPos << std::endl;
             currentNum -= 1;
             return data[static_cast<size_t>(frontPos)];
         }
