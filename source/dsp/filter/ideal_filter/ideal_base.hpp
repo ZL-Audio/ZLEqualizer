@@ -33,6 +33,26 @@ namespace zlFilter {
             }
         }
 
+        static void updateMixResponse(
+            const std::array<double, 6> &coeff,
+            const std::vector<std::complex<SampleType> > &wis,
+            std::vector<std::complex<SampleType> > &response,
+            const size_t startMix, const size_t endMix, const std::vector<SampleType> &mix) {
+            for (size_t idx = 0; idx < startMix; ++idx) {
+                response[idx] *= getResponse(coeff, wis[idx]);
+            }
+            for (size_t idx = startMix; idx < endMix; ++idx) {
+                auto singleResponse = getResponse(coeff, wis[idx]);
+                singleResponse = std::polar<SampleType>(std::abs(singleResponse), std::arg(singleResponse) * mix[idx]);
+                response[idx] *= singleResponse;
+            }
+            for (size_t idx = endMix; idx < wis.size(); ++idx) {
+                auto singleResponse = getResponse(coeff, wis[idx]);
+                singleResponse = std::polar<SampleType>(std::abs(singleResponse), SampleType(0));
+                response[idx] *= singleResponse;
+            }
+        }
+
         static SampleType getMagnitude(const std::array<double, 6> &coeff, const SampleType w) {
             const auto w_2 = w * w;
             const auto t1 = coeff[2] - coeff[0] * w_2;

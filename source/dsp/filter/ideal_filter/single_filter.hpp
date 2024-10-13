@@ -93,6 +93,20 @@ namespace zlFilter {
             return false;
         }
 
+        bool updateMixPhaseResponse(const std::vector<std::complex<FloatType> > &wis,
+                                    const size_t startMix, const size_t endMix, const std::vector<FloatType> &mix) {
+            if (toUpdatePara.exchange(false)) {
+                updateParas();
+                std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
+                for (size_t i = 0; i < currentFilterNum; ++i) {
+                    IdealBase<FloatType>::updateMixResponse(coeffs[i], wis, response,
+                                                            startMix, endMix, mix);
+                }
+                return true;
+            }
+            return false;
+        }
+
         bool updateZeroPhaseResponse(const std::vector<std::complex<FloatType> > &wis) {
             if (toUpdatePara.exchange(false)) {
                 updateParas();

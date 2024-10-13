@@ -28,7 +28,7 @@ namespace zlFilter {
     class MixedCorrection {
     public:
         static constexpr size_t defaultFFTOrder = 11;
-        static constexpr size_t startDecay = 256, endDecay = 2;
+        static constexpr size_t startMix = 256, endMix = 2;
 
         MixedCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
                         std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
@@ -57,15 +57,15 @@ namespace zlFilter {
                 decayMultiplier = 0.9974778475699037;
             }
             double mix = decayMultiplier;
-            for (size_t i = 0; i < startDecayIdx; ++i) {
-                correctionMix[i] = 0.f;
+            for (size_t i = 0; i < startMixIdx; ++i) {
+                correctionMix[i] = FloatType(1);
             }
-            for (size_t i = startDecayIdx; i < endDecayIdx; ++i) {
-                correctionMix[i] = 1.f - static_cast<float>(mix);
+            for (size_t i = startMixIdx; i < endMixIdx; ++i) {
+                correctionMix[i] = static_cast<FloatType>(mix);
                 mix *= decayMultiplier;
             }
-            for (size_t i = endDecayIdx; i < correctionMix.size(); ++i) {
-                correctionMix[i] = 1.f;
+            for (size_t i = endMixIdx; i < correctionMix.size(); ++i) {
+                correctionMix[i] = FloatType(0);
             }
         }
 
@@ -122,8 +122,8 @@ namespace zlFilter {
         // mixed corrections
         std::vector<std::complex<float> > corrections{};
         std::vector<std::complex<FloatType> > &wis1, &wis2;
-        size_t startDecayIdx{0}, endDecayIdx{0};
-        std::vector<float> correctionMix{};
+        size_t startMixIdx{0}, endMixIdx{0};
+        std::vector<FloatType> correctionMix{};
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;
@@ -164,8 +164,8 @@ namespace zlFilter {
 
             corrections.resize(numBins);
             correctionMix.resize(numBins);
-            startDecayIdx = corrections.size() / startDecay;
-            endDecayIdx = corrections.size() / endDecay;
+            startMixIdx = corrections.size() / startMix;
+            endMixIdx = corrections.size() / endMix;
 
             reset();
         }
@@ -211,7 +211,7 @@ namespace zlFilter {
         void processSpectrum() {
             update();
             auto *cdata = reinterpret_cast<std::complex<float> *>(fftData.data());
-            for (size_t i = startDecayIdx; i < corrections.size(); ++i) {
+            for (size_t i = startMixIdx; i < corrections.size(); ++i) {
                 cdata[i] = cdata[i] * corrections[i];
             }
         }
@@ -222,11 +222,8 @@ namespace zlFilter {
             for (size_t idx = 0; idx < filterIndices.size(); ++idx) {
                 const auto i = filterIndices[idx];
                 if (!bypassMask[i]) {
-                    if (idealFs[i].getFilterType() != zlFilter::highPass) {
-                        needToUpdate = needToUpdate || idealFs[i].updateZeroPhaseResponse(wis1);
-                    } else {
-                        needToUpdate = needToUpdate || idealFs[i].updateResponse(wis1);
-                    }
+                    needToUpdate = needToUpdate || idealFs[i].updateMixPhaseResponse(
+                        wis1, startMixIdx, endMixIdx, correctionMix);
                     needToUpdate = needToUpdate || iirFs[i].updateResponse(wis2);
                 }
             }
@@ -239,12 +236,12 @@ namespace zlFilter {
                         const auto &idealResponse = idealFs[i].getResponse();
                         const auto &iirResponse = iirFs[i].getResponse();
                         if (!hasBeenUpdated) {
-                            for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
+                            for (size_t j = startMixIdx; j < corrections.size() - 1; ++j) {
                                 corrections[j] = static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
                             }
                             hasBeenUpdated = true;
                         } else {
-                            for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
+                            for (size_t j = startMixIdx; j < corrections.size() - 1; ++j) {
                                 corrections[j] *= static_cast<std::complex<float>>(idealResponse[j] / iirResponse[j]);
                             }
                         }
@@ -254,35 +251,10 @@ namespace zlFilter {
                     std::fill(corrections.begin(), corrections.end(), std::complex(1.f, 0.f));
                 } else {
                     // remove all infinity & NaN
-                    for (size_t j = startDecayIdx; j < corrections.size() - 1; ++j) {
+                    for (size_t j = startMixIdx; j < corrections.size() - 1; ++j) {
                         if (!std::isfinite(corrections[j].real()) || !std::isfinite(corrections[j].imag())
                             || std::abs(corrections[j].real()) > 10000.f || std::abs(corrections[j].imag()) > 10000.f) {
                             corrections[j] = std::complex(1.f, 0.f);
-                        }
-                    }
-                    double phaseShift = 0.0;
-                    auto previousPhase = std::arg(corrections[startDecayIdx]);
-                    if (previousPhase > 0.f) {
-                        for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
-                            const auto decay = correctionMix[j];
-                            const auto currentPhase = std::arg(corrections[j]);
-                            if (previousPhase > 1.5f && currentPhase < -1.5f) {
-                                phaseShift += pi * 2;
-                            }
-                            corrections[j] = std::polar<float>(std::abs(corrections[j]) * decay + (1.f - decay),
-                                                               (currentPhase + static_cast<float>(phaseShift)) * decay);
-                            previousPhase = currentPhase;
-                        }
-                    } else {
-                        for (size_t j = startDecayIdx; j < endDecayIdx; ++j) {
-                            const auto decay = correctionMix[j];
-                            const auto currentPhase = std::arg(corrections[j]);
-                            if (previousPhase < -1.5f && currentPhase > 1.5f) {
-                                phaseShift -= pi * 2;
-                            }
-                            corrections[j] = std::polar<float>(std::abs(corrections[j]) * decay + (1.f - decay),
-                                                               (currentPhase + static_cast<float>(phaseShift)) * decay);
-                            previousPhase = currentPhase;
                         }
                     }
                     corrections.end()[-1] = std::abs(corrections.end()[-2]);
