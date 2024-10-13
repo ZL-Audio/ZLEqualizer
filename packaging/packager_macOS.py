@@ -65,7 +65,7 @@ def main():
                             developer_id_app, plugin_path), shell=True)
 
                 identifier = "{}.{}.{}.pkg".format(bundle_id, project_name, extension)
-                pkg_path = "{}/{}.{}.pkg".format(build_dir, product_name, extension)
+                pkg_path = "{}/{}.{}.pkg".format(build_dir, product_name, extension).replace(" ", "_")
 
                 subprocess.run(
                     'pkgbuild --identifier "{}" --version {} --component "{}" --install-location "{}" "{}"'.format(
