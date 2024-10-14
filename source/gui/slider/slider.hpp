@@ -11,8 +11,6 @@
 #define ZLINTERFACE_SLIDER_H
 
 #include "compact_linear_slider/compact_linear_slider.hpp"
-#include "linear_slider/linear_slider.hpp"
-#include "rotary_slider/rotary_slider.hpp"
 #include "two_value_rotary_slider/two_value_rotary_slider.hpp"
 #include "extra_slider/snapping_slider.h"
 
