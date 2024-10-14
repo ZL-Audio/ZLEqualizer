@@ -21,7 +21,8 @@
 
 namespace zlInterface {
     class TwoValueRotarySlider final : public juce::Component,
-                                       private juce::Label::Listener, private juce::Slider::Listener {
+                                       private juce::Label::Listener,
+                                       private juce::Slider::Listener {
     public:
         explicit TwoValueRotarySlider(const juce::String &labelText, UIBase &base);
 
@@ -90,8 +91,8 @@ namespace zlInterface {
         friz::Animator animator;
         static constexpr int animationId = 1;
 
-        int dragDistance {10};
-        bool isShiftPressed {false};
+        int dragDistance{10};
+        bool isShiftPressed{false};
 
         static juce::String getDisplayValue(juce::Slider &s);
 

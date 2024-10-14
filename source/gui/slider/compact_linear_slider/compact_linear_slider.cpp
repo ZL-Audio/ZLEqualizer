@@ -31,6 +31,9 @@ namespace zlInterface {
         textLookAndFeel.setFontScale(FontHuge);
         text.setLookAndFeel(&textLookAndFeel);
         text.setInterceptsMouseClicks(false, false);
+        // text.setEditable(false, true);
+        // text.addMouseListener(this, false);
+        text.addListener(this);
         addAndMakeVisible(text);
 
         // setup label
@@ -85,6 +88,11 @@ namespace zlInterface {
         sliderLookAndFeel.setTextAlpha(1.f);
         nameLookAndFeel.setAlpha(0.f);
         slider.mouseExit(event);
+
+        if (text.getCurrentTextEditor() != nullptr) {
+            return;
+        }
+
         if (animator.getAnimation(animationId) != nullptr)
             return;
         auto frizEffect{
@@ -106,13 +114,59 @@ namespace zlInterface {
     }
 
     void CompactLinearSlider::mouseDoubleClick(const juce::MouseEvent &event) {
-        slider.mouseDoubleClick(event);
-        text.setText(getDisplayValue(slider), juce::dontSendNotification);
+        if (event.mods.isCommandDown()) {
+            text.showEditor();
+        } else {
+            slider.mouseDoubleClick(event);
+            text.setText(getDisplayValue(slider), juce::dontSendNotification);
+        }
     }
 
     void CompactLinearSlider::mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) {
         slider.mouseWheelMove(event, wheel);
         text.setText(getDisplayValue(slider), juce::dontSendNotification);
+    }
+
+    void CompactLinearSlider::labelTextChanged(juce::Label *labelThatHasChanged) {
+        juce::ignoreUnused(labelThatHasChanged);
+    }
+
+    void CompactLinearSlider::editorShown(juce::Label *l, juce::TextEditor &editor) {
+        juce::ignoreUnused(l);
+        editor.setInputRestrictions(0, "-0123456789.kK");\
+
+        text.repaint();
+        label.repaint();
+        editor.setJustification(juce::Justification::centred);
+        editor.setColour(juce::TextEditor::outlineColourId, uiBase.getTextColor());
+        editor.setColour(juce::TextEditor::highlightedTextColourId, uiBase.getTextColor());
+#if (USE_JUCE7_INSTEAD_OF_LATEST)
+        editor.applyFontToAllText(uiBase.getFontSize() * FontHuge);
+#else
+        editor.applyFontToAllText(juce::FontOptions{uiBase.getFontSize() * FontHuge});
+#endif
+        editor.applyColourToAllText(uiBase.getTextColor(), true);
+    }
+
+    void CompactLinearSlider::editorHidden(juce::Label *l, juce::TextEditor &editor) {
+        juce::ignoreUnused(l);
+
+        auto k = 1.0;
+        const auto ctext = editor.getText();
+        if (ctext.contains("k") || ctext.contains("K")) {
+            k = 1000.0;
+        }
+        const auto actualValue = ctext.getDoubleValue() * k;
+        // juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
+        // logger.logMessage(juce::String(actualValue));
+        slider.setValue(actualValue, juce::sendNotificationAsync);
+        text.repaint();
+        label.repaint();
+    }
+
+    void CompactLinearSlider::sliderValueChanged(juce::Slider *) {
+        text.setText(getDisplayValue(slider), juce::dontSendNotification);
+        text.repaint();
     }
 
     juce::String CompactLinearSlider::getDisplayValue(juce::Slider &s) {
