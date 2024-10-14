@@ -66,14 +66,15 @@ namespace zlDSP {
             controllerRef.getAutoGain().enable(newValue > .5f);
         } else if (parameterID == scale::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
-                const auto baseGain = parameterRef.getRawParameterValue(appendSuffix(gain::ID, i))->load();
-                const auto targetGain = parameterRef.getRawParameterValue(appendSuffix(targetGain::ID, i))->load();
-                controllerRef.getBaseFilter(i).setGain(
-                    zlDSP::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue)));
-                controllerRef.getFilter(i).getMainFilter().setGain(
-                    zlDSP::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue)));
-                controllerRef.getTargetFilter(i).setGain(
-                    zlDSP::targetGain::range.snapToLegalValue(targetGain * scale::formatV(newValue)));
+                auto baseGain = parameterRef.getRawParameterValue(appendSuffix(gain::ID, i))->load();
+                auto targetGain = parameterRef.getRawParameterValue(appendSuffix(targetGain::ID, i))->load();
+                baseGain = zlDSP::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue));
+                targetGain = zlDSP::targetGain::range.snapToLegalValue(targetGain * scale::formatV(newValue));
+                controllerRef.getBaseFilter(i).setGain(baseGain);
+                controllerRef.getFilter(i).getMainFilter().setGain(baseGain);
+                controllerRef.getMainIIRFilter(i).setGain(baseGain);
+                controllerRef.getMainIdealFilter(i).setGain(baseGain);
+                controllerRef.getTargetFilter(i).setGain(targetGain);
             }
         } else if (parameterID == outputGain::ID) {
             controllerRef.getGainDSP().setGainDecibels(static_cast<FloatType>(newValue));
