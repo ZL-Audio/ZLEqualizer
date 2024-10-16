@@ -24,6 +24,7 @@ namespace zlInterface {
         slider.setScrollWheelEnabled(true);
         slider.setInterceptsMouseClicks(false, false);
         slider.setLookAndFeel(&sliderLookAndFeel);
+        slider.addListener(this);
         addAndMakeVisible(slider);
 
         text.setText(getDisplayValue(slider), juce::dontSendNotification);
@@ -31,8 +32,6 @@ namespace zlInterface {
         textLookAndFeel.setFontScale(FontHuge);
         text.setLookAndFeel(&textLookAndFeel);
         text.setInterceptsMouseClicks(false, false);
-        // text.setEditable(false, true);
-        // text.addMouseListener(this, false);
         text.addListener(this);
         addAndMakeVisible(text);
 
@@ -61,17 +60,14 @@ namespace zlInterface {
 
     void CompactLinearSlider::mouseUp(const juce::MouseEvent &event) {
         slider.mouseUp(event);
-        text.setText(getDisplayValue(slider), juce::dontSendNotification);
     }
 
     void CompactLinearSlider::mouseDown(const juce::MouseEvent &event) {
         slider.mouseDown(event);
-        text.setText(getDisplayValue(slider), juce::dontSendNotification);
     }
 
     void CompactLinearSlider::mouseDrag(const juce::MouseEvent &event) {
         slider.mouseDrag(event);
-        text.setText(getDisplayValue(slider), juce::dontSendNotification);
     }
 
     void CompactLinearSlider::mouseEnter(const juce::MouseEvent &event) {
@@ -93,20 +89,7 @@ namespace zlInterface {
             return;
         }
 
-        if (animator.getAnimation(animationId) != nullptr)
-            return;
-        auto frizEffect{
-            friz::makeAnimation<friz::Parametric, 1>(
-                animationId, {1.5f}, {0.f}, 1000, friz::Parametric::kLinear)
-        };
-        frizEffect->updateFn = [this](int, const auto &vals) {
-            auto val = juce::jmin(vals[0], 1.0f);
-            textLookAndFeel.setAlpha(val);
-            nameLookAndFeel.setAlpha(1.f - val);
-            text.repaint();
-            label.repaint();
-        };
-        animator.addAnimation(std::move(frizEffect));
+        leaveAnimation();
     }
 
     void CompactLinearSlider::mouseMove(const juce::MouseEvent &event) {
@@ -132,11 +115,11 @@ namespace zlInterface {
     }
 
     void CompactLinearSlider::editorShown(juce::Label *l, juce::TextEditor &editor) {
+        editor.setInterceptsMouseClicks(false, false);
         juce::ignoreUnused(l);
-        editor.setInputRestrictions(0, "-0123456789.kK");\
+        editor.setInputRestrictions(0, "-0123456789.kK");
+        text.addMouseListener(this, true);
 
-        text.repaint();
-        label.repaint();
         editor.setJustification(juce::Justification::centred);
         editor.setColour(juce::TextEditor::outlineColourId, uiBase.getTextColor());
         editor.setColour(juce::TextEditor::highlightedTextColourId, uiBase.getTextColor());
@@ -150,18 +133,17 @@ namespace zlInterface {
 
     void CompactLinearSlider::editorHidden(juce::Label *l, juce::TextEditor &editor) {
         juce::ignoreUnused(l);
-
+        text.removeMouseListener(this);
         auto k = 1.0;
         const auto ctext = editor.getText();
         if (ctext.contains("k") || ctext.contains("K")) {
             k = 1000.0;
         }
         const auto actualValue = ctext.getDoubleValue() * k;
-        // juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
-        // logger.logMessage(juce::String(actualValue));
+
         slider.setValue(actualValue, juce::sendNotificationAsync);
-        text.repaint();
-        label.repaint();
+
+        leaveAnimation();
     }
 
     void CompactLinearSlider::sliderValueChanged(juce::Slider *) {
@@ -180,5 +162,22 @@ namespace zlInterface {
             labelToDisplay = juce::String(value).substring(0, 4) + "K";
         }
         return labelToDisplay;
+    }
+
+    void CompactLinearSlider::leaveAnimation() {
+        if (animator.getAnimation(animationId) != nullptr)
+            return;
+        auto frizEffect{
+            friz::makeAnimation<friz::Parametric, 1>(
+                animationId, {1.5f}, {0.f}, 1000, friz::Parametric::kLinear)
+        };
+        frizEffect->updateFn = [this](int, const auto &vals) {
+            auto val = juce::jmin(vals[0], 1.0f);
+            textLookAndFeel.setAlpha(val);
+            nameLookAndFeel.setAlpha(1.f - val);
+            text.repaint();
+            label.repaint();
+        };
+        animator.addAnimation(std::move(frizEffect));
     }
 }

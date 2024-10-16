@@ -78,6 +78,8 @@ namespace zlInterface {
         void editorHidden(juce::Label *l, juce::TextEditor &editor) override;
 
         void sliderValueChanged(juce::Slider *slider) override;
+
+        void leaveAnimation();
     };
 }
 

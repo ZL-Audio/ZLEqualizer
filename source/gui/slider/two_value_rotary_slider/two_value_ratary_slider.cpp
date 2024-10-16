@@ -56,13 +56,8 @@ namespace zlInterface {
 
         setEditable(true);
         setShowSlider2(false);
-
-        label1.setInterceptsMouseClicks(true, false);
-        label2.setInterceptsMouseClicks(true, false);
         label1.setEditable(false, true);
         label2.setEditable(false, true);
-        label1.addMouseListener(this, false);
-        label2.addMouseListener(this, false);
 
         label1.setJustificationType(juce::Justification::centred);
         label2.setJustificationType(juce::Justification::centred);
@@ -158,12 +153,8 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseEnter(const juce::MouseEvent &event) {
-        if (event.originalComponent == &label1 || event.originalComponent == &label2) {
-            return;
-        }
         slider1.mouseEnter(event);
         slider2.mouseEnter(event);
-        mouseOver.store(true);
         labelLookAndFeel.setAlpha(0.f);
         labelLookAndFeel1.setAlpha(1.f);
         labelLookAndFeel2.setAlpha(1.f);
@@ -174,35 +165,14 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseExit(const juce::MouseEvent &event) {
-        if (event.originalComponent == &label1 || event.originalComponent == &label2) {
-            return;
-        }
         slider1.mouseExit(event);
         slider2.mouseExit(event);
 
-        mouseOver.store(false);
-
-        if (this->contains(event.getMouseDownPosition())) {
+        if (label1.getCurrentTextEditor() != nullptr || label2.getCurrentTextEditor() != nullptr) {
             return;
         }
 
-        if (animator.getAnimation(animationId) != nullptr)
-            return;
-        auto frizEffect{
-            friz::makeAnimation<friz::Parametric, 1>(
-                animationId, {1.5f}, {0.f}, 1000, friz::Parametric::kLinear)
-        };
-        frizEffect->updateFn = [this](int, const auto &vals) {
-            auto val = juce::jmin(vals[0], 1.0f);
-            labelLookAndFeel.setAlpha(1 - val);
-            labelLookAndFeel1.setAlpha(val);
-            labelLookAndFeel2.setAlpha(val);
-            for (auto &l: {&label, &label1, &label2}) {
-                l->repaint();
-            }
-        };
-
-        animator.addAnimation(std::move(frizEffect));
+        leaveAnimation();
     }
 
     void TwoValueRotarySlider::mouseMove(const juce::MouseEvent &event) {
@@ -210,8 +180,16 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseDoubleClick(const juce::MouseEvent &event) {
-        if (event.originalComponent == &label1 || event.originalComponent == &label2) {
-            return;
+        if (event.mods.isCommandDown()) {
+            const auto portion = static_cast<float>(event.getPosition().getY()
+                ) / static_cast<float>(getLocalBounds().getHeight());
+            if (portion < .5f || !showSlider2.load()) {
+                label1.showEditor();
+                return;
+            } else {
+                label2.showEditor();
+                return;
+            }
         }
         if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseDoubleClick(event);
@@ -285,13 +263,7 @@ namespace zlInterface {
             slider2.setValue(actualValue, juce::sendNotificationAsync);
         }
 
-        labelLookAndFeel.setAlpha(1);
-        labelLookAndFeel1.setAlpha(0);
-        labelLookAndFeel2.setAlpha(0);
-
-        for (auto &ll: {&label, &label1, &label2}) {
-            ll->repaint();
-        }
+        leaveAnimation();
     }
 
     void TwoValueRotarySlider::sliderValueChanged(juce::Slider *slider) {
@@ -302,5 +274,25 @@ namespace zlInterface {
         if (slider == &slider2) {
             label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
         }
+    }
+
+    void TwoValueRotarySlider::leaveAnimation() {
+        if (animator.getAnimation(animationId) != nullptr)
+            return;
+        auto frizEffect{
+            friz::makeAnimation<friz::Parametric, 1>(
+                animationId, {1.5f}, {0.f}, 1000, friz::Parametric::kLinear)
+        };
+        frizEffect->updateFn = [this](int, const auto &vals) {
+            auto val = juce::jmin(vals[0], 1.0f);
+            labelLookAndFeel.setAlpha(1 - val);
+            labelLookAndFeel1.setAlpha(val);
+            labelLookAndFeel2.setAlpha(val);
+            for (auto &l: {&label, &label1, &label2}) {
+                l->repaint();
+            }
+        };
+
+        animator.addAnimation(std::move(frizEffect));
     }
 }

@@ -85,7 +85,7 @@ namespace zlInterface {
 
         juce::Label label, label1, label2;
 
-        std::atomic<bool> showSlider2 = true, mouseOver, editable;
+        std::atomic<bool> showSlider2 = true, editable;
         std::atomic<float> lrPad = 0, ubPad = 0;
 
         friz::Animator animator;
@@ -117,6 +117,8 @@ namespace zlInterface {
             slider1.setMouseDragSensitivity(actualDragDistance);
             slider2.setMouseDragSensitivity(actualDragDistance);
         }
+
+        void leaveAnimation();
     };
 }
 
