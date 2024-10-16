@@ -4,6 +4,17 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.4.2
+
+- add & change slider value editor shortcuts
+  - open value editor with Ctrl/Command + mouse double-clicking for ALL sliders
+- fix incorrect curve display when adjusting `scale`
+- improve `mixed phase` phase shift continuity
+
+## 0.4.1
+
+- fix some debug code
+
 ## 0.4.0
 
 - add parallel filter structure
