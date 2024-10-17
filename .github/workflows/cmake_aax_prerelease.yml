@@ -27,7 +27,7 @@ jobs:
       matrix:
         include:
           - name: macOS
-            os: macos-14
+            os: macos-15
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"

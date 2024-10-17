@@ -36,7 +36,7 @@ jobs:
             app_suffix: ""
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
           - name: macOS
-            os: macos-14
+            os: macos-15
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"

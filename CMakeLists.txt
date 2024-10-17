@@ -7,6 +7,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-includes")
 include(GitVersion)
 include(PamplejuceVersion)
 
+# Configures universal binaries and decides which version of macOS to support
+include(PamplejuceMacOS)
+
 # Change me!
 # This is the internal name of the project and the name of JUCE's shared code "target"
 # Note: This cannot have spaces (it may be 2023, but you can't have it all!)
@@ -64,9 +67,6 @@ endif ()
 
 # include boost for this project
 # find_package(Boost 1.80.0 REQUIRED)
-
-# Configures universal binaries in CI
-include(PamplejuceMacOS)
 
 # Couple tweaks that IMO should be JUCE defaults
 include(JUCEDefaults)
