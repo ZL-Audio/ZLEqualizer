@@ -41,7 +41,7 @@ jobs:
             boost_platform_version: "11"
             boost_toolset: "clang"
             plugin_os_format: "AU"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+            cmake_extra_flags:
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
