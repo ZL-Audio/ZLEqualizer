@@ -245,6 +245,10 @@ namespace zlPanel {
         std::atomic<float> x{0.f}, y{0.f}, width{0.f}, height{0.f};
     };
 
+    static inline float replaceWithFinite(const float x) {
+        return std::isfinite(x) ? x : 100000.f;
+    }
+
     inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
         return static_cast<float>(i) /
                static_cast<float>(zlFilter::frequencies.size() - 1) * bound.getWidth() + bound.getX();
@@ -257,7 +261,7 @@ namespace zlPanel {
     }
 
     inline static float dbToY(const float db, const float maxDB, const juce::Rectangle<float> bound) {
-        return -db / maxDB * bound.getHeight() * 0.5f + bound.getCentreY();
+        return replaceWithFinite(-db / maxDB * bound.getHeight() * 0.5f + bound.getCentreY());
     }
 
     inline static void drawCurve(juce::Path &path,

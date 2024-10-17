@@ -224,16 +224,16 @@ namespace zlFFT {
                 path.get().startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
                 for (size_t idx = 0; idx < PointNum - cubicNum; ++idx) {
                     const auto x = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
-                    const auto y = interplotDBs[i][idx].load() / minDB * height + boundY;
+                    const auto y = replaceWithFinite(interplotDBs[i][idx].load() / minDB * height + boundY);
                     path.get().lineTo(x, y);
                 }
                 for (size_t idx = PointNum - cubicNum; idx < PointNum - 2; idx += 3) {
                     const auto x1 = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
-                    const auto y1 = interplotDBs[i][idx].load() / minDB * height + boundY;\
+                    const auto y1 = replaceWithFinite(interplotDBs[i][idx].load() / minDB * height + boundY);
                     const auto x2 = static_cast<float>(idx + 1) / static_cast<float>(PointNum - 1) * width;
-                    const auto y2 = interplotDBs[i][idx + 1].load() / minDB * height + boundY;
+                    const auto y2 = replaceWithFinite(interplotDBs[i][idx + 1].load() / minDB * height + boundY);
                     const auto x3 = static_cast<float>(idx + 2) / static_cast<float>(PointNum - 1) * width;
-                    const auto y3 = interplotDBs[i][idx + 2].load() / minDB * height + boundY;
+                    const auto y3 = replaceWithFinite(interplotDBs[i][idx + 2].load() / minDB * height + boundY);
                     path.get().cubicTo(x1, y1, x2, y2, x3, y3);
                 }
             }
@@ -318,6 +318,10 @@ namespace zlFFT {
         inline float binToY(const float bin, const juce::Rectangle<float> bounds) const {
             const auto db = juce::Decibels::gainToDecibels(bin, -240.f);
             return bounds.getY() + (db / minDB) * bounds.getHeight();
+        }
+
+        static inline float replaceWithFinite(const float x) {
+            return std::isfinite(x) ? x : 100000.f;
         }
     };
 }

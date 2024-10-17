@@ -76,10 +76,8 @@ namespace zlInterpolation {
                 endIdx -= 1;
             }
             for (size_t i = startIdx; i <= endIdx; ++i) {
-                if (currentPos + 2 < inputSize) {
-                    while (currentPos + 2 < inputSize && x[i] >= xs[currentPos + 1]) {
-                        currentPos += 1;
-                    }
+                while (currentPos + 2 < inputSize && x[i] >= xs[currentPos + 1]) {
+                    currentPos += 1;
                 }
                 const auto t = (x[i] - xs[currentPos]) / (xs[currentPos + 1] - xs[currentPos]);
                 y[i] = h00(t) * ys[currentPos] +
