@@ -44,8 +44,6 @@ namespace zlDSP {
     void Controller<FloatType>::updateSubBuffer() {
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * sampleRate.load()));
 
-        triggerAsyncUpdate();
-
         const auto numRMS = static_cast<size_t>(
             zlDSP::dynRMS::range.end / 1000.f * static_cast<float>(sampleRate.load()));
         for (auto &f: filters) {
@@ -115,6 +113,8 @@ namespace zlDSP {
         for (auto &t: trackers) {
             t.prepare(subSpec);
         }
+
+        toUpdateLRs.store(true);
     }
 
     template<typename FloatType>
