@@ -27,7 +27,7 @@ namespace zlFilter {
     class PrototypeCorrection {
     public:
         static constexpr size_t defaultFFTOrder = 10;
-        static constexpr size_t startDecay = 256, endDecay = 64;
+        static constexpr size_t startDecayIdx = 2, endDecayIdx = 8;
 
         PrototypeCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
                             std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
@@ -106,7 +106,6 @@ namespace zlFilter {
         // prototype corrections
         std::vector<std::complex<float> > corrections{};
         std::vector<std::complex<FloatType> > &wis1, &wis2;
-        size_t startDecayIdx{0}, endDecayIdx{0};
         float deltaDecay{0.f};
 
         std::unique_ptr<juce::dsp::FFT> fft;
@@ -147,8 +146,6 @@ namespace zlFilter {
             fftData.resize(fftSize * 2);
 
             corrections.resize(numBins);
-            startDecayIdx = corrections.size() / startDecay;
-            endDecayIdx = corrections.size() / endDecay;
 
             deltaDecay = 1.f / static_cast<float>(endDecayIdx - startDecayIdx);
 

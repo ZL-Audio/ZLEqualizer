@@ -28,7 +28,8 @@ namespace zlFilter {
     class MixedCorrection {
     public:
         static constexpr size_t defaultFFTOrder = 11;
-        static constexpr size_t startMix = 256, endMix = 2;
+        static constexpr size_t startMixIdx = 4, endMixIdx = 512;
+        static constexpr double decayMultiplier = 0.98;
 
         MixedCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
                         std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
@@ -43,18 +44,17 @@ namespace zlFilter {
         }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
-            auto decayMultiplier = 0.98;
             if (spec.sampleRate <= 50000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder);
             } else if (spec.sampleRate <= 100000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 1);
-                decayMultiplier = 0.9899494936611666;
+                // decayMultiplier = 0.9899494936611666;
             } else if (spec.sampleRate <= 200000) {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 2);
-                decayMultiplier = 0.9949620563926881;
+                // decayMultiplier = 0.9949620563926881;
             } else {
                 setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 3);
-                decayMultiplier = 0.9974778475699037;
+                // decayMultiplier = 0.9974778475699037;
             }
             double mix = decayMultiplier;
             for (size_t i = 0; i < startMixIdx; ++i) {
@@ -122,7 +122,6 @@ namespace zlFilter {
         // mixed corrections
         std::vector<std::complex<float> > corrections{};
         std::vector<std::complex<FloatType> > &wis1, &wis2;
-        size_t startMixIdx{0}, endMixIdx{0};
         std::vector<FloatType> correctionMix{};
 
         std::unique_ptr<juce::dsp::FFT> fft;
@@ -164,8 +163,6 @@ namespace zlFilter {
 
             corrections.resize(numBins);
             correctionMix.resize(numBins);
-            startMixIdx = corrections.size() / startMix;
-            endMixIdx = corrections.size() / endMix;
 
             reset();
         }
