@@ -118,13 +118,23 @@ namespace zlInterface {
         void setOption(const juce::PopupMenu::Options &x) { option = x; }
 
         juce::PopupMenu::Options getOptionsForComboBoxPopupMenu(juce::ComboBox &box, juce::Label &label) override {
-            return option.withParentComponent(box.getTopLevelComponent()->getChildComponent(0))
-                    .withTargetComponent(&box)
-                    .withItemThatMustBeVisible(box.getSelectedId())
-                    .withInitiallySelectedItem(box.getSelectedId())
-                    .withMinimumWidth(box.getWidth())
-                    .withMaximumNumColumns(1)
-                    .withStandardItemHeight(label.getHeight());
+            if (!juce::JUCEApplicationBase::isStandaloneApp()) {
+                return option.withParentComponent(box.getTopLevelComponent()->getChildComponent(0))
+                        .withTargetComponent(&box)
+                        .withItemThatMustBeVisible(box.getSelectedId())
+                        .withInitiallySelectedItem(box.getSelectedId())
+                        .withMinimumWidth(box.getWidth())
+                        .withMaximumNumColumns(1)
+                        .withStandardItemHeight(label.getHeight());
+            } else {
+                return option.withParentComponent(box.getTopLevelComponent())
+                        .withTargetComponent(&box)
+                        .withItemThatMustBeVisible(box.getSelectedId())
+                        .withInitiallySelectedItem(box.getSelectedId())
+                        .withMinimumWidth(box.getWidth())
+                        .withMaximumNumColumns(1)
+                        .withStandardItemHeight(label.getHeight());
+            }
         }
 
     private:
