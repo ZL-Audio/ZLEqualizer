@@ -39,6 +39,12 @@ namespace zlFFT {
                                        maxFreqLog2 - minFreqLog2) + minFreqLog2;
                 interplotFreqs[i] = std::pow(2.f, temp);
             }
+            for (auto &f:readyFlags) {
+                f.store(false);
+            }
+            for (auto &db: interplotDBs) {
+                std::fill(db.begin(), db.end(), minDB * 2.f);
+            }
             reset();
         }
 
@@ -61,13 +67,9 @@ namespace zlFFT {
         }
 
         void reset() {
-            for (size_t i = 0; i < FFTNum; ++i) {
-                for (size_t j = 0; j < PointNum; ++j) {
-                    interplotDBs[i][j].store(minDB * 2.f);
-                }
+            for (auto &f:toReset) {
+                f.store(true);
             }
-            toClear.store(true);
-            toClearFFT.store(true);
         }
 
         void setOrder(int fftOrder) {
@@ -182,6 +184,9 @@ namespace zlFFT {
                     const auto decay = actualDecayRate[i].load();
                     auto &smoothedDB{smoothedDBs[i]};
                     const auto ampScale = 2.f / static_cast<float>(fftBuffer.size());
+                    if (toReset[i].exchange(false)) {
+                        std::fill(smoothedDB.begin(), smoothedDB.end(), minDB * 2.f);
+                    }
                     for (size_t j = 0; j < smoothedFreqs.size(); ++j) {
                         const auto currentDB = juce::Decibels::gainToDecibels(ampScale * fftBuffer[j], -240.f);
                         smoothedDB[j] = currentDB < smoothedDB[j]
@@ -198,12 +203,15 @@ namespace zlFFT {
                 const float tiltShiftTotal = (maxFreqLog2 - minFreqLog2) * totalTilt;
                 const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(PointNum - 1);
 
-                float tiltShift = -tiltShiftTotal * .5f;
-                for (size_t idx = 0; idx < PointNum; ++idx) {
-                    for (const auto &i: isONVector) {
-                        interplotDBs[i][idx].store(tiltShift + preInterplotDBs[i][idx]);
+                for (const auto &i: isONVector) {
+                    if (readyFlags[i].load() == false) {
+                        float tiltShift = -tiltShiftTotal * .5f;
+                        for (size_t idx = 0; idx < PointNum; ++idx) {
+                            interplotDBs[i][idx] = tiltShift + preInterplotDBs[i][idx];
+                            tiltShift += tiltShiftDelta;
+                        }
+                        readyFlags[i].store(true);
                     }
-                    tiltShift += tiltShiftDelta;
                 }
             }
         }
@@ -217,6 +225,12 @@ namespace zlFFT {
             for (size_t i = 0; i < FFTNum; ++i) {
                 if (isON[i].load()) isONVector.push_back(i);
             }
+            for (const auto &i: isONVector) {
+                if (readyFlags[i].load() == true) {
+                    readyDBs[i] = interplotDBs[i];
+                    readyFlags[i].store(false);
+                }
+            }
             constexpr auto cubicNum = (PointNum / 7) * 6;
             const float width = bound.getWidth(), height = bound.getHeight(), boundY = bound.getY();
             for (const auto &i: isONVector) {
@@ -224,16 +238,16 @@ namespace zlFFT {
                 path.get().startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
                 for (size_t idx = 0; idx < PointNum - cubicNum; ++idx) {
                     const auto x = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
-                    const auto y = replaceWithFinite(interplotDBs[i][idx].load() / minDB * height + boundY);
+                    const auto y = replaceWithFinite(readyDBs[i][idx] / minDB * height + boundY);
                     path.get().lineTo(x, y);
                 }
                 for (size_t idx = PointNum - cubicNum; idx < PointNum - 2; idx += 3) {
                     const auto x1 = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
-                    const auto y1 = replaceWithFinite(interplotDBs[i][idx].load() / minDB * height + boundY);
+                    const auto y1 = replaceWithFinite(readyDBs[i][idx] / minDB * height + boundY);
                     const auto x2 = static_cast<float>(idx + 1) / static_cast<float>(PointNum - 1) * width;
-                    const auto y2 = replaceWithFinite(interplotDBs[i][idx + 1].load() / minDB * height + boundY);
+                    const auto y2 = replaceWithFinite(readyDBs[i][idx + 1] / minDB * height + boundY);
                     const auto x3 = static_cast<float>(idx + 2) / static_cast<float>(PointNum - 1) * width;
-                    const auto y3 = replaceWithFinite(interplotDBs[i][idx + 2].load() / minDB * height + boundY);
+                    const auto y3 = replaceWithFinite(readyDBs[i][idx + 2] / minDB * height + boundY);
                     path.get().cubicTo(x1, y1, x2, y2, x3, y3);
                 }
             }
@@ -273,7 +287,13 @@ namespace zlFFT {
             }
         }
 
-        std::array<std::atomic<float>, PointNum> &getInterplotDBs(const size_t i) { return interplotDBs[i]; }
+        std::array<float, PointNum> &getInterplotDBs(const size_t i) {
+            if (readyFlags[i].load() == true) {
+                readyDBs[i] = interplotDBs[i];
+                readyFlags[i].store(false);
+            }
+            return readyDBs[i];
+        }
 
     private:
         std::array<std::vector<float>, FFTNum> sampleFIFOs;
@@ -294,7 +314,10 @@ namespace zlFFT {
 
         std::array<float, PointNum> interplotFreqs{};
         std::array<std::array<float, PointNum>, FFTNum> preInterplotDBs{};
-        std::array<std::array<std::atomic<float>, PointNum>, FFTNum> interplotDBs{};
+        std::array<std::array<float, PointNum>, FFTNum> interplotDBs{};
+        std::array<std::array<float, PointNum>, FFTNum> readyDBs{};
+        std::array<std::atomic<bool>, FFTNum> readyFlags;
+
         std::atomic<float> deltaT, decayRate, refreshRate{60}, tiltSlope;
         std::array<std::atomic<float>, FFTNum> decayRates{}, actualDecayRate{};
         std::atomic<float> extraTilt{0.f}, extraSpeed{1.f};
@@ -304,7 +327,7 @@ namespace zlFFT {
         std::atomic<size_t> fftSize;
 
         std::atomic<float> sampleRate;
-        std::atomic<bool> toClear{false}, toClearFFT{true};
+        std::array<std::atomic<bool>, FFTNum> toReset;
         std::atomic<bool> isPrepared{false};
 
         std::array<std::atomic<bool>, FFTNum> isON{};

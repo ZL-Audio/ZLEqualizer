@@ -13,8 +13,8 @@ namespace zlFFT {
     template<typename FloatType>
     ConflictAnalyzer<FloatType>::ConflictAnalyzer()
         : Thread("conflict_analyzer") {
-        std::fill(mainDB.begin(), mainDB.end(), -144.f);
-        std::fill(refDB.begin(), refDB.end(), -144.f);
+        // std::fill(mainDB.begin(), mainDB.end(), -144.f);
+        // std::fill(refDB.begin(), refDB.end(), -144.f);
         syncAnalyzer.setDecayRate(0, 0.985f);
         syncAnalyzer.setDecayRate(1, 0.985f);
         syncAnalyzer.setON({true, true});
@@ -72,12 +72,8 @@ namespace zlFFT {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
             syncAnalyzer.run();
-            const auto &mainDBAtomic = syncAnalyzer.getInterplotDBs(0);
-            const auto &refDBAtomic = syncAnalyzer.getInterplotDBs(1);
-            for (size_t i = 0; i < mainDB.size(); ++i) {
-                mainDB[i] = mainDBAtomic[i].load();
-                refDB[i] = refDBAtomic[i].load();
-            }
+            const auto &mainDB = syncAnalyzer.getInterplotDBs(0);
+            const auto &refDB = syncAnalyzer.getInterplotDBs(1);
             const auto mainM = std::reduce(mainDB.begin(), mainDB.end()) / static_cast<float>(mainDB.size());
             const auto refM = std::reduce(refDB.begin(), refDB.end()) / static_cast<float>(refDB.size());
             const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f);
