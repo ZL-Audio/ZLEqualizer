@@ -38,8 +38,14 @@ namespace zlPanel {
 
     void UISettingButton::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        panel.loadSetting();
-        panel.setVisible(true);
+        if (event.mods.isCommandDown()) {
+            getParentComponent()->getParentComponent()->setSize(
+                static_cast<int>(zlState::windowW::defaultV),
+                static_cast<int>(zlState::windowH::defaultV));
+        } else {
+            panel.loadSetting();
+            panel.setVisible(true);
+        }
     }
 
     void UISettingButton::resized() {
