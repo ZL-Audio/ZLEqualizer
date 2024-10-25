@@ -32,6 +32,9 @@ namespace zlFFT {
     public:
         explicit MultipleFFTAnalyzer() {
             static_assert(PointNum % 2 == 1);
+
+            prepareAkima();
+
             tiltSlope.store(zlState::ffTTilt::slopes[static_cast<size_t>(zlState::ffTTilt::defaultI)]);
             interplotFreqs[0] = minFreq;
             for (size_t i = 1; i < PointNum; ++i) {
@@ -39,7 +42,7 @@ namespace zlFFT {
                                        maxFreqLog2 - minFreqLog2) + minFreqLog2;
                 interplotFreqs[i] = std::pow(2.f, temp);
             }
-            for (auto &f:readyFlags) {
+            for (auto &f: readyFlags) {
                 f.store(false);
             }
             for (auto &db: interplotDBs) {
@@ -49,6 +52,40 @@ namespace zlFFT {
         }
 
         ~MultipleFFTAnalyzer() = default;
+
+        void prepareAkima() {
+            std::vector<size_t> seqInputIndices{};
+            seqInputIndices.push_back(0);
+            size_t i = 1, i0 = 1;
+            const float delta = std::pow(
+                static_cast<float>((1 << defaultFFTOrder) + 1), 1.f / static_cast<float>(PointNum));
+            while (i < (1 << defaultFFTOrder) + 1) {
+                while (static_cast<float>(i) / static_cast<float>(i0) < delta) {
+                    i += 1;
+                    if (i >= (1 << defaultFFTOrder)) {
+                        break;
+                    }
+                }
+                i0 = i;
+                seqInputIndices.push_back(i);
+            }
+
+            seqInputStarts.reserve(seqInputIndices.size());
+            seqInputEnds.reserve(seqInputIndices.size());
+            seqInputStarts.push_back(0);
+            seqInputEnds.push_back(1);
+            for (size_t idx = 1; idx < seqInputIndices.size() - 1; ++idx) {
+                seqInputStarts.push_back(seqInputEnds.back());
+                seqInputEnds.push_back((seqInputIndices[idx] + seqInputIndices[idx + 1]) / 2);
+            }
+            seqInputStarts.push_back(seqInputEnds.back());
+            seqInputEnds.push_back((1 << defaultFFTOrder));
+
+            seqInputFreqs.resize(seqInputIndices.size());
+            seqInputDBs.resize(seqInputIndices.size());
+            seqAkima = std::make_unique<zlInterpolation::SeqMakima<float> >(
+                seqInputFreqs.data(), seqInputDBs.data(), seqInputFreqs.size(), 0.f, 0.f);
+        }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
             juce::GenericScopedLock lock(spinLock);
@@ -67,7 +104,7 @@ namespace zlFFT {
         }
 
         void reset() {
-            for (auto &f:toReset) {
+            for (auto &f: toReset) {
                 f.store(true);
             }
         }
@@ -83,10 +120,9 @@ namespace zlFFT {
             deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
             decayRate.store(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]);
 
-            const auto currentDeltaT = deltaT.load();
-            smoothedFreqs[0] = 0.f;
-            for (size_t idx = 1; idx < smoothedFreqs.size(); ++idx) {
-                smoothedFreqs[idx] = smoothedFreqs[idx - 1] + currentDeltaT;
+            const auto currentDeltaT = .5f * deltaT.load();
+            for (size_t idx = 0; idx < seqInputFreqs.size(); ++idx) {
+                seqInputFreqs[idx] = static_cast<float>(seqInputStarts[idx] + seqInputEnds[idx] - 1) * currentDeltaT;
             }
             for (size_t i = 0; i < FFTNum; ++i) {
                 std::fill(smoothedDBs[i].begin(), smoothedDBs[i].end(), minDB * 2.f);
@@ -187,16 +223,24 @@ namespace zlFFT {
                     if (toReset[i].exchange(false)) {
                         std::fill(smoothedDB.begin(), smoothedDB.end(), minDB * 2.f);
                     }
-                    for (size_t j = 0; j < smoothedFreqs.size(); ++j) {
+                    for (size_t j = 0; j < smoothedDB.size(); ++j) {
                         const auto currentDB = juce::Decibels::gainToDecibels(ampScale * fftBuffer[j], -240.f);
                         smoothedDB[j] = currentDB < smoothedDB[j]
                                             ? smoothedDB[j] * decay + currentDB * (1 - decay)
                                             : currentDB;
                     }
 
-                    auto &spline(seqAkimas[i]);
-                    spline.prepare();
-                    spline.eval(interplotFreqs.data(), preInterplotDBs[i].data(), PointNum);
+                    for (size_t j = 0; j < seqInputDBs.size(); ++j) {
+                        const auto startIdx = seqInputStarts[j];
+                        const auto endIdx = seqInputEnds[j];
+                        // logger.logMessage(juce::String(startIdx) + "\t" + juce::String(endIdx) + "\t" + juce::String(smoothedDB.size()));
+                        seqInputDBs[j] = std::reduce(
+                                             smoothedDB.begin() + startIdx,
+                                             smoothedDB.begin() + endIdx) / static_cast<float>(endIdx - startIdx);
+                    }
+
+                    seqAkima->prepare();
+                    seqAkima->eval(interplotFreqs.data(), preInterplotDBs[i].data(), PointNum);
                 }
             } {
                 const float totalTilt = tiltSlope.load() + extraTilt.load();
@@ -301,16 +345,15 @@ namespace zlFFT {
         juce::AbstractFifo abstractFIFO{1};
 
         std::vector<float> fftBuffer;
-        std::array<float, (1 << defaultFFTOrder) + 1> smoothedFreqs{};
+
+        // smooth dbs over time
         std::array<std::array<float, (1 << defaultFFTOrder) + 1>, FFTNum> smoothedDBs{};
-        std::array<zlInterpolation::SeqMakima<float>, FFTNum> seqAkimas =
-                [&]<size_t... Is>(std::index_sequence<Is...>) {
-                    return std::array{
-                        zlInterpolation::SeqMakima<float>{
-                            smoothedFreqs.data(), std::get<Is>(smoothedDBs).data(), (1 << defaultFFTOrder) + 1, 0.f, 0.f
-                        }...
-                    };
-                }(std::make_index_sequence<std::tuple_size_v<decltype(smoothedDBs)> >());
+        // smooth dbs over high frequency for Akimas input
+        std::vector<float> seqInputFreqs{};
+        std::vector<size_t> seqInputStarts, seqInputEnds, setInputIndices;
+        std::vector<float> seqInputDBs{};
+
+        std::unique_ptr<zlInterpolation::SeqMakima<float> > seqAkima;
 
         std::array<float, PointNum> interplotFreqs{};
         std::array<std::array<float, PointNum>, FFTNum> preInterplotDBs{};
