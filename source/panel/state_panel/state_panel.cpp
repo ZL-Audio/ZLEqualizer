@@ -11,9 +11,10 @@
 
 namespace zlPanel {
     StatePanel::StatePanel(PluginProcessor &p,
-                           zlInterface::UIBase &base)
+                           zlInterface::UIBase &base,
+                           UISettingPanel &uiSettingPanel)
         : uiBase(base),
-          logoPanel(p, base),
+          logoPanel(p, base, uiSettingPanel),
           fftSettingPanel(p, base),
           compSettingPanel(p, base),
           outputSettingPanel(p, base),

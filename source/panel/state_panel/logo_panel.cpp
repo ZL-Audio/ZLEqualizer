@@ -10,9 +10,11 @@
 #include "logo_panel.hpp"
 
 namespace zlPanel {
-    LogoPanel::LogoPanel(PluginProcessor &p, zlInterface::UIBase &base)
+    LogoPanel::LogoPanel(PluginProcessor &p,
+                         zlInterface::UIBase &base,
+                         UISettingPanel &uiSettingPanel)
         : stateRef(p.state),
-          uiBase(base),
+          uiBase(base), panelToShow(uiSettingPanel),
           brandDrawable(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
           logoDrawable(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
         juce::ignoreUnused(stateRef);
@@ -56,5 +58,16 @@ namespace zlPanel {
 
     void LogoPanel::setJustification(const int justificationFlags) {
         justification = justificationFlags;
+    }
+
+    void LogoPanel::mouseDoubleClick(const juce::MouseEvent &event) {
+        if (event.mods.isCommandDown()) {
+            getParentComponent()->getParentComponent()->getParentComponent()->setSize(
+                static_cast<int>(zlState::windowW::defaultV),
+                static_cast<int>(zlState::windowH::defaultV));
+        } else {
+            panelToShow.loadSetting();
+            panelToShow.setVisible(true);
+        }
     }
 } // zlPanel

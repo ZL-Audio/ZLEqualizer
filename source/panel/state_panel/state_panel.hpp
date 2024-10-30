@@ -11,6 +11,7 @@
 #define ZLEqualizer_STATE_PANEL_HPP
 
 #include "../../PluginProcessor.hpp"
+#include "../ui_setting_panel/ui_setting_panel.hpp"
 #include "logo_panel.hpp"
 #include "fft_setting_panel.hpp"
 #include "comp_setting_panel.hpp"
@@ -22,7 +23,8 @@ namespace zlPanel {
     class StatePanel final : public juce::Component {
     public:
         explicit StatePanel(PluginProcessor &p,
-                            zlInterface::UIBase &base);
+                            zlInterface::UIBase &base,
+                            UISettingPanel &uiSettingPanel);
 
         void resized() override;
 

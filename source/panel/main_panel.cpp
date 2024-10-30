@@ -14,12 +14,11 @@ namespace zlPanel {
         : processorRef(p), state(p.state), uiBase(p.state),
           controlPanel(p, uiBase),
           curvePanel(p, uiBase, p.getController()),
-          statePanel(p, uiBase),
-          uiSettingPanel(p, uiBase), uiSettingButton(uiSettingPanel, uiBase) {
+          statePanel(p, uiBase, uiSettingPanel),
+          uiSettingPanel(p, uiBase) {
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
-        addAndMakeVisible(uiSettingButton);
         addChildComponent(uiSettingPanel);
 
         updateFFTs();
@@ -42,7 +41,7 @@ namespace zlPanel {
     void MainPanel::resized() {
         auto bound = getLocalBounds().toFloat();
         if (bound.getHeight() < 0.47f * bound.getWidth()) {
-            return;
+            bound.setHeight(0.47f * bound.getWidth());
         }
         const auto fontSize = bound.getWidth() * 0.014287762237762238f;
         uiBase.setFontSize(fontSize);
@@ -51,7 +50,7 @@ namespace zlPanel {
         statePanel.setBounds(stateBound.toNearestInt());
         stateBound = stateBound.removeFromRight(stateBound.getHeight());
         stateBound.removeFromBottom(fontSize * .5f);
-        uiSettingButton.setBounds(stateBound.toNearestInt());
+
         uiSettingPanel.setBounds(getLocalBounds());
 
         const auto controlBound = bound.removeFromBottom(fontSize * 7.348942487176095f);

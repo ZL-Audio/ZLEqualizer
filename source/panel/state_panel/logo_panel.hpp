@@ -12,20 +12,25 @@
 
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
+#include "../ui_setting_panel/ui_setting_panel.hpp"
 
 namespace zlPanel {
     class LogoPanel final : public juce::Component {
     public:
         explicit LogoPanel(PluginProcessor &p,
-                           zlInterface::UIBase &base);
+        zlInterface::UIBase &base,
+        UISettingPanel &uiSettingPanel);
 
         void paint(juce::Graphics &g) override;
 
         void setJustification(int justificationFlags);
 
+        void mouseDoubleClick(const juce::MouseEvent &event) override;
+
     private:
         juce::AudioProcessorValueTreeState &stateRef;
         zlInterface::UIBase &uiBase;
+        UISettingPanel &panelToShow;
         const std::unique_ptr<juce::Drawable> brandDrawable, logoDrawable;
         juce::Justification justification {juce::Justification::topLeft};
     };
