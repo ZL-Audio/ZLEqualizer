@@ -113,7 +113,6 @@ namespace zlFilter {
 
     private:
         std::array<SampleType, 5> mCoeff{0, 0, 0, 0, 0};
-        SampleType g, R2, h, chp, cbp, clp;
         std::vector<SampleType> s1, s2;
     };
 }

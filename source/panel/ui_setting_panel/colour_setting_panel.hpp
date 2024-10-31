@@ -7,18 +7,18 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef INTERNAL_SETTING_PANEL_HPP
-#define INTERNAL_SETTING_PANEL_HPP
+#ifndef COLOUR_UI_SETTING_PANEL_HPP
+#define COLOUR_UI_SETTING_PANEL_HPP
 
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
-    class InternalSettingPanel final : public juce::Component {
+    class ColourSettingPanel final : public juce::Component {
     public:
-        explicit InternalSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit ColourSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
-        ~InternalSettingPanel() override;
+        ~ColourSettingPanel() override;
 
         void loadSetting();
 
@@ -35,23 +35,9 @@ namespace zlPanel {
         zlInterface::ColourOpacitySelector textSelector, backgroundSelector, shadowSelector, glowSelector;
         zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
         zlInterface::ColourOpacitySelector gainSelector;
-        juce::Label wheelLabel;
-        juce::Label dragLabel;
-        std::array<zlInterface::CompactLinearSlider, 4> sensitivitySliders;
-        zlInterface::CompactCombobox wheelReverseBox;
-        juce::Label rotaryStyleLabel;
-        zlInterface::CompactCombobox rotaryStyleBox;
-        zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
-        juce::Label refreshRateLabel;
-        zlInterface::CompactCombobox refreshRateBox;
-        juce::Label fftLabel;
-        zlInterface::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
-        juce::Label curveThickLabel;
-        zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
-
         static constexpr size_t numSelectors = 10;
         std::array<juce::Label, numSelectors> selectorLabels;
-        std::array<zlInterface::ColourOpacitySelector*, numSelectors> selectors{
+        std::array<zlInterface::ColourOpacitySelector *, numSelectors> selectors{
             &textSelector,
             &backgroundSelector,
             &shadowSelector,
@@ -78,4 +64,4 @@ namespace zlPanel {
     };
 } // zlPanel
 
-#endif //INTERNAL_SETTING_PANEL_HPP
+#endif //COLOUR_UI_SETTING_PANEL_HPP

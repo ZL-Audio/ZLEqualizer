@@ -7,11 +7,13 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_UISETTINGPANEL_H
-#define ZLEqualizer_UISETTINGPANEL_H
+#ifndef UI_SETTING_PANEL_H
+#define UI_SETTING_PANEL_H
 
-#include "internal_setting_panel.hpp"
 #include "../../PluginProcessor.hpp"
+#include "colour_setting_panel.hpp"
+#include "control_setting_panel.hpp"
+#include "other_ui_setting_panel.hpp"
 
 namespace zlPanel {
 
@@ -27,18 +29,34 @@ public:
 
     void loadSetting();
 
+    void mouseDown(const juce::MouseEvent &event) override;
+
 private:
     PluginProcessor &pRef;
     zlInterface::UIBase &uiBase;
     juce::Viewport viewPort;
-    InternalSettingPanel internelPanel;
+    ColourSettingPanel colourPanel;
+    ControlSettingPanel controlPanel;
+    OtherUISettingPanel otherPanel;
     const std::unique_ptr<juce::Drawable> saveDrawable, closeDrawable, resetDrawable;
     zlInterface::ClickButton saveButton, closeButton, resetButton;
 
+    zlInterface::NameLookAndFeel panelNameLAF;
+    std::array<juce::Label, 3> panelLabels;
+
     juce::Label versionLabel;
     zlInterface::NameLookAndFeel labelLAF;
+
+    enum panelIdx {
+        colourP,
+        controlP,
+        otherP
+    };
+    panelIdx currentPanelIdx = colourP;
+
+    void changeDisplayPanel();
 };
 
 } // zlPanel
 
-#endif //ZLEqualizer_UISETTINGPANEL_H
+#endif //UI_SETTING_PANEL_H
