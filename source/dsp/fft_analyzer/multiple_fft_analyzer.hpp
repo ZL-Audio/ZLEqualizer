@@ -24,14 +24,18 @@ namespace zlFFT {
     class MultipleFFTAnalyzer final {
     private:
         juce::SpinLock spinLock;
-        static constexpr size_t defaultFFTOrder = 12;
         static constexpr float minFreq = 10.f, maxFreq = 22000.f, minDB = -72.f;
         static constexpr float minFreqLog2 = 3.321928094887362f;
         static constexpr float maxFreqLog2 = 14.425215903299383f;
 
     public:
-        explicit MultipleFFTAnalyzer() {
-            static_assert(PointNum % 2 == 1);
+        explicit MultipleFFTAnalyzer(const size_t fftOrder = 12) {
+            defaultFFTOrder = fftOrder;
+            binSize = (1 << (defaultFFTOrder - 1)) + 1;
+
+            for (auto &db: smoothedDBs) {
+                db.resize(binSize);
+            }
 
             prepareAkima();
 
@@ -58,11 +62,11 @@ namespace zlFFT {
             seqInputIndices.push_back(0);
             size_t i = 1, i0 = 1;
             const float delta = std::pow(
-                static_cast<float>((1 << defaultFFTOrder) + 1), 1.f / static_cast<float>(PointNum));
-            while (i < (1 << defaultFFTOrder) + 1) {
+                static_cast<float>(binSize), .75f / static_cast<float>(PointNum));
+            while (i < binSize - 1) {
                 while (static_cast<float>(i) / static_cast<float>(i0) < delta) {
                     i += 1;
-                    if (i >= (1 << defaultFFTOrder)) {
+                    if (i >= binSize - 1) {
                         break;
                     }
                 }
@@ -76,10 +80,12 @@ namespace zlFFT {
             seqInputEnds.push_back(1);
             for (size_t idx = 1; idx < seqInputIndices.size() - 1; ++idx) {
                 seqInputStarts.push_back(seqInputEnds.back());
-                seqInputEnds.push_back((seqInputIndices[idx] + seqInputIndices[idx + 1]) / 2);
+                seqInputEnds.push_back(
+                    static_cast<std::vector<float>::difference_type>(
+                        seqInputIndices[idx] + seqInputIndices[idx + 1]) / 2);
             }
             seqInputStarts.push_back(seqInputEnds.back());
-            seqInputEnds.push_back((1 << defaultFFTOrder));
+            seqInputEnds.push_back(static_cast<std::vector<float>::difference_type>(binSize) - 1);
 
             seqInputFreqs.resize(seqInputIndices.size());
             seqInputDBs.resize(seqInputIndices.size());
@@ -233,7 +239,6 @@ namespace zlFFT {
                     for (size_t j = 0; j < seqInputDBs.size(); ++j) {
                         const auto startIdx = seqInputStarts[j];
                         const auto endIdx = seqInputEnds[j];
-                        // logger.logMessage(juce::String(startIdx) + "\t" + juce::String(endIdx) + "\t" + juce::String(smoothedDB.size()));
                         seqInputDBs[j] = std::reduce(
                                              smoothedDB.begin() + startIdx,
                                              smoothedDB.begin() + endIdx) / static_cast<float>(endIdx - startIdx);
@@ -340,6 +345,9 @@ namespace zlFFT {
         }
 
     private:
+        size_t defaultFFTOrder = 12;
+        size_t binSize = (1 << (defaultFFTOrder - 1)) + 1;
+
         std::array<std::vector<float>, FFTNum> sampleFIFOs;
         std::array<std::vector<float>, FFTNum> circularBuffers;
         juce::AbstractFifo abstractFIFO{1};
@@ -347,10 +355,11 @@ namespace zlFFT {
         std::vector<float> fftBuffer;
 
         // smooth dbs over time
-        std::array<std::array<float, (1 << defaultFFTOrder) + 1>, FFTNum> smoothedDBs{};
+        std::array<std::vector<float>, FFTNum> smoothedDBs{};
         // smooth dbs over high frequency for Akimas input
         std::vector<float> seqInputFreqs{};
-        std::vector<size_t> seqInputStarts, seqInputEnds, setInputIndices;
+        std::vector<std::vector<float>::difference_type> seqInputStarts, seqInputEnds;
+        std::vector<size_t> setInputIndices;
         std::vector<float> seqInputDBs{};
 
         std::unique_ptr<zlInterpolation::SeqMakima<float> > seqAkima;
