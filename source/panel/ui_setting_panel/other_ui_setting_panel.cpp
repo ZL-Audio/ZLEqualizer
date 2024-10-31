@@ -17,7 +17,8 @@ namespace zlPanel {
           fftTiltSlider("Tilt", base),
           fftSpeedSlider("Speed", base),
           singleCurveSlider("Single", base),
-          sumCurveSlider("Sum", base) {
+          sumCurveSlider("Sum", base),
+          defaultPassFilterSlopeBox("", zlState::defaultPassFilterSlope::choices, base) {
         juce::ignoreUnused(pRef);
         nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
@@ -44,12 +45,17 @@ namespace zlPanel {
         sumCurveSlider.getSlider().setDoubleClickReturnValue(true, zlState::sumCurveThickness::defaultV);
         addAndMakeVisible(singleCurveSlider);
         addAndMakeVisible(sumCurveSlider);
+        defaultPassFilterSlopeLabel.setText("Default Pass Filter Slope", juce::dontSendNotification);
+        defaultPassFilterSlopeLabel.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(defaultPassFilterSlopeLabel);
+        addAndMakeVisible(defaultPassFilterSlopeBox);
     }
 
     OtherUISettingPanel::~OtherUISettingPanel() {
         refreshRateLabel.setLookAndFeel(nullptr);
         fftLabel.setLookAndFeel(nullptr);
         curveThickLabel.setLookAndFeel(nullptr);
+        defaultPassFilterSlopeLabel.setLookAndFeel(nullptr);
     }
 
     void OtherUISettingPanel::loadSetting() {
@@ -58,6 +64,7 @@ namespace zlPanel {
         fftSpeedSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraSpeed()));
         singleCurveSlider.getSlider().setValue(uiBase.getSingleCurveThickness());
         sumCurveSlider.getSlider().setValue(uiBase.getSumCurveThickness());
+        defaultPassFilterSlopeBox.getBox().setSelectedId(uiBase.getDefaultPassFilterSlope() + 1);
     }
 
     void OtherUISettingPanel::saveSetting() {
@@ -66,6 +73,7 @@ namespace zlPanel {
         uiBase.setFFTExtraSpeed(static_cast<float>(fftSpeedSlider.getSlider().getValue()));
         uiBase.setSingleCurveThickness(static_cast<float>(singleCurveSlider.getSlider().getValue()));
         uiBase.setSumCurveThickness(static_cast<float>(sumCurveSlider.getSlider().getValue()));
+        uiBase.setDefaultPassFilterSlope(defaultPassFilterSlopeBox.getBox().getSelectedId() - 1);
         uiBase.saveToAPVTS();
     }
 
@@ -98,6 +106,13 @@ namespace zlPanel {
             singleCurveSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
             localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
             sumCurveSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+        } {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            defaultPassFilterSlopeLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            defaultPassFilterSlopeBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
     }
 } // zlPanel

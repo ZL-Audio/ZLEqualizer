@@ -81,7 +81,7 @@ namespace zlDSP {
         }
 
         inline static float convertTo01(const int x) {
-            return static_cast<float>(x) / static_cast<float>(T::choices.size());
+            return static_cast<float>(x) / static_cast<float>(T::choices.size() - 1);
         }
     };
 

@@ -345,6 +345,14 @@ namespace zlInterface {
 
         void setIsMouseWheelShiftReverse(const bool x) { isMouseWheelShiftReverse.store(x); }
 
+        bool getIsSliderDoubleClickOpenEditor() const { return isSliderDoubleClickOpenEditor.load(); }
+
+        void setIsSliderDoubleClickOpenEditor(const bool x) { isSliderDoubleClickOpenEditor.store(x); }
+
+        int getDefaultPassFilterSlope() const { return defaultPassFilterSlope.load(); }
+
+        void setDefaultPassFilterSlope(const int x) { defaultPassFilterSlope.store(x); }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         std::atomic<float> fontSize{0};
@@ -357,6 +365,8 @@ namespace zlInterface {
         std::atomic<float> singleCurveThickness{1.f}, sumCurveThickness{1.f};
         std::array<std::atomic<bool>, zlState::bandNUM> isBandSelected{};
         std::atomic<bool> isMouseWheelShiftReverse{false};
+        std::atomic<bool> isSliderDoubleClickOpenEditor{false};
+        std::atomic<int> defaultPassFilterSlope{1};
 
         float loadPara(const std::string &id) const {
             return state.getRawParameterValue(id)->load();

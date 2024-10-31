@@ -41,6 +41,8 @@ private:
     juce::Label rotaryStyleLabel;
     zlInterface::CompactCombobox rotaryStyleBox;
     zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
+    juce::Label sliderDoubleClickLabel;
+    zlInterface::CompactCombobox sliderDoubleClickBox;
 };
 
 } // zlPanel

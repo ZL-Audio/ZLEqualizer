@@ -265,11 +265,13 @@ namespace zlInterface {
         isMouseWheelShiftReverse.store(state.getRawParameterValue(zlState::wheelShiftReverse::ID)->load() > .5f);
         rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlState::rotaryStyle::ID)->load());
         rotaryDragSensitivity = state.getRawParameterValue(zlState::rotaryDragSensitivity::ID)->load();
+        isSliderDoubleClickOpenEditor.store(loadPara(zlState::sliderDoubleClickFunc::ID) > .5f);
         refreshRateId.store(static_cast<size_t>(state.getRawParameterValue(zlState::refreshRate::ID)->load()));
         fftExtraTilt.store(loadPara(zlState::fftExtraTilt::ID));
         fftExtraSpeed.store(loadPara(zlState::fftExtraSpeed::ID));
         singleCurveThickness.store(loadPara(zlState::singleCurveThickness::ID));
         sumCurveThickness.store(loadPara(zlState::sumCurveThickness::ID));
+        defaultPassFilterSlope.store(static_cast<int>(loadPara(zlState::defaultPassFilterSlope::ID)));
     }
 
     void UIBase::saveToAPVTS() {
@@ -304,6 +306,7 @@ namespace zlInterface {
                  zlState::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
         savePara(zlState::rotaryDragSensitivity::ID,
                  zlState::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
+        savePara(zlState::sliderDoubleClickFunc::ID, static_cast<float>(isSliderDoubleClickOpenEditor.load()));
         savePara(zlState::refreshRate::ID, zlState::refreshRate::convertTo01(static_cast<int>(refreshRateId.load())));
         savePara(zlState::fftExtraTilt::ID, zlState::fftExtraTilt::convertTo01(fftExtraTilt.load()));
         savePara(zlState::fftExtraSpeed::ID, zlState::fftExtraSpeed::convertTo01(fftExtraSpeed.load()));
@@ -311,5 +314,7 @@ namespace zlInterface {
                  zlState::singleCurveThickness::convertTo01(singleCurveThickness.load()));
         savePara(zlState::sumCurveThickness::ID,
                  zlState::sumCurveThickness::convertTo01(sumCurveThickness.load()));
+        savePara(zlState::defaultPassFilterSlope::ID,
+                 zlState::defaultPassFilterSlope::convertTo01(defaultPassFilterSlope.load()));
     }
 }

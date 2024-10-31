@@ -40,6 +40,8 @@ private:
     zlInterface::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
     juce::Label curveThickLabel;
     zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
+    juce::Label defaultPassFilterSlopeLabel;
+    zlInterface::CompactCombobox defaultPassFilterSlopeBox;
 };
 
 } // zlPanel

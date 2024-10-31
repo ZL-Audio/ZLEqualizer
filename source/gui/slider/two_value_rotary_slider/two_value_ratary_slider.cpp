@@ -124,6 +124,9 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseUp(const juce::MouseEvent &event) {
+        if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
+            return;
+        }
         if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseUp(event);
         } else {
@@ -132,6 +135,9 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseDown(const juce::MouseEvent &event) {
+        if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
+            return;
+        }
         if (!showSlider2.load() || event.mods.isLeftButtonDown()) {
             slider1.mouseDown(event);
         } else {
@@ -180,7 +186,7 @@ namespace zlInterface {
     }
 
     void TwoValueRotarySlider::mouseDoubleClick(const juce::MouseEvent &event) {
-        if (event.mods.isCommandDown()) {
+        if (uiBase.getIsSliderDoubleClickOpenEditor() != event.mods.isCommandDown()) {
             const auto portion = static_cast<float>(event.getPosition().getY()
                 ) / static_cast<float>(getLocalBounds().getHeight());
             if (portion < .5f || !showSlider2.load()) {

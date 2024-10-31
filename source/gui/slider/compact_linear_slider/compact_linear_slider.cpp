@@ -59,10 +59,16 @@ namespace zlInterface {
     }
 
     void CompactLinearSlider::mouseUp(const juce::MouseEvent &event) {
+        if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
+            return;
+        }
         slider.mouseUp(event);
     }
 
     void CompactLinearSlider::mouseDown(const juce::MouseEvent &event) {
+        if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
+            return;
+        }
         slider.mouseDown(event);
     }
 
@@ -74,7 +80,6 @@ namespace zlInterface {
         textLookAndFeel.setAlpha(1.f);
         nameLookAndFeel.setAlpha(0.f);
         slider.mouseEnter(event);
-        text.setText(getDisplayValue(slider), juce::dontSendNotification);
         animator.cancelAnimation(animationId, false);
         text.repaint();
         label.repaint();
@@ -97,17 +102,15 @@ namespace zlInterface {
     }
 
     void CompactLinearSlider::mouseDoubleClick(const juce::MouseEvent &event) {
-        if (event.mods.isCommandDown()) {
+        if (uiBase.getIsSliderDoubleClickOpenEditor() != event.mods.isCommandDown()) {
             text.showEditor();
         } else {
             slider.mouseDoubleClick(event);
-            text.setText(getDisplayValue(slider), juce::dontSendNotification);
         }
     }
 
     void CompactLinearSlider::mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) {
         slider.mouseWheelMove(event, wheel);
-        text.setText(getDisplayValue(slider), juce::dontSendNotification);
     }
 
     void CompactLinearSlider::labelTextChanged(juce::Label *labelThatHasChanged) {

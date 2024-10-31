@@ -119,13 +119,13 @@ namespace zlPanel {
 
         colourPanel.setBounds(0, 0,
                               juce::roundToInt(bound.getWidth()),
-                              juce::roundToInt(uiBase.getFontSize() * (40.f + 2.f)));
+                              juce::roundToInt(uiBase.getFontSize() * (40.f + 1.f)));
         controlPanel.setBounds(0, 0,
                                juce::roundToInt(bound.getWidth()),
-                               juce::roundToInt(uiBase.getFontSize() * (12.f + 2.f)));
+                               juce::roundToInt(uiBase.getFontSize() * (16.f + 1.f)));
         otherPanel.setBounds(0, 0,
                              juce::roundToInt(bound.getWidth()),
-                             juce::roundToInt(uiBase.getFontSize() * (12.f + 2.f)));
+                             juce::roundToInt(uiBase.getFontSize() * (16.f + 1.f)));
 
         viewPort.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
         const auto leftBound = bound.removeFromLeft(

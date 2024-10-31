@@ -290,10 +290,20 @@ namespace zlState {
 
     class rotaryDragSensitivity : public FloatParameters<rotaryDragSensitivity> {
     public:
-        auto static constexpr ID = "rotary_darg_sensitivity";
+        auto static constexpr ID = "rotary_drag_sensitivity";
         auto static constexpr name = "";
         inline auto static const range = juce::NormalisableRange<float>(2.f, 32.f, 0.01f);
         auto static constexpr defaultV = 10.f;
+    };
+
+    class sliderDoubleClickFunc : public ChoiceParameters<sliderDoubleClickFunc> {
+    public:
+        auto static constexpr ID = "slider_double_click_func";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Return Default", "Open Editor"
+        };
+        int static constexpr defaultI = 0;
     };
 
     class refreshRate : public ChoiceParameters<refreshRate> {
@@ -348,6 +358,17 @@ namespace zlState {
         auto static constexpr defaultV = 1.f;
     };
 
+    class defaultPassFilterSlope : public ChoiceParameters<defaultPassFilterSlope> {
+    public:
+        auto static constexpr ID = "default_pass_filter_slope";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "6 dB/oct", "12 dB/oct", "24 dB/oct",
+            "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"
+        };
+        int static constexpr defaultI = 1;
+    };
+
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
@@ -374,9 +395,11 @@ namespace zlState {
                    wheelSensitivity::get(), wheelFineSensitivity::get(), wheelShiftReverse::get(),
                    dragSensitivity::get(), dragFineSensitivity::get(),
                    rotaryStyle::get(), rotaryDragSensitivity::get(),
+                   sliderDoubleClickFunc::get(),
                    refreshRate::get(),
                    fftExtraTilt::get(), fftExtraSpeed::get(),
-                   singleCurveThickness::get(), sumCurveThickness::get());
+                   singleCurveThickness::get(), sumCurveThickness::get(),
+                   defaultPassFilterSlope::get());
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);

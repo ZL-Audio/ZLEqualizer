@@ -11,19 +11,20 @@
 
 namespace zlPanel {
     ControlSettingPanel::ControlSettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
-    : pRef(p),
-      uiBase(base), nameLAF(base),
-    sensitivitySliders{
-                  {
-                      zlInterface::CompactLinearSlider("Rough", base),
-                      zlInterface::CompactLinearSlider("Fine", base),
-                      zlInterface::CompactLinearSlider("Rough", base),
-                      zlInterface::CompactLinearSlider("Fine", base)
-                  }
-    },
-    wheelReverseBox("", zlState::wheelShiftReverse::choices, base),
-    rotaryStyleBox("", zlState::rotaryStyle::choices, base),
-    rotaryDragSensitivitySlider("Distance", base) {
+        : pRef(p),
+          uiBase(base), nameLAF(base),
+          sensitivitySliders{
+              {
+                  zlInterface::CompactLinearSlider("Rough", base),
+                  zlInterface::CompactLinearSlider("Fine", base),
+                  zlInterface::CompactLinearSlider("Rough", base),
+                  zlInterface::CompactLinearSlider("Fine", base)
+              }
+          },
+          wheelReverseBox("", zlState::wheelShiftReverse::choices, base),
+          rotaryStyleBox("", zlState::rotaryStyle::choices, base),
+          rotaryDragSensitivitySlider("Distance", base),
+          sliderDoubleClickBox("", zlState::sliderDoubleClickFunc::choices, base) {
         juce::ignoreUnused(pRef);
         nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
@@ -50,12 +51,13 @@ namespace zlPanel {
         rotaryDragSensitivitySlider.getSlider().setRange(2.0, 32.0, 0.01);
         rotaryDragSensitivitySlider.getSlider().setDoubleClickReturnValue(true, 10.0);
         addAndMakeVisible(rotaryDragSensitivitySlider);
+        sliderDoubleClickLabel.setText("Slider Double Click", juce::dontSendNotification);
+        sliderDoubleClickLabel.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(sliderDoubleClickLabel);
+        addAndMakeVisible(sliderDoubleClickBox);
     }
 
-    ControlSettingPanel::~ControlSettingPanel() {
-        wheelLabel.setLookAndFeel(nullptr);
-        rotaryStyleLabel.setLookAndFeel(nullptr);
-    }
+    ControlSettingPanel::~ControlSettingPanel() = default;
 
     void ControlSettingPanel::loadSetting() {
         for (size_t i = 0; i < sensitivitySliders.size(); ++i) {
@@ -65,6 +67,7 @@ namespace zlPanel {
         wheelReverseBox.getBox().setSelectedId(static_cast<int>(uiBase.getIsMouseWheelShiftReverse()) + 1);
         rotaryStyleBox.getBox().setSelectedId(static_cast<int>(uiBase.getRotaryStyleID()) + 1);
         rotaryDragSensitivitySlider.getSlider().setValue(static_cast<double>(uiBase.getRotaryDragSensitivity()));
+        sliderDoubleClickBox.getBox().setSelectedId(static_cast<int>(uiBase.getIsSliderDoubleClickOpenEditor()) + 1);
     }
 
     void ControlSettingPanel::saveSetting() {
@@ -75,6 +78,7 @@ namespace zlPanel {
         uiBase.setIsMouseWheelShiftReverse(static_cast<bool>(wheelReverseBox.getBox().getSelectedId() - 1));
         uiBase.setRotaryStyleID(static_cast<size_t>(rotaryStyleBox.getBox().getSelectedId() - 1));
         uiBase.setRotaryDragSensitivity(static_cast<float>(rotaryDragSensitivitySlider.getSlider().getValue()));
+        uiBase.setIsSliderDoubleClickOpenEditor(static_cast<bool>(sliderDoubleClickBox.getBox().getSelectedId() - 1));
         uiBase.saveToAPVTS();
     }
 
@@ -82,8 +86,7 @@ namespace zlPanel {
     }
 
     void ControlSettingPanel::resized() {
-        auto bound = getLocalBounds().toFloat();
-        {
+        auto bound = getLocalBounds().toFloat(); {
             bound.removeFromTop(uiBase.getFontSize());
             auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
             wheelLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
@@ -112,6 +115,14 @@ namespace zlPanel {
             rotaryStyleBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
             localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
             rotaryDragSensitivitySlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+        }
+        {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            sliderDoubleClickLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.425f;
+            sliderDoubleClickBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
     }
 } // zlPanel

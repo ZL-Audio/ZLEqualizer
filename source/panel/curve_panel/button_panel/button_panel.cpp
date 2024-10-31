@@ -273,6 +273,8 @@ namespace zlPanel {
         if (freq < 20.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::highPass));
+            initIDs.emplace_back(zlDSP::slope::ID);
+            initValues.emplace_back(zlDSP::slope::convertTo01(uiBase.getDefaultPassFilterSlope()));
         } else if (freq < 50.f) {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::lowShelf));
@@ -297,6 +299,8 @@ namespace zlPanel {
         } else {
             initIDs.emplace_back(zlDSP::fType::ID);
             initValues.emplace_back(zlDSP::fType::convertTo01(zlFilter::FilterType::lowPass));
+            initIDs.emplace_back(zlDSP::slope::ID);
+            initValues.emplace_back(zlDSP::slope::convertTo01(uiBase.getDefaultPassFilterSlope()));
         }
         initIDs.emplace_back(zlDSP::freq::ID);
         initValues.emplace_back(zlDSP::freq::convertTo01(freq));

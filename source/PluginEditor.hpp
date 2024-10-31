@@ -50,9 +50,11 @@ private:
         "gain_r", "gain_g", "gain_b", "gain_o",
         zlState::wheelSensitivity::ID, zlState::wheelFineSensitivity::ID,
         zlState::rotaryStyle::ID, zlState::rotaryDragSensitivity::ID,
+        zlState::sliderDoubleClickFunc::ID,
         zlState::refreshRate::ID,
         zlState::fftExtraTilt::ID, zlState::fftExtraSpeed::ID,
-        zlState::singleCurveThickness::ID, zlState::sumCurveThickness::ID
+        zlState::singleCurveThickness::ID, zlState::sumCurveThickness::ID,
+        zlState::defaultPassFilterSlope::ID
     };
 
     void parameterChanged(const juce::String &parameterID, float newValue) override;
