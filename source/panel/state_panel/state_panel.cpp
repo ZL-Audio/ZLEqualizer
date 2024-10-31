@@ -69,19 +69,19 @@ namespace zlPanel {
 
         bound.removeFromBottom(uiBase.getFontSize() * .5f);
 
-        const auto outputSettingBound = bound.removeFromRight(height * 2.5f);
+        const auto outputSettingBound = bound.removeFromRight(height * labelSize);
         outputSettingPanel.setBounds(outputSettingBound.toNearestInt());
         bound.removeFromRight(height * .5f);
-        const auto fftSettingBound = bound.removeFromRight(height * 2.5f);
+        const auto fftSettingBound = bound.removeFromRight(height * labelSize);
         fftSettingPanel.setBounds(fftSettingBound.toNearestInt());
         bound.removeFromRight(height * .5f);
-        const auto compSettingBound = bound.removeFromRight(height * 2.5f);
+        const auto compSettingBound = bound.removeFromRight(height * labelSize);
         compSettingPanel.setBounds(compSettingBound.toNearestInt());
         bound.removeFromRight(height * .5f);
-        const auto conflictSettingBound = bound.removeFromRight(height * 2.5f);
+        const auto conflictSettingBound = bound.removeFromRight(height * labelSize);
         conflictSettingPanel.setBounds(conflictSettingBound.toNearestInt());
         bound.removeFromRight(height * .5f);
-        const auto generalSettingBound = bound.removeFromRight(height * 2.5f);
+        const auto generalSettingBound = bound.removeFromRight(height * labelSize);
         generalSettingPanel.setBounds(generalSettingBound.toNearestInt());
     }
 } // zlPanel

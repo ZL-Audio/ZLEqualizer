@@ -29,6 +29,7 @@ namespace zlPanel {
         void resized() override;
 
     private:
+        constexpr static float labelSize = 2.75f;
         zlInterface::UIBase &uiBase;
         LogoPanel logoPanel;
         FFTSettingPanel fftSettingPanel;

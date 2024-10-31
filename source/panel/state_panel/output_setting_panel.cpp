@@ -89,6 +89,7 @@ namespace zlPanel {
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           uiBase(base),
+          currentScale(*parametersRef.getRawParameterValue(zlDSP::scale::ID)),
           callOutBoxLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         lookAndFeelChanged();
@@ -101,23 +102,20 @@ namespace zlPanel {
     }
 
     void OutputSettingPanel::paint(juce::Graphics &g) {
-        g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
+        // g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
+        // g.fillPath(backgroundPath);
         g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
-        juce::Path path;
-        const auto bound = getLocalBounds().toFloat();
-        path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                 uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
-                                 false, false, true, true);
-        g.fillPath(path);
+        g.fillPath(backgroundPath);
 
+        g.setFont(uiBase.getFontSize() * 1.375f);
         if (showGain) {
             g.setColour(uiBase.getColourByIdx(zlInterface::gainColour));
+            g.drawText(gainString, gainBound, juce::Justification::centred);
+            g.drawText(scaleString, scaleBound, juce::Justification::centred);
         } else {
             g.setColour(uiBase.getTextColor());
+            g.drawText("Output", getLocalBounds().toFloat(), juce::Justification::centred);
         }
-        g.setFont(uiBase.getFontSize() * 1.375f);
-        g.drawText(displayString, bound, juce::Justification::centred);
     }
 
     void OutputSettingPanel::mouseDown(const juce::MouseEvent &event) {
@@ -146,15 +144,12 @@ namespace zlPanel {
         const auto currentGain = processorRef.getController().getGainCompensation();
         showGain = !showGain;
         if (showGain) {
-            juce::String gainString;
-            if (currentGain <= -10.0) {
+            if (currentGain <= 0.04) {
                 gainString = juce::String(currentGain, 1, false);
-            } else if (currentGain < 10.0) {
+            } else {
                 gainString = "+" + juce::String(currentGain, 1, false);
             }
-            displayString = gainString;
-        } else {
-            displayString = "Output";
+            scaleString = juce::String(currentScale.load(), 0, false) + "%";
         }
         repaint();
     }
@@ -166,8 +161,17 @@ namespace zlPanel {
         } else {
             stopTimer();
             showGain = false;
-            displayString = "Output";
             repaint();
         }
+    }
+
+    void OutputSettingPanel::resized() {
+        gainBound = getLocalBounds().toFloat();
+        scaleBound = gainBound.removeFromRight(gainBound.getWidth() * .5f);
+        const auto bound = getLocalBounds().toFloat();
+        backgroundPath.clear();
+        backgroundPath.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
+                                           uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
+                                           false, false, true, true);
     }
 } // zlPanel

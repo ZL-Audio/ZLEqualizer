@@ -28,12 +28,17 @@ namespace zlPanel {
 
         void mouseDown(const juce::MouseEvent &event) override;
 
+        void resized() override;
+
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        juce::String displayString {"Output"};
+        std::atomic<float> &currentScale;
+        juce::String gainString {"0.0"}, scaleString{"100.0%"};
         bool showGain{false};
+        juce::Rectangle<float> gainBound, scaleBound;
+        juce::Path backgroundPath;
 
         zlInterface::CallOutBoxLAF callOutBoxLAF;
         juce::Component::SafePointer<juce::CallOutBox> boxPointer;
