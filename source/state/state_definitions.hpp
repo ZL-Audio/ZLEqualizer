@@ -279,7 +279,7 @@ namespace zlState {
         inline auto static const choices = juce::StringArray{
             "Circular", "Horizontal", "Vertical", "Horiz + Vert"
         };
-        int static constexpr defaultI = 0;
+        int static constexpr defaultI = 3;
         inline static std::array<juce::Slider::SliderStyle, 4> styles{
             juce::Slider::Rotary,
             juce::Slider::RotaryHorizontalDrag,
@@ -303,7 +303,7 @@ namespace zlState {
         inline auto static const choices = juce::StringArray{
             "Return Default", "Open Editor"
         };
-        int static constexpr defaultI = 0;
+        int static constexpr defaultI = 1;
     };
 
     class refreshRate : public ChoiceParameters<refreshRate> {
