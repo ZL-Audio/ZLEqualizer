@@ -381,12 +381,12 @@ namespace zlState {
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);
         addOneColour(layout, "grid", 255 - 8, 255 - 9, 255 - 11, true, .25f);
-        addOneColour(layout, "tag", 137, 125, 109, true, 0.f);
+        addOneColour(layout, "tag", 137, 125, 109, true, 1.f);
         addOneColour(layout, "text", 255 - 8, 255 - 9, 255 - 11, true, 1.f);
         addOneColour(layout, "background", (255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2, true, 1.f);
         addOneColour(layout, "shadow", 0, 0, 0, true, 1.f);
         addOneColour(layout, "glow", 70, 66, 62, true, 1.f);
-        addOneColour(layout, "gain", 255 - 8, 255 - 9, 255 - 11, true, 0.f);
+        addOneColour(layout, "gain", 255 - 8, 255 - 9, 255 - 11, true, 1.f);
         return layout;
     }
 }

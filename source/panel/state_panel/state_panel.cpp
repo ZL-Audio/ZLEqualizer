@@ -61,7 +61,7 @@ namespace zlPanel {
 
         const auto effectBound = bound.removeFromRight(height * .8f);
         effectC.setBounds(effectBound.toNearestInt());
-        bound.removeFromRight(height * .25f);
+        bound.removeFromRight(height * .15f);
 
         const auto sgcBound = bound.removeFromRight(height * .75f);
         sgcC.setBounds(sgcBound.toNearestInt());
