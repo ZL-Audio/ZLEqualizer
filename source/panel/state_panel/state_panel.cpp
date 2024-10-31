@@ -19,7 +19,12 @@ namespace zlPanel {
           compSettingPanel(p, base),
           outputSettingPanel(p, base),
           conflictSettingPanel(p, base),
-          generalSettingPanel(p, base) {
+          generalSettingPanel(p, base),
+          effectC("all", uiBase),
+          sgcC("S", uiBase),
+          effectDrawable(
+              juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg,
+                                                  BinaryData::fadpowerswitch_svgSize)) {
         setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
         addAndMakeVisible(fftSettingPanel);
@@ -27,23 +32,51 @@ namespace zlPanel {
         addAndMakeVisible(outputSettingPanel);
         addAndMakeVisible(conflictSettingPanel);
         addAndMakeVisible(generalSettingPanel);
+
+        effectC.setDrawable(effectDrawable.get());
+
+        for (auto &c: {&effectC, &sgcC}) {
+            c->getLAF().setLabelScale(1.7f);
+            c->getLAF().enableShadow(false);
+            c->getLAF().setShrinkScale(.0f);
+            addAndMakeVisible(c);
+        }
+
+        addAndMakeVisible(effectC);
+        addAndMakeVisible(sgcC);
+
+        attach({
+                       &effectC.getButton(),
+                       &sgcC.getButton(),
+                   },
+                   {zlDSP::effectON::ID, zlDSP::staticAutoGain::ID},
+                   p.parameters, buttonAttachments);
     }
 
     void StatePanel::resized() {
         auto bound = getLocalBounds().toFloat();
         const auto logoBound = bound.removeFromLeft(bound.getWidth() * .125f);
         logoPanel.setBounds(logoBound.toNearestInt());
-        bound.removeFromRight(uiBase.getFontSize() * 4);
         const auto height = bound.getHeight();
+
+        const auto effectBound = bound.removeFromRight(height * .8f);
+        effectC.setBounds(effectBound.toNearestInt());
+        bound.removeFromRight(height * .25f);
+
+        const auto sgcBound = bound.removeFromRight(height * .75f);
+        sgcC.setBounds(sgcBound.toNearestInt());
+        bound.removeFromRight(height * .25f);
+
         bound.removeFromBottom(uiBase.getFontSize() * .5f);
+
+        const auto outputSettingBound = bound.removeFromRight(height * 2.5f);
+        outputSettingPanel.setBounds(outputSettingBound.toNearestInt());
+        bound.removeFromRight(height * .5f);
         const auto fftSettingBound = bound.removeFromRight(height * 2.5f);
         fftSettingPanel.setBounds(fftSettingBound.toNearestInt());
         bound.removeFromRight(height * .5f);
         const auto compSettingBound = bound.removeFromRight(height * 2.5f);
         compSettingPanel.setBounds(compSettingBound.toNearestInt());
-        bound.removeFromRight(height * .5f);
-        const auto outputSettingBound = bound.removeFromRight(height * 2.5f);
-        outputSettingPanel.setBounds(outputSettingBound.toNearestInt());
         bound.removeFromRight(height * .5f);
         const auto conflictSettingBound = bound.removeFromRight(height * 2.5f);
         conflictSettingPanel.setBounds(conflictSettingBound.toNearestInt());

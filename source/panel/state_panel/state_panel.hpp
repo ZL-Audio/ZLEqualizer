@@ -36,6 +36,10 @@ namespace zlPanel {
         OutputSettingPanel outputSettingPanel;
         ConflictSettingPanel conflictSettingPanel;
         GeneralSettingPanel generalSettingPanel;
+
+        zlInterface::CompactButton effectC, sgcC;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > buttonAttachments{};
+        const std::unique_ptr<juce::Drawable> effectDrawable;
     };
 } // zlPanel
 
