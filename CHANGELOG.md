@@ -6,10 +6,14 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.4.2
 
-- add & change slider value editor shortcuts
-  - open value editor with Ctrl/Command + mouse double-clicking for ALL sliders
-- fix incorrect curve display when adjusting `scale`
-- improve `mixed phase` phase shift continuity
+- change the top panel layout (move global bypass and sgc buttons outside)
+- change the UI setting panel layout
+- add the resizing to default size function to UI button
+- add default pass filter order & slider doube clicking to UI setting panel
+- fix incorrect latency when the samplerate changes after loading the plugin
+- fix combobox displays in `Standalone`
+- improve `matched phase` `mixed phase` under high samplerates
+- improve spectrum display accuracy in the high-end
 
 ## 0.4.1
 
