@@ -30,13 +30,15 @@ namespace zlPanel {
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
 
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
-        for (auto &d:scaleDBs) {
+        for (auto &d: scaleDBs) {
             const auto y = d * bound.getHeight() + bound.getY() - uiBase.getFontSize() * .75f;
-            const auto lTextBound = juce::Rectangle<float>(bound.getX(), y, bound.getWidth() * .4f, uiBase.getFontSize() * 1.5f);
+            const auto lTextBound = juce::Rectangle<float>(bound.getX(), y, bound.getWidth() * .4f,
+                                                           uiBase.getFontSize() * 1.5f);
             const auto leftDB = static_cast<int>(-2 * d * maximumDB.load() + maximumDB.load());
             g.setColour(uiBase.getTextColor());
             g.drawText(juce::String(leftDB), lTextBound, juce::Justification::centredRight);
-            const auto rTextBound = juce::Rectangle<float>(bound.getCentreX(), y, bound.getWidth() * .4f, uiBase.getFontSize() * 1.5f);
+            const auto rTextBound = juce::Rectangle<float>(bound.getCentreX(), y, bound.getWidth() * .4f,
+                                                           uiBase.getFontSize() * 1.5f);
             const auto reftDB = static_cast<int>(maximumFFTDB.load() * d);
             g.setColour(uiBase.getTextInactiveColor());
             g.drawText(juce::String(reftDB), rTextBound, juce::Justification::centredRight);

@@ -27,8 +27,6 @@ namespace zlPanel {
 
         ~FilterButtonPanel() override;
 
-        void paint(juce::Graphics &g) override;
-
         void resized() override;
 
         zlInterface::Dragger &getDragger() { return dragger; }
@@ -51,6 +49,8 @@ namespace zlPanel {
         }
 
         void mouseDoubleClick(const juce::MouseEvent &event) override;
+
+        void lookAndFeelChanged() override;
 
     private:
         PluginProcessor &processorRef;

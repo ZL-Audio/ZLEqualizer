@@ -11,6 +11,7 @@
 #define ZL_COLOUR_SELECTOR_H
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include <juce_gui_extra/juce_gui_extra.h>
 #include "../interface_definitions.hpp"
 #include "../calloutbox/call_out_box_laf.hpp"
 

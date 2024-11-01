@@ -10,6 +10,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 - change the UI setting panel layout
 - add the resizing to default size function to UI button
 - add default pass filter order & slider doube clicking to UI setting panel
+- add colour maps to UI setting panel
 - fix incorrect latency when the samplerate changes after loading the plugin
 - fix combobox displays in `Standalone`
 - improve `matched phase` `mixed phase` under high samplerates
@@ -39,28 +40,12 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.3.5
 
-After installation, please load the plugin in an empty DAW session and check its functionality.
-
-**WARNING for Linux users**: If you build it locally, please build with `juce7` branch.
-
-**WARNING for Windows users**: The C++ runtime is now statically linked. However, you may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
-
-**WARNING for Pro Tool users**: AAX is updated in this version. If Pro Tools cannot recognize the plugin (or display an error message), please open a discussion.
-
 - BREAKING: add auto dynamic threshold. When you press the dynamic threshold learning button, it will not only start the threshold learning but also automatically adjust the threshold. See the manual for more information.
 - BREAKING: fix the reset button in the UI setting panel. When you press the reset button, it will reset colours to defaults.
 - add standalone to releases
 - change the plugin logo
 
 ## 0.3.4
-
-After installation, please load the plugin in an empty DAW session and check its functionality.
-
-**WARNING for Linux users**: If you build it locally, please build with `juce7` branch.
-
-**WARNING for Windows users**: The C++ runtime is now statically linked. However, you may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
-
-**WARNING for Pro Tool users**: AAX is not updated in this version.
 
 - BREAKING: remove light/dark colour modes
 - add text/background/shadow/glow colours to UI setting panel
@@ -71,24 +56,10 @@ After installation, please load the plugin in an empty DAW session and check its
 
 ## 0.3.3
 
-After installation, please load the plugin in an empty DAW session and check its functionality.
-
-**WARNING for Linux users**: If you build it locally, please build with `juce7` branch.
-
-**WARNING for Windows users**: The C++ runtime is now statically linked. However, you may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
-
-**WARNING for Pro Tools users**: This is the first AAX plugin from me. If Pro Tools cannot recognize the plugin (or display an error message), please reach out to me.
-
 - add more colours to UI setting panel
 - add AAX to macOS & Windows release
 
 ## 0.3.2
-
-Several dependencies have been updated. After installation, please load the plugin in an empty DAW session and check its functionality.
-
-**WARNING for Linux users**: If you build it locally, please build with `juce7` branch since JUCE 8 has some issues on Linux.
-
-**WARNING for Windows users**: You may have to install the [Latest Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) (if you are not able to open the plugin).
 
 - bump to JUCE 8 (except for Linux)
 - improve multi-band selection

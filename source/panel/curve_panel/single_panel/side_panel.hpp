@@ -32,6 +32,8 @@ namespace zlPanel {
 
         bool checkRepaint();
 
+        void lookAndFeelChanged() override;
+
     private:
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;

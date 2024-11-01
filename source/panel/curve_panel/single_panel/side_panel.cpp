@@ -38,6 +38,7 @@ namespace zlPanel {
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
         update();
+        lookAndFeelChanged();
     }
 
     SidePanel::~SidePanel() {
@@ -62,7 +63,7 @@ namespace zlPanel {
         const auto x2 = scale2.load() * bound.getWidth();
 
         const auto thickness = uiBase.getFontSize() * 0.15f;
-        g.setColour(uiBase.getColorMap1(idx));
+        g.setColour(colour);
         g.drawLine(x1, bound.getBottom(), x2, bound.getBottom(), thickness);
     }
 
@@ -102,5 +103,9 @@ namespace zlPanel {
 
         scale1.store(std::log(static_cast<float>(freq1) / 10.f) / std::log(2200.f));
         scale2.store(std::log(static_cast<float>(freq2) / 10.f) / std::log(2200.f));
+    }
+
+    void SidePanel::lookAndFeelChanged() {
+        colour = uiBase.getColorMap1(idx);
     }
 } // zlPanel

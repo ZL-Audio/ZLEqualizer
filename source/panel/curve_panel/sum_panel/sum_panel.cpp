@@ -30,6 +30,7 @@ namespace zlPanel {
                 parametersRef.addParameterListener(paraID, this);
             }
         }
+        lookAndFeelChanged();
     }
 
     SumPanel::~SumPanel() {
@@ -50,7 +51,7 @@ namespace zlPanel {
         }
         for (size_t j = 0; j < useLRMS.size(); ++j) {
             if (!useLRMS[j]) { continue; }
-            g.setColour(uiBase.getColorMap2(j));
+            g.setColour(colours[j]);
             const juce::GenericScopedTryLock lock(pathLocks[j]);
             if (lock.isLocked()) {
                 g.strokePath(recentPaths[j], juce::PathStrokeType(
@@ -125,5 +126,11 @@ namespace zlPanel {
     void SumPanel::resized() {
         atomicBound.update(getLocalBounds().toFloat());
         toRepaint.store(true);
+    }
+
+    void SumPanel::lookAndFeelChanged() {
+        for (size_t j = 0; j < colours.size(); ++j) {
+            colours[j] = uiBase.getColorMap2(j);
+        }
     }
 } // zlPanel

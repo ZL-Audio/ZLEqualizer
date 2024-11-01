@@ -41,9 +41,12 @@ namespace zlPanel {
 
         void run();
 
+        void lookAndFeelChanged() override;
+
     private:
         std::array<juce::Path, 5> paths, recentPaths;
         std::array<juce::SpinLock, 5> pathLocks;
+        std::array<juce::Colour, 5> colours;
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
         zlDSP::Controller<double> &c;

@@ -51,6 +51,7 @@ namespace zlPanel {
         setInterceptsMouseClicks(false, false);
         addAndMakeVisible(sidePanel);
         skipRepaint.store(false);
+        lookAndFeelChanged();
     }
 
     SinglePanel::~SinglePanel() {
@@ -69,7 +70,6 @@ namespace zlPanel {
         if (!actived.load()) {
             return;
         }
-        colour = uiBase.getColorMap1(idx);
         auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
         thickness *= uiBase.getSingleCurveThickness();
         g.setColour(colour);
@@ -270,5 +270,9 @@ namespace zlPanel {
             juce::GenericScopedLock lock(dynLock);
             recentDynPath = dynPath;
         }
+    }
+
+    void SinglePanel::lookAndFeelChanged() {
+        colour = uiBase.getColorMap1(idx);
     }
 } // zlPanel

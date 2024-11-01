@@ -28,7 +28,10 @@ namespace zlPanel {
 
         void resized() override;
 
-        void setMaximumDB(const float x) { maximumDB.store(x); triggerAsyncUpdate();}
+        void setMaximumDB(const float x) {
+            maximumDB.store(x);
+            triggerAsyncUpdate();
+        }
 
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;

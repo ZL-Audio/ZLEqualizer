@@ -60,13 +60,11 @@ namespace zlPanel {
                 path->lineTo(leftCorner);
                 path->closeSubPath();
             }
-        }
-        {
+        } {
             juce::GenericScopedLock lock{pathLock};
             recentPath1 = path1;
             recentPath2 = path2;
-        }
-        {
+        } {
             juce::GenericScopedLock lock{pathLock};
             recentPath3 = path3;
         }

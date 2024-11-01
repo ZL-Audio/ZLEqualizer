@@ -17,12 +17,10 @@ namespace zlPanel {
           dragger(base), targetDragger(base), sideDragger(base),
           buttonPopUp(bandIdx, parametersRef, parametersNARef, base),
           band{bandIdx} {
-        dragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
         dragger.addMouseListener(this, true);
         targetDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::upDownArrow);
-        targetDragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
         sideDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::rectangle);
-        sideDragger.getLAF().setColour(uiBase.getColorMap1(bandIdx));
+        lookAndFeelChanged();
         for (const auto &idx: IDs) {
             const auto idxD = zlDSP::appendSuffix(idx, band.load());
             parametersRef.addParameterListener(idxD, this);
@@ -87,13 +85,6 @@ namespace zlPanel {
             parametersNARef.removeParameterListener(zlState::appendSuffix(idx, band.load()), this);
         }
         parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
-    }
-
-    void FilterButtonPanel::paint(juce::Graphics &g) {
-        juce::ignoreUnused(g);
-        for (auto &d: {&sideDragger, &targetDragger, &dragger}) {
-            d->getLAF().setColour(uiBase.getColorMap1(band.load()));
-        }
     }
 
     void FilterButtonPanel::resized() {
@@ -363,6 +354,12 @@ namespace zlPanel {
             } else {
                 processorRef.getFiltersAttach().turnOffDynamic(band.load());
             }
+        }
+    }
+
+    void FilterButtonPanel::lookAndFeelChanged() {
+        for (auto &d: {&sideDragger, &targetDragger, &dragger}) {
+            d->getLAF().setColour(uiBase.getColorMap1(band.load()));
         }
     }
 } // zlPanel

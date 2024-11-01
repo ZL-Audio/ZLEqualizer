@@ -54,6 +54,8 @@ namespace zlPanel {
 
         void run();
 
+        void lookAndFeelChanged() override;
+
     private:
         juce::Path curvePath, shadowPath, dynPath;
         juce::Path recentCurvePath, recentShadowPath, recentDynPath;
