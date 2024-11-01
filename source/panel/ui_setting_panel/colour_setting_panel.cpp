@@ -30,7 +30,8 @@ namespace zlPanel {
           sideSelector(base, *this),
           gridSelector(base, *this),
           tagSelector(base, *this),
-          gainSelector(base, *this) {
+          gainSelector(base, *this),
+          cMap1Selector(base), cMap2Selector(base) {
         juce::ignoreUnused(pRef);
         nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
@@ -40,6 +41,14 @@ namespace zlPanel {
             addAndMakeVisible(selectorLabels[i]);
             addAndMakeVisible(selectors[i]);
         }
+        cMap1Label.setText("Colour Map 1", juce::dontSendNotification);
+        cMap1Label.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(cMap1Label);
+        addAndMakeVisible(cMap1Selector);
+        cMap2Label.setText("Colour Map 2", juce::dontSendNotification);
+        cMap2Label.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(cMap2Label);
+        addAndMakeVisible(cMap2Selector);
     }
 
     ColourSettingPanel::~ColourSettingPanel() {
@@ -52,12 +61,16 @@ namespace zlPanel {
         for (size_t i = 0; i < numSelectors; ++i) {
             selectors[i]->setColour(uiBase.getColourByIdx(static_cast<zlInterface::colourIdx>(i)));
         }
+        cMap1Selector.getBox().setSelectedId(static_cast<int>(uiBase.getCMap1Idx()) + 1);
+        cMap2Selector.getBox().setSelectedId(static_cast<int>(uiBase.getCMap2Idx()) + 1);
     }
 
     void ColourSettingPanel::saveSetting() {
         for (size_t i = 0; i < numSelectors; ++i) {
             uiBase.setColourByIdx(static_cast<zlInterface::colourIdx>(i), selectors[i]->getColour());
         }
+        uiBase.setCMap1Idx(static_cast<size_t>(cMap1Selector.getBox().getSelectedId() - 1));
+        uiBase.setCMap2Idx(static_cast<size_t>(cMap2Selector.getBox().getSelectedId() - 1));
         uiBase.saveToAPVTS();
     }
 
@@ -70,6 +83,8 @@ namespace zlPanel {
         postSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
         sideSelector.setColour(getIntColour(252, 18, 197, .1f));
         gridSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .25f));
+        cMap1Selector.getBox().setSelectedId(zlState::colourMap1Idx::defaultI + 1);
+        cMap2Selector.getBox().setSelectedId(zlState::colourMap2Idx::defaultI + 1);
         saveSetting();
     }
 
@@ -81,6 +96,18 @@ namespace zlPanel {
             selectorLabels[i].setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
             selectors[i]->setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
+        } {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            cMap1Label.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            cMap1Selector.setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
+        } {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            cMap2Label.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            cMap2Selector.setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
         }
     }
 } // zlPanel

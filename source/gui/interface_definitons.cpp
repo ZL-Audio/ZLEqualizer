@@ -272,6 +272,8 @@ namespace zlInterface {
         singleCurveThickness.store(loadPara(zlState::singleCurveThickness::ID));
         sumCurveThickness.store(loadPara(zlState::sumCurveThickness::ID));
         defaultPassFilterSlope.store(static_cast<int>(loadPara(zlState::defaultPassFilterSlope::ID)));
+        cMap1Idx = static_cast<size_t>(loadPara(zlState::colourMap1Idx::ID));
+        cMap2Idx = static_cast<size_t>(loadPara(zlState::colourMap2Idx::ID));
     }
 
     void UIBase::saveToAPVTS() const {
@@ -316,5 +318,7 @@ namespace zlInterface {
                  zlState::sumCurveThickness::convertTo01(sumCurveThickness.load()));
         savePara(zlState::defaultPassFilterSlope::ID,
                  zlState::defaultPassFilterSlope::convertTo01(defaultPassFilterSlope.load()));
+        savePara(zlState::colourMap1Idx::ID, zlState::colourMapIdx::convertTo01(static_cast<int>(cMap1Idx)));
+        savePara(zlState::colourMap2Idx::ID, zlState::colourMapIdx::convertTo01(static_cast<int>(cMap2Idx)));
     }
 }

@@ -61,6 +61,8 @@ namespace zlPanel {
             "Tag Colour",
             "Gain Colour",
         };
+        juce::Label cMap1Label, cMap2Label;
+        zlInterface::ColourMapSelector cMap1Selector, cMap2Selector;
     };
 } // zlPanel
 

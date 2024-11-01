@@ -7,11 +7,10 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef COLOURSELECTOR_H
-#define COLOURSELECTOR_H
+#ifndef ZL_COLOUR_SELECTOR_H
+#define ZL_COLOUR_SELECTOR_H
 
 #include <juce_gui_basics/juce_gui_basics.h>
-#include <juce_gui_extra/juce_gui_extra.h>
 #include "../interface_definitions.hpp"
 #include "../calloutbox/call_out_box_laf.hpp"
 
@@ -52,4 +51,4 @@ namespace zlInterface {
     };
 } // zlInterface
 
-#endif //COLOURSELECTOR_H
+#endif //ZL_COLOUR_SELECTOR_H

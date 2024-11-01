@@ -7,8 +7,8 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef COLOUR_OPACITY_SELECTOR_HPP
-#define COLOUR_OPACITY_SELECTOR_HPP
+#ifndef ZL_COLOUR_OPACITY_SELECTOR_HPP
+#define ZL_COLOUR_OPACITY_SELECTOR_HPP
 
 #include "colour_selector.hpp"
 #include "../slider/slider.hpp"
@@ -46,4 +46,4 @@ namespace zlInterface {
     };
 } // zlInterface
 
-#endif //COLOUR_OPACITY_SELECTOR_HPP
+#endif //ZL_COLOUR_OPACITY_SELECTOR_HPP

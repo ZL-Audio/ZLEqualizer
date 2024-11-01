@@ -48,6 +48,7 @@ private:
         "side_r", "side_g", "side_b", "side_o",
         "grid_r", "grid_g", "grid_b", "grid_o",
         "gain_r", "gain_g", "gain_b", "gain_o",
+        zlState::colourMap1Idx::ID, zlState::colourMap2Idx::ID,
         zlState::wheelSensitivity::ID, zlState::wheelFineSensitivity::ID,
         zlState::rotaryStyle::ID, zlState::rotaryDragSensitivity::ID,
         zlState::sliderDoubleClickFunc::ID,

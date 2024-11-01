@@ -49,7 +49,6 @@ namespace zlInterface {
     static constexpr size_t ColorMap2Size = 6;
 
 
-
     inline std::array colourMaps = {
         std::vector<juce::Colour>{
             juce::Colour(31, 119, 180),
@@ -198,13 +197,11 @@ namespace zlInterface {
         }
 
         inline juce::Colour getColorMap1(const size_t idx) const {
-            const auto currentCMapIdx = cMap1Idx.load();
-            return colourMaps[currentCMapIdx][idx % colourMaps[currentCMapIdx].size()];
+            return colourMaps[cMap1Idx][idx % colourMaps[cMap1Idx].size()];
         }
 
         inline juce::Colour getColorMap2(const size_t idx) const {
-            const auto currentCMapIdx = cMap2Idx.load();
-            return colourMaps[currentCMapIdx][idx % colourMaps[currentCMapIdx].size()];
+            return colourMaps[cMap2Idx][idx % colourMaps[cMap2Idx].size()];
         }
 
         static juce::Rectangle<float> getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds,
@@ -339,6 +336,14 @@ namespace zlInterface {
 
         void setDefaultPassFilterSlope(const int x) { defaultPassFilterSlope.store(x); }
 
+        size_t getCMap1Idx() const { return cMap1Idx; }
+
+        void setCMap1Idx(const size_t x) { cMap1Idx = x; }
+
+        size_t getCMap2Idx() const { return cMap2Idx; }
+
+        void setCMap2Idx(const size_t x) { cMap2Idx = x; }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         std::atomic<float> fontSize{0};
@@ -365,8 +370,8 @@ namespace zlInterface {
             para->endChangeGesture();
         }
 
-        std::atomic<size_t> cMap1Idx{zlState::colourMapIdx::defaultDark};
-        std::atomic<size_t> cMap2Idx{zlState::colourMapIdx::seabornBrightDark};
+        size_t cMap1Idx{zlState::colourMapIdx::defaultDark};
+        size_t cMap2Idx{zlState::colourMapIdx::seabornBrightDark};
     };
 }
 

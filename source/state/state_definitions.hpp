@@ -392,27 +392,19 @@ namespace zlState {
         int static constexpr defaultI = 0;
     };
 
-    class colourMapIdx1 : public ChoiceParameters<colourMapIdx1> {
+    class colourMap1Idx : public ChoiceParameters<colourMap1Idx> {
     public:
-        auto static constexpr ID = "colour_map_idx1";
+        auto static constexpr ID = "colour_map_1_idx";
         auto static constexpr name = "";
-        inline auto static const choices = juce::StringArray{
-            "Default Light", "Default Dark",
-            "Seaborn Normal Light", "Seaborn Normal Dark",
-            "Seaborn Bright Light", "Seaborn Bright Dark"
-        };
+        inline auto static const choices = colourMapIdx::choices;
         int static constexpr defaultI = 1;
     };
 
-    class colourMapIdx2 : public ChoiceParameters<colourMapIdx2> {
+    class colourMap2Idx : public ChoiceParameters<colourMap2Idx> {
     public:
-        auto static constexpr ID = "colour_map_idx2";
+        auto static constexpr ID = "colour_map_2_idx";
         auto static constexpr name = "";
-        inline auto static const choices = juce::StringArray{
-            "Default Light", "Default Dark",
-            "Seaborn Normal Light", "Seaborn Normal Dark",
-            "Seaborn Bright Light", "Seaborn Bright Dark"
-        };
+        inline auto static const choices = colourMapIdx::choices;
         int static constexpr defaultI = 5;
     };
 
@@ -457,7 +449,7 @@ namespace zlState {
         addOneColour(layout, "shadow", 0, 0, 0, true, 1.f);
         addOneColour(layout, "glow", 70, 66, 62, true, 1.f);
         addOneColour(layout, "gain", 255 - 8, 255 - 9, 255 - 11, true, 1.f);
-        layout.add(colourMapIdx1::get(), colourMapIdx2::get());
+        layout.add(colourMap1Idx::get(), colourMap2Idx::get());
         return layout;
     }
 }
