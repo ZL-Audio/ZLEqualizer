@@ -142,6 +142,13 @@ namespace zlDSP {
         }
         if (currentIsSgcON != isSgcON.load()) {
             currentIsSgcON = isSgcON.load();
+            if (!currentIsSgcON) {
+                for (auto &cG: compensationGains) {
+                    cG.setGainLinear(FloatType(1));
+                }
+            } else {
+                toUpdateSgc.store(true);
+            }
         }
         if (currentIsSgcON) {
             if (toUpdateSgc.exchange(false)) {
