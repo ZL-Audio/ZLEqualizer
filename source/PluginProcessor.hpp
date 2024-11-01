@@ -24,6 +24,7 @@ public:
     juce::AudioProcessorValueTreeState parameters;
     juce::AudioProcessorValueTreeState parametersNA;
     juce::AudioProcessorValueTreeState state;
+    zlState::Property property;
 
     PluginProcessor();
 

@@ -11,8 +11,9 @@
 
 namespace zlFFT {
     template<typename FloatType>
-    PrePostFFTAnalyzer<FloatType>::PrePostFFTAnalyzer()
-        : Thread("pre_post_analyzer") {
+    PrePostFFTAnalyzer<FloatType>::PrePostFFTAnalyzer(const size_t fftOrder)
+        : Thread("pre_post_analyzer"),
+          fftAnalyzer(fftOrder) {
         fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
     }
 

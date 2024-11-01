@@ -23,7 +23,7 @@ namespace zlFFT {
     public:
         static constexpr size_t pointNum = 251;
 
-        explicit PrePostFFTAnalyzer();
+        explicit PrePostFFTAnalyzer(size_t fftOrder = 12);
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 

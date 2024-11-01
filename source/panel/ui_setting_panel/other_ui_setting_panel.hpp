@@ -38,6 +38,7 @@ private:
     zlInterface::CompactCombobox refreshRateBox;
     juce::Label fftLabel;
     zlInterface::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
+    zlInterface::CompactCombobox fftOrderBox;
     juce::Label curveThickLabel;
     zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
     juce::Label defaultPassFilterSlopeLabel;

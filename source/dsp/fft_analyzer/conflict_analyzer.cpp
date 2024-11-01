@@ -11,8 +11,9 @@
 
 namespace zlFFT {
     template<typename FloatType>
-    ConflictAnalyzer<FloatType>::ConflictAnalyzer()
-        : Thread("conflict_analyzer") {
+    ConflictAnalyzer<FloatType>::ConflictAnalyzer(const size_t fftOrder)
+        : Thread("conflict_analyzer"),
+          syncAnalyzer(fftOrder) {
         // std::fill(mainDB.begin(), mainDB.end(), -144.f);
         // std::fill(refDB.begin(), refDB.end(), -144.f);
         syncAnalyzer.setDecayRate(0, 0.985f);

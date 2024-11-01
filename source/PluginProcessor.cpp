@@ -26,7 +26,9 @@ PluginProcessor::PluginProcessor()
       state(dummyProcessor, nullptr,
             juce::Identifier("ZLEqualizerState"),
             zlState::getStateParameterLayout()),
-      controller(*this),
+      property(state),
+      controller(*this, zlState::ffTOrder::orders[
+                     static_cast<size_t>(state.getRawParameterValue(zlState::ffTOrder::ID)->load())]),
       filtersAttach(*this, parameters, parametersNA, controller),
       soloAttach(*this, parameters, controller),
       choreAttach(*this, parameters, parametersNA, controller),

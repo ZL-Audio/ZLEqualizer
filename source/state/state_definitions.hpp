@@ -115,17 +115,6 @@ namespace zlState {
         int static constexpr defaultI = 0;
     };
 
-    class ffTOrder : public ChoiceParameters<ffTOrder> {
-    public:
-        auto static constexpr ID = "fft_order";
-        auto static constexpr name = "";
-        inline auto static const choices = juce::StringArray{
-            "Low", "Medium", "High"
-        };
-        static constexpr std::array<int, 3> orders{10, 11, 12};
-        int static constexpr defaultI = 1;
-    };
-
     class ffTSpeed : public ChoiceParameters<ffTSpeed> {
     public:
         auto static constexpr ID = "fft_speed";
@@ -194,7 +183,7 @@ namespace zlState {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(selectedBandIdx::get(), maximumDB::get(),
                    fftPreON::get(), fftPostON::get(), fftSideON::get(),
-                   ffTOrder::get(), ffTSpeed::get(), ffTTilt::get(),
+                   ffTSpeed::get(), ffTTilt::get(),
                    conflictON::get(), conflictStrength::get(), conflictScale::get());
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
@@ -317,9 +306,20 @@ namespace zlState {
         inline static std::array<int, 5> ms{
             39, 33, 16, 11, 8
         };
-        inline static std::array<float, 5> rates {
+        inline static std::array<float, 5> rates{
             25, 30, 60, 90, 120
         };
+    };
+
+    class ffTOrder : public ChoiceParameters<ffTOrder> {
+    public:
+        auto static constexpr ID = "fft_order";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Low", "Medium", "High"
+        };
+        static constexpr std::array<size_t, 3> orders{11, 12, 13};
+        int static constexpr defaultI = 1;
     };
 
     class fftExtraTilt : public FloatParameters<fftExtraTilt> {
@@ -436,7 +436,7 @@ namespace zlState {
                    rotaryStyle::get(), rotaryDragSensitivity::get(),
                    sliderDoubleClickFunc::get(),
                    refreshRate::get(),
-                   fftExtraTilt::get(), fftExtraSpeed::get(),
+                   ffTOrder::get(), fftExtraTilt::get(), fftExtraSpeed::get(),
                    singleCurveThickness::get(), sumCurveThickness::get(),
                    defaultPassFilterSlope::get());
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);

@@ -274,6 +274,7 @@ namespace zlInterface {
         defaultPassFilterSlope.store(static_cast<int>(loadPara(zlState::defaultPassFilterSlope::ID)));
         cMap1Idx = static_cast<size_t>(loadPara(zlState::colourMap1Idx::ID));
         cMap2Idx = static_cast<size_t>(loadPara(zlState::colourMap2Idx::ID));
+        fftOrderIdx = static_cast<int>(loadPara(zlState::ffTOrder::ID));
     }
 
     void UIBase::saveToAPVTS() const {
@@ -320,5 +321,6 @@ namespace zlInterface {
                  zlState::defaultPassFilterSlope::convertTo01(defaultPassFilterSlope.load()));
         savePara(zlState::colourMap1Idx::ID, zlState::colourMapIdx::convertTo01(static_cast<int>(cMap1Idx)));
         savePara(zlState::colourMap2Idx::ID, zlState::colourMapIdx::convertTo01(static_cast<int>(cMap2Idx)));
+        savePara(zlState::ffTOrder::ID, zlState::ffTOrder::convertTo01(fftOrderIdx));
     }
 }

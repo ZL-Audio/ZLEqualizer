@@ -30,7 +30,7 @@ namespace zlDSP {
     public:
         static constexpr size_t FilterSize = 16;
 
-        explicit Controller(juce::AudioProcessor &processor);
+        explicit Controller(juce::AudioProcessor &processor, size_t fftOrder = 12);
 
         void reset();
 
@@ -259,9 +259,9 @@ namespace zlDSP {
         std::atomic<bool> isEffectON{true};
         bool currentIsEffectON{true};
 
-        zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzer{};
+        zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzer;
 
-        zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer{};
+        zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer;
 
         std::atomic<bool> dynLink{false};
 

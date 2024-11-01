@@ -344,6 +344,10 @@ namespace zlInterface {
 
         void setCMap2Idx(const size_t x) { cMap2Idx = x; }
 
+        int getFFTOrderIdx() const { return fftOrderIdx; }
+
+        void setFFTOrderIdx(const int x) { fftOrderIdx = x; }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         std::atomic<float> fontSize{0};
@@ -372,6 +376,8 @@ namespace zlInterface {
 
         size_t cMap1Idx{zlState::colourMapIdx::defaultDark};
         size_t cMap2Idx{zlState::colourMapIdx::seabornBrightDark};
+
+        int fftOrderIdx;
     };
 }
 

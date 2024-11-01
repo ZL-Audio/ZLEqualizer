@@ -16,6 +16,7 @@ namespace zlPanel {
           refreshRateBox("", zlState::refreshRate::choices, base),
           fftTiltSlider("Tilt", base),
           fftSpeedSlider("Speed", base),
+          fftOrderBox("order", zlState::ffTOrder::choices, base),
           singleCurveSlider("Single", base),
           sumCurveSlider("Sum", base),
           defaultPassFilterSlopeBox("", zlState::defaultPassFilterSlope::choices, base) {
@@ -36,6 +37,7 @@ namespace zlPanel {
             true, static_cast<double>(zlState::fftExtraSpeed::defaultV));
         addAndMakeVisible(fftTiltSlider);
         addAndMakeVisible(fftSpeedSlider);
+        addAndMakeVisible(fftOrderBox);
         curveThickLabel.setText("Curve Thickness", juce::dontSendNotification);
         curveThickLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(curveThickLabel);
@@ -62,6 +64,7 @@ namespace zlPanel {
         refreshRateBox.getBox().setSelectedId(static_cast<int>(uiBase.getRefreshRateID()) + 1);
         fftTiltSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraTilt()));
         fftSpeedSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraSpeed()));
+        fftOrderBox.getBox().setSelectedId(uiBase.getFFTOrderIdx() + 1);
         singleCurveSlider.getSlider().setValue(uiBase.getSingleCurveThickness());
         sumCurveSlider.getSlider().setValue(uiBase.getSumCurveThickness());
         defaultPassFilterSlopeBox.getBox().setSelectedId(uiBase.getDefaultPassFilterSlope() + 1);
@@ -71,6 +74,7 @@ namespace zlPanel {
         uiBase.setRefreshRateID(static_cast<size_t>(refreshRateBox.getBox().getSelectedId() - 1));
         uiBase.setFFTExtraTilt(static_cast<float>(fftTiltSlider.getSlider().getValue()));
         uiBase.setFFTExtraSpeed(static_cast<float>(fftSpeedSlider.getSlider().getValue()));
+        uiBase.setFFTOrderIdx(fftOrderBox.getBox().getSelectedId() - 1);
         uiBase.setSingleCurveThickness(static_cast<float>(singleCurveSlider.getSlider().getValue()));
         uiBase.setSumCurveThickness(static_cast<float>(sumCurveSlider.getSlider().getValue()));
         uiBase.setDefaultPassFilterSlope(defaultPassFilterSlopeBox.getBox().getSelectedId() - 1);
@@ -97,6 +101,8 @@ namespace zlPanel {
             fftTiltSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
             localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
             fftSpeedSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            fftOrderBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
             bound.removeFromTop(uiBase.getFontSize());
             auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);

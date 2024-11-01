@@ -24,8 +24,9 @@ namespace zlFFT {
     template<typename FloatType>
     class ConflictAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
-        static constexpr size_t pointNum = 401;
-        explicit ConflictAnalyzer();
+        static constexpr size_t pointNum = 251;
+
+        explicit ConflictAnalyzer(size_t fftOrder = 12);
 
         ~ConflictAnalyzer() override;
 

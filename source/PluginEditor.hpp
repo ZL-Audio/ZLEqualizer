@@ -30,7 +30,7 @@ public:
 
 private:
     PluginProcessor &processorRef;
-    zlState::Property property;
+    zlState::Property &property;
     std::atomic<bool> isSizeChanged{false};
 
     zlPanel::MainPanel mainPanel;

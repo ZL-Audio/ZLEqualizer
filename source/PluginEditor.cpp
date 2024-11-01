@@ -10,8 +10,7 @@
 #include "PluginEditor.hpp"
 
 PluginEditor::PluginEditor(PluginProcessor &p)
-    : AudioProcessorEditor(&p), processorRef(p), property(p.state),
-      mainPanel(p) {
+    : AudioProcessorEditor(&p), processorRef(p), property(p.property), mainPanel(p) {
     for (auto &ID: IDs) {
         processorRef.state.addParameterListener(ID, this);
     }
@@ -25,8 +24,6 @@ PluginEditor::PluginEditor(PluginProcessor &p)
                     static_cast<int>(zlState::windowH::minV),
                     static_cast<int>(zlState::windowW::maxV),
                     static_cast<int>(zlState::windowH::maxV));
-    // getConstrainer()->setFixedAspectRatio(
-    //     zlState::windowW::defaultV / zlState::windowH::defaultV);
     setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
     lastUIWidth.referTo(p.state.getParameterAsValue(zlState::windowW::ID));
     lastUIHeight.referTo(p.state.getParameterAsValue(zlState::windowH::ID));
