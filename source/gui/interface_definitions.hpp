@@ -48,14 +48,10 @@ namespace zlInterface {
     static constexpr size_t ColorMap1Size = 10;
     static constexpr size_t ColorMap2Size = 6;
 
-    struct UIColors {
-        juce::Colour TextColor = juce::Colour(87, 96, 110);
-        juce::Colour BackgroundColor = juce::Colour(214, 223, 236);
-        juce::Colour TextLightColor = juce::Colour(191, 200, 216);
-        juce::Colour DarkShadowColor = juce::Colour(168, 172, 178);
-        juce::Colour BrightShadowColor = juce::Colour(237, 246, 255);
-        juce::Colour ExtraColor1 = juce::Colour(139, 0, 0);
-        std::array<juce::Colour, ColorMap1Size> ColorMap1 = {
+
+
+    inline std::array colourMaps = {
+        std::vector<juce::Colour>{
             juce::Colour(31, 119, 180),
             juce::Colour(255, 127, 14),
             juce::Colour(44, 160, 44),
@@ -66,62 +62,52 @@ namespace zlInterface {
             juce::Colour(127, 127, 127),
             juce::Colour(188, 189, 34),
             juce::Colour(23, 190, 207)
-        };
-        std::array<juce::Colour, ColorMap2Size> ColorMap2 = {
+        },
+        std::vector<juce::Colour>{
+            juce::Colour(224, 136, 75),
+            juce::Colour(0, 128, 241),
+            juce::Colour(211, 95, 211),
+            juce::Colour(41, 216, 215),
+            juce::Colour(107, 152, 66),
+            juce::Colour(115, 169, 180),
+            juce::Colour(28, 136, 61),
+            juce::Colour(128, 128, 128),
+            juce::Colour(67, 66, 221),
+            juce::Colour(232, 65, 48),
+        },
+        std::vector<juce::Colour>{
             juce::Colour(76, 114, 176),
             juce::Colour(85, 168, 104),
             juce::Colour(196, 78, 82),
             juce::Colour(129, 114, 178),
             juce::Colour(255, 196, 0),
             juce::Colour(100, 181, 205),
-        };
-    };
-
-    inline const std::array<UIColors, 2> styleColors{
-        {
-            {},
-            {
-                .TextColor = juce::Colour(255 - 8, 255 - 9, 255 - 11),
-                .BackgroundColor = juce::Colour((255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2),
-                .TextLightColor = juce::Colour(137, 125, 109),
-                .DarkShadowColor = juce::Colour(0, 0, 0),
-                .BrightShadowColor = juce::Colour(70, 66, 63),
-                .ExtraColor1 = juce::Colour(255 - 139, 255, 255),
-                .ColorMap1 = {
-                    juce::Colour(224, 136, 75),
-                    juce::Colour(0, 128, 241),
-                    juce::Colour(211, 95, 211),
-                    juce::Colour(41, 216, 215),
-                    juce::Colour(107, 152, 66),
-                    juce::Colour(115, 169, 180),
-                    juce::Colour(28, 136, 61),
-                    juce::Colour(128, 128, 128),
-                    juce::Colour(67, 66, 221),
-                    juce::Colour(232, 65, 48),
-                },
-                .ColorMap2 = {
-                    juce::Colour(255, 192, 0),
-                    juce::Colour(252, 18, 197),
-                    juce::Colour(23, 255, 244),
-                    juce::Colour(117, 212, 29),
-                    juce::Colour(0, 59, 255),
-                    juce::Colour(255, 40, 0),
-                }
-            }
+        },
+        std::vector<juce::Colour>{
+            juce::Colour(179, 141, 79),
+            juce::Colour(170, 87, 151),
+            juce::Colour(59, 177, 173),
+            juce::Colour(126, 141, 77),
+            juce::Colour(51, 70, 139),
+            juce::Colour(155, 74, 50),
+        },
+        std::vector<juce::Colour>{
+            juce::Colour(0, 63, 255),
+            juce::Colour(3, 237, 58),
+            juce::Colour(232, 0, 11),
+            juce::Colour(138, 43, 226),
+            juce::Colour(255, 196, 0),
+            juce::Colour(0, 215, 255),
+        },
+        std::vector<juce::Colour>{
+            juce::Colour(255, 192, 0),
+            juce::Colour(252, 18, 197),
+            juce::Colour(23, 255, 244),
+            juce::Colour(117, 212, 29),
+            juce::Colour(0, 59, 255),
+            juce::Colour(255, 40, 0),
         }
     };
-
-    auto inline const TextColor = juce::Colour(87, 96, 110);
-    auto inline const TextInactiveColor = TextColor.withAlpha(0.5f);
-    auto inline const TextHideColor = TextColor.withAlpha(0.25f);
-
-    auto inline const BackgroundColor = juce::Colour(214, 223, 236);
-    auto inline const BackgroundInactiveColor = BackgroundColor.withAlpha(0.8f);
-    auto inline const BackgroundHideColor = BackgroundColor.withAlpha(0.5f);
-    auto inline const BackgroundInvisibleColor = BackgroundColor.withAlpha(0.25f);
-
-    auto inline const DarkShadowColor = juce::Colour(168, 172, 178);
-    auto inline const BrightShadowColor = juce::Colour(237, 246, 255);
 
     auto inline constexpr FontTiny = 0.5f;
     auto inline constexpr FontSmall = 0.75f;
@@ -138,9 +124,9 @@ namespace zlInterface {
         bool curveTopLeft = true, curveTopRight = true, curveBottomLeft = true, curveBottomRight = true;
         bool fit = true, flip = false;
         bool drawBright = true, drawDark = true, drawMain = true;
-        juce::Colour mainColour = BackgroundColor;
-        juce::Colour darkShadowColor = DarkShadowColor;
-        juce::Colour brightShadowColor = BrightShadowColor;
+        juce::Colour mainColour = juce::Colours::white.withAlpha(0.f);
+        juce::Colour darkShadowColor = juce::Colours::white.withAlpha(0.f);
+        juce::Colour brightShadowColor = juce::Colours::white.withAlpha(0.f);
         bool changeMain = false, changeDark = false, changeBright = false;
     };
 
@@ -148,9 +134,9 @@ namespace zlInterface {
         float blurRadius = 0.5f;
         bool fit = true, flip = false;
         bool drawBright = true, drawDark = true;
-        juce::Colour mainColour = BackgroundColor;
-        juce::Colour darkShadowColor = DarkShadowColor;
-        juce::Colour brightShadowColor = BrightShadowColor;
+        juce::Colour mainColour = juce::Colours::white.withAlpha(0.f);
+        juce::Colour darkShadowColor = juce::Colours::white.withAlpha(0.f);
+        juce::Colour brightShadowColor = juce::Colours::white.withAlpha(0.f);
         bool changeMain = false, changeDark = false, changeBright = false;
     };
 
@@ -211,14 +197,14 @@ namespace zlInterface {
             return customColours[static_cast<size_t>(glowColour)];
         }
 
-        inline juce::Colour getExtraColor1() const { return styleColors[1].ExtraColor1; }
-
         inline juce::Colour getColorMap1(const size_t idx) const {
-            return styleColors[1].ColorMap1[idx % ColorMap1Size];
+            const auto currentCMapIdx = cMap1Idx.load();
+            return colourMaps[currentCMapIdx][idx % colourMaps[currentCMapIdx].size()];
         }
 
         inline juce::Colour getColorMap2(const size_t idx) const {
-            return styleColors[1].ColorMap2[idx % ColorMap2Size];
+            const auto currentCMapIdx = cMap2Idx.load();
+            return colourMaps[currentCMapIdx][idx % colourMaps[currentCMapIdx].size()];
         }
 
         static juce::Rectangle<float> getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds,
@@ -335,7 +321,7 @@ namespace zlInterface {
 
         void loadFromAPVTS();
 
-        void saveToAPVTS();
+        void saveToAPVTS() const;
 
         bool getIsBandSelected(const size_t x) const { return isBandSelected[x].load(); }
 
@@ -378,6 +364,9 @@ namespace zlInterface {
             para->setValueNotifyingHost(x);
             para->endChangeGesture();
         }
+
+        std::atomic<size_t> cMap1Idx{zlState::colourMapIdx::defaultDark};
+        std::atomic<size_t> cMap2Idx{zlState::colourMapIdx::seabornBrightDark};
     };
 }
 

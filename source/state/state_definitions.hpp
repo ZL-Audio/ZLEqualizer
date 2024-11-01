@@ -369,6 +369,53 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
+    class colourMapIdx : public ChoiceParameters<colourMapIdx> {
+    public:
+        auto static constexpr ID = "colour_map_idx";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Default Light", "Default Dark",
+            "Seaborn Normal Light", "Seaborn Normal Dark",
+            "Seaborn Bright Light", "Seaborn Bright Dark"
+        };
+
+        enum colourMapName {
+            defaultLight,
+            defaultDark,
+            seabornNormalLight,
+            seabornNormalDark,
+            seabornBrightLight,
+            seabornBrightDark,
+            colourMapNum
+        };
+
+        int static constexpr defaultI = 0;
+    };
+
+    class colourMapIdx1 : public ChoiceParameters<colourMapIdx1> {
+    public:
+        auto static constexpr ID = "colour_map_idx1";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Default Light", "Default Dark",
+            "Seaborn Normal Light", "Seaborn Normal Dark",
+            "Seaborn Bright Light", "Seaborn Bright Dark"
+        };
+        int static constexpr defaultI = 1;
+    };
+
+    class colourMapIdx2 : public ChoiceParameters<colourMapIdx2> {
+    public:
+        auto static constexpr ID = "colour_map_idx2";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "Default Light", "Default Dark",
+            "Seaborn Normal Light", "Seaborn Normal Dark",
+            "Seaborn Bright Light", "Seaborn Bright Dark"
+        };
+        int static constexpr defaultI = 5;
+    };
+
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
@@ -410,6 +457,7 @@ namespace zlState {
         addOneColour(layout, "shadow", 0, 0, 0, true, 1.f);
         addOneColour(layout, "glow", 70, 66, 62, true, 1.f);
         addOneColour(layout, "gain", 255 - 8, 255 - 9, 255 - 11, true, 1.f);
+        layout.add(colourMapIdx1::get(), colourMapIdx2::get());
         return layout;
     }
 }

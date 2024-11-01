@@ -74,7 +74,7 @@ namespace zlInterface {
                                                                    const fillRoundedShadowRectangleArgs &margs) const {
         auto args = margs;
         if (!args.changeMain)
-            args.mainColour = getBackgroundColor().withAlpha(args.mainColour.getAlpha());
+            args.mainColour = getBackgroundColor();
         if (!args.changeDark)
             args.darkShadowColor = getDarkShadowColor();
         if (!args.changeBright)
@@ -143,7 +143,7 @@ namespace zlInterface {
                                                      const fillShadowEllipseArgs &margs) const {
         auto args = margs;
         if (!args.changeMain)
-            args.mainColour = getBackgroundColor().withAlpha(args.mainColour.getAlpha());
+            args.mainColour = getBackgroundColor();
         if (!args.changeDark)
             args.darkShadowColor = getDarkShadowColor();
         if (!args.changeBright)
@@ -210,7 +210,7 @@ namespace zlInterface {
                                                           const fillShadowEllipseArgs &margs) const {
         auto args = margs;
         if (!args.changeMain)
-            args.mainColour = getBackgroundColor().withAlpha(args.mainColour.getAlpha());
+            args.mainColour = getBackgroundColor();
         if (!args.changeDark)
             args.darkShadowColor = getDarkShadowColor();
         if (!args.changeBright)
@@ -274,7 +274,7 @@ namespace zlInterface {
         defaultPassFilterSlope.store(static_cast<int>(loadPara(zlState::defaultPassFilterSlope::ID)));
     }
 
-    void UIBase::saveToAPVTS() {
+    void UIBase::saveToAPVTS() const {
         for (size_t i = 0; i < colourNum; ++i) {
             const std::array<float, 4> rgbo = {
                 customColours[i].getFloatRed(),
