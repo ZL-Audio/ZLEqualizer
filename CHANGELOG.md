@@ -4,7 +4,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
-## 0.4.2
+## 0.4.3
 
 - change the top panel layout (move global bypass and sgc buttons outside)
 - change the UI setting panel layout
@@ -16,6 +16,14 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 - fix combobox displays in `Standalone`
 - improve `matched phase` `mixed phase` under high samplerates
 - improve spectrum display accuracy in the high-end
+
+## 0.4.2
+
+- add & change slider value editor shortcuts
+- open value editor with Ctrl/Command + mouse double-clicking for ALL sliders
+- fix incorrect curve display when adjusting Scale
+- fix macOS compatibility issue (now it should support macOS 10.13 and above)
+- improve `mixed phase` phase shift continuity
 
 ## 0.4.1
 
