@@ -7,12 +7,17 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_FFT_ANALYZER_HPP
-#define ZLEqualizer_FFT_ANALYZER_HPP
+#ifndef ZLPANEL_MATCH_PANEL_HPP
+#define ZLPANEL_MATCH_PANEL_HPP
 
-#include "pre_post_fft_analyzer.hpp"
-#include "conflict_analyzer.hpp"
-#include "multiple_fft_analyzer.hpp"
-#include "average_fft_analyzer.hpp"
+#include "match_analyzer_panel.hpp"
 
-#endif //ZLEqualizer_FFT_ANALYZER_HPP
+namespace zlPanel {
+
+class MatchPanel {
+
+};
+
+} // zlPanel
+
+#endif //ZLPANEL_MATCH_PANEL_HPP

@@ -70,7 +70,9 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setON(const bool x) {
         isON.store(x);
-        triggerAsyncUpdate();
+        if (!x) {
+            triggerAsyncUpdate();
+        }
     }
 
     template<typename FloatType>

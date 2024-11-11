@@ -218,18 +218,39 @@ namespace zlPanel {
         2.79776698e+00, 2.82484613e+00, 2.85218738e+00, 2.87979327e+00
     };
 
+    class AtomicPoint{
+    public:
+        AtomicPoint() = default;
+
+        void store(const juce::Point<float> &p) {
+            x.store(p.getX());
+            y.store(p.getY());
+        }
+
+        juce::Point<float> load() const {
+            return {x.load(), y.load()};
+        }
+
+        float getX() const { return x.load(); }
+
+        float getY() const { return y.load(); }
+
+    private:
+        std::atomic<float> x{0.f}, y{0.f};
+    };
+
     class AtomicBound {
     public:
         AtomicBound() = default;
 
-        void update(const juce::Rectangle<float> &bound) {
+        void store(const juce::Rectangle<float> &bound) {
             x.store(bound.getX());
             y.store(bound.getY());
             width.store(bound.getWidth());
             height.store(bound.getHeight());
         }
 
-        juce::Rectangle<float> get() const {
+        juce::Rectangle<float> load() const {
             return {x.load(), y.load(), width.load(), height.load()};
         }
 

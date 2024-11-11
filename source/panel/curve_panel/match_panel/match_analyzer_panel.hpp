@@ -7,20 +7,20 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_FFT_PANEL_HPP
-#define ZLPANEL_FFT_PANEL_HPP
+#ifndef ZLPANEL_MATCH_ANALYZER_PANEL_HPP
+#define ZLPANEL_MATCH_ANALYZER_PANEL_HPP
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 #include "../helpers.hpp"
 
 namespace zlPanel {
-    class FFTPanel final : public juce::Component {
+    class MatchAnalyzerPanel final : public juce::Component {
     public:
-        explicit FFTPanel(zlFFT::PrePostFFTAnalyzer<double> &analyzer,
-                          zlInterface::UIBase &base);
+        explicit MatchAnalyzerPanel(zlFFT::AverageFFTAnalyzer<double, 251> &analyzer,
+                                    zlInterface::UIBase &base);
 
-        ~FFTPanel() override;
+        ~MatchAnalyzerPanel() override;
 
         void paint(juce::Graphics &g) override;
 
@@ -31,10 +31,10 @@ namespace zlPanel {
         void visibilityChanged() override;
 
     private:
-        zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
+        zlFFT::AverageFFTAnalyzer<double, 251> &analyzerRef;
         zlInterface::UIBase &uiBase;
-        juce::Path path1{}, path2{}, path3{};
-        juce::Path recentPath1{}, recentPath2{}, recentPath3{};
+        juce::Path path1{}, path2{};
+        juce::Path recentPath1{}, recentPath2{};
         juce::SpinLock pathLock;
         AtomicPoint leftCorner, rightCorner;
         AtomicBound atomicBound;
@@ -42,4 +42,4 @@ namespace zlPanel {
     };
 } // zlPanel
 
-#endif //ZLPANEL_FFT_PANEL_HPP
+#endif //ZLPANEL_MATCH_ANALYZER_PANEL_HPP

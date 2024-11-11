@@ -149,7 +149,7 @@ namespace zlPanel {
             } else {
                 gainString = "+" + juce::String(currentGain, 1, false);
             }
-            scaleString = juce::String(currentScale.load(), 0, false) + "%";
+            scaleString = juce::String(static_cast<int>(std::round(currentScale.load()))) + "%";
         }
         repaint();
     }

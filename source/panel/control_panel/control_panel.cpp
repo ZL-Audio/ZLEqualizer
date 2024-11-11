@@ -38,7 +38,7 @@ namespace zlPanel {
         rightControlPanel.setBounds(rightBound.toNearestInt());
     }
 
-    void ControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
+    void ControlPanel::parameterChanged(const juce::String &parameterID, const float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
             bandIdx.store(static_cast<size_t>(newValue));
             triggerAsyncUpdate();

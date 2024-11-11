@@ -11,11 +11,10 @@
 
 namespace zlPanel {
     ButtonPanel::ButtonPanel(PluginProcessor &processor,
-                             zlInterface::UIBase &base,
-                             zlDSP::Controller<double> &c)
+                             zlInterface::UIBase &base)
         : processorRef(processor),
           parametersRef(processor.parameters), parametersNARef(processor.parametersNA),
-          uiBase(base), controllerRef(c),
+          uiBase(base), controllerRef(processor.getController()),
           wheelSlider{
               zlInterface::SnappingSlider{base},
               zlInterface::SnappingSlider{base},

@@ -7,8 +7,8 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_CURVE_PANEL_HPP
-#define ZLEqualizer_CURVE_PANEL_HPP
+#ifndef ZLPANEL_CURVE_PANEL_HPP
+#define ZLPANEL_CURVE_PANEL_HPP
 
 #include "../../PluginProcessor.hpp"
 #include "../../dsp/dsp.hpp"
@@ -19,6 +19,7 @@
 #include "single_panel/single_panel.hpp"
 #include "button_panel/button_panel.hpp"
 #include "conflict_panel/conflict_panel.hpp"
+#include "match_panel/match_panel.hpp"
 
 namespace zlPanel {
     class CurvePanel final : public juce::Component,
@@ -26,8 +27,7 @@ namespace zlPanel {
                              private juce::Thread {
     public:
         explicit CurvePanel(PluginProcessor &processor,
-                            zlInterface::UIBase &base,
-                            zlDSP::Controller<double> &c);
+                            zlInterface::UIBase &base);
 
         ~CurvePanel() override;
 
@@ -53,6 +53,8 @@ namespace zlPanel {
         juce::Time currentT;
         juce::VBlankAttachment vblank;
 
+        std::atomic<bool> showMatching{false};
+
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void repaintCallBack();
@@ -62,4 +64,4 @@ namespace zlPanel {
 }
 
 
-#endif //ZLEqualizer_CURVE_PANEL_HPP
+#endif //ZLPANEL_CURVE_PANEL_HPP

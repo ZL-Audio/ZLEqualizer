@@ -11,18 +11,17 @@
 
 namespace zlPanel {
     CurvePanel::CurvePanel(PluginProcessor &processor,
-                           zlInterface::UIBase &base,
-                           zlDSP::Controller<double> &c)
+                           zlInterface::UIBase &base)
         : Thread("curve panel"),
           processorRef(processor),
           parametersRef(processor.parameters), parametersNARef(processor.parametersNA), uiBase(base),
-          controllerRef(c),
+          controllerRef(processor.getController()),
           backgroundPanel(parametersRef, parametersNARef, base),
-          fftPanel(c.getAnalyzer(), base),
-          conflictPanel(c.getConflictAnalyzer(), base),
-          sumPanel(parametersRef, base, c, baseFilters, mainFilters),
-          soloPanel(parametersRef, parametersNARef, base, c),
-          buttonPanel(processorRef, base, c),
+          fftPanel(controllerRef.getAnalyzer(), base),
+          conflictPanel(controllerRef.getConflictAnalyzer(), base),
+          sumPanel(parametersRef, base, controllerRef, baseFilters, mainFilters),
+          soloPanel(parametersRef, parametersNARef, base, controllerRef),
+          buttonPanel(processorRef, base),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
         for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {
@@ -37,7 +36,7 @@ namespace zlPanel {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             const auto idx = zlState::bandNUM - i - 1;
             singlePanels[i] =
-                    std::make_unique<SinglePanel>(idx, parametersRef, parametersNARef, base, c,
+                    std::make_unique<SinglePanel>(idx, parametersRef, parametersNARef, base, controllerRef,
                                                   baseFilters[idx], targetFilters[idx], mainFilters[idx]);
             addAndMakeVisible(*singlePanels[i]);
         }
@@ -102,8 +101,10 @@ namespace zlPanel {
     void CurvePanel::repaintCallBack() {
         const juce::Time nowT = juce::Time::getCurrentTime();
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
-            buttonPanel.updateDraggers();
-            conflictPanel.updateGradient();
+            if (!showMatching.load()) {
+                buttonPanel.updateDraggers();
+                conflictPanel.updateGradient();
+            }
             repaint();
             currentT = nowT;
         }
@@ -114,17 +115,20 @@ namespace zlPanel {
         while (!threadShouldExit()) {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
-            const auto &analyzer = controllerRef.getAnalyzer();
-            if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON())
-                && analyzer.getPathReady()) {
-                fftPanel.updatePaths();
-            }
-            for (const auto &sP: singlePanels) {
-                if (sP->checkRepaint()) {
-                    sP->run();
+            if (!showMatching.load()) {
+                const auto &analyzer = controllerRef.getAnalyzer();
+                if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) && analyzer.getPathReady()) {
+                    fftPanel.updatePaths();
                 }
+                for (const auto &sP: singlePanels) {
+                    if (sP->checkRepaint()) {
+                        sP->run();
+                    }
+                }
+                sumPanel.run();
+            } else {
+                // const auto &analyzer = controllerRef.getMatchAnalyzer();
             }
-            sumPanel.run();
         }
     }
 }

@@ -111,6 +111,9 @@ namespace zlDSP {
         conflictAnalyzer.prepare(subSpec);
         conflictAnalyzer.getSideDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
         conflictAnalyzer.getSideDelay().prepare(subSpec);
+
+        matchAnalyzer.prepare(subSpec);
+
         for (auto &t: trackers) {
             t.prepare(subSpec);
         }
@@ -206,6 +209,7 @@ namespace zlDSP {
     void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                  juce::AudioBuffer<FloatType> &subSideBuffer) {
         fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
+        // matchAnalyzer.process(subMainBuffer, subSideBuffer);
 
         if (currentIsEffectON) {
             if (currentUseSolo) {

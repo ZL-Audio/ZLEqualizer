@@ -24,8 +24,7 @@ namespace zlPanel {
                               private juce::ChangeListener {
     public:
         explicit ButtonPanel(PluginProcessor &processor,
-                             zlInterface::UIBase &base,
-                             zlDSP::Controller<double> &c);
+                             zlInterface::UIBase &base);
 
         ~ButtonPanel() override;
 

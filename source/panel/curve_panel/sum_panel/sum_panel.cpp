@@ -124,7 +124,7 @@ namespace zlPanel {
     }
 
     void SumPanel::resized() {
-        atomicBound.update(getLocalBounds().toFloat());
+        atomicBound.store(getLocalBounds().toFloat());
         toRepaint.store(true);
     }
 

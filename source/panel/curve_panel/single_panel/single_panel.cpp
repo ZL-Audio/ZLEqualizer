@@ -141,7 +141,7 @@ namespace zlPanel {
 
     void SinglePanel::resized() {
         const auto bound = getLocalBounds().toFloat();
-        atomicBound.update(bound);
+        atomicBound.store(bound);
         sidePanel.setBounds(getLocalBounds());
         toRepaint.store(true);
     }

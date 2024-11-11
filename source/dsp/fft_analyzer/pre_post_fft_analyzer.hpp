@@ -7,8 +7,8 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_PRE_POST_FFT_ANALYZER_HPP
-#define ZLEqualizer_PRE_POST_FFT_ANALYZER_HPP
+#ifndef ZLFFT_PRE_POST_FFT_ANALYZER_HPP
+#define ZLFFT_PRE_POST_FFT_ANALYZER_HPP
 
 #include "multiple_fft_analyzer.hpp"
 #include "../delay/delay.hpp"
@@ -78,4 +78,4 @@ namespace zlFFT {
     };
 } // zlFFT
 
-#endif //ZLEqualizer_PRE_POST_FFT_ANALYZER_HPP
+#endif //ZLFFT_PRE_POST_FFT_ANALYZER_HPP

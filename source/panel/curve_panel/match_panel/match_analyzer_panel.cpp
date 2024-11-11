@@ -7,53 +7,42 @@
 //
 // You should have received a copy of the GNU General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "fft_panel.hpp"
+#include "match_analyzer_panel.hpp"
 
 namespace zlPanel {
-    FFTPanel::FFTPanel(zlFFT::PrePostFFTAnalyzer<double> &analyzer,
-                       zlInterface::UIBase &base)
+    MatchAnalyzerPanel::MatchAnalyzerPanel(zlFFT::AverageFFTAnalyzer<double, 251> &analyzer,
+                                           zlInterface::UIBase &base)
         : analyzerRef(analyzer), uiBase(base) {
         setInterceptsMouseClicks(false, false);
     }
 
-    FFTPanel::~FFTPanel() {
+    MatchAnalyzerPanel::~MatchAnalyzerPanel() {
         analyzerRef.setON(false);
     }
 
-    void FFTPanel::paint(juce::Graphics &g) {
-        juce::GenericScopedTryLock lock{pathLock};
-        if (!lock.isLocked()) { return; }
-        if (analyzerRef.getPreON() && !recentPath1.isEmpty()) {
-            g.setColour(uiBase.getColourByIdx(zlInterface::preColour));
-            g.fillPath(recentPath1);
-        }
-
-        if (analyzerRef.getPostON() && !recentPath2.isEmpty()) {
-            g.setColour(uiBase.getTextColor().withAlpha(0.5f));
-            const auto thickness = uiBase.getFontSize() * 0.1f;
-            g.strokePath(recentPath2,
-                         juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-
-            g.setColour(uiBase.getColourByIdx(zlInterface::postColour));
-            g.fillPath(recentPath2);
-        }
-
-        if (analyzerRef.getSideON() && !recentPath3.isEmpty()) {
-            g.setColour(uiBase.getColourByIdx(zlInterface::sideColour));
-            g.fillPath(recentPath3);
-        }
+    void MatchAnalyzerPanel::visibilityChanged() {
+        analyzerRef.setON(isVisible());
     }
 
-    void FFTPanel::resized() {
+    void MatchAnalyzerPanel::paint(juce::Graphics &g) {
+        juce::GenericScopedTryLock lock{pathLock};
+        if (!lock.isLocked()) { return; }
+        g.setColour(uiBase.getColourByIdx(zlInterface::preColour).withAlpha(1.f));
+        g.fillPath(recentPath1);
+        g.setColour(uiBase.getColourByIdx(zlInterface::sideColour).withAlpha(1.f));
+        g.fillPath(recentPath2);
+    }
+
+    void MatchAnalyzerPanel::resized() {
         const auto bound = getLocalBounds().toFloat();
         leftCorner.store({bound.getX() * 0.9f, bound.getBottom() * 1.1f});
         rightCorner.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
         atomicBound.store(bound);
     }
 
-    void FFTPanel::updatePaths() {
-        analyzerRef.updatePaths(path1, path2, path3, atomicBound.load());
-        for (auto &path: {&path1, &path2, &path3}) {
+    void MatchAnalyzerPanel::updatePaths() {
+        analyzerRef.createPath({path1, path2}, atomicBound.load());
+        for (auto &path: {&path1, &path2}) {
             if (!path->isEmpty()) {
                 path->lineTo(rightCorner.load());
                 path->lineTo(leftCorner.load());
@@ -64,13 +53,5 @@ namespace zlPanel {
             recentPath1 = path1;
             recentPath2 = path2;
         }
-        if (analyzerRef.getSideON()) {
-            juce::GenericScopedLock lock{pathLock};
-            recentPath3 = path3;
-        }
-    }
-
-    void FFTPanel::visibilityChanged() {
-        analyzerRef.setON(isVisible());
     }
 } // zlPanel

@@ -23,6 +23,7 @@
 #include "delay/delay.hpp"
 #include "phase/phase.hpp"
 #include "container/container.hpp"
+#include "eq_match/eq_match.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -85,6 +86,8 @@ namespace zlDSP {
         zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzer; }
 
         zlFFT::ConflictAnalyzer<FloatType> &getConflictAnalyzer() { return conflictAnalyzer; }
+
+        zlEqMatch::EqMatchAnalyzer<FloatType> &getMatchAnalyzer() { return matchAnalyzer; }
 
         zlGain::Gain<FloatType> &getGainDSP() { return outputGain; }
 
@@ -263,6 +266,8 @@ namespace zlDSP {
 
         zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer;
 
+        zlEqMatch::EqMatchAnalyzer<FloatType> matchAnalyzer;
+
         std::atomic<bool> dynLink{false};
 
         std::atomic<double> sampleRate{48000};
@@ -275,11 +280,11 @@ namespace zlDSP {
         filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
 
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
-                            juce::AudioBuffer<FloatType> &subSideBuffer);
+                              juce::AudioBuffer<FloatType> &subSideBuffer);
 
         template<bool isBypassed = false>
         void processSubBufferOnOff(juce::AudioBuffer<FloatType> &subMainBuffer,
-                              juce::AudioBuffer<FloatType> &subSideBuffer);
+                                   juce::AudioBuffer<FloatType> &subSideBuffer);
 
         void processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
                          juce::AudioBuffer<FloatType> &subSideBuffer);

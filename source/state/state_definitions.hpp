@@ -174,6 +174,34 @@ namespace zlState {
         auto static constexpr defaultV = 1.f;
     };
 
+    class matchPanelShow : public ChoiceParameters<matchPanelShow> {
+    public:
+        auto static constexpr ID = "match_panel_show";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 0;
+    };
+
+    class matchAnalyzerON : public ChoiceParameters<matchAnalyzerON> {
+    public:
+        auto static constexpr ID = "match_analyzer_on";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 0;
+    };
+
+    class matchAnalyzerLWeight : public FloatParameters<matchAnalyzerLWeight> {
+    public:
+        auto static constexpr ID = "match_analyzer_l_weight";
+        auto static constexpr name = "NA";
+        inline auto static const range = juce::NormalisableRange<float>(0.f, 1.f, .01f);
+        auto static constexpr defaultV = .5f;
+    };
+
     inline void addOneBandParas(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                                 const std::string &suffix = "") {
         layout.add(active::get(suffix));
@@ -184,7 +212,9 @@ namespace zlState {
         layout.add(selectedBandIdx::get(), maximumDB::get(),
                    fftPreON::get(), fftPostON::get(), fftSideON::get(),
                    ffTSpeed::get(), ffTTilt::get(),
-                   conflictON::get(), conflictStrength::get(), conflictScale::get());
+                   conflictON::get(), conflictStrength::get(), conflictScale::get(),
+                   matchPanelShow::get(),
+                   matchAnalyzerON::get(), matchAnalyzerLWeight::get());
         for (int i = 0; i < bandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
