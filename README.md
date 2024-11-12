@@ -38,7 +38,7 @@ See the releases for the latest version.
 
 ## License
 
-ZLEqualizer is licensed under GPLv3, as found in the [LICENSE.md](LICENSE.md) file.
+ZLEqualizer is licensed under AGPLv3, as found in the [LICENSE.md](LICENSE.md) file.
 
 Copyright (c) 2023 - [zsliu98](https://github.com/zsliu98)
 
