@@ -33,7 +33,7 @@ namespace zlFilter {
 
     private:
         Empty<FloatType> &target;
-        FloatType gainDB;
+        FloatType gainDB{0};
         std::atomic<bool> isON{false}, toUpdate{false};
 
         static inline FloatType integrateFQ(const FloatType f1, const FloatType f2) {
@@ -153,6 +153,7 @@ namespace zlFilter {
                 case notch:
                 case bandPass:
                 default:
+                    gainDB = FloatType(0);
                     break;
             }
         }
