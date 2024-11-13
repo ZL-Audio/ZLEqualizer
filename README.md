@@ -46,6 +46,8 @@ JUCE framework from [JUCE](https://github.com/juce-framework/JUCE)
 
 JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
+[nlopt](https://github.com/stevengj/nlopt) by [Steven G. Johnson](https://github.com/stevengj)
+
 [farbot](https://github.com/hogliux/farbot) by [Fabian Renn](https://github.com/hogliux)
 
 [Friz](https://github.com/bgporter/animator) by [bgporter](https://github.com/bgporter)
