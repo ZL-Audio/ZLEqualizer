@@ -17,7 +17,7 @@
 namespace zlPanel {
     class MatchAnalyzerPanel final : public juce::Component {
     public:
-        explicit MatchAnalyzerPanel(zlFFT::AverageFFTAnalyzer<double, 251> &analyzer,
+        explicit MatchAnalyzerPanel(zlFFT::AverageFFTAnalyzer<double, 2, 251> &analyzer,
                                     zlInterface::UIBase &base);
 
         ~MatchAnalyzerPanel() override;
@@ -31,7 +31,7 @@ namespace zlPanel {
         void visibilityChanged() override;
 
     private:
-        zlFFT::AverageFFTAnalyzer<double, 251> &analyzerRef;
+        zlFFT::AverageFFTAnalyzer<double, 2, 251> &analyzerRef;
         zlInterface::UIBase &uiBase;
         juce::Path path1{}, path2{};
         juce::Path recentPath1{}, recentPath2{};

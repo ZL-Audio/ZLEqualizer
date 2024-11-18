@@ -11,5 +11,6 @@
 #define ZLEQMATCH_EQ_MATCH_HPP
 
 #include "eq_match_analyzer.hpp"
+#include "eq_match_optimizer.hpp"
 
 #endif //ZLEQMATCH_EQ_MATCH_HPP

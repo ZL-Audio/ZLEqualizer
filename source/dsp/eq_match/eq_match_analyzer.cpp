@@ -11,9 +11,14 @@
 
 namespace zlEqMatch {
     template<typename FloatType>
-    EqMatchAnalyzer<FloatType>::EqMatchAnalyzer(size_t fftOrder)
+    EqMatchAnalyzer<FloatType>::EqMatchAnalyzer(const size_t fftOrder)
         : Thread("eq_match_analyzer"), fftAnalyzer(fftOrder){
-        fftAnalyzer.setON(isON.load());
+        for (auto &dB : mainDBs) {
+            dB.store(avgDB);
+        }
+        for (auto &dB : targetDBs) {
+            dB.store(avgDB);
+        }
     }
 
     template<typename FloatType>

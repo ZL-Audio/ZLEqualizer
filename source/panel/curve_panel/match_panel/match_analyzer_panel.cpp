@@ -10,18 +10,18 @@
 #include "match_analyzer_panel.hpp"
 
 namespace zlPanel {
-    MatchAnalyzerPanel::MatchAnalyzerPanel(zlFFT::AverageFFTAnalyzer<double, 251> &analyzer,
+    MatchAnalyzerPanel::MatchAnalyzerPanel(zlFFT::AverageFFTAnalyzer<double, 2, 251> &analyzer,
                                            zlInterface::UIBase &base)
         : analyzerRef(analyzer), uiBase(base) {
         setInterceptsMouseClicks(false, false);
     }
 
     MatchAnalyzerPanel::~MatchAnalyzerPanel() {
-        analyzerRef.setON(false);
+        // analyzerRef.setON(false);
     }
 
     void MatchAnalyzerPanel::visibilityChanged() {
-        analyzerRef.setON(isVisible());
+        // analyzerRef.setON(isVisible());
     }
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
