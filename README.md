@@ -3,12 +3,12 @@
   <img src="docs/logo.svg" width="7.5%" />
 </p>
 
-# ZLEqualizer
+# ZL Equalizer
 ![pluginval](<https://github.com/ZL-Audio/ZLEqualizer/actions/workflows/cmake_full_test.yml/badge.svg?branch=main>)
 [![License](https://img.shields.io/badge/License-GPL3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
 [![Downloads](https://img.shields.io/github/downloads/ZL-Audio/ZLEqualizer/total)](https://somsubhra.github.io/github-release-stats/?username=ZL-Audio&repository=ZLEqualizer&page=1&per_page=30)
 
-ZLEqualizer is an equalizer plugin.
+ZL Equalizer is an equalizer plugin.
 
 A short intro video is available at [here](https://www.youtube.com/watch?v=bC-mBDumzvU).
 
@@ -38,7 +38,7 @@ See the releases for the latest version.
 
 ## License
 
-ZLEqualizer is licensed under AGPLv3, as found in the [LICENSE.md](LICENSE.md) file.
+ZL Equalizer is licensed under AGPLv3, as found in the [LICENSE.md](LICENSE.md) file. However, the [logo of ZL Audio](assets/zlaudio.svg) and the [logo of ZL Equalizer](assets/logo.svg) are not covered by this license.
 
 Copyright (c) 2023 - [zsliu98](https://github.com/zsliu98)
 
