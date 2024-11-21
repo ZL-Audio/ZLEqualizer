@@ -11,6 +11,7 @@
 #define ZLEQUALIZER_FILTERS_ATTACH_HPP
 
 #include "controller.hpp"
+#include "chore/chore.hpp"
 #include "../state/state_definitions.hpp"
 
 namespace zlDSP {
@@ -41,6 +42,9 @@ namespace zlDSP {
         juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
         Controller<FloatType> &controllerRef;
         std::array<zlFilter::DynamicIIR<FloatType, Controller<FloatType>::FilterSize>, bandNUM> &filtersRef;
+        std::array<std::string, bandNUM * 2> sideParaNames;
+        std::array<std::unique_ptr<zlChore::ParaUpdater>, bandNUM> sideFreqUpdater;
+        std::array<std::unique_ptr<zlChore::ParaUpdater>, bandNUM> sideQUpdater;
 
         constexpr static std::array IDs{
             bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,

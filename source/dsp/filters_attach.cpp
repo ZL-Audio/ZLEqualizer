@@ -19,6 +19,12 @@ namespace zlDSP {
           controllerRef(controller), filtersRef(controller.getFilters()) {
         addListeners();
         initDefaultValues();
+        for (size_t i = 0; i < bandNUM; ++i) {
+            sideFreqUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters,
+                zlDSP::appendSuffix(zlDSP::sideFreq::ID, i));
+            sideQUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters,
+                zlDSP::appendSuffix(zlDSP::sideQ::ID, i));
+        }
     }
 
     template<typename FloatType>
@@ -128,10 +134,8 @@ namespace zlDSP {
             f.getFilterType(), f.getFreq(), f.getQ());
         const auto soloFreq01 = sideFreq::convertTo01(static_cast<float>(soloFreq));
         const auto soloQ01 = sideQ::convertTo01(static_cast<float>(soloQ));
-        const auto paraFreq = parameterRef.getParameter(zlDSP::appendSuffix(sideFreq::ID, idx));
-        updateParaNotifyHost(paraFreq, soloFreq01);
-        const auto paraQ = parameterRef.getParameter(zlDSP::appendSuffix(sideQ::ID, idx));
-        updateParaNotifyHost(paraQ, soloQ01);
+        sideFreqUpdater[idx]->update(soloFreq01);
+        sideQUpdater[idx] -> update(soloQ01);
     }
 
     template<typename FloatType>
