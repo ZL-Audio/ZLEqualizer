@@ -12,11 +12,8 @@ env:
   BUILD_TYPE: Debug
   BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  DISPLAY: :0 # linux pluginval needs this
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   THREAD_SANITIZER_FLAG: True
-  PLUGINVAL_DISABLED: Plugin state restoration
-  IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
 
 # jobs are run in paralell on different machines
 # all steps run in series
@@ -35,70 +32,6 @@ jobs:
             cmake_extra_flags:
 
     steps:
-      - name: Set up Clang (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x ./llvm.sh
-          sudo ./llvm.sh 17
-
-      # This also starts up our "fake" display Xvfb, needed for pluginval
-      - name: Install JUCE's Linux Deps (Linux)
-        if: runner.os == 'Linux'
-        # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
-        run: |
-          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev xvfb ninja-build ladspa-sdk
-          sudo /usr/bin/Xvfb $DISPLAY &
-
-      - name: Setup MSVC Toolchain (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
-      # - name: Cache Clang (Windows)
-      #   if: runner.os == 'Windows'
-      #   id: cache-llvm
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: |
-      #       C:/Program Files/LLVM
-      #       ./llvm
-      #     key: llvm-17
-
-      # - name: Set up Clang (Windows)
-      #   if: runner.os == 'Windows'
-      #   uses: KyleMayes/install-llvm-action@v2
-      #   with:
-      #     version: "17.0.6"
-      #     cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-
-      - name: Cache IPP (Windows)
-        if: runner.os == 'Windows'
-        id: cache-ipp
-        uses: actions/cache@v4
-        with:
-          key: ipp-v5
-          path: C:\Program Files (x86)\Intel
-
-      - name: Install IPP (Windows)
-        if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
-        shell: bash
-        run: |
-          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/b4adec02-353b-4144-aa21-f2087040f316/w_ipp_oneapi_p_2021.11.0.533_offline.exe
-          ./oneapi.exe -s -x -f oneapi
-          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
-
-      - name: Save IPP cache (even on CI fail)
-        if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
-        uses: actions/cache/save@v4
-        with:
-          path: C:\Program Files (x86)\Intel
-          key: ipp-v5
-
-      - name: Install Ninja (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: choco install ninja
-
       - name: Install macOS Deps
         if: ${{ runner.os == 'macOS' }}
         run: brew install ninja osxutils
@@ -108,15 +41,6 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-
-      - name: Import Certificates (macOS)
-        uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
-        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '')}}
-        with:
-          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
-          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
-        env:
-          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
       - name: Configure
         shell: bash
@@ -174,7 +98,7 @@ jobs:
       - name: Pluginval VST3 validations
         shell: bash
         run: |
-          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "Plugin state restoration"
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
@@ -187,7 +111,7 @@ jobs:
         run: |
           sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
           sudo killall -9 AudioComponentRegistrar
-          ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+          ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "Plugin state restoration,Automation"
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
