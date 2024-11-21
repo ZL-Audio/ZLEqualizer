@@ -45,6 +45,7 @@ namespace zlDSP {
             for (auto &ID: IDs) {
                 parameterRef.addParameterListener(ID + suffix, this);
             }
+            parameterNARef.addParameterListener(zlState::active::ID + suffix, this);
         }
         parameterNARef.addParameterListener(zlState::maximumDB::ID, this);
     }
@@ -146,7 +147,9 @@ namespace zlDSP {
         }
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         auto value = static_cast<FloatType>(newValue);
-        if (parameterID.startsWith(bypass::ID)) {
+        if (parameterID.startsWith(zlState::active::ID)) {
+            controllerRef.setIsActive(idx, newValue > .5f);
+        } else if (parameterID.startsWith(bypass::ID)) {
             controllerRef.setBypass(idx, newValue > .5f);
         } else if (parameterID.startsWith(fType::ID)) {
             const auto fType = static_cast<zlFilter::FilterType>(value);

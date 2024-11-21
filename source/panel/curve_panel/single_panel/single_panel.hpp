@@ -15,6 +15,8 @@
 #include "../helpers.hpp"
 #include "../../../state/state_definitions.hpp"
 #include "side_panel.hpp"
+#include "reset_attach.hpp"
+#include "sidefq_attach.hpp"
 
 namespace zlPanel {
     class SinglePanel final : public juce::Component,
@@ -63,11 +65,12 @@ namespace zlPanel {
 
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-
         zlInterface::UIBase &uiBase;
-        std::atomic<bool> dynON, selected, actived;
         zlDSP::Controller<double> &controllerRef;
+        zlPanel::ResetAttach resetAttach;
         zlFilter::Ideal<double, 16> &baseF, &targetF, &mainF;
+
+        std::atomic<bool> dynON, selected, active;
         std::atomic<float> maximumDB;
         AtomicBound atomicBound;
 

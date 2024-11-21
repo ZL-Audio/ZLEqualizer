@@ -83,7 +83,6 @@ private:
     zlDSP::FiltersAttach<double> filtersAttach;
     zlDSP::SoloAttach<double> soloAttach;
     zlDSP::ChoreAttach<double> choreAttach;
-    zlDSP::ResetAttach<double> resetAttach;
     juce::AudioBuffer<double> doubleBuffer;
     std::atomic<bool> isMono{false};
     std::atomic<int> mainInChannelNum{2}, auxInChannelNum{2};

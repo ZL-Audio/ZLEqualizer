@@ -20,6 +20,7 @@ namespace zlPanel {
                              zlFilter::Ideal<double, 16> &mainFilter)
         : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), controllerRef(controller),
+          resetAttach(bandIdx, parameters, parametersNA, controller),
           baseF(baseFilter), targetF(targetFilter), mainF(mainFilter),
           sidePanel(bandIdx, parameters, parametersNA, base, controller) {
         curvePath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
@@ -67,7 +68,7 @@ namespace zlPanel {
     }
 
     void SinglePanel::paint(juce::Graphics &g) {
-        if (!actived.load()) {
+        if (!active.load()) {
             return;
         }
         auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
@@ -164,7 +165,7 @@ namespace zlPanel {
             selected.store(static_cast<size_t>(newValue) == idx);
         } else {
             if (parameterID.startsWith(zlState::active::ID)) {
-                actived.store(newValue > .5f);
+                active.store(newValue > .5f);
                 baseFreq.store(10.0);
                 baseGain.store(0.0);
             } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
@@ -217,7 +218,7 @@ namespace zlPanel {
         baseGain.store(static_cast<double>(baseF.getGain())); {
             baseF.updateMagnitude(ws);
             curvePath.clear();
-            if (actived.load()) {
+            if (active.load()) {
                 drawCurve(curvePath, baseF.getDBs(), maxDB, bound);
                 centeredDB.store(static_cast<float>(baseF.getDB(0.0001308996938995747 * baseFreq.load())));
             } else {
@@ -229,10 +230,10 @@ namespace zlPanel {
         // draw shadow
         {
             shadowPath.clear();
-            if (actived.load()) {
+            if (active.load()) {
                 drawCurve(shadowPath, baseF.getDBs(), maxDB, bound);
             }
-            if (actived.load() && selected.load()) {
+            if (active.load() && selected.load()) {
                 switch (baseF.getFilterType()) {
                     case zlFilter::FilterType::peak:
                     case zlFilter::FilterType::lowShelf:
@@ -261,7 +262,7 @@ namespace zlPanel {
         // draw dynamic shadow
         {
             dynPath.clear();
-            if (dynON.load() && actived.load()) {
+            if (dynON.load() && active.load()) {
                 drawCurve(dynPath, baseF.getDBs(), maxDB, bound);
                 targetF.updateMagnitude(ws);
                 drawCurve(dynPath, targetF.getDBs(), maxDB, bound, true, false);

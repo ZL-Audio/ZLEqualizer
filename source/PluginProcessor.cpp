@@ -31,8 +31,7 @@ PluginProcessor::PluginProcessor()
                      static_cast<size_t>(state.getRawParameterValue(zlState::ffTOrder::ID)->load())]),
       filtersAttach(*this, parameters, parametersNA, controller),
       soloAttach(*this, parameters, controller),
-      choreAttach(*this, parameters, parametersNA, controller),
-      resetAttach(*this, parameters, parametersNA, controller) {
+      choreAttach(*this, parameters, parametersNA, controller) {
 }
 
 PluginProcessor::~PluginProcessor() = default;
