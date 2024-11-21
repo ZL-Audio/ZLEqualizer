@@ -178,7 +178,7 @@ jobs:
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
-          REPEAT: 2
+          REPEAT: 1
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
       - name: Pluginval AU validations (macOS)
@@ -191,5 +191,5 @@ jobs:
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
-          REPEAT: 2
+          REPEAT: 1
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"

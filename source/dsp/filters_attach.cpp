@@ -20,10 +20,11 @@ namespace zlDSP {
         addListeners();
         initDefaultValues();
         for (size_t i = 0; i < bandNUM; ++i) {
-            sideFreqUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters,
-                zlDSP::appendSuffix(zlDSP::sideFreq::ID, i));
-            sideQUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters,
-                zlDSP::appendSuffix(zlDSP::sideQ::ID, i));
+            const auto suffix = zlDSP::appendSuffix("", i);
+            sideFreqUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters, sideFreq::ID + suffix);
+            sideQUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters, sideQ::ID + suffix);
+            thresholdUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters, threshold::ID + suffix);
+            kneeUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters, kneeW::ID + suffix);
         }
     }
 
@@ -136,7 +137,7 @@ namespace zlDSP {
         const auto soloFreq01 = sideFreq::convertTo01(static_cast<float>(soloFreq));
         const auto soloQ01 = sideQ::convertTo01(static_cast<float>(soloQ));
         sideFreqUpdater[idx]->update(soloFreq01);
-        sideQUpdater[idx] -> update(soloQ01);
+        sideQUpdater[idx]->update(soloQ01);
     }
 
     template<typename FloatType>
@@ -208,17 +209,8 @@ namespace zlDSP {
                 const auto kneeV = static_cast<float>(
                                        hist.getPercentile(FloatType(0.95)) - hist.getPercentile(FloatType(0.05))
                                    ) / 120.f;
-                const std::array dynamicLearnValues{
-                    threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)),
-                    kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV))
-                };
-                for (size_t i = 0; i < dynamicLearnIDs.size(); ++i) {
-                    auto initID = dynamicLearnIDs[i] + parameterID.getLastCharacters(2);
-                    const auto para = parameterRef.getParameter(initID);
-                    para->beginChangeGesture();
-                    para->setValueNotifyingHost(dynamicLearnValues[i]);
-                    para->endChangeGesture();
-                }
+                thresholdUpdater[idx]->update(threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)));
+                kneeUpdater[idx]->update(kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV)));
             } else {
                 controllerRef.setLearningHist(idx, f);
             }

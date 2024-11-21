@@ -43,8 +43,8 @@ namespace zlDSP {
         Controller<FloatType> &controllerRef;
         std::array<zlFilter::DynamicIIR<FloatType, Controller<FloatType>::FilterSize>, bandNUM> &filtersRef;
         std::array<std::string, bandNUM * 2> sideParaNames;
-        std::array<std::unique_ptr<zlChore::ParaUpdater>, bandNUM> sideFreqUpdater;
-        std::array<std::unique_ptr<zlChore::ParaUpdater>, bandNUM> sideQUpdater;
+        std::array<std::unique_ptr<zlChore::ParaUpdater>, bandNUM> sideFreqUpdater, sideQUpdater;
+        std::array<std::unique_ptr<zlChore::ParaUpdater>, bandNUM> thresholdUpdater, kneeUpdater;
 
         constexpr static std::array IDs{
             bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,
@@ -72,8 +72,6 @@ namespace zlDSP {
         };
         constexpr static std::array dynamicResetIDs{dynamicLearn::ID, dynamicBypass::ID,
             sideSolo::ID, dynamicRelative::ID};
-
-        constexpr static std::array dynamicLearnIDs {threshold::ID, kneeW::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

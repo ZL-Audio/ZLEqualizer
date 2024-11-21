@@ -18,9 +18,8 @@ namespace zlPanel {
     public:
         explicit ResetAttach(const size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
-                             zlDSP::Controller<double> &controller)
-            : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA), controllerRef(controller) {
+                             juce::AudioProcessorValueTreeState &parametersNA)
+            : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA) {
             parametersRef.addParameterListener(zlDSP::appendSuffix(zlDSP::bypass::ID, idx), this);
             parametersNARef.addParameterListener(zlState::appendSuffix(zlState::active::ID, idx), this);
         }
@@ -34,7 +33,6 @@ namespace zlPanel {
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef;
         juce::AudioProcessorValueTreeState &parametersNARef;
-        zlDSP::Controller<double> &controllerRef;
         std::atomic<bool> toActive;
 
         constexpr static std::array resetIDs{

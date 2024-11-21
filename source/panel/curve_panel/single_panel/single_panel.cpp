@@ -20,7 +20,7 @@ namespace zlPanel {
                              zlFilter::Ideal<double, 16> &mainFilter)
         : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), controllerRef(controller),
-          resetAttach(bandIdx, parameters, parametersNA, controller),
+          resetAttach(bandIdx, parameters, parametersNA),
           baseF(baseFilter), targetF(targetFilter), mainF(mainFilter),
           sidePanel(bandIdx, parameters, parametersNA, base, controller) {
         curvePath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));

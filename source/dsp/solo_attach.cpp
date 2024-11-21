@@ -16,14 +16,19 @@ namespace zlDSP {
                                       Controller<FloatType> &controller) : processorRef(processor),
                                                                            parameterRef(parameters),
                                                                            controllerRef(controller) {
+        for (size_t i = 0; i < bandNUM; ++i) {
+            const auto suffix = zlDSP::appendSuffix("", i);
+            mainSoloUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters, solo::ID + suffix);
+            sideSoloUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters, sideSolo::ID + suffix);
+        }
         addListeners();
         initDefaultValues();
     }
 
     template<typename FloatType>
     SoloAttach<FloatType>::~SoloAttach() {
-        for (int i = 0; i < bandNUM; ++i) {
-            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+        for (size_t i = 0; i < bandNUM; ++i) {
+            const auto suffix = zlDSP::appendSuffix("", i);
             for (auto &ID: IDs) {
                 parameterRef.removeParameterListener(ID + suffix, this);
             }
@@ -32,8 +37,8 @@ namespace zlDSP {
 
     template<typename FloatType>
     void SoloAttach<FloatType>::addListeners() {
-        for (int i = 0; i < bandNUM; ++i) {
-            auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
+        for (size_t i = 0; i < bandNUM; ++i) {
+            const auto suffix = zlDSP::appendSuffix("", i);
             for (auto &ID: IDs) {
                 parameterRef.addParameterListener(ID + suffix, this);
             }
@@ -48,16 +53,11 @@ namespace zlDSP {
             if (newValue > .5f) {
                 if (idx != soloIdx.load() || isSide != soloIsSide.load()) {
                     const auto oldIdx = soloIdx.load();
-                    const auto oldSuffix = oldIdx < 10 ? "0" + std::to_string(oldIdx) : std::to_string(oldIdx);
-                    const auto initID = soloIsSide.load()
-                                      ? sideSolo::ID + oldSuffix
-                                      : solo::ID + oldSuffix;
-
-                    auto *para =  parameterRef.getParameter(initID);
-                    para->beginChangeGesture();
-                    para->setValueNotifyingHost(0.f);
-                    para->endChangeGesture();
-
+                    if (soloIsSide.load()) {
+                        sideSoloUpdater[oldIdx]->update(0.f);
+                    } else {
+                        mainSoloUpdater[oldIdx]->update(0.f);
+                    }
                     soloIdx.store(idx);
                     soloIsSide.store(isSide);
                 }

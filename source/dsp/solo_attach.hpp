@@ -11,6 +11,7 @@
 #define ZLEqualizer_SOLO_ATTACH_HPP
 
 #include "controller.hpp"
+#include "chore/chore.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -28,6 +29,8 @@ namespace zlDSP {
         juce::AudioProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parameterRef;
         Controller<FloatType> &controllerRef;
+
+        std::array<std::unique_ptr<zlChore::ParaUpdater>, zlDSP::bandNUM> mainSoloUpdater, sideSoloUpdater;
 
         constexpr static std::array IDs{
             fType::ID,
