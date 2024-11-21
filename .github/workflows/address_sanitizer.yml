@@ -1,4 +1,4 @@
-name: Sanitizer
+name: Address Sanitizer
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DISPLAY: :0 # linux pluginval needs this
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  SANITIZER_FLAG: True
+  ADDRESS_SANITIZER_FLAG: True
   PLUGINVAL_DISABLED: Plugin state restoration
   IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
 

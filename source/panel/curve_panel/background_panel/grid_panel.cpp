@@ -12,13 +12,11 @@
 namespace zlPanel {
     GridPanel::GridPanel(zlInterface::UIBase &base) : uiBase(base) {
         setInterceptsMouseClicks(false, false);
-        setOpaque(true);
     }
 
     GridPanel::~GridPanel() = default;
 
     void GridPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getBackgroundColor());
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
         if (uiBase.getColourByIdx(zlInterface::gridColour).getFloatAlpha() <= 0.01f) {
             return;

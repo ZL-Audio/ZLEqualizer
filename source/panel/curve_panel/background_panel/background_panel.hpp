@@ -25,6 +25,8 @@ namespace zlPanel {
 
         ~BackgroundPanel() override;
 
+        void paint(juce::Graphics &g) override;
+
         void resized() override;
 
         void setMaximumDB(const float x) { scalePanel.setMaximumDB(x); }

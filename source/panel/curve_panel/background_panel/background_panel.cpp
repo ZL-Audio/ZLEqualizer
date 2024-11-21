@@ -25,6 +25,10 @@ namespace zlPanel {
 
     BackgroundPanel::~BackgroundPanel() = default;
 
+    void BackgroundPanel::paint(juce::Graphics &g) {
+        g.fillAll(uiBase.getBackgroundColor());
+    }
+
     void BackgroundPanel::resized() {
         auto bound = getLocalBounds().toFloat();
         const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4.1f);
