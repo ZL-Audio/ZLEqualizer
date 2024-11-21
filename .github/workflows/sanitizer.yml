@@ -1,0 +1,195 @@
+name: Sanitizer
+
+on:
+  workflow_dispatch:
+
+# When pushing new commits, cancel any running builds on that branch
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Debug
+  BUILD_DIR: Builds
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DISPLAY: :0 # linux pluginval needs this
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  SANITIZER_FLAG: True
+  PLUGINVAL_DISABLED: Plugin state restoration
+  IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
+
+# jobs are run in paralell on different machines
+# all steps run in series
+jobs:
+  build_and_test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      matrix:
+        include:
+          - name: macOS
+            os: macos-15
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
+            plugin_os_format: "VST3;AU"
+            cmake_extra_flags:
+
+    steps:
+      - name: Set up Clang (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 17
+
+      # This also starts up our "fake" display Xvfb, needed for pluginval
+      - name: Install JUCE's Linux Deps (Linux)
+        if: runner.os == 'Linux'
+        # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
+        run: |
+          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev xvfb ninja-build ladspa-sdk
+          sudo /usr/bin/Xvfb $DISPLAY &
+
+      - name: Setup MSVC Toolchain (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # - name: Cache Clang (Windows)
+      #   if: runner.os == 'Windows'
+      #   id: cache-llvm
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       C:/Program Files/LLVM
+      #       ./llvm
+      #     key: llvm-17
+
+      # - name: Set up Clang (Windows)
+      #   if: runner.os == 'Windows'
+      #   uses: KyleMayes/install-llvm-action@v2
+      #   with:
+      #     version: "17.0.6"
+      #     cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+      - name: Cache IPP (Windows)
+        if: runner.os == 'Windows'
+        id: cache-ipp
+        uses: actions/cache@v4
+        with:
+          key: ipp-v5
+          path: C:\Program Files (x86)\Intel
+
+      - name: Install IPP (Windows)
+        if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
+        shell: bash
+        run: |
+          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/b4adec02-353b-4144-aa21-f2087040f316/w_ipp_oneapi_p_2021.11.0.533_offline.exe
+          ./oneapi.exe -s -x -f oneapi
+          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+
+      - name: Save IPP cache (even on CI fail)
+        if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
+        uses: actions/cache/save@v4
+        with:
+          path: C:\Program Files (x86)\Intel
+          key: ipp-v5
+
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: choco install ninja
+
+      - name: Install macOS Deps
+        if: ${{ runner.os == 'macOS' }}
+        run: brew install ninja osxutils
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Import Certificates (macOS)
+        uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
+        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '')}}
+        with:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
+        env:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+
+      - name: Configure
+        shell: bash
+        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+        env:
+          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+
+      - name: Read in .env from CMake # see GitHubENV.cmake
+        shell: bash
+        run: |
+          cat .env # show us the config
+          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+
+      - name: Set additional env vars for next steps
+        shell: bash
+        run: |
+          ARTIFACTS_PATH=${{ env.BUILD_DIR }}/${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}
+          echo "ARTIFACTS_PATH=$ARTIFACTS_PATH" >> $GITHUB_ENV
+          echo "VST3_PATH=$ARTIFACTS_PATH/VST3/${{ env.PRODUCT_NAME }}.vst3" >> $GITHUB_ENV
+          echo "AU_PATH=$ARTIFACTS_PATH/AU/${{ env.PRODUCT_NAME }}.component" >> $GITHUB_ENV
+          echo "LV2_PATH=$ARTIFACTS_PATH/LV2/${{ env.PRODUCT_NAME }}.lv2" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
+
+      - name: Checkout pluginval code
+        uses: actions/checkout@v4
+        with:
+          path: "pluginval"
+          repository: 'ZL-Audio/pluginval'
+          submodules: recursive
+
+      - name: Configure Pluginval
+        shell: bash
+        working-directory: ./pluginval
+        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }}
+        env:
+          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+
+      - name: Build Pluginval
+        shell: bash
+        working-directory: ./pluginval
+        run: |
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+          ls ${{ env.BUILD_DIR }}/pluginval_artefacts/Debug
+
+      - name: Setup Pluginval random seed
+        uses: josStorer/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYYMMDD
+
+      - name: Pluginval VST3 validations
+        shell: bash
+        run: |
+          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+        env:
+          STRICTNESS_LEVEL: 10
+          TIMEOUT_MS: 1440000
+          REPEAT: 2
+          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
+
+      - name: Pluginval AU validations (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        shell: bash
+        run: |
+          sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
+          sudo killall -9 AudioComponentRegistrar
+          ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+        env:
+          STRICTNESS_LEVEL: 10
+          TIMEOUT_MS: 1440000
+          REPEAT: 2
+          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"

@@ -63,7 +63,7 @@ jobs:
           sudo ./llvm.sh 17
 
       # This also starts up our "fake" display Xvfb, needed for pluginval
-      - name: Install JUCE's Linux Deps
+      - name: Install JUCE's Linux Deps (Linux)
         if: runner.os == 'Linux'
         # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
         run: |

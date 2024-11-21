@@ -65,6 +65,9 @@ else ()
     endif ()
 endif ()
 
+# Sanitizer support, comment out to disable
+include(Sanitizer)
+
 # include boost for this project
 # find_package(Boost 1.80.0 REQUIRED)
 
