@@ -4,6 +4,11 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.4.4
+
+- fix uninitialized static gain compensation in some edge cases
+- fix data race in some edge cases
+
 ## 0.4.3
 
 - change the top panel layout (move global bypass and sgc buttons outside)
