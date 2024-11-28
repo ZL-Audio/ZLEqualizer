@@ -16,19 +16,101 @@
 #include "../filter/ideal_filter/ideal_filter.hpp"
 
 namespace zlEqMatch {
-    template<size_t filterNum>
+    template<size_t FilterNum>
     class EqMatchOptimizer final {
     public:
-        static constexpr double eps = 1e-6;
+        static constexpr double eps = 1e-3;
+        static constexpr double minFreqLog = 2.302585092994046, maxFreqLog = 9.998797732340453;
+        static constexpr double minGain = -15.0, maxGain = 15.0;
+        static constexpr double minQLog = -2.3025850929940455, maxQLog = 2.302585092994046;
+        static constexpr std::array<double, 3> lowerBound{minFreqLog, minGain, minQLog};
+        static constexpr std::array<double, 3> upperBound{maxFreqLog, maxGain, maxQLog};
+        static constexpr std::array algos1{
+            nlopt::algorithm::LD_MMA, nlopt::algorithm::LD_SLSQP, nlopt::algorithm::LD_VAR2
+        };
+        static constexpr std::array algos2{
+            nlopt::algorithm::GN_CRS2_LM
+        };
+        static constexpr std::array<zlFilter::FilterType, 3> filterTypes{
+            zlFilter::FilterType::lowShelf, zlFilter::FilterType::peak, zlFilter::FilterType::highShelf
+        };
+        static constexpr std::array<double, 3> initSol{6.907755278982137, 0.0, -0.3465735902799726};
+
+        EqMatchOptimizer() {
+            mFilter.prepare(48000.0);
+        }
+
         std::vector<double> &getDiffs() { return mDiffs; }
 
-        void runSimple() {
-            for (size_t i = 0; i < filterNum; i++) {
+        void setDiffs(const double *diffs, const size_t diffsSize) {
+            mFilter.prepareDBSize(diffsSize);
+            const auto deltaLog = (maxFreqLog - minFreqLog) / (static_cast<double>(diffsSize) - 1.0);
+            auto currentLog = minFreqLog;
+            mWs.resize(diffsSize);
+            for (size_t i = 0; i < diffsSize; i++) {
+                mWs[i] = std::exp(currentLog) / 48000.0 * 2.0 * 3.141592653589793;
+                currentLog += deltaLog;
+            }
+            mDiffs.resize(diffsSize);
+            for (size_t i = 0; i < diffsSize; i++) {
+                mDiffs[i] = diffs[i];
             }
         }
 
+        void runDeterministic() {
+            std::vector<nlopt::algorithm> mAlgos;
+            mAlgos.resize(algos1.size());
+            std::copy(algos1.begin(), algos1.end(), mAlgos.begin());
+            for (size_t i = 0; i < FilterNum; i++) {
+                std::array<double, filterTypes.size()> mse{};
+                std::array<std::vector<double>, filterTypes.size()> sols{};
+                for (size_t j = 0; j < filterTypes.size(); j++) {
+                    sols[j].resize(initSol.size());
+                    std::copy(initSol.begin(), initSol.end(), sols[j].begin());
+                    mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos);
+                }
+                const auto idx = std::distance(mse.begin(), std::min_element(mse.begin(), mse.end()));
+                filters[i].setFilterType(filterTypes[idx]);
+                filters[i].setFreq(std::exp(sols[idx][0]));
+                filters[i].setGain(sols[idx][1]);
+                filters[i].setQ(std::exp(sols[idx][2]));
+                solMSE = mse[idx];
+                updateDiff(filters[i]);
+            }
+        }
+
+        void runStochastic() {
+            std::vector<nlopt::algorithm> mAlgos1, mAlgos2;
+            mAlgos1.resize(algos1.size());
+            std::copy(algos1.begin(), algos1.end(), mAlgos1.begin());
+            mAlgos2.resize(algos2.size());
+            std::copy(algos2.begin(), algos2.end(), mAlgos2.begin());
+            for (size_t i = 0; i < FilterNum; i++) {
+                std::array<double, filterTypes.size()> mse{};
+                std::array<std::vector<double>, filterTypes.size()> sols{};
+                for (size_t j = 0; j < filterTypes.size(); j++) {
+                    sols[j].resize(initSol.size());
+                    std::copy(initSol.begin(), initSol.end(), sols[j].begin());
+                    mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos2);
+                    mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos1);
+                }
+                const auto idx = std::distance(mse.begin(), std::min_element(mse.begin(), mse.end()));
+                filters[i].setFilterType(filterTypes[idx]);
+                filters[i].setFreq(std::exp(sols[idx][0]));
+                filters[i].setGain(sols[idx][1]);
+                filters[i].setQ(std::exp(sols[idx][2]));
+                solMSE = mse[idx];
+                updateDiff(filters[i]);
+            }
+        }
+
+        double getSolMSE() const { return solMSE; }
+
+        std::array<zlFilter::Empty<double>, FilterNum> &getSol() { return filters; }
+
     private:
-        std::array<zlFilter::Empty<double>, filterNum> filters;
+        std::array<zlFilter::Empty<double>, FilterNum> filters;
+        double solMSE{};
         zlFilter::Ideal<double, 1> mFilter;
         std::vector<double> mDiffs;
         std::vector<double> mWs;
@@ -65,13 +147,13 @@ namespace zlEqMatch {
         }
 
         static double calculateMSE(const zlFilter::FilterType filterType,
-                                   const double freq, const double gain, const double q,
+                                   const double freqLog, const double gain, const double qLog,
                                    zlFilter::Ideal<double, 1> *filter,
                                    const std::vector<double> *diffs, const std::vector<double> *ws) {
             filter->setFilterType(filterType);
-            filter->setFreq(freq);
+            filter->setFreq(std::exp(freqLog));
             filter->setGain(gain);
-            filter->setQ(q);
+            filter->setQ(std::exp(qLog));
             filter->updateMagnitude(*ws);
             const auto &dB = filter->getDBs();
             double mse = 0.0;
@@ -80,6 +162,49 @@ namespace zlEqMatch {
                 mse += t * t;
             }
             return mse / static_cast<double>(dB.size());
+        }
+
+        double improveSolution(std::vector<double> &sol,
+                               const zlFilter::FilterType fType,
+                               const std::vector<nlopt::algorithm> &algos) {
+            optFData optData{fType, &mFilter, &mDiffs, &mWs};
+            double bestMSE = 1e6;
+            std::vector<double> bestSol = sol;
+            const std::vector<double> mLowerBound{minFreqLog, minGain, minQLog};
+            const std::vector<double> mUpperBound{maxFreqLog, maxGain, maxQLog};
+            for (const auto &algo: algos) {
+                auto opt = nlopt::opt(algo, 3);
+                opt.set_min_objective(func, &optData);
+                opt.set_lower_bounds(mLowerBound);
+                opt.set_upper_bounds(mUpperBound);
+                opt.set_xtol_abs(1e-3);
+                opt.set_population(80);
+                opt.set_maxtime(1);
+                try {
+                    std::vector<double> currentSol = sol;
+                    double currentMSE = 0.0;
+                    const auto res = opt.optimize(currentSol, currentMSE);
+                    if (res >= 0 && currentMSE < bestMSE) {
+                        bestSol = currentSol;
+                        bestMSE = currentMSE;
+                    }
+                } catch (...) {
+                }
+            }
+            sol = bestSol;
+            return bestMSE;
+        }
+
+        void updateDiff(const zlFilter::Empty<double> &eFilter) {
+            mFilter.setFilterType(eFilter.getFilterType());
+            mFilter.setFreq(eFilter.getFreq());
+            mFilter.setGain(eFilter.getGain());
+            mFilter.setQ(eFilter.getQ());
+            mFilter.updateMagnitude(mWs);
+            const auto &dB = mFilter.getDBs();
+            for (size_t i = 0; i < dB.size(); ++i) {
+                mDiffs[i] -= dB[i];
+            }
         }
     };
 } // zlEqMatch
