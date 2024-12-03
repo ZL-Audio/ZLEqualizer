@@ -236,7 +236,6 @@ namespace zlFFT {
                     const float rms = juce::Decibels::gainToDecibels(ms, -160.f) * 0.5f;
                     if (rms < -80.f) { continue; }
                     // calculate loudness weighting
-
                     const auto weight = calculateWeight(rms);
                     currentNum[i] += weight;
                     const auto newWeight = weight / currentNum[i];

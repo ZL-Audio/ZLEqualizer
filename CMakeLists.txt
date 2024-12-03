@@ -180,10 +180,17 @@ target_link_libraries(SharedCode
 )
 
 # add nlopt
+set(BUILD_SHARED_LIBS OFF)
+
 add_subdirectory(nlopt)
 
-# Link the JUCE plugin targets our SharedCode target
-target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode nlopt)
+target_link_libraries(SharedCode
+        INTERFACE
+        nlopt
+)
+
+# Link the nlopt targets our SharedCode target
+target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)
 
 # IPP support, comment out to disable
 include(PamplejuceIPP)

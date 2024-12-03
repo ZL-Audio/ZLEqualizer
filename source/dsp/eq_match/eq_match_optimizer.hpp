@@ -11,6 +11,7 @@
 #define ZLEQMATCH_EQ_MATCH_OPTIMIZER_HPP
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #include "nlopt.hpp"
 #pragma GCC diagnostic pop
 #include "../filter/ideal_filter/ideal_filter.hpp"
