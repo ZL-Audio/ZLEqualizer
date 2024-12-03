@@ -61,9 +61,6 @@ namespace zlFFT {
         }
         if (currentON) {
             fftAnalyzer.process({preBuffer, postBuffer, sideBuffer});
-            if (!isPathReady.load()) {
-                triggerAsyncUpdate();
-            }
         }
     }
 
@@ -122,11 +119,14 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::updatePaths(
         juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_, juce::Rectangle<float> bound) {
-        prePath_.clear();
-        postPath_.clear();
-        sidePath_.clear();
-        fftAnalyzer.createPath({prePath_, postPath_, sidePath_}, bound);
-        isPathReady.store(false);
+        if (isPathReady.load()) {
+            prePath_.clear();
+            postPath_.clear();
+            sidePath_.clear();
+            fftAnalyzer.createPath({prePath_, postPath_, sidePath_}, bound);
+            isPathReady.store(false);
+        }
+        triggerAsyncUpdate();
     }
 
     template

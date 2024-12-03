@@ -51,8 +51,6 @@ namespace zlFFT {
 
         inline bool getSideON() const { return isSideON.load(); }
 
-        bool getPathReady() const { return isPathReady.load(); }
-
         void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
                          juce::Rectangle<float> bound);
 

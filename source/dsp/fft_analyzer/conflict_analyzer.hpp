@@ -69,7 +69,6 @@ namespace zlFFT {
     private:
         MultipleFFTAnalyzer<FloatType, 2, pointNum> syncAnalyzer;
         juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
-        // std::array<float, pointNum> mainDB{}, refDB{};
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
         std::atomic<bool> isON{false}, isConflictReady{false}, toReset{false};
         bool currentIsON{false};

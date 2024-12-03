@@ -117,7 +117,7 @@ namespace zlPanel {
             juce::ignoreUnused(flag);
             if (!showMatching.load()) {
                 const auto &analyzer = controllerRef.getAnalyzer();
-                if ((analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) && analyzer.getPathReady()) {
+                if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
                     fftPanel.updatePaths();
                 }
                 for (const auto &sP: singlePanels) {

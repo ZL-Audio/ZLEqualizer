@@ -14,8 +14,6 @@ namespace zlFFT {
     ConflictAnalyzer<FloatType>::ConflictAnalyzer(const size_t fftOrder)
         : Thread("conflict_analyzer"),
           syncAnalyzer(fftOrder) {
-        // std::fill(mainDB.begin(), mainDB.end(), -144.f);
-        // std::fill(refDB.begin(), refDB.end(), -144.f);
         syncAnalyzer.setDecayRate(0, 0.985f);
         syncAnalyzer.setDecayRate(1, 0.985f);
         syncAnalyzer.setON({true, true});
@@ -62,9 +60,6 @@ namespace zlFFT {
     void ConflictAnalyzer<FloatType>::process() {
         if (currentIsON) {
             syncAnalyzer.process({mainBuffer, refBuffer});
-            if (!isConflictReady.load()) {
-                triggerAsyncUpdate();
-            }
         }
     }
 
@@ -113,25 +108,27 @@ namespace zlFFT {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::updateGradient(juce::ColourGradient &gradient) {
-        // calculate gradient
-        gradient.point1 = juce::Point<float>(x1.load(), 0.f);
-        gradient.point2 = juce::Point<float>(x2.load(), 0.f);
-        gradient.isRadial = false;
-        gradient.clearColours();
+        if (isConflictReady.load()) {
+            // calculate gradient
+            gradient.point1 = juce::Point<float>(x1.load(), 0.f);
+            gradient.point2 = juce::Point<float>(x2.load(), 0.f);
+            gradient.isRadial = false;
+            gradient.clearColours();
 
-        gradient.addColour(0.0,
-                           gColour.withMultipliedAlpha(juce::jmax(conflictsP.front().load(), 0.f)));
-        gradient.addColour(1.0,
-                           gColour.withMultipliedAlpha(juce::jmax(conflictsP.back().load(), 0.f)));
-        for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
-            if (conflictsP[i + 1] > 0 || conflictsP[i - 1] > 0) {
-                const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
-                const auto rectColour = gColour.withMultipliedAlpha(juce::jmax(conflictsP[i].load(), 0.f));
-                gradient.addColour(p, rectColour);
+            gradient.addColour(0.0,
+                               gColour.withMultipliedAlpha(juce::jmax(conflictsP.front().load(), 0.f)));
+            gradient.addColour(1.0,
+                               gColour.withMultipliedAlpha(juce::jmax(conflictsP.back().load(), 0.f)));
+            for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
+                if (conflictsP[i + 1] > 0 || conflictsP[i - 1] > 0) {
+                    const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
+                    const auto rectColour = gColour.withMultipliedAlpha(juce::jmax(conflictsP[i].load(), 0.f));
+                    gradient.addColour(p, rectColour);
+                }
             }
+            isConflictReady.store(false);
         }
-
-        isConflictReady.store(false);
+        triggerAsyncUpdate();
     }
 
     template<typename FloatType>
