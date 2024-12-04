@@ -294,7 +294,7 @@ jobs:
       uses: actions/download-artifact@v4
 
     - name: Generate Signed Build Provenance Attestations
-      uses: actions/attest-build-provenance@v1
+      uses: actions/attest-build-provenance@v2
       with:
         subject-path: |
           */*.exe
