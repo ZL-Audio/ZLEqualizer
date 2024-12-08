@@ -119,7 +119,7 @@ namespace zlPanel {
 
         colourPanel.setBounds(0, 0,
                               juce::roundToInt(bound.getWidth()),
-                              juce::roundToInt(uiBase.getFontSize() * (48.f + 1.f)));
+                              juce::roundToInt(uiBase.getFontSize() * (52.f + 1.f)));
         controlPanel.setBounds(0, 0,
                                juce::roundToInt(bound.getWidth()),
                                juce::roundToInt(uiBase.getFontSize() * (16.f + 1.f)));

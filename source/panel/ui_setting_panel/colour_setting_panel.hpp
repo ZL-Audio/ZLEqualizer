@@ -28,6 +28,8 @@ namespace zlPanel {
 
         void resized() override;
 
+        void mouseDown(const juce::MouseEvent &event) override;
+
     private:
         PluginProcessor &pRef;
         zlInterface::UIBase &uiBase;
@@ -61,8 +63,27 @@ namespace zlPanel {
             "Tag Colour",
             "Gain Colour",
         };
+        std::array<std::string, numSelectors> tagNames{
+            "text_colour",
+            "background_colour",
+            "shadow_colour",
+            "glow_colour",
+            "pre_colour",
+            "post_colour",
+            "side_colour",
+            "grid_colour",
+        };
         juce::Label cMap1Label, cMap2Label;
         zlInterface::ColourMapSelector cMap1Selector, cMap2Selector;
+        juce::Label importLabel, exportLabel;
+
+        std::unique_ptr<juce::FileChooser> myChooser;
+        inline auto static const settingDirectory =
+                juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                .getChildFile("Audio")
+                .getChildFile("Presets")
+                .getChildFile(JucePlugin_Manufacturer)
+                .getChildFile("Shared Settings");
     };
 } // zlPanel
 

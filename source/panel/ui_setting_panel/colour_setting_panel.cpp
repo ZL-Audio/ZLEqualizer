@@ -33,6 +33,9 @@ namespace zlPanel {
           gainSelector(base, *this),
           cMap1Selector(base), cMap2Selector(base) {
         juce::ignoreUnused(pRef);
+        if (!settingDirectory.isDirectory()) {
+            settingDirectory.createDirectory();
+        }
         nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
         for (size_t i = 0; i < numSelectors; ++i) {
@@ -49,6 +52,14 @@ namespace zlPanel {
         cMap2Label.setLookAndFeel(&nameLAF);
         addAndMakeVisible(cMap2Label);
         addAndMakeVisible(cMap2Selector);
+        importLabel.setText("Import", juce::dontSendNotification);
+        importLabel.setLookAndFeel(&nameLAF);
+        importLabel.addMouseListener(this, false);
+        addAndMakeVisible(importLabel);
+        exportLabel.setText("Export", juce::dontSendNotification);
+        exportLabel.setLookAndFeel(&nameLAF);
+        exportLabel.addMouseListener(this, false);
+        addAndMakeVisible(exportLabel);
     }
 
     ColourSettingPanel::~ColourSettingPanel() {
@@ -108,6 +119,60 @@ namespace zlPanel {
             cMap2Label.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
             cMap2Selector.setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
+        } {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            importLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .45f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .10f);
+            exportLabel.setBounds(localBound.removeFromLeft(uiBase.getFontSize() * 5.f).toNearestInt());
+        }
+    }
+
+    void ColourSettingPanel::mouseDown(const juce::MouseEvent &event) {
+        if (event.originalComponent == &importLabel) {
+            myChooser = std::make_unique<juce::FileChooser>(
+                "Load the colour settings...", settingDirectory, "*.xml",
+                true, false, nullptr);
+            constexpr auto settingOpenFlags = juce::FileBrowserComponent::openMode |
+                                              juce::FileBrowserComponent::canSelectFiles;
+            myChooser->launchAsync(settingOpenFlags, [this](const juce::FileChooser &chooser) {
+                const juce::File settingFile(chooser.getResult());
+                if (const auto xmlInput = juce::XmlDocument::parse(settingFile)) {
+                    for (size_t i = 0; i < tagNames.size(); ++i) {
+                        if (const auto *xmlColour = xmlInput->getChildByName(tagNames[i])) {
+                            const juce::Colour colour = getIntColour(
+                                xmlColour->getIntAttribute("r"),
+                                xmlColour->getIntAttribute("g"),
+                                xmlColour->getIntAttribute("b"),
+                                static_cast<float>(xmlColour->getDoubleAttribute("o")));
+                            selectors[i]->setColour(colour);
+                        }
+                    }
+                }
+            });
+        } else if (event.originalComponent == &exportLabel) {
+            myChooser = std::make_unique<juce::FileChooser>(
+                "Save the colour settings...", settingDirectory.getChildFile("colour.xml"), "*.xml",
+                true, false, nullptr);
+            constexpr auto settingSaveFlags = juce::FileBrowserComponent::saveMode |
+                                              juce::FileBrowserComponent::warnAboutOverwriting;
+            myChooser->launchAsync(settingSaveFlags, [this](const juce::FileChooser &chooser) {
+                juce::File settingFile(chooser.getResult().withFileExtension("xml"));
+                if (settingFile.create()) {
+                    juce::XmlElement xmlOutput{"colour_setting"};
+                    for (size_t i = 0; i < tagNames.size(); ++i) {
+                        const auto tagName = selectorNames[i];
+                        auto *xmlColour = xmlOutput.createNewChildElement(tagNames[i]);
+                        juce::Colour colour = selectors[i]->getColour();
+                        xmlColour->setAttribute("r", colour.getRed());
+                        xmlColour->setAttribute("g", colour.getGreen());
+                        xmlColour->setAttribute("b", colour.getBlue());
+                        xmlColour->setAttribute("o", colour.getFloatAlpha());
+                    }
+                    const auto result = xmlOutput.writeTo(settingFile);
+                    juce::ignoreUnused(result);
+                }
+            });
         }
     }
 } // zlPanel
