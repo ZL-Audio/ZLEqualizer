@@ -88,14 +88,14 @@ jobs:
         id: cache-ipp
         uses: actions/cache@v4
         with:
-          key: ipp-v5
+          key: ipp-v6
           path: C:\Program Files (x86)\Intel
 
       - name: Install IPP (Windows)
         if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
         shell: bash
         run: |
-          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/b4adec02-353b-4144-aa21-f2087040f316/w_ipp_oneapi_p_2021.11.0.533_offline.exe
+          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/2e89fab4-e1c7-4f14-a1ef-6cddba8c5fa7/intel-ipp-2022.0.0.796_offline.exe
           ./oneapi.exe -s -x -f oneapi
           ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
@@ -104,7 +104,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: C:\Program Files (x86)\Intel
-          key: ipp-v5
+          key: ipp-v6
 
       - name: Install Ninja (Windows)
         if: runner.os == 'Windows'
