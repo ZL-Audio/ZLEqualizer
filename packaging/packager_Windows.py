@@ -26,8 +26,8 @@ def main():
 #define Year GetDateTimeString("yyyy","","")
 
 [Setup]
-ArchitecturesInstallIn64BitMode=x64
-ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64compatible
+ArchitecturesAllowed=x64compatible
 AppName={#ProductName}
 OutputBaseFilename={#ArtifactName}
 AppCopyright=Copyright (C) {#Year} {#Publisher}
