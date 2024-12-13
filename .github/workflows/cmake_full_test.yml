@@ -135,7 +135,7 @@ jobs:
           p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
       - name: Cache the build
-        uses: mozilla-actions/sccache-action@v0.0.6
+        uses: mozilla-actions/sccache-action@v0.0.7
 
       - name: Configure
         shell: bash
