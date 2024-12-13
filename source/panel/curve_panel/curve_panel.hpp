@@ -24,6 +24,7 @@
 namespace zlPanel {
     class CurvePanel final : public juce::Component,
                              private juce::AudioProcessorValueTreeState::Listener,
+                             private juce::ValueTree::Listener,
                              private juce::Thread {
     public:
         explicit CurvePanel(PluginProcessor &processor,
@@ -50,12 +51,15 @@ namespace zlPanel {
         SoloPanel soloPanel;
         ButtonPanel buttonPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
+        MatchPanel matchPanel;
         juce::Time currentT;
         juce::VBlankAttachment vblank;
 
-        std::atomic<bool> showMatching{false};
+        std::atomic<bool> showMatchPanel{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged, const juce::Identifier &property) override;
 
         void repaintCallBack();
 

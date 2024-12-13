@@ -22,6 +22,7 @@ namespace zlPanel {
           sumPanel(parametersRef, base, controllerRef, baseFilters, mainFilters),
           soloPanel(parametersRef, parametersNARef, base, controllerRef),
           buttonPanel(processorRef, base),
+          matchPanel(processor.getController().getMatchAnalyzer(), base),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
         for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {
@@ -43,11 +44,14 @@ namespace zlPanel {
         addAndMakeVisible(sumPanel);
         addAndMakeVisible(soloPanel);
         addAndMakeVisible(buttonPanel);
+        addChildComponent(matchPanel);
         parameterChanged(zlDSP::scale::ID, parametersRef.getRawParameterValue(zlDSP::scale::ID)->load());
         parametersRef.addParameterListener(zlDSP::scale::ID, this);
         parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
         startThread(juce::Thread::Priority::low);
+
+        uiBase.getValueTree().addListener(this);
     }
 
     CurvePanel::~CurvePanel() {
@@ -71,14 +75,16 @@ namespace zlPanel {
         backgroundPanel.setBounds(getLocalBounds());
         auto bound = getLocalBounds().toFloat();
         bound.removeFromRight(uiBase.getFontSize() * 4.1f);
-        fftPanel.setBounds(bound.toNearestInt());
-        conflictPanel.setBounds(bound.toNearestInt());
+        const auto intBound = bound.toNearestInt();
+        fftPanel.setBounds(intBound);
+        conflictPanel.setBounds(intBound);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            singlePanels[i]->setBounds(bound.toNearestInt());
+            singlePanels[i]->setBounds(intBound);
         }
-        sumPanel.setBounds(bound.toNearestInt());
-        soloPanel.setBounds(bound.toNearestInt());
-        buttonPanel.setBounds(bound.toNearestInt());
+        sumPanel.setBounds(intBound);
+        soloPanel.setBounds(intBound);
+        buttonPanel.setBounds(intBound);
+        matchPanel.setBounds(intBound);
     }
 
     void CurvePanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -98,13 +104,15 @@ namespace zlPanel {
         }
     }
 
+    void CurvePanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged, const juce::Identifier &property) {
+        showMatchPanel.store(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow)));
+    }
+
     void CurvePanel::repaintCallBack() {
         const juce::Time nowT = juce::Time::getCurrentTime();
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
-            if (!showMatching.load()) {
-                buttonPanel.updateDraggers();
-                conflictPanel.updateGradient();
-            }
+            buttonPanel.updateDraggers();
+            conflictPanel.updateGradient();
             repaint();
             currentT = nowT;
         }
@@ -115,20 +123,16 @@ namespace zlPanel {
         while (!threadShouldExit()) {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
-            if (!showMatching.load()) {
-                const auto &analyzer = controllerRef.getAnalyzer();
-                if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
-                    fftPanel.updatePaths();
-                }
-                for (const auto &sP: singlePanels) {
-                    if (sP->checkRepaint()) {
-                        sP->run();
-                    }
-                }
-                sumPanel.run();
-            } else {
-                // const auto &analyzer = controllerRef.getMatchAnalyzer();
+            const auto &analyzer = controllerRef.getAnalyzer();
+            if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
+                fftPanel.updatePaths();
             }
+            for (const auto &sP: singlePanels) {
+                if (sP->checkRepaint()) {
+                    sP->run();
+                }
+            }
+            sumPanel.run();
         }
     }
 }

@@ -10,4 +10,15 @@
 #include "match_panel.hpp"
 
 namespace zlPanel {
+    MatchPanel::MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer, zlInterface::UIBase &base)
+        : uiBase(base) {
+        juce::ignoreUnused(analyzer);
+        uiBase.getValueTree().addListener(this);
+        setInterceptsMouseClicks(true, false);
+    }
+
+    void MatchPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged, const juce::Identifier &property) {
+        setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow)));
+    }
+
 } // zlPanel
