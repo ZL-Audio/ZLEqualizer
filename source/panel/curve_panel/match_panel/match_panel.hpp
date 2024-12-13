@@ -13,8 +13,7 @@
 #include "match_analyzer_panel.hpp"
 
 namespace zlPanel {
-    class MatchPanel final : public juce::Component,
-                             private juce::ValueTree::Listener {
+    class MatchPanel final : public juce::Component {
     public:
         explicit MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
                             zlInterface::UIBase &base);
@@ -23,9 +22,6 @@ namespace zlPanel {
 
     private:
         zlInterface::UIBase &uiBase;
-
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
-                                      const juce::Identifier &property) override;
     };
 } // zlPanel
 

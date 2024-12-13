@@ -106,7 +106,15 @@ namespace zlPanel {
     }
 
     void CurvePanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
-        showMatchPanel.store(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow)));
+        const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
+        showMatchPanel.store(f);
+        matchPanel.setVisible(f);
+        // sumPanel.setVisible(!f);
+        // for (size_t i = 0; i < zlState::bandNUM; ++i) {
+        //     singlePanels[i]->setVisible(!f);
+        // }
+        buttonPanel.setVisible(!f);
+        soloPanel.setVisible(!f);
     }
 
     void CurvePanel::repaintCallBack() {

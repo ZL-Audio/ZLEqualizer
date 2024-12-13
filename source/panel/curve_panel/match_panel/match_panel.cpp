@@ -12,16 +12,9 @@
 namespace zlPanel {
     MatchPanel::MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer, zlInterface::UIBase &base)
         : uiBase(base) {
-        juce::ignoreUnused(analyzer);
-        uiBase.getValueTree().addListener(this);
+        juce::ignoreUnused(analyzer, uiBase);
         setInterceptsMouseClicks(true, false);
     }
 
-    MatchPanel::~MatchPanel() {
-        uiBase.getValueTree().removeListener(this);
-    }
-
-    void MatchPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
-        setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow)));
-    }
+    MatchPanel::~MatchPanel() = default;
 } // zlPanel
