@@ -102,8 +102,6 @@ namespace zlPanel {
     }
 
     void OutputSettingPanel::paint(juce::Graphics &g) {
-        // g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
-        // g.fillPath(backgroundPath);
         g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
         g.fillPath(backgroundPath);
 

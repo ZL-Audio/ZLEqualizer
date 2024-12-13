@@ -42,6 +42,10 @@ namespace zlInterface {
             lookAndFeel.updateImages();
         }
 
+        void visibilityChanged() override {
+            lookAndFeel.updateImages();
+        }
+
     private:
         UIBase &uiBase;
 

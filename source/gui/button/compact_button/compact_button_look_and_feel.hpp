@@ -64,9 +64,9 @@ namespace zlInterface {
                     const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f;
                     const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
                     if (isPressed) {
-                        drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
+                        internalImg->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
                     } else {
-                        drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
+                        internalImg->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
                     }
                 }
             }
@@ -93,7 +93,8 @@ namespace zlInterface {
 
         void updateImages() {
             if (drawable != nullptr) {
-                drawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
+                internalImg = drawable->createCopy();
+                internalImg->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
             }
         }
 
@@ -101,6 +102,7 @@ namespace zlInterface {
         std::atomic<bool> editable{true}, reverse{false}, withShadow{true};
         std::atomic<float> buttonDepth = 0.f, fontScale{1.f}, shrinkScale{1.f};
         juce::Drawable *drawable = nullptr;
+        std::unique_ptr<juce::Drawable> internalImg;
 
         UIBase &uiBase;
     };

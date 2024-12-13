@@ -39,6 +39,7 @@ namespace zlPanel {
             d->setScale(scale);
             addAndMakeVisible(d);
         }
+        addChildComponent(buttonPopUp);
         // set current band if dragger is clicked
         dragger.getButton().onClick = [this]() {
             if (dragger.getButton().getToggleState()) {
@@ -51,14 +52,12 @@ namespace zlPanel {
                 }
 
                 if (isActiveTarget.load()) {
-                    addAndMakeVisible(buttonPopUp);
                     buttonPopUp.toFront(false);
                     buttonPopUp.componentMovedOrResized(dragger.getButton(), true, true);
+                    buttonPopUp.setVisible(true);
                 }
             } else {
                 buttonPopUp.setVisible(false);
-                buttonPopUp.repaint();
-                removeChildComponent(&buttonPopUp);
             }
         };
         // disable link if side dragger is clicked
@@ -166,7 +165,7 @@ namespace zlPanel {
         dragger.setActive(f);
         dragger.setInterceptsMouseClicks(false, f);
         if (!f) {
-            removeChildComponent(&buttonPopUp);
+            buttonPopUp.setVisible(false);
         }
 
         if (toUpdateAttachment.exchange(false)) {
@@ -337,7 +336,7 @@ namespace zlPanel {
             sideDragger.getButton().setToggleState(false, juce::NotificationType::sendNotificationAsync);
         }
         if (!f) {
-            removeChildComponent(&buttonPopUp);
+            buttonPopUp.setVisible(false);
         }
     }
 

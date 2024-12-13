@@ -23,7 +23,8 @@ namespace zlInterface {
                 button.setToggleable(true);
                 button.setClickingTogglesState(true);
             }
-            updateImages();
+            button.setColour(juce::DrawableButton::backgroundColourId, juce::Colours::white.withAlpha(0.f));
+            button.setColour(juce::DrawableButton::backgroundOnColourId, juce::Colours::white.withAlpha(0.f));
             addAndMakeVisible(button);
         }
 
@@ -43,8 +44,10 @@ namespace zlInterface {
 
         void lookAndFeelChanged() override {
             updateImages();
-            button.setColour(juce::DrawableButton::backgroundColourId, uiBase.getBackgroundColor());
-            button.setColour(juce::DrawableButton::backgroundOnColourId, uiBase.getBackgroundColor());
+        }
+
+        void visibilityChanged() override {
+            updateImages();
         }
 
         void updateImages() {
