@@ -20,6 +20,7 @@ namespace zlPanel {
           outputSettingPanel(p, base),
           conflictSettingPanel(p, base),
           generalSettingPanel(p, base),
+          matchSettingPanel(base),
           effectC("all", uiBase),
           sgcC("S", uiBase),
           effectDrawable(
@@ -32,6 +33,7 @@ namespace zlPanel {
         addAndMakeVisible(outputSettingPanel);
         addAndMakeVisible(conflictSettingPanel);
         addAndMakeVisible(generalSettingPanel);
+        addAndMakeVisible(matchSettingPanel);
 
         effectC.setDrawable(effectDrawable.get());
 
@@ -46,11 +48,11 @@ namespace zlPanel {
         addAndMakeVisible(sgcC);
 
         attach({
-                       &effectC.getButton(),
-                       &sgcC.getButton(),
-                   },
-                   {zlDSP::effectON::ID, zlDSP::staticAutoGain::ID},
-                   p.parameters, buttonAttachments);
+                   &effectC.getButton(),
+                   &sgcC.getButton(),
+               },
+               {zlDSP::effectON::ID, zlDSP::staticAutoGain::ID},
+               p.parameters, buttonAttachments);
     }
 
     void StatePanel::resized() {
@@ -59,7 +61,7 @@ namespace zlPanel {
         logoPanel.setBounds(logoBound.toNearestInt());
         const auto height = bound.getHeight();
 
-        const auto effectBound = bound.removeFromRight(height * .8f);
+        const auto effectBound = bound.removeFromRight(height * .8f).removeFromTop(height * 0.05f);
         effectC.setBounds(effectBound.toNearestInt());
         bound.removeFromRight(height * .15f);
 
@@ -83,5 +85,8 @@ namespace zlPanel {
         bound.removeFromRight(height * .5f);
         const auto generalSettingBound = bound.removeFromRight(height * labelSize);
         generalSettingPanel.setBounds(generalSettingBound.toNearestInt());
+        bound.removeFromRight(height * .5f);
+        const auto matchSettingBound = bound.removeFromRight(height * labelSize);
+        matchSettingPanel.setBounds(matchSettingBound.toNearestInt());
     }
 } // zlPanel

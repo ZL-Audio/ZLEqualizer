@@ -38,6 +38,15 @@ namespace zlInterface {
         sensitivityNum
     };
 
+    enum settingIdx {
+        matchPanelShow,
+        settingNum
+    };
+
+    inline std::array identifiers {
+        juce::Identifier("match_panel_show")
+    };
+
     inline std::array<std::string, colourNum> colourNames{
         "text", "background",
         "shadow", "glow",
@@ -47,7 +56,6 @@ namespace zlInterface {
 
     static constexpr size_t ColorMap1Size = 10;
     static constexpr size_t ColorMap2Size = 6;
-
 
     inline std::array colourMaps = {
         std::vector<juce::Colour>{
@@ -348,8 +356,19 @@ namespace zlInterface {
 
         void setFFTOrderIdx(const int x) { fftOrderIdx = x; }
 
+        juce::ValueTree &getValueTree() { return valueTree; }
+
+        juce::var getProperty(const settingIdx idx) const {
+            return valueTree.getProperty(identifiers[static_cast<size_t>(idx)]);
+        }
+
+        void setProperty(const settingIdx idx, const juce::var &v) {
+            valueTree.setProperty(identifiers[idx], v, nullptr);
+        }
     private:
         juce::AudioProcessorValueTreeState &state;
+        juce::ValueTree valueTree{"ui_setting"};
+
         std::atomic<float> fontSize{0};
         std::array<juce::Colour, colourNum> customColours;
         std::array<float, sensitivityNum> wheelSensitivity{1.f, 0.12f, 1.f, .25f};
@@ -377,7 +396,7 @@ namespace zlInterface {
         size_t cMap1Idx{zlState::colourMapIdx::defaultDark};
         size_t cMap2Idx{zlState::colourMapIdx::seabornBrightDark};
 
-        int fftOrderIdx;
+        int fftOrderIdx{1};
     };
 }
 

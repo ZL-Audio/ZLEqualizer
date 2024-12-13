@@ -18,6 +18,7 @@
 #include "output_setting_panel.hpp"
 #include "conflict_setting_panel.hpp"
 #include "general_setting_panel.hpp"
+#include "match_setting_panel.hpp"
 
 namespace zlPanel {
     class StatePanel final : public juce::Component {
@@ -37,6 +38,7 @@ namespace zlPanel {
         OutputSettingPanel outputSettingPanel;
         ConflictSettingPanel conflictSettingPanel;
         GeneralSettingPanel generalSettingPanel;
+        MatchSettingPanel matchSettingPanel;
 
         zlInterface::CompactButton effectC, sgcC;
         juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > buttonAttachments{};
