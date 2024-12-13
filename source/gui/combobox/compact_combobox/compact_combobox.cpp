@@ -31,8 +31,8 @@ namespace zlInterface {
 
     void CompactCombobox::resized() {
         auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), juce::jmin(bound.getHeight(),
-                                                                         uiBase.getFontSize() * 2.f));
+        bound = bound.withSizeKeepingCentre(bound.getWidth(),
+                                            juce::jmin(bound.getHeight(), uiBase.getFontSize() * 2.f));
         comboBox.setBounds(bound.toNearestInt());
     }
 

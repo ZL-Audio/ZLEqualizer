@@ -59,7 +59,8 @@ namespace zlPanel {
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged, const juce::Identifier &property) override;
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                      const juce::Identifier &property) override;
 
         void repaintCallBack();
 

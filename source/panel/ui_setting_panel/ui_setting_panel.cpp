@@ -20,9 +20,9 @@ namespace zlPanel {
           closeDrawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           resetDrawable(
               juce::Drawable::createFromImageData(BinaryData::loopleftline_svg, BinaryData::loopleftline_svgSize)),
-          saveButton(saveDrawable.get(), uiBase),
-          closeButton(closeDrawable.get(), uiBase),
-          resetButton(resetDrawable.get(), uiBase),
+          saveButton(uiBase, saveDrawable.get()),
+          closeButton(uiBase, closeDrawable.get()),
+          resetButton(uiBase, resetDrawable.get()),
           panelNameLAF(uiBase),
           labelLAF(uiBase) {
         juce::ignoreUnused(pRef);
@@ -130,12 +130,12 @@ namespace zlPanel {
         viewPort.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
         const auto leftBound = bound.removeFromLeft(
             bound.getWidth() * .3333333f).withSizeKeepingCentre(
-            uiBase.getFontSize() * 1.25f, uiBase.getFontSize() * 1.25f);
+            uiBase.getFontSize() * 2.f, uiBase.getFontSize() * 2.f);
         const auto centerBound = bound.removeFromLeft(
             bound.getWidth() * .5f).withSizeKeepingCentre(
-            uiBase.getFontSize() * 1.25f, uiBase.getFontSize() * 1.25f);
+            uiBase.getFontSize() * 2.f, uiBase.getFontSize() * 2.f);
         const auto rightBound = bound.withSizeKeepingCentre(
-            uiBase.getFontSize() * 1.25f, uiBase.getFontSize() * 1.25f);
+            uiBase.getFontSize() * 2.f, uiBase.getFontSize() * 2.f);
         saveButton.setBounds(leftBound.toNearestInt());
         resetButton.setBounds(centerBound.toNearestInt());
         closeButton.setBounds(rightBound.toNearestInt());

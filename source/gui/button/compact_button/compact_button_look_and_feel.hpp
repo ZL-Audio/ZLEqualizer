@@ -30,7 +30,8 @@ namespace zlInterface {
             auto bounds = button.getLocalBounds().toFloat();
             if (withShadow.load()) {
                 bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f * shrinkScale.load(), {});
-                bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f * shrinkScale.load(), {.flip = true});
+                bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f * shrinkScale.load(),
+                                                       {.flip = true});
             } else {
                 bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.3f * shrinkScale.load(), {});
                 g.setColour(uiBase.getBackgroundColor());
@@ -60,14 +61,12 @@ namespace zlInterface {
                     g.setFont(uiBase.getFontSize() * fontScale.load());
                     g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
-                    const auto tempDrawable = drawable->createCopy();
-                    tempDrawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
                     const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f;
                     const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
                     if (isPressed) {
-                        tempDrawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
+                        drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
                     } else {
-                        tempDrawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
+                        drawable->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
                     }
                 }
             }
@@ -81,6 +80,7 @@ namespace zlInterface {
 
         inline void setDrawable(juce::Drawable *x) {
             drawable = x;
+            updateImages();
         }
 
         void enableShadow(const bool f) { withShadow.store(f); }
@@ -90,6 +90,12 @@ namespace zlInterface {
         void setLabelScale(const float x) { fontScale.store(x); }
 
         void setShrinkScale(const float x) { shrinkScale.store(x); }
+
+        void updateImages() {
+            if (drawable != nullptr) {
+                drawable->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
+            }
+        }
 
     private:
         std::atomic<bool> editable{true}, reverse{false}, withShadow{true};

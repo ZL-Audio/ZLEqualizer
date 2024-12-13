@@ -17,8 +17,11 @@ namespace zlPanel {
         setInterceptsMouseClicks(true, false);
     }
 
-    void MatchPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged, const juce::Identifier &property) {
-        setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow)));
+    MatchPanel::~MatchPanel() {
+        uiBase.getValueTree().removeListener(this);
     }
 
+    void MatchPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
+        setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow)));
+    }
 } // zlPanel

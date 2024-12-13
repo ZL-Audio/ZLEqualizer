@@ -164,6 +164,15 @@ namespace zlInterface {
             value = value / 1000;
             labelToDisplay = juce::String(value).substring(0, 4) + "K";
         }
+        // remove trailing zeros
+        while (labelToDisplay.contains(".")) {
+            const auto lastS = labelToDisplay.getLastCharacter();
+            if (lastS == '.' || lastS == '0') {
+                labelToDisplay = labelToDisplay.dropLastCharacters(1);
+            } else {
+                break;
+            }
+        }
         return labelToDisplay;
     }
 

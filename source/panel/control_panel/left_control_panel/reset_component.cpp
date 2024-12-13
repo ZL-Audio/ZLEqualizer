@@ -19,7 +19,7 @@ namespace zlPanel {
           parametersNARef(parametersNA),
           uiBase(base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          button(drawable.get(), base) {
+          button(base, drawable.get()) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         button.getButton().onClick = [this]() {
             const auto currentBand = bandIdx.load();
@@ -33,14 +33,13 @@ namespace zlPanel {
                 }
             }
         };
-        button.getLookAndFeel().setCurve(false, true, false, false);
+        button.setPadding(.0f, .0f, .0f, .0f);
         addAndMakeVisible(button);
     }
 
     ResetComponent::~ResetComponent() = default;
 
     void ResetComponent::resized() {
-        button.getLookAndFeel().setPadding(uiBase.getFontSize() * 0.375f);
         button.setBounds(getLocalBounds());
     }
 

@@ -22,7 +22,7 @@ namespace zlPanel {
           fTypeC("", zlDSP::fType::choices, base),
           pitchLAF(base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          button(drawable.get(), base) {
+          button(base, drawable.get()) {
         juce::ignoreUnused(parametersNARef);
 
         bypassC.getLAF().enableShadow(false);
@@ -82,7 +82,7 @@ namespace zlPanel {
                 }
             }
         };
-        button.getLookAndFeel().setCurve(false, true, false, false);
+        button.setPadding(.05f, .05f, .05f, .05f);
         addAndMakeVisible(button);
     }
 
@@ -104,7 +104,6 @@ namespace zlPanel {
     }
 
     void ButtonPopUp::resized() {
-        button.getLookAndFeel().setPadding(uiBase.getFontSize() * 0.65f);
         pitchLAF.setPadding(0, uiBase.getFontSize() * .25f, 0, 0);
 
         juce::Grid grid;

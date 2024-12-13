@@ -61,7 +61,8 @@ namespace zlPanel {
         logoPanel.setBounds(logoBound.toNearestInt());
         const auto height = bound.getHeight();
 
-        const auto effectBound = bound.removeFromRight(height * .8f).removeFromTop(height * 0.05f);
+        auto effectBound = bound.removeFromRight(height * .8f);
+        effectBound.removeFromTop(height * 0.035f);
         effectC.setBounds(effectBound.toNearestInt());
         bound.removeFromRight(height * .15f);
 

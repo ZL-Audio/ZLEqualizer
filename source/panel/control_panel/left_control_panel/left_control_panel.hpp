@@ -22,8 +22,7 @@ namespace zlPanel {
                                    private juce::AudioProcessorValueTreeState::Listener,
                                    private juce::AsyncUpdater {
     public:
-        explicit LeftControlPanel(PluginProcessor &p,
-                                  zlInterface::UIBase &base);
+        explicit LeftControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
         ~LeftControlPanel() override;
 

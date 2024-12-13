@@ -14,6 +14,7 @@
 #include "../../gui/gui.hpp"
 #include "left_control_panel/left_control_panel.hpp"
 #include "right_control_panel/right_control_panel.hpp"
+#include "match_control_panel/match_control_panel.hpp"
 
 namespace zlPanel {
     class ControlPanel final : public juce::Component,
@@ -33,6 +34,7 @@ namespace zlPanel {
         std::atomic<size_t> bandIdx{0};
         LeftControlPanel leftControlPanel;
         RightControlPanel rightControlPanel;
+        MatchControlPanel matchControlPanel;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

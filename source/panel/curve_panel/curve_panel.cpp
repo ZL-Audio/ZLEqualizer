@@ -55,6 +55,7 @@ namespace zlPanel {
     }
 
     CurvePanel::~CurvePanel() {
+        uiBase.getValueTree().removeListener(this);
         if (isThreadRunning()) {
             stopThread(-1);
         }
@@ -104,7 +105,7 @@ namespace zlPanel {
         }
     }
 
-    void CurvePanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged, const juce::Identifier &property) {
+    void CurvePanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
         showMatchPanel.store(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow)));
     }
 

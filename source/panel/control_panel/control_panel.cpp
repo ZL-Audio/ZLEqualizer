@@ -16,11 +16,13 @@ namespace zlPanel {
                                zlInterface::UIBase &base)
         : parametersNARef(p.parametersNA), uiBase(base),
           leftControlPanel(p, base),
-          rightControlPanel(p, base) {
+          rightControlPanel(p, base),
+          matchControlPanel(p, base) {
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
         addAndMakeVisible(leftControlPanel);
         addAndMakeVisible(rightControlPanel);
+        addChildComponent(matchControlPanel);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
     }
 
@@ -31,11 +33,13 @@ namespace zlPanel {
     void ControlPanel::resized() {
         const auto bound = getLocalBounds().toFloat();
         const auto actualBound = uiBase.getRoundedShadowRectangleArea(bound, uiBase.getFontSize(), {});
-        const auto leftWidth = actualBound.getWidth() * (33.f / 63.f) + (bound.getWidth() - actualBound.getWidth()) * .5f;
+        const auto leftWidth = actualBound.getWidth() * (33.f / 63.f) + (bound.getWidth() - actualBound.getWidth()) *
+                               .5f;
         auto rightBound = getLocalBounds().toFloat();
         const auto leftBound = rightBound.removeFromLeft(leftWidth);
         leftControlPanel.setBounds(leftBound.toNearestInt());
         rightControlPanel.setBounds(rightBound.toNearestInt());
+        matchControlPanel.setBounds(getLocalBounds());
     }
 
     void ControlPanel::parameterChanged(const juce::String &parameterID, const float newValue) {

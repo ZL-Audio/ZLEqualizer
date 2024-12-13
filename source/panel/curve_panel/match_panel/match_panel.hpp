@@ -19,10 +19,13 @@ namespace zlPanel {
         explicit MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
                             zlInterface::UIBase &base);
 
+        ~MatchPanel() override;
+
     private:
         zlInterface::UIBase &uiBase;
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged, const juce::Identifier &property) override;
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                      const juce::Identifier &property) override;
     };
 } // zlPanel
 

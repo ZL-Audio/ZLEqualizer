@@ -127,9 +127,9 @@ namespace zlPanel {
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
         grid.performLayout(bound.toNearestInt());
 
-        const auto resetBound = juce::Rectangle<float>(bound.getTopRight().getX() - 1.25f * uiBase.getFontSize(),
+        const auto resetBound = juce::Rectangle<float>(bound.getTopRight().getX() - 1.5f * uiBase.getFontSize(),
                                                        bound.getTopRight().getY(),
-                                                       1.25f * uiBase.getFontSize(), 1.25f * uiBase.getFontSize());
+                                                       1.5f * uiBase.getFontSize(), 1.5f * uiBase.getFontSize());
         resetComponent.setBounds(resetBound.toNearestInt());
         updateMouseDragSensitivity();
     }
