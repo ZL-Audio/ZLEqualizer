@@ -66,7 +66,7 @@ namespace zlInterface {
                     if (isPressed) {
                         internalImg->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
                     } else {
-                        internalImg->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
+                        internalImg->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
                     }
                 }
             }
