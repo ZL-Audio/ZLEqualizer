@@ -22,10 +22,10 @@ namespace zlEqMatch {
     public:
         static constexpr double eps = 1e-3;
         static constexpr double minFreqLog = 2.302585092994046, maxFreqLog = 9.998797732340453;
-        static constexpr double minGain = -15.0, maxGain = 15.0;
+        static constexpr double minGain = -15.0, maxGain = 15.0, gainScale = .3;
         static constexpr double minQLog = -2.3025850929940455, maxQLog = 2.302585092994046;
-        static constexpr std::array<double, 3> lowerBound{minFreqLog, minGain, minQLog};
-        static constexpr std::array<double, 3> upperBound{maxFreqLog, maxGain, maxQLog};
+        static constexpr std::array<double, 3> lowerBound{minFreqLog, minGain * gainScale, minQLog};
+        static constexpr std::array<double, 3> upperBound{maxFreqLog, maxGain * gainScale, maxQLog};
         static constexpr std::array algos1{
             nlopt::algorithm::LD_MMA, nlopt::algorithm::LD_SLSQP, nlopt::algorithm::LD_VAR2
         };
@@ -70,10 +70,10 @@ namespace zlEqMatch {
                     std::copy(initSol.begin(), initSol.end(), sols[j].begin());
                     mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos);
                 }
-                const auto idx = std::distance(mse.begin(), std::min_element(mse.begin(), mse.end()));
+                const auto idx = static_cast<size_t>(std::min_element(mse.begin(), mse.end()) - mse.begin());
                 filters[i].setFilterType(filterTypes[idx]);
                 filters[i].setFreq(std::exp(sols[idx][0]));
-                filters[i].setGain(sols[idx][1]);
+                filters[i].setGain(sols[idx][1] / gainScale);
                 filters[i].setQ(std::exp(sols[idx][2]));
                 solMSE = mse[idx];
                 updateDiff(filters[i]);
@@ -95,10 +95,10 @@ namespace zlEqMatch {
                     mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos2);
                     mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos1);
                 }
-                const auto idx = std::distance(mse.begin(), std::min_element(mse.begin(), mse.end()));
+                const auto idx = static_cast<size_t>(std::min_element(mse.begin(), mse.end()) - mse.begin());
                 filters[i].setFilterType(filterTypes[idx]);
                 filters[i].setFreq(std::exp(sols[idx][0]));
-                filters[i].setGain(sols[idx][1]);
+                filters[i].setGain(sols[idx][1] / gainScale);
                 filters[i].setQ(std::exp(sols[idx][2]));
                 solMSE = mse[idx];
                 updateDiff(filters[i]);
@@ -153,7 +153,7 @@ namespace zlEqMatch {
                                    const std::vector<double> *diffs, const std::vector<double> *ws) {
             filter->setFilterType(filterType);
             filter->setFreq(std::exp(freqLog));
-            filter->setGain(gain);
+            filter->setGain(gain / gainScale);
             filter->setQ(std::exp(qLog));
             filter->updateMagnitude(*ws);
             const auto &dB = filter->getDBs();

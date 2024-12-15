@@ -10,8 +10,9 @@
 #include "match_panel.hpp"
 
 namespace zlPanel {
-    MatchPanel::MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer, zlInterface::UIBase &base)
-        : uiBase(base), matchAnalyzerPanel(analyzer, base) {
+    MatchPanel::MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
+                           juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
+        : uiBase(base), matchAnalyzerPanel(analyzer, parametersNA, base) {
         juce::ignoreUnused(analyzer, uiBase);
         setInterceptsMouseClicks(true, false);
         addAndMakeVisible(matchAnalyzerPanel);

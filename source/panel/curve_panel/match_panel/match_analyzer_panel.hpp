@@ -18,6 +18,7 @@ namespace zlPanel {
     class MatchAnalyzerPanel final : public juce::Component {
     public:
         explicit MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
+        juce::AudioProcessorValueTreeState &parametersNA,
                                     zlInterface::UIBase &base);
 
         ~MatchAnalyzerPanel() override;
@@ -30,6 +31,7 @@ namespace zlPanel {
 
     private:
         zlEqMatch::EqMatchAnalyzer<double> &analyzerRef;
+        juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase &uiBase;
         juce::Path path1{}, path2{}, path3{};
         juce::Path recentPath1{}, recentPath2{}, recentPath3{};

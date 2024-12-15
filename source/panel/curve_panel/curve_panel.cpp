@@ -22,7 +22,7 @@ namespace zlPanel {
           sumPanel(parametersRef, base, controllerRef, baseFilters, mainFilters),
           soloPanel(parametersRef, parametersNARef, base, controllerRef),
           buttonPanel(processorRef, base),
-          matchPanel(processor.getController().getMatchAnalyzer(), base),
+          matchPanel(processor.getController().getMatchAnalyzer(), parametersNARef, base),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
         for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {

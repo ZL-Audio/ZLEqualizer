@@ -16,6 +16,7 @@ namespace zlPanel {
     class MatchPanel final : public juce::Component {
     public:
         explicit MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
+                            juce::AudioProcessorValueTreeState &parametersNA,
                             zlInterface::UIBase &base);
 
         ~MatchPanel() override;

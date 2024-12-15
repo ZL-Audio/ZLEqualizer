@@ -15,6 +15,7 @@
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
+#include "match_runner.hpp"
 
 namespace zlPanel {
     class MatchControlPanel final : public juce::Component,
@@ -32,6 +33,8 @@ namespace zlPanel {
         static constexpr float weightP = 0.365f;
         zlInterface::UIBase &uiBase;
         zlEqMatch::EqMatchAnalyzer<double> &analyzer;
+        MatchRunner matchRunner;
+
         const std::unique_ptr<juce::Drawable> startDrawable, pauseDrawable, saveDrawable;
 
         zlInterface::CompactCombobox sideChooseBox, fitAlgoBox;

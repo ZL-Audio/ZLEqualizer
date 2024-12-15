@@ -178,8 +178,8 @@ namespace zlFilter {
 
         static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 6>, 16> &coeffs) {
-            return FilterDesign::updateCoeffs<16,
+                                      std::array<std::array<double, 6>, FilterSize> &coeffs) {
+            return FilterDesign::updateCoeffs<FilterSize,
                 IdealCoeff::get1LowShelf, IdealCoeff::get1HighShelf, IdealCoeff::get1TiltShelf,
                 IdealCoeff::get1LowPass, IdealCoeff::get1HighPass,
                 IdealCoeff::get2Peak,

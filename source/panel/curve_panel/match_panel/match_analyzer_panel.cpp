@@ -11,8 +11,9 @@
 
 namespace zlPanel {
     MatchAnalyzerPanel::MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
+                                           juce::AudioProcessorValueTreeState &parametersNA,
                                            zlInterface::UIBase &base)
-        : analyzerRef(analyzer), uiBase(base) {
+        : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base) {
         setInterceptsMouseClicks(false, false);
     }
 
@@ -31,7 +32,7 @@ namespace zlPanel {
         g.strokePath(recentPath1,
                      juce::PathStrokeType(thickness,
                                           juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        g.setColour(uiBase.getColorMap2(0));
+        g.setColour(uiBase.getColorMap2(2));
         g.strokePath(recentPath3,
                      juce::PathStrokeType(thickness * 1.5f,
                                           juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
@@ -45,7 +46,12 @@ namespace zlPanel {
     }
 
     void MatchAnalyzerPanel::updatePaths() {
-        analyzerRef.updatePaths(path1, path2, path3, atomicBound.load()); {
+        const auto currentMaximumDB =
+                zlState::maximumDB::dBs[static_cast<size_t>(
+                    parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load())];
+        analyzerRef.updatePaths(path1, path2, path3,
+                                atomicBound.load(),
+                                {-72.f, -72.f, -currentMaximumDB * 2.f}); {
             juce::GenericScopedLock lock{pathLock};
             recentPath1 = path1;
             recentPath2 = path2;

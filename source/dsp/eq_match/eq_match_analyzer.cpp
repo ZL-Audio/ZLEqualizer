@@ -13,9 +13,9 @@ namespace zlEqMatch {
     template<typename FloatType>
     EqMatchAnalyzer<FloatType>::EqMatchAnalyzer(const size_t fftOrder)
         : Thread("eq_match_analyzer"), fftAnalyzer(fftOrder) {
-        std::fill(mainDBs.begin(), mainDBs.end(), avgDB);
-        std::fill(targetDBs.begin(), targetDBs.end(), avgDB);
-        std::fill(diffs.begin(), diffs.end(), avgDB);
+        std::fill(mainDBs.begin(), mainDBs.end(), 0.f);
+        std::fill(targetDBs.begin(), targetDBs.end(), 0.f);
+        std::fill(diffs.begin(), diffs.end(), 0.f);
         updateSmooth();
     }
 
@@ -80,7 +80,7 @@ namespace zlEqMatch {
         float tiltShift = -tiltShiftTotal * .5f;
         if (toUpdateFromLoadDBs.load() == false) {
             for (size_t i = 0; i < loadDBs.size(); i++) {
-                loadDBs[i] = tiltShift + avgDB;
+                loadDBs[i] = tiltShift;
                 tiltShift += tiltShiftDelta;
             }
             toUpdateFromLoadDBs.store(true);
@@ -99,18 +99,19 @@ namespace zlEqMatch {
 
     template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP,
-                                                 const juce::Rectangle<float> bound) {
+                                                 const juce::Rectangle<float> bound,
+                                                 const std::array<float, 3> minDBs) {
         // update mainDBs and targetDBs
         {
             mainDBs = fftAnalyzer.getInterplotDBs(0);
-            const auto maxDB = *std::max_element(mainDBs.begin(), mainDBs.end()) - avgDB;
+            const auto maxDB = *std::max_element(mainDBs.begin(), mainDBs.end());
             for (auto &dB : mainDBs) {
                 dB -= maxDB;
             }
         }
         if (mMode.load() == MatchMode::matchSide) {
             targetDBs = fftAnalyzer.getInterplotDBs(1);
-            const auto maxDB = *std::max_element(targetDBs.begin(), targetDBs.end()) - avgDB;
+            const auto maxDB = *std::max_element(targetDBs.begin(), targetDBs.end());
             for (auto &dB : targetDBs) {
                 dB -= maxDB;
             }
@@ -147,9 +148,14 @@ namespace zlEqMatch {
             slopeShift += slopeDelta;
         }
         // center diffs
-        const auto diffC = std::reduce(diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size()) - avgDB;
+        const auto diffC = std::reduce(diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size());
         for (auto &diff: diffs) {
             diff -= diffC;
+        }
+        // save to target
+        for (size_t i = 0; i < pointNum; ++i) {
+            atomicTargetDBs[i].store(targetDBs[i]);
+            atomicDiffs[i].store(diffs[i]);
         }
         // create paths
         const float width = bound.getWidth(), height = bound.getHeight(), boundY = bound.getY();
@@ -158,10 +164,14 @@ namespace zlEqMatch {
             p->clear();
         }
         const std::array<std::array<float, pointNum> *, 3> dBs{&mainDBs, &targetDBs, &diffs};
-        for (size_t idx = 0; idx < pointNum; ++idx) {
+        for (size_t i = 0; i < 3; ++i) {
+            const auto y = (dBs[i]->at(0) / minDBs[i] + .5f) * height + boundY;
+            paths[i]->startNewSubPath(0.f, y);
+        }
+        for (size_t idx = 1; idx < pointNum; ++idx) {
             const auto x = static_cast<float>(idx) / static_cast<float>(pointNum - 1) * width;
             for (size_t i = 0; i < 3; ++i) {
-                const auto y = dBs[i]->at(idx) / fftAnalyzer.minDB * height + boundY;
+                const auto y = (dBs[i]->at(idx) / minDBs[i] + .5f) * height + boundY;
                 paths[i]->lineTo(x, y);
             }
         }

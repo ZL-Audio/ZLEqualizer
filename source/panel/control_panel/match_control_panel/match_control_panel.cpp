@@ -12,6 +12,7 @@
 namespace zlPanel {
     MatchControlPanel::MatchControlPanel(PluginProcessor &p, zlInterface::UIBase &base)
         : uiBase(base), analyzer(p.getController().getMatchAnalyzer()),
+          matchRunner(p),
           startDrawable(juce::Drawable::createFromImageData(BinaryData::playfill_svg, BinaryData::playfill_svgSize)),
           pauseDrawable(juce::Drawable::createFromImageData(BinaryData::pauseline_svg, BinaryData::pauseline_svgSize)),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
@@ -52,6 +53,10 @@ namespace zlPanel {
             analyzer.setMatchMode(matchMode);
         };
         fitAlgoBox.getBox().setSelectedId(1);
+        fitAlgoBox.getBox().onChange = [this]() {
+            const auto fitAlgo = static_cast<size_t>(fitAlgoBox.getBox().getSelectedId() - 1);
+            matchRunner.setMode(fitAlgo);
+        };
         for (const auto &c: {&sideChooseBox, &fitAlgoBox}) {
             addAndMakeVisible(c);
         }
@@ -72,6 +77,9 @@ namespace zlPanel {
         };
         numBandSlider.getSlider().setRange(1.0, 16.0, 1.0);
         numBandSlider.getSlider().setValue(8.0);
+        numBandSlider.getSlider().onValueChange = [this]() {
+            matchRunner.setNumBand(static_cast<size_t>(numBandSlider.getSlider().getValue()));
+        };
         for (const auto &c: {&weightSlider, &smoothSlider, &slopeSlider, &numBandSlider}) {
             addAndMakeVisible(c);
         }
@@ -87,6 +95,11 @@ namespace zlPanel {
             learnButton.getButton().setToggleState(false, juce::dontSendNotification);
             analyzer.setON(false);
             saveToPreset();
+        };
+        fitButton.getButton().onClick = [this]() {
+            learnButton.getButton().setToggleState(false, juce::dontSendNotification);
+            analyzer.setON(false);
+            matchRunner.start(analyzer.getDiffs());
         };
         resetDefault();
     }
@@ -201,7 +214,7 @@ namespace zlPanel {
             stream->writeText("#native", false, false, nullptr);
             stream->writeText(",\n", false, false, nullptr);
             for (auto &p: analyzer.getTarget()) {
-                stream->writeText(juce::String(p), false, false, nullptr);
+                stream->writeText(juce::String(p.load()), false, false, nullptr);
                 stream->writeText(",\n", false, false, nullptr);
             }
         });

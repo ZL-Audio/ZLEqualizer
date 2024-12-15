@@ -47,7 +47,8 @@ namespace zlEqMatch {
 
         void setTargetPreset(const std::array<float, pointNum> &dBs);
 
-        void updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP, juce::Rectangle<float> bound);
+        void updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP,
+            juce::Rectangle<float> bound, std::array<float, 3> minDBs);
 
         void setSmooth(const float x) {
             smooth.store(x);
@@ -56,11 +57,14 @@ namespace zlEqMatch {
 
         void setSlope(const float x) { slope.store(x); }
 
-        std::array<float, pointNum> &getTarget() { return targetDBs; }
+        std::array<std::atomic<float>, pointNum> &getTarget() { return atomicTargetDBs; }
+
+        std::array<std::atomic<float>, pointNum> &getDiffs() { return atomicDiffs; }
 
     private:
         zlFFT::AverageFFTAnalyzer<FloatType, 2, pointNum> fftAnalyzer;
         std::array<float, pointNum> mainDBs{}, targetDBs{}, diffs{};
+        std::array<std::atomic<float>, pointNum> atomicTargetDBs{}, atomicDiffs{};
         std::atomic<MatchMode> mMode;
         std::atomic<bool> isON{false};
         std::array<float, pointNum> loadDBs{};
