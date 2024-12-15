@@ -18,8 +18,8 @@ namespace zlEqMatch {
     public:
         enum MatchMode {
             matchSide,
-            matchSlope,
-            matchPreset
+            matchPreset,
+            matchSlope
         };
 
         static constexpr size_t pointNum = 251, smoothSize = 11;
@@ -43,26 +43,9 @@ namespace zlEqMatch {
             mMode.store(mode);
         }
 
-        void setTargetSlope(const float x) {
-            const float tiltShiftTotal = (fftAnalyzer.maxFreqLog2 - fftAnalyzer.minFreqLog2) * x;
-            const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(pointNum - 1);
-            float tiltShift = -tiltShiftTotal * .5f;
-            if (toUpdateFromLoadDBs.load() == false) {
-                for (size_t i = 0; i < targetDBs.size(); i++) {
-                    loadDBs[i] = tiltShift + avgDB;
-                    tiltShift += tiltShiftDelta;
-                }
-            }
-        }
+        void setTargetSlope(float x);
 
-        void setTargetPreset(const std::array<float, pointNum> &dBs) {
-            if (toUpdateFromLoadDBs.load() == false) {
-                for (size_t i = 0; i < dBs.size(); i++) {
-                    loadDBs[i] = dBs[i];
-                }
-                toUpdateFromLoadDBs.store(true);
-            }
-        }
+        void setTargetPreset(const std::array<float, pointNum> &dBs);
 
         void updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP, juce::Rectangle<float> bound);
 

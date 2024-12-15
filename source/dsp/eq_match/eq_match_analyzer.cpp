@@ -74,6 +74,30 @@ namespace zlEqMatch {
     }
 
     template<typename FloatType>
+    void EqMatchAnalyzer<FloatType>::setTargetSlope(const float x) {
+        const float tiltShiftTotal = (fftAnalyzer.maxFreqLog2 - fftAnalyzer.minFreqLog2) * x;
+        const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(pointNum - 1);
+        float tiltShift = -tiltShiftTotal * .5f;
+        if (toUpdateFromLoadDBs.load() == false) {
+            for (size_t i = 0; i < loadDBs.size(); i++) {
+                loadDBs[i] = tiltShift + avgDB;
+                tiltShift += tiltShiftDelta;
+            }
+            toUpdateFromLoadDBs.store(true);
+        }
+    }
+
+    template<typename FloatType>
+    void EqMatchAnalyzer<FloatType>::setTargetPreset(const std::array<float, pointNum> &dBs) {
+        if (toUpdateFromLoadDBs.load() == false) {
+            for (size_t i = 0; i < dBs.size(); i++) {
+                loadDBs[i] = dBs[i];
+            }
+            toUpdateFromLoadDBs.store(true);
+        }
+    }
+
+    template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP,
                                                  const juce::Rectangle<float> bound) {
         // update mainDBs and targetDBs

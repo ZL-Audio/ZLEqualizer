@@ -28,6 +28,23 @@ namespace zlPanel {
         uiBase.getValueTree().addListener(this);
 
         sideChooseBox.getBox().setSelectedId(1);
+        sideChooseBox.getBox().onChange = [this]() {
+            const auto matchMode = static_cast<zlEqMatch::EqMatchAnalyzer<double>::MatchMode>(
+                sideChooseBox.getBox().getSelectedId() - 1);
+            switch (matchMode) {
+                case zlEqMatch::EqMatchAnalyzer<double>::matchSide: {
+                    break;
+                }
+                case zlEqMatch::EqMatchAnalyzer<double>::matchSlope: {
+                    analyzer.setTargetSlope(0.f);
+                    break;
+                }
+                case zlEqMatch::EqMatchAnalyzer<double>::matchPreset: {
+                    break;
+                }
+            }
+            analyzer.setMatchMode(matchMode);
+        };
         fitAlgoBox.getBox().setSelectedId(1);
         for (const auto &c: {&sideChooseBox, &fitAlgoBox}) {
             addAndMakeVisible(c);
