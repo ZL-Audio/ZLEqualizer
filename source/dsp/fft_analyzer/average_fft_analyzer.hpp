@@ -111,6 +111,10 @@ namespace zlFFT {
 
         void reset() {
             toReset.store(true);
+            toResetOutput.store(true);
+            for (auto &f: readyFlags) {
+                f.store(false);
+            }
         }
 
         void setOrder(int fftOrder) {
@@ -318,6 +322,9 @@ namespace zlFFT {
             if (readyFlags[i].load() == true) {
                 readyDBs[i] = interplotDBs[i];
                 readyFlags[i].store(false);
+                toResetOutput.store(false);
+            } else if (toResetOutput.load()) {
+                std::fill(readyDBs[i].begin(), readyDBs[i].end(), 2.f * minDB);
             }
             return readyDBs[i];
         }
@@ -352,7 +359,7 @@ namespace zlFFT {
         std::array<std::array<float, PointNum>, FFTNum> preInterplotDBs{};
         std::array<std::array<float, PointNum>, FFTNum> interplotDBs{};
         std::array<std::array<float, PointNum>, FFTNum> readyDBs{};
-        std::array<std::atomic<bool>, PointNum> readyFlags;
+        std::array<std::atomic<bool>, FFTNum> readyFlags;
         std::atomic<int> readyNum{std::numeric_limits<int>::max()};
 
         std::unique_ptr<juce::dsp::FFT> fft;
@@ -360,7 +367,7 @@ namespace zlFFT {
         std::atomic<size_t> fftSize;
 
         std::atomic<float> sampleRate;
-        std::atomic<bool> toReset{true};
+        std::atomic<bool> toReset{true}, toResetOutput{true};
         std::atomic<bool> isPrepared{false};
 
         std::array<std::atomic<bool>, FFTNum> isON;

@@ -48,7 +48,7 @@ namespace zlPanel {
             c->setPadding(.2f, .2f, .2f, .2f);
         }
 
-        learnButton.getButton().onClick = [this]() {
+        learnButton.getButton().onStateChange = [this]() {
             analyzer.setON(learnButton.getButton().getToggleState());
         };
     }
@@ -99,6 +99,11 @@ namespace zlPanel {
     }
 
     void MatchControlPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
-        setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow)));
+        const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
+        setVisible(f);
+        if (!f) {
+            learnButton.getButton().setToggleState(false, juce::sendNotificationSync);
+        }
+        analyzer.reset();
     }
 } // zlPanel

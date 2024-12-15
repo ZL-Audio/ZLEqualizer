@@ -28,9 +28,6 @@ namespace zlEqMatch {
     void EqMatchAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &bBuffer,
                                              juce::AudioBuffer<FloatType> &tBuffer) {
         if (isON.load()) {
-            if (toReset.exchange(false)) {
-                fftAnalyzer.reset();
-            }
             fftAnalyzer.process({bBuffer, tBuffer});
         }
     }
@@ -54,6 +51,11 @@ namespace zlEqMatch {
                 }
             }
         }
+    }
+
+    template<typename FloatType>
+    void EqMatchAnalyzer<FloatType>::reset() {
+        fftAnalyzer.reset();
     }
 
     template<typename FloatType>

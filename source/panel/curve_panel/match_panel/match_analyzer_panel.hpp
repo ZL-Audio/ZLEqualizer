@@ -36,7 +36,6 @@ namespace zlPanel {
         juce::SpinLock pathLock;
         AtomicPoint leftCorner, rightCorner;
         AtomicBound atomicBound;
-        std::atomic<bool> firstPath = true;
     };
 } // zlPanel
 

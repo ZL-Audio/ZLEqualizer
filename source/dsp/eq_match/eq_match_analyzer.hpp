@@ -35,6 +35,8 @@ namespace zlEqMatch {
 
         void setON(bool x);
 
+        void reset();
+
         void checkRun();
 
         void setMatchMode(MatchMode mode) {
@@ -73,7 +75,6 @@ namespace zlEqMatch {
         std::array<float, pointNum> mainDBs{}, targetDBs{}, diffs{};
         std::atomic<MatchMode> mMode;
         std::atomic<bool> isON{false};
-        std::atomic<bool> toReset{false};
         std::array<float, pointNum> loadDBs{};
         std::atomic<bool> toUpdateFromLoadDBs{false};
 
