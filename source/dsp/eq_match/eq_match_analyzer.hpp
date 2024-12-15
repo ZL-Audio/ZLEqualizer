@@ -66,7 +66,10 @@ namespace zlEqMatch {
 
         void updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP, juce::Rectangle<float> bound);
 
-        void setSmooth(const float x) { smooth.store(x); }
+        void setSmooth(const float x) {
+            smooth.store(x);
+            toUpdateSmooth.store(true);
+        }
 
         void setSlope(const float x) { slope.store(x); }
 
@@ -91,10 +94,10 @@ namespace zlEqMatch {
                 const auto currentSmooth = smooth.load();
                 constexpr float midSlope = -1.f / static_cast<float>(smoothSize / 2);
                 const auto tempSlope = currentSmooth < 0.5
-                                           ? -1.f + currentSmooth * 2.f * (midSlope + 1.f)
-                                           : midSlope + (currentSmooth - .5f) * 2.f * (-midSlope);
+                                           ? -1.f * (1 - currentSmooth * 2.f) + currentSmooth * 2.f * midSlope
+                                           : (2.f - 2.f * currentSmooth) * midSlope;
                 for (size_t i = 1; i < smoothSize / 2 + 1; i++) {
-                    smoothKernel[smoothSize / 2 + i] = tempSlope * static_cast<float>(i) + 1;
+                    smoothKernel[smoothSize / 2 + i] = std::max(tempSlope * static_cast<float>(i) + 1, 0.f);
                     smoothKernel[smoothSize / 2 - i] = smoothKernel[smoothSize / 2 + i];
                 }
                 const auto kernelC = 1.f /
