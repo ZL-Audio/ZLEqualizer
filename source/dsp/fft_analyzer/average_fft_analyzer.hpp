@@ -138,6 +138,7 @@ namespace zlFFT {
                 sampleFIFOs[i].resize(static_cast<size_t>(tempSize));
                 circularBuffers[i].resize(static_cast<size_t>(tempSize));
             }
+            readyNum.store(tempSize / 2);
         }
 
         /**
@@ -322,7 +323,7 @@ namespace zlFFT {
         }
 
         bool getReadyForNextFFT() const {
-            return abstractFIFO.getNumReady() >= static_cast<int>(circularBuffers[0].size()) / 4;
+            return abstractFIFO.getNumReady() >= readyNum.load();
         }
 
     private:
@@ -352,7 +353,7 @@ namespace zlFFT {
         std::array<std::array<float, PointNum>, FFTNum> interplotDBs{};
         std::array<std::array<float, PointNum>, FFTNum> readyDBs{};
         std::array<std::atomic<bool>, PointNum> readyFlags;
-
+        std::atomic<int> readyNum{std::numeric_limits<int>::max()};
 
         std::unique_ptr<juce::dsp::FFT> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;

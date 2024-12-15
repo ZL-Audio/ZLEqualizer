@@ -31,6 +31,7 @@ namespace zlPanel {
     private:
         static constexpr float weightP = 0.365f;
         zlInterface::UIBase &uiBase;
+        zlEqMatch::EqMatchAnalyzer<double> &analyzer;
         const std::unique_ptr<juce::Drawable> startDrawable, pauseDrawable, saveDrawable;
 
         zlInterface::CompactCombobox sideChooseBox, fitAlgoBox;

@@ -11,10 +11,15 @@
 
 namespace zlPanel {
     MatchPanel::MatchPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer, zlInterface::UIBase &base)
-        : uiBase(base) {
+        : uiBase(base), matchAnalyzerPanel(analyzer, base) {
         juce::ignoreUnused(analyzer, uiBase);
         setInterceptsMouseClicks(true, false);
+        addAndMakeVisible(matchAnalyzerPanel);
     }
 
     MatchPanel::~MatchPanel() = default;
+
+    void MatchPanel::resized() {
+        matchAnalyzerPanel.setBounds(getLocalBounds());
+    }
 } // zlPanel

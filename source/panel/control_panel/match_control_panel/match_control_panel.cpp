@@ -11,7 +11,7 @@
 
 namespace zlPanel {
     MatchControlPanel::MatchControlPanel(PluginProcessor &p, zlInterface::UIBase &base)
-        : uiBase(base),
+        : uiBase(base), analyzer(p.getController().getMatchAnalyzer()),
           startDrawable(juce::Drawable::createFromImageData(BinaryData::playfill_svg, BinaryData::playfill_svgSize)),
           pauseDrawable(juce::Drawable::createFromImageData(BinaryData::pauseline_svg, BinaryData::pauseline_svgSize)),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
@@ -47,10 +47,15 @@ namespace zlPanel {
             addAndMakeVisible(c);
             c->setPadding(.2f, .2f, .2f, .2f);
         }
+
+        learnButton.getButton().onClick = [this]() {
+            analyzer.setON(learnButton.getButton().getToggleState());
+        };
     }
 
     MatchControlPanel::~MatchControlPanel() {
         uiBase.getValueTree().removeListener(this);
+        analyzer.setON(false);
     }
 
     void MatchControlPanel::paint(juce::Graphics &g) {

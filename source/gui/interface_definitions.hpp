@@ -43,7 +43,7 @@ namespace zlInterface {
         settingNum
     };
 
-    inline std::array identifiers {
+    inline std::array identifiers{
         juce::Identifier("match_panel_show")
     };
 
@@ -365,6 +365,7 @@ namespace zlInterface {
         void setProperty(const settingIdx idx, const juce::var &v) {
             valueTree.setProperty(identifiers[idx], v, nullptr);
         }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         juce::ValueTree valueTree{"ui_setting"};

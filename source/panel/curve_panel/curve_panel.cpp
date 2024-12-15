@@ -109,10 +109,6 @@ namespace zlPanel {
         const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
         showMatchPanel.store(f);
         matchPanel.setVisible(f);
-        // sumPanel.setVisible(!f);
-        // for (size_t i = 0; i < zlState::bandNUM; ++i) {
-        //     singlePanels[i]->setVisible(!f);
-        // }
         buttonPanel.setVisible(!f);
         soloPanel.setVisible(!f);
     }
@@ -142,6 +138,9 @@ namespace zlPanel {
                 }
             }
             sumPanel.run();
+            if (showMatchPanel.load()) {
+                matchPanel.updatePaths();
+            }
         }
     }
 }

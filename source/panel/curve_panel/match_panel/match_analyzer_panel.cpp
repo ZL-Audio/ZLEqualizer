@@ -10,27 +10,28 @@
 #include "match_analyzer_panel.hpp"
 
 namespace zlPanel {
-    MatchAnalyzerPanel::MatchAnalyzerPanel(zlFFT::AverageFFTAnalyzer<double, 2, 251> &analyzer,
+    MatchAnalyzerPanel::MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
                                            zlInterface::UIBase &base)
         : analyzerRef(analyzer), uiBase(base) {
         setInterceptsMouseClicks(false, false);
     }
 
-    MatchAnalyzerPanel::~MatchAnalyzerPanel() {
-        // analyzerRef.setON(false);
-    }
-
-    void MatchAnalyzerPanel::visibilityChanged() {
-        // analyzerRef.setON(isVisible());
-    }
+    MatchAnalyzerPanel::~MatchAnalyzerPanel() = default;
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
         juce::GenericScopedTryLock lock{pathLock};
+        g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(.5f));
+        const auto thickness = uiBase.getFontSize() * 0.2f;
         if (!lock.isLocked()) { return; }
         g.setColour(uiBase.getColourByIdx(zlInterface::preColour).withAlpha(1.f));
-        g.fillPath(recentPath1);
+        g.strokePath(recentPath1,
+                     juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         g.setColour(uiBase.getColourByIdx(zlInterface::sideColour).withAlpha(1.f));
-        g.fillPath(recentPath2);
+        g.strokePath(recentPath2,
+                     juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        g.setColour(uiBase.getColorMap1(0));
+        g.strokePath(recentPath3,
+                     juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
 
     void MatchAnalyzerPanel::resized() {
@@ -41,17 +42,13 @@ namespace zlPanel {
     }
 
     void MatchAnalyzerPanel::updatePaths() {
-        analyzerRef.createPath({path1, path2}, atomicBound.load());
-        for (auto &path: {&path1, &path2}) {
-            if (!path->isEmpty()) {
-                path->lineTo(rightCorner.load());
-                path->lineTo(leftCorner.load());
-                path->closeSubPath();
-            }
-        } {
+        analyzerRef.updatePaths(path1, path2, path3, atomicBound.load());
+        {
             juce::GenericScopedLock lock{pathLock};
             recentPath1 = path1;
             recentPath2 = path2;
+            recentPath3 = path3;
         }
+        analyzerRef.checkRun();
     }
 } // zlPanel

@@ -14,7 +14,7 @@
 
 namespace zlEqMatch {
     template<typename FloatType>
-    class EqMatchAnalyzer final : private juce::Thread, juce::AsyncUpdater {
+    class EqMatchAnalyzer final : private juce::Thread {
     public:
         enum MatchMode {
             matchSide,
@@ -22,7 +22,7 @@ namespace zlEqMatch {
             matchPreset
         };
 
-        static constexpr size_t pointNum = 251;
+        static constexpr size_t pointNum = 251, smoothSize = 11;
         static constexpr float avgDB = -36.f;
 
         explicit EqMatchAnalyzer(size_t fftOrder = 12);
@@ -35,50 +35,74 @@ namespace zlEqMatch {
 
         void setON(bool x);
 
+        void checkRun();
+
         void setMatchMode(MatchMode mode) {
             mMode.store(mode);
-            switch (mode) {
-                case matchSide: {
-                    fftAnalyzer.setON(0, true);
-                    fftAnalyzer.setON(1, true);
-                    break;
-                }
-                case matchSlope:
-                case matchPreset: {
-                    fftAnalyzer.setON(0, true);
-                    fftAnalyzer.setON(1, false);
-                    break;
-                }
-            }
         }
 
-        void setTargetSlope(const float slope) {
-            const float tiltShiftTotal = (fftAnalyzer.maxFreqLog2 - fftAnalyzer.minFreqLog2) * slope;
+        void setTargetSlope(const float x) {
+            const float tiltShiftTotal = (fftAnalyzer.maxFreqLog2 - fftAnalyzer.minFreqLog2) * x;
             const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(pointNum - 1);
             float tiltShift = -tiltShiftTotal * .5f;
-            for (size_t i = 0; i < targetDBs.size(); i++) {
-                targetDBs[i].store(tiltShift + avgDB);
-                tiltShift += tiltShiftDelta;
+            if (toUpdateFromLoadDBs.load() == false) {
+                for (size_t i = 0; i < targetDBs.size(); i++) {
+                    loadDBs[i] = tiltShift + avgDB;
+                    tiltShift += tiltShiftDelta;
+                }
             }
         }
 
         void setTargetPreset(const std::array<float, pointNum> &dBs) {
-            for(size_t i = 0; i < dBs.size(); i++) {
-                targetDBs[i].store(dBs[i]);
+            if (toUpdateFromLoadDBs.load() == false) {
+                for (size_t i = 0; i < dBs.size(); i++) {
+                    loadDBs[i] = dBs[i];
+                }
+                toUpdateFromLoadDBs.store(true);
             }
         }
 
+        void updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP, juce::Rectangle<float> bound);
+
+        void setSmooth(const float x) { smooth.store(x); }
+
+        void setSlope(const float x) { slope.store(x); }
+
     private:
         zlFFT::AverageFFTAnalyzer<FloatType, 2, pointNum> fftAnalyzer;
-        std::array<std::atomic<float>, pointNum> mainDBs;
-        std::array<std::atomic<float>, pointNum> targetDBs;
+        std::array<float, pointNum> mainDBs{}, targetDBs{}, diffs{};
         std::atomic<MatchMode> mMode;
         std::atomic<bool> isON{false};
         std::atomic<bool> toReset{false};
+        std::array<float, pointNum> loadDBs{};
+        std::atomic<bool> toUpdateFromLoadDBs{false};
+
+        std::atomic<float> smooth{.5f}, slope{.0f};
+        std::atomic<bool> toUpdateSmooth{true};
+        std::array<float, smoothSize> smoothKernel;
+        std::array<float, pointNum + smoothSize - 1> originalDiffs{};
 
         void run() override;
 
-        void handleAsyncUpdate() override;
+        void updateSmooth() {
+            if (toUpdateSmooth.exchange(false)) {
+                smoothKernel[smoothSize / 2] = 1.0;
+                const auto currentSmooth = smooth.load();
+                constexpr float midSlope = -1.f / static_cast<float>(smoothSize / 2);
+                const auto tempSlope = currentSmooth < 0.5
+                                           ? -1.f + currentSmooth * 2.f * (midSlope + 1.f)
+                                           : midSlope + (currentSmooth - .5f) * 2.f * (-midSlope);
+                for (size_t i = 1; i < smoothSize / 2 + 1; i++) {
+                    smoothKernel[smoothSize / 2 + i] = tempSlope * static_cast<float>(i) + 1;
+                    smoothKernel[smoothSize / 2 - i] = smoothKernel[smoothSize / 2 + i];
+                }
+                const auto kernelC = 1.f /
+                    std::max(std::reduce(smoothKernel.begin(), smoothKernel.end(), 0.0f), 0.01f);
+                for (auto &x:smoothKernel) {
+                    x *= kernelC;
+                }
+            }
+        }
     };
 } // zlEqMatch
 

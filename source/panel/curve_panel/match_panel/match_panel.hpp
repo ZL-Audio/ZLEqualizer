@@ -20,8 +20,15 @@ namespace zlPanel {
 
         ~MatchPanel() override;
 
+        void resized() override;
+
+        void updatePaths() {
+            matchAnalyzerPanel.updatePaths();
+        }
+
     private:
         zlInterface::UIBase &uiBase;
+        MatchAnalyzerPanel matchAnalyzerPanel;
     };
 } // zlPanel
 
