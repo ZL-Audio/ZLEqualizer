@@ -24,7 +24,7 @@ namespace zlPanel {
 
         ~MatchControlPanel() override;
 
-        void paint (juce::Graphics &g) override;
+        void paint(juce::Graphics &g) override;
 
         void resized() override;
 
@@ -38,10 +38,23 @@ namespace zlPanel {
         zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider, numBandSlider;
         zlInterface::ClickButton learnButton, saveButton, fitButton;
 
+        std::unique_ptr<juce::FileChooser> myChooser;
+        inline auto static const presetDirectory =
+                juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                .getChildFile("Audio")
+                .getChildFile("Presets")
+                .getChildFile(JucePlugin_Manufacturer)
+                .getChildFile(JucePlugin_Name)
+                .getChildFile("Match Presets");
+
         void resetDefault();
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
+
+        void loadFromPreset();
+
+        void saveToPreset();
     };
 } // zlPanel
 

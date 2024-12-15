@@ -26,7 +26,12 @@ namespace zlPanel {
           fitButton(base, startDrawable.get()) {
         juce::ignoreUnused(p);
         uiBase.getValueTree().addListener(this);
-
+        // create preset directory if not exists
+        if (!presetDirectory.isDirectory()) {
+            const auto f = presetDirectory.createDirectory();
+            juce::ignoreUnused(f);
+        }
+        // init combobox
         sideChooseBox.getBox().setSelectedId(1);
         sideChooseBox.getBox().onChange = [this]() {
             const auto matchMode = static_cast<zlEqMatch::EqMatchAnalyzer<double>::MatchMode>(
@@ -40,6 +45,7 @@ namespace zlPanel {
                     break;
                 }
                 case zlEqMatch::EqMatchAnalyzer<double>::matchPreset: {
+                    loadFromPreset();
                     break;
                 }
             }
@@ -76,6 +82,11 @@ namespace zlPanel {
 
         learnButton.getButton().onStateChange = [this]() {
             analyzer.setON(learnButton.getButton().getToggleState());
+        };
+        saveButton.getButton().onClick = [this]() {
+            learnButton.getButton().setToggleState(false, juce::dontSendNotification);
+            analyzer.setON(false);
+            saveToPreset();
         };
         resetDefault();
     }
@@ -146,5 +157,53 @@ namespace zlPanel {
         if (!f) {
             resetDefault();
         }
+    }
+
+    void MatchControlPanel::loadFromPreset() {
+        myChooser = std::make_unique<juce::FileChooser>(
+            "Load the match preset...", presetDirectory, "*.csv",
+            true, false, nullptr);
+        constexpr auto settingOpenFlags = juce::FileBrowserComponent::openMode |
+                                          juce::FileBrowserComponent::canSelectFiles;
+        myChooser->launchAsync(settingOpenFlags, [this](const juce::FileChooser &chooser) {
+            const juce::File settingFile(chooser.getResult());
+            if (!settingFile.existsAsFile()) { return; }
+            const auto stream(settingFile.createInputStream());
+            if (stream->isExhausted()) { return; }
+            const auto start = stream->readNextLine();
+            if (start.startsWith("#native")) {
+                std::array<float, 251> points;
+                size_t idx = 0;
+                while (!stream->isExhausted() && idx < points.size()) {
+                    points[idx] = stream->readNextLine().getFloatValue();
+                    idx += 1;
+                }
+                if (idx == points.size()) {
+                    analyzer.setTargetPreset(points);
+                }
+            }
+        });
+    }
+
+    void MatchControlPanel::saveToPreset() {
+        myChooser = std::make_unique<juce::FileChooser>(
+            "Save the match preset...", presetDirectory.getChildFile("match.csv"), "*.csv",
+            true, false, nullptr);
+        constexpr auto settingSaveFlags = juce::FileBrowserComponent::saveMode |
+                                          juce::FileBrowserComponent::warnAboutOverwriting;
+        myChooser->launchAsync(settingSaveFlags, [this](const juce::FileChooser &chooser) {
+            juce::File settingFile(chooser.getResult().withFileExtension("csv"));
+            if (settingFile.existsAsFile()) {
+                const auto f = settingFile.deleteFile();
+                juce::ignoreUnused(f);
+            }
+            const auto stream = settingFile.createOutputStream();
+            stream->writeText("#native", false, false, nullptr);
+            stream->writeText(",\n", false, false, nullptr);
+            for (auto &p: analyzer.getTarget()) {
+                stream->writeText(juce::String(p), false, false, nullptr);
+                stream->writeText(",\n", false, false, nullptr);
+            }
+        });
     }
 } // zlPanel

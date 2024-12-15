@@ -56,6 +56,8 @@ namespace zlEqMatch {
 
         void setSlope(const float x) { slope.store(x); }
 
+        std::array<float, pointNum> &getTarget() { return targetDBs; }
+
     private:
         zlFFT::AverageFFTAnalyzer<FloatType, 2, pointNum> fftAnalyzer;
         std::array<float, pointNum> mainDBs{}, targetDBs{}, diffs{};
@@ -84,8 +86,8 @@ namespace zlEqMatch {
                     smoothKernel[smoothSize / 2 - i] = smoothKernel[smoothSize / 2 + i];
                 }
                 const auto kernelC = 1.f /
-                    std::max(std::reduce(smoothKernel.begin(), smoothKernel.end(), 0.0f), 0.01f);
-                for (auto &x:smoothKernel) {
+                                     std::max(std::reduce(smoothKernel.begin(), smoothKernel.end(), 0.0f), 0.01f);
+                for (auto &x: smoothKernel) {
                     x *= kernelC;
                 }
             }
