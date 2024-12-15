@@ -38,6 +38,8 @@ namespace zlPanel {
         zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider, numBandSlider;
         zlInterface::ClickButton learnButton, saveButton, fitButton;
 
+        void resetDefault();
+
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
     };

@@ -333,6 +333,10 @@ namespace zlFFT {
             return abstractFIFO.getNumReady() >= readyNum.load();
         }
 
+        void setWeight(const float x) {
+            loudnessWeightAlpha.store(std::clamp(x, 0.f, 1.f));
+        }
+
     private:
         size_t defaultFFTOrder = 12;
         size_t binSize = (1 << (defaultFFTOrder - 1)) + 1;
@@ -346,7 +350,7 @@ namespace zlFFT {
         // smooth dbs over time
         std::array<std::vector<float>, FFTNum> smoothedDBs{};
         std::array<float, FFTNum> currentNum{};
-        std::atomic<float> loudnessWeightAlpha{0.1f};
+        std::atomic<float> loudnessWeightAlpha{0.5f};
         // smooth dbs over high frequency for Akimas input
         std::vector<float> seqInputFreqs{};
         std::vector<std::vector<float>::difference_type> seqInputStarts, seqInputEnds;
@@ -377,8 +381,8 @@ namespace zlFFT {
         }
 
         float calculateWeight(const float rms) const {
-            const auto currentAlpha = loudnessWeightAlpha.load();
-            return std::exp(currentAlpha * std::min(rms, 0.f));
+            const auto t = loudnessWeightAlpha.load();
+            return (1.f / 80.f * rms + 1.f) * (1.f - t) + std::exp(0.1f * rms) * t;
         }
     };
 }

@@ -33,11 +33,20 @@ namespace zlPanel {
             addAndMakeVisible(c);
         }
         weightSlider.getSlider().setRange(0.0, 1.0, 0.01);
-        weightSlider.getSlider().setValue(0.5);
+        weightSlider.getSlider().setDoubleClickReturnValue(true, .5);
+        weightSlider.getSlider().onValueChange = [this]() {
+            analyzer.getAverageFFT().setWeight(static_cast<float>(weightSlider.getSlider().getValue()));
+        };
         smoothSlider.getSlider().setRange(0.0, 1.0, 0.01);
-        smoothSlider.getSlider().setValue(0.5);
+        smoothSlider.getSlider().setDoubleClickReturnValue(true, .5);
+        smoothSlider.getSlider().onValueChange = [this]() {
+            analyzer.setSmooth(static_cast<float>(smoothSlider.getSlider().getValue()));
+        };
         slopeSlider.getSlider().setRange(-4.5, 4.5, 0.01);
-        slopeSlider.getSlider().setValue(0.0);
+        slopeSlider.getSlider().setDoubleClickReturnValue(true, 0.);
+        slopeSlider.getSlider().onValueChange = [this]() {
+            analyzer.setSlope(static_cast<float>(slopeSlider.getSlider().getValue()));
+        };
         numBandSlider.getSlider().setRange(1.0, 16.0, 1.0);
         numBandSlider.getSlider().setValue(8.0);
         for (const auto &c: {&weightSlider, &smoothSlider, &slopeSlider, &numBandSlider}) {
@@ -51,6 +60,7 @@ namespace zlPanel {
         learnButton.getButton().onStateChange = [this]() {
             analyzer.setON(learnButton.getButton().getToggleState());
         };
+        resetDefault();
     }
 
     MatchControlPanel::~MatchControlPanel() {
@@ -98,12 +108,26 @@ namespace zlPanel {
         grid.performLayout(bound.toNearestInt());
     }
 
+    void MatchControlPanel::resetDefault() {
+        weightSlider.getSlider().setValue(0.5, juce::dontSendNotification);
+        analyzer.getAverageFFT().setWeight(.5f);
+
+        smoothSlider.getSlider().setValue(0.5, juce::dontSendNotification);
+        analyzer.setSmooth(.5f);
+
+        slopeSlider.getSlider().setValue(0., juce::dontSendNotification);
+        analyzer.setSlope(0.f);
+
+        learnButton.getButton().setToggleState(false, juce::dontSendNotification);
+        analyzer.setON(false);
+        analyzer.reset();
+    }
+
     void MatchControlPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
         const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
         setVisible(f);
         if (!f) {
-            learnButton.getButton().setToggleState(false, juce::sendNotificationSync);
+            resetDefault();
         }
-        analyzer.reset();
     }
 } // zlPanel
