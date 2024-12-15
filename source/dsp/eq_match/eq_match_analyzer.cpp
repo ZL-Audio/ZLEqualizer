@@ -75,14 +75,18 @@ namespace zlEqMatch {
     void EqMatchAnalyzer<FloatType>::updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP,
                                                  const juce::Rectangle<float> bound) {
         // update mainDBs and targetDBs
-        mainDBs = fftAnalyzer.getInterplotDBs(0);
-        for (auto &dB : mainDBs) {
-            dB += 10.f;
+        {
+            mainDBs = fftAnalyzer.getInterplotDBs(0);
+            const auto maxDB = *std::max_element(mainDBs.begin(), mainDBs.end()) - avgDB;
+            for (auto &dB : mainDBs) {
+                dB -= maxDB;
+            }
         }
         if (mMode.load() == MatchMode::matchSide) {
             targetDBs = fftAnalyzer.getInterplotDBs(1);
+            const auto maxDB = *std::max_element(targetDBs.begin(), targetDBs.end()) - avgDB;
             for (auto &dB : targetDBs) {
-                dB += 10.f;
+                dB -= maxDB;
             }
         } else if (toUpdateFromLoadDBs.load()) {
             targetDBs = loadDBs;

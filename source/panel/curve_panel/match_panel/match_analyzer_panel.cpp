@@ -21,17 +21,20 @@ namespace zlPanel {
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
         juce::GenericScopedTryLock lock{pathLock};
         g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(.5f));
-        const auto thickness = uiBase.getFontSize() * 0.2f;
+        const auto thickness = uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness();
         if (!lock.isLocked()) { return; }
-        g.setColour(uiBase.getColourByIdx(zlInterface::preColour).withAlpha(1.f));
-        g.strokePath(recentPath1,
-                     juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        g.setColour(uiBase.getColourByIdx(zlInterface::sideColour).withAlpha(1.f));
+        g.setColour(uiBase.getColourByIdx(zlInterface::sideColour).withAlpha(.5f));
         g.strokePath(recentPath2,
-                     juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        g.setColour(uiBase.getColorMap1(0));
+                     juce::PathStrokeType(thickness,
+                                          juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        g.setColour(uiBase.getColourByIdx(zlInterface::preColour).withAlpha(.5f));
+        g.strokePath(recentPath1,
+                     juce::PathStrokeType(thickness,
+                                          juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        g.setColour(uiBase.getColorMap2(0));
         g.strokePath(recentPath3,
-                     juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+                     juce::PathStrokeType(thickness * 1.5f,
+                                          juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
 
     void MatchAnalyzerPanel::resized() {
@@ -42,8 +45,7 @@ namespace zlPanel {
     }
 
     void MatchAnalyzerPanel::updatePaths() {
-        analyzerRef.updatePaths(path1, path2, path3, atomicBound.load());
-        {
+        analyzerRef.updatePaths(path1, path2, path3, atomicBound.load()); {
             juce::GenericScopedLock lock{pathLock};
             recentPath1 = path1;
             recentPath2 = path2;

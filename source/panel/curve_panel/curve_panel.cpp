@@ -115,7 +115,8 @@ namespace zlPanel {
 
     void CurvePanel::repaintCallBack() {
         const juce::Time nowT = juce::Time::getCurrentTime();
-        if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS()) {
+        const auto refreshRateMul = showMatchPanel.load() ? static_cast<juce::int64>(2) : static_cast<juce::int64>(1);
+        if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
             repaint();
