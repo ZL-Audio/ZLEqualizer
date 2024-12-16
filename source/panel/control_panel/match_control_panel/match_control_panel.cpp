@@ -12,7 +12,7 @@
 namespace zlPanel {
     MatchControlPanel::MatchControlPanel(PluginProcessor &p, zlInterface::UIBase &base)
         : uiBase(base), analyzer(p.getController().getMatchAnalyzer()),
-          matchRunner(p),
+          matchRunner(p, analyzer.getDiffs()),
           startDrawable(juce::Drawable::createFromImageData(BinaryData::playfill_svg, BinaryData::playfill_svgSize)),
           pauseDrawable(juce::Drawable::createFromImageData(BinaryData::pauseline_svg, BinaryData::pauseline_svgSize)),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
@@ -78,6 +78,7 @@ namespace zlPanel {
         numBandSlider.getSlider().setRange(1.0, 16.0, 1.0);
         numBandSlider.getSlider().onValueChange = [this]() {
             matchRunner.setNumBand(static_cast<size_t>(numBandSlider.getSlider().getValue()));
+            matchRunner.update();
         };
         for (const auto &c: {&weightSlider, &smoothSlider, &slopeSlider, &numBandSlider}) {
             addAndMakeVisible(c);
@@ -98,7 +99,7 @@ namespace zlPanel {
         fitButton.getButton().onClick = [this]() {
             learnButton.getButton().setToggleState(false, juce::dontSendNotification);
             analyzer.setON(false);
-            matchRunner.start(analyzer.getDiffs());
+            matchRunner.start();
             uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, true);
         };
         resetDefault();
@@ -151,12 +152,15 @@ namespace zlPanel {
 
     void MatchControlPanel::resetDefault() {
         weightSlider.getSlider().setValue(0.5, juce::dontSendNotification);
+        weightSlider.updateDisplayValue();
         analyzer.getAverageFFT().setWeight(.5f);
 
         smoothSlider.getSlider().setValue(0.5, juce::dontSendNotification);
+        smoothSlider.updateDisplayValue();
         analyzer.setSmooth(.5f);
 
         slopeSlider.getSlider().setValue(0., juce::dontSendNotification);
+        slopeSlider.updateDisplayValue();
         analyzer.setSlope(0.f);
 
         learnButton.getButton().setToggleState(false, juce::dontSendNotification);
@@ -164,9 +168,10 @@ namespace zlPanel {
         analyzer.reset();
 
         numBandSlider.getSlider().setValue(8.0, juce::dontSendNotification);
+        numBandSlider.updateDisplayValue();
         matchRunner.setNumBand(static_cast<size_t>(8));
 
-        sideChooseBox.getBox().setSelectedId(1);
+        sideChooseBox.getBox().setSelectedId(1, juce::dontSendNotification);
         analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::MatchMode::matchSide);
 
         fitAlgoBox.getBox().setSelectedId(2, juce::dontSendNotification);

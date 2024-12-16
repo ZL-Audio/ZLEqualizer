@@ -40,7 +40,7 @@ namespace zlEqMatch {
                 fftAnalyzer.setON(1, true);
                 isON.store(true);
                 if (!isThreadRunning()) {
-                    startThread();
+                    startThread(Priority::low);
                 }
             } else {
                 isON.store(false);

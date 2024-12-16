@@ -16,9 +16,9 @@ namespace zlPanel {
     class MatchRunner final : private juce::Thread,
                               private juce::AsyncUpdater {
     public:
-        explicit MatchRunner(PluginProcessor &p);
+        explicit MatchRunner(PluginProcessor &p, std::array<std::atomic<float>, 251> &atomicDiffs);
 
-        void start(const std::array<std::atomic<float>, 251> &x);
+        void start();
 
         void setMode(const size_t x) {
             mode.store(x);
@@ -26,12 +26,16 @@ namespace zlPanel {
 
         void setNumBand(const size_t x) {
             numBand.store(x);
+        }
+
+        void update() {
             triggerAsyncUpdate();
         }
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlEqMatch::EqMatchOptimizer<16> optimizer;
+        std::array<std::atomic<float>, 251> &atomicDiffsRef;
         std::array<double, 251> diffs{};
         std::atomic<bool> isReady{false}, isRunning{false};
         std::atomic<size_t> mode{1}, numBand{8};
@@ -47,6 +51,7 @@ namespace zlPanel {
             para->endChangeGesture();
         }
 
+        void loadDiffs();
     };
 } // zlPanel
 

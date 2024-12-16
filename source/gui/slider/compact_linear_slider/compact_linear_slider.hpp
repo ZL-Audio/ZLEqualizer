@@ -56,6 +56,11 @@ namespace zlInterface {
             ubPad.store(ub);
         }
 
+        void updateDisplayValue() {
+            text.setText(getDisplayValue(slider), juce::dontSendNotification);
+            text.repaint();
+        }
+
     private:
         UIBase &uiBase;
 

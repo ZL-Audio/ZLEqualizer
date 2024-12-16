@@ -4,6 +4,12 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.5.0
+
+- add EQ match
+- add UI setting import/export
+- improve GUI performance
+
 ## 0.4.5
 
 - fix nlopt library linking issue in 0.4.4 (See #132) which breaks Linux and macOS binaries
