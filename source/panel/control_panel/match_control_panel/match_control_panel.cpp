@@ -84,8 +84,9 @@ namespace zlPanel {
             addAndMakeVisible(c);
             c->setPadding(.2f, .2f, .2f, .2f);
         }
-        learnButton.getButton().onStateChange = [this]() {
+        learnButton.getButton().onClick = [this]() {
             analyzer.setON(learnButton.getButton().getToggleState());
+            uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
         };
         saveButton.getButton().onClick = [this]() {
             learnButton.getButton().setToggleState(false, juce::dontSendNotification);
@@ -96,6 +97,7 @@ namespace zlPanel {
             learnButton.getButton().setToggleState(false, juce::dontSendNotification);
             analyzer.setON(false);
             matchRunner.start(analyzer.getDiffs());
+            uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, true);
         };
         resetDefault();
     }

@@ -15,10 +15,11 @@
 #include "../helpers.hpp"
 
 namespace zlPanel {
-    class MatchAnalyzerPanel final : public juce::Component {
+    class MatchAnalyzerPanel final : public juce::Component,
+                                     private juce::ValueTree::Listener {
     public:
         explicit MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
-        juce::AudioProcessorValueTreeState &parametersNA,
+                                    juce::AudioProcessorValueTreeState &parametersNA,
                                     zlInterface::UIBase &base);
 
         ~MatchAnalyzerPanel() override;
@@ -38,6 +39,11 @@ namespace zlPanel {
         juce::SpinLock pathLock;
         AtomicPoint leftCorner, rightCorner;
         AtomicBound atomicBound;
+        float backgroundAlpha = .5f;
+        bool showAverage{true};
+
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                      const juce::Identifier &property) override;
     };
 } // zlPanel
 

@@ -21,6 +21,7 @@ namespace zlPanel {
         addAndMakeVisible(name);
 
         uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, false);
+        uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
     }
 
     void MatchSettingPanel::resized() {
@@ -43,5 +44,8 @@ namespace zlPanel {
         juce::ignoreUnused(event);
         const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
         uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, !f);
+        if (!f) {
+            uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
+        }
     }
 } // zlPanel

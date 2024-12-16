@@ -15,23 +15,28 @@ namespace zlPanel {
                                            zlInterface::UIBase &base)
         : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base) {
         setInterceptsMouseClicks(false, false);
+        uiBase.getValueTree().addListener(this);
     }
 
-    MatchAnalyzerPanel::~MatchAnalyzerPanel() = default;
+    MatchAnalyzerPanel::~MatchAnalyzerPanel() {
+        uiBase.getValueTree().removeListener(this);
+    }
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(.5f));
+        g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(backgroundAlpha));
         const auto thickness = uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness();
         juce::GenericScopedTryLock lock{pathLock};
         if (!lock.isLocked()) { return; }
-        g.setColour(uiBase.getColourByIdx(zlInterface::sideColour).withAlpha(.5f));
-        g.strokePath(recentPath2,
-                     juce::PathStrokeType(thickness,
-                                          juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        g.setColour(uiBase.getColourByIdx(zlInterface::preColour).withAlpha(.5f));
-        g.strokePath(recentPath1,
-                     juce::PathStrokeType(thickness,
-                                          juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        if (showAverage) {
+            g.setColour(uiBase.getColourByIdx(zlInterface::sideColour).withAlpha(.5f));
+            g.strokePath(recentPath2,
+                         juce::PathStrokeType(thickness,
+                                              juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+            g.setColour(uiBase.getColourByIdx(zlInterface::preColour).withAlpha(.5f));
+            g.strokePath(recentPath1,
+                         juce::PathStrokeType(thickness,
+                                              juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        }
         g.setColour(uiBase.getColorMap2(2));
         g.strokePath(recentPath3,
                      juce::PathStrokeType(thickness * 1.5f,
@@ -58,5 +63,11 @@ namespace zlPanel {
             recentPath3 = path3;
         }
         analyzerRef.checkRun();
+    }
+
+    void MatchAnalyzerPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
+        const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelFit));
+        backgroundAlpha = f ? .2f : .5f;
+        showAverage = !f;
     }
 } // zlPanel
