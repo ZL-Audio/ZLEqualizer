@@ -13,10 +13,12 @@ namespace zlPanel {
     MatchRunner::MatchRunner(PluginProcessor &p)
         : Thread("match_runner"),
           parametersRef(p.parameters), parametersNARef(p.parametersNA) {
+        std::fill(diffs.begin(), diffs.end(), 0.);
     }
 
     void MatchRunner::start(const std::array<std::atomic<float>, 251> &x) {
         if (isThreadRunning()) { return; }
+        if (isRunning.load()) { return; }
         for (size_t i = 0; i < diffs.size(); i++) {
             diffs[i] = static_cast<double>(x[i].load());
         }
@@ -26,10 +28,14 @@ namespace zlPanel {
     void MatchRunner::run() {
         isReady.store(false);
         if (mode.load() == 0) {
+            isRunning.store(true);
             optimizer.setDiffs(&diffs[0], diffs.size());
+            isRunning.store(false);
             optimizer.runDeterministic();
         } else {
+            isRunning.store(true);
             optimizer.setDiffs(&diffs[0], diffs.size());
+            isRunning.store(false);
             optimizer.runStochastic();
         }
         isReady.store(true);

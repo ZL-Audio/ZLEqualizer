@@ -33,7 +33,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlEqMatch::EqMatchOptimizer<16> optimizer;
         std::array<double, 251> diffs{};
-        std::atomic<bool> isReady{false};
+        std::atomic<bool> isReady{false}, isRunning{false};
         std::atomic<size_t> mode{1}, numBand{8};
 
         void run() override;

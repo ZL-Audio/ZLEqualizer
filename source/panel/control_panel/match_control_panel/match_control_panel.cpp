@@ -33,24 +33,26 @@ namespace zlPanel {
             juce::ignoreUnused(f);
         }
         // init combobox
-        sideChooseBox.getBox().onChange = [this]() {
-            const auto matchMode = static_cast<zlEqMatch::EqMatchAnalyzer<double>::MatchMode>(
-                sideChooseBox.getBox().getSelectedId() - 1);
-            switch (matchMode) {
-                case zlEqMatch::EqMatchAnalyzer<double>::matchSide: {
-                    break;
-                }
-                case zlEqMatch::EqMatchAnalyzer<double>::matchSlope: {
-                    analyzer.setTargetSlope(0.f);
-                    break;
-                }
-                case zlEqMatch::EqMatchAnalyzer<double>::matchPreset: {
+        const auto *menu = sideChooseBox.getBox().getRootMenu();
+        juce::PopupMenu::MenuItemIterator iterator(*menu);
+        while (iterator.next()) {
+            auto item = &iterator.getItem();
+            if (item->itemID == 1) {
+                item->setAction ([this] {
+                    analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchSide);
+                });
+            } else if (item->itemID == 2) {
+                item->setAction ([this] {
                     loadFromPreset();
-                    break;
-                }
+                    analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchPreset);
+                });
+            } else if (item->itemID == 3) {
+                item->setAction ([this] {
+                    analyzer.setTargetSlope(0.f);
+                    analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchSlope);
+                });
             }
-            analyzer.setMatchMode(matchMode);
-        };
+        }
         fitAlgoBox.getBox().onChange = [this]() {
             const auto fitAlgo = static_cast<size_t>(fitAlgoBox.getBox().getSelectedId() - 1);
             matchRunner.setMode(fitAlgo);
