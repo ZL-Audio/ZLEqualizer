@@ -30,7 +30,7 @@ namespace zlEqMatch {
             nlopt::algorithm::LD_MMA, nlopt::algorithm::LD_SLSQP, nlopt::algorithm::LD_VAR2
         };
         static constexpr std::array algos2{
-            nlopt::algorithm::GN_CRS2_LM
+            nlopt::algorithm::GN_CRS2_LM, nlopt::algorithm::GN_CRS2_LM, nlopt::algorithm::LD_SLSQP
         };
         static constexpr std::array<zlFilter::FilterType, 3> filterTypes{
             zlFilter::FilterType::lowShelf, zlFilter::FilterType::peak, zlFilter::FilterType::highShelf

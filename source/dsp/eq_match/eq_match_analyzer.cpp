@@ -152,6 +152,12 @@ namespace zlEqMatch {
         for (auto &diff: diffs) {
             diff -= diffC;
         }
+        // scale diffs
+        if (rescale < .99f) {
+            for (auto &diff: diffs) {
+                diff *= rescale;
+            }
+        }
         // save to target
         for (size_t i = 0; i < pointNum; ++i) {
             atomicTargetDBs[i].store(targetDBs[i]);

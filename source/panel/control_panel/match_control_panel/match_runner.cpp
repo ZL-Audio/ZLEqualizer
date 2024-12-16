@@ -43,6 +43,7 @@ namespace zlPanel {
         for (size_t i = 0; i < currentNumBand; i++) {
             const auto &filter = filters[i];
             savePara(zlDSP::appendSuffix(zlDSP::bypass::ID, i), 0.f);
+            savePara(zlDSP::appendSuffix(zlDSP::dynamicON::ID, i), 0.f);
             savePara(zlDSP::appendSuffix(zlDSP::fType::ID, i),
                      zlDSP::fType::convertTo01(filter.getFilterType()));
             savePara(zlDSP::appendSuffix(zlDSP::freq::ID, i),

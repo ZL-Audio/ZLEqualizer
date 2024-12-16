@@ -20,9 +20,9 @@ namespace zlPanel {
     MatchAnalyzerPanel::~MatchAnalyzerPanel() = default;
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
-        juce::GenericScopedTryLock lock{pathLock};
         g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(.5f));
         const auto thickness = uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness();
+        juce::GenericScopedTryLock lock{pathLock};
         if (!lock.isLocked()) { return; }
         g.setColour(uiBase.getColourByIdx(zlInterface::sideColour).withAlpha(.5f));
         g.strokePath(recentPath2,

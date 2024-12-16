@@ -33,7 +33,6 @@ namespace zlPanel {
             juce::ignoreUnused(f);
         }
         // init combobox
-        sideChooseBox.getBox().setSelectedId(1);
         sideChooseBox.getBox().onChange = [this]() {
             const auto matchMode = static_cast<zlEqMatch::EqMatchAnalyzer<double>::MatchMode>(
                 sideChooseBox.getBox().getSelectedId() - 1);
@@ -52,7 +51,6 @@ namespace zlPanel {
             }
             analyzer.setMatchMode(matchMode);
         };
-        fitAlgoBox.getBox().setSelectedId(1);
         fitAlgoBox.getBox().onChange = [this]() {
             const auto fitAlgo = static_cast<size_t>(fitAlgoBox.getBox().getSelectedId() - 1);
             matchRunner.setMode(fitAlgo);
@@ -76,7 +74,6 @@ namespace zlPanel {
             analyzer.setSlope(static_cast<float>(slopeSlider.getSlider().getValue()));
         };
         numBandSlider.getSlider().setRange(1.0, 16.0, 1.0);
-        numBandSlider.getSlider().setValue(8.0);
         numBandSlider.getSlider().onValueChange = [this]() {
             matchRunner.setNumBand(static_cast<size_t>(numBandSlider.getSlider().getValue()));
         };
@@ -87,7 +84,6 @@ namespace zlPanel {
             addAndMakeVisible(c);
             c->setPadding(.2f, .2f, .2f, .2f);
         }
-
         learnButton.getButton().onStateChange = [this]() {
             analyzer.setON(learnButton.getButton().getToggleState());
         };
@@ -112,7 +108,7 @@ namespace zlPanel {
     void MatchControlPanel::paint(juce::Graphics &g) {
         auto bound = getLocalBounds().toFloat();
         g.fillAll(uiBase.getColourByIdx(zlInterface::colourIdx::backgroundColour));
-        bound = bound.removeFromLeft(bound.getWidth() * weightP);
+        bound = bound.withSizeKeepingCentre(bound.getWidth() * weightP, bound.getHeight());
         uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
     }
 
@@ -144,7 +140,7 @@ namespace zlPanel {
         }
 
         auto bound = getLocalBounds().toFloat();
-        bound = bound.removeFromLeft(bound.getWidth() * weightP);
+        bound = bound.withSizeKeepingCentre(bound.getWidth() * weightP, bound.getHeight());
         bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
         grid.performLayout(bound.toNearestInt());
     }
@@ -162,6 +158,15 @@ namespace zlPanel {
         learnButton.getButton().setToggleState(false, juce::dontSendNotification);
         analyzer.setON(false);
         analyzer.reset();
+
+        numBandSlider.getSlider().setValue(8.0, juce::dontSendNotification);
+        matchRunner.setNumBand(static_cast<size_t>(8));
+
+        sideChooseBox.getBox().setSelectedId(1);
+        analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::MatchMode::matchSide);
+
+        fitAlgoBox.getBox().setSelectedId(2, juce::dontSendNotification);
+        matchRunner.setMode(static_cast<size_t>(1));
     }
 
     void MatchControlPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {

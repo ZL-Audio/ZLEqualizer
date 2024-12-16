@@ -34,7 +34,7 @@ namespace zlPanel {
         zlEqMatch::EqMatchOptimizer<16> optimizer;
         std::array<double, 251> diffs{};
         std::atomic<bool> isReady{false};
-        std::atomic<size_t> mode{0}, numBand{8};
+        std::atomic<size_t> mode{1}, numBand{8};
 
         void run() override;
 

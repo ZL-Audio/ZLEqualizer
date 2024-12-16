@@ -73,6 +73,7 @@ namespace zlEqMatch {
         std::atomic<float> smooth{.5f}, slope{.0f};
         std::atomic<bool> toUpdateSmooth{true};
         std::array<float, smoothSize> smoothKernel;
+        float rescale = 1.f;
         std::array<float, pointNum + smoothSize - 1> originalDiffs{};
 
         void run() override;
@@ -80,7 +81,8 @@ namespace zlEqMatch {
         void updateSmooth() {
             if (toUpdateSmooth.exchange(false)) {
                 smoothKernel[smoothSize / 2] = 1.0;
-                const auto currentSmooth = smooth.load();
+                const auto currentSmooth = std::clamp(smooth.load(), 0.f, .5f);
+                rescale = std::clamp(2.f - 2 * smooth.load(), 0.f, 1.f);
                 constexpr float midSlope = -1.f / static_cast<float>(smoothSize / 2);
                 const auto tempSlope = currentSmooth < 0.5
                                            ? -1.f * (1 - currentSmooth * 2.f) + currentSmooth * 2.f * midSlope
