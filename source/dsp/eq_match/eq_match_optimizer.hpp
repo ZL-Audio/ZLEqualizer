@@ -21,7 +21,7 @@ namespace zlEqMatch {
     class EqMatchOptimizer final {
     public:
         static constexpr double eps = 1e-3;
-        static constexpr double minFreqLog = 2.302585092994046, maxFreqLog = 9.998797732340453;
+        static constexpr double minFreqLog = 2.3026, maxFreqLog = 9.9034;
         static constexpr double minGain = -15.0, maxGain = 15.0, gainScale = .3;
         static constexpr double minQLog = -2.3025850929940455, maxQLog = 2.302585092994046;
         static constexpr std::array<double, 3> lowerBound{minFreqLog, minGain * gainScale, minQLog};
