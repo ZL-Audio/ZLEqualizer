@@ -136,6 +136,7 @@ namespace zlPanel {
             constexpr auto settingOpenFlags = juce::FileBrowserComponent::openMode |
                                               juce::FileBrowserComponent::canSelectFiles;
             myChooser->launchAsync(settingOpenFlags, [this](const juce::FileChooser &chooser) {
+                if (chooser.getResults().size() <= 0) { return; }
                 const juce::File settingFile(chooser.getResult());
                 if (const auto xmlInput = juce::XmlDocument::parse(settingFile)) {
                     for (size_t i = 0; i < tagNames.size(); ++i) {
@@ -157,6 +158,7 @@ namespace zlPanel {
             constexpr auto settingSaveFlags = juce::FileBrowserComponent::saveMode |
                                               juce::FileBrowserComponent::warnAboutOverwriting;
             myChooser->launchAsync(settingSaveFlags, [this](const juce::FileChooser &chooser) {
+                if (chooser.getResults().size() <= 0) { return; }
                 juce::File settingFile(chooser.getResult().withFileExtension("xml"));
                 if (settingFile.create()) {
                     juce::XmlElement xmlOutput{"colour_setting"};

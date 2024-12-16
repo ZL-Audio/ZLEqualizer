@@ -38,16 +38,16 @@ namespace zlPanel {
         while (iterator.next()) {
             auto item = &iterator.getItem();
             if (item->itemID == 1) {
-                item->setAction ([this] {
+                item->setAction([this] {
                     analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchSide);
                 });
             } else if (item->itemID == 2) {
-                item->setAction ([this] {
+                item->setAction([this] {
                     loadFromPreset();
                     analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchPreset);
                 });
             } else if (item->itemID == 3) {
-                item->setAction ([this] {
+                item->setAction([this] {
                     analyzer.setTargetSlope(0.f);
                     analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchSlope);
                 });
@@ -188,6 +188,7 @@ namespace zlPanel {
         constexpr auto settingOpenFlags = juce::FileBrowserComponent::openMode |
                                           juce::FileBrowserComponent::canSelectFiles;
         myChooser->launchAsync(settingOpenFlags, [this](const juce::FileChooser &chooser) {
+            if (chooser.getResults().size() <= 0) { return; }
             const juce::File settingFile(chooser.getResult());
             if (!settingFile.existsAsFile()) { return; }
             const auto stream(settingFile.createInputStream());
@@ -214,6 +215,7 @@ namespace zlPanel {
         constexpr auto settingSaveFlags = juce::FileBrowserComponent::saveMode |
                                           juce::FileBrowserComponent::warnAboutOverwriting;
         myChooser->launchAsync(settingSaveFlags, [this](const juce::FileChooser &chooser) {
+            if (chooser.getResults().size() <= 0) { return; }
             juce::File settingFile(chooser.getResult().withFileExtension("csv"));
             if (settingFile.existsAsFile()) {
                 const auto f = settingFile.deleteFile();
