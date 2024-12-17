@@ -593,7 +593,6 @@ namespace zlDSP {
 
         useSolo.store(true);
         toUpdateSolo.store(true);
-        isSoloUpdate.store(true);
     }
 
     template<typename FloatType>
@@ -601,7 +600,6 @@ namespace zlDSP {
         if (idx == soloIdx.load() && isSide == soloSide.load()) {
             useSolo.store(false);
             toUpdateSolo.store(true);
-            isSoloUpdate.store(true);
         }
     }
 

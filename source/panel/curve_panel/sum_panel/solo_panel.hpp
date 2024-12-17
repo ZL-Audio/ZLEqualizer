@@ -30,7 +30,8 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         zlFilter::IIR<double, zlDSP::Controller<double>::FilterSize> &soloF;
         zlDSP::Controller<double> &controllerRef;
-        std::atomic<float> scale1{.5f}, scale2{.5f};
+        double soloFreq{0.}, soloQ{0.};
+        float scale1{.5f}, scale2{.5f};
 
         void handleAsyncUpdate();
     };

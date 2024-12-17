@@ -61,8 +61,6 @@ namespace zlDSP {
 
         void clearSolo(size_t idx, bool isSide);
 
-        bool getSoloUpdated() { return isSoloUpdate.exchange(false); }
-
         inline zlFilter::IIR<FloatType, FilterSize> &getSoloFilter() { return soloFilter; }
 
         std::tuple<FloatType, FloatType> getSoloFilterParas(zlFilter::FilterType fType, FloatType freq, FloatType q);
@@ -240,7 +238,7 @@ namespace zlDSP {
 
         zlFilter::IIR<FloatType, FilterSize> soloFilter;
         std::atomic<size_t> soloIdx;
-        std::atomic<bool> toUpdateSolo{false}, isSoloUpdate{false};
+        std::atomic<bool> toUpdateSolo{false};
         std::atomic<bool> useSolo{false}, soloSide{false};
         bool currentUseSolo{false}, currentSoloSide{false};
         size_t currentSoloIdx{0};
