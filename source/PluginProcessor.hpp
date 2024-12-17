@@ -85,7 +85,21 @@ private:
     zlDSP::ChoreAttach<double> choreAttach;
     juce::AudioBuffer<double> doubleBuffer;
     std::atomic<bool> isMono{false};
-    std::atomic<int> mainInChannelNum{2}, auxInChannelNum{2};
+
+    enum ChannelLayout {
+        main1aux0, main1aux1, main1aux2,
+        main2aux0, main2aux1, main2aux2,
+        invalid
+    };
+    ChannelLayout channelLayout{invalid};
+
+    void doubleBufferCopyFrom(int destChan, const juce::AudioBuffer<float> &buffer, int srcChan);
+
+    void doubleBufferCopyTo(int srcChan, juce::AudioBuffer<float> &buffer, int destChan) const;
+
+    void doubleBufferCopyFrom(int destChan, const juce::AudioBuffer<double> &buffer, int srcChan);
+
+    void doubleBufferCopyTo(int srcChan, juce::AudioBuffer<double> &buffer, int destChan) const;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };

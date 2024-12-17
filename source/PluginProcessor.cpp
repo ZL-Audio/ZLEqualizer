@@ -98,11 +98,25 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     const auto channels = static_cast<juce::uint32>(juce::jmin(getMainBusNumInputChannels(),
                                                                getMainBusNumOutputChannels()));
     isMono.store(channels == 1);
-    mainInChannelNum.store(getMainBusNumInputChannels());
-    if (!getBus(true, 1)->isEnabled()) {
-        auxInChannelNum.store(0);
-    } else {
-        auxInChannelNum.store(getChannelCountOfBus(true, 1));
+    const auto mainInChannelNum = getMainBusNumInputChannels();
+    const auto auxInChannelNum = getBus(true, 1)->isEnabled() ? getChannelCountOfBus(true, 1) : 0;
+    channelLayout = ChannelLayout::invalid;
+    if (mainInChannelNum == 1) {
+        if (auxInChannelNum == 0) {
+            channelLayout = ChannelLayout::main1aux0;
+        } else if (auxInChannelNum == 1) {
+            channelLayout = ChannelLayout::main1aux1;
+        } else if (auxInChannelNum == 2) {
+            channelLayout = ChannelLayout::main1aux2;
+        }
+    } else if (mainInChannelNum == 2) {
+        if (auxInChannelNum == 0) {
+            channelLayout = ChannelLayout::main2aux0;
+        } else if (auxInChannelNum == 1) {
+            channelLayout = ChannelLayout::main2aux1;
+        } else if (auxInChannelNum == 2) {
+            channelLayout = ChannelLayout::main2aux2;
+        }
     }
     const juce::dsp::ProcessSpec spec{
         sampleRate,
@@ -110,6 +124,7 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
         2
     };
     doubleBuffer.setSize(4, samplesPerBlock);
+    doubleBuffer.clear();
     controller.prepare(spec);
 }
 
@@ -137,74 +152,66 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                    juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    const auto mINum = mainInChannelNum.load();
-    const auto aINum = auxInChannelNum.load();
-    if (mINum == 1) {
-        doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-        if (aINum == 0) {
-            for (int chan = 0; chan < 2; ++chan) {
-                auto *dest = doubleBuffer.getWritePointer(chan);
-                auto sideDest = doubleBuffer.getWritePointer(chan + 2);
-                auto *src = buffer.getReadPointer(chan / 2);
-                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                    dest[i] = static_cast<double>(src[i]);
-                    sideDest[i] = static_cast<double>(src[i]);
-                }
-            }
-        } else if (aINum == 1) {
-            for (int chan = 0; chan < 4; ++chan) {
-                auto *dest = doubleBuffer.getWritePointer(chan);
-                auto *src = buffer.getReadPointer(chan / 2);
-                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                    dest[i] = static_cast<double>(src[i]);
-                }
-            }
+    doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+    switch (channelLayout) {
+        case ChannelLayout::main1aux0: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 0);
+            doubleBufferCopyFrom(2, buffer, 0);
+            doubleBufferCopyFrom(3, buffer, 0);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            break;
         }
-        controller.process(doubleBuffer); {
-            auto *dest = buffer.getWritePointer(0);
-            auto *src = doubleBuffer.getReadPointer(0);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = static_cast<float>(src[i]);
-            }
+        case ChannelLayout::main1aux1: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 0);
+            doubleBufferCopyFrom(2, buffer, 1);
+            doubleBufferCopyFrom(3, buffer, 1);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            break;
         }
-    } else if (mINum == 2) {
-        if (aINum == 0) {
-            doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-            for (int chan = 0; chan < 2; ++chan) {
-                auto *dest = doubleBuffer.getWritePointer(chan);
-                auto *sideDest = doubleBuffer.getWritePointer(chan + 2);
-                auto *src = buffer.getReadPointer(chan);
-                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                    dest[i] = static_cast<double>(src[i]);
-                    sideDest[i] = static_cast<double>(src[i]);
-                }
-            }
-        } else if (aINum == 1) {
-            doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-            for (int chan = 0; chan < 2; ++chan) {
-                auto *dest = doubleBuffer.getWritePointer(chan);
-                auto *src = buffer.getReadPointer(chan);
-                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                    dest[i] = static_cast<double>(src[i]);
-                }
-            }
-            for (int chan = 2; chan < 4; ++chan) {
-                auto *dest = doubleBuffer.getWritePointer(chan);
-                auto *src = buffer.getReadPointer(2);
-                for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                    dest[i] = static_cast<double>(src[i]);
-                }
-            }
-        } else if (aINum == 2) {
-            doubleBuffer.makeCopyOf(buffer, true);
+        case ChannelLayout::main1aux2: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 0);
+            doubleBufferCopyFrom(2, buffer, 1);
+            doubleBufferCopyFrom(3, buffer, 2);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            break;
         }
-        controller.process(doubleBuffer);
-        for (int chan = 0; chan < 2; ++chan) {
-            auto *dest = buffer.getWritePointer(chan);
-            auto *src = doubleBuffer.getReadPointer(chan);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = static_cast<float>(src[i]);
-            }
+        case ChannelLayout::main2aux0: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 1);
+            doubleBufferCopyFrom(2, buffer, 0);
+            doubleBufferCopyFrom(3, buffer, 1);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            doubleBufferCopyTo(1, buffer, 1);
+            break;
+        }
+        case ChannelLayout::main2aux1: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 1);
+            doubleBufferCopyFrom(2, buffer, 2);
+            doubleBufferCopyFrom(3, buffer, 2);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            doubleBufferCopyTo(1, buffer, 1);
+            break;
+        }
+        case ChannelLayout::main2aux2: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 1);
+            doubleBufferCopyFrom(2, buffer, 2);
+            doubleBufferCopyFrom(3, buffer, 3);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            doubleBufferCopyTo(1, buffer, 1);
+            break;
+        }
+        case ChannelLayout::invalid: {
         }
     }
 }
@@ -212,56 +219,60 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    const auto mINum = mainInChannelNum.load();
-    const auto aINum = auxInChannelNum.load();
-    if (mINum == 1) {
-        doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-        if (aINum == 0) {
-            for (int chan = 0; chan < 4; ++chan) {
-                doubleBuffer.copyFrom(chan, 0, buffer, 0, 0, buffer.getNumSamples());
-            }
-        } else if (aINum == 1) {
-            for (int chan = 0; chan < 2; ++chan) {
-                doubleBuffer.copyFrom(chan, 0, buffer, 0, 0, buffer.getNumSamples());
-            }
-            for (int chan = 2; chan < 4; ++chan) {
-                doubleBuffer.copyFrom(chan, 0, buffer, 1, 0, buffer.getNumSamples());
-            }
-        }
-        controller.process(doubleBuffer); {
-            auto *dest = buffer.getWritePointer(0);
-            auto *src = doubleBuffer.getReadPointer(0);
-            for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
-                dest[i] = src[i];
-            }
-        }
-    } else if (mINum == 2) {
-        if (aINum == 0) {
-            doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-            for (int chan = 0; chan < 2; ++chan) {
-                doubleBuffer.copyFrom(chan, 0, buffer, chan, 0, buffer.getNumSamples());
-            }
-            for (int chan = 2; chan < 4; ++chan) {
-                doubleBuffer.copyFrom(chan, 0, buffer, chan - 2, 0, buffer.getNumSamples());
-            }
+    doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
+    switch (channelLayout) {
+        case ChannelLayout::main1aux0: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 0);
+            doubleBufferCopyFrom(2, buffer, 0);
+            doubleBufferCopyFrom(3, buffer, 0);
             controller.process(doubleBuffer);
-            for (int chan = 0; chan < 2; ++chan) {
-                buffer.copyFrom(chan, 0, doubleBuffer, chan, 0, doubleBuffer.getNumSamples());
-            }
-        } else if (aINum == 1) {
-            doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
-            for (int chan = 0; chan < 2; ++chan) {
-                doubleBuffer.copyFrom(chan, 0, buffer, chan, 0, buffer.getNumSamples());
-            }
-            for (int chan = 2; chan < 4; ++chan) {
-                doubleBuffer.copyFrom(chan, 0, buffer, 2, 0, buffer.getNumSamples());
-            }
+            doubleBufferCopyTo(0, buffer, 0);
+            break;
+        }
+        case ChannelLayout::main1aux1: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 0);
+            doubleBufferCopyFrom(2, buffer, 1);
+            doubleBufferCopyFrom(3, buffer, 1);
             controller.process(doubleBuffer);
-            for (int chan = 0; chan < 2; ++chan) {
-                buffer.copyFrom(chan, 0, doubleBuffer, chan, 0, doubleBuffer.getNumSamples());
-            }
-        } else if (aINum == 2) {
+            doubleBufferCopyTo(0, buffer, 0);
+            break;
+        }
+        case ChannelLayout::main1aux2: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 0);
+            doubleBufferCopyFrom(2, buffer, 1);
+            doubleBufferCopyFrom(3, buffer, 2);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            break;
+        }
+        case ChannelLayout::main2aux0: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 1);
+            doubleBufferCopyFrom(2, buffer, 0);
+            doubleBufferCopyFrom(3, buffer, 1);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            doubleBufferCopyTo(1, buffer, 1);
+            break;
+        }
+        case ChannelLayout::main2aux1: {
+            doubleBufferCopyFrom(0, buffer, 0);
+            doubleBufferCopyFrom(1, buffer, 1);
+            doubleBufferCopyFrom(2, buffer, 2);
+            doubleBufferCopyFrom(3, buffer, 2);
+            controller.process(doubleBuffer);
+            doubleBufferCopyTo(0, buffer, 0);
+            doubleBufferCopyTo(1, buffer, 1);
+            break;
+        }
+        case ChannelLayout::main2aux2: {
             controller.process(buffer);
+            break;
+        }
+        case ChannelLayout::invalid: {
         }
     }
 }
@@ -297,6 +308,38 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
         parameters.replaceState(tempTree.getChildWithName(parameters.state.getType()));
         parametersNA.replaceState(tempTree.getChildWithName(parametersNA.state.getType()));
     }
+}
+
+void PluginProcessor::doubleBufferCopyFrom(const int destChan,
+                                           const juce::AudioBuffer<float> &buffer, const int srcChan) {
+    auto *dest = doubleBuffer.getWritePointer(destChan);
+    auto *src = buffer.getReadPointer(srcChan);
+    for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+        dest[i] = static_cast<double>(src[i]);
+    }
+}
+
+void PluginProcessor::doubleBufferCopyFrom(const int destChan,
+                                           const juce::AudioBuffer<double> &buffer, const int srcChan) {
+    juce::FloatVectorOperations::copy(doubleBuffer.getWritePointer(destChan),
+                                      buffer.getReadPointer(srcChan),
+                                      buffer.getNumSamples());
+}
+
+void PluginProcessor::doubleBufferCopyTo(const int srcChan,
+                                         juce::AudioBuffer<float> &buffer, int const destChan) const {
+    auto *src = doubleBuffer.getReadPointer(srcChan);
+    auto *dest = buffer.getWritePointer(destChan);
+    for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+        dest[i] = static_cast<float>(src[i]);
+    }
+}
+
+void PluginProcessor::doubleBufferCopyTo(const int srcChan,
+                                         juce::AudioBuffer<double> &buffer, int const destChan) const {
+    juce::FloatVectorOperations::copy(buffer.getWritePointer(destChan),
+                                      doubleBuffer.getReadPointer(srcChan),
+                                      buffer.getNumSamples());
 }
 
 juce::AudioProcessor *JUCE_CALLTYPE
