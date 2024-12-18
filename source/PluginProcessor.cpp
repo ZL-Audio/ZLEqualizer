@@ -92,32 +92,8 @@ void PluginProcessor::changeProgramName(int index, const juce::String &newName) 
 }
 
 //==============================================================================
-void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need.
-    const auto channels = static_cast<juce::uint32>(juce::jmin(getMainBusNumInputChannels(),
-                                                               getMainBusNumOutputChannels()));
-    isMono.store(channels == 1);
-    const auto mainInChannelNum = getMainBusNumInputChannels();
-    const auto auxInChannelNum = getBus(true, 1)->isEnabled() ? getChannelCountOfBus(true, 1) : 0;
-    channelLayout = ChannelLayout::invalid;
-    if (mainInChannelNum == 1) {
-        if (auxInChannelNum == 0) {
-            channelLayout = ChannelLayout::main1aux0;
-        } else if (auxInChannelNum == 1) {
-            channelLayout = ChannelLayout::main1aux1;
-        } else if (auxInChannelNum == 2) {
-            channelLayout = ChannelLayout::main1aux2;
-        }
-    } else if (mainInChannelNum == 2) {
-        if (auxInChannelNum == 0) {
-            channelLayout = ChannelLayout::main2aux0;
-        } else if (auxInChannelNum == 1) {
-            channelLayout = ChannelLayout::main2aux1;
-        } else if (auxInChannelNum == 2) {
-            channelLayout = ChannelLayout::main2aux2;
-        }
-    }
+void PluginProcessor::prepareToPlay(const double sampleRate, const int samplesPerBlock) {
+    // prepare to play
     const juce::dsp::ProcessSpec spec{
         sampleRate,
         static_cast<juce::uint32>(samplesPerBlock),
@@ -126,6 +102,30 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     doubleBuffer.setSize(4, samplesPerBlock);
     doubleBuffer.clear();
     controller.prepare(spec);
+    // determine current channel layout
+    const auto *mainBus = getBus(true, 0);
+    const auto *auxBus = getBus(true, 1);
+    channelLayout = ChannelLayout::invalid;
+    if (mainBus == nullptr) {
+        return;
+    }
+    if (mainBus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
+        if (auxBus == nullptr || !auxBus->isEnabled()) {
+            channelLayout = ChannelLayout::main1aux0;
+        } else if (auxBus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
+            channelLayout = ChannelLayout::main1aux1;
+        } else if (auxBus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+            channelLayout = ChannelLayout::main1aux2;
+        }
+    } else if (mainBus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+        if (auxBus == nullptr || !auxBus->isEnabled()) {
+            channelLayout = ChannelLayout::main2aux0;
+        } else if (auxBus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
+            channelLayout = ChannelLayout::main2aux1;
+        } else if (auxBus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+            channelLayout = ChannelLayout::main2aux2;
+        }
+    }
 }
 
 void PluginProcessor::releaseResources() {
@@ -142,7 +142,8 @@ bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
     if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::mono() &&
         layouts.getMainOutputChannelSet() == juce::AudioChannelSet::mono() &&
         (layouts.getChannelSet(true, 1).isDisabled() ||
-         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono())) {
+         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono() ||
+         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::stereo())) {
         return true;
     }
     return false;
@@ -314,7 +315,7 @@ void PluginProcessor::doubleBufferCopyFrom(const int destChan,
                                            const juce::AudioBuffer<float> &buffer, const int srcChan) {
     auto *dest = doubleBuffer.getWritePointer(destChan);
     auto *src = buffer.getReadPointer(srcChan);
-    for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+    for (int i = 0; i < buffer.getNumSamples(); ++i) {
         dest[i] = static_cast<double>(src[i]);
     }
 }
@@ -330,7 +331,7 @@ void PluginProcessor::doubleBufferCopyTo(const int srcChan,
                                          juce::AudioBuffer<float> &buffer, int const destChan) const {
     auto *src = doubleBuffer.getReadPointer(srcChan);
     auto *dest = buffer.getWritePointer(destChan);
-    for (int i = 0; i < doubleBuffer.getNumSamples(); ++i) {
+    for (int i = 0; i < buffer.getNumSamples(); ++i) {
         dest[i] = static_cast<float>(src[i]);
     }
 }

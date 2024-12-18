@@ -84,7 +84,6 @@ private:
     zlDSP::SoloAttach<double> soloAttach;
     zlDSP::ChoreAttach<double> choreAttach;
     juce::AudioBuffer<double> doubleBuffer;
-    std::atomic<bool> isMono{false};
 
     enum ChannelLayout {
         main1aux0, main1aux1, main1aux2,
