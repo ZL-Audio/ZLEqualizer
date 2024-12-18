@@ -21,6 +21,7 @@ namespace zlEqMatch {
     class EqMatchOptimizer final {
     public:
         static constexpr double eps = 1e-3;
+        static constexpr double diffMinFreqLog = 2.302585092994046, diffMaxFreqLog = 9.998797732340453;
         static constexpr double minFreqLog = 2.3026, maxFreqLog = 9.9034;
         static constexpr double minGain = -15.0, maxGain = 15.0, gainScale = .3;
         static constexpr double minQLog = -2.3025850929940455, maxQLog = 2.302585092994046;
@@ -44,9 +45,10 @@ namespace zlEqMatch {
         std::vector<double> &getDiffs() { return mDiffs; }
 
         void setDiffs(const double *diffs, const size_t diffsSize) {
+            mFilter.prepare(48000.0);
             mFilter.prepareDBSize(diffsSize);
-            const auto deltaLog = (maxFreqLog - minFreqLog) / (static_cast<double>(diffsSize) - 1.0);
-            auto currentLog = minFreqLog;
+            const auto deltaLog = (diffMaxFreqLog - diffMinFreqLog) / (static_cast<double>(diffsSize) - 1.0);
+            auto currentLog = diffMinFreqLog;
             mWs.resize(diffsSize);
             for (size_t i = 0; i < diffsSize; i++) {
                 mWs[i] = std::exp(currentLog) / 48000.0 * 2.0 * 3.141592653589793;
