@@ -23,7 +23,8 @@ namespace zlEqMatch {
         static constexpr double eps = 1e-3;
         static constexpr double diffMinFreqLog = 2.302585092994046, diffMaxFreqLog = 9.998797732340453;
         static constexpr double minFreqLog = 2.3026, maxFreqLog = 9.9034;
-        static constexpr double minGain = -15.0, maxGain = 15.0, gainScale = .3;
+        static constexpr double minGain = -29.999, maxGain = 29.999, gainScale = .15;
+        static constexpr double minGainScale = minGain * gainScale, maxGainScale = maxGain * gainScale;
         static constexpr double minQLog = -2.3025850929940455, maxQLog = 2.302585092994046;
         static constexpr std::array<double, 3> lowerBound{minFreqLog, minGain * gainScale, minQLog};
         static constexpr std::array<double, 3> upperBound{maxFreqLog, maxGain * gainScale, maxQLog};
@@ -173,8 +174,8 @@ namespace zlEqMatch {
             optFData optData{fType, &mFilter, &mDiffs, &mWs};
             double bestMSE = 1e6;
             std::vector<double> bestSol = sol;
-            const std::vector<double> mLowerBound{minFreqLog, minGain, minQLog};
-            const std::vector<double> mUpperBound{maxFreqLog, maxGain, maxQLog};
+            const std::vector<double> mLowerBound{minFreqLog, minGainScale, minQLog};
+            const std::vector<double> mUpperBound{maxFreqLog, maxGainScale, maxQLog};
             for (const auto &algo: algos) {
                 auto opt = nlopt::opt(algo, 3);
                 opt.set_min_objective(func, &optData);
