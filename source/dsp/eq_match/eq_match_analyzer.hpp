@@ -72,7 +72,7 @@ namespace zlEqMatch {
 
         std::atomic<float> smooth{.5f}, slope{.0f};
         std::atomic<bool> toUpdateSmooth{true};
-        std::array<float, smoothSize> smoothKernel;
+        std::array<float, smoothSize> smoothKernel{};
         float rescale = 1.f;
         std::array<float, pointNum + smoothSize - 1> originalDiffs{};
 

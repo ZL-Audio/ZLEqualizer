@@ -13,7 +13,7 @@ namespace zlDSP {
     template<typename FloatType>
     Controller<FloatType>::Controller(juce::AudioProcessor &processor, const size_t fftOrder)
         : processorRef(processor),
-          fftAnalyzer(fftOrder), conflictAnalyzer(fftOrder) {
+          fftAnalyzer(fftOrder), conflictAnalyzer(fftOrder), matchAnalyzer(13) {
         for (size_t i = 0; i < bandNUM; ++i) {
             histograms[i].setDecayRate(FloatType(0.99999));
             subHistograms[i].setDecayRate(FloatType(0.9995));
