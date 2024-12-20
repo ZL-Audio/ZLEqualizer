@@ -11,12 +11,15 @@
 #define MATCH_RUNNER_HPP
 
 #include "../../../PluginProcessor.hpp"
+#include "../../../gui/gui.hpp"
 
 namespace zlPanel {
     class MatchRunner final : private juce::Thread,
                               private juce::AsyncUpdater {
     public:
-        explicit MatchRunner(PluginProcessor &p, std::array<std::atomic<float>, 251> &atomicDiffs);
+        explicit MatchRunner(PluginProcessor &p,
+                             std::array<std::atomic<float>, 251> &atomicDiffs,
+                             zlInterface::CompactLinearSlider &numBandSlider);
 
         void start();
 
@@ -36,9 +39,12 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlEqMatch::EqMatchOptimizer<16> optimizer;
         std::array<std::atomic<float>, 251> &atomicDiffsRef;
+        zlInterface::CompactLinearSlider &slider;
         std::array<double, 251> diffs{};
-        std::atomic<bool> isReady{false}, isRunning{false};
+        std::atomic<bool> toCalculateNumBand{false};
         std::atomic<size_t> mode{1}, numBand{8};
+        std::array<zlFilter::Empty<double>, 16> mFilters;
+        juce::CriticalSection criticalSection;
 
         void run() override;
 
@@ -52,6 +58,10 @@ namespace zlPanel {
         }
 
         void loadDiffs();
+
+        static constexpr double effectThreshold = 1.5;
+
+        static double calculateEffect(const zlFilter::Empty<double> &filter);
     };
 } // zlPanel
 

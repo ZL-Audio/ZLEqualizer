@@ -12,7 +12,6 @@
 namespace zlPanel {
     MatchControlPanel::MatchControlPanel(PluginProcessor &p, zlInterface::UIBase &base)
         : uiBase(base), analyzer(p.getController().getMatchAnalyzer()),
-          matchRunner(p, analyzer.getDiffs()),
           startDrawable(juce::Drawable::createFromImageData(BinaryData::playfill_svg, BinaryData::playfill_svgSize)),
           pauseDrawable(juce::Drawable::createFromImageData(BinaryData::pauseline_svg, BinaryData::pauseline_svgSize)),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
@@ -24,7 +23,8 @@ namespace zlPanel {
           numBandSlider("Num Band", base),
           learnButton(base, startDrawable.get(), pauseDrawable.get()),
           saveButton(base, saveDrawable.get()),
-          fitButton(base, startDrawable.get()) {
+          fitButton(base, startDrawable.get()),
+          matchRunner(p, analyzer.getDiffs(), numBandSlider) {
         juce::ignoreUnused(p);
         uiBase.getValueTree().addListener(this);
         // create preset directory if not exists

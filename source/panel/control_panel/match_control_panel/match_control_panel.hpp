@@ -33,13 +33,14 @@ namespace zlPanel {
         static constexpr float weightP = 0.365f;
         zlInterface::UIBase &uiBase;
         zlEqMatch::EqMatchAnalyzer<double> &analyzer;
-        MatchRunner matchRunner;
 
         const std::unique_ptr<juce::Drawable> startDrawable, pauseDrawable, saveDrawable;
 
         zlInterface::CompactCombobox sideChooseBox, fitAlgoBox;
         zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider, numBandSlider;
         zlInterface::ClickButton learnButton, saveButton, fitButton;
+
+        MatchRunner matchRunner;
 
         std::unique_ptr<juce::FileChooser> myChooser;
         inline auto static const presetDirectory =
