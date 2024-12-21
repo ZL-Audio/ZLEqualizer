@@ -14,12 +14,15 @@ namespace zlPanel {
                                            juce::AudioProcessorValueTreeState &parametersNA,
                                            zlInterface::UIBase &base)
         : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base) {
+        parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
+        parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
         setInterceptsMouseClicks(false, false);
         uiBase.getValueTree().addListener(this);
     }
 
     MatchAnalyzerPanel::~MatchAnalyzerPanel() {
         uiBase.getValueTree().removeListener(this);
+        parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
     }
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
@@ -48,6 +51,7 @@ namespace zlPanel {
         leftCorner.store({bound.getX() * 0.9f, bound.getBottom() * 1.1f});
         rightCorner.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
         atomicBound.store(bound);
+        dBScale.store((1.f + uiBase.getFontSize() * 2.f / bound.getHeight()) * 2.f);
     }
 
     void MatchAnalyzerPanel::updatePaths() {
@@ -56,7 +60,7 @@ namespace zlPanel {
                     parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load())];
         analyzerRef.updatePaths(path1, path2, path3,
                                 atomicBound.load(),
-                                {-72.f, -72.f, -currentMaximumDB * 2.f}); {
+                                {-72.f, -72.f, -currentMaximumDB * dBScale.load()}); {
             juce::GenericScopedLock lock{pathLock};
             recentPath1 = path1;
             recentPath2 = path2;
@@ -69,5 +73,10 @@ namespace zlPanel {
         const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelFit));
         backgroundAlpha = f ? .2f : .5f;
         showAverage = !f;
+    }
+
+    void MatchAnalyzerPanel::parameterChanged(const juce::String &parameterID, float newValue) {
+        juce::ignoreUnused(parameterID);
+        maximumDB.store(zlState::maximumDB::dBs[static_cast<size_t>(newValue)]);
     }
 } // zlPanel

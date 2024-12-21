@@ -16,6 +16,7 @@
 
 namespace zlPanel {
     class MatchAnalyzerPanel final : public juce::Component,
+     private juce::AudioProcessorValueTreeState::Listener,
                                      private juce::ValueTree::Listener {
     public:
         explicit MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
@@ -41,9 +42,13 @@ namespace zlPanel {
         AtomicBound atomicBound;
         float backgroundAlpha = .5f;
         bool showAverage{true};
+        std::atomic<float> dBScale{1.f};
+        std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
 

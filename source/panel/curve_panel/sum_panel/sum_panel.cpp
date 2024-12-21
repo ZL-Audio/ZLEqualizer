@@ -100,12 +100,7 @@ namespace zlPanel {
                 }
             }
 
-            const juce::Rectangle<float> bound{
-                atomicBound.getX(), atomicBound.getY() + uiBase.getFontSize(),
-                atomicBound.getWidth(), atomicBound.getHeight() - 2 * uiBase.getFontSize()
-            };
-
-            drawCurve(paths[j], dBs, maximumDB.load(), bound, false, true);
+            drawCurve(paths[j], dBs, maximumDB.load(), atomicBound.load(), false, true);
         }
         for (size_t j = 0; j < useLRMS.size(); ++j) {
             juce::GenericScopedLock lock(pathLocks[j]);
@@ -124,7 +119,11 @@ namespace zlPanel {
     }
 
     void SumPanel::resized() {
-        atomicBound.store(getLocalBounds().toFloat());
+        const auto bound = getLocalBounds().toFloat();
+        atomicBound.store({
+            bound.getX(), bound.getY() + uiBase.getFontSize(),
+            bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize()
+        });
         toRepaint.store(true);
     }
 
