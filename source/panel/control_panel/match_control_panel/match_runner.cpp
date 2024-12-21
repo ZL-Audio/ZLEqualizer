@@ -42,6 +42,14 @@ namespace zlPanel {
             mFilters[i].setGain(filters[i].getGain());
             mFilters[i].setQ(filters[i].getQ());
         }
+        estNumBand = 16;
+        const auto &mse = optimizer.getMSE();
+        for (size_t i = 0; i < mFilters.size(); i++) {
+            if (mse[i] < mseThreshold) {
+                estNumBand = i + 1;
+                break;
+            }
+        }
         toCalculateNumBand.store(true);
         triggerAsyncUpdate();
     }
@@ -50,16 +58,9 @@ namespace zlPanel {
         juce::ScopedLock lock(criticalSection);
         size_t currentNumBand = numBand.load();
         if (toCalculateNumBand.exchange(false)) {
-            currentNumBand = 16;
-            for (size_t i = 0; i < 16; i++) {
-                if (calculateEffect(mFilters[16 - i]) < effectThreshold) {
-                    currentNumBand -= 1;
-                } else {
-                    break;
-                }
-            }
-            currentNumBand = std::max(currentNumBand, static_cast<size_t>(1));
+            currentNumBand = estNumBand;
             slider.getSlider().setValue(static_cast<double>(currentNumBand), juce::dontSendNotification);
+            slider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(currentNumBand));
             slider.updateDisplayValue();
             numBand.store(currentNumBand);
         }
@@ -87,31 +88,6 @@ namespace zlPanel {
     void MatchRunner::loadDiffs() {
         for (size_t i = 0; i < diffs.size(); i++) {
             diffs[i] = static_cast<double>(atomicDiffsRef[i].load());
-        }
-    }
-
-    double MatchRunner::calculateEffect(const zlFilter::Empty<double> &filter) {
-        const auto fType = filter.getFilterType();
-        const auto freq = filter.getFreq(), gain = filter.getGain(), q = filter.getQ();
-        switch (fType) {
-            case zlFilter::peak: {
-                return std::abs(gain) * std::asinh(0.5 / q) * 2.0 / std::log(2.0);
-            }
-            case zlFilter::lowShelf: {
-                return std::abs(gain) * (std::log2(freq / 10.0) + 0.1);
-            }
-            case zlFilter::highShelf: {
-                return std::abs(gain) * (std::log2(22000.0 / freq) + 0.1);
-            }
-            case zlFilter::lowPass:
-            case zlFilter::highPass:
-            case zlFilter::notch:
-            case zlFilter::bandPass:
-            case zlFilter::tiltShelf:
-            case zlFilter::bandShelf:
-            default: {
-                return 0.;
-            }
         }
     }
 } // zlPanel

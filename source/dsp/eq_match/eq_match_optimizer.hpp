@@ -74,11 +74,11 @@ namespace zlEqMatch {
                     mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos);
                 }
                 const auto idx = static_cast<size_t>(std::min_element(mse.begin(), mse.end()) - mse.begin());
+                mseS[idx] = mse[idx];
                 filters[i].setFilterType(filterTypes[idx]);
                 filters[i].setFreq(std::exp(sols[idx][0]));
                 filters[i].setGain(sols[idx][1] / gainScale);
                 filters[i].setQ(std::exp(sols[idx][2]));
-                solMSE = mse[idx];
                 updateDiff(filters[i]);
             }
         }
@@ -99,22 +99,22 @@ namespace zlEqMatch {
                     mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos1);
                 }
                 const auto idx = static_cast<size_t>(std::min_element(mse.begin(), mse.end()) - mse.begin());
+                mseS[i] = mse[idx];
                 filters[i].setFilterType(filterTypes[idx]);
                 filters[i].setFreq(std::exp(sols[idx][0]));
                 filters[i].setGain(sols[idx][1] / gainScale);
                 filters[i].setQ(std::exp(sols[idx][2]));
-                solMSE = mse[idx];
                 updateDiff(filters[i]);
             }
         }
 
-        double getSolMSE() const { return solMSE; }
+        std::array<double, FilterNum> &getMSE() { return mseS; }
 
         std::array<zlFilter::Empty<double>, FilterNum> &getSol() { return filters; }
 
     private:
         std::array<zlFilter::Empty<double>, FilterNum> filters;
-        double solMSE{};
+        std::array<double, FilterNum> mseS{};
         zlFilter::Ideal<double, 1> mFilter;
         std::vector<double> mDiffs;
         std::vector<double> mWs;

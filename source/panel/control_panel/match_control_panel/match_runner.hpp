@@ -43,6 +43,7 @@ namespace zlPanel {
         std::array<double, 251> diffs{};
         std::atomic<bool> toCalculateNumBand{false};
         std::atomic<size_t> mode{1}, numBand{8};
+        size_t estNumBand{16};
         std::array<zlFilter::Empty<double>, 16> mFilters;
         juce::CriticalSection criticalSection;
 
@@ -59,9 +60,7 @@ namespace zlPanel {
 
         void loadDiffs();
 
-        static constexpr double effectThreshold = 1.5;
-
-        static double calculateEffect(const zlFilter::Empty<double> &filter);
+        static constexpr double mseThreshold = 5.;
     };
 } // zlPanel
 
