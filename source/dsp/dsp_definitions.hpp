@@ -17,6 +17,25 @@ namespace zlDSP {
 
     inline auto static constexpr bandNUM = 16;
 
+    inline juce::NormalisableRange<float> logMidRange(
+        const float xMin, const float xMax, const float xMid, const float xInterval) {
+        const float rng1{std::log(xMid / xMin) * 2.f};
+        const float rng2{std::log(xMax / xMid) * 2.f};
+        return {
+            xMin, xMax,
+            [=](float, float, const float v) {
+                return v < 0.5 ? std::exp(v * rng1) * xMin : std::exp((v - .5f) * rng2) * xMid;
+            },
+            [=](float, float, const float v) {
+                return v < xMid ? std::log(v / xMin) / rng1 : .5f + std::log(v / xMid) / rng2;
+            },
+            [=](float, float, const float v) {
+                const float x = xMin + xInterval * std::round ((v - xMin) / xInterval);
+                return x <= xMin ? xMin : (x >= xMax ? xMax : x);
+            }
+        };
+    }
+
     // float
     template<class T>
     class FloatParameters {
@@ -28,11 +47,11 @@ namespace zlDSP {
         }
 
         static std::unique_ptr<juce::AudioParameterFloat> get(bool meta, const std::string &suffix = "",
-                                                             bool automate = true) {
+                                                              bool automate = true) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::name).
                     withMeta(meta);
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
-                                                              T::name + suffix, T::range, T::defaultV, attributes);
+                                                               T::name + suffix, T::range, T::defaultV, attributes);
         }
 
         inline static float convertTo01(const float x) {
@@ -73,7 +92,8 @@ namespace zlDSP {
                                                                 T::name + suffix, T::choices, T::defaultI, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterChoice> get(bool meta, const std::string &suffix = "", bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterChoice> get(bool meta, const std::string &suffix = "",
+                                                               bool automate = true) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::name).
                     withMeta(meta);
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
@@ -125,7 +145,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "freq";
         auto static constexpr name = "Freq";
-        inline auto static const range = juce::NormalisableRange<float>(10, 20000, .1f, 0.23064293761596813f);
+        inline auto static const range = logMidRange(10.f, 20000.f, 1000.f, 0.1f);
         auto static constexpr defaultV = 1000.f;
     };
 
@@ -141,7 +161,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "Q";
         auto static constexpr name = "Q";
-        inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
+        inline auto static const range = logMidRange(0.025f, 25.f, 0.707f, 0.001f);
         auto static constexpr defaultV = 0.707f;
     };
 
@@ -201,7 +221,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "target_Q";
         auto static constexpr name = "Target Q";
-        inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
+        inline auto static const range = logMidRange(0.025f, 25.f, 0.707f, 0.001f);
         auto static constexpr defaultV = 0.707f;
     };
 
@@ -245,7 +265,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "side_freq";
         auto static constexpr name = "Side Freq";
-        inline auto static const range = juce::NormalisableRange<float>(10, 20000, .1f, 0.23064293761596813f);
+        inline auto static const range = logMidRange(10.f, 20000.f, 1000.f, 0.1f);
         auto static constexpr defaultV = 1000.f;
     };
 
@@ -271,7 +291,7 @@ namespace zlDSP {
     public:
         auto static constexpr ID = "side_Q";
         auto static constexpr name = "Side Q";
-        inline auto static const range = juce::NormalisableRange<float>(.025f, 25, .001f, 0.19213519025943943f);
+        inline auto static const range = logMidRange(0.025f, 25.f, 0.707f, 0.001f);
         auto static constexpr defaultV = 0.707f;
     };
 
@@ -404,9 +424,11 @@ namespace zlDSP {
             "Minimum Phase", "State Variable", "Parallel",
             "Matched Phase", "Mixed Phase", "Linear Phase"
         };
+
         enum FilterStructure {
             minimum, svf, parallel, matched, mixed, linear
         };
+
         int static constexpr defaultI = 0;
     };
 
@@ -459,7 +481,7 @@ namespace zlDSP {
         return s + suffix;
     }
 
-    inline void updateParaNotifyHost(juce::RangedAudioParameter* para, float value) {
+    inline void updateParaNotifyHost(juce::RangedAudioParameter *para, float value) {
         para->beginChangeGesture();
         para->setValueNotifyingHost(value);
         para->endChangeGesture();

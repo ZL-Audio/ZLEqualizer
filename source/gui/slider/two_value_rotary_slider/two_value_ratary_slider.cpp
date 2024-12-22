@@ -74,8 +74,7 @@ namespace zlInterface {
     }
 
     juce::String TwoValueRotarySlider::getDisplayValue(juce::Slider &s) {
-        const auto interval = s.getNormalisableRange().interval;
-        auto value = std::round(s.getValue() / interval) * interval;
+        auto value = s.getNormalisableRange().snapToLegalValue(s.getValue());
         juce::String labelToDisplay = juce::String(value).substring(0, 4);
         if (value < 10000 && labelToDisplay.contains(".")) {
             labelToDisplay = juce::String(value).substring(0, 5);
@@ -93,7 +92,6 @@ namespace zlInterface {
                 break;
             }
         }
-
         return labelToDisplay;
     }
 
