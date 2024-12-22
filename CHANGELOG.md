@@ -6,8 +6,10 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.5.0
 
-- add EQ match
+- add Equalization Match (See the manual for details)
 - add UI setting import/export
+- fix incorrect channel layout (See #138)
+- fix incorrect solo display (See #138)
 - improve GUI performance
 
 ## 0.4.5
