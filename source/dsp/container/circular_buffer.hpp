@@ -34,6 +34,7 @@ namespace zlContainer {
 
         void clear() {
             std::fill(data.begin(), data.end(), T());
+            pos = 0;
             currentNum = 0;
         }
 
