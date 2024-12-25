@@ -114,7 +114,7 @@ namespace zlEqMatch {
                 filters[i].setQ(std::exp(sols[idx][2]));
                 updateDiff(filters[i]);
                 // if mse is already small enough, exit
-                if (mseS[i] < 1e-6) {
+                if (mseS[i] < eps * 1e-3) {
                     for (size_t j = i + 1; j < filters.size(); j++) {
                         mseS[j] = mseS[i];
                         filters[j].setFilterType(zlFilter::FilterType::peak);
@@ -206,10 +206,12 @@ namespace zlEqMatch {
             const std::vector<double> mLowerBound{minFreqLog, minGainScale, minQLog};
             const std::vector<double> mUpperBound{maxFreqLog, maxGainScale, maxQLog};
             for (const auto &algo: algos) {
+                if (shouldExit.load()) { return 0.f; }
                 auto opt = nlopt::opt(algo, 3);
                 opt.set_min_objective(func, &optData);
                 opt.set_lower_bounds(mLowerBound);
                 opt.set_upper_bounds(mUpperBound);
+                opt.set_stopval(eps * 1e-3);
                 opt.set_xtol_abs(1e-3);
                 opt.set_population(80);
                 opt.set_maxtime(1);

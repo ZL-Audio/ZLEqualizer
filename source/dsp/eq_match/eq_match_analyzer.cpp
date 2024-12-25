@@ -105,14 +105,14 @@ namespace zlEqMatch {
         {
             mainDBs = fftAnalyzer.getInterplotDBs(0);
             const auto maxDB = *std::max_element(mainDBs.begin(), mainDBs.end());
-            for (auto &dB : mainDBs) {
+            for (auto &dB: mainDBs) {
                 dB -= maxDB;
             }
         }
         if (mMode.load() == MatchMode::matchSide) {
             targetDBs = fftAnalyzer.getInterplotDBs(1);
             const auto maxDB = *std::max_element(targetDBs.begin(), targetDBs.end());
-            for (auto &dB : targetDBs) {
+            for (auto &dB: targetDBs) {
                 dB -= maxDB;
             }
         } else if (toUpdateFromLoadDBs.load()) {
@@ -147,16 +147,16 @@ namespace zlEqMatch {
             diffs[i] += slopeShift;
             slopeShift += slopeDelta;
         }
-        // center diffs
-        const auto diffC = std::reduce(diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size());
-        for (auto &diff: diffs) {
-            diff -= diffC;
-        }
         // scale diffs
         if (rescale < .99f) {
             for (auto &diff: diffs) {
                 diff *= rescale;
             }
+        }
+        // center diffs
+        const auto diffC = std::reduce(diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size());
+        for (auto &diff: diffs) {
+            diff -= diffC;
         }
         // save to target
         for (size_t i = 0; i < pointNum; ++i) {

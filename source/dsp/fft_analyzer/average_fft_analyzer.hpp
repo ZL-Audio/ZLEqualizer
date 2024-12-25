@@ -253,7 +253,7 @@ namespace zlFFT {
                     const auto ampScale = 2.f / static_cast<float>(fftBuffer.size());
                     // calculate rms weighted average dBs
                     for (size_t j = 0; j < smoothedDB.size(); ++j) {
-                        const auto currentDB = juce::Decibels::gainToDecibels(ampScale * fftBuffer[j], -240.f);
+                        const auto currentDB = juce::Decibels::gainToDecibels(ampScale * fftBuffer[j], -120.f);
                         smoothedDB[j] = smoothedDB[j] * oldWeight + currentDB * newWeight;
                     }
                     // calculate seq-akima input dBs
