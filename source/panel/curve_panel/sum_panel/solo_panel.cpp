@@ -23,6 +23,7 @@ namespace zlPanel {
     }
 
     SoloPanel::~SoloPanel() = default;
+
     void SoloPanel::paint(juce::Graphics &g) {
         if (!controllerRef.getSolo()) {
             return;
@@ -39,7 +40,7 @@ namespace zlPanel {
         const auto leftArea = bound.removeFromLeft(x1);
         const auto rightArea = bound.removeFromRight(width - x2);
 
-        g.setColour(uiBase.getTextInactiveColor());
+        g.setColour(uiBase.getTextColor().withAlpha(.1f));
         g.fillRect(leftArea);
         g.fillRect(rightArea);
     }
