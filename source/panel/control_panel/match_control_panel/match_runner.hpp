@@ -15,11 +15,14 @@
 
 namespace zlPanel {
     class MatchRunner final : private juce::Thread,
-                              private juce::AsyncUpdater {
+                              private juce::AsyncUpdater,
+                              private juce::ValueTree::Listener {
     public:
-        explicit MatchRunner(PluginProcessor &p,
+        explicit MatchRunner(PluginProcessor &p, zlInterface::UIBase &base,
                              std::array<std::atomic<float>, 251> &atomicDiffs,
                              zlInterface::CompactLinearSlider &numBandSlider);
+
+        ~MatchRunner() override;
 
         void start();
 
@@ -36,6 +39,7 @@ namespace zlPanel {
         }
 
     private:
+        zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlEqMatch::EqMatchOptimizer<16> optimizer;
         std::array<std::atomic<float>, 251> &atomicDiffsRef;
@@ -46,10 +50,14 @@ namespace zlPanel {
         size_t estNumBand{16};
         std::array<zlFilter::Empty<double>, 16> mFilters;
         juce::CriticalSection criticalSection;
+        std::atomic<float> lowCutP{0.f}, highCutP{1.f};
 
         void run() override;
 
         void handleAsyncUpdate() override;
+
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                      const juce::Identifier &property) override;
 
         void savePara(const std::string &id, const float x) const {
             const auto para = parametersRef.getParameter(id);

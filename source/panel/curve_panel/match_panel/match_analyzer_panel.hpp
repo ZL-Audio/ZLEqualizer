@@ -44,6 +44,7 @@ namespace zlPanel {
         bool showAverage{true};
         std::atomic<float> dBScale{1.f};
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
+        float lowCutP{0.f}, highCutP{1.f};
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;

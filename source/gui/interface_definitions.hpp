@@ -41,11 +41,14 @@ namespace zlInterface {
     enum settingIdx {
         matchPanelShow,
         matchPanelFit,
+        matchLowCut,
+        matchHighCut,
         settingNum
     };
 
     inline std::array identifiers{
-        juce::Identifier("match_panel_show"), juce::Identifier("match_panel_fit")
+        juce::Identifier("match_panel_show"), juce::Identifier("match_panel_fit"),
+        juce::Identifier("match_low_cut"), juce::Identifier("match_high_cut")
     };
 
     inline std::array<std::string, colourNum> colourNames{

@@ -17,23 +17,34 @@ namespace zlDSP {
 
     inline auto static constexpr bandNUM = 16;
 
-    inline juce::NormalisableRange<float> logMidRange(
-        const float xMin, const float xMax, const float xMid, const float xInterval) {
-        const float rng1{std::log(xMid / xMin) * 2.f};
-        const float rng2{std::log(xMax / xMid) * 2.f};
+    template<typename FloatType>
+    inline juce::NormalisableRange<FloatType> getLogMidRange(
+        const FloatType xMin, const FloatType xMax, const FloatType xMid, const FloatType xInterval) {
+        const FloatType rng1{std::log(xMid / xMin) * FloatType(2)};
+        const FloatType rng2{std::log(xMax / xMid) * FloatType(2)};
         return {
             xMin, xMax,
-            [=](float, float, const float v) {
-                return v < 0.5 ? std::exp(v * rng1) * xMin : std::exp((v - .5f) * rng2) * xMid;
+            [=](FloatType, FloatType, const FloatType v) {
+                return v < FloatType(.5) ? std::exp(v * rng1) * xMin : std::exp((v - FloatType(.5)) * rng2) * xMid;
             },
-            [=](float, float, const float v) {
-                return v < xMid ? std::log(v / xMin) / rng1 : .5f + std::log(v / xMid) / rng2;
+            [=](FloatType, FloatType, const FloatType v) {
+                return v < xMid ? std::log(v / xMin) / rng1 : FloatType(.5) + std::log(v / xMid) / rng2;
             },
-            [=](float, float, const float v) {
-                const float x = xMin + xInterval * std::round ((v - xMin) / xInterval);
+            [=](FloatType, FloatType, const FloatType v) {
+                const FloatType x = xMin + xInterval * std::round ((v - xMin) / xInterval);
                 return x <= xMin ? xMin : (x >= xMax ? xMax : x);
             }
         };
+    }
+
+    inline juce::NormalisableRange<double> logMidRange(
+        const double xMin, const double xMax, const double xMid, const double xInterval) {
+        return getLogMidRange<double>(xMin, xMax, xMid, xInterval);
+    }
+
+    inline juce::NormalisableRange<float> logMidRange(
+        const float xMin, const float xMax, const float xMid, const float xInterval) {
+        return getLogMidRange<float>(xMin, xMax, xMid, xInterval);
     }
 
     // float

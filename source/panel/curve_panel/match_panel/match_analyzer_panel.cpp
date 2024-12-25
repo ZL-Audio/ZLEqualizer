@@ -44,6 +44,18 @@ namespace zlPanel {
         g.strokePath(recentPath3,
                      juce::PathStrokeType(thickness * 1.5f,
                                           juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        if (lowCutP > 0.001f) {
+            auto bound = getLocalBounds().toFloat();
+            bound = bound.removeFromLeft(bound.getWidth() * lowCutP);
+            g.setColour(uiBase.getBackgroundColor().withAlpha(.5f));
+            g.fillRect(bound);
+        }
+        if (highCutP < .999f) {
+            auto bound = getLocalBounds().toFloat();
+            bound = bound.removeFromRight(bound.getWidth() * (1.f - highCutP));
+            g.setColour(uiBase.getBackgroundColor().withAlpha(.5f));
+            g.fillRect(bound);
+        }
     }
 
     void MatchAnalyzerPanel::resized() {
@@ -69,10 +81,16 @@ namespace zlPanel {
         analyzerRef.checkRun();
     }
 
-    void MatchAnalyzerPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
-        const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelFit));
-        backgroundAlpha = f ? .2f : .5f;
-        showAverage = !f;
+    void MatchAnalyzerPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &property) {
+        if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchPanelFit)]) {
+            const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelFit));
+            backgroundAlpha = f ? .2f : .5f;
+            showAverage = !f;
+        } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchLowCut)]) {
+            lowCutP = static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchLowCut));
+        } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchHighCut)]) {
+            highCutP = static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchHighCut));
+        }
     }
 
     void MatchAnalyzerPanel::parameterChanged(const juce::String &parameterID, float newValue) {

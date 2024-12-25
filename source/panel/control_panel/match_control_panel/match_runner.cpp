@@ -10,14 +10,22 @@
 #include "match_runner.hpp"
 
 namespace zlPanel {
-    MatchRunner::MatchRunner(PluginProcessor &p,
+    MatchRunner::MatchRunner(PluginProcessor &p, zlInterface::UIBase &base,
                              std::array<std::atomic<float>, 251> &atomicDiffs,
                              zlInterface::CompactLinearSlider &numBandSlider)
-        : Thread("match_runner"),
+        : Thread("match_runner"), uiBase(base),
           parametersRef(p.parameters), parametersNARef(p.parametersNA),
           atomicDiffsRef(atomicDiffs),
           slider(numBandSlider) {
         std::fill(diffs.begin(), diffs.end(), 0.);
+        uiBase.getValueTree().addListener(this);
+        addListener(&optimizer);
+    }
+
+    MatchRunner::~MatchRunner() {
+        stopThread(-1);
+        removeListener(&optimizer);
+        uiBase.getValueTree().removeListener(this);
     }
 
     void MatchRunner::start() {
@@ -25,14 +33,19 @@ namespace zlPanel {
     }
 
     void MatchRunner::run() {
+        const auto startIdx = static_cast<size_t>(lowCutP.load() * static_cast<float>(diffs.size()));
+        const auto endIdx = static_cast<size_t>(highCutP.load() * static_cast<float>(diffs.size()));
         if (mode.load() == 0) {
             loadDiffs();
             optimizer.setDiffs(&diffs[0], diffs.size());
-            optimizer.runDeterministic();
+            optimizer.runDeterministic(startIdx, endIdx);
         } else {
             loadDiffs();
             optimizer.setDiffs(&diffs[0], diffs.size());
-            optimizer.runStochastic();
+            optimizer.runStochastic(startIdx, endIdx);
+        }
+        if (threadShouldExit()) {
+            return;
         }
         juce::ScopedLock lock(criticalSection);
         const auto &filters = optimizer.getSol();
@@ -82,6 +95,16 @@ namespace zlPanel {
             para->beginChangeGesture();
             para->setValueNotifyingHost(0.f);
             para->endChangeGesture();
+        }
+    }
+
+    void MatchRunner::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                               const juce::Identifier &property) {
+        juce::ignoreUnused(treeWhosePropertyHasChanged);
+        if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchLowCut)]) {
+            lowCutP.store(static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchLowCut)));
+        } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchHighCut)]) {
+            highCutP.store(static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchHighCut)));
         }
     }
 

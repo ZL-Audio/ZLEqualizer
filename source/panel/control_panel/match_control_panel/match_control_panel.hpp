@@ -30,14 +30,15 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        static constexpr float weightP = 0.365f;
+        static constexpr float weightP = 0.4693f;
         zlInterface::UIBase &uiBase;
         zlEqMatch::EqMatchAnalyzer<double> &analyzer;
 
         const std::unique_ptr<juce::Drawable> startDrawable, pauseDrawable, saveDrawable;
 
         zlInterface::CompactCombobox sideChooseBox, fitAlgoBox;
-        zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider, numBandSlider;
+        zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider;
+        zlInterface::CompactLinearSlider lowCutSlider, highCutSlider, numBandSlider;
         zlInterface::ClickButton learnButton, saveButton, fitButton;
 
         MatchRunner matchRunner;
