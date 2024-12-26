@@ -17,6 +17,8 @@ namespace zlPanel {
 
 class OtherUISettingPanel final : public juce::Component {
 public:
+    static constexpr float heightP = 16.f;
+
     explicit OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
     ~OtherUISettingPanel() override;

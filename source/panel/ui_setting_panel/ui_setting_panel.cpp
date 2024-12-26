@@ -71,23 +71,23 @@ namespace zlPanel {
         };
 
         panelNameLAF.setFontScale(1.5f);
-        panelNameLAF.setJustification(juce::Justification::centred);
         panelLabels[0].setText("Colour", juce::dontSendNotification);
         panelLabels[1].setText("Control", juce::dontSendNotification);
         panelLabels[2].setText("Other", juce::dontSendNotification);
         for (auto &pL: panelLabels) {
             pL.setInterceptsMouseClicks(true, false);
             pL.addMouseListener(this, false);
+            pL.setJustificationType(juce::Justification::centred);
             pL.setLookAndFeel(&panelNameLAF);
             addAndMakeVisible(pL);
         }
 
         labelLAF.setFontScale(1.125f);
         labelLAF.setAlpha(.5f);
-        labelLAF.setJustification(juce::Justification::bottomLeft);
         versionLabel.setText(
             juce::String(ZLEQUALIZER_CURRENT_VERSION) + " " + juce::String(ZLEQUALIZER_CURRENT_HASH),
             juce::dontSendNotification);
+        versionLabel.setJustificationType(juce::Justification::bottomLeft);
         versionLabel.setLookAndFeel(&labelLAF);
         addAndMakeVisible(versionLabel);
     }
@@ -119,13 +119,13 @@ namespace zlPanel {
 
         colourPanel.setBounds(0, 0,
                               juce::roundToInt(bound.getWidth()),
-                              juce::roundToInt(uiBase.getFontSize() * (52.f + 1.f)));
+                              juce::roundToInt(uiBase.getFontSize() * (ColourSettingPanel::heightP + 1.f)));
         controlPanel.setBounds(0, 0,
                                juce::roundToInt(bound.getWidth()),
-                               juce::roundToInt(uiBase.getFontSize() * (16.f + 1.f)));
+                               juce::roundToInt(uiBase.getFontSize() * (ControlSettingPanel::heightP + 1.f)));
         otherPanel.setBounds(0, 0,
                              juce::roundToInt(bound.getWidth()),
-                             juce::roundToInt(uiBase.getFontSize() * (16.f + 1.f)));
+                             juce::roundToInt(uiBase.getFontSize() * (OtherUISettingPanel::heightP + 1.f)));
 
         viewPort.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
         const auto leftBound = bound.removeFromLeft(

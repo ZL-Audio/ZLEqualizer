@@ -21,13 +21,14 @@ namespace zlPanel {
           sumCurveSlider("Sum", base),
           defaultPassFilterSlopeBox("", zlState::defaultPassFilterSlope::choices, base) {
         juce::ignoreUnused(pRef);
-        nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
         refreshRateLabel.setText("Refresh Rate", juce::dontSendNotification);
+        refreshRateLabel.setJustificationType(juce::Justification::centredRight);
         refreshRateLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(refreshRateLabel);
         addAndMakeVisible(refreshRateBox);
         fftLabel.setText("FFT", juce::dontSendNotification);
+        fftLabel.setJustificationType(juce::Justification::centredRight);
         fftLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(fftLabel);
         fftTiltSlider.getSlider().setNormalisableRange(zlState::fftExtraTilt::doubleRange);
@@ -39,6 +40,7 @@ namespace zlPanel {
         addAndMakeVisible(fftSpeedSlider);
         addAndMakeVisible(fftOrderBox);
         curveThickLabel.setText("Curve Thickness", juce::dontSendNotification);
+        curveThickLabel.setJustificationType(juce::Justification::centredRight);
         curveThickLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(curveThickLabel);
         singleCurveSlider.getSlider().setNormalisableRange(zlState::singleCurveThickness::doubleRange);
@@ -48,6 +50,7 @@ namespace zlPanel {
         addAndMakeVisible(singleCurveSlider);
         addAndMakeVisible(sumCurveSlider);
         defaultPassFilterSlopeLabel.setText("Default Pass Filter Slope", juce::dontSendNotification);
+        defaultPassFilterSlopeLabel.setJustificationType(juce::Justification::centredRight);
         defaultPassFilterSlopeLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(defaultPassFilterSlopeLabel);
         addAndMakeVisible(defaultPassFilterSlopeBox);

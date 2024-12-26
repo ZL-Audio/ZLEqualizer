@@ -16,6 +16,8 @@
 namespace zlPanel {
     class ColourSettingPanel final : public juce::Component {
     public:
+        static constexpr float heightP = 52.f;
+
         explicit ColourSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
         ~ColourSettingPanel() override;
@@ -63,6 +65,20 @@ namespace zlPanel {
             "Tag Colour",
             "Gain Colour",
         };
+
+        std::array<zlInterface::colourIdx, numSelectors> colourIdx {
+            zlInterface::colourIdx::textColour,
+            zlInterface::colourIdx::backgroundColour,
+            zlInterface::colourIdx::shadowColour,
+            zlInterface::colourIdx::glowColour,
+            zlInterface::colourIdx::preColour,
+            zlInterface::colourIdx::postColour,
+            zlInterface::colourIdx::sideColour,
+            zlInterface::colourIdx::gridColour,
+            zlInterface::colourIdx::tagColour,
+            zlInterface::colourIdx::gainColour
+        };
+
         std::array<std::string, numSelectors> tagNames{
             "text_colour",
             "background_colour",
@@ -73,6 +89,7 @@ namespace zlPanel {
             "side_colour",
             "grid_colour",
         };
+
         juce::Label cMap1Label, cMap2Label;
         zlInterface::ColourMapSelector cMap1Selector, cMap2Selector;
         juce::Label importLabel, exportLabel;

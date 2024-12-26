@@ -36,27 +36,31 @@ namespace zlPanel {
         if (!settingDirectory.isDirectory()) {
             settingDirectory.createDirectory();
         }
-        nameLAF.setJustification(juce::Justification::centredRight);
         nameLAF.setFontScale(zlInterface::FontHuge);
         for (size_t i = 0; i < numSelectors; ++i) {
             selectorLabels[i].setText(selectorNames[i], juce::dontSendNotification);
+            selectorLabels[i].setJustificationType(juce::Justification::centredRight);
             selectorLabels[i].setLookAndFeel(&nameLAF);
             addAndMakeVisible(selectorLabels[i]);
             addAndMakeVisible(selectors[i]);
         }
         cMap1Label.setText("Colour Map 1", juce::dontSendNotification);
+        cMap1Label.setJustificationType(juce::Justification::centredRight);
         cMap1Label.setLookAndFeel(&nameLAF);
         addAndMakeVisible(cMap1Label);
         addAndMakeVisible(cMap1Selector);
         cMap2Label.setText("Colour Map 2", juce::dontSendNotification);
+        cMap2Label.setJustificationType(juce::Justification::centredRight);
         cMap2Label.setLookAndFeel(&nameLAF);
         addAndMakeVisible(cMap2Label);
         addAndMakeVisible(cMap2Selector);
-        importLabel.setText("Import", juce::dontSendNotification);
+        importLabel.setText("Import Colours", juce::dontSendNotification);
+        importLabel.setJustificationType(juce::Justification::centred);
         importLabel.setLookAndFeel(&nameLAF);
         importLabel.addMouseListener(this, false);
         addAndMakeVisible(importLabel);
-        exportLabel.setText("Export", juce::dontSendNotification);
+        exportLabel.setText("Export Colours", juce::dontSendNotification);
+        exportLabel.setJustificationType(juce::Justification::centred);
         exportLabel.setLookAndFeel(&nameLAF);
         exportLabel.addMouseListener(this, false);
         addAndMakeVisible(exportLabel);
@@ -70,7 +74,7 @@ namespace zlPanel {
 
     void ColourSettingPanel::loadSetting() {
         for (size_t i = 0; i < numSelectors; ++i) {
-            selectors[i]->setColour(uiBase.getColourByIdx(static_cast<zlInterface::colourIdx>(i)));
+            selectors[i]->setColour(uiBase.getColourByIdx(colourIdx[i]));
         }
         cMap1Selector.getBox().setSelectedId(static_cast<int>(uiBase.getCMap1Idx()) + 1);
         cMap2Selector.getBox().setSelectedId(static_cast<int>(uiBase.getCMap2Idx()) + 1);
@@ -78,7 +82,7 @@ namespace zlPanel {
 
     void ColourSettingPanel::saveSetting() {
         for (size_t i = 0; i < numSelectors; ++i) {
-            uiBase.setColourByIdx(static_cast<zlInterface::colourIdx>(i), selectors[i]->getColour());
+            uiBase.setColourByIdx(colourIdx[i], selectors[i]->getColour());
         }
         uiBase.setCMap1Idx(static_cast<size_t>(cMap1Selector.getBox().getSelectedId() - 1));
         uiBase.setCMap2Idx(static_cast<size_t>(cMap2Selector.getBox().getSelectedId() - 1));
@@ -124,7 +128,7 @@ namespace zlPanel {
             auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
             importLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .45f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .10f);
-            exportLabel.setBounds(localBound.removeFromLeft(uiBase.getFontSize() * 5.f).toNearestInt());
+            exportLabel.setBounds(localBound.toNearestInt());
         }
     }
 
@@ -146,9 +150,11 @@ namespace zlPanel {
                                 xmlColour->getIntAttribute("g"),
                                 xmlColour->getIntAttribute("b"),
                                 static_cast<float>(xmlColour->getDoubleAttribute("o")));
-                            selectors[i]->setColour(colour);
+                            uiBase.setColourByIdx(colourIdx[i], colour);
                         }
                     }
+                    uiBase.saveToAPVTS();
+                    loadSetting();
                 }
             });
         } else if (event.originalComponent == &exportLabel) {

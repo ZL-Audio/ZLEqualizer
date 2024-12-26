@@ -17,6 +17,8 @@ namespace zlPanel {
 
 class ControlSettingPanel final : public juce::Component {
 public:
+    static constexpr float heightP = 20.f;
+
     explicit ControlSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
     ~ControlSettingPanel() override;
@@ -28,6 +30,8 @@ public:
     void resetSetting();
 
     void resized() override;
+
+    void mouseDown(const juce::MouseEvent &event) override;
 
 private:
     PluginProcessor &pRef;
@@ -43,6 +47,19 @@ private:
     zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
     juce::Label sliderDoubleClickLabel;
     zlInterface::CompactCombobox sliderDoubleClickBox;
+
+    juce::Label importLabel, exportLabel;
+    std::unique_ptr<juce::FileChooser> myChooser;
+    inline auto static const settingDirectory =
+            juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+            .getChildFile("Audio")
+            .getChildFile("Presets")
+            .getChildFile(JucePlugin_Manufacturer)
+            .getChildFile("Shared Settings");
+
+    void importControls();
+
+    void exportControls();
 };
 
 } // zlPanel

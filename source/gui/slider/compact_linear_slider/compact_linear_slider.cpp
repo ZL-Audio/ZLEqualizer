@@ -28,6 +28,7 @@ namespace zlInterface {
         addAndMakeVisible(slider);
 
         text.setText(getDisplayValue(slider), juce::dontSendNotification);
+        text.setJustificationType(juce::Justification::centred);
         textLookAndFeel.setAlpha(0.f);
         textLookAndFeel.setFontScale(FontHuge);
         text.setLookAndFeel(&textLookAndFeel);
@@ -37,6 +38,7 @@ namespace zlInterface {
 
         // setup label
         label.setText(labelText, juce::dontSendNotification);
+        label.setJustificationType(juce::Justification::centred);
         label.setLookAndFeel(&nameLookAndFeel);
         nameLookAndFeel.setFontScale(FontHuge);
         label.setInterceptsMouseClicks(false, false);

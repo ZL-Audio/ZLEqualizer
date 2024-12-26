@@ -94,6 +94,7 @@ namespace zlPanel {
         name.setLookAndFeel(&nameLAF);
         name.setEditable(false);
         name.setInterceptsMouseClicks(false, false);
+        name.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(name);
     }
 

@@ -34,15 +34,16 @@ namespace zlInterface {
         addAndMakeVisible(slider2);
 
         label.setText(labelText, juce::dontSendNotification);
+        label.setJustificationType(juce::Justification::centred);
         label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
         label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
 
         labelLookAndFeel.setFontScale(1.75f);
         labelLookAndFeel1.setFontScale(FontHuge);
-        labelLookAndFeel1.setJustification(juce::Justification::centredBottom);
+        label1.setJustificationType(juce::Justification::centredBottom);
         labelLookAndFeel1.setAlpha(0.f);
         labelLookAndFeel2.setFontScale(FontHuge);
-        labelLookAndFeel2.setJustification(juce::Justification::centredTop);
+        label2.setJustificationType(juce::Justification::centredTop);
         labelLookAndFeel2.setAlpha(0.f);
 
         label.setLookAndFeel(&labelLookAndFeel);
@@ -110,14 +111,14 @@ namespace zlInterface {
             const auto valueBound2 = labelBound;
             label1.setBounds(valueBound1.toNearestInt());
             label2.setBounds(valueBound2.toNearestInt());
-            labelLookAndFeel1.setJustification(juce::Justification::centredBottom);
-            labelLookAndFeel2.setJustification(juce::Justification::centredTop);
+            label1.setJustificationType(juce::Justification::centredBottom);
+            label2.setJustificationType(juce::Justification::centredTop);
         } else {
             slider2LAF.setEditable(false);
             labelBound = labelBound.withSizeKeepingCentre(labelBound.getWidth(), labelBound.getHeight() * .5f);
             label1.setBounds(labelBound.toNearestInt());
             label2.setBounds(0, 0, 0, 0);
-            labelLookAndFeel1.setJustification(juce::Justification::centred);
+            label1.setJustificationType(juce::Justification::centred);
         }
     }
 
