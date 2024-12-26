@@ -83,6 +83,17 @@ namespace zlEqMatch {
                 filters[i].setGain(sols[idx][1] / gainScale);
                 filters[i].setQ(std::exp(sols[idx][2]));
                 updateDiff(filters[i]);
+                // if mse is already small enough, exit
+                if (mseS[i] < eps) {
+                    for (size_t j = i + 1; j < filters.size(); j++) {
+                        mseS[j] = mseS[i];
+                        filters[j].setFilterType(zlFilter::FilterType::peak);
+                        filters[j].setFreq(1000.);
+                        filters[j].setGain(0.);
+                        filters[j].setQ(0.707);
+                    }
+                    return;
+                }
             }
         }
 
@@ -114,7 +125,7 @@ namespace zlEqMatch {
                 filters[i].setQ(std::exp(sols[idx][2]));
                 updateDiff(filters[i]);
                 // if mse is already small enough, exit
-                if (mseS[i] < eps * 1e-3) {
+                if (mseS[i] < eps) {
                     for (size_t j = i + 1; j < filters.size(); j++) {
                         mseS[j] = mseS[i];
                         filters[j].setFilterType(zlFilter::FilterType::peak);
@@ -211,7 +222,7 @@ namespace zlEqMatch {
                 opt.set_min_objective(func, &optData);
                 opt.set_lower_bounds(mLowerBound);
                 opt.set_upper_bounds(mUpperBound);
-                opt.set_stopval(eps * 1e-3);
+                opt.set_stopval(eps);
                 opt.set_xtol_abs(1e-3);
                 opt.set_population(80);
                 opt.set_maxtime(1);
