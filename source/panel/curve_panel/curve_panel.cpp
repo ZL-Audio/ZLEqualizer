@@ -20,8 +20,8 @@ namespace zlPanel {
           fftPanel(controllerRef.getAnalyzer(), base),
           conflictPanel(controllerRef.getConflictAnalyzer(), base),
           sumPanel(parametersRef, base, controllerRef, baseFilters, mainFilters),
-          soloPanel(parametersRef, parametersNARef, base, controllerRef),
           buttonPanel(processorRef, base),
+          soloPanel(parametersRef, parametersNARef, base, controllerRef, buttonPanel),
           matchPanel(processor.getController().getMatchAnalyzer(), parametersNARef, base),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {

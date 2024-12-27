@@ -48,8 +48,8 @@ namespace zlPanel {
         FFTPanel fftPanel;
         ConflictPanel conflictPanel;
         SumPanel sumPanel;
-        SoloPanel soloPanel;
         ButtonPanel buttonPanel;
+        SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
         MatchPanel matchPanel;
         juce::Time currentT;

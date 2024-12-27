@@ -57,7 +57,9 @@ namespace zlDSP {
 
         void setSolo(size_t idx, bool isSide);
 
-        inline bool getSolo() const { return useSolo.load(); }
+        bool getSolo() const { return useSolo.load(); }
+
+        bool getSoloIsSide() const { return soloSide.load(); }
 
         void clearSolo(size_t idx, bool isSide);
 

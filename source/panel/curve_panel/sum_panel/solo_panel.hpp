@@ -12,28 +12,36 @@
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
+#include "../button_panel/button_panel.hpp"
 
 namespace zlPanel {
-    class SoloPanel final : public juce::Component {
+    class SoloPanel final : public juce::Component,
+                            private juce::AudioProcessorValueTreeState::Listener {
     public:
         SoloPanel(juce::AudioProcessorValueTreeState &parameters,
                   juce::AudioProcessorValueTreeState &parametersNA,
                   zlInterface::UIBase &base,
-                  zlDSP::Controller<double> &controller);
+                  zlDSP::Controller<double> &controller,
+                  ButtonPanel &buttonPanel);
 
         ~SoloPanel() override;
 
         void paint(juce::Graphics &g) override;
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef;
+        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlFilter::IIR<double, zlDSP::Controller<double>::FilterSize> &soloF;
         zlDSP::Controller<double> &controllerRef;
-        double soloFreq{0.}, soloQ{0.};
-        float scale1{.5f}, scale2{.5f};
+        ButtonPanel &buttonPanelRef;
+        float currentX{0.}, currentBW{0.};
+        double soloQ{0.};
+        std::atomic<size_t> selectBandIdx{0};
+        std::vector<std::unique_ptr<zlChore::ParaUpdater>> soloUpdaters, sideSoloUpdaters;
 
         void handleAsyncUpdate();
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
 

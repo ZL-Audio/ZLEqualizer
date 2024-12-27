@@ -25,6 +25,12 @@ namespace zlChore {
             triggerAsyncUpdate();
         }
 
+        void updateSync(const float paraValue) {
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(paraValue);
+            para->endChangeGesture();
+        }
+
     private:
         juce::RangedAudioParameter *para;
         std::atomic<float> value;

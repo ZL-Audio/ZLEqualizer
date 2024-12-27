@@ -30,6 +30,14 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        zlInterface::Dragger &getDragger(const size_t idx) const {
+            return panels[idx]->getDragger();
+        }
+
+        zlInterface::Dragger &getSideDragger(const size_t idx) const {
+            return panels[idx]->getSideDragger();
+        }
+
         void updateDraggers() const {
             for (const auto &p: panels) {
                 p->getDragger().updateButton();
