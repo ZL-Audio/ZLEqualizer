@@ -93,10 +93,6 @@ namespace zlDSP {
 
         zlGain::AutoGain<FloatType> &getAutoGain() { return autoGain; }
 
-        void setDynLink(const bool x) { dynLink.store(x); }
-
-        bool getDynLink() const { return dynLink.load(); }
-
         void setZeroLatency(const bool x) {
             isZeroLatency.store(x);
             triggerAsyncUpdate();
@@ -267,8 +263,6 @@ namespace zlDSP {
         zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer;
 
         zlEqMatch::EqMatchAnalyzer<FloatType> matchAnalyzer;
-
-        std::atomic<bool> dynLink{false};
 
         std::atomic<double> sampleRate{48000};
 

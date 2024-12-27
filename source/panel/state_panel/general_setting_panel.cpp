@@ -19,22 +19,21 @@ namespace zlPanel {
             : parametersRef(parameters),
               uiBase(base),
               filterStructure("", zlDSP::filterStructure::choices, uiBase),
-              zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase),
-              dynLinkC("Dyn Link:", zlDSP::dynLink::choices, uiBase) {
+              zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase) {
             for (auto &c: {&filterStructure}) {
                 addAndMakeVisible(c);
             }
-            for (auto &c: {&zeroLATC, &dynLinkC}) {
+            for (auto &c: {&zeroLATC}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.625f);
                 c->setLabelPos(zlInterface::ClickCombobox::left);
                 addAndMakeVisible(c);
             }
             attach({
-                       &filterStructure.getBox(), &zeroLATC.getCompactBox().getBox(), &dynLinkC.getCompactBox().getBox()
+                       &filterStructure.getBox(), &zeroLATC.getCompactBox().getBox()
                    },
                    {
-                       zlDSP::filterStructure::ID, zlDSP::zeroLatency::ID, zlDSP::dynLink::ID
+                       zlDSP::filterStructure::ID, zlDSP::zeroLatency::ID
                    },
                    parametersRef, boxAttachments);
         }
@@ -46,13 +45,12 @@ namespace zlPanel {
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
 
-            grid.templateRows = {Track(Fr(44)), Track(Fr(44)), Track(Fr(44))};
+            grid.templateRows = {Track(Fr(44)), Track(Fr(44))};
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
                 juce::GridItem(filterStructure).withArea(1, 1),
                 juce::GridItem(zeroLATC).withArea(2, 1),
-                juce::GridItem(dynLinkC).withArea(3, 1),
             };
             grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
             auto bound = getLocalBounds().toFloat();
@@ -65,7 +63,7 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
 
         zlInterface::CompactCombobox filterStructure;
-        zlInterface::ClickCombobox zeroLATC, dynLinkC;
+        zlInterface::ClickCombobox zeroLATC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
     };
 
@@ -120,7 +118,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<GeneralCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 10.f),
-                         juce::roundToInt(uiBase.getFontSize() * 6.6f));//4.3525f));
+                         juce::roundToInt(uiBase.getFontSize() * 4.4f));//4.3525f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

@@ -58,6 +58,11 @@ namespace zlPanel {
             } else {
                 processorRef.getFiltersAttach().turnOffDynamic(currentBand);
             }
+            auto *para = parametersRef.getParameter(
+                zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(static_cast<float>(uiBase.getDynLink()));
+            para->endChangeGesture();
         };
 
         dynLC.setDrawable(dynLeDrawable.get());

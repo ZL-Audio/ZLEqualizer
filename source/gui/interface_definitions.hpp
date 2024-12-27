@@ -360,6 +360,10 @@ namespace zlInterface {
 
         void setFFTOrderIdx(const int x) { fftOrderIdx = x; }
 
+        bool getDynLink() const { return dynLink.load(); }
+
+        void setDynLink(const bool x) { dynLink.store(x); }
+
         juce::ValueTree &getValueTree() { return valueTree; }
 
         juce::var getProperty(const settingIdx idx) const {
@@ -386,6 +390,7 @@ namespace zlInterface {
         std::atomic<bool> isMouseWheelShiftReverse{false};
         std::atomic<bool> isSliderDoubleClickOpenEditor{false};
         std::atomic<int> defaultPassFilterSlope{1};
+        std::atomic<bool> dynLink{true};
 
         float loadPara(const std::string &id) const {
             return state.getRawParameterValue(id)->load();

@@ -6,6 +6,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ## 0.5.0
 
+- BREAKING: change dynamic link to UI setting
 - add Equalization Match (See the manual for details)
 - add UI setting import/export
 - fix incorrect channel layout (See #138)

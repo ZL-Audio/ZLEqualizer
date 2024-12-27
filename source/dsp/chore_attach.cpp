@@ -80,8 +80,6 @@ namespace zlDSP {
             controllerRef.getGainDSP().setGainDecibels(static_cast<FloatType>(newValue));
         } else if (parameterID == filterStructure::ID) {
             controllerRef.setFilterStructure(static_cast<filterStructure::FilterStructure>(newValue));
-        } else if (parameterID == dynLink::ID) {
-            controllerRef.setDynLink(newValue > .5f);
         } else if (parameterID == dynHQ::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
                 controllerRef.getFilter(i).setIsPerSample(newValue > .5f);

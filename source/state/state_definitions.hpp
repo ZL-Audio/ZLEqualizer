@@ -399,6 +399,16 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
+    class dynLink : public ChoiceParameters<dynLink> {
+    public:
+        auto static constexpr ID = "global_dyn_link";
+        auto static constexpr name = "Global Dynamic Link";
+        inline auto static const choices = juce::StringArray{
+            "OFF", "ON"
+        };
+        int static constexpr defaultI = 1;
+    };
+
     class colourMapIdx : public ChoiceParameters<colourMapIdx> {
     public:
         auto static constexpr ID = "colour_map_idx";
@@ -468,7 +478,7 @@ namespace zlState {
                    refreshRate::get(),
                    ffTOrder::get(), fftExtraTilt::get(), fftExtraSpeed::get(),
                    singleCurveThickness::get(), sumCurveThickness::get(),
-                   defaultPassFilterSlope::get());
+                   defaultPassFilterSlope::get(), dynLink::get());
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);

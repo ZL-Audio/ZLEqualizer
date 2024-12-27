@@ -57,8 +57,6 @@ namespace zlDSP {
         updateSideFQ(idx);
         const auto paraDynBypass = parameterRef.getParameter(zlDSP::appendSuffix(dynamicBypass::ID, idx));
         updateParaNotifyHost(paraDynBypass, 0.f);
-        const auto paraDynLink = parameterRef.getParameter(zlDSP::appendSuffix(singleDynLink::ID, idx));
-        updateParaNotifyHost(paraDynLink, static_cast<float>(controllerRef.getDynLink()));
         const auto paraDynLearn = parameterRef.getParameter(zlDSP::appendSuffix(dynamicLearn::ID, idx));
         updateParaNotifyHost(paraDynLearn, 1.f);
         const auto paraThreshold = parameterRef.getParameter(zlDSP::appendSuffix(threshold::ID, idx));

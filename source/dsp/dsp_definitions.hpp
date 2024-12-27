@@ -443,16 +443,6 @@ namespace zlDSP {
         int static constexpr defaultI = 0;
     };
 
-    class dynLink : public ChoiceParameters<dynLink> {
-    public:
-        auto static constexpr ID = "global_dyn_link";
-        auto static constexpr name = "Global Dynamic Link";
-        inline auto static const choices = juce::StringArray{
-            "OFF", "ON"
-        };
-        int static constexpr defaultI = 0;
-    };
-
     class dynHQ : public ChoiceParameters<dynHQ> {
     public:
         auto static constexpr ID = "dyn_hq";
@@ -483,7 +473,7 @@ namespace zlDSP {
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
                    effectON::get(), phaseFlip::get(), staticAutoGain::get(), autoGain::get(),
                    scale::get(), outputGain::get(),
-                   filterStructure::get(), dynLink::get(), dynHQ::get(), zeroLatency::get());
+                   filterStructure::get(), dynHQ::get(), zeroLatency::get());
         return layout;
     }
 
