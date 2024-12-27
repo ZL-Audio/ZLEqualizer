@@ -19,7 +19,8 @@ namespace zlPanel {
           fftOrderBox("order", zlState::ffTOrder::choices, base),
           singleCurveSlider("Single", base),
           sumCurveSlider("Sum", base),
-          defaultPassFilterSlopeBox("", zlState::defaultPassFilterSlope::choices, base) {
+          defaultPassFilterSlopeBox("", zlState::defaultPassFilterSlope::choices, base),
+          dynLinkBox("", zlState::dynLink::choices, base) {
         juce::ignoreUnused(pRef);
         nameLAF.setFontScale(zlInterface::FontHuge);
         refreshRateLabel.setText("Refresh Rate", juce::dontSendNotification);
@@ -54,13 +55,11 @@ namespace zlPanel {
         defaultPassFilterSlopeLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(defaultPassFilterSlopeLabel);
         addAndMakeVisible(defaultPassFilterSlopeBox);
-    }
-
-    OtherUISettingPanel::~OtherUISettingPanel() {
-        refreshRateLabel.setLookAndFeel(nullptr);
-        fftLabel.setLookAndFeel(nullptr);
-        curveThickLabel.setLookAndFeel(nullptr);
-        defaultPassFilterSlopeLabel.setLookAndFeel(nullptr);
+        dynLinkLabel.setText("Default Dynamic Link", juce::dontSendNotification);
+        dynLinkLabel.setJustificationType(juce::Justification::centredRight);
+        dynLinkLabel.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(dynLinkLabel);
+        addAndMakeVisible(dynLinkBox);
     }
 
     void OtherUISettingPanel::loadSetting() {
@@ -71,6 +70,7 @@ namespace zlPanel {
         singleCurveSlider.getSlider().setValue(uiBase.getSingleCurveThickness());
         sumCurveSlider.getSlider().setValue(uiBase.getSumCurveThickness());
         defaultPassFilterSlopeBox.getBox().setSelectedId(uiBase.getDefaultPassFilterSlope() + 1);
+        dynLinkBox.getBox().setSelectedId(static_cast<int>(uiBase.getDynLink()) + 1);
     }
 
     void OtherUISettingPanel::saveSetting() {
@@ -81,6 +81,7 @@ namespace zlPanel {
         uiBase.setSingleCurveThickness(static_cast<float>(singleCurveSlider.getSlider().getValue()));
         uiBase.setSumCurveThickness(static_cast<float>(sumCurveSlider.getSlider().getValue()));
         uiBase.setDefaultPassFilterSlope(defaultPassFilterSlopeBox.getBox().getSelectedId() - 1);
+        uiBase.setDynLink(dynLinkBox.getBox().getSelectedId() == 2);
         uiBase.saveToAPVTS();
     }
 
@@ -122,6 +123,13 @@ namespace zlPanel {
             localBound.removeFromLeft(bound.getWidth() * .05f);
             const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
             defaultPassFilterSlopeBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+        } {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            dynLinkLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            dynLinkBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
     }
 } // zlPanel

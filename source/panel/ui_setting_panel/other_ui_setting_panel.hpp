@@ -17,11 +17,9 @@ namespace zlPanel {
 
 class OtherUISettingPanel final : public juce::Component {
 public:
-    static constexpr float heightP = 16.f;
+    static constexpr float heightP = 20.f;
 
     explicit OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
-
-    ~OtherUISettingPanel() override;
 
     void loadSetting();
 
@@ -45,6 +43,8 @@ private:
     zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
     juce::Label defaultPassFilterSlopeLabel;
     zlInterface::CompactCombobox defaultPassFilterSlopeBox;
+    juce::Label dynLinkLabel;
+    zlInterface::CompactCombobox dynLinkBox;
 };
 
 } // zlPanel
