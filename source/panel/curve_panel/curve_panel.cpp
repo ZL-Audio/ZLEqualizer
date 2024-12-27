@@ -105,15 +105,22 @@ namespace zlPanel {
         }
     }
 
-    void CurvePanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
-        const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
-        showMatchPanel.store(f);
-        matchPanel.setVisible(f);
-        buttonPanel.setVisible(!f);
-        soloPanel.setVisible(!f);
+    void CurvePanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &property) {
+        if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchPanelShow)]) {
+            const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
+            showMatchPanel.store(f);
+            matchPanel.setVisible(f);
+            buttonPanel.setVisible(!f);
+            soloPanel.setVisible(!f);
+        } else if (property == zlInterface::identifiers[static_cast<size_t>(
+                       zlInterface::settingIdx::uiSettingPanelShow)]) {
+            const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::uiSettingPanelShow));
+            showUISettingsPanel.store(f);
+        }
     }
 
     void CurvePanel::repaintCallBack() {
+        if (showUISettingsPanel.load()) { return; }
         const juce::Time nowT = juce::Time::getCurrentTime();
         const auto refreshRateMul = showMatchPanel.load() ? static_cast<juce::int64>(2) : static_cast<juce::int64>(1);
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {

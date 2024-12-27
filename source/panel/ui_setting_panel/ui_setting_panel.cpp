@@ -27,6 +27,7 @@ namespace zlPanel {
           labelLAF(uiBase) {
         juce::ignoreUnused(pRef);
         setOpaque(true);
+        uiBase.setProperty(zlInterface::settingIdx::uiSettingPanelShow, false);
         addAndMakeVisible(saveButton);
         addAndMakeVisible(closeButton);
         addAndMakeVisible(resetButton);
@@ -179,5 +180,9 @@ namespace zlPanel {
                 break;
             }
         }
+    }
+
+    void UISettingPanel::visibilityChanged() {
+        uiBase.setProperty(zlInterface::settingIdx::uiSettingPanelShow, isVisible());
     }
 } // zlPanel
