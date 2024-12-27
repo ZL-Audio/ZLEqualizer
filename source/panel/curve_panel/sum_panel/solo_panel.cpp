@@ -43,15 +43,28 @@ namespace zlPanel {
             return;
         }
         const size_t bandIdx = selectBandIdx.load();
-        const auto x = buttonPanelRef.getDragger(selectBandIdx.load()).getButton().getBounds().getCentreX();
-        if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
-            currentX = x;
-            handleAsyncUpdate();
-        }
+
         g.setColour(uiBase.getTextColor().withAlpha(.1f));
         auto bound = getLocalBounds().toFloat();
         if (controllerRef.getSoloIsSide()) {
+            const auto x = buttonPanelRef.getSideDragger(selectBandIdx.load()).getButton().getBounds().getCentreX();
+            if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
+                currentX = x;
+                handleAsyncUpdate();
+            }
+            const auto boundWidth = bound.getWidth();
+            const auto leftWidth = currentX - currentBW * boundWidth;
+            const auto rightWidth = boundWidth - currentX - currentBW * boundWidth;
+            const auto leftArea = bound.removeFromLeft(leftWidth);
+            const auto rightArea = bound.removeFromRight(rightWidth);
+            g.fillRect(leftArea);
+            g.fillRect(rightArea);
         } else {
+            const auto x = buttonPanelRef.getDragger(selectBandIdx.load()).getButton().getBounds().getCentreX();
+            if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
+                currentX = x;
+                handleAsyncUpdate();
+            }
             const auto &f = controllerRef.getMainIdealFilter(bandIdx);
             switch (f.getFilterType()) {
                 case zlFilter::highPass:
