@@ -45,6 +45,9 @@ namespace zlPanel {
                 p->getSideDragger().updateButton();
                 p->updateDraggers();
             }
+            for (const auto &p: linkButtons) {
+                p->updateBound();
+            }
         }
 
         void resized() override;

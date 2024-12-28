@@ -17,25 +17,24 @@
 
 namespace zlPanel {
     class LinkButtonPanel final : public juce::Component,
-                                  private juce::AudioProcessorValueTreeState::Listener,
-                                  private juce::AsyncUpdater {
+                                  private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit LinkButtonPanel(size_t idx,
                                  juce::AudioProcessorValueTreeState &parameters,
                                  juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base);
+                                 zlInterface::UIBase &base,
+                                 zlInterface::Dragger &sideDragger);
 
         ~LinkButtonPanel() override;
 
-        void paint(juce::Graphics &g) override;
-
-        void resized() override;
-
         zlInterface::CompactButton &getButton() { return dynLinkC; }
+
+        void updateBound();
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
+        zlInterface::Dragger &sideDraggerRef;
         zlInterface::CompactButton dynLinkC;
         juce::Rectangle<float> buttonBound;
         std::atomic<bool> buttonChanged{false};
@@ -46,14 +45,10 @@ namespace zlPanel {
         std::atomic<bool> isDynamicON{false}, isSelected{false};
         std::atomic<float> sideFreq{1000.f};
 
-        constexpr static std::array IDs{zlDSP::sideFreq::ID, zlDSP::dynamicON::ID};
+        constexpr static std::array IDs{zlDSP::dynamicON::ID};
         constexpr static std::array NAIDs{zlState::selectedBandIdx::ID};
 
-        void updateBound();
-
         void parameterChanged(const juce::String &parameterID, float newValue) override;
-
-        void handleAsyncUpdate() override;
     };
 } // zlPanel
 

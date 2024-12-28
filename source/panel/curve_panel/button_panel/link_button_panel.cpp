@@ -10,10 +10,14 @@
 #include "link_button_panel.hpp"
 
 namespace zlPanel {
-    LinkButtonPanel::LinkButtonPanel(size_t idx, juce::AudioProcessorValueTreeState &parameters,
-                                     juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
+    LinkButtonPanel::LinkButtonPanel(const size_t idx,
+                                     juce::AudioProcessorValueTreeState &parameters,
+                                     juce::AudioProcessorValueTreeState &parametersNA,
+                                     zlInterface::UIBase &base,
+                                     zlInterface::Dragger &sideDragger)
         : parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
+          sideDraggerRef(sideDragger),
           dynLinkC("L", base),
           linkDrawable(juce::Drawable::createFromImageData(BinaryData::linksfill_svg, BinaryData::linksfill_svgSize)),
           bandIdx(idx) {
@@ -25,7 +29,7 @@ namespace zlPanel {
         setInterceptsMouseClicks(false, true);
 
         for (auto &ID: IDs) {
-            const auto suffixID = zlDSP::appendSuffix(ID, bandIdx.load());
+            const auto suffixID = zlDSP::appendSuffix(ID, idx);
             parametersRef.addParameterListener(suffixID, this);
             parameterChanged(suffixID, parametersRef.getRawParameterValue(suffixID)->load());
         }
@@ -36,23 +40,13 @@ namespace zlPanel {
     }
 
     LinkButtonPanel::~LinkButtonPanel() {
+        const auto idx = bandIdx.load();
         for (auto &ID: IDs) {
-            parametersRef.removeParameterListener(zlDSP::appendSuffix(ID, bandIdx.load()), this);
+            parametersRef.removeParameterListener(zlDSP::appendSuffix(ID, idx), this);
         }
         for (auto &ID: NAIDs) {
             parametersNARef.removeParameterListener(ID, this);
         }
-    }
-
-    void LinkButtonPanel::paint(juce::Graphics &g) {
-        juce::ignoreUnused(g);
-        if (buttonChanged.exchange(false) && dynLinkC.isVisible()) {
-            dynLinkC.setBounds(buttonBound.toNearestInt());
-        }
-    }
-
-    void LinkButtonPanel::resized() {
-        handleAsyncUpdate();
     }
 
     void LinkButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -63,24 +57,18 @@ namespace zlPanel {
         } else if (parameterID.startsWith(zlState::selectedBandIdx::ID)) {
             isSelected.store(static_cast<size_t>(newValue) == bandIdx.load());
         }
-        triggerAsyncUpdate();
-    }
-
-    void LinkButtonPanel::handleAsyncUpdate() {
-        updateBound();
     }
 
     void LinkButtonPanel::updateBound() {
         if (isSelected.load() && isDynamicON.load()) {
-            auto dynPos = std::log(sideFreq.load() / 10.f) / std::log(2200.f);
-            dynPos = juce::jlimit(0.025f, 0.975f, dynPos);
+            const auto dynPos = static_cast<float>(sideDraggerRef.getButton().getBounds().getCentreX());
             buttonBound = juce::Rectangle<float>{2.5f * uiBase.getFontSize(), 2.5f * uiBase.getFontSize()};
             auto bound = getLocalBounds().toFloat();
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 8 * uiBase.getFontSize());
             buttonBound = buttonBound.withCentre(
-                {bound.getX() + dynPos * bound.getWidth(), bound.getBottom()}
+                {dynPos, bound.getBottom()}
             );
-            buttonChanged.store(true);
+            dynLinkC.setBounds(buttonBound.toNearestInt());
             dynLinkC.setVisible(true);
         } else {
             dynLinkC.setVisible(false);

@@ -47,7 +47,8 @@ namespace zlPanel {
         g.setColour(uiBase.getTextColor().withAlpha(.1f));
         auto bound = getLocalBounds().toFloat();
         if (controllerRef.getSoloIsSide()) {
-            const auto x = buttonPanelRef.getSideDragger(selectBandIdx.load()).getButton().getBounds().getCentreX();
+            const auto x = static_cast<float>(
+                buttonPanelRef.getSideDragger(selectBandIdx.load()).getButton().getBounds().getCentreX());
             if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
                 currentX = x;
                 handleAsyncUpdate();
@@ -60,7 +61,8 @@ namespace zlPanel {
             g.fillRect(leftArea);
             g.fillRect(rightArea);
         } else {
-            const auto x = buttonPanelRef.getDragger(selectBandIdx.load()).getButton().getBounds().getCentreX();
+            const auto x = static_cast<float>(
+                buttonPanelRef.getSideDragger(selectBandIdx.load()).getButton().getBounds().getCentreX());
             if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
                 currentX = x;
                 handleAsyncUpdate();

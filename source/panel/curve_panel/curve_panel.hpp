@@ -55,7 +55,8 @@ namespace zlPanel {
         juce::Time currentT;
         juce::VBlankAttachment vblank;
 
-        std::atomic<bool> showMatchPanel{false}, showUISettingsPanel{false};
+        std::atomic<bool> showMatchPanel{false};
+        bool showUISettingsPanel{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

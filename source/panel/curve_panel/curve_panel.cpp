@@ -115,12 +115,12 @@ namespace zlPanel {
         } else if (property == zlInterface::identifiers[static_cast<size_t>(
                        zlInterface::settingIdx::uiSettingPanelShow)]) {
             const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::uiSettingPanelShow));
-            showUISettingsPanel.store(f);
+            showUISettingsPanel = f;
         }
     }
 
     void CurvePanel::repaintCallBack() {
-        if (showUISettingsPanel.load()) { return; }
+        if (showUISettingsPanel) { return; }
         const juce::Time nowT = juce::Time::getCurrentTime();
         const auto refreshRateMul = showMatchPanel.load() ? static_cast<juce::int64>(2) : static_cast<juce::int64>(1);
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
