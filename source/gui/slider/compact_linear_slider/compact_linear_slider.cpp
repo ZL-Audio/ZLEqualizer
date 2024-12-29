@@ -61,20 +61,23 @@ namespace zlInterface {
     }
 
     void CompactLinearSlider::mouseUp(const juce::MouseEvent &event) {
-        if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
+        if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown() || event.mods.isRightButtonDown()) {
             return;
         }
         slider.mouseUp(event);
     }
 
     void CompactLinearSlider::mouseDown(const juce::MouseEvent &event) {
-        if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
+        if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown() || event.mods.isRightButtonDown()) {
             return;
         }
         slider.mouseDown(event);
     }
 
     void CompactLinearSlider::mouseDrag(const juce::MouseEvent &event) {
+        if (event.mods.isRightButtonDown()) {
+            return;
+        }
         slider.mouseDrag(event);
     }
 
