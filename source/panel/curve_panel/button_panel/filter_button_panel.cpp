@@ -342,16 +342,29 @@ namespace zlPanel {
 
     void FilterButtonPanel::mouseDoubleClick(const juce::MouseEvent &event) {
         if (event.mods.isCommandDown()) {
-            const auto paraID = zlDSP::appendSuffix(zlDSP::dynamicON::ID, band.load());
+            const auto currentBand = band.load();
+            // turn on/off current band dynamic
+            const auto paraID = zlDSP::appendSuffix(zlDSP::dynamicON::ID, currentBand);
             const auto newValue = 1.f - parametersRef.getRawParameterValue(paraID)->load();
-            auto *para = parametersRef.getParameter(paraID);
-            para->beginChangeGesture();
-            para->setValueNotifyingHost(newValue);
-            para->endChangeGesture();
+            {
+                auto *para = parametersRef.getParameter(paraID);
+                para->beginChangeGesture();
+                para->setValueNotifyingHost(newValue);
+                para->endChangeGesture();
+            }
+            float dynLinkValue = 0.0;
             if (newValue > 0.5f) {
-                processorRef.getFiltersAttach().turnOnDynamic(band.load());
+                processorRef.getFiltersAttach().turnOnDynamic(currentBand);
+                dynLinkValue = static_cast<float>(uiBase.getDynLink());
             } else {
-                processorRef.getFiltersAttach().turnOffDynamic(band.load());
+                processorRef.getFiltersAttach().turnOffDynamic(currentBand);
+            }
+            {
+                auto *para = parametersRef.getParameter(
+                    zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
+                para->beginChangeGesture();
+                para->setValueNotifyingHost(dynLinkValue);
+                para->endChangeGesture();
             }
         }
     }
