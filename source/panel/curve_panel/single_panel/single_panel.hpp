@@ -16,7 +16,6 @@
 #include "../../../state/state_definitions.hpp"
 #include "side_panel.hpp"
 #include "reset_attach.hpp"
-#include "sidefq_attach.hpp"
 
 namespace zlPanel {
     class SinglePanel final : public juce::Component,
@@ -29,7 +28,8 @@ namespace zlPanel {
                              zlDSP::Controller<double> &controller,
                              zlFilter::Ideal<double, 16> &baseFilter,
                              zlFilter::Ideal<double, 16> &targetFilter,
-                             zlFilter::Ideal<double, 16> &mainFilter);
+                             zlFilter::Ideal<double, 16> &mainFilter,
+                             zlInterface::Dragger &sideDragger);
 
         ~SinglePanel() override;
 
@@ -57,6 +57,10 @@ namespace zlPanel {
         void run();
 
         void lookAndFeelChanged() override;
+
+        void updateDragger() {
+            sidePanel.updateDragger();
+        }
 
     private:
         juce::Path curvePath, shadowPath, dynPath;

@@ -24,38 +24,36 @@ namespace zlPanel {
                            juce::AudioProcessorValueTreeState &parameters,
                            juce::AudioProcessorValueTreeState &parametersNA,
                            zlInterface::UIBase &base,
-                           zlDSP::Controller<double> &controller);
+                           zlDSP::Controller<double> &controller,
+                           zlInterface::Dragger &sideDragger);
 
         ~SidePanel() override;
 
         void paint(juce::Graphics &g) override;
 
-        bool checkRepaint();
-
         void lookAndFeelChanged() override;
+
+        void updateDragger();
 
     private:
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlFilter::IIR<double, zlDSP::Controller<double>::FilterSize> &sideF;
+        zlInterface::Dragger &sideDraggerRef;
         std::atomic<bool> dynON, selected, actived;
-        std::atomic<bool> toRepaint{false};
 
         static constexpr std::array changeIDs{
-            zlDSP::dynamicON::ID, zlDSP::sideFreq::ID, zlDSP::sideQ::ID
+            zlDSP::dynamicON::ID, zlDSP::sideQ::ID
         };
 
         juce::Colour colour;
 
-        std::atomic<double> sideFreq{1000.0}, sideQ{0.707};
-        std::atomic<float> scale1{.5f}, scale2{.5f};
-        std::atomic<bool> skipRepaint{false};
+        std::atomic<double> sideQ{0.707};
         std::atomic<bool> toUpdate{false};
+        float currentBW;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
-
-        void update();
     };
 } // zlPanel
 

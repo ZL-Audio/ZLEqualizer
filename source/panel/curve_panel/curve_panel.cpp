@@ -38,7 +38,8 @@ namespace zlPanel {
             const auto idx = zlState::bandNUM - i - 1;
             singlePanels[i] =
                     std::make_unique<SinglePanel>(idx, parametersRef, parametersNARef, base, controllerRef,
-                                                  baseFilters[idx], targetFilters[idx], mainFilters[idx]);
+                                                  baseFilters[idx], targetFilters[idx], mainFilters[idx],
+                                                  buttonPanel.getSideDragger(idx));
             addAndMakeVisible(*singlePanels[i]);
         }
         addAndMakeVisible(sumPanel);
@@ -126,6 +127,9 @@ namespace zlPanel {
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
+            for (const auto &panel : singlePanels) {
+                panel->updateDragger();
+            }
             repaint();
             currentT = nowT;
         }

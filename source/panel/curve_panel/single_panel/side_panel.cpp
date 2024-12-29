@@ -10,34 +10,33 @@
 #include "side_panel.hpp"
 
 namespace zlPanel {
-    SidePanel::SidePanel(size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
-                         juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base,
-                         zlDSP::Controller<double> &controller)
+    SidePanel::SidePanel(const size_t bandIdx,
+                         juce::AudioProcessorValueTreeState &parameters,
+                         juce::AudioProcessorValueTreeState &parametersNA,
+                         zlInterface::UIBase &base,
+                         zlDSP::Controller<double> &controller,
+                         zlInterface::Dragger &sideDragger)
         : idx(bandIdx),
           parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
-          sideF(controller.getFilter(bandIdx).getSideFilter()) {
+          sideF(controller.getFilter(bandIdx).getSideFilter()),
+          sideDraggerRef(sideDragger) {
         setInterceptsMouseClicks(false, false);
         const std::string suffix = zlDSP::appendSuffix("", idx);
-        skipRepaint.store(true);
         parameterChanged(zlDSP::dynamicON::ID + suffix,
                          parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
-        parameterChanged(zlDSP::sideFreq::ID + suffix,
-                         parametersRef.getRawParameterValue(zlDSP::sideFreq::ID + suffix)->load());
         parameterChanged(zlDSP::sideQ::ID + suffix,
                          parametersRef.getRawParameterValue(zlDSP::sideQ::ID + suffix)->load());
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
         parameterChanged(zlState::active::ID + suffix,
                          parametersNARef.getRawParameterValue(zlState::active::ID + suffix)->load());
-        skipRepaint.store(false);
 
         for (auto &id: changeIDs) {
             parametersRef.addParameterListener(id + suffix, this);
         }
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parametersNARef.addParameterListener(zlState::active::ID + suffix, this);
-        update();
         lookAndFeelChanged();
     }
 
@@ -51,27 +50,16 @@ namespace zlPanel {
     }
 
     void SidePanel::paint(juce::Graphics &g) {
-        if (!selected.load() || !actived.load() || !dynON.load()) {
+        if (!isVisible()) {
             return;
-        }
-        if (toUpdate.exchange(false)) {
-            update();
         }
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 4 * uiBase.getFontSize());
-        const auto x1 = scale1.load() * bound.getWidth();
-        const auto x2 = scale2.load() * bound.getWidth();
 
+        const auto x = static_cast<float>(sideDraggerRef.getButton().getBounds().getCentreX());
         const auto thickness = uiBase.getFontSize() * 0.15f;
         g.setColour(colour);
-        g.drawLine(x1, bound.getBottom(), x2, bound.getBottom(), thickness);
-    }
-
-    bool SidePanel::checkRepaint() {
-        if (toRepaint.exchange(false)) {
-            return true;
-        }
-        return false;
+        g.drawLine(x - currentBW, bound.getBottom(), x + currentBW, bound.getBottom(), thickness);
     }
 
     void SidePanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -82,27 +70,24 @@ namespace zlPanel {
                 actived.store(newValue > .5f);
             } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
                 dynON.store(newValue > .5f);
-            } else if (parameterID.startsWith(zlDSP::sideFreq::ID)) {
-                sideFreq.store(newValue);
-                toUpdate.store(true);
             } else if (parameterID.startsWith(zlDSP::sideQ::ID)) {
                 sideQ.store(newValue);
                 toUpdate.store(true);
             }
         }
-        if (!skipRepaint.load()) {
-            toRepaint.store(true);
-        }
     }
 
-    void SidePanel::update() {
-        const auto q = sideQ.load(), freq = sideFreq.load();
-        const auto bw = 2 * std::asinh(0.5f / q) / std::log(2.f);
-        const auto scale = std::pow(2.f, bw / 2.f);
-        const auto freq1 = freq / scale, freq2 = freq * scale;
-
-        scale1.store(std::log(static_cast<float>(freq1) / 10.f) / std::log(2200.f));
-        scale2.store(std::log(static_cast<float>(freq2) / 10.f) / std::log(2200.f));
+    void SidePanel::updateDragger() {
+        if (!selected.load() || !actived.load() || !dynON.load()) {
+            setVisible(false);
+            return;
+        } else {
+            setVisible(true);
+        }
+        if (toUpdate.exchange(false)) {
+            const auto bw = std::asinh(0.5f / sideQ.load());
+            currentBW = static_cast<float>(bw) / std::log(2200.f) * getLocalBounds().toFloat().getWidth();
+        }
     }
 
     void SidePanel::lookAndFeelChanged() {

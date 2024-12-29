@@ -62,7 +62,7 @@ namespace zlPanel {
             g.fillRect(rightArea);
         } else {
             const auto x = static_cast<float>(
-                buttonPanelRef.getSideDragger(selectBandIdx.load()).getButton().getBounds().getCentreX());
+                buttonPanelRef.getDragger(selectBandIdx.load()).getButton().getBounds().getCentreX());
             if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
                 currentX = x;
                 handleAsyncUpdate();

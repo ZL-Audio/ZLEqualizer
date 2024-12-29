@@ -17,12 +17,13 @@ namespace zlPanel {
                              zlDSP::Controller<double> &controller,
                              zlFilter::Ideal<double, 16> &baseFilter,
                              zlFilter::Ideal<double, 16> &targetFilter,
-                             zlFilter::Ideal<double, 16> &mainFilter)
+                             zlFilter::Ideal<double, 16> &mainFilter,
+                             zlInterface::Dragger &sideDragger)
         : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), controllerRef(controller),
           resetAttach(bandIdx, parameters, parametersNA),
           baseF(baseFilter), targetF(targetFilter), mainF(mainFilter),
-          sidePanel(bandIdx, parameters, parametersNA, base, controller) {
+          sidePanel(bandIdx, parameters, parametersNA, base, controller, sideDragger) {
         curvePath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
         shadowPath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
         dynPath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 6 + 12));
@@ -157,7 +158,7 @@ namespace zlPanel {
         } else if (toRepaint.exchange(false)) {
             return true;
         }
-        return sidePanel.checkRepaint();
+        return false;
     }
 
     void SinglePanel::parameterChanged(const juce::String &parameterID, float newValue) {
