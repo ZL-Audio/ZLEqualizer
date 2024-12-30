@@ -126,6 +126,7 @@ namespace zlPanel {
             analyzer.setON(false);
             matchRunner.start();
             uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, true);
+            uiBase.setProperty(zlInterface::settingIdx::matchFitRunning, true);
         };
         resetDefault();
     }

@@ -82,6 +82,7 @@ namespace zlPanel {
             slider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(currentNumBand));
             slider.updateDisplayValue();
             numBand.store(currentNumBand);
+            uiBase.setProperty(zlInterface::settingIdx::matchFitRunning, false);
         }
         for (size_t i = 0; i < currentNumBand; i++) {
             const auto &filter = mFilters[i];

@@ -45,6 +45,8 @@ namespace zlPanel {
         std::atomic<float> dBScale{1.f};
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         float lowCutP{0.f}, highCutP{1.f};
+        zlInterface::NameLookAndFeel labelLAF;
+        juce::Label runningLabel;
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;

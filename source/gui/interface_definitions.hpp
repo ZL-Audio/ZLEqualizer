@@ -44,13 +44,15 @@ namespace zlInterface {
         matchPanelFit,
         matchLowCut,
         matchHighCut,
+        matchFitRunning,
         settingNum
     };
 
     inline std::array identifiers{
         juce::Identifier("ui_setting_panel_show"),
         juce::Identifier("match_panel_show"), juce::Identifier("match_panel_fit"),
-        juce::Identifier("match_low_cut"), juce::Identifier("match_high_cut")
+        juce::Identifier("match_low_cut"), juce::Identifier("match_high_cut"),
+        juce::Identifier("match_fit_running")
     };
 
     inline std::array<std::string, colourNum> colourNames{

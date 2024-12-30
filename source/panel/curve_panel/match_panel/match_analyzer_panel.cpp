@@ -13,11 +13,17 @@ namespace zlPanel {
     MatchAnalyzerPanel::MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
                                            juce::AudioProcessorValueTreeState &parametersNA,
                                            zlInterface::UIBase &base)
-        : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base) {
+        : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base),
+          labelLAF(uiBase) {
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
         parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
         setInterceptsMouseClicks(false, false);
         uiBase.getValueTree().addListener(this);
+        runningLabel.setText("Running", juce::dontSendNotification);
+        runningLabel.setJustificationType(juce::Justification::centred);
+        labelLAF.setFontScale(5.f);
+        runningLabel.setLookAndFeel(&labelLAF);
+        addChildComponent(runningLabel);
     }
 
     MatchAnalyzerPanel::~MatchAnalyzerPanel() {
@@ -64,6 +70,8 @@ namespace zlPanel {
         rightCorner.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
         atomicBound.store(bound);
         dBScale.store((1.f + uiBase.getFontSize() * 2.f / bound.getHeight()) * 2.f);
+        runningLabel.setBounds(bound.withSizeKeepingCentre(
+            bound.getWidth() * .5f, uiBase.getFontSize() * 5.f).toNearestInt());
     }
 
     void MatchAnalyzerPanel::updatePaths() {
@@ -90,6 +98,8 @@ namespace zlPanel {
             lowCutP = static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchLowCut));
         } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchHighCut)]) {
             highCutP = static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchHighCut));
+        } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchFitRunning)]) {
+            runningLabel.setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchFitRunning)));
         }
     }
 
