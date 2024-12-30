@@ -39,10 +39,14 @@ namespace zlPanel {
             loadDiffs();
             optimizer.setDiffs(&diffs[0], diffs.size());
             optimizer.runDeterministic(startIdx, endIdx);
-        } else {
+        } else if (mode.load() == 1) {
             loadDiffs();
             optimizer.setDiffs(&diffs[0], diffs.size());
             optimizer.runStochastic(startIdx, endIdx);
+        } else {
+            loadDiffs();
+            optimizer.setDiffs(&diffs[0], diffs.size());
+            optimizer.runStochasticPlus({2, 4, 6}, startIdx, endIdx);
         }
         if (threadShouldExit()) {
             return;
@@ -51,6 +55,7 @@ namespace zlPanel {
         const auto &filters = optimizer.getSol();
         for (size_t i = 0; i < mFilters.size(); i++) {
             mFilters[i].setFilterType(filters[i].getFilterType());
+            mFilters[i].setOrder(filters[i].getOrder());
             mFilters[i].setFreq(filters[i].getFreq());
             mFilters[i].setGain(filters[i].getGain());
             mFilters[i].setQ(filters[i].getQ());
@@ -83,6 +88,8 @@ namespace zlPanel {
             savePara(zlDSP::appendSuffix(zlDSP::dynamicON::ID, i), 0.f);
             savePara(zlDSP::appendSuffix(zlDSP::fType::ID, i),
                      zlDSP::fType::convertTo01(filter.getFilterType()));
+            savePara(zlDSP::appendSuffix(zlDSP::slope::ID, i),
+                     zlDSP::slope::convertTo01(zlDSP::slope::convertToIdx(filter.getOrder())));
             savePara(zlDSP::appendSuffix(zlDSP::freq::ID, i),
                      zlDSP::freq::convertTo01(static_cast<float>(filter.getFreq())));
             savePara(zlDSP::appendSuffix(zlDSP::gain::ID, i),

@@ -150,6 +150,18 @@ namespace zlDSP {
         };
         int static constexpr defaultI = 1;
         static constexpr std::array<size_t, 7> orderArray{1, 2, 4, 6, 8, 12, 16};
+        static int convertToIdx(const size_t order) {
+            switch (order) {
+                case 1: return 0;
+                case 2: return 1;
+                case 4: return 2;
+                case 6: return 3;
+                case 8: return 4;
+                case 12: return 5;
+                case 16: return 6;
+                default: return 0;
+            }
+        }
     };
 
     class freq : public FloatParameters<freq> {

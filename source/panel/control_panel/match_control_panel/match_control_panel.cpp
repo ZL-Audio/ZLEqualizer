@@ -16,7 +16,7 @@ namespace zlPanel {
           pauseDrawable(juce::Drawable::createFromImageData(BinaryData::pauseline_svg, BinaryData::pauseline_svgSize)),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
           sideChooseBox("", {"Side", "Preset", "Flat"}, base),
-          fitAlgoBox("", {"LD", "GN"}, base),
+          fitAlgoBox("", {"LD", "GN", "GN+"}, base),
           weightSlider("Weight", base),
           smoothSlider("Smooth", base),
           slopeSlider("Slope", base),

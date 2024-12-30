@@ -37,6 +37,7 @@ namespace zlEqMatch {
         static constexpr std::array<zlFilter::FilterType, 3> filterTypes{
             zlFilter::FilterType::lowShelf, zlFilter::FilterType::peak, zlFilter::FilterType::highShelf
         };
+        static constexpr size_t maximumOrder = 6;
         static constexpr std::array<double, 3> initSol{6.907755278982137, 0.0, -0.3465735902799726};
 
         EqMatchOptimizer() {
@@ -72,9 +73,10 @@ namespace zlEqMatch {
                 std::array<double, filterTypes.size()> mse{};
                 std::array<std::vector<double>, filterTypes.size()> sols{};
                 for (size_t j = 0; j < filterTypes.size(); j++) {
+                    mFilter.setFilterType(filterTypes[j]);
                     sols[j].resize(initSol.size());
                     std::copy(initSol.begin(), initSol.end(), sols[j].begin());
-                    mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos, startIdx, endIdx);
+                    mse[j] = improveSolution(sols[j], mAlgos, startIdx, endIdx);
                 }
                 const auto idx = static_cast<size_t>(std::min_element(mse.begin(), mse.end()) - mse.begin());
                 mseS[idx] = mse[idx];
@@ -97,7 +99,11 @@ namespace zlEqMatch {
             }
         }
 
-        void runStochastic(size_t startIdx = 0, size_t endIdx = 10000) {
+        void runStochastic(const size_t startIdx = 0, const size_t endIdx = 10000) {
+            runStochasticPlus({2}, startIdx, endIdx);
+        }
+
+        void runStochasticPlus(const std::vector<size_t> orders, size_t startIdx = 0, size_t endIdx = 10000) {
             shouldExit.store(false);
             endIdx = std::min(endIdx, mDiffs.size());
             startIdx = std::min(startIdx, endIdx);
@@ -107,28 +113,43 @@ namespace zlEqMatch {
             mAlgos2.resize(algos2.size());
             std::copy(algos2.begin(), algos2.end(), mAlgos2.begin());
             for (size_t i = 0; i < FilterNum; i++) {
-                std::array<double, filterTypes.size()> mse{};
-                std::array<std::vector<double>, filterTypes.size()> sols{};
-                for (size_t j = 0; j < filterTypes.size(); j++) {
-                    sols[j].resize(initSol.size());
-                    std::copy(initSol.begin(), initSol.end(), sols[j].begin());
-                    mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos2, startIdx, endIdx);
-                    if (shouldExit.load()) { return; }
-                    mse[j] = improveSolution(sols[j], filterTypes[j], mAlgos1, startIdx, endIdx);
-                    if (shouldExit.load()) { return; }
+                std::vector<double> mseByOrders{};
+                std::vector<zlFilter::FilterType> filterTypeByOrders{};
+                std::vector<std::vector<double> > solsByOrders{};
+                for (const size_t order: orders) {
+                    mFilter.setOrder(order);
+                    std::array<double, filterTypes.size()> mse{};
+                    std::array<std::vector<double>, filterTypes.size()> sols{};
+                    for (size_t j = 0; j < filterTypes.size(); j++) {
+                        mFilter.setFilterType(filterTypes[j]);
+                        sols[j].resize(initSol.size());
+                        std::copy(initSol.begin(), initSol.end(), sols[j].begin());
+                        mse[j] = improveSolution(sols[j], mAlgos2, startIdx, endIdx);
+                        if (shouldExit.load()) { return; }
+                        mse[j] = improveSolution(sols[j], mAlgos1, startIdx, endIdx);
+                        if (shouldExit.load()) { return; }
+                    }
+                    const auto idx = static_cast<size_t>(std::min_element(mse.begin(), mse.end()) - mse.begin());
+                    mseByOrders.push_back(mse[idx]);
+                    filterTypeByOrders.push_back(filterTypes[idx]);
+                    solsByOrders.push_back(sols[idx]);
                 }
-                const auto idx = static_cast<size_t>(std::min_element(mse.begin(), mse.end()) - mse.begin());
-                mseS[i] = mse[idx];
-                filters[i].setFilterType(filterTypes[idx]);
-                filters[i].setFreq(std::exp(sols[idx][0]));
-                filters[i].setGain(sols[idx][1] / gainScale);
-                filters[i].setQ(std::exp(sols[idx][2]));
+                const auto idx = static_cast<size_t>(
+                    std::min_element(mseByOrders.begin(), mseByOrders.end()) - mseByOrders.begin());
+                const size_t actualIdx = mseByOrders[idx] <= mseByOrders[0] - 0.1 ? idx : static_cast<size_t>(0);
+                mseS[i] = mseByOrders[actualIdx];
+                filters[i].setFilterType(filterTypeByOrders[actualIdx]);
+                filters[i].setOrder(orders[actualIdx]);
+                filters[i].setFreq(std::exp(solsByOrders[actualIdx][0]));
+                filters[i].setGain(solsByOrders[actualIdx][1] / gainScale);
+                filters[i].setQ(std::exp(solsByOrders[actualIdx][2]));
                 updateDiff(filters[i]);
                 // if mse is already small enough, exit
                 if (mseS[i] < eps) {
                     for (size_t j = i + 1; j < filters.size(); j++) {
                         mseS[j] = mseS[i];
                         filters[j].setFilterType(zlFilter::FilterType::peak);
+                        filters[i].setOrder(2);
                         filters[j].setFreq(1000.);
                         filters[j].setGain(0.);
                         filters[j].setQ(0.707);
@@ -142,7 +163,6 @@ namespace zlEqMatch {
 
         std::array<zlFilter::Empty<double>, FilterNum> &getSol() { return filters; }
 
-
         void exitSignalSent() override {
             shouldExit.store(true);
         }
@@ -150,50 +170,47 @@ namespace zlEqMatch {
     private:
         std::array<zlFilter::Empty<double>, FilterNum> filters;
         std::array<double, FilterNum> mseS{};
-        zlFilter::Ideal<double, 1> mFilter;
+        zlFilter::Ideal<double, maximumOrder> mFilter;
         std::vector<double> mDiffs;
         std::vector<double> mWs;
         std::atomic<bool> shouldExit{false};
 
         struct optFData {
-            zlFilter::FilterType filterType;
             size_t startIdx;
             size_t endIdx;
-            zlFilter::Ideal<double, 1> *filter;
+            zlFilter::Ideal<double, maximumOrder> *filter;
             std::vector<double> *diffs;
             std::vector<double> *ws;
         };
 
         static double func(const std::vector<double> &x, std::vector<double> &grad, void *f_data) {
             auto *data = static_cast<optFData *>(f_data);
-            const auto mse = calculateMSE(data->filterType, x[0], x[1], x[2],
+            const auto mse = calculateMSE(x[0], x[1], x[2],
                                           data->filter, data->diffs, data->ws, data->startIdx, data->endIdx);
             if (!grad.empty()) {
-                const auto mse0l = calculateMSE(data->filterType, x[0] - eps, x[1], x[2],
+                const auto mse0l = calculateMSE(x[0] - eps, x[1], x[2],
                                                 data->filter, data->diffs, data->ws, data->startIdx, data->endIdx);
-                const auto mse0r = calculateMSE(data->filterType, x[0] + eps, x[1], x[2],
+                const auto mse0r = calculateMSE(x[0] + eps, x[1], x[2],
                                                 data->filter, data->diffs, data->ws, data->startIdx, data->endIdx);
                 grad[0] = (mse0r - mse0l) / (2 * eps);
-                const auto mse1l = calculateMSE(data->filterType, x[0], x[1] - eps, x[2],
+                const auto mse1l = calculateMSE(x[0], x[1] - eps, x[2],
                                                 data->filter, data->diffs, data->ws, data->startIdx, data->endIdx);
-                const auto mse1r = calculateMSE(data->filterType, x[0], x[1] + eps, x[2],
+                const auto mse1r = calculateMSE(x[0], x[1] + eps, x[2],
                                                 data->filter, data->diffs, data->ws, data->startIdx, data->endIdx);
                 grad[1] = (mse1r - mse1l) / (2 * eps);
-                const auto mse2l = calculateMSE(data->filterType, x[0], x[1], x[2] - eps,
+                const auto mse2l = calculateMSE(x[0], x[1], x[2] - eps,
                                                 data->filter, data->diffs, data->ws, data->startIdx, data->endIdx);
-                const auto mse2r = calculateMSE(data->filterType, x[0], x[1], x[2] + eps,
+                const auto mse2r = calculateMSE(x[0], x[1], x[2] + eps,
                                                 data->filter, data->diffs, data->ws, data->startIdx, data->endIdx);
                 grad[2] = (mse2r - mse2l) / (2 * eps);
             }
             return mse;
         }
 
-        static double calculateMSE(const zlFilter::FilterType filterType,
-                                   const double freqLog, const double gain, const double qLog,
-                                   zlFilter::Ideal<double, 1> *filter,
+        static double calculateMSE(const double freqLog, const double gain, const double qLog,
+                                   zlFilter::Ideal<double, maximumOrder> *filter,
                                    const std::vector<double> *diffs, const std::vector<double> *ws,
                                    const size_t startIdx, const size_t endIdx) {
-            filter->setFilterType(filterType);
             filter->setFreq(std::exp(freqLog));
             filter->setGain(gain / gainScale);
             filter->setQ(std::exp(qLog));
@@ -208,10 +225,9 @@ namespace zlEqMatch {
         }
 
         double improveSolution(std::vector<double> &sol,
-                               const zlFilter::FilterType fType,
                                const std::vector<nlopt::algorithm> &algos,
                                const size_t startIdx, const size_t endIdx) {
-            optFData optData{fType, startIdx, endIdx, &mFilter, &mDiffs, &mWs};
+            optFData optData{startIdx, endIdx, &mFilter, &mDiffs, &mWs};
             double bestMSE = 1e6;
             std::vector<double> bestSol = sol;
             const std::vector<double> mLowerBound{minFreqLog, minGainScale, minQLog};
@@ -243,6 +259,7 @@ namespace zlEqMatch {
 
         void updateDiff(const zlFilter::Empty<double> &eFilter) {
             mFilter.setFilterType(eFilter.getFilterType());
+            mFilter.setOrder(eFilter.getOrder());
             mFilter.setFreq(eFilter.getFreq());
             mFilter.setGain(eFilter.getGain());
             mFilter.setQ(eFilter.getQ());
