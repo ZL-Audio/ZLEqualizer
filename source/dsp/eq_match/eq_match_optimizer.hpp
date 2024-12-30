@@ -20,7 +20,7 @@ namespace zlEqMatch {
     template<size_t FilterNum>
     class EqMatchOptimizer final : public juce::Thread::Listener {
     public:
-        static constexpr double eps = 1e-3;
+        static constexpr double eps = 1e-3, highOrderEps = 1.;
         static constexpr double diffMinFreqLog = 2.302585092994046, diffMaxFreqLog = 9.998797732340453;
         static constexpr double minFreqLog = 2.3026, maxFreqLog = 9.9034;
         static constexpr double minGain = -29.999, maxGain = 29.999, gainScale = .15;
@@ -103,7 +103,7 @@ namespace zlEqMatch {
             runStochasticPlus({2}, startIdx, endIdx);
         }
 
-        void runStochasticPlus(const std::vector<size_t> orders, size_t startIdx = 0, size_t endIdx = 10000) {
+        void runStochasticPlus(std::vector<size_t> orders, size_t startIdx = 0, size_t endIdx = 10000) {
             shouldExit.store(false);
             endIdx = std::min(endIdx, mDiffs.size());
             startIdx = std::min(startIdx, endIdx);
@@ -112,14 +112,17 @@ namespace zlEqMatch {
             std::copy(algos1.begin(), algos1.end(), mAlgos1.begin());
             mAlgos2.resize(algos2.size());
             std::copy(algos2.begin(), algos2.end(), mAlgos2.begin());
+            // fit filter one by one
             for (size_t i = 0; i < FilterNum; i++) {
                 std::vector<double> mseByOrders{};
                 std::vector<zlFilter::FilterType> filterTypeByOrders{};
                 std::vector<std::vector<double> > solsByOrders{};
+                // for all orders
                 for (const size_t order: orders) {
                     mFilter.setOrder(order);
                     std::array<double, filterTypes.size()> mse{};
                     std::array<std::vector<double>, filterTypes.size()> sols{};
+                    // for all filter types
                     for (size_t j = 0; j < filterTypes.size(); j++) {
                         mFilter.setFilterType(filterTypes[j]);
                         sols[j].resize(initSol.size());
@@ -129,20 +132,24 @@ namespace zlEqMatch {
                         mse[j] = improveSolution(sols[j], mAlgos1, startIdx, endIdx);
                         if (shouldExit.load()) { return; }
                     }
+                    // choose the filter type with the min mse
                     const auto idx = static_cast<size_t>(std::min_element(mse.begin(), mse.end()) - mse.begin());
                     mseByOrders.push_back(mse[idx]);
                     filterTypeByOrders.push_back(filterTypes[idx]);
                     solsByOrders.push_back(sols[idx]);
                 }
+                // choose the order with the min mse
                 const auto idx = static_cast<size_t>(
                     std::min_element(mseByOrders.begin(), mseByOrders.end()) - mseByOrders.begin());
-                const size_t actualIdx = mseByOrders[idx] <= mseByOrders[0] - 0.1 ? idx : static_cast<size_t>(0);
+                const size_t actualIdx = mseByOrders[idx] <= mseByOrders[0] - highOrderEps ? idx : static_cast<size_t>(0);
+                // store optimal mse and filter parameters
                 mseS[i] = mseByOrders[actualIdx];
                 filters[i].setFilterType(filterTypeByOrders[actualIdx]);
                 filters[i].setOrder(orders[actualIdx]);
                 filters[i].setFreq(std::exp(solsByOrders[actualIdx][0]));
                 filters[i].setGain(solsByOrders[actualIdx][1] / gainScale);
                 filters[i].setQ(std::exp(solsByOrders[actualIdx][2]));
+                // update diff
                 updateDiff(filters[i]);
                 // if mse is already small enough, exit
                 if (mseS[i] < eps) {
@@ -155,6 +162,10 @@ namespace zlEqMatch {
                         filters[j].setQ(0.707);
                     }
                     return;
+                }
+                // if there is no chance to reach highOrderEps with higher orders, reduce order to 2
+                if (mseS[i] < highOrderEps) {
+                    orders = {2};
                 }
             }
         }

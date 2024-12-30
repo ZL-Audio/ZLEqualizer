@@ -50,25 +50,26 @@ namespace zlPanel {
         }
         if (threadShouldExit()) {
             return;
-        }
-        juce::ScopedLock lock(criticalSection);
-        const auto &filters = optimizer.getSol();
-        for (size_t i = 0; i < mFilters.size(); i++) {
-            mFilters[i].setFilterType(filters[i].getFilterType());
-            mFilters[i].setOrder(filters[i].getOrder());
-            mFilters[i].setFreq(filters[i].getFreq());
-            mFilters[i].setGain(filters[i].getGain());
-            mFilters[i].setQ(filters[i].getQ());
-        }
-        estNumBand = 16;
-        const auto &mse = optimizer.getMSE();
-        for (size_t i = 0; i < mFilters.size(); i++) {
-            if (mse[i] < mseThreshold) {
-                estNumBand = i + 1;
-                break;
+        } {
+            juce::ScopedLock lock(criticalSection);
+            const auto &filters = optimizer.getSol();
+            for (size_t i = 0; i < mFilters.size(); i++) {
+                mFilters[i].setFilterType(filters[i].getFilterType());
+                mFilters[i].setOrder(filters[i].getOrder());
+                mFilters[i].setFreq(filters[i].getFreq());
+                mFilters[i].setGain(filters[i].getGain());
+                mFilters[i].setQ(filters[i].getQ());
             }
+            estNumBand = 16;
+            const auto &mse = optimizer.getMSE();
+            for (size_t i = 0; i < mFilters.size(); i++) {
+                if (mse[i] < mseThreshold) {
+                    estNumBand = i + 1;
+                    break;
+                }
+            }
+            toCalculateNumBand.store(true);
         }
-        toCalculateNumBand.store(true);
         triggerAsyncUpdate();
     }
 
