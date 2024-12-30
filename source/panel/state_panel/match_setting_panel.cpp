@@ -48,8 +48,8 @@ namespace zlPanel {
         if (!f) {
             uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
         } else {
-            uiBase.setProperty(zlInterface::settingIdx::matchLowCut, 10.f);
-            uiBase.setProperty(zlInterface::settingIdx::matchHighCut, 22000.f);
+            uiBase.setProperty(zlInterface::settingIdx::matchLowCut, 0.f);
+            uiBase.setProperty(zlInterface::settingIdx::matchHighCut, 1.f);
         }
     }
 } // zlPanel
