@@ -20,7 +20,9 @@ namespace zlInterface {
         enum DraggerShape {
             round,
             rectangle,
-            upDownArrow
+            upDownArrow,
+            rightArrow,
+            leftArrow
         };
 
         explicit DraggerLookAndFeel(UIBase &base) : uiBase(base) {
@@ -30,11 +32,6 @@ namespace zlInterface {
                               bool shouldDrawButtonAsHighlighted,
                               bool shouldDrawButtonAsDown) override {
             if (!active.load()) { return; }
-            auto bound = button.getLocalBounds().toFloat();
-            const auto radius = std::min(bound.getHeight(), bound.getWidth());
-            bound = bound.withSizeKeepingCentre(radius, radius);
-
-            updatePaths(bound);
 
             if (shouldDrawButtonAsDown || button.getToggleState()) {
                 g.setColour(uiBase.getTextColor());
@@ -54,8 +51,10 @@ namespace zlInterface {
                 } else {
                     g.setColour(juce::Colours::black);
                 }
-                // g.setColour(colour.withMultipliedBrightness(2.f));
                 g.setFont(uiBase.getFontSize() * labelScale);
+                auto bound = button.getLocalBounds().toFloat();
+                const auto radius = std::min(bound.getHeight(), bound.getWidth());
+                bound = bound.withSizeKeepingCentre(radius, radius);
                 g.drawText(l, bound, juce::Justification::centred);
             }
         }
@@ -88,6 +87,14 @@ namespace zlInterface {
                     updateUpDownArrowPaths(bound);
                     break;
                 }
+                case rightArrow: {
+                    updateRightArrowPaths(bound);
+                    break;
+                }
+                case leftArrow: {
+                    updateLeftArrowPaths(bound);
+                    break;
+                }
             }
         }
 
@@ -112,6 +119,32 @@ namespace zlInterface {
                 path.lineTo(temp.getCentreX() + temp.getWidth() * .33f, temp.getCentreY());
                 path.lineTo(temp.getCentreX(), temp.getBottom());
                 path.lineTo(temp.getCentreX() - temp.getWidth() * .33f, temp.getCentreY());
+                path.closeSubPath();
+            };
+            updateOnePath(outlinePath, bound);
+            bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight() * .75f);
+            updateOnePath(innerPath, bound);
+        }
+
+        void updateRightArrowPaths(juce::Rectangle<float> &bound) {
+            auto updateOnePath = [](juce::Path &path, const juce::Rectangle<float> &temp) {
+                const auto center = temp.getCentre();
+                path.startNewSubPath(center.getX() + temp.getWidth() * .5f, center.getY());
+                path.lineTo(center.getX() - temp.getWidth() * .25f, center.getY() + temp.getHeight() * std::sqrt(3.f) * .25f);
+                path.lineTo(center.getX() - temp.getWidth() * .25f, center.getY() - temp.getHeight() * std::sqrt(3.f) * .25f);
+                path.closeSubPath();
+            };
+            updateOnePath(outlinePath, bound);
+            bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight() * .75f);
+            updateOnePath(innerPath, bound);
+        }
+
+        void updateLeftArrowPaths(juce::Rectangle<float> &bound) {
+            auto updateOnePath = [](juce::Path &path, const juce::Rectangle<float> &temp) {
+                const auto center = temp.getCentre();
+                path.startNewSubPath(center.getX() - temp.getWidth() * .5f, center.getY());
+                path.lineTo(center.getX() + temp.getWidth() * .25f, center.getY() + temp.getHeight() * std::sqrt(3.f) * .25f);
+                path.lineTo(center.getX() + temp.getWidth() * .25f, center.getY() - temp.getHeight() * std::sqrt(3.f) * .25f);
                 path.closeSubPath();
             };
             updateOnePath(outlinePath, bound);

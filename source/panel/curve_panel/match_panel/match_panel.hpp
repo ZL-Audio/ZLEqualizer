@@ -27,6 +27,10 @@ namespace zlPanel {
             matchAnalyzerPanel.updatePaths();
         }
 
+        void visibilityChanged() override {
+            matchAnalyzerPanel.visibilityChanged();
+        }
+
     private:
         zlInterface::UIBase &uiBase;
         MatchAnalyzerPanel matchAnalyzerPanel;

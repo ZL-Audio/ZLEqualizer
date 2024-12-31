@@ -16,8 +16,9 @@
 
 namespace zlPanel {
     class MatchAnalyzerPanel final : public juce::Component,
-     private juce::AudioProcessorValueTreeState::Listener,
-                                     private juce::ValueTree::Listener {
+                                     private juce::AudioProcessorValueTreeState::Listener,
+                                     private juce::ValueTree::Listener,
+                                     private zlInterface::Dragger::Listener {
     public:
         explicit MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
                                     juce::AudioProcessorValueTreeState &parametersNA,
@@ -28,6 +29,8 @@ namespace zlPanel {
         void paint(juce::Graphics &g) override;
 
         void resized() override;
+
+        void visibilityChanged() override;
 
         void updatePaths();
 
@@ -44,14 +47,27 @@ namespace zlPanel {
         bool showAverage{true};
         std::atomic<float> dBScale{1.f};
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
-        float lowCutP{0.f}, highCutP{1.f};
+        zlInterface::Dragger lowDragger, highDragger;
         zlInterface::NameLookAndFeel labelLAF;
         juce::Label runningLabel;
+        static constexpr auto scale = 1.5f;
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void lookAndFeelChanged() override;
+
+        void dragStarted(zlInterface::Dragger *dragger) override {
+            juce::ignoreUnused(dragger);
+        }
+
+        void dragEnded(zlInterface::Dragger *dragger) override {
+            juce::ignoreUnused(dragger);
+        }
+
+        void draggerValueChanged(zlInterface::Dragger *dragger) override;
     };
 } // zlPanel
 

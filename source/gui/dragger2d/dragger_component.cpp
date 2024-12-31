@@ -33,6 +33,10 @@ namespace zlInterface {
     void Dragger::updateButton() {
         if (dummyButtonChanged.exchange(false)) {
             button.setBounds(dummyButton.getBounds());
+            auto bound = button.getLocalBounds().toFloat();
+            const auto radius = std::min(bound.getHeight(), bound.getWidth());
+            bound = bound.withSizeKeepingCentre(radius, radius);
+            draggerLAF.updatePaths(bound);
         }
     }
 
@@ -43,7 +47,6 @@ namespace zlInterface {
         dummyBound = dummyButton.getBounds();
         isShiftDown = event.mods.isShiftDown();
         dragger.startDraggingComponent(&preButton, event);
-
         const BailOutChecker checker(this);
         listeners.callChecked(checker, [&](Dragger::Listener &l) { l.dragStarted(this); });
     }
@@ -60,26 +63,20 @@ namespace zlInterface {
             if (event.mods.isCommandDown()) {
                 if (event.mods.isLeftButtonDown()) {
                     constrainer.setXON(false);
-                    constrainer.setYON(true);
+                    constrainer.setYON(yEnabled);
                 } else {
-                    constrainer.setXON(true);
+                    constrainer.setXON(xEnabled);
                     constrainer.setYON(false);
                 }
             } else {
-                constrainer.setXON(true);
-                constrainer.setYON(true);
+                constrainer.setXON(xEnabled);
+                constrainer.setYON(yEnabled);
             }
             if (!isShiftDown && event.mods.isShiftDown()) {
                 preBound = preButton.getBounds();
                 dummyBound = dummyButton.getBounds();
                 isShiftDown = true;
             }
-            // if (currentShiftDown && !isShiftDown) {
-            //     dragger.startDraggingComponent(&preButton, event);
-            //     preBound = preButton.getBounds();
-            //     dummyBound = dummyButton.getBounds();
-            //     isShiftDown = currentShiftDown;
-            // }
 
             dragger.dragComponent(&preButton, event, nullptr);
             const auto shift = (preButton.getBounds().getPosition() - preBound.getPosition()).toFloat();

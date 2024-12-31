@@ -67,16 +67,21 @@ namespace zlInterface {
         void removeListener(Listener *listener);
 
         void setPadding(const float left, const float right,
-                        const float uppper, const float bottom) {
+                        const float upper, const float bottom) {
             lPadding = left;
             rPadding = right;
-            uPadding = uppper;
+            uPadding = upper;
             bPadding = bottom;
         }
 
         void setActive(const bool f) { draggerLAF.setActive(f); }
 
         DraggerLookAndFeel &getLAF() {return draggerLAF;}
+
+        void setXYEnabled(const bool x, const bool y) {
+            xEnabled = x;
+            yEnabled = y;
+        }
 
     private:
         UIBase &uiBase;
@@ -89,6 +94,7 @@ namespace zlInterface {
         DraggerLookAndFeel draggerLAF;
         juce::ComponentDragger dragger;
         DraggerConstrainer constrainer;
+        bool xEnabled{true}, yEnabled{true};
         std::atomic<bool> isSelected;
         std::atomic<float> xPortion, yPortion;
 

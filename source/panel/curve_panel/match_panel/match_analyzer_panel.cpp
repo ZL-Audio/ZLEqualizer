@@ -14,16 +14,31 @@ namespace zlPanel {
                                            juce::AudioProcessorValueTreeState &parametersNA,
                                            zlInterface::UIBase &base)
         : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base),
+          lowDragger(base), highDragger(base),
           labelLAF(uiBase) {
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
         parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
-        setInterceptsMouseClicks(false, false);
+        setInterceptsMouseClicks(false, true);
         uiBase.getValueTree().addListener(this);
         runningLabel.setText("Running", juce::dontSendNotification);
         runningLabel.setJustificationType(juce::Justification::centred);
         labelLAF.setFontScale(5.f);
         runningLabel.setLookAndFeel(&labelLAF);
         addChildComponent(runningLabel);
+        lowDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::rightArrow);
+        highDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::leftArrow);
+        for (auto &d : {&lowDragger, &highDragger}) {
+            d->setYPortion(.5f);
+            d->setXYEnabled(true, false);
+            d->setScale(scale);
+            d->setActive(true);
+            d->getButton().setToggleState(true, juce::dontSendNotification);
+            d->getLAF().setIsSelected(true);
+            d->setInterceptsMouseClicks(false, true);
+            d->addListener(this);
+            addAndMakeVisible(d);
+        }
+        lookAndFeelChanged();
     }
 
     MatchAnalyzerPanel::~MatchAnalyzerPanel() {
@@ -32,6 +47,9 @@ namespace zlPanel {
     }
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
+        for (auto &d : {&lowDragger, &highDragger}) {
+            d->updateButton();
+        }
         g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(backgroundAlpha));
         const auto thickness = uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness();
         juce::GenericScopedTryLock lock{pathLock};
@@ -50,16 +68,16 @@ namespace zlPanel {
         g.strokePath(recentPath3,
                      juce::PathStrokeType(thickness * 1.5f,
                                           juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        if (lowCutP > 0.001f) {
+        if (const auto xP = lowDragger.getXPortion(); xP > 0.001f) {
             auto bound = getLocalBounds().toFloat();
-            bound = bound.removeFromLeft(bound.getWidth() * lowCutP);
-            g.setColour(uiBase.getBackgroundColor().withAlpha(.5f));
+            bound = bound.removeFromLeft(bound.getWidth() * xP);
+            g.setColour(uiBase.getBackgroundColor().withAlpha(.75f));
             g.fillRect(bound);
         }
-        if (highCutP < .999f) {
+        if (const auto yP = highDragger.getXPortion(); yP < .999f) {
             auto bound = getLocalBounds().toFloat();
-            bound = bound.removeFromRight(bound.getWidth() * (1.f - highCutP));
-            g.setColour(uiBase.getBackgroundColor().withAlpha(.5f));
+            bound = bound.removeFromRight(bound.getWidth() * (1.f - yP));
+            g.setColour(uiBase.getBackgroundColor().withAlpha(.75f));
             g.fillRect(bound);
         }
     }
@@ -72,6 +90,8 @@ namespace zlPanel {
         dBScale.store((1.f + uiBase.getFontSize() * 2.f / bound.getHeight()) * 2.f);
         runningLabel.setBounds(bound.withSizeKeepingCentre(
             bound.getWidth() * .5f, uiBase.getFontSize() * 5.f).toNearestInt());
+        lowDragger.setBounds(getLocalBounds());
+        highDragger.setBounds(getLocalBounds());
     }
 
     void MatchAnalyzerPanel::updatePaths() {
@@ -89,16 +109,19 @@ namespace zlPanel {
         analyzerRef.checkRun();
     }
 
+    void MatchAnalyzerPanel::visibilityChanged() {
+        lowDragger.setXPortion(0.f);
+        highDragger.setXPortion(1.f);
+        draggerValueChanged(&lowDragger);
+        draggerValueChanged(&highDragger);
+    }
+
     void MatchAnalyzerPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &property) {
         if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchPanelFit)]) {
             const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelFit));
             backgroundAlpha = f ? .2f : .5f;
             showAverage = !f;
-        } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchLowCut)]) {
-            lowCutP = static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchLowCut));
-        } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchHighCut)]) {
-            highCutP = static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchHighCut));
-        } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchFitRunning)]) {
+        } else if (uiBase.isProperty(zlInterface::settingIdx::matchFitRunning, property)) {
             runningLabel.setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchFitRunning)));
         }
     }
@@ -106,5 +129,19 @@ namespace zlPanel {
     void MatchAnalyzerPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         juce::ignoreUnused(parameterID);
         maximumDB.store(zlState::maximumDB::dBs[static_cast<size_t>(newValue)]);
+    }
+
+    void MatchAnalyzerPanel::lookAndFeelChanged() {
+        for (auto &d : {&lowDragger, &highDragger}) {
+            d->getLAF().setColour(uiBase.getTextColor());
+        }
+    }
+
+    void MatchAnalyzerPanel::draggerValueChanged(zlInterface::Dragger *dragger) {
+        if (dragger == &lowDragger) {
+            uiBase.setProperty(zlInterface::settingIdx::matchLowCut, lowDragger.getXPortion());
+        } else if (dragger == &highDragger) {
+            uiBase.setProperty(zlInterface::settingIdx::matchHighCut, highDragger.getXPortion());
+        }
     }
 } // zlPanel

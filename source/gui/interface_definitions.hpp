@@ -378,6 +378,10 @@ namespace zlInterface {
             valueTree.setProperty(identifiers[idx], v, nullptr);
         }
 
+        static bool isProperty(const settingIdx idx, const juce::Identifier &property) {
+            return property == identifiers[static_cast<size_t>(idx)];
+        }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         juce::ValueTree valueTree{"ui_setting"};
