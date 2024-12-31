@@ -11,6 +11,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 - add UI setting import/export
 - fix incorrect channel layout (See #138)
 - fix incorrect solo display (See #138)
+- fix double-click behaviour (See #141)
 - improve solo display
 - improve GUI performance (especially when you open the UI setting panel)
 
