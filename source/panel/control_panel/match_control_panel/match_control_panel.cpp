@@ -75,7 +75,6 @@ namespace zlPanel {
         slopeSlider.getSlider().onValueChange = [this]() {
             analyzer.setSlope(static_cast<float>(slopeSlider.getSlider().getValue()));
         };
-        numBandSlider.getSlider().setRange(1.0, 16.0, 1.0);
         numBandSlider.getSlider().onValueChange = [this]() {
             matchRunner.setNumBand(static_cast<size_t>(numBandSlider.getSlider().getValue()));
             matchRunner.update();
@@ -172,6 +171,7 @@ namespace zlPanel {
         analyzer.setON(false);
         analyzer.reset();
 
+        numBandSlider.getSlider().setRange(1.0, 16.0, 1.0);
         numBandSlider.getSlider().setValue(8.0, juce::dontSendNotification);
         numBandSlider.updateDisplayValue();
         matchRunner.setNumBand(static_cast<size_t>(8));

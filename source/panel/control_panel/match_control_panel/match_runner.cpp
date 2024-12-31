@@ -78,6 +78,14 @@ namespace zlPanel {
         size_t currentNumBand = numBand.load();
         if (toCalculateNumBand.exchange(false)) {
             currentNumBand = estNumBand;
+            size_t currentMaxBand = mFilters.size();
+            for (size_t i = 0; i < mFilters.size(); i++) {
+                if (std::abs(mFilters[i].getGain()) < 1e-6) {
+                    currentMaxBand = i;
+                    break;
+                }
+            }
+            slider.getSlider().setRange(1.0, static_cast<double>(currentMaxBand), 1.0);
             slider.getSlider().setValue(static_cast<double>(currentNumBand), juce::dontSendNotification);
             slider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(currentNumBand));
             slider.updateDisplayValue();

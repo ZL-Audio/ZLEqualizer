@@ -38,7 +38,7 @@ namespace zlEqMatch {
             zlFilter::FilterType::lowShelf, zlFilter::FilterType::peak, zlFilter::FilterType::highShelf
         };
         static constexpr size_t maximumOrder = 6;
-        static constexpr std::array<double, 3> initSol{6.907755278982137, 0.0, -0.3465735902799726};
+        static constexpr std::array<double, 3> initSol{6.214608098422191, 0.0, -0.3465735902799726};
 
         EqMatchOptimizer() {
             mFilter.prepare(48000.0);
@@ -90,7 +90,7 @@ namespace zlEqMatch {
                     for (size_t j = i + 1; j < filters.size(); j++) {
                         mseS[j] = mseS[i];
                         filters[j].setFilterType(zlFilter::FilterType::peak);
-                        filters[j].setFreq(1000.);
+                        filters[j].setFreq(500.);
                         filters[j].setGain(0.);
                         filters[j].setQ(0.707);
                     }
@@ -157,7 +157,7 @@ namespace zlEqMatch {
                         mseS[j] = mseS[i];
                         filters[j].setFilterType(zlFilter::FilterType::peak);
                         filters[i].setOrder(2);
-                        filters[j].setFreq(1000.);
+                        filters[j].setFreq(500.);
                         filters[j].setGain(0.);
                         filters[j].setQ(0.707);
                     }
