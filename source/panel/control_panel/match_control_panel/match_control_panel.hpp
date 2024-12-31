@@ -30,7 +30,7 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        static constexpr float weightP = 0.4693f;
+        static constexpr float weightP = 0.05216f * 7.f;
         zlInterface::UIBase &uiBase;
         zlEqMatch::EqMatchAnalyzer<double> &analyzer;
 
@@ -38,7 +38,7 @@ namespace zlPanel {
 
         zlInterface::CompactCombobox sideChooseBox, fitAlgoBox;
         zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider;
-        zlInterface::CompactLinearSlider lowCutSlider, highCutSlider, numBandSlider;
+        zlInterface::CompactLinearSlider numBandSlider;
         zlInterface::ClickButton learnButton, saveButton, fitButton;
 
         MatchRunner matchRunner;

@@ -20,8 +20,6 @@ namespace zlPanel {
           weightSlider("Weight", base),
           smoothSlider("Smooth", base),
           slopeSlider("Slope", base),
-          lowCutSlider("Low Cut", base),
-          highCutSlider("High Cut", base),
           numBandSlider("Num Band", base),
           learnButton(base, startDrawable.get(), pauseDrawable.get()),
           saveButton(base, saveDrawable.get()),
@@ -76,35 +74,14 @@ namespace zlPanel {
         slopeSlider.getSlider().setDoubleClickReturnValue(true, 0.);
         slopeSlider.getSlider().onValueChange = [this]() {
             analyzer.setSlope(static_cast<float>(slopeSlider.getSlider().getValue()));
-        }; {
-            auto &s = lowCutSlider.getSlider();
-            s.setNormalisableRange(zlDSP::logMidRange(10., 22000., std::sqrt(10. * 22000.), .1));
-            s.setDoubleClickReturnValue(true, 10.);
-            s.onValueChange = [this]() {
-                const auto &slider = lowCutSlider.getSlider();
-                uiBase.setProperty(zlInterface::settingIdx::matchLowCut,
-                                   static_cast<float>(
-                                       slider.getNormalisableRange().convertTo0to1(slider.getValue())));
-            };
-        } {
-            auto &s = highCutSlider.getSlider();
-            s.setNormalisableRange(zlDSP::logMidRange(10., 22000., std::sqrt(10. * 22000.), .1));
-            s.setDoubleClickReturnValue(true, 22000.);
-            s.onValueChange = [this]() {
-                const auto &slider = highCutSlider.getSlider();
-                uiBase.setProperty(zlInterface::settingIdx::matchHighCut,
-                                   static_cast<float>(
-                                       slider.getNormalisableRange().convertTo0to1(slider.getValue())));
-            };
-        }
+        };
         numBandSlider.getSlider().setRange(1.0, 16.0, 1.0);
         numBandSlider.getSlider().onValueChange = [this]() {
             matchRunner.setNumBand(static_cast<size_t>(numBandSlider.getSlider().getValue()));
             matchRunner.update();
         };
         for (const auto &c: {
-                 &weightSlider, &smoothSlider, &slopeSlider,
-                 &lowCutSlider, &highCutSlider, &numBandSlider
+                 &weightSlider, &smoothSlider, &slopeSlider, &numBandSlider
              }) {
             addAndMakeVisible(c);
         }
@@ -151,7 +128,7 @@ namespace zlPanel {
         grid.templateRows = {Track(Fr(1)), Track(Fr(1))};
         grid.templateColumns = {
             Track(Fr(60)), Track(Fr(30)), Track(Fr(60)),
-            Track(Fr(60)), Track(Fr(30)), Track(Fr(30))
+            Track(Fr(30)), Track(Fr(30))
         };
 
         grid.items = {
@@ -161,16 +138,13 @@ namespace zlPanel {
             juce::GridItem(saveButton).withArea(2, 2),
             juce::GridItem(smoothSlider).withArea(1, 3),
             juce::GridItem(slopeSlider).withArea(2, 3),
-            juce::GridItem(lowCutSlider).withArea(1, 4),
-            juce::GridItem(highCutSlider).withArea(2, 4),
-            juce::GridItem(fitAlgoBox).withArea(1, 5),
-            juce::GridItem(fitButton).withArea(1, 6),
-            juce::GridItem(numBandSlider).withArea(2, 5, 3, 7)
+            juce::GridItem(fitAlgoBox).withArea(1, 4),
+            juce::GridItem(fitButton).withArea(1, 5),
+            juce::GridItem(numBandSlider).withArea(2, 4, 3, 6)
         };
 
         for (const auto &c: {
-                 &weightSlider, &smoothSlider, &slopeSlider,
-                 &lowCutSlider, &highCutSlider, &numBandSlider
+                 &weightSlider, &smoothSlider, &slopeSlider, &numBandSlider
              }) {
             c->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
         }
@@ -197,14 +171,6 @@ namespace zlPanel {
         learnButton.getButton().setToggleState(false, juce::dontSendNotification);
         analyzer.setON(false);
         analyzer.reset();
-
-        lowCutSlider.getSlider().setValue(lowCutSlider.getSlider().getDoubleClickReturnValue(),
-                                          juce::dontSendNotification);
-        lowCutSlider.updateDisplayValue();
-
-        highCutSlider.getSlider().setValue(highCutSlider.getSlider().getDoubleClickReturnValue(),
-                                           juce::dontSendNotification);
-        highCutSlider.updateDisplayValue();
 
         numBandSlider.getSlider().setValue(8.0, juce::dontSendNotification);
         numBandSlider.updateDisplayValue();
