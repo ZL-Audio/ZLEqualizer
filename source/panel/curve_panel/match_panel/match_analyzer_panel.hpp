@@ -34,6 +34,8 @@ namespace zlPanel {
 
         void updatePaths();
 
+        void updateDraggers();
+
     private:
         zlEqMatch::EqMatchAnalyzer<double> &analyzerRef;
         juce::AudioProcessorValueTreeState &parametersNARef;
@@ -46,8 +48,9 @@ namespace zlPanel {
         float backgroundAlpha = .5f;
         bool showAverage{true};
         std::atomic<float> dBScale{1.f};
+        float currentMaximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
-        zlInterface::Dragger lowDragger, highDragger;
+        zlInterface::Dragger lowDragger, highDragger, shiftDragger;
         zlInterface::NameLookAndFeel labelLAF;
         juce::Label runningLabel;
         static constexpr auto scale = 1.5f;

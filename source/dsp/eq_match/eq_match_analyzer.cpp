@@ -154,7 +154,8 @@ namespace zlEqMatch {
             }
         }
         // center diffs
-        const auto diffC = std::reduce(diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size());
+        const auto diffC = std::reduce(
+            diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size()) - shift.load();
         for (auto &diff: diffs) {
             diff -= diffC;
         }

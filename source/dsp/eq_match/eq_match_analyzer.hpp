@@ -57,6 +57,8 @@ namespace zlEqMatch {
 
         void setSlope(const float x) { slope.store(x); }
 
+        void setShift(const float x) { shift.store(x); }
+
         std::array<std::atomic<float>, pointNum> &getTarget() { return atomicTargetDBs; }
 
         std::array<std::atomic<float>, pointNum> &getDiffs() { return atomicDiffs; }
@@ -70,7 +72,7 @@ namespace zlEqMatch {
         std::array<float, pointNum> loadDBs{};
         std::atomic<bool> toUpdateFromLoadDBs{false};
 
-        std::atomic<float> smooth{.5f}, slope{.0f};
+        std::atomic<float> smooth{.5f}, slope{.0f}, shift{0.f};
         std::atomic<bool> toUpdateSmooth{true};
         std::array<float, smoothSize> smoothKernel{};
         float rescale = 1.f;

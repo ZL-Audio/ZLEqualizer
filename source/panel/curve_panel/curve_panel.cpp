@@ -130,6 +130,9 @@ namespace zlPanel {
             for (const auto &panel : singlePanels) {
                 panel->updateDragger();
             }
+            if (showMatchPanel.load()) {
+                matchPanel.updateDraggers();
+            }
             repaint();
             currentT = nowT;
         }

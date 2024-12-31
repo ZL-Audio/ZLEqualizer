@@ -27,6 +27,10 @@ namespace zlPanel {
             matchAnalyzerPanel.updatePaths();
         }
 
+        void updateDraggers() {
+            matchAnalyzerPanel.updateDraggers();
+        }
+
         void visibilityChanged() override {
             matchAnalyzerPanel.visibilityChanged();
         }
