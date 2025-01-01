@@ -63,10 +63,23 @@ namespace zlEqMatch {
 
         std::array<std::atomic<float>, pointNum> &getDiffs() { return atomicDiffs; }
 
+        void setDrawingDiffs(const size_t idx, const float x) {
+            drawingDiffs[idx].store(x);
+            drawingFlag[idx].store(true);
+        }
+
+        void clearDrawingDiffs() {
+            for (size_t idx = 0; idx < pointNum; ++idx) {
+                drawingFlag[idx].store(false);
+            }
+        }
+
     private:
         zlFFT::AverageFFTAnalyzer<FloatType, 2, pointNum> fftAnalyzer;
         std::array<float, pointNum> mainDBs{}, targetDBs{}, diffs{};
         std::array<std::atomic<float>, pointNum> atomicTargetDBs{}, atomicDiffs{};
+        std::array<std::atomic<bool>, pointNum> drawingFlag;
+        std::array<std::atomic<float>, pointNum> drawingDiffs;
         std::atomic<MatchMode> mMode;
         std::atomic<bool> isON{false};
         std::array<float, pointNum> loadDBs{};

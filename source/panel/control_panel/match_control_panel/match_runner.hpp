@@ -68,7 +68,7 @@ namespace zlPanel {
 
         void loadDiffs();
 
-        static constexpr double mseThreshold = 5.;
+        static constexpr double mseThreshold = .5;
     };
 } // zlPanel
 

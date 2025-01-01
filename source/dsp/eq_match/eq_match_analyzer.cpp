@@ -17,6 +17,7 @@ namespace zlEqMatch {
         std::fill(targetDBs.begin(), targetDBs.end(), 0.f);
         std::fill(diffs.begin(), diffs.end(), 0.f);
         updateSmooth();
+        clearDrawingDiffs();
     }
 
     template<typename FloatType>
@@ -158,6 +159,12 @@ namespace zlEqMatch {
             diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size()) - shift.load();
         for (auto &diff: diffs) {
             diff -= diffC;
+        }
+        // read from drawing
+        for (size_t i = 0; i < pointNum; ++i) {
+            if (drawingFlag[i].load()) {
+                diffs[i] = drawingDiffs[i].load();
+            }
         }
         // save to target
         for (size_t i = 0; i < pointNum; ++i) {

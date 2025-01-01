@@ -36,6 +36,12 @@ namespace zlPanel {
 
         void updateDraggers();
 
+        void mouseDown(const juce::MouseEvent &event) override;
+
+        void mouseDrag(const juce::MouseEvent &event) override;
+
+        void mouseDoubleClick(const juce::MouseEvent &event) override;
+
     private:
         zlEqMatch::EqMatchAnalyzer<double> &analyzerRef;
         juce::AudioProcessorValueTreeState &parametersNARef;
@@ -54,6 +60,8 @@ namespace zlPanel {
         zlInterface::NameLookAndFeel labelLAF;
         juce::Label runningLabel;
         static constexpr auto scale = 1.5f;
+        size_t preDrawIdx{0};
+        float preDrawDB{0.f};
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
@@ -71,6 +79,14 @@ namespace zlPanel {
         }
 
         void draggerValueChanged(zlInterface::Dragger *dragger) override;
+
+        void getIdxDBromPoint(const juce::Point<int> &p, size_t &idx, float &dB) {
+            const auto bound = getLocalBounds().toFloat();
+            const auto idxInt = juce::roundToInt(250.f * (static_cast<float>(p.getX()) - bound.getX()) / bound.getWidth());
+            idx = static_cast<size_t>(std::clamp(idxInt, 0, 250));
+            const auto yP = (p.getY() - bound.getY()) / bound.getHeight() - .5f;
+            dB =  -maximumDB.load() * dBScale.load() * yP;
+        }
     };
 } // zlPanel
 
