@@ -70,7 +70,10 @@ namespace zlPanel {
 
     void CurvePanel::paintOverChildren(juce::Graphics &g) {
         juce::ignoreUnused(g);
-        notify();
+        if (toNotify) {
+            toNotify = false;
+            notify();
+        }
     }
 
     void CurvePanel::resized() {
@@ -133,8 +136,11 @@ namespace zlPanel {
             if (showMatchPanel.load()) {
                 matchPanel.updateDraggers();
             }
-            repaint();
-            currentT = nowT;
+            if (!toNotify) {
+                toNotify = true;
+                repaint();
+                currentT = nowT;
+            }
         }
     }
 

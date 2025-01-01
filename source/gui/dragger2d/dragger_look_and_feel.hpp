@@ -130,8 +130,8 @@ namespace zlInterface {
             auto updateOnePath = [](juce::Path &path, const juce::Rectangle<float> &temp) {
                 const auto center = temp.getCentre();
                 path.startNewSubPath(center.getX() + temp.getWidth() * .5f, center.getY());
-                path.lineTo(center.getX() - temp.getWidth() * .25f, center.getY() + temp.getHeight() * std::sqrt(3.f) * .25f);
-                path.lineTo(center.getX() - temp.getWidth() * .25f, center.getY() - temp.getHeight() * std::sqrt(3.f) * .25f);
+                path.lineTo(center.getX(), center.getY() + temp.getHeight() * std::sqrt(3.f) * .25f);
+                path.lineTo(center.getX(), center.getY() - temp.getHeight() * std::sqrt(3.f) * .25f);
                 path.closeSubPath();
             };
             updateOnePath(outlinePath, bound);
@@ -143,8 +143,8 @@ namespace zlInterface {
             auto updateOnePath = [](juce::Path &path, const juce::Rectangle<float> &temp) {
                 const auto center = temp.getCentre();
                 path.startNewSubPath(center.getX() - temp.getWidth() * .5f, center.getY());
-                path.lineTo(center.getX() + temp.getWidth() * .25f, center.getY() + temp.getHeight() * std::sqrt(3.f) * .25f);
-                path.lineTo(center.getX() + temp.getWidth() * .25f, center.getY() - temp.getHeight() * std::sqrt(3.f) * .25f);
+                path.lineTo(center.getX(), center.getY() + temp.getHeight() * std::sqrt(3.f) * .25f);
+                path.lineTo(center.getX(), center.getY() - temp.getHeight() * std::sqrt(3.f) * .25f);
                 path.closeSubPath();
             };
             updateOnePath(outlinePath, bound);

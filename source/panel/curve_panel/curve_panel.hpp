@@ -54,6 +54,7 @@ namespace zlPanel {
         MatchPanel matchPanel;
         juce::Time currentT;
         juce::VBlankAttachment vblank;
+        bool toNotify{false};
 
         std::atomic<bool> showMatchPanel{false};
         bool showUISettingsPanel{false};
