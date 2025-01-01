@@ -17,6 +17,8 @@ namespace zlPanel {
           parametersRef(p.parameters), parametersNARef(p.parametersNA),
           atomicDiffsRef(atomicDiffs),
           slider(numBandSlider) {
+        parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
+        parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
         std::fill(diffs.begin(), diffs.end(), 0.);
         uiBase.getValueTree().addListener(this);
         addListener(&optimizer);
@@ -26,6 +28,7 @@ namespace zlPanel {
         stopThread(-1);
         removeListener(&optimizer);
         uiBase.getValueTree().removeListener(this);
+        parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
     }
 
     void MatchRunner::start() {
@@ -62,8 +65,10 @@ namespace zlPanel {
             }
             estNumBand = 16;
             const auto &mse = optimizer.getMSE();
+            const auto thresholdTemp = static_cast<double>(maximumDB.load()) * mseRelThreshold;
+            const auto threshold = thresholdTemp;
             for (size_t i = 0; i < mFilters.size(); i++) {
-                if (mse[i] < mseThreshold) {
+                if (mse[i] < threshold) {
                     estNumBand = i + 1;
                     break;
                 }
@@ -129,5 +134,10 @@ namespace zlPanel {
         for (size_t i = 0; i < diffs.size(); i++) {
             diffs[i] = static_cast<double>(atomicDiffsRef[i].load());
         }
+    }
+
+    void MatchRunner::parameterChanged(const juce::String &parameterID, const float newValue) {
+        juce::ignoreUnused(parameterID);
+        maximumDB.store(zlState::maximumDB::dBs[static_cast<size_t>(newValue)]);
     }
 } // zlPanel

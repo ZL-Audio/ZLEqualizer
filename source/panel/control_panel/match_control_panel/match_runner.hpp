@@ -15,6 +15,7 @@
 
 namespace zlPanel {
     class MatchRunner final : private juce::Thread,
+                              private juce::AudioProcessorValueTreeState::Listener,
                               private juce::AsyncUpdater,
                               private juce::ValueTree::Listener {
     public:
@@ -38,6 +39,8 @@ namespace zlPanel {
             triggerAsyncUpdate();
         }
 
+        void setMaximumDB(const float x) { maximumDB.store(x); }
+
     private:
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -50,7 +53,7 @@ namespace zlPanel {
         size_t estNumBand{16};
         std::array<zlFilter::Empty<double>, 16> mFilters;
         juce::CriticalSection criticalSection;
-        std::atomic<float> lowCutP{0.f}, highCutP{1.f};
+        std::atomic<float> lowCutP{0.f}, highCutP{1.f}, maximumDB{12.f};
 
         void run() override;
 
@@ -68,7 +71,9 @@ namespace zlPanel {
 
         void loadDiffs();
 
-        static constexpr double mseThreshold = .5;
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        static constexpr double mseRelThreshold = 1.f / 30.f;
     };
 } // zlPanel
 

@@ -137,7 +137,7 @@ namespace zlPanel {
         }
     }
 
-    void MatchAnalyzerPanel::parameterChanged(const juce::String &parameterID, float newValue) {
+    void MatchAnalyzerPanel::parameterChanged(const juce::String &parameterID, const float newValue) {
         juce::ignoreUnused(parameterID);
         maximumDB.store(zlState::maximumDB::dBs[static_cast<size_t>(newValue)]);
     }
@@ -176,37 +176,55 @@ namespace zlPanel {
     }
 
     void MatchAnalyzerPanel::mouseDrag(const juce::MouseEvent &event) {
+        // draw if command down
         if (event.mods.isCommandDown()) {
             size_t currentDrawIdx;
             float currentDrawDB;
             getIdxDBromPoint(event.getPosition(), currentDrawIdx, currentDrawDB);
+            // if right button down, clear draws
             if (event.mods.isRightButtonDown()) {
-                currentDrawDB = 0.f;
-            }
-            if (currentDrawIdx == preDrawIdx) {
-                analyzerRef.setDrawingDiffs(currentDrawIdx, currentDrawDB);
-            } else if (currentDrawIdx < preDrawIdx) {
-                float dB = currentDrawDB;
-                const float deltaDB = (preDrawDB - currentDrawDB) / static_cast<float>(preDrawIdx - currentDrawIdx - 1);
-                for (size_t idx = currentDrawIdx; idx < preDrawIdx; ++idx) {
-                    analyzerRef.setDrawingDiffs(idx, dB);
-                    dB += deltaDB;
+                if (currentDrawIdx == preDrawIdx) {
+                    analyzerRef.clearDrawingDiffs(currentDrawIdx);
+                } else if (currentDrawIdx < preDrawIdx) {
+                    for (size_t idx = currentDrawIdx; idx < preDrawIdx; ++idx) {
+                        analyzerRef.clearDrawingDiffs(idx);
+                    }
+                } else {
+                    for (size_t idx = preDrawIdx + 1; idx <= currentDrawIdx; ++idx) {
+                        analyzerRef.clearDrawingDiffs(idx);
+                    }
                 }
             } else {
-                float dB = preDrawDB;
-                const float deltaDB = (currentDrawDB - preDrawDB) / static_cast<float>(currentDrawIdx - preDrawIdx - 1);
-                for (size_t idx = preDrawIdx + 1; idx <= currentDrawIdx; ++idx) {
-                    analyzerRef.setDrawingDiffs(idx, dB);
-                    dB += deltaDB;
+                // if shift down, draw as zeros
+                if (event.mods.isShiftDown()) {
+                    currentDrawDB = 0.f;
+                }
+                if (currentDrawIdx == preDrawIdx) {
+                    analyzerRef.setDrawingDiffs(currentDrawIdx, currentDrawDB);
+                } else if (currentDrawIdx < preDrawIdx) {
+                    float dB = currentDrawDB;
+                    const float deltaDB = (preDrawDB - currentDrawDB) / static_cast<float>(preDrawIdx - currentDrawIdx - 1);
+                    for (size_t idx = currentDrawIdx; idx < preDrawIdx; ++idx) {
+                        analyzerRef.setDrawingDiffs(idx, dB);
+                        dB += deltaDB;
+                    }
+                } else {
+                    float dB = preDrawDB;
+                    const float deltaDB = (currentDrawDB - preDrawDB) / static_cast<float>(currentDrawIdx - preDrawIdx - 1);
+                    for (size_t idx = preDrawIdx + 1; idx <= currentDrawIdx; ++idx) {
+                        analyzerRef.setDrawingDiffs(idx, dB);
+                        dB += deltaDB;
+                    }
                 }
             }
+            // store current idx and DB
             preDrawIdx = currentDrawIdx;
             preDrawDB = currentDrawDB;
         }
     }
 
     void MatchAnalyzerPanel::mouseDoubleClick(const juce::MouseEvent &event) {
-        if (!event.mods.isCommandDown()) {
+        if (!event.mods.isCommandDown() && event.mods.isShiftDown()) {
             analyzerRef.clearDrawingDiffs();
         }
     }

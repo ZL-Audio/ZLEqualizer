@@ -68,6 +68,10 @@ namespace zlEqMatch {
             drawingFlag[idx].store(true);
         }
 
+        void clearDrawingDiffs(const size_t idx) {
+            drawingFlag[idx].store(false);
+        }
+
         void clearDrawingDiffs() {
             for (size_t idx = 0; idx < pointNum; ++idx) {
                 drawingFlag[idx].store(false);
