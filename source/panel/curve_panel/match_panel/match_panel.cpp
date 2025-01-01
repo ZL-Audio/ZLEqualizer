@@ -15,7 +15,7 @@ namespace zlPanel {
         : uiBase(base), matchAnalyzerPanel(analyzer, parametersNA, base) {
         juce::ignoreUnused(analyzer, uiBase);
         setInterceptsMouseClicks(true, false);
-        addAndMakeVisible(matchAnalyzerPanel);
+        addChildComponent(matchAnalyzerPanel);
     }
 
     MatchPanel::~MatchPanel() = default;

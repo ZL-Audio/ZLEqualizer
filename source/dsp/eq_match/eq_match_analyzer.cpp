@@ -155,16 +155,11 @@ namespace zlEqMatch {
             }
         }
         // center diffs
+        const auto currentShift = shift.load();
         const auto diffC = std::reduce(
-            diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size()) - shift.load();
-        // read from drawing
+            diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size()) - currentShift;
         for (size_t i = 0; i < pointNum; ++i) {
-            if (drawingFlag[i].load()) {
-                diffs[i] = drawingDiffs[i].load();
-            }
-        }
-        for (auto &diff: diffs) {
-            diff -= diffC;
+            diffs[i] = drawingFlag[i].load() ? drawingDiffs[i].load() + currentShift : diffs[i] - diffC;
         }
         // save to target
         for (size_t i = 0; i < pointNum; ++i) {

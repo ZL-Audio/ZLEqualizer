@@ -20,7 +20,7 @@ namespace zlEqMatch {
     template<size_t FilterNum>
     class EqMatchOptimizer final : public juce::Thread::Listener {
     public:
-        static constexpr double eps = 1e-3, highOrderEps = 1.;
+        static constexpr double eps = 1e-3, highOrderEps = .1;
         static constexpr double diffMinFreqLog = 2.302585092994046, diffMaxFreqLog = 9.998797732340453;
         static constexpr double minFreqLog = 2.3026, maxFreqLog = 9.9034;
         static constexpr double minGain = -29.999, maxGain = 29.999, gainScale = .15;

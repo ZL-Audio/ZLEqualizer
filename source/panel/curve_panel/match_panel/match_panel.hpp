@@ -32,7 +32,7 @@ namespace zlPanel {
         }
 
         void visibilityChanged() override {
-            matchAnalyzerPanel.visibilityChanged();
+            matchAnalyzerPanel.setVisible(isVisible());
         }
 
     private:

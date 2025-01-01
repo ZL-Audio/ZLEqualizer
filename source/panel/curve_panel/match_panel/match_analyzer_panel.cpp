@@ -47,6 +47,7 @@ namespace zlPanel {
             addAndMakeVisible(d);
         }
         lookAndFeelChanged();
+        visibilityChanged();
     }
 
     MatchAnalyzerPanel::~MatchAnalyzerPanel() {
@@ -119,12 +120,16 @@ namespace zlPanel {
     }
 
     void MatchAnalyzerPanel::visibilityChanged() {
-        lowDragger.setXPortion(0.f);
-        highDragger.setXPortion(1.f);
-        shiftDragger.setYPortion(.5f);
-        draggerValueChanged(&lowDragger);
-        draggerValueChanged(&highDragger);
-        draggerValueChanged(&shiftDragger);
+        if (!isVisible()) {
+            lowDragger.setXPortion(0.f);
+            highDragger.setXPortion(1.f);
+            shiftDragger.setYPortion(.5f);
+            draggerValueChanged(&lowDragger);
+            draggerValueChanged(&highDragger);
+            draggerValueChanged(&shiftDragger);
+            analyzerRef.clearDrawingDiffs();
+            updateDraggers();
+        }
     }
 
     void MatchAnalyzerPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &property) {
