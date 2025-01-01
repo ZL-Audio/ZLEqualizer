@@ -64,7 +64,7 @@ namespace zlEqMatch {
         std::array<std::atomic<float>, pointNum> &getDiffs() { return atomicDiffs; }
 
         void setDrawingDiffs(const size_t idx, const float x) {
-            drawingDiffs[idx].store(x);
+            drawingDiffs[idx].store(x - shift.load());
             drawingFlag[idx].store(true);
         }
 

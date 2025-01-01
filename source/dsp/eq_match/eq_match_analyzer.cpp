@@ -157,14 +157,14 @@ namespace zlEqMatch {
         // center diffs
         const auto diffC = std::reduce(
             diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size()) - shift.load();
-        for (auto &diff: diffs) {
-            diff -= diffC;
-        }
         // read from drawing
         for (size_t i = 0; i < pointNum; ++i) {
             if (drawingFlag[i].load()) {
                 diffs[i] = drawingDiffs[i].load();
             }
+        }
+        for (auto &diff: diffs) {
+            diff -= diffC;
         }
         // save to target
         for (size_t i = 0; i < pointNum; ++i) {
