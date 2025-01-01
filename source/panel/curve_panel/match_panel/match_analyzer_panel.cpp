@@ -203,14 +203,14 @@ namespace zlPanel {
                     analyzerRef.setDrawingDiffs(currentDrawIdx, currentDrawDB);
                 } else if (currentDrawIdx < preDrawIdx) {
                     float dB = currentDrawDB;
-                    const float deltaDB = (preDrawDB - currentDrawDB) / static_cast<float>(preDrawIdx - currentDrawIdx - 1);
+                    const float deltaDB = (preDrawDB - currentDrawDB) / static_cast<float>(preDrawIdx - currentDrawIdx);
                     for (size_t idx = currentDrawIdx; idx < preDrawIdx; ++idx) {
                         analyzerRef.setDrawingDiffs(idx, dB);
                         dB += deltaDB;
                     }
                 } else {
                     float dB = preDrawDB;
-                    const float deltaDB = (currentDrawDB - preDrawDB) / static_cast<float>(currentDrawIdx - preDrawIdx - 1);
+                    const float deltaDB = (currentDrawDB - preDrawDB) / static_cast<float>(currentDrawIdx - preDrawIdx);
                     for (size_t idx = preDrawIdx + 1; idx <= currentDrawIdx; ++idx) {
                         analyzerRef.setDrawingDiffs(idx, dB);
                         dB += deltaDB;
