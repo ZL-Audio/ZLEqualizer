@@ -124,9 +124,11 @@ namespace zlPanel {
                                                const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
         if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchLowCut)]) {
-            lowCutP.store(static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchLowCut)));
+            lowCutP.store(std::clamp(
+                static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchLowCut)), 0.f, 1.f));
         } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchHighCut)]) {
-            highCutP.store(static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchHighCut)));
+            highCutP.store(std::clamp(
+                static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchHighCut)), 0.f, 1.f));
         }
     }
 

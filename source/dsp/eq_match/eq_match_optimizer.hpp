@@ -156,7 +156,7 @@ namespace zlEqMatch {
                     for (size_t j = i + 1; j < filters.size(); j++) {
                         mseS[j] = mseS[i];
                         filters[j].setFilterType(zlFilter::FilterType::peak);
-                        filters[i].setOrder(2);
+                        filters[j].setOrder(2);
                         filters[j].setFreq(500.);
                         filters[j].setGain(0.);
                         filters[j].setQ(0.707);
@@ -185,7 +185,6 @@ namespace zlEqMatch {
         std::vector<double> mDiffs;
         std::vector<double> mWs;
         std::atomic<bool> shouldExit{false};
-
         struct optFData {
             size_t startIdx;
             size_t endIdx;
