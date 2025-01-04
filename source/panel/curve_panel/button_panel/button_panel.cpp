@@ -21,6 +21,12 @@ namespace zlPanel {
               zlInterface::SnappingSlider{base}
           } {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
+            const auto suffix = zlDSP::appendSuffix("", i);
+            freqUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(parametersRef, zlDSP::freq::ID + suffix);
+            gainUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(parametersRef, zlDSP::gain::ID + suffix);
+            QUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(parametersRef, zlDSP::Q::ID + suffix);
+        }
+        for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, processorRef, base);
             linkButtons[i] = std::make_unique<LinkButtonPanel>(
                 i, parametersRef, parametersNARef, base, panels[i]->getSideDragger());
@@ -61,7 +67,6 @@ namespace zlPanel {
             parametersNARef.addParameterListener(idx, this);
             parameterChanged(idx, parametersNARef.getRawParameterValue(idx)->load());
         }
-
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             addAndMakeVisible(panels[i].get());
             addAndMakeVisible(linkButtons[i].get());
@@ -191,10 +196,6 @@ namespace zlPanel {
     void ButtonPanel::mouseDown(const juce::MouseEvent &event) {
         if (event.originalComponent != this) {
             isLeftClick.store(!event.mods.isRightButtonDown());
-            for (size_t idx = 0; idx < panels.size(); ++idx) {
-                previousGains[idx].store(
-                    static_cast<float>(controllerRef.getBaseFilter(idx).getGain()));
-            }
             return;
         }
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
@@ -354,17 +355,13 @@ namespace zlPanel {
             const auto currentBand = selectBandIdx.load();
             const auto value = static_cast<double>(newValue);
             if (parameterID.startsWith(zlDSP::freq::ID)) {
-                const auto ratio = static_cast<float>(value / currentFreq.load());
-                currentFreq.store(value);
+                const auto ratio = static_cast<float>(value / previousFreqs[currentBand].load());
                 if (!uiBase.getIsBandSelected(currentBand)) return;
                 for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                     if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                        auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, idx));
-                        const auto shiftFreq = para->convertFrom0to1(para->getValue()) * ratio;
+                        const auto shiftFreq = previousFreqs[idx].load() * ratio;
                         const auto legalFreq = zlDSP::freq::range.snapToLegalValue(shiftFreq);
-                        para->beginChangeGesture();
-                        para->setValueNotifyingHost(para->convertTo0to1(legalFreq));
-                        para->endChangeGesture();
+                        freqUpdaters[idx]->update(zlDSP::freq::range.convertTo0to1(legalFreq));
                     }
                 }
             } else if (parameterID.startsWith(zlDSP::gain::ID)) {
@@ -374,39 +371,29 @@ namespace zlPanel {
                     const auto scale = newValue / previousGains[currentBand].load();
                     for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                         if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                            auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
                             const auto shiftGain = scale * previousGains[idx].load();
                             const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
-                            para->beginChangeGesture();
-                            para->setValueNotifyingHost(para->convertTo0to1(legalGain));
-                            para->endChangeGesture();
+                            gainUpdaters[idx]->update(zlDSP::gain::convertTo01(legalGain));
                         }
                     }
                 } else {
                     const auto shift = newValue - previousGains[currentBand].load();
                     for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                         if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                            auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::gain::ID, idx));
                             const auto shiftGain = shift + previousGains[idx].load();
                             const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
-                            para->beginChangeGesture();
-                            para->setValueNotifyingHost(para->convertTo0to1(legalGain));
-                            para->endChangeGesture();
+                            gainUpdaters[idx]->update(zlDSP::gain::convertTo01(legalGain));
                         }
                     }
                 }
             } else if (parameterID.startsWith(zlDSP::Q::ID)) {
-                const auto ratio = static_cast<float>(value / currentQ.load());
-                currentQ.store(value);
+                const auto ratio = static_cast<float>(value / previousQs[currentBand].load());
                 if (!uiBase.getIsBandSelected(currentBand)) return;
                 for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                     if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
-                        auto *para = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::Q::ID, idx));
-                        const auto shiftQ = para->convertFrom0to1(para->getValue()) * ratio;
+                        const auto shiftQ = ratio * previousQs[idx].load();
                         const auto legalQ = zlDSP::Q::range.snapToLegalValue(shiftQ);
-                        para->beginChangeGesture();
-                        para->setValueNotifyingHost(para->convertTo0to1(legalQ));
-                        para->endChangeGesture();
+                        QUpdaters[idx]->update(zlDSP::Q::range.convertTo0to1(legalQ));
                     }
                 }
             }
@@ -414,6 +401,7 @@ namespace zlPanel {
     }
 
     void ButtonPanel::attachGroup(const size_t idx) {
+        loadPreviousParameters();
         for (size_t oldIdx = 0; oldIdx < zlState::bandNUM; ++oldIdx) {
             for (const auto &parameter: IDs) {
                 parametersRef.removeParameterListener(zlDSP::appendSuffix(parameter, oldIdx), this);
@@ -422,10 +410,6 @@ namespace zlPanel {
         for (const auto &parameter: IDs) {
             parametersRef.addParameterListener(zlDSP::appendSuffix(parameter, idx), this);
         }
-        currentFreq.store(
-            static_cast<double>(parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::freq::ID, idx))->load()));
-        currentQ.store(
-            static_cast<double>(parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::Q::ID, idx))->load()));
     }
 
     void ButtonPanel::handleAsyncUpdate() {
@@ -503,6 +487,18 @@ namespace zlPanel {
             para->beginChangeGesture();
             para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(currentFirstSelectIdx));
             para->endChangeGesture();
+        }
+        loadPreviousParameters();
+    }
+
+    void ButtonPanel::loadPreviousParameters() {
+        for (size_t idx = 0; idx < panels.size(); ++idx) {
+            previousFreqs[idx].store(zlDSP::freq::range.convertFrom0to1(
+                freqUpdaters[idx]->getPara()->getValue()));
+            previousGains[idx].store(zlDSP::gain::range.convertFrom0to1(
+                gainUpdaters[idx]->getPara()->getValue()));
+            previousQs[idx].store(zlDSP::Q::range.convertFrom0to1(
+                QUpdaters[idx]->getPara()->getValue()));
         }
     }
 } // zlPanel

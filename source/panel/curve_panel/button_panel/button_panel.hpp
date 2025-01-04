@@ -81,6 +81,8 @@ namespace zlPanel {
 
         static constexpr std::array NAIDs{zlState::maximumDB::ID, zlState::selectedBandIdx::ID};
 
+        std::array<std::unique_ptr<zlChore::ParaUpdater>, zlState::bandNUM> freqUpdaters, gainUpdaters, QUpdaters;
+
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void handleAsyncUpdate() override;
@@ -101,9 +103,8 @@ namespace zlPanel {
 
         juce::LassoComponent<size_t> lassoComponent;
         juce::SelectedItemSet<size_t> itemsSet;
-        std::atomic<double> currentFreq, currentQ;
         std::atomic<bool> isLeftClick{true};
-        std::array<std::atomic<float>, zlState::bandNUM> previousGains{};
+        std::array<std::atomic<float>, zlState::bandNUM> previousFreqs{}, previousGains{}, previousQs{};
 
         std::atomic<bool> toAttachGroup{false};
 
@@ -121,6 +122,8 @@ namespace zlPanel {
         inline void drawFreq(juce::Graphics &g, float freq, const juce::Rectangle<float> &bound, bool isTop);
 
         inline void drawGain(juce::Graphics &g, float gain, const juce::Rectangle<float> &bound, bool isLeft);
+
+        inline void loadPreviousParameters();
     };
 } // zlPanel
 

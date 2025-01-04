@@ -31,6 +31,8 @@ namespace zlChore {
             para->endChangeGesture();
         }
 
+        juce::RangedAudioParameter *getPara() const { return para; }
+
     private:
         juce::RangedAudioParameter *para;
         std::atomic<float> value;
