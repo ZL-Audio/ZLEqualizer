@@ -409,6 +409,16 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
+    class renderingEngine : public ChoiceParameters<renderingEngine> {
+    public:
+        auto static constexpr ID = "rendering_engine";
+        auto static constexpr name = "Rendering Engine";
+        inline auto static const choices = juce::StringArray{
+            "Software", "Hardware"
+        };
+        int static constexpr defaultI = 1;
+    };
+
     class colourMapIdx : public ChoiceParameters<colourMapIdx> {
     public:
         auto static constexpr ID = "colour_map_idx";
@@ -478,7 +488,7 @@ namespace zlState {
                    refreshRate::get(),
                    ffTOrder::get(), fftExtraTilt::get(), fftExtraSpeed::get(),
                    singleCurveThickness::get(), sumCurveThickness::get(),
-                   defaultPassFilterSlope::get(), dynLink::get());
+                   defaultPassFilterSlope::get(), dynLink::get(), renderingEngine::get());
         addOneColour(layout, "pre", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "post", 255 - 8, 255 - 9, 255 - 11, true, 0.1f);
         addOneColour(layout, "side", 252, 18, 197, true, 0.1f);

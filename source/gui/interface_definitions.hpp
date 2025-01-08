@@ -369,6 +369,10 @@ namespace zlInterface {
 
         void setDynLink(const bool x) { dynLink.store(x); }
 
+        int getRenderingEngine() const { return renderingEngine.load(); }
+
+        void setRenderingEngine(const int x) { renderingEngine.store(x); }
+
         juce::ValueTree &getValueTree() { return valueTree; }
 
         juce::var getProperty(const settingIdx idx) const {
@@ -400,6 +404,7 @@ namespace zlInterface {
         std::atomic<bool> isSliderDoubleClickOpenEditor{false};
         std::atomic<int> defaultPassFilterSlope{1};
         std::atomic<bool> dynLink{true};
+        std::atomic<int> renderingEngine{1};
 
         float loadPara(const std::string &id) const {
             return state.getRawParameterValue(id)->load();

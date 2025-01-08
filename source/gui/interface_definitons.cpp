@@ -276,6 +276,7 @@ namespace zlInterface {
         cMap2Idx = static_cast<size_t>(loadPara(zlState::colourMap2Idx::ID));
         fftOrderIdx = static_cast<int>(loadPara(zlState::ffTOrder::ID));
         dynLink.store(static_cast<bool>(loadPara(zlState::dynLink::ID)));
+        renderingEngine.store(static_cast<int>(loadPara(zlState::renderingEngine::ID)));
     }
 
     void UIBase::saveToAPVTS() const {
@@ -324,5 +325,6 @@ namespace zlInterface {
         savePara(zlState::colourMap2Idx::ID, zlState::colourMapIdx::convertTo01(static_cast<int>(cMap2Idx)));
         savePara(zlState::ffTOrder::ID, zlState::ffTOrder::convertTo01(fftOrderIdx));
         savePara(zlState::dynLink::ID, zlState::dynLink::convertTo01(dynLink.load()));
+        savePara(zlState::renderingEngine::ID, zlState::renderingEngine::convertTo01(renderingEngine.load()));
     }
 }

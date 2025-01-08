@@ -63,6 +63,12 @@ namespace zlPanel {
         triggerAsyncUpdate();
     }
 
+    void MainPanel::parentHierarchyChanged() {
+        if (const auto peer = getPeer()) {
+            peer->setCurrentRenderingEngine(uiBase.getRenderingEngine());
+        }
+    }
+
     void MainPanel::handleAsyncUpdate() {
         updateFFTs();
     }

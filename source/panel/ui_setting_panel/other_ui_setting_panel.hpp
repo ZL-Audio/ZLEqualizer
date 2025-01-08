@@ -17,7 +17,7 @@ namespace zlPanel {
 
 class OtherUISettingPanel final : public juce::Component {
 public:
-    static constexpr float heightP = 20.f;
+    static constexpr float heightP = 4.f * 6.f;
 
     explicit OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
@@ -34,6 +34,8 @@ private:
     zlInterface::UIBase &uiBase;
     zlInterface::NameLookAndFeel nameLAF;
 
+    juce::Label renderingEngineLabel;
+    zlInterface::CompactCombobox renderingEngineBox;
     juce::Label refreshRateLabel;
     zlInterface::CompactCombobox refreshRateBox;
     juce::Label fftLabel;

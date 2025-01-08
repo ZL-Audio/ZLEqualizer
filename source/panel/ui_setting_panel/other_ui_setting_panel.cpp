@@ -13,6 +13,7 @@ namespace zlPanel {
     OtherUISettingPanel::OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
         : pRef(p),
           uiBase(base), nameLAF(base),
+          renderingEngineBox("", zlState::renderingEngine::choices, base),
           refreshRateBox("", zlState::refreshRate::choices, base),
           fftTiltSlider("Tilt", base),
           fftSpeedSlider("Speed", base),
@@ -23,6 +24,11 @@ namespace zlPanel {
           dynLinkBox("", zlState::dynLink::choices, base) {
         juce::ignoreUnused(pRef);
         nameLAF.setFontScale(zlInterface::FontHuge);
+        renderingEngineLabel.setText("Rendering Engine", juce::dontSendNotification);
+        renderingEngineLabel.setJustificationType(juce::Justification::centredRight);
+        renderingEngineLabel.setLookAndFeel(&nameLAF);
+        addAndMakeVisible(renderingEngineLabel);
+        addAndMakeVisible(renderingEngineBox);
         refreshRateLabel.setText("Refresh Rate", juce::dontSendNotification);
         refreshRateLabel.setJustificationType(juce::Justification::centredRight);
         refreshRateLabel.setLookAndFeel(&nameLAF);
@@ -63,6 +69,7 @@ namespace zlPanel {
     }
 
     void OtherUISettingPanel::loadSetting() {
+        renderingEngineBox.getBox().setSelectedId(static_cast<int>(uiBase.getRenderingEngine()) + 1);
         refreshRateBox.getBox().setSelectedId(static_cast<int>(uiBase.getRefreshRateID()) + 1);
         fftTiltSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraTilt()));
         fftSpeedSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraSpeed()));
@@ -74,6 +81,7 @@ namespace zlPanel {
     }
 
     void OtherUISettingPanel::saveSetting() {
+        uiBase.setRenderingEngine(static_cast<int>(renderingEngineBox.getBox().getSelectedId() - 1));
         uiBase.setRefreshRateID(static_cast<size_t>(refreshRateBox.getBox().getSelectedId() - 1));
         uiBase.setFFTExtraTilt(static_cast<float>(fftTiltSlider.getSlider().getValue()));
         uiBase.setFFTExtraSpeed(static_cast<float>(fftSpeedSlider.getSlider().getValue()));
@@ -90,6 +98,13 @@ namespace zlPanel {
 
     void OtherUISettingPanel::resized() {
         auto bound = getLocalBounds().toFloat(); {
+            bound.removeFromTop(uiBase.getFontSize());
+            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            renderingEngineLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            localBound.removeFromLeft(bound.getWidth() * .05f);
+            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            renderingEngineBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+        } {
             bound.removeFromTop(uiBase.getFontSize());
             auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
             refreshRateLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());

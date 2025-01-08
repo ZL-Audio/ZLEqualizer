@@ -29,6 +29,8 @@ namespace zlPanel {
 
         void resized() override;
 
+        void parentHierarchyChanged() override;
+
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &state;
