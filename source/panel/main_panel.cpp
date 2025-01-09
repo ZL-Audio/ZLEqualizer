@@ -64,9 +64,9 @@ namespace zlPanel {
     }
 
     void MainPanel::parentHierarchyChanged() {
-        if (const auto peer = getPeer()) {
-            peer->setCurrentRenderingEngine(uiBase.getRenderingEngine());
-        }
+        // if (const auto peer = getPeer()) {
+        //     peer->setCurrentRenderingEngine(uiBase.getRenderingEngine());
+        // }
     }
 
     void MainPanel::handleAsyncUpdate() {

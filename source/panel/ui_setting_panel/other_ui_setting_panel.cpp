@@ -27,8 +27,8 @@ namespace zlPanel {
         renderingEngineLabel.setText("Rendering Engine", juce::dontSendNotification);
         renderingEngineLabel.setJustificationType(juce::Justification::centredRight);
         renderingEngineLabel.setLookAndFeel(&nameLAF);
-        addAndMakeVisible(renderingEngineLabel);
-        addAndMakeVisible(renderingEngineBox);
+        // addAndMakeVisible(renderingEngineLabel);
+        // addAndMakeVisible(renderingEngineBox);
         refreshRateLabel.setText("Refresh Rate", juce::dontSendNotification);
         refreshRateLabel.setJustificationType(juce::Justification::centredRight);
         refreshRateLabel.setLookAndFeel(&nameLAF);
@@ -98,13 +98,6 @@ namespace zlPanel {
 
     void OtherUISettingPanel::resized() {
         auto bound = getLocalBounds().toFloat(); {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
-            renderingEngineLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
-            localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
-            renderingEngineBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-        } {
             bound.removeFromTop(uiBase.getFontSize());
             auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
             refreshRateLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
