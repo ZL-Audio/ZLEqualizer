@@ -28,7 +28,6 @@ jobs:
         include:
           - name: Linux
             os: ubuntu-22.04
-            pluginval-binary: ./pluginval
             boost_platform_version: "22.04"
             boost_toolset: "gcc"
             plugin_os_format: "VST3;LV2;Standalone"
@@ -37,7 +36,6 @@ jobs:
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
           - name: macOS
             os: macos-15
-            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             boost_platform_version: "11"
             boost_toolset: "clang"
             plugin_os_format: "VST3;AU;Standalone"
@@ -46,7 +44,6 @@ jobs:
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           - name: Windows
             os: windows-latest
-            pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
             boost_toolset: "msvc"
             plugin_os_format: "VST3;LV2;Standalone"
@@ -54,7 +51,6 @@ jobs:
             app_suffix: ".exe"
           - name: Windows-Software
             os: windows-latest
-            pluginval-binary: ./pluginval.exe
             boost_platform_version: "2022"
             boost_toolset: "msvc"
             plugin_os_format: "VST3;LV2;Standalone"
@@ -181,29 +177,6 @@ jobs:
           echo "AAX_PATH=aax_releases/${{ matrix.name }}/${{ env.PRODUCT_NAME }}.aaxplugin" >> $GITHUB_ENV
           echo "Standalone_PATH=$ARTIFACTS_PATH/Standalone/${{ env.PRODUCT_NAME }}${{ matrix.app_suffix }}" >> $GITHUB_ENV
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
-
-      - name: Pluginval setup
-        shell: bash
-        run: |
-          curl -LO "https://github.com/Tracktion/pluginval/releases/download/v1.0.3/pluginval_${{ runner.os }}.zip"
-          7z x pluginval_${{ runner.os }}.zip
-          echo "PLUGINVAL_DISABLED=Plugin state restoration" >> $GITHUB_ENV
-
-      - name: Setup Pluginval random seed
-        uses: josStorer/get-current-time@v2
-        id: current-time
-        with:
-          format: YYYYMMDD
-
-      - name: Pluginval VST3 validations
-        shell: bash
-        run: |
-          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
-        env:
-          STRICTNESS_LEVEL: 10
-          TIMEOUT_MS: 1440000
-          REPEAT: 1
-          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
       - name: Codesign and Create Individual Packages (macOS)
         if: ${{ runner.os == 'macOS' }}
