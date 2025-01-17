@@ -112,6 +112,11 @@ juce_add_plugin("${PROJECT_NAME}"
         VST3_CATEGORIES EQ
         AAX_CATEGORY AAX_ePlugInCategory_EQ
 
+        MICROPHONE_PERMISSION_ENABLED TRUE
+        MICROPHONE_PERMISSION_TEXT "${PRODUCT_NAME} Standalone needs access to your audio interface"
+        HARDENED_RUNTIME_ENABLED TRUE
+        HARDENED_RUNTIME_OPTIONS com.apple.security.device.audio-input
+
         # The name of your final executable
         # This is how it's listed in the DAW
         # This can be different from PROJECT_NAME and can have spaces!
