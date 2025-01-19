@@ -39,15 +39,15 @@ namespace zlPanel {
             const auto y = d * bound.getHeight() + bound.getY() - uiBase.getFontSize() * .75f;
             const auto lTextBound = juce::Rectangle<float>(bound.getX(), y, bound.getWidth() * .4f,
                                                            uiBase.getFontSize() * 1.5f);
-            const auto leftDB = static_cast<int>(-2 * d * maximumDB.load() + maximumDB.load());
+            const auto leftDB = static_cast<int>(std::round(-2 * d * maximumDB.load() + maximumDB.load()));
             g.setColour(uiBase.getTextColor());
             g.drawText(juce::String(leftDB), lTextBound, juce::Justification::centredRight);
             const auto rTextBound = juce::Rectangle<float>(bound.getCentreX(), y, bound.getWidth() * .4f,
                                                            uiBase.getFontSize() * 1.5f);
-            const auto reftDB = static_cast<int>(minimumFFTDB.load() * d);
-            if (reftDB > -100) {
+            const auto fftDB = static_cast<int>(std::round(minimumFFTDB.load() * d));
+            if (fftDB > -100) {
                 g.setColour(uiBase.getTextInactiveColor());
-                g.drawText(juce::String(reftDB), rTextBound, juce::Justification::centredRight);
+                g.drawText(juce::String(fftDB), rTextBound, juce::Justification::centredRight);
             }
         }
     }
