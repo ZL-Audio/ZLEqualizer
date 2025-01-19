@@ -85,6 +85,17 @@ namespace zlState {
         int static constexpr defaultI = 1;
     };
 
+    class minimumFFTDB : public ChoiceParameters<minimumFFTDB> {
+    public:
+        auto static constexpr ID = "minimum_fft_db";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray{
+            "-60 dB", "-72 dB", "-96 dB", "-120 dB"
+        };
+        static constexpr std::array<float, 4> dBs = {-60.f, -72.f, -96.f, -120.f};
+        int static constexpr defaultI = 1;
+    };
+
     class fftPreON : public ChoiceParameters<fftPreON> {
     public:
         auto static constexpr ID = "fft_pre_on";
@@ -209,7 +220,7 @@ namespace zlState {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(selectedBandIdx::get(), maximumDB::get(),
+        layout.add(selectedBandIdx::get(), maximumDB::get(), minimumFFTDB::get(),
                    fftPreON::get(), fftPostON::get(), fftSideON::get(),
                    ffTSpeed::get(), ffTTilt::get(),
                    conflictON::get(), conflictStrength::get(), conflictScale::get(),

@@ -118,12 +118,13 @@ namespace zlFFT {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::updatePaths(
-        juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_, juce::Rectangle<float> bound) {
+        juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
+        juce::Rectangle<float> bound, const float minimumFFTDB) {
         if (isPathReady.load()) {
             prePath_.clear();
             postPath_.clear();
             sidePath_.clear();
-            fftAnalyzer.createPath({prePath_, postPath_, sidePath_}, bound);
+            fftAnalyzer.createPath({prePath_, postPath_, sidePath_}, bound, minimumFFTDB);
             isPathReady.store(false);
         }
         triggerAsyncUpdate();

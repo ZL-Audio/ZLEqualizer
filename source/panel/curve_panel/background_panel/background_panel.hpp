@@ -31,6 +31,8 @@ namespace zlPanel {
 
         void setMaximumDB(const float x) { scalePanel.setMaximumDB(x); }
 
+        void setMinimumFFTDB(const float x) { scalePanel.setMinimumFFTDB(x); }
+
     private:
         zlInterface::UIBase &uiBase;
         GridPanel gridPanel;

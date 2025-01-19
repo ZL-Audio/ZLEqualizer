@@ -30,6 +30,10 @@ namespace zlPanel {
 
         void visibilityChanged() override;
 
+        void setMinimumFFTDB(const float x) {
+            minimumFFTDB.store(x);
+        }
+
     private:
         zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
         zlInterface::UIBase &uiBase;
@@ -39,6 +43,7 @@ namespace zlPanel {
         AtomicPoint leftCorner, rightCorner;
         AtomicBound atomicBound;
         std::atomic<bool> firstPath = true;
+        std::atomic<float> minimumFFTDB{-72.f};
     };
 } // zlPanel
 

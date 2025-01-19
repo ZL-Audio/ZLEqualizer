@@ -266,7 +266,8 @@ namespace zlFFT {
         }
 
         void createPath(std::array<std::reference_wrapper<juce::Path>, FFTNum> paths,
-                        const juce::Rectangle<float> bound) {
+                        const juce::Rectangle<float> bound,
+                        const float currentMinDB = -72.f) {
             for (auto &p: paths) {
                 p.get().clear();
             }
@@ -287,16 +288,16 @@ namespace zlFFT {
                 path.get().startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
                 for (size_t idx = 0; idx < PointNum - cubicNum; ++idx) {
                     const auto x = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
-                    const auto y = replaceWithFinite(readyDBs[i][idx] / minDB * height + boundY);
+                    const auto y = replaceWithFinite(readyDBs[i][idx] / currentMinDB * height + boundY);
                     path.get().lineTo(x, y);
                 }
                 for (size_t idx = PointNum - cubicNum; idx < PointNum - 2; idx += 3) {
                     const auto x1 = static_cast<float>(idx) / static_cast<float>(PointNum - 1) * width;
-                    const auto y1 = replaceWithFinite(readyDBs[i][idx] / minDB * height + boundY);
+                    const auto y1 = replaceWithFinite(readyDBs[i][idx] / currentMinDB * height + boundY);
                     const auto x2 = static_cast<float>(idx + 1) / static_cast<float>(PointNum - 1) * width;
-                    const auto y2 = replaceWithFinite(readyDBs[i][idx + 1] / minDB * height + boundY);
+                    const auto y2 = replaceWithFinite(readyDBs[i][idx + 1] / currentMinDB * height + boundY);
                     const auto x3 = static_cast<float>(idx + 2) / static_cast<float>(PointNum - 1) * width;
-                    const auto y3 = replaceWithFinite(readyDBs[i][idx + 2] / minDB * height + boundY);
+                    const auto y3 = replaceWithFinite(readyDBs[i][idx + 2] / currentMinDB * height + boundY);
                     path.get().cubicTo(x1, y1, x2, y2, x3, y3);
                 }
             }

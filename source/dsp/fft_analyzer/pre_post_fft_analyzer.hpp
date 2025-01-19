@@ -52,7 +52,7 @@ namespace zlFFT {
         inline bool getSideON() const { return isSideON.load(); }
 
         void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
-                         juce::Rectangle<float> bound);
+                         juce::Rectangle<float> bound, float minimumFFTDB);
 
         zlDelay::SampleDelay<FloatType> &getPreDelay() { return preDelay; }
 

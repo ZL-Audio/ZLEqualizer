@@ -50,6 +50,8 @@ namespace zlPanel {
         parametersRef.addParameterListener(zlDSP::scale::ID, this);
         parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
+        parameterChanged(zlState::minimumFFTDB::ID, parametersNARef.getRawParameterValue(zlState::minimumFFTDB::ID)->load());
+        parametersNARef.addParameterListener(zlState::minimumFFTDB::ID, this);
         startThread(juce::Thread::Priority::low);
 
         uiBase.getValueTree().addListener(this);
@@ -62,6 +64,7 @@ namespace zlPanel {
         }
         parametersRef.removeParameterListener(zlDSP::scale::ID, this);
         parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
+        parametersNARef.removeParameterListener(zlState::minimumFFTDB::ID, this);
     }
 
     void CurvePanel::paint(juce::Graphics &g) {
@@ -79,7 +82,7 @@ namespace zlPanel {
     void CurvePanel::resized() {
         backgroundPanel.setBounds(getLocalBounds());
         auto bound = getLocalBounds().toFloat();
-        bound.removeFromRight(uiBase.getFontSize() * 4.1f);
+        bound.removeFromRight(uiBase.getFontSize() * 4.2f);
         const auto intBound = bound.toNearestInt();
         fftPanel.setBounds(intBound);
         conflictPanel.setBounds(intBound);
@@ -106,6 +109,11 @@ namespace zlPanel {
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 singlePanels[i]->setScale(scale);
             }
+        } else if (parameterID == zlState::minimumFFTDB::ID) {
+            const auto idx = static_cast<size_t>(newValue);
+            const auto minDB = zlState::minimumFFTDB::dBs[idx];
+            backgroundPanel.setMinimumFFTDB(minDB);
+            fftPanel.setMinimumFFTDB(minDB);
         }
     }
 

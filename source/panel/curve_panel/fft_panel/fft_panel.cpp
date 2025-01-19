@@ -52,7 +52,7 @@ namespace zlPanel {
     }
 
     void FFTPanel::updatePaths() {
-        analyzerRef.updatePaths(path1, path2, path3, atomicBound.load());
+        analyzerRef.updatePaths(path1, path2, path3, atomicBound.load(), minimumFFTDB.load());
         for (auto &path: {&path1, &path2, &path3}) {
             if (!path->isEmpty()) {
                 path->lineTo(rightCorner.load());
