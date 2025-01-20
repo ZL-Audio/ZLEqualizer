@@ -18,7 +18,9 @@ namespace zlPanel {
           minFFTBox("", zlState::minimumFFTDB::choices, base) {
         juce::ignoreUnused(uiBase);
         scaleBox.getLAF().setFontScale(zlInterface::FontLarge);
+        scaleBox.getBox().setJustificationType(juce::Justification::centredRight);
         minFFTBox.getLAF().setFontScale(zlInterface::FontLarge);
+        minFFTBox.getBox().setJustificationType(juce::Justification::centredRight);
         attach({&scaleBox.getBox(), &minFFTBox.getBox()},
                {zlState::maximumDB::ID, zlState::minimumFFTDB::ID},
                parametersNARef, boxAttachments);
@@ -58,12 +60,15 @@ namespace zlPanel {
         {
             auto boxBound = juce::Rectangle<float>(uiBase.getFontSize() * 4.f, uiBase.getFontSize() * 1.5f);
             boxBound = boxBound.withCentre({bound.getCentreX(), bound.getY()});
-            boxBound.removeFromRight(uiBase.getFontSize());
+            boxBound.removeFromRight(uiBase.getFontSize() * .95f);
+            boxBound.removeFromLeft(uiBase.getFontSize() * .05f);
             scaleBox.setBounds(boxBound.toNearestInt());
         }
         {
             auto boxBound = juce::Rectangle<float>(bound.getWidth(), uiBase.getFontSize() * 1.5f);
             boxBound = boxBound.withCentre({bound.getCentreX(), bound.getBottom()});
+            boxBound.removeFromRight(uiBase.getFontSize() * .5f);
+            boxBound.removeFromLeft(uiBase.getFontSize() * .5f);
             minFFTBox.setBounds(boxBound.toNearestInt());
         }
     }

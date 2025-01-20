@@ -90,7 +90,7 @@ namespace zlState {
         auto static constexpr ID = "minimum_fft_db";
         auto static constexpr name = "";
         inline auto static const choices = juce::StringArray{
-            "-60 dB", "-72 dB", "-96 dB", "-120 dB"
+            "-60", "-72", "-96", "-120"
         };
         static constexpr std::array<float, 4> dBs = {-60.f, -72.f, -96.f, -120.f};
         int static constexpr defaultI = 1;

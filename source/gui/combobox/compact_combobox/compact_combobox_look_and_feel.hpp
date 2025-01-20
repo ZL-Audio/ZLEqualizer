@@ -60,7 +60,7 @@ namespace zlInterface {
                 g.setColour(uiBase->getTextInactiveColor());
             }
             g.setFont(uiBase->getFontSize() * fontScale);
-            g.drawText(label.getText(), label.getLocalBounds(), juce::Justification::centred);
+            g.drawText(label.getText(), label.getLocalBounds(), label.getJustificationType());
         }
 
         void drawPopupMenuBackground(juce::Graphics &g, int width, int height) override {

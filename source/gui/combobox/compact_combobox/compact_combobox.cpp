@@ -18,6 +18,7 @@ namespace zlInterface {
         comboBox.setScrollWheelEnabled(false);
         comboBox.setInterceptsMouseClicks(false, false);
         comboBox.setLookAndFeel(&boxLookAndFeel);
+        comboBox.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(comboBox);
 
         setEditable(true);
