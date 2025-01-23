@@ -343,27 +343,39 @@ namespace zlPanel {
     void FilterButtonPanel::mouseDoubleClick(const juce::MouseEvent &event) {
         if (event.mods.isCommandDown()) {
             const auto currentBand = band.load();
-            // turn on/off current band dynamic
-            const auto paraID = zlDSP::appendSuffix(zlDSP::dynamicON::ID, currentBand);
-            const auto newValue = 1.f - parametersRef.getRawParameterValue(paraID)->load();
-            {
-                auto *para = parametersRef.getParameter(paraID);
-                para->beginChangeGesture();
-                para->setValueNotifyingHost(newValue);
-                para->endChangeGesture();
-            }
-            float dynLinkValue = 0.0;
-            if (newValue > 0.5f) {
-                processorRef.getFiltersAttach().turnOnDynamic(currentBand);
-                dynLinkValue = static_cast<float>(uiBase.getDynLink());
-            } else {
-                processorRef.getFiltersAttach().turnOffDynamic(currentBand);
-            }
-            {
+            if (event.mods.isLeftButtonDown()) {
+                // turn on/off current band dynamic
+                const auto paraID = zlDSP::appendSuffix(zlDSP::dynamicON::ID, currentBand);
+                const auto newValue = 1.f - parametersRef.getRawParameterValue(paraID)->load();
+                {
+                    auto *para = parametersRef.getParameter(paraID);
+                    para->beginChangeGesture();
+                    para->setValueNotifyingHost(newValue);
+                    para->endChangeGesture();
+                }
+                float dynLinkValue = 0.0;
+                if (newValue > 0.5f) {
+                    processorRef.getFiltersAttach().turnOnDynamic(currentBand);
+                    dynLinkValue = static_cast<float>(uiBase.getDynLink());
+                } else {
+                    processorRef.getFiltersAttach().turnOffDynamic(currentBand);
+                }
+                {
+                    auto *para = parametersRef.getParameter(
+                        zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
+                    para->beginChangeGesture();
+                    para->setValueNotifyingHost(dynLinkValue);
+                    para->endChangeGesture();
+                }
+            } else if (event.mods.isRightButtonDown()) {
                 auto *para = parametersRef.getParameter(
-                    zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
+                        zlDSP::appendSuffix(zlDSP::solo::ID, currentBand));
                 para->beginChangeGesture();
-                para->setValueNotifyingHost(dynLinkValue);
+                if (para->getValue() < 0.5f) {
+                    para->setValueNotifyingHost(1.f);
+                } else {
+                    para->setValueNotifyingHost(0.f);
+                }
                 para->endChangeGesture();
             }
         }

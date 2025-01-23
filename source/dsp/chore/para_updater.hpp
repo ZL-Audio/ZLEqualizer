@@ -35,7 +35,7 @@ namespace zlChore {
 
     private:
         juce::RangedAudioParameter *para;
-        std::atomic<float> value;
+        std::atomic<float> value{};
 
         void handleAsyncUpdate() override {
             para->beginChangeGesture();
