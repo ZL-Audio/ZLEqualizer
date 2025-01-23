@@ -35,24 +35,18 @@ jobs:
           - name: Linux
             os: ubuntu-22.04
             pluginval-binary: ./pluginval
-            boost_platform_version: "22.04"
-            boost_toolset: "gcc"
             plugin_os_format: "VST3"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
           - name: macOS
             os: macos-15
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            boost_platform_version: "11"
-            boost_toolset: "clang"
             plugin_os_format: "AU"
             cmake_extra_flags:
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
-            boost_platform_version: "2022"
-            boost_toolset: "msvc"
             plugin_os_format: "VST3"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
 
     steps:
       - name: Set up Clang (Linux)
@@ -70,22 +64,9 @@ jobs:
           sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev xvfb ninja-build
           sudo /usr/bin/Xvfb $DISPLAY &
 
-      - name: Cache Clang (Windows)
+      - name: Set up Developer Command Prompt (Windows)
         if: runner.os == 'Windows'
-        id: cache-llvm
-        uses: actions/cache@v4
-        with:
-          path: |
-            C:/Program Files/LLVM
-            ./llvm
-          key: llvm-17
-
-      - name: Set up Clang (Windows)
-        if: runner.os == 'Windows'
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "17.0.6"
-          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Cache IPP (Windows)
         if: runner.os == 'Windows'
@@ -134,12 +115,9 @@ jobs:
         env:
           p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
-      - name: Cache the build
-        uses: mozilla-actions/sccache-action@v0.0.7
-
       - name: Configure
         shell: bash
-        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ${{ matrix.cmake_extra_flags }} .
+        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
         env:
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
 
