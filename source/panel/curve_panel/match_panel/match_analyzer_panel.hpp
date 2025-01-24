@@ -13,6 +13,7 @@
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 #include "../helpers.hpp"
+#include "match_label.hpp"
 
 namespace zlPanel {
     class MatchAnalyzerPanel final : public juce::Component,
@@ -57,8 +58,7 @@ namespace zlPanel {
         float currentMaximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         zlInterface::Dragger lowDragger, highDragger, shiftDragger;
-        zlInterface::NameLookAndFeel labelLAF;
-        juce::Label runningLabel;
+        MatchLabel matchLabel;
         static constexpr auto scale = 1.5f;
         size_t preDrawIdx{0};
         float preDrawDB{0.f};

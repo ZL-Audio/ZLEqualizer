@@ -15,16 +15,11 @@ namespace zlPanel {
                                            zlInterface::UIBase &base)
         : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base),
           lowDragger(base), highDragger(base), shiftDragger(base),
-          labelLAF(uiBase) {
+          matchLabel(base) {
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
         parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
         setInterceptsMouseClicks(true, true);
-        uiBase.getValueTree().addListener(this);
-        runningLabel.setText("Running", juce::dontSendNotification);
-        runningLabel.setJustificationType(juce::Justification::centred);
-        labelLAF.setFontScale(5.f);
-        runningLabel.setLookAndFeel(&labelLAF);
-        addChildComponent(runningLabel); {
+        uiBase.getValueTree().addListener(this); {
             lowDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::rightArrow);
             lowDragger.setYPortion(.5f);
             lowDragger.setXYEnabled(true, false);
@@ -46,6 +41,7 @@ namespace zlPanel {
             d->addListener(this);
             addAndMakeVisible(d);
         }
+        addChildComponent(matchLabel);
         lookAndFeelChanged();
         visibilityChanged();
     }
@@ -99,8 +95,7 @@ namespace zlPanel {
         rightCorner.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
         atomicBound.store(bound);
         dBScale.store((1.f + uiBase.getFontSize() * 2.f / bound.getHeight()) * 2.f);
-        runningLabel.setBounds(bound.withSizeKeepingCentre(
-            bound.getWidth() * .5f, uiBase.getFontSize() * 5.f).toNearestInt());
+        matchLabel.setBounds(getLocalBounds());
         lowDragger.setBounds(getLocalBounds());
         highDragger.setBounds(getLocalBounds());
         shiftDragger.setBounds(getLocalBounds());
@@ -138,7 +133,7 @@ namespace zlPanel {
             backgroundAlpha = f ? .2f : .5f;
             showAverage = !f;
         } else if (zlInterface::UIBase::isProperty(zlInterface::settingIdx::matchFitRunning, property)) {
-            runningLabel.setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchFitRunning)));
+            matchLabel.setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchFitRunning)));
         }
     }
 
