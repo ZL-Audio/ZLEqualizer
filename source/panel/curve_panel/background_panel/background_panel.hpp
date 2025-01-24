@@ -14,7 +14,6 @@
 
 #include "../../../gui/gui.hpp"
 #include "grid_panel.hpp"
-#include "scale_panel.hpp"
 
 namespace zlPanel {
     class BackgroundPanel final : public juce::Component {
@@ -29,14 +28,9 @@ namespace zlPanel {
 
         void resized() override;
 
-        void setMaximumDB(const float x) { scalePanel.setMaximumDB(x); }
-
-        void setMinimumFFTDB(const float x) { scalePanel.setMinimumFFTDB(x); }
-
     private:
         zlInterface::UIBase &uiBase;
         GridPanel gridPanel;
-        ScalePanel scalePanel;
     };
 }
 

@@ -14,13 +14,12 @@ namespace zlPanel {
                                  juce::AudioProcessorValueTreeState &parametersNA,
                                  zlInterface::UIBase &base)
         : uiBase(base),
-          gridPanel(base),
-    scalePanel(parametersNA, base){
+          gridPanel(base) {
         juce::ignoreUnused(parameters);
         setInterceptsMouseClicks(false, true);
         setOpaque(true);
         addAndMakeVisible(gridPanel);
-        addAndMakeVisible(scalePanel);
+        setBufferedToImage(true);
     }
 
     BackgroundPanel::~BackgroundPanel() = default;
@@ -31,8 +30,6 @@ namespace zlPanel {
 
     void BackgroundPanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4.2f);
-        gridPanel.setBounds(bound.toNearestInt());
-        scalePanel.setBounds(scaleBound.toNearestInt());
+        gridPanel.setBounds(getLocalBounds());
     }
 }

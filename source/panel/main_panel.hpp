@@ -13,6 +13,7 @@
 #include "../PluginProcessor.hpp"
 #include "control_panel/control_panel.hpp"
 #include "curve_panel/curve_panel.hpp"
+#include "curve_panel/scale_panel.hpp"
 #include "state_panel/state_panel.hpp"
 #include "ui_setting_panel/ui_setting_panel.hpp"
 
@@ -37,6 +38,7 @@ namespace zlPanel {
         zlInterface::UIBase uiBase;
         ControlPanel controlPanel;
         CurvePanel curvePanel;
+        ScalePanel scalePanel;
         StatePanel statePanel;
         UISettingPanel uiSettingPanel;
 

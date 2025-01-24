@@ -14,13 +14,14 @@ namespace zlPanel {
         : processorRef(p), state(p.state), uiBase(p.state),
           controlPanel(p, uiBase),
           curvePanel(p, uiBase),
+          scalePanel(p, uiBase),
           statePanel(p, uiBase, uiSettingPanel),
           uiSettingPanel(p, uiBase) {
         addAndMakeVisible(curvePanel);
+        addAndMakeVisible(scalePanel);
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
         addChildComponent(uiSettingPanel);
-
         updateFFTs();
 
         state.addParameterListener(zlState::fftExtraTilt::ID, this);
@@ -55,7 +56,9 @@ namespace zlPanel {
 
         const auto controlBound = bound.removeFromBottom(fontSize * 7.348942487176095f);
         controlPanel.setBounds(controlBound.toNearestInt());
+        const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4.2f);
         curvePanel.setBounds(bound.toNearestInt());
+        scalePanel.setBounds(scaleBound.toNearestInt());
     }
 
     void MainPanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -74,12 +77,12 @@ namespace zlPanel {
     }
 
     void MainPanel::updateFFTs() {
-        for (auto &fft : {&processorRef.getController().getAnalyzer().getMultipleFFT()}) {
+        for (auto &fft: {&processorRef.getController().getAnalyzer().getMultipleFFT()}) {
             fft->setExtraTilt(uiBase.getFFTExtraTilt());
             fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
             fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
-        for (auto &fft : {&processorRef.getController().getConflictAnalyzer().getSyncFFT()}) {
+        for (auto &fft: {&processorRef.getController().getConflictAnalyzer().getSyncFFT()}) {
             fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
     }

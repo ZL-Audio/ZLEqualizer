@@ -1,4 +1,4 @@
-// Copyright (C) 2024 - zsliu98
+// Copyright (C) 2025 - zsliu98
 // This file is part of ZLEqualizer
 //
 // ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
@@ -12,14 +12,15 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "../../../gui/gui.hpp"
-#include "../../../state/state.hpp"
+#include "../../PluginProcessor.hpp"
+#include "../../gui/gui.hpp"
+#include "../../state/state.hpp"
 
 namespace zlPanel {
     class ScalePanel final : public juce::Component,
                              private juce::AsyncUpdater {
     public:
-        ScalePanel(juce::AudioProcessorValueTreeState &parametersNA,
+        ScalePanel(PluginProcessor &processor,
                    zlInterface::UIBase &base);
 
         ~ScalePanel() override;

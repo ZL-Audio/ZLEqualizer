@@ -1,4 +1,4 @@
-// Copyright (C) 2024 - zsliu98
+// Copyright (C) 2025 - zsliu98
 // This file is part of ZLEqualizer
 //
 // ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
@@ -8,24 +8,30 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "scale_panel.hpp"
-
-#include "../../panel_definitons.hpp"
+#include "../panel_definitons.hpp"
 
 namespace zlPanel {
-    ScalePanel::ScalePanel(juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
-        : parametersNARef(parametersNA), uiBase(base),
+    ScalePanel::ScalePanel(PluginProcessor &processor, zlInterface::UIBase &base)
+        : parametersNARef(processor.parametersNA), uiBase(base),
           scaleBox("", zlState::maximumDB::choices, base),
           minFFTBox("", zlState::minimumFFTDB::choices, base) {
         juce::ignoreUnused(uiBase);
         scaleBox.getLAF().setFontScale(zlInterface::FontLarge);
         scaleBox.getBox().setJustificationType(juce::Justification::centredRight);
+        scaleBox.getBox().onChange = [this]() {
+            triggerAsyncUpdate();
+        };
         minFFTBox.getLAF().setFontScale(zlInterface::FontLarge);
         minFFTBox.getBox().setJustificationType(juce::Justification::centredRight);
+        minFFTBox.getBox().onChange = [this]() {
+            triggerAsyncUpdate();
+        };
         attach({&scaleBox.getBox(), &minFFTBox.getBox()},
                {zlState::maximumDB::ID, zlState::minimumFFTDB::ID},
                parametersNARef, boxAttachments);
         addAndMakeVisible(scaleBox);
         addAndMakeVisible(minFFTBox);
+        triggerAsyncUpdate();
     }
 
     ScalePanel::~ScalePanel() = default;
@@ -74,6 +80,10 @@ namespace zlPanel {
     }
 
     void ScalePanel::handleAsyncUpdate() {
+        maximumDB.store(zlState::maximumDB::dBs[
+            static_cast<size_t>(parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load())]);
+        minimumFFTDB.store(zlState::minimumFFTDB::dBs[
+            static_cast<size_t>(parametersNARef.getRawParameterValue(zlState::minimumFFTDB::ID)->load())]);
         repaint();
     }
 } // zlPanel

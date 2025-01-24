@@ -80,26 +80,23 @@ namespace zlPanel {
     }
 
     void CurvePanel::resized() {
-        backgroundPanel.setBounds(getLocalBounds());
-        auto bound = getLocalBounds().toFloat();
-        bound.removeFromRight(uiBase.getFontSize() * 4.2f);
-        const auto intBound = bound.toNearestInt();
-        fftPanel.setBounds(intBound);
-        conflictPanel.setBounds(intBound);
+        const auto bound = getLocalBounds();
+        backgroundPanel.setBounds(bound);
+        fftPanel.setBounds(bound);
+        conflictPanel.setBounds(bound);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            singlePanels[i]->setBounds(intBound);
+            singlePanels[i]->setBounds(bound);
         }
-        sumPanel.setBounds(intBound);
-        soloPanel.setBounds(intBound);
-        buttonPanel.setBounds(intBound);
-        matchPanel.setBounds(intBound);
+        sumPanel.setBounds(bound);
+        soloPanel.setBounds(bound);
+        buttonPanel.setBounds(bound);
+        matchPanel.setBounds(bound);
     }
 
     void CurvePanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::maximumDB::ID) {
             const auto idx = static_cast<size_t>(newValue);
             const auto maxDB = zlState::maximumDB::dBs[idx];
-            backgroundPanel.setMaximumDB(maxDB);
             sumPanel.setMaximumDB(maxDB);
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 singlePanels[i]->setMaximumDB(maxDB);
@@ -112,7 +109,6 @@ namespace zlPanel {
         } else if (parameterID == zlState::minimumFFTDB::ID) {
             const auto idx = static_cast<size_t>(newValue);
             const auto minDB = zlState::minimumFFTDB::dBs[idx];
-            backgroundPanel.setMinimumFFTDB(minDB);
             fftPanel.setMinimumFFTDB(minDB);
         }
     }
