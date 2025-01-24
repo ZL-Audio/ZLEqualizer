@@ -49,13 +49,13 @@ jobs:
             plugin_os_format: "VST3;LV2;Standalone"
             juce_branch: "main"
             app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
           - name: Windows-Software
             os: windows-latest
             plugin_os_format: "VST3;LV2;Standalone"
             juce_branch: "juce7"
             app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 
     steps:
       - name: Set up Clang (Linux)

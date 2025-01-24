@@ -46,7 +46,7 @@ jobs:
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             plugin_os_format: "VST3"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 
     steps:
       - name: Set up Clang (Linux)
