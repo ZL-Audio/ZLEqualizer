@@ -25,7 +25,9 @@ namespace zlPanel {
           sgcC("S", uiBase),
           effectDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg,
-                                                  BinaryData::fadpowerswitch_svgSize)) {
+                                                  BinaryData::fadpowerswitch_svgSize)),
+          sgcDrawable(juce::Drawable::createFromImageData(BinaryData::staticgaincompensation_svg,
+                                                          BinaryData::staticgaincompensation_svgSize)) {
         setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
         addAndMakeVisible(fftSettingPanel);
@@ -36,6 +38,7 @@ namespace zlPanel {
         addAndMakeVisible(matchSettingPanel);
 
         effectC.setDrawable(effectDrawable.get());
+        sgcC.setDrawable(sgcDrawable.get());
 
         for (auto &c: {&effectC, &sgcC}) {
             c->getLAF().setLabelScale(1.7f);
@@ -62,11 +65,12 @@ namespace zlPanel {
         const auto height = bound.getHeight();
 
         auto effectBound = bound.removeFromRight(height * .8f);
-        effectBound.removeFromTop(height * 0.035f);
+        // effectBound.removeFromTop(height * 0.035f);
         effectC.setBounds(effectBound.toNearestInt());
         bound.removeFromRight(height * .15f);
 
-        const auto sgcBound = bound.removeFromRight(height * .75f);
+        auto sgcBound = bound.removeFromRight(height * .8f);
+        // sgcBound.removeFromTop(height * 0.035f);
         sgcC.setBounds(sgcBound.toNearestInt());
         bound.removeFromRight(height * .25f);
 

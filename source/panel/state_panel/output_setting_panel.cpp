@@ -23,13 +23,16 @@ namespace zlPanel {
               outGainS("Out Gain", uiBase),
               phaseDrawable(
                   juce::Drawable::createFromImageData(BinaryData::fadphase_svg,
-                                                      BinaryData::fadphase_svgSize)) {
+                                                      BinaryData::fadphase_svgSize)),
+              agcDrawable(juce::Drawable::createFromImageData(BinaryData::autogaincompensation_svg,
+                                                              BinaryData::autogaincompensation_svgSize)) {
             phaseC.setDrawable(phaseDrawable.get());
+            agcC.setDrawable(agcDrawable.get());
 
             for (auto &c: {&phaseC, &agcC}) {
                 c->getLAF().setLabelScale(1.7f);
                 c->getLAF().enableShadow(false);
-                c->getLAF().setShrinkScale(.0f);
+                c->getLAF().setShrinkScale(0.f);
                 addAndMakeVisible(c);
             }
             for (auto &c: {&scaleS, &outGainS}) {
@@ -81,6 +84,7 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
 
         const std::unique_ptr<juce::Drawable> phaseDrawable;
+        const std::unique_ptr<juce::Drawable> agcDrawable;
     };
 
     OutputSettingPanel::OutputSettingPanel(PluginProcessor &p,
