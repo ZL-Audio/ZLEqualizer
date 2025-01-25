@@ -39,10 +39,7 @@ namespace zlPanel {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.f);
                 addAndMakeVisible(c);
             }
-            attach({
-                       &phaseC.getButton(),
-                       &agcC.getButton()
-                   },
+            attach({&phaseC.getButton(), &agcC.getButton()},
                    {zlDSP::phaseFlip::ID, zlDSP::autoGain::ID},
                    parametersRef, buttonAttachments);
             attach({&scaleS.getSlider(), &outGainS.getSlider()},

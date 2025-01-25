@@ -467,14 +467,14 @@ namespace zlPanel {
     void ButtonPanel::changeListenerCallback(juce::ChangeBroadcaster *source) {
         juce::ignoreUnused(source);
         int currentSelectedNum = 0;
-        int currentFirstSelectIdx = 0;
+        size_t currentFirstSelectIdx = 0;
         const auto currentBand = selectBandIdx.load();
         bool isCurrentBandSelected = false;
         for (size_t idx = 0; idx < panels.size(); ++idx) {
             const auto f1 = itemsSet.isSelected(idx);
             if (f1) {
                 if (currentSelectedNum == 0) {
-                    currentFirstSelectIdx = static_cast<int>(idx);
+                    currentFirstSelectIdx = idx;
                 }
                 if (idx == currentBand) {
                     isCurrentBandSelected = true;
@@ -489,12 +489,8 @@ namespace zlPanel {
             }
         }
         if (currentSelectedNum > 0) {
-            if ((previousLassoNum == 0 && currentFirstSelectIdx != static_cast<int>(selectBandIdx.load()))
-                || !isCurrentBandSelected) {
-                auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
-                para->beginChangeGesture();
-                para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(currentFirstSelectIdx));
-                para->endChangeGesture();
+            if (previousLassoNum == 0 || !isCurrentBandSelected) {
+                panels[currentFirstSelectIdx]->setSelected(true);
             }
             previousLassoNum = currentSelectedNum;
             loadPreviousParameters();
