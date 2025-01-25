@@ -203,6 +203,7 @@ namespace zlPanel {
         }
 
         itemsSet.deselectAll();
+        previousLassoNum = 0;
         lassoComponent.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
                                  uiBase.getTextColor().withMultipliedAlpha(.25f));
         lassoComponent.setColour(juce::LassoComponent<size_t>::lassoOutlineColourId,
@@ -482,11 +483,12 @@ namespace zlPanel {
                 panels[idx]->repaint();
             }
         }
-        if (currentSelectedNum == 1 && currentFirstSelectIdx != static_cast<int>(selectBandIdx.load())) {
+        if (previousLassoNum == 0 && currentSelectedNum > 0 && currentFirstSelectIdx != static_cast<int>(selectBandIdx.load())) {
             auto *para = parametersNARef.getParameter(zlState::selectedBandIdx::ID);
             para->beginChangeGesture();
             para->setValueNotifyingHost(zlState::selectedBandIdx::convertTo01(currentFirstSelectIdx));
             para->endChangeGesture();
+            previousLassoNum = currentSelectedNum;
         }
         loadPreviousParameters();
     }

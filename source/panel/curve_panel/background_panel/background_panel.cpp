@@ -15,7 +15,7 @@ namespace zlPanel {
                                  zlInterface::UIBase &base)
         : uiBase(base),
           gridPanel(base) {
-        juce::ignoreUnused(parameters);
+        juce::ignoreUnused(parameters, parametersNA);
         setInterceptsMouseClicks(false, true);
         setOpaque(true);
         addAndMakeVisible(gridPanel);
@@ -29,7 +29,6 @@ namespace zlPanel {
     }
 
     void BackgroundPanel::resized() {
-        auto bound = getLocalBounds().toFloat();
         gridPanel.setBounds(getLocalBounds());
     }
 }
