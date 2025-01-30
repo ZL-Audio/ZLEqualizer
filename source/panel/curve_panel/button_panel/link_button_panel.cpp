@@ -26,7 +26,7 @@ namespace zlPanel {
         attach({&dynLinkC.getButton()}, {zlDSP::appendSuffix(zlDSP::singleDynLink::ID, bandIdx)},
                parameters, buttonAttachments);
         addChildComponent(dynLinkC);
-        setInterceptsMouseClicks(false, true);
+        sideDraggerRef.addMouseListener(this, true);
 
         for (auto &ID: IDs) {
             const auto suffixID = zlDSP::appendSuffix(ID, idx);
@@ -37,6 +37,7 @@ namespace zlPanel {
             parametersNARef.addParameterListener(ID, this);
             parameterChanged(ID, parametersNARef.getRawParameterValue(ID)->load());
         }
+        setInterceptsMouseClicks(false, true);
     }
 
     LinkButtonPanel::~LinkButtonPanel() {
@@ -72,6 +73,21 @@ namespace zlPanel {
             dynLinkC.setVisible(true);
         } else {
             dynLinkC.setVisible(false);
+        }
+    }
+
+    void LinkButtonPanel::mouseDoubleClick(const juce::MouseEvent &event) {
+        if (event.mods.isCommandDown() && event.mods.isRightButtonDown()) {
+            const auto currentBand = bandIdx.load();
+            auto *para = parametersRef.getParameter(
+                zlDSP::appendSuffix(zlDSP::sideSolo::ID, currentBand));
+            para->beginChangeGesture();
+            if (para->getValue() < 0.5f) {
+                para->setValueNotifyingHost(1.f);
+            } else {
+                para->setValueNotifyingHost(0.f);
+            }
+            para->endChangeGesture();
         }
     }
 } // zlPanel

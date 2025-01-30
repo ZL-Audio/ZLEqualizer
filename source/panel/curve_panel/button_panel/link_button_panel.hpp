@@ -31,6 +31,8 @@ namespace zlPanel {
 
         void updateBound();
 
+        void mouseDoubleClick(const juce::MouseEvent &event) override;
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
