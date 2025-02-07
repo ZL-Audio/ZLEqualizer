@@ -11,8 +11,9 @@
 #define ZLPANEL_STATIC_OMEGA_ARRAY_HPP
 
 #include <array>
-
 #include <juce_gui_basics/juce_gui_basics.h>
+
+#include "../helper/helper.hpp"
 
 namespace zlPanel {
     const static std::vector<double> ws = {
@@ -218,54 +219,6 @@ namespace zlPanel {
         2.79776698e+00, 2.82484613e+00, 2.85218738e+00, 2.87979327e+00
     };
 
-    class AtomicPoint{
-    public:
-        AtomicPoint() = default;
-
-        void store(const juce::Point<float> &p) {
-            x.store(p.getX());
-            y.store(p.getY());
-        }
-
-        juce::Point<float> load() const {
-            return {x.load(), y.load()};
-        }
-
-        float getX() const { return x.load(); }
-
-        float getY() const { return y.load(); }
-
-    private:
-        std::atomic<float> x{0.f}, y{0.f};
-    };
-
-    class AtomicBound {
-    public:
-        AtomicBound() = default;
-
-        void store(const juce::Rectangle<float> &bound) {
-            x.store(bound.getX());
-            y.store(bound.getY());
-            width.store(bound.getWidth());
-            height.store(bound.getHeight());
-        }
-
-        juce::Rectangle<float> load() const {
-            return {x.load(), y.load(), width.load(), height.load()};
-        }
-
-        float getX() const { return x.load(); }
-
-        float getY() const { return y.load(); }
-
-        float getWidth() const { return width.load(); }
-
-        float getHeight() const { return height.load(); }
-
-    private:
-        std::atomic<float> x{0.f}, y{0.f}, width{0.f}, height{0.f};
-    };
-
     static inline float replaceWithFinite(const float x) {
         return std::isfinite(x) ? x : 100000.f;
     }
@@ -292,15 +245,16 @@ namespace zlPanel {
                                  const bool reverse = false,
                                  const bool startPath = true) {
         const auto threshold = 2 * maxDB / static_cast<float>(bound.getHeight());
+        zlPanel::PathMinimizer minimizer{path};
         if (reverse) {
             {
                 constexpr auto i = zlFilter::frequencies.size() - 1;
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
                 if (startPath) {
-                    path.startNewSubPath(x, y);
+                    minimizer.template startNewSubPath<true>(x, y);
                 } else {
-                    path.lineTo(x, y);
+                    minimizer.template startNewSubPath<false>(x, y);
                 }
             }
             auto dB0 = dBs[0];
@@ -310,14 +264,14 @@ namespace zlPanel {
                     || (dBs[j] <= dBs[j - 1] && dBs[j] <= dBs[j + 1])) {
                     const auto x = indexToX(j, bound);
                     const auto y = dbToY(static_cast<float>(dBs[j]), maxDB, bound);
-                    path.lineTo(x, y);
+                    minimizer.lineTo(x, y);
                     dB0 = dBs[j];
                 }
             } {
                 constexpr auto i = 0;
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
-                path.lineTo(x, y);
+                minimizer.lineTo(x, y);
             }
         } else {
             {
@@ -325,9 +279,9 @@ namespace zlPanel {
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
                 if (startPath) {
-                    path.startNewSubPath(x, y);
+                    minimizer.template startNewSubPath<true>(x, y);
                 } else {
-                    path.lineTo(x, y);
+                    minimizer.template startNewSubPath<false>(x, y);
                 }
             }
             auto dB0 = dBs[0];
@@ -337,16 +291,17 @@ namespace zlPanel {
                     || (dBs[j] <= dBs[j - 1] && dBs[j] <= dBs[j + 1])) {
                     const auto x = indexToX(j, bound);
                     const auto y = dbToY(static_cast<float>(dBs[j]), maxDB, bound);
-                    path.lineTo(x, y);
+                    minimizer.lineTo(x, y);
                     dB0 = dBs[j];
                 }
             } {
                 constexpr auto i = zlFilter::frequencies.size() - 1;
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
-                path.lineTo(x, y);
+                minimizer.lineTo(x, y);
             }
         }
+        minimizer.finish();
     }
 }
 
