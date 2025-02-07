@@ -314,6 +314,8 @@ namespace zlPanel {
         if (event.mods.isCommandDown()) {
             initIDs.emplace_back(zlDSP::dynamicON::ID);
             initValues.emplace_back(zlDSP::dynamicON::convertTo01(true));
+            initIDs.emplace_back(zlDSP::singleDynLink::ID);
+            initValues.emplace_back(zlDSP::singleDynLink::convertTo01(uiBase.getDynLink()));
         }
 
         for (size_t i = 0; i < initIDs.size(); ++i) {
