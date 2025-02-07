@@ -49,7 +49,7 @@ namespace zlDSP {
         constexpr static std::array IDs{
             bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,
             lrType::ID, dynamicON::ID, dynamicLearn::ID,
-            dynamicBypass::ID, dynamicRelative::ID,
+            dynamicBypass::ID, dynamicRelative::ID, sideSwap::ID,
             targetGain::ID, targetQ::ID, threshold::ID, kneeW::ID,
             sideFreq::ID, attack::ID, release::ID, sideQ::ID,
             singleDynLink::ID
@@ -59,7 +59,7 @@ namespace zlDSP {
             float(bypass::defaultV), float(fType::defaultI), float(slope::defaultI),
             freq::defaultV, gain::defaultV, Q::defaultV,
             float(lrType::defaultI), float(dynamicON::defaultV), float(dynamicLearn::defaultV),
-            float(dynamicBypass::defaultV), float(dynamicRelative::defaultV),
+            float(dynamicBypass::defaultV), float(dynamicRelative::defaultV), float(sideSwap::defaultV),
             targetGain::defaultV, targetQ::defaultV,
             threshold::defaultV, kneeW::defaultV,
             sideFreq::defaultV, attack::defaultV, release::defaultV, sideQ::defaultV,

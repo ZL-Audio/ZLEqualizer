@@ -71,9 +71,11 @@ namespace zlDSP {
 
         void setRelative(size_t idx, bool isRelative);
 
+        void setSideSwap(size_t idx, bool isSwap);
+
         void setLearningHist(size_t idx, bool isLearning);
 
-        bool getLearningHistON(size_t idx) const { return isHistON[idx].load(); }
+        bool getLearningHistON(const size_t idx) const { return isHistON[idx].load(); }
 
         zlHistogram::Histogram<FloatType, 80> &getLearningHist(const size_t idx) { return histograms[idx]; }
 
@@ -228,9 +230,12 @@ namespace zlDSP {
         zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
         zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
 
-        std::array<std::atomic<bool>, bandNUM> dynRelatives;
+        std::array<std::atomic<bool>, bandNUM> dynRelatives, sideSwaps;
+        std::atomic<bool> toUpdateDynRelSide{true};
+        std::array<bool, bandNUM> currentDynRelatives{}, currentSideSwaps{};
         std::array<zlCompressor::RMSTracker<FloatType>, 5> trackers;
         std::array<bool, 5> useTrackers{};
+        std::array<FloatType, 5> trackerBaselines{};
 
         std::atomic<bool> sideChain;
 
@@ -287,10 +292,13 @@ namespace zlDSP {
         void processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
                             juce::AudioBuffer<FloatType> &subSideBuffer);
 
-        template<bool isBypassed = false>
-        void processDynamicLRMS(size_t lrIdx,
-                                juce::AudioBuffer<FloatType> &subMainBuffer,
-                                juce::AudioBuffer<FloatType> &subSideBuffer);
+        template<size_t lrIdx>
+        void processDynamicLRMSTrackers(juce::AudioBuffer<FloatType> &subSideBuffer);
+
+        template<bool isBypassed = false, size_t lrIdx1, size_t lrIdx2>
+        void processDynamicLRMS(juce::AudioBuffer<FloatType> &subMainBuffer,
+                                juce::AudioBuffer<FloatType> &subSideBuffer1,
+                                juce::AudioBuffer<FloatType> &subSideBuffer2);
 
         template<bool isBypassed = false>
         void processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer,
@@ -326,6 +334,8 @@ namespace zlDSP {
         void updateCorrections();
 
         void updateSolo();
+
+        void updateDynRelSide();
     };
 }
 

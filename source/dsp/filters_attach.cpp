@@ -72,6 +72,8 @@ namespace zlDSP {
         updateParaNotifyHost(paraDynLearn, 0.f);
         const auto paraDynRelative = parameterRef.getParameter(zlDSP::appendSuffix(dynamicRelative::ID, idx));
         updateParaNotifyHost(paraDynRelative, 0.f);
+        const auto paraSideSwap = parameterRef.getParameter(zlDSP::appendSuffix(sideSwap::ID, idx));
+        updateParaNotifyHost(paraSideSwap, 0.f);
         const auto paraSideSolo = parameterRef.getParameter(zlDSP::appendSuffix(sideSolo::ID, idx));
         updateParaNotifyHost(paraSideSolo, 0.f);
     }
@@ -216,6 +218,8 @@ namespace zlDSP {
             filtersRef[idx].setDynamicBypass(newValue > .5f);
         } else if (parameterID.startsWith(dynamicRelative::ID)) {
             controllerRef.setRelative(idx, newValue > .5f);
+        } else if (parameterID.startsWith(sideSwap::ID)) {
+            controllerRef.setSideSwap(idx, newValue > .5f);
         } else if (parameterID.startsWith(targetGain::ID)) {
             value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
             value = targetGain::range.snapToLegalValue(static_cast<float>(value));

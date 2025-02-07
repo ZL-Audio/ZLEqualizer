@@ -163,6 +163,10 @@ namespace zlDSP {
             currentUseSolo = useSolo.load();
             updateSolo();
         }
+        if (toUpdateDynRelSide.exchange(false)) {
+            updateDynRelSide();
+            updateTrackersON();
+        }
         currentIsEffectON = isEffectON.load();
 
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
@@ -315,25 +319,30 @@ namespace zlDSP {
             }
         }
         // stereo filters process
-        processDynamicLRMS<isBypassed>(0, subMainBuffer, subSideBuffer);
+        processDynamicLRMSTrackers<0>(subSideBuffer);
+        processDynamicLRMS<isBypassed, 0, 0>(subMainBuffer, subSideBuffer, subSideBuffer);
         // LR filters process
         if (useLR) {
             lrMainSplitter.split(subMainBuffer);
             lrSideSplitter.split(subSideBuffer);
-            processDynamicLRMS<isBypassed>(1, lrMainSplitter.getLBuffer(),
-                                           lrSideSplitter.getLBuffer());
-            processDynamicLRMS<isBypassed>(2, lrMainSplitter.getRBuffer(),
-                                           lrSideSplitter.getRBuffer());
+            processDynamicLRMSTrackers<1>(lrSideSplitter.getLBuffer());
+            processDynamicLRMSTrackers<2>(lrSideSplitter.getRBuffer());
+            processDynamicLRMS<isBypassed, 1, 2>(lrMainSplitter.getLBuffer(),
+                                                 lrSideSplitter.getLBuffer(), lrSideSplitter.getRBuffer());
+            processDynamicLRMS<isBypassed, 2, 1>(lrMainSplitter.getRBuffer(),
+                                                 lrSideSplitter.getRBuffer(), lrSideSplitter.getLBuffer());
             lrMainSplitter.combine(subMainBuffer);
         }
         // MS filters process
         if (useMS) {
             msMainSplitter.split(subMainBuffer);
             msSideSplitter.split(subSideBuffer);
-            processDynamicLRMS<isBypassed>(3, msMainSplitter.getMBuffer(),
-                                           msSideSplitter.getMBuffer());
-            processDynamicLRMS<isBypassed>(4, msMainSplitter.getSBuffer(),
-                                           msSideSplitter.getSBuffer());
+            processDynamicLRMSTrackers<3>(msSideSplitter.getMBuffer());
+            processDynamicLRMSTrackers<4>(msSideSplitter.getSBuffer());
+            processDynamicLRMS<isBypassed, 3, 4>(msMainSplitter.getMBuffer(),
+                                                 msSideSplitter.getMBuffer(), msSideSplitter.getSBuffer());
+            processDynamicLRMS<isBypassed, 4, 3>(msMainSplitter.getSBuffer(),
+                                                 msSideSplitter.getSBuffer(), msSideSplitter.getMBuffer());
             msMainSplitter.combine(subMainBuffer);
         }
         // set main filter gain & Q and update histograms
@@ -358,27 +367,33 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    template<bool isBypassed>
-    void Controller<FloatType>::processDynamicLRMS(const size_t lrIdx,
-                                                   juce::AudioBuffer<FloatType> &subMainBuffer,
-                                                   juce::AudioBuffer<FloatType> &subSideBuffer) {
+    template<size_t lrIdx>
+    void Controller<FloatType>::processDynamicLRMSTrackers(juce::AudioBuffer<FloatType> &subSideBuffer) {
         auto &tracker{trackers[lrIdx]};
-        const auto &indices{filterLRIndices[lrIdx]};
-        FloatType baseLine = 0;
         if (useTrackers[lrIdx]) {
             tracker.process(subSideBuffer);
-            baseLine = tracker.getMomentaryLoudness();
-            if (baseLine <= tracker.minusInfinityDB + 1) {
-                baseLine = tracker.minusInfinityDB * FloatType(0.5);
+            trackerBaselines[lrIdx] = tracker.getMomentaryLoudness();
+            if (trackerBaselines[lrIdx] <= tracker.minusInfinityDB + FloatType(1)) {
+                trackerBaselines[lrIdx] = tracker.minusInfinityDB * FloatType(0.5);
             }
         }
+    }
+
+    template<typename FloatType>
+    template<bool isBypassed, size_t lrIdx1, size_t lrIdx2>
+    void Controller<FloatType>::processDynamicLRMS(juce::AudioBuffer<FloatType> &subMainBuffer,
+                                                   juce::AudioBuffer<FloatType> &subSideBuffer1,
+                                                   juce::AudioBuffer<FloatType> &subSideBuffer2) {
+        const auto &indices{filterLRIndices[lrIdx1]};
         for (size_t idx = 0; idx < indices.size(); ++idx) {
             const auto i = indices[idx];
-            if (dynRelatives[i].load()) {
+            const auto baseLine = sideSwaps[i] ? trackerBaselines[lrIdx2] : trackerBaselines[lrIdx1];
+            if (currentDynRelatives[i]) {
                 filters[i].getCompressor().setBaseLine(baseLine);
             } else {
                 filters[i].getCompressor().setBaseLine(0);
             }
+            juce::AudioBuffer<FloatType> &subSideBuffer = sideSwaps[i] ? subSideBuffer2 : subSideBuffer1;
             if (currentIsBypass[i] || isBypassed) {
                 filters[i].template process<true>(subMainBuffer, subSideBuffer);
             } else {
@@ -386,7 +401,7 @@ namespace zlDSP {
             }
         }
         if (currentIsSgcON && currentFilterStructure != filterStructure::parallel) {
-            compensationGains[lrIdx].template process<isBypassed>(subMainBuffer);
+            compensationGains[lrIdx1].template process<isBypassed>(subMainBuffer);
         }
     }
 
@@ -606,7 +621,15 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::setRelative(const size_t idx, const bool isRelative) {
         dynRelatives[idx].store(isRelative);
-        updateTrackersON();
+        toUpdateDynRelSide.store(true);
+        setLearningHist(idx, isHistON[idx].load());
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::setSideSwap(const size_t idx, const bool isSwap) {
+        sideSwaps[idx].store(isSwap);
+        toUpdateDynRelSide.store(true);
+        setLearningHist(idx, isHistON[idx].load());
     }
 
     template<typename FloatType>
@@ -703,7 +726,7 @@ namespace zlDSP {
         for (size_t idx = 0; idx < 5; ++idx) {
             const auto &indices{filterLRIndices[idx]};
             for (size_t i = 0; i < indices.size(); ++i) {
-                if (dynRelatives[indices[i]].load()) {
+                if (currentDynRelatives[i]) {
                     useTrackers[idx] = true;
                     break;
                 }
@@ -865,6 +888,14 @@ namespace zlDSP {
         }
         soloFilter.setFreq(freq);
         soloFilter.setQ(q);
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateDynRelSide() {
+        for (size_t i = 0; i < bandNUM; ++i) {
+            currentDynRelatives[i] = dynRelatives[i].load();
+            currentSideSwaps[i] = sideSwaps[i].load();
+        }
     }
 
     template
