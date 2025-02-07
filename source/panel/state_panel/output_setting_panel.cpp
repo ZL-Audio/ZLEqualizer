@@ -30,7 +30,6 @@ namespace zlPanel {
             agcC.setDrawable(agcDrawable.get());
 
             for (auto &c: {&phaseC, &agcC}) {
-                c->getLAF().setLabelScale(1.7f);
                 c->getLAF().enableShadow(false);
                 c->getLAF().setShrinkScale(0.f);
                 addAndMakeVisible(c);

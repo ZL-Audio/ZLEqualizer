@@ -50,16 +50,9 @@ namespace zlPanel {
         };
         dynSoloC.setDrawable(soloDrawable.get());
         dynRelativeC.setDrawable(relativeDrawable.get());
-        dynRelativeC.getLAF().setShrinkScale(.5f);
         sideChainC.setDrawable(sideDrawable.get());
-        sideChainC.getLAF().setShrinkScale(.5f);
-        sideChainC.getButton().onClick = [this]() {
-            const auto isSideOn = static_cast<int>(sideChainC.getButton().getToggleState());
-            const auto para = parametersNARef.getParameter(zlState::fftSideON::ID);
-            para->beginChangeGesture();
-            para->setValueNotifyingHost(zlState::fftSideON::convertTo01(isSideOn));
-            para->endChangeGesture();
-        };
+        dynRelativeC.getLAF().setScale(1.25f);
+        sideChainC.getLAF().setScale(1.25f);
         for (auto &c: {&dynBypassC, &dynSoloC, &dynRelativeC, &sideChainC}) {
             addAndMakeVisible(c);
         }
@@ -158,27 +151,24 @@ namespace zlPanel {
     }
 
     void RightControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        const auto id = parameterID.dropLastCharacters(2);
-        const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        if (id == zlDSP::dynamicON::ID) {
-            const auto f = newValue > .5f;
-            dynBypassC.setEditable(f);
-            dynSoloC.setEditable(f);
-            dynRelativeC.setEditable(f);
-            sideChainC.setEditable(f);
-            thresC.setEditable(f);
-            attackC.setEditable(f);
-            kneeC.setEditable(f);
-            releaseC.setEditable(f);
-            sideFreqC.setEditable(f);
-            sideQC.setEditable(f);
-            if (idx == bandIdx.load()) {
-                triggerAsyncUpdate();
-            }
+        if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
+            dynEditable.store(newValue > .5f);
+            triggerAsyncUpdate();
         }
     }
 
     void RightControlPanel::handleAsyncUpdate() {
+        const auto f = dynEditable.load();
+        dynBypassC.setEditable(f);
+        dynSoloC.setEditable(f);
+        dynRelativeC.setEditable(f);
+        sideChainC.setEditable(f);
+        thresC.setEditable(f);
+        attackC.setEditable(f);
+        kneeC.setEditable(f);
+        releaseC.setEditable(f);
+        sideFreqC.setEditable(f);
+        sideQC.setEditable(f);
         repaint();
     }
 

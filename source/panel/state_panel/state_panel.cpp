@@ -13,7 +13,7 @@ namespace zlPanel {
     StatePanel::StatePanel(PluginProcessor &p,
                            zlInterface::UIBase &base,
                            UISettingPanel &uiSettingPanel)
-        : uiBase(base),
+        : uiBase(base), parametersNARef(p.parametersNA),
           logoPanel(p, base, uiSettingPanel),
           fftSettingPanel(p, base),
           compSettingPanel(p, base),
@@ -21,11 +21,14 @@ namespace zlPanel {
           conflictSettingPanel(p, base),
           generalSettingPanel(p, base),
           matchSettingPanel(base),
-          effectC("all", uiBase),
-          sgcC("S", uiBase),
+          effectC("", uiBase),
+          sideC("", uiBase),
+          sgcC("", uiBase),
           effectDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg,
                                                   BinaryData::fadpowerswitch_svgSize)),
+          sideDrawable(juce::Drawable::createFromImageData(BinaryData::externalside_svg,
+                                                           BinaryData::externalside_svgSize)),
           sgcDrawable(juce::Drawable::createFromImageData(BinaryData::staticgaincompensation_svg,
                                                           BinaryData::staticgaincompensation_svgSize)) {
         setInterceptsMouseClicks(false, true);
@@ -38,24 +41,30 @@ namespace zlPanel {
         addAndMakeVisible(matchSettingPanel);
 
         effectC.setDrawable(effectDrawable.get());
+        sideC.setDrawable(sideDrawable.get());
         sgcC.setDrawable(sgcDrawable.get());
 
-        for (auto &c: {&effectC, &sgcC}) {
-            c->getLAF().setLabelScale(1.7f);
+        for (auto &c: {&effectC, &sideC, &sgcC}) {
             c->getLAF().enableShadow(false);
             c->getLAF().setShrinkScale(.0f);
             addAndMakeVisible(c);
         }
 
-        addAndMakeVisible(effectC);
-        addAndMakeVisible(sgcC);
-
         attach({
                    &effectC.getButton(),
+                   &sideC.getButton(),
                    &sgcC.getButton(),
                },
-               {zlDSP::effectON::ID, zlDSP::staticAutoGain::ID},
+               {zlDSP::effectON::ID, zlDSP::sideChain::ID, zlDSP::staticAutoGain::ID},
                p.parameters, buttonAttachments);
+
+        sideC.getButton().onClick = [this]() {
+            const auto isSideOn = static_cast<int>(sideC.getButton().getToggleState());
+            const auto para = parametersNARef.getParameter(zlState::fftSideON::ID);
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(zlState::fftSideON::convertTo01(isSideOn));
+            para->endChangeGesture();
+        };
     }
 
     void StatePanel::resized() {
@@ -64,13 +73,13 @@ namespace zlPanel {
         logoPanel.setBounds(logoBound.toNearestInt());
         const auto height = bound.getHeight();
 
-        auto effectBound = bound.removeFromRight(height * .8f);
-        // effectBound.removeFromTop(height * 0.035f);
+        const auto effectBound = bound.removeFromRight(height * .85f);
         effectC.setBounds(effectBound.toNearestInt());
-        bound.removeFromRight(height * .15f);
 
-        auto sgcBound = bound.removeFromRight(height * .8f);
-        // sgcBound.removeFromTop(height * 0.035f);
+        const auto sideBound = bound.removeFromRight(height * .85f);
+        sideC.setBounds(sideBound.toNearestInt());
+
+        const auto sgcBound = bound.removeFromRight(height * .85f);
         sgcC.setBounds(sgcBound.toNearestInt());
         bound.removeFromRight(height * .25f);
 

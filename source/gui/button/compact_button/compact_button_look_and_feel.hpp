@@ -25,20 +25,20 @@ namespace zlInterface {
                               bool shouldDrawButtonAsHighlighted,
                               bool shouldDrawButtonAsDown) override {
             juce::ignoreUnused(shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
-            const auto isPressed = button.getToggleState() ^ reverse.load();
+            const auto isPressed = button.getToggleState() ^ reverse;
 
             auto bounds = button.getLocalBounds().toFloat();
-            if (withShadow.load()) {
-                bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f * shrinkScale.load(), {});
-                bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f * shrinkScale.load(),
+            if (withShadow) {
+                bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f * shrinkScale, {});
+                bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f * shrinkScale,
                                                        {.flip = true});
             } else {
-                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.3f * shrinkScale.load(), {});
+                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.3f * shrinkScale, {});
                 g.setColour(uiBase.getBackgroundColor());
                 g.fillEllipse(bounds);
             }
             if (isPressed) {
-                if (withShadow.load()) {
+                if (withShadow) {
                     const auto innerBound = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
                     uiBase.drawInnerShadowEllipse(g, innerBound, uiBase.getFontSize() * 0.375f, {
                                                       .darkShadowColor = uiBase.getDarkShadowColor().
@@ -50,7 +50,7 @@ namespace zlInterface {
                                                   });
                 }
             }
-            if (editable.load()) {
+            if (editable) {
                 if (drawable == nullptr) {
                     const auto textBound = button.getLocalBounds().toFloat();
                     if (isPressed) {
@@ -58,10 +58,10 @@ namespace zlInterface {
                     } else {
                         g.setColour(uiBase.getTextColor().withAlpha(0.5f));
                     }
-                    g.setFont(uiBase.getFontSize() * fontScale.load());
+                    g.setFont(uiBase.getFontSize() * scale);
                     g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
-                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f;
+                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f * scale;
                     const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
                     if (isPressed) {
                         internalImg->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
@@ -72,9 +72,9 @@ namespace zlInterface {
             }
         }
 
-        inline void setEditable(const bool f) { editable.store(f); }
+        inline void setEditable(const bool f) { editable = f; }
 
-        inline float getDepth() const { return buttonDepth.load(); }
+        [[nodiscard]] inline float getDepth() const { return buttonDepth; }
 
         inline void setDepth(const float x) { buttonDepth = x; }
 
@@ -83,13 +83,13 @@ namespace zlInterface {
             updateImages();
         }
 
-        void enableShadow(const bool f) { withShadow.store(f); }
+        void enableShadow(const bool f) { withShadow = f; }
 
-        void setReverse(const bool f) { reverse.store(f); }
+        void setScale(const float x) { scale = x; }
 
-        void setLabelScale(const float x) { fontScale.store(x); }
+        void setReverse(const bool f) { reverse = f; }
 
-        void setShrinkScale(const float x) { shrinkScale.store(x); }
+        void setShrinkScale(const float x) { shrinkScale = x; }
 
         void updateImages() {
             if (drawable != nullptr) {
@@ -99,8 +99,8 @@ namespace zlInterface {
         }
 
     private:
-        std::atomic<bool> editable{true}, reverse{false}, withShadow{true};
-        std::atomic<float> buttonDepth = 0.f, fontScale{1.f}, shrinkScale{1.f};
+        bool editable{true}, reverse{false}, withShadow{true};
+        float buttonDepth{0.f}, shrinkScale{1.f}, scale{1.f};
         juce::Drawable *drawable = nullptr;
         std::unique_ptr<juce::Drawable> internalImg;
 

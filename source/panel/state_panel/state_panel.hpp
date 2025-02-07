@@ -32,6 +32,7 @@ namespace zlPanel {
     private:
         constexpr static float labelSize = 2.75f;
         zlInterface::UIBase &uiBase;
+        juce::AudioProcessorValueTreeState &parametersNARef;
         LogoPanel logoPanel;
         FFTSettingPanel fftSettingPanel;
         CompSettingPanel compSettingPanel;
@@ -40,9 +41,10 @@ namespace zlPanel {
         GeneralSettingPanel generalSettingPanel;
         MatchSettingPanel matchSettingPanel;
 
-        zlInterface::CompactButton effectC, sgcC;
+        zlInterface::CompactButton effectC, sideC, sgcC;
         juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > buttonAttachments{};
         const std::unique_ptr<juce::Drawable> effectDrawable;
+        const std::unique_ptr<juce::Drawable> sideDrawable;
         const std::unique_ptr<juce::Drawable> sgcDrawable;
     };
 } // zlPanel

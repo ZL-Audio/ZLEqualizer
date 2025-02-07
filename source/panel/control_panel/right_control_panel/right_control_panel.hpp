@@ -34,6 +34,7 @@ namespace zlPanel {
     private:
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        std::atomic<bool> dynEditable{false};
 
         zlInterface::CompactButton dynBypassC, dynSoloC, dynRelativeC, sideChainC;
         juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
