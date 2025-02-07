@@ -29,9 +29,8 @@ namespace zlPanel {
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
-          relativeDrawable(juce::Drawable::createFromImageData(BinaryData::righttobracketsolid_svg,
-                                                               BinaryData::righttobracketsolid_svgSize)),
-          sideDrawable(juce::Drawable::createFromImageData(BinaryData::fadside_svg, BinaryData::fadside_svgSize)) {
+          relativeDrawable(juce::Drawable::createFromImageData(BinaryData::relative_svg, BinaryData::relative_svgSize)),
+          sideDrawable(juce::Drawable::createFromImageData(BinaryData::swap_svg, BinaryData::swap_svgSize)) {
         juce::ignoreUnused(parametersNARef);
         dynBypassC.setDrawable(bypassDrawable.get());
         dynBypassC.getLAF().setReverse(true);
@@ -51,7 +50,9 @@ namespace zlPanel {
         };
         dynSoloC.setDrawable(soloDrawable.get());
         dynRelativeC.setDrawable(relativeDrawable.get());
+        dynRelativeC.getLAF().setShrinkScale(.5f);
         sideChainC.setDrawable(sideDrawable.get());
+        sideChainC.getLAF().setShrinkScale(.5f);
         sideChainC.getButton().onClick = [this]() {
             const auto isSideOn = static_cast<int>(sideChainC.getButton().getToggleState());
             const auto para = parametersNARef.getParameter(zlState::fftSideON::ID);
@@ -140,7 +141,7 @@ namespace zlPanel {
         attach({&dynBypassC.getButton(), &dynSoloC.getButton(), &dynRelativeC.getButton(), &sideChainC.getButton()},
                {
                    zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix,
-                   zlDSP::dynamicRelative::ID + suffix, zlDSP::sideChain::ID
+                   zlDSP::dynamicRelative::ID + suffix, zlDSP::sideSwap::ID + suffix
                },
                parametersRef, buttonAttachments);
         attach({&thresC.getSlider(), &attackC.getSlider(), &kneeC.getSlider(), &releaseC.getSlider()},
@@ -164,6 +165,7 @@ namespace zlPanel {
             dynBypassC.setEditable(f);
             dynSoloC.setEditable(f);
             dynRelativeC.setEditable(f);
+            sideChainC.setEditable(f);
             thresC.setEditable(f);
             attackC.setEditable(f);
             kneeC.setEditable(f);
@@ -177,9 +179,6 @@ namespace zlPanel {
     }
 
     void RightControlPanel::handleAsyncUpdate() {
-        dynBypassC.repaint();
-        dynSoloC.repaint();
-        dynRelativeC.repaint();
         repaint();
     }
 

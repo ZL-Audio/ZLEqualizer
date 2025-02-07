@@ -74,6 +74,9 @@ namespace zlPanel {
 
         setInterceptsMouseClicks(false, true);
         dragger.getButton().addComponentListener(&buttonPopUp);
+        dragger.setInterceptsMouseClicks(false, true);
+        targetDragger.setInterceptsMouseClicks(false, true);
+        sideDragger.setInterceptsMouseClicks(false, true);
     }
 
     FilterButtonPanel::~FilterButtonPanel() {
@@ -163,7 +166,7 @@ namespace zlPanel {
 
     void FilterButtonPanel::handleAsyncUpdate() {
         const auto f = isActiveTarget.load();
-        dragger.setActive(f);
+        dragger.setVisible(f);
         dragger.setInterceptsMouseClicks(false, f);
         if (!f) {
             buttonPopUp.setVisible(false);
@@ -285,8 +288,6 @@ namespace zlPanel {
             const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
             auto *para1 = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, band.load()));
             auto *para3 = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::targetGain::ID, band.load()));
-            targetDragger.setActive(true);
-            targetDragger.setInterceptsMouseClicks(false, true);
             targetAttach = std::make_unique<zlInterface::DraggerParameterAttach>(
                 *para1, freqRange,
                 *para3, gainRange,
@@ -294,11 +295,8 @@ namespace zlPanel {
             targetAttach->enableX(true);
             targetAttach->enableY(true);
             targetAttach->sendInitialUpdate();
-
             targetDragger.setVisible(true);
         } else {
-            targetDragger.setActive(false);
-            targetDragger.setInterceptsMouseClicks(false, false);
             targetAttach.reset();
             targetDragger.setVisible(false);
         }
@@ -307,8 +305,6 @@ namespace zlPanel {
             const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
             auto *para2 = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::sideFreq::ID, band.load()));
             auto *para3 = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::targetGain::ID, band.load()));
-            sideDragger.setActive(true);
-            sideDragger.setInterceptsMouseClicks(false, true);
             sideAttach = std::make_unique<zlInterface::DraggerParameterAttach>(
                 *para2, freqRange,
                 *para3, gainRange,
@@ -316,11 +312,8 @@ namespace zlPanel {
             sideAttach->enableX(true);
             sideAttach->enableY(false);
             sideAttach->sendInitialUpdate();
-
             sideDragger.setVisible(true);
         } else {
-            sideDragger.setActive(false);
-            sideDragger.setInterceptsMouseClicks(false, false);
             sideAttach.reset();
             sideDragger.setVisible(false);
         }
