@@ -77,6 +77,7 @@ namespace zlPanel {
         std::atomic<bool> dynON, selected, active;
         std::atomic<float> maximumDB;
         AtomicBound atomicBound;
+        AtomicPoint atomicBottomLeft, atomicBottomRight;
 
         std::atomic<bool> skipRepaint{false};
         std::atomic<bool> toRepaint{false};

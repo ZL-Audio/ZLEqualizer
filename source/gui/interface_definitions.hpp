@@ -185,9 +185,9 @@ namespace zlInterface {
             loadFromAPVTS();
         }
 
-        void setFontSize(const float fSize) { fontSize.store(fSize); }
+        void setFontSize(const float fSize) { fontSize = fSize; }
 
-        inline float getFontSize() const { return fontSize.load(); }
+        inline float getFontSize() const { return fontSize; }
 
         inline juce::Colour getTextColor() const {
             return customColours[static_cast<size_t>(textColour)];
@@ -391,7 +391,7 @@ namespace zlInterface {
         juce::AudioProcessorValueTreeState &state;
         juce::ValueTree valueTree{"ui_setting"};
 
-        std::atomic<float> fontSize{0};
+        float fontSize{0.f};
         std::array<juce::Colour, colourNum> customColours;
         std::array<float, sensitivityNum> wheelSensitivity{1.f, 0.12f, 1.f, .25f};
         size_t rotaryStyleId{0};

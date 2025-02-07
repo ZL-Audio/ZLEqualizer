@@ -142,9 +142,12 @@ namespace zlPanel {
     }
 
     void SinglePanel::resized() {
-        const auto bound = getLocalBounds().toFloat();
-        atomicBound.store(bound);
+        auto bound = getLocalBounds().toFloat();
+        atomicBottomLeft.store(bound.getBottomLeft());
+        atomicBottomRight.store(bound.getBottomRight());
         sidePanel.setBounds(getLocalBounds());
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        atomicBound.store(bound);
         toRepaint.store(true);
     }
 
@@ -203,16 +206,9 @@ namespace zlPanel {
 
     void SinglePanel::run() {
         juce::ScopedNoDenormals noDenormals;
-        const juce::Rectangle<float> bound{
-            atomicBound.getX(), atomicBound.getY() + uiBase.getFontSize(),
-            atomicBound.getWidth(), atomicBound.getHeight() - 2 * uiBase.getFontSize()
-        };
-        const juce::Point<float> bottomLeft{
-            atomicBound.getX(), atomicBound.getY() + atomicBound.getHeight()
-        };
-        const juce::Point<float> bottomRight{
-            atomicBound.getX() + atomicBound.getWidth(), atomicBound.getY() + atomicBound.getHeight()
-        };
+        const auto bound = atomicBound.load();
+        const auto bottomLeft = atomicBottomLeft.load();
+        const auto bottomRight = atomicBottomRight.load();
         const auto maxDB = maximumDB.load();
         // draw curve
         baseFreq.store(static_cast<double>(baseF.getFreq()));
