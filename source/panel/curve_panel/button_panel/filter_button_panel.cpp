@@ -18,7 +18,7 @@ namespace zlPanel {
           buttonPopUp(bandIdx, parametersRef, parametersNARef, base),
           band{bandIdx} {
         dragger.addMouseListener(this, true);
-        dragger.setBufferedToImage(true);
+        dragger.getButton().setBufferedToImage(true);
         targetDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::upDownArrow);
         sideDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::rectangle);
         lookAndFeelChanged();
