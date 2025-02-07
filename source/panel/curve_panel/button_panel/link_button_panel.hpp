@@ -33,12 +33,14 @@ namespace zlPanel {
 
         void mouseDoubleClick(const juce::MouseEvent &event) override;
 
+        void resized() override;
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlInterface::Dragger &sideDraggerRef;
         zlInterface::CompactButton dynLinkC;
-        juce::Rectangle<float> buttonBound;
+        float buttonSize{}, buttonBottom{};
         std::atomic<bool> buttonChanged{false};
         juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
         const std::unique_ptr<juce::Drawable> linkDrawable;

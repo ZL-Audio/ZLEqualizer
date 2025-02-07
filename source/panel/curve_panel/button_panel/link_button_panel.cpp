@@ -25,6 +25,7 @@ namespace zlPanel {
         dynLinkC.setDrawable(linkDrawable.get());
         attach({&dynLinkC.getButton()}, {zlDSP::appendSuffix(zlDSP::singleDynLink::ID, bandIdx)},
                parameters, buttonAttachments);
+        // dynLinkC.setBufferedToImage(true);
         addChildComponent(dynLinkC);
         sideDraggerRef.addMouseListener(this, true);
 
@@ -63,12 +64,8 @@ namespace zlPanel {
     void LinkButtonPanel::updateBound() {
         if (isSelected.load() && isDynamicON.load()) {
             const auto dynPos = static_cast<float>(sideDraggerRef.getButton().getBounds().getCentreX());
-            buttonBound = juce::Rectangle<float>{2.5f * uiBase.getFontSize(), 2.5f * uiBase.getFontSize()};
-            auto bound = getLocalBounds().toFloat();
-            bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 8 * uiBase.getFontSize());
-            buttonBound = buttonBound.withCentre(
-                {dynPos, bound.getBottom()}
-            );
+            auto buttonBound = juce::Rectangle<float>{buttonSize, buttonSize};
+            buttonBound = buttonBound.withCentre({dynPos, buttonBottom});
             dynLinkC.setBounds(buttonBound.toNearestInt());
             dynLinkC.setVisible(true);
         } else {
@@ -89,5 +86,12 @@ namespace zlPanel {
             }
             para->endChangeGesture();
         }
+    }
+
+    void LinkButtonPanel::resized() {
+        buttonSize = 2.5f * uiBase.getFontSize();
+        auto bound = getLocalBounds().toFloat();
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 8 * uiBase.getFontSize());
+        buttonBottom = bound.getBottom();
     }
 } // zlPanel
