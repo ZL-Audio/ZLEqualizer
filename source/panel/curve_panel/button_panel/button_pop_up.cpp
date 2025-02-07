@@ -32,6 +32,7 @@ namespace zlPanel {
         soloC.setDrawable(soloDrawable.get());
         for (auto &c: {&bypassC, &soloC}) {
             addAndMakeVisible(c);
+            c->setBufferedToImage(true);
         }
         attach({&bypassC.getButton(), &soloC.getButton()},
                {
@@ -58,6 +59,7 @@ namespace zlPanel {
         for (auto &c: {&fTypeC}) {
             addAndMakeVisible(c);
         }
+        fTypeC.setBufferedToImage(true);
         attach({&fTypeC.getBox()},
                {zlDSP::appendSuffix(zlDSP::fType::ID, bandIdx)},
                parametersRef, boxAttachments);
@@ -84,6 +86,7 @@ namespace zlPanel {
         };
         button.setPadding(.05f, .05f, .05f, .05f);
         addAndMakeVisible(button);
+        button.setBufferedToImage(true);
     }
 
     ButtonPopUp::~ButtonPopUp() {
