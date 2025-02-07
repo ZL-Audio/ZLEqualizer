@@ -171,7 +171,6 @@ namespace zlPanel {
         if (!f) {
             buttonPopUp.setVisible(false);
         }
-
         if (toUpdateAttachment.exchange(false)) {
             updateAttachment();
         }
@@ -182,6 +181,7 @@ namespace zlPanel {
             updateBounds();
         }
         dragger.repaint();
+        dragger.getButton().repaint();
         targetDragger.repaint();
         sideDragger.repaint();
         buttonPopUp.componentMovedOrResized(dragger.getButton(), true, true);
