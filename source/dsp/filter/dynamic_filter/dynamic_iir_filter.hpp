@@ -137,9 +137,14 @@ namespace zlFilter {
             if (currentDynamicBypass) {
                 portion = 0;
             }
-            mFilter.template setGain<true, false>((1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
-            mFilter.template setQ<true, false>((1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
-            if (!currentIsPerSample) mFilter.skipSmooth();
+            if (currentIsPerSample) {
+                mFilter.template setGain<true, false, false>((1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
+                mFilter.template setQ<true, false, false>((1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
+            } else {
+                mFilter.template setGain<true, false, true>((1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
+                mFilter.template setQ<true, false, true>((1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
+                mFilter.updateCoeffs();
+            }
             if (mFilter.getShouldBeParallel()) {
                 mFilter.template process<isBypassed>(mFilter.getParallelBuffer());
             } else {

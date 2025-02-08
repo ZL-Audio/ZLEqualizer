@@ -212,13 +212,17 @@ namespace zlFilter {
          * set the frequency of the filter
          * @param x frequency
          */
-        template<bool update = true, bool async = true>
+        template<bool update = true, bool async = true, bool force = false>
         void setFreq(const FloatType x) {
             if (async) {
                 freq.store(static_cast<double>(x));
                 if (update) { toUpdateFGQ.store(true); }
             } else {
-                currentFreq.setTargetValue(static_cast<double>(x));
+                if (force) {
+                    currentFreq.setCurrentAndTargetValue(static_cast<double>(x));
+                } else {
+                    currentFreq.setTargetValue(static_cast<double>(x));
+                }
             }
         }
 
@@ -235,14 +239,17 @@ namespace zlFilter {
          * set the gain of the filter
          * @param x gain
          */
-        template<bool update = true, bool async = true>
+        template<bool update = true, bool async = true, bool force = false>
         void setGain(const FloatType x) {
             if (async) {
                 gain.store(static_cast<double>(x));
                 if (update) toUpdateFGQ.store(true);
             } else {
-                gain.store(static_cast<double>(x));
-                currentGain.setTargetValue(static_cast<double>(x));
+                if (force) {
+                    currentGain.setCurrentAndTargetValue(static_cast<double>(x));
+                } else {
+                    currentGain.setTargetValue(static_cast<double>(x));
+                }
             }
         }
 
@@ -259,13 +266,17 @@ namespace zlFilter {
          * set the Q value of the filter
          * @param x Q value
          */
-        template<bool update = true, bool async = true>
+        template<bool update = true, bool async = true, bool force = false>
         void setQ(const FloatType x) {
             if (async) {
                 q.store(static_cast<double>(x));
                 if (update) toUpdateFGQ.store(true);
             } else {
-                currentQ.setTargetValue(static_cast<double>(x));
+                if (force) {
+                    currentQ.setCurrentAndTargetValue(static_cast<double>(x));
+                } else {
+                    currentQ.setTargetValue(static_cast<double>(x));
+                }
             }
         }
 
