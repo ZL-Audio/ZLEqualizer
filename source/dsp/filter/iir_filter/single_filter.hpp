@@ -45,7 +45,6 @@ namespace zlFilter {
         void prepare(const juce::dsp::ProcessSpec &spec) {
             processSpec = spec;
             numChannels.store(spec.numChannels);
-            sampleRate.store(static_cast<float>(spec.sampleRate));
             for (auto &f: filters) {
                 f.prepare(spec);
             }
@@ -406,8 +405,7 @@ namespace zlFilter {
         FilterType currentFilterType{FilterType::peak};
 
         juce::dsp::ProcessSpec processSpec{48000, 512, 2};
-        std::atomic<float> sampleRate{48000};
-        std::atomic<juce::uint32> numChannels;
+        std::atomic<juce::uint32> numChannels{2};
 
         std::atomic<bool> toUpdatePara{true}, toReset{true};
         std::atomic<bool> toUpdateFGQ{false};
