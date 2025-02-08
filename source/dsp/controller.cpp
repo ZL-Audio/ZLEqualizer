@@ -167,6 +167,9 @@ namespace zlDSP {
             updateDynRelSide();
             updateTrackersON();
         }
+        if (toUpdateHist.exchange(false)) {
+            updateHistograms();
+        }
         currentIsEffectON = isEffectON.load();
 
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
@@ -360,6 +363,7 @@ namespace zlDSP {
                         const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
                         histograms[i].push(static_cast<size_t>(histIdx));
                         subHistograms[i].push(static_cast<size_t>(histIdx));
+                        atomicHistograms[i].sync(histograms[i]);
                     }
                 }
             }
@@ -622,14 +626,12 @@ namespace zlDSP {
     void Controller<FloatType>::setRelative(const size_t idx, const bool isRelative) {
         dynRelatives[idx].store(isRelative);
         toUpdateDynRelSide.store(true);
-        setLearningHist(idx, isHistON[idx].load());
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setSideSwap(const size_t idx, const bool isSwap) {
         sideSwaps[idx].store(isSwap);
         toUpdateDynRelSide.store(true);
-        setLearningHist(idx, isHistON[idx].load());
     }
 
     template<typename FloatType>
@@ -735,12 +737,9 @@ namespace zlDSP {
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::setLearningHist(const size_t idx, const bool isLearning) {
-        if (isLearning) {
-            histograms[idx].reset();
-            subHistograms[idx].reset(FloatType(12.5));
-        }
+    void Controller<FloatType>::setLearningHistON(const size_t idx, const bool isLearning) {
         isHistON[idx].store(isLearning);
+        toUpdateHist.store(true);
     }
 
     template<typename FloatType>
@@ -893,8 +892,23 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::updateDynRelSide() {
         for (size_t i = 0; i < bandNUM; ++i) {
-            currentDynRelatives[i] = dynRelatives[i].load();
-            currentSideSwaps[i] = sideSwaps[i].load();
+            if (currentDynRelatives[i] != dynRelatives[i].load() || currentSideSwaps[i] != sideSwaps[i].load()) {
+                currentDynRelatives[i] = dynRelatives[i].load();
+                currentSideSwaps[i] = sideSwaps[i].load();
+                histograms[i].reset(FloatType(12.5));
+                subHistograms[i].reset(FloatType(12.5));
+            }
+        }
+    }
+
+    template<typename FloatType>
+    void Controller<FloatType>::updateHistograms() {
+        for (size_t i = 0; i < bandNUM; ++i) {
+            if (currentIsHistON[i] != isHistON[i].load()) {
+                currentIsHistON[i] = isHistON[i].load();
+                histograms[i].reset(FloatType(12.5));
+                subHistograms[i].reset(FloatType(12.5));
+            }
         }
     }
 

@@ -201,7 +201,7 @@ namespace zlDSP {
         } else if (parameterID.startsWith(dynamicLearn::ID)) {
             const auto f = newValue > .5f;
             if (!f && controllerRef.getLearningHistON(idx)) {
-                controllerRef.setLearningHist(idx, false);
+                controllerRef.setLearningHistON(idx, false);
                 const auto &hist = controllerRef.getLearningHist(idx);
                 const auto thresholdV = static_cast<float>(
                     -hist.getPercentile(FloatType(0.5)) + controllerRef.getThreshold(idx) + FloatType(40));
@@ -211,7 +211,7 @@ namespace zlDSP {
                 thresholdUpdater[idx]->update(threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)));
                 kneeUpdater[idx]->update(kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV)));
             } else {
-                controllerRef.setLearningHist(idx, f);
+                controllerRef.setLearningHistON(idx, f);
             }
         } else if (parameterID.startsWith(dynamicBypass::ID)) {
             filtersRef[idx].setDynamicBypass(newValue > .5f);

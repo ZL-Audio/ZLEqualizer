@@ -73,11 +73,11 @@ namespace zlDSP {
 
         void setSideSwap(size_t idx, bool isSwap);
 
-        void setLearningHist(size_t idx, bool isLearning);
+        void setLearningHistON(size_t idx, bool isLearning);
 
         bool getLearningHistON(const size_t idx) const { return isHistON[idx].load(); }
 
-        zlHistogram::Histogram<FloatType, 80> &getLearningHist(const size_t idx) { return histograms[idx]; }
+        zlHistogram::AtomicHistogram<FloatType, 80> &getLearningHist(const size_t idx) { return atomicHistograms[idx]; }
 
         void setLookAhead(FloatType x);
 
@@ -248,7 +248,10 @@ namespace zlDSP {
 
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> histograms;
         std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> subHistograms;
+        std::array<zlHistogram::AtomicHistogram<FloatType, 80>, bandNUM> atomicHistograms;
         std::array<std::atomic<bool>, bandNUM> isHistON{};
+        std::array<bool, bandNUM> currentIsHistON{};
+        std::atomic<bool> toUpdateHist{true};
         std::array<std::atomic<FloatType>, bandNUM> currentThreshold{};
 
         static inline double subBufferLength = 0.001;
@@ -336,6 +339,8 @@ namespace zlDSP {
         void updateSolo();
 
         void updateDynRelSide();
+
+        void updateHistograms();
     };
 }
 
