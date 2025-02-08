@@ -349,10 +349,10 @@ namespace zlDSP {
         if (!isBypassed) {
             for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
                 const auto i = dynamicONIndices[idx];
-                mainIdeals[i].setGain(filters[i].getMainFilter().getGain());
-                mainIdeals[i].setQ(filters[i].getMainFilter().getQ());
-                mainIIRs[i].setGain(filters[i].getMainFilter().getGain());
-                mainIIRs[i].setQ(filters[i].getMainFilter().getQ());
+                mainIdeals[i].setGain(filters[i].getMainFilter().template getGain<false>());
+                mainIdeals[i].setQ(filters[i].getMainFilter().template getQ<false>());
+                mainIIRs[i].setGain(filters[i].getMainFilter().template getGain<false>());
+                mainIIRs[i].setQ(filters[i].getMainFilter().template getQ<false>());
                 if (isHistON[i].load()) {
                     auto &compressor = filters[i].getCompressor();
                     const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
@@ -542,8 +542,8 @@ namespace zlDSP {
         const auto bQ = bFilters[idx].getQ();
 
         filters[idx].setDynamicON(x);
-        filters[idx].getMainFilter().template setGain<false>(bFilters[idx].getGain());
-        filters[idx].getMainFilter().template setQ<true>(bFilters[idx].getQ());
+        filters[idx].getMainFilter().setGain(bFilters[idx].getGain());
+        filters[idx].getMainFilter().setQ(bFilters[idx].getQ());
 
         mainIIRs[idx].setGain(bGain);
         mainIIRs[idx].setQ(bQ);
@@ -829,8 +829,8 @@ namespace zlDSP {
         for (size_t idx = 0; idx < bandNUM; ++idx) {
             const auto bGain = bFilters[idx].getGain();
             const auto bQ = bFilters[idx].getQ();
-            filters[idx].getMainFilter().template setGain<false>(bGain);
-            filters[idx].getMainFilter().template setQ<true>(bQ);
+            filters[idx].getMainFilter().setGain(bGain);
+            filters[idx].getMainFilter().setQ(bQ);
         }
     }
 

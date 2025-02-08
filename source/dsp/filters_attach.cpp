@@ -188,7 +188,6 @@ namespace zlDSP {
         } else if (parameterID.startsWith(Q::ID)) {
             controllerRef.getBaseFilter(idx).setQ(value);
             filtersRef[idx].getMainFilter().setQ(value);
-            filtersRef[idx].updateIsCurrentDynamicChangeQ();
             controllerRef.getMainIdealFilter(idx).setQ(value);
             controllerRef.getMainIIRFilter(idx).setQ(value);
             if (sDynLink[idx].load()) {
@@ -226,7 +225,6 @@ namespace zlDSP {
             controllerRef.getTargetFilter(idx).setGain(value);
         } else if (parameterID.startsWith(targetQ::ID)) {
             controllerRef.getTargetFilter(idx).setQ(value);
-            filtersRef[idx].updateIsCurrentDynamicChangeQ();
         } else if (parameterID.startsWith(threshold::ID)) {
             controllerRef.setThreshold(idx, value);
             filtersRef[idx].getCompressor().getComputer().setThreshold(value);

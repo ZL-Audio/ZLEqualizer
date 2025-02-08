@@ -56,7 +56,6 @@ namespace zlFilter {
         template<bool isBypassed = false>
         void process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
             cacheCurrentValues();
-
             mFilter.processPre(mBuffer);
             if (currentDynamicON) {
                 if (!mFilter.getShouldNotBeParallel()) {
@@ -114,19 +113,13 @@ namespace zlFilter {
 
         void setIsPerSample(const bool x) { isPerSample.store(x); }
 
-        void updateIsCurrentDynamicChangeQ() {
-            isDynamicChangeQ.store(std::abs(bFilter.getQ() - tFilter.getQ()) >= FloatType(0.00001));
-        }
-
     private:
         zlFilter::IIR<FloatType, FilterSize> mFilter, sFilter;
         zlFilter::Empty<FloatType> &bFilter, &tFilter;
         zlCompressor::ForwardCompressor<FloatType> compressor;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> active{false}, dynamicON{false}, dynamicBypass{false};
-        std::atomic<bool> isDynamicChangeQ{false};
         bool currentDynamicON{false}, currentDynamicBypass{false};
-        bool currentIsDynamicChangeQ{false};
         std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
         FilterStructure currentFilterStructure{FilterStructure::iir};
         juce::AudioBuffer<FloatType> sampleBuffer;
@@ -144,51 +137,13 @@ namespace zlFilter {
             if (currentDynamicBypass) {
                 portion = 0;
             }
-            if (!currentIsPerSample) {
-                if (currentIsDynamicChangeQ) {
-                    mFilter.setGainAndQNow((1 - portion) * bFilter.getGain() + portion * tFilter.getGain(),
-                                           (1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
-                } else {
-                    mFilter.setGainNow((1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
-                }
-                if (mFilter.getShouldBeParallel()) {
-                    mFilter.template process<isBypassed>(mFilter.getParallelBuffer());
-                } else {
-                    mFilter.template process<isBypassed>(mBuffer);
-                }
+            mFilter.template setGain<true, false>((1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
+            mFilter.template setQ<true, false>((1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
+            if (!currentIsPerSample) mFilter.skipSmooth();
+            if (mFilter.getShouldBeParallel()) {
+                mFilter.template process<isBypassed>(mFilter.getParallelBuffer());
             } else {
-                if (currentIsDynamicChangeQ) {
-                    const auto oldGain = mFilter.getGain();
-                    const auto oldQ = mFilter.getQ();
-                    const auto newGain = (1 - portion) * bFilter.getGain() + portion * tFilter.getGain();
-                    const auto newQ = (1 - portion) * bFilter.getQ() + portion * tFilter.getQ();
-                    auto audioWriters = mFilter.getShouldBeParallel()
-                                            ? mFilter.getParallelBuffer().getArrayOfWritePointers()
-                                            : mBuffer.getArrayOfWritePointers();
-                    for (int i = 0; i < mBuffer.getNumSamples(); ++i) {
-                        const auto pp = static_cast<FloatType>(i) / static_cast<FloatType>(mBuffer.getNumSamples());
-                        const auto currentGain = newGain * pp + oldGain * (1 - pp);
-                        const auto currentQ = newQ * pp + oldQ * (1 - pp);
-                        mFilter.setGainAndQNow(currentGain, currentQ);
-                        sampleBuffer.setDataToReferTo(audioWriters, static_cast<int>(mBuffer.getNumChannels()), i,
-                                                      1);
-                        mFilter.template process<isBypassed>(sampleBuffer);
-                    }
-                } else {
-                    const auto oldGain = mFilter.getGain();
-                    const auto newGain = (1 - portion) * bFilter.getGain() + portion * tFilter.getGain();
-                    auto audioWriters = mFilter.getShouldBeParallel()
-                                            ? mFilter.getParallelBuffer().getArrayOfWritePointers()
-                                            : mBuffer.getArrayOfWritePointers();
-                    for (int i = 0; i < mBuffer.getNumSamples(); ++i) {
-                        const auto pp = static_cast<FloatType>(i) / static_cast<FloatType>(mBuffer.getNumSamples());
-                        const auto currentGain = newGain * pp + oldGain * (1 - pp);
-                        mFilter.setGainNow(currentGain);
-                        sampleBuffer.setDataToReferTo(audioWriters, static_cast<int>(mBuffer.getNumChannels()), i,
-                                                      1);
-                        mFilter.template process<isBypassed>(sampleBuffer);
-                    }
-                }
+                mFilter.template process<isBypassed>(mBuffer);
             }
         }
 
@@ -212,7 +167,6 @@ namespace zlFilter {
             if (currentDynamicON) {
                 currentDynamicBypass = dynamicBypass.load();
                 currentIsPerSample = isPerSample.load();
-                currentIsDynamicChangeQ = isDynamicChangeQ.load();
             }
         }
     };
