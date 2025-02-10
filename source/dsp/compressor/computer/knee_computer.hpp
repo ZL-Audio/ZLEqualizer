@@ -1,76 +1,116 @@
 // Copyright (C) 2025 - zsliu98
-// This file is part of ZLEqualizer
+// This file is part of ZLCompressor
 //
-// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLCompressor is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
 //
-// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+// ZLCompressor is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License along with ZLCompressor. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLECOMP_COMPUTER_H
-#define ZLECOMP_COMPUTER_H
+#ifndef ZL_COMPRESSOR_KNEE_COMPUTER_HPP
+#define ZL_COMPRESSOR_KNEE_COMPUTER_HPP
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-#include "virtual_computer.hpp"
-
 namespace zlCompressor {
+    template<typename FloatType>
+    struct LinearCurve {
+        static constexpr FloatType a{FloatType(0)};
+        FloatType b, c;
+
+        void setPara(FloatType t, FloatType r, FloatType w) {
+            juce::ignoreUnused(w);
+            b = FloatType(1) / r;
+            c = t * (FloatType(1) - FloatType(1) / r);
+        }
+    };
+
+    template<typename FloatType>
+    struct DownCurve {
+        FloatType a, c;
+        static constexpr FloatType b{FloatType(0)};
+
+        void setPara(FloatType t, FloatType r, FloatType w) {
+            a = FloatType(0.5) / (r * std::min(t + w, FloatType(-0.0001)));
+            c = FloatType(0.5) * (w - t) / r + t;
+        }
+    };
+
+    template<typename FloatType>
+    struct UpCurve {
+        FloatType a, c;
+        static constexpr FloatType b{FloatType(1)};
+
+        void setPara(FloatType t, FloatType r, FloatType w) {
+            a = FloatType(0.5) * (FloatType(1) - r) / (r * std::min(t + w, FloatType(-0.0001)));
+            c = FloatType(0.5) * (FloatType(1) - r) * (w - t) / r;
+        }
+    };
+
     /**
      * a computer that computes the current compression
      * @tparam FloatType
      */
-    template<typename FloatType>
-    class KneeComputer : VirtualComputer<FloatType> {
+    template<typename FloatType, bool useCurve = false, bool useBound = false>
+    class KneeComputer final {
     public:
-        KneeComputer() { interpolate(); }
+        KneeComputer() = default;
 
-        KneeComputer(const KneeComputer<FloatType> &c);
+        void prepareBuffer() {
+            if (toInterpolate.exchange(false)) {
+                interpolate();
+            }
+        }
 
-        ~KneeComputer() override;
-
-        FloatType eval(FloatType x);
+        FloatType eval(FloatType x)  {
+            if (x <= lowThres) {
+                return x;
+            } else if (x >= highThres) {
+                const auto y = useCurve ? paras[2] + paras[3] * x + paras[4] * x * x : paras[2] + paras[3] * x;
+                return useBound ? std::max(x - currentBound, y) : y;
+            } else {
+                const auto xx = x + paras[1];
+                const auto y = x + paras[0] * xx * xx;
+                return useBound ? std::max(x - currentBound, y) : y;
+            }
+        }
 
         /**
          * computes the current compression
          * @param x input level (in dB)
          * @return current compression (in dB)
          */
-        FloatType process(FloatType x) override;
+        FloatType process(FloatType x)  {
+            return eval(x) - x;
+        }
 
         inline void setThreshold(FloatType v) {
             threshold.store(v);
-            interpolate();
+            toInterpolate.store(true);
         }
 
         inline FloatType getThreshold() const { return threshold.load(); }
 
         inline void setRatio(FloatType v) {
-            ratio.store(v);
-            interpolate();
+            ratio.store(std::max(FloatType(1), v));
+            toInterpolate.store(true);
         }
 
         inline FloatType getRatio() const { return ratio.load(); }
 
         inline void setKneeW(FloatType v) {
-            kneeW.store(v);
-            interpolate();
+            kneeW.store(std::max(v, FloatType(0.01)));
+            toInterpolate.store(true);
         }
 
         inline FloatType getKneeW() const { return kneeW.load(); }
 
-        inline void setKneeD(FloatType v) {
-            kneeD.store(v);
-            interpolate();
+        inline void setCurve(FloatType v) {
+            curve.store(juce::jlimit(FloatType(-1), FloatType(1), v));
+            toInterpolate.store(true);
         }
 
-        inline FloatType getKneeD() const { return kneeD.load(); }
-
-        inline void setKneeS(FloatType v) {
-            kneeS.store(v);
-            interpolate();
-        }
-
-        inline FloatType getKneeS() const { return kneeS.load(); }
+        inline FloatType getCurve() const { return curve.load(); }
 
         inline void setBound(FloatType v) {
             bound.store(v);
@@ -78,18 +118,56 @@ namespace zlCompressor {
 
         inline FloatType getBound() const { return bound.load(); }
 
-        inline FloatType getReductionAtKnee() const {return reductionAtKnee.load(); }
+        FloatType getReductionAtKnee() const { return reductionAtKnee; }
 
     private:
-        std::atomic<FloatType> threshold{0}, ratio{1};
-        std::atomic<FloatType> kneeW{FloatType(0.0625)}, kneeD{FloatType(0.5)}, kneeS{FloatType(0.5)};
+        LinearCurve<FloatType> linearCurve;
+        DownCurve<FloatType> downCurve;
+        UpCurve<FloatType> upCurve;
+        std::atomic<FloatType> threshold{-18}, ratio{2};
+        std::atomic<FloatType> kneeW{FloatType(0.25)}, curve{0};
+        FloatType lowThres{0}, highThres{0};
         std::atomic<FloatType> bound{60};
-        std::atomic<FloatType> tempA {0}, tempB{0}, tempC{0};
-        std::atomic<FloatType> reductionAtKnee{0};
+        FloatType currentBound{60};
+        FloatType reductionAtKnee{FloatType(0.001)};
+        std::array<FloatType, 5> paras;
+        std::atomic<bool> toInterpolate{true};
 
-        void interpolate();
+        void interpolate() {
+            const auto currentThreshold = threshold.load();
+            const auto currentKneeW = kneeW.load();
+            const auto currentRatio = ratio.load();
+            currentBound = bound.load();
+            const auto currentCurve = curve.load();
+            lowThres = currentThreshold - currentKneeW;
+            highThres = currentThreshold + currentKneeW;
+            paras[0] = FloatType(1) / currentRatio - FloatType(1);
+            paras[1] = -lowThres;
+            paras[0] *= FloatType(1) / (currentKneeW * FloatType(4));
+            if (useCurve) {
+                if (currentCurve >= FloatType(0)) {
+                    const auto alpha = FloatType(1) - currentCurve, beta = currentCurve;
+                    linearCurve.setPara(currentThreshold, currentRatio, currentKneeW);
+                    downCurve.setPara(currentThreshold, currentRatio, currentKneeW);
+                    paras[2] = alpha * linearCurve.c + beta * downCurve.c;
+                    paras[3] = alpha * linearCurve.b + beta * downCurve.b;
+                    paras[4] = alpha * linearCurve.a + beta * downCurve.a;
+                } else {
+                    const auto alpha = FloatType(1) + currentCurve, beta = -currentCurve;
+                    linearCurve.setPara(currentThreshold, currentRatio, currentKneeW);
+                    upCurve.setPara(currentThreshold, currentRatio, currentKneeW);
+                    paras[2] = alpha * linearCurve.c + beta * upCurve.c;
+                    paras[3] = alpha * linearCurve.b + beta * upCurve.b;
+                    paras[4] = alpha * linearCurve.a + beta * upCurve.a;
+                }
+            } else {
+                linearCurve.setPara(currentThreshold, currentRatio, currentKneeW);
+                paras[2] = linearCurve.c;
+                paras[3] = linearCurve.b;
+            }
+            reductionAtKnee = std::max(FloatType(0.001), highThres - eval(highThres));
+        }
     };
-
 } // KneeComputer
 
-#endif //ZLECOMP_COMPUTER_H
+#endif //ZL_COMPRESSOR_KNEE_COMPUTER_HPP

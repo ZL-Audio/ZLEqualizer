@@ -10,6 +10,8 @@
 #ifndef ZLEQUALIZER_COMPRESSOR_HPP
 #define ZLEQUALIZER_COMPRESSOR_HPP
 
-#include "forward_compressor.hpp"
+#include "tracker/tracker.hpp"
+#include "computer/computer.hpp"
+#include "follower/follower.hpp"
 
 #endif //ZLEQUALIZER_COMPRESSOR_HPP

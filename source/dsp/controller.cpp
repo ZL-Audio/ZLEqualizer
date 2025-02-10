@@ -45,10 +45,8 @@ namespace zlDSP {
     void Controller<FloatType>::updateSubBuffer() {
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * sampleRate.load()));
 
-        const auto numRMS = static_cast<size_t>(
-            zlDSP::dynRMS::range.end / 1000.f * static_cast<float>(sampleRate.load()));
         for (auto &f: filters) {
-            f.getCompressor().getTracker().setMaximumMomentarySize(numRMS);
+            f.getTracker().setMaximumMomentarySeconds(static_cast<FloatType>(zlDSP::dynRMS::range.end / 1000.f));
         }
 
         juce::dsp::ProcessSpec subSpec{sampleRate.load(), subBuffer.getSubSpec().maximumBlockSize, 2};
@@ -315,9 +313,9 @@ namespace zlDSP {
                             currentThreshold[i].load() + FloatType(40) +
                             static_cast<FloatType>(threshold::range.snapToLegalValue(
                                 static_cast<float>(-subHistograms[i].getPercentile(FloatType(0.5)))));
-                    filters[i].getCompressor().getComputer().setThreshold(depThres);
+                    filters[i].getComputer().setThreshold(depThres);
                 } else {
-                    filters[i].getCompressor().getComputer().setThreshold(currentThreshold[i].load());
+                    filters[i].getComputer().setThreshold(currentThreshold[i].load());
                 }
             }
         }
@@ -357,8 +355,7 @@ namespace zlDSP {
                 mainIIRs[i].setGain(filters[i].getMainFilter().template getGain<false>());
                 mainIIRs[i].setQ(filters[i].getMainFilter().template getQ<false>());
                 if (isHistON[i].load()) {
-                    auto &compressor = filters[i].getCompressor();
-                    const auto diff = compressor.getBaseLine() - compressor.getTracker().getMomentaryLoudness();
+                    const auto diff = filters[i].getBaseLine() - filters[i].getTracker().getMomentaryLoudness();
                     if (diff <= 100) {
                         const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
                         histograms[i].push(static_cast<size_t>(histIdx));
@@ -375,7 +372,7 @@ namespace zlDSP {
     void Controller<FloatType>::processDynamicLRMSTrackers(juce::AudioBuffer<FloatType> &subSideBuffer) {
         auto &tracker{trackers[lrIdx]};
         if (useTrackers[lrIdx]) {
-            tracker.process(subSideBuffer);
+            tracker.processBufferRMS(subSideBuffer);
             trackerBaselines[lrIdx] = tracker.getMomentaryLoudness();
             if (trackerBaselines[lrIdx] <= tracker.minusInfinityDB + FloatType(1)) {
                 trackerBaselines[lrIdx] = tracker.minusInfinityDB * FloatType(0.5);
@@ -393,9 +390,9 @@ namespace zlDSP {
             const auto i = indices[idx];
             const auto baseLine = sideSwaps[i] ? trackerBaselines[lrIdx2] : trackerBaselines[lrIdx1];
             if (currentDynRelatives[i]) {
-                filters[i].getCompressor().setBaseLine(baseLine);
+                filters[i].setBaseLine(baseLine);
             } else {
-                filters[i].getCompressor().setBaseLine(0);
+                filters[i].setBaseLine(0);
             }
             juce::AudioBuffer<FloatType> &subSideBuffer = sideSwaps[i] ? subSideBuffer2 : subSideBuffer1;
             if (currentIsBypass[i] || isBypassed) {
@@ -752,7 +749,7 @@ namespace zlDSP {
     void Controller<FloatType>::setRMS(const FloatType x) {
         const auto rmsMs = x / static_cast<FloatType>(1000);
         for (auto &f: filters) {
-            f.getCompressor().getTracker().setMomentarySeconds(rmsMs);
+            f.getTracker().setMomentarySeconds(rmsMs);
         }
     }
 

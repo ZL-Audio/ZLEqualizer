@@ -33,7 +33,6 @@ namespace zlFilter {
         void reset() {
             mFilter.reset();
             sFilter.reset();
-            compressor.reset();
         }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
@@ -41,9 +40,12 @@ namespace zlFilter {
             sFilter.template setOrder<false>(2);
             sFilter.template setFilterType<false>(zlFilter::FilterType::bandPass);
             sFilter.prepare(spec);
-            compressor.prepare(spec);
+            juce::dsp::ProcessSpec temp = spec;
+            temp.sampleRate = 1000.0;
+            follower.prepare(temp);
+            tracker.prepare(temp);
 
-            compressor.getComputer().setRatio(100);
+            computer.setRatio(1000);
             sBufferCopy.setSize(static_cast<int>(spec.numChannels),
                                 static_cast<int>(spec.maximumBlockSize));
         }
@@ -90,7 +92,11 @@ namespace zlFilter {
 
         IIR<FloatType, FilterSize> &getSideFilter() { return sFilter; }
 
-        zlCompressor::ForwardCompressor<FloatType> &getCompressor() { return compressor; }
+        zlCompressor::KneeComputer<FloatType, false, false> &getComputer() { return computer; }
+
+        zlCompressor::RMSTracker<FloatType, false> &getTracker() { return tracker; }
+
+        zlCompressor::PSFollower<FloatType, true, false> &getFollower() { return follower; }
 
         void setActive(const bool x) {
             if (x) {
@@ -113,10 +119,17 @@ namespace zlFilter {
 
         void setIsPerSample(const bool x) { isPerSample.store(x); }
 
+        void setBaseLine(const FloatType x) { compBaseline = x; }
+
+        FloatType getBaseLine() const { return compBaseline; }
+
     private:
         zlFilter::IIR<FloatType, FilterSize> mFilter, sFilter;
         zlFilter::Empty<FloatType> &bFilter, &tFilter;
-        zlCompressor::ForwardCompressor<FloatType> compressor;
+        zlCompressor::KneeComputer<FloatType, false, false> computer;
+        zlCompressor::RMSTracker<FloatType, false> tracker;
+        zlCompressor::PSFollower<FloatType, true, false> follower;
+        FloatType compBaseline;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> active{false}, dynamicON{false}, dynamicBypass{false};
         bool currentDynamicON{false}, currentDynamicBypass{false};
@@ -131,17 +144,30 @@ namespace zlFilter {
             sBufferCopy.makeCopyOf(sBuffer, true);
             sFilter.processPre(sBufferCopy);
             sFilter.process(sBufferCopy);
-            auto reducedLoudness = juce::Decibels::gainToDecibels(compressor.process(sBufferCopy));
-            auto maximumReduction = compressor.getComputer().getReductionAtKnee();
-            auto portion = std::min(reducedLoudness / maximumReduction, FloatType(1));
+            // feed side-chain into the tracker
+            tracker.processBufferRMS(sBufferCopy);
+            // get loudness from tracker
+            const auto currentLoudness = tracker.getMomentaryLoudness() - compBaseline;
+            // calculate the reduction
+            const auto reducedLoudness = currentLoudness - computer.eval(currentLoudness);
+            // smooth the reduction
+            const auto smoothLoudness = follower.processSample(reducedLoudness);
+
+            // calculate gain/Q mix portion
+            auto portion = std::min(smoothLoudness / computer.getReductionAtKnee(), FloatType(1));
+
+            // DBG(juce::String(currentLoudness) + "\t" + juce::String(reducedLoudness) + "\t" +
+            //     juce::String(smoothLoudness) + "\t" + juce::String(portion));
             if (currentDynamicBypass) {
                 portion = 0;
             }
             if (currentIsPerSample) {
-                mFilter.template setGain<true, false, false>((1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
+                mFilter.template setGain<true, false, false>(
+                    (1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
                 mFilter.template setQ<true, false, false>((1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
             } else {
-                mFilter.template setGain<true, false, true>((1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
+                mFilter.template setGain<true, false, true>(
+                    (1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
                 mFilter.template setQ<true, false, true>((1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
                 mFilter.updateCoeffs();
             }
@@ -172,6 +198,9 @@ namespace zlFilter {
             if (currentDynamicON) {
                 currentDynamicBypass = dynamicBypass.load();
                 currentIsPerSample = isPerSample.load();
+                computer.prepareBuffer();
+                tracker.prepareBuffer();
+                follower.prepareBuffer();
             }
         }
     };

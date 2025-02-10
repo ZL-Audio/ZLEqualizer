@@ -227,15 +227,15 @@ namespace zlDSP {
             controllerRef.getTargetFilter(idx).setQ(value);
         } else if (parameterID.startsWith(threshold::ID)) {
             controllerRef.setThreshold(idx, value);
-            filtersRef[idx].getCompressor().getComputer().setThreshold(value);
+            filtersRef[idx].getComputer().setThreshold(value);
         } else if (parameterID.startsWith(kneeW::ID)) {
-            filtersRef[idx].getCompressor().getComputer().setKneeW(kneeW::formatV(value));
+            filtersRef[idx].getComputer().setKneeW(kneeW::formatV(value));
         } else if (parameterID.startsWith(sideFreq::ID)) {
             filtersRef[idx].getSideFilter().setFreq(value);
         } else if (parameterID.startsWith(attack::ID)) {
-            filtersRef[idx].getCompressor().getDetector().setAttack(value);
+            filtersRef[idx].getFollower().setAttack(value);
         } else if (parameterID.startsWith(release::ID)) {
-            filtersRef[idx].getCompressor().getDetector().setRelease(value);
+            filtersRef[idx].getFollower().setRelease(value);
         } else if (parameterID.startsWith(sideQ::ID)) {
             filtersRef[idx].getSideFilter().setQ(value);
         } else if (parameterID.startsWith(singleDynLink::ID)) {

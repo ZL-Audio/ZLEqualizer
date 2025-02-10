@@ -54,7 +54,7 @@ namespace zlDSP {
             controllerRef.setRMS(static_cast<FloatType>(newValue));
         } else if (parameterID == dynSmooth::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
-                controllerRef.getFilter(i).getCompressor().getDetector().setSmooth(static_cast<FloatType>(newValue));
+                controllerRef.getFilter(i).getFollower().setSmooth(static_cast<FloatType>(newValue));
             }
         } else if (parameterID == effectON::ID) {
             controllerRef.setEffectON(newValue > .5f);
