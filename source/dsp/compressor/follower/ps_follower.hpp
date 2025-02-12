@@ -14,6 +14,12 @@
 #include <numbers>
 
 namespace zlCompressor {
+    /**
+     * a punch-smooth follower
+     * @tparam FloatType
+     * @tparam useSmooth whether to use smooth
+     * @tparam usePunch whether to use punch
+     */
     template<typename FloatType, bool useSmooth = false, bool usePunch = false>
     class PSFollower {
     public:
@@ -21,12 +27,16 @@ namespace zlCompressor {
 
         /**
          * call before processing starts
-         * @param spec
+         * @tparam toReset whether to reset the internal state
+         * @param sr sampleRate
          */
-        void prepare(const juce::dsp::ProcessSpec &spec) {
-            expFactor = -2.0 * std::numbers::pi * 1000.0 / spec.sampleRate;
-            state = FloatType(0);
-            y = FloatType(0);
+        template <bool toReset=true>
+        void prepare(const double sr) {
+            expFactor = -2.0 * std::numbers::pi * 1000.0 / sr;
+            if (toReset) {
+                state = FloatType(0);
+                y = FloatType(0);
+            }
             toUpdate.store(true);
         }
 

@@ -113,7 +113,7 @@ namespace zlDSP {
         matchAnalyzer.prepare(subSpec);
 
         for (auto &t: trackers) {
-            t.prepare(subSpec);
+            t.prepare(subSpec.sampleRate);
         }
 
         toUpdateLRs.store(true);

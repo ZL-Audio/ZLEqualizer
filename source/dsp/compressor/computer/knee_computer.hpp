@@ -50,6 +50,8 @@ namespace zlCompressor {
     /**
      * a computer that computes the current compression
      * @tparam FloatType
+     * @tparam useCurve whether to use curve
+     * @tparam useBound whether to use bound
      */
     template<typename FloatType, bool useCurve = false, bool useBound = false>
     class KneeComputer final {
@@ -137,7 +139,9 @@ namespace zlCompressor {
             const auto currentThreshold = threshold.load();
             const auto currentKneeW = kneeW.load();
             const auto currentRatio = ratio.load();
-            currentBound = bound.load();
+            if (useBound) {
+                currentBound = bound.load();
+            }
             const auto currentCurve = curve.load();
             lowThres = currentThreshold - currentKneeW;
             highThres = currentThreshold + currentKneeW;

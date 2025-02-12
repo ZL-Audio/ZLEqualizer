@@ -40,12 +40,11 @@ namespace zlFilter {
             sFilter.template setOrder<false>(2);
             sFilter.template setFilterType<false>(zlFilter::FilterType::bandPass);
             sFilter.prepare(spec);
-            juce::dsp::ProcessSpec temp = spec;
-            temp.sampleRate = 1000.0;
-            follower.prepare(temp);
-            tracker.prepare(temp);
+            const auto sr = spec.sampleRate / static_cast<double>(spec.maximumBlockSize);
+            follower.prepare(sr);
+            tracker.prepare(sr);
 
-            computer.setRatio(1000);
+            computer.setRatio(FloatType(1000));
             sBufferCopy.setSize(static_cast<int>(spec.numChannels),
                                 static_cast<int>(spec.maximumBlockSize));
         }
@@ -152,12 +151,8 @@ namespace zlFilter {
             const auto reducedLoudness = currentLoudness - computer.eval(currentLoudness);
             // smooth the reduction
             const auto smoothLoudness = follower.processSample(reducedLoudness);
-
             // calculate gain/Q mix portion
             auto portion = std::min(smoothLoudness / computer.getReductionAtKnee(), FloatType(1));
-
-            // DBG(juce::String(currentLoudness) + "\t" + juce::String(reducedLoudness) + "\t" +
-            //     juce::String(smoothLoudness) + "\t" + juce::String(portion));
             if (currentDynamicBypass) {
                 portion = 0;
             }
