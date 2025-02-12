@@ -12,6 +12,7 @@
 
 #include <juce_dsp/juce_dsp.h>
 #include "../filter_design/filter_design.hpp"
+#include "../../chore/chore.hpp"
 #include "coeff/martin_coeff.hpp"
 #include "iir_base.hpp"
 #include "svf_base.hpp"
@@ -54,9 +55,9 @@ namespace zlFilter {
             setOrder(order.load());
             parallelBuffer.setSize(static_cast<int>(spec.numChannels),
                                    static_cast<int>(spec.maximumBlockSize));
-            currentFreq.reset(spec.sampleRate, 0.001);
-            currentGain.reset(spec.sampleRate, 0.001);
-            currentQ.reset(spec.sampleRate, 0.001);
+            currentFreq.prepare(spec.sampleRate, 0.1);
+            currentGain.prepare(spec.sampleRate, 0.001);
+            currentQ.prepare(spec.sampleRate, 0.001);
         }
 
         /**
@@ -86,9 +87,9 @@ namespace zlFilter {
                 updateCoeffs();
             }
             if (toUpdateFGQ.exchange(false)) {
-                currentFreq.setTargetValue(freq.load());
-                currentGain.setTargetValue(gain.load());
-                currentQ.setTargetValue(q.load());
+                currentFreq.setTarget(freq.load());
+                currentGain.setTarget(gain.load());
+                currentQ.setTarget(q.load());
             }
         }
 
@@ -218,9 +219,9 @@ namespace zlFilter {
                 if (update) { toUpdateFGQ.store(true); }
             } else {
                 if (force) {
-                    currentFreq.setCurrentAndTargetValue(static_cast<double>(x));
+                    currentFreq.setCurrentAndTarget(static_cast<double>(x));
                 } else {
-                    currentFreq.setTargetValue(static_cast<double>(x));
+                    currentFreq.setTarget(static_cast<double>(x));
                 }
             }
         }
@@ -230,7 +231,7 @@ namespace zlFilter {
             if (async) {
                 return static_cast<FloatType>(freq.load());
             } else {
-                return static_cast<FloatType>(currentFreq.getCurrentValue());
+                return static_cast<FloatType>(currentFreq.getCurrent());
             }
         }
 
@@ -245,9 +246,9 @@ namespace zlFilter {
                 if (update) toUpdateFGQ.store(true);
             } else {
                 if (force) {
-                    currentGain.setCurrentAndTargetValue(static_cast<double>(x));
+                    currentGain.setCurrentAndTarget(static_cast<double>(x));
                 } else {
-                    currentGain.setTargetValue(static_cast<double>(x));
+                    currentGain.setTarget(static_cast<double>(x));
                 }
             }
         }
@@ -257,7 +258,7 @@ namespace zlFilter {
             if (async) {
                 return static_cast<FloatType>(gain.load());
             } else {
-                return static_cast<FloatType>(currentGain.getCurrentValue());
+                return static_cast<FloatType>(currentGain.getCurrent());
             }
         }
 
@@ -272,9 +273,9 @@ namespace zlFilter {
                 if (update) toUpdateFGQ.store(true);
             } else {
                 if (force) {
-                    currentQ.setCurrentAndTargetValue(static_cast<double>(x));
+                    currentQ.setCurrentAndTarget(static_cast<double>(x));
                 } else {
-                    currentQ.setTargetValue(static_cast<double>(x));
+                    currentQ.setTarget(static_cast<double>(x));
                 }
             }
         }
@@ -284,14 +285,14 @@ namespace zlFilter {
             if (async) {
                 return static_cast<FloatType>(q.load());
             } else {
-                return static_cast<FloatType>(currentQ.getCurrentValue());
+                return static_cast<FloatType>(currentQ.getCurrent());
             }
         }
 
         void skipSmooth() {
-            currentFreq.setCurrentAndTargetValue(currentFreq.getTargetValue());
-            currentGain.setCurrentAndTargetValue(currentGain.getTargetValue());
-            currentQ.setCurrentAndTargetValue(currentQ.getTargetValue());
+            currentFreq.setCurrentAndTarget(currentFreq.getTarget());
+            currentGain.setCurrentAndTarget(currentGain.getTarget());
+            currentQ.setCurrentAndTarget(currentQ.getTarget());
             updateCoeffs();
         }
 
@@ -328,9 +329,9 @@ namespace zlFilter {
          * DO NOT call it unless you are sure what you are doing
          */
         void updateCoeffs() {
-            const auto nextFreq = currentFreq.getNextValue();
-            const auto nextGain = currentGain.getNextValue();
-            const auto nextQ = currentQ.getNextValue();
+            const auto nextFreq = currentFreq.getNext();
+            const auto nextGain = currentGain.getNext();
+            const auto nextQ = currentQ.getNext();
             if (!shouldBeParallel) {
                 currentFilterNum = updateIIRCoeffs(currentFilterType, order.load(),
                                                    nextFreq, processSpec.sampleRate,
@@ -398,8 +399,9 @@ namespace zlFilter {
 
         size_t currentFilterNum{1};
         std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
-        juce::SmoothedValue<double, juce::ValueSmoothingTypes::Multiplicative> currentFreq{1000.0}, currentQ{0.707};
-        juce::SmoothedValue<double, juce::ValueSmoothingTypes::Linear> currentGain{0.0};
+        zlChore::SmoothedValue<double, zlChore::Lin> currentGain{0.0};
+        zlChore::SmoothedValue<double, zlChore::Mul> currentQ{0.707};
+        zlChore::SmoothedValue<double, zlChore::FixMul> currentFreq{1000.0};
         std::atomic<size_t> order{2};
         std::atomic<FilterType> filterType{FilterType::peak};
         FilterType currentFilterType{FilterType::peak};

@@ -11,5 +11,6 @@
 #define ZLCHORE_HPP
 
 #include "para_updater.hpp"
+#include "smoothed_value.hpp"
 
 #endif //ZLCHORE_HPP
