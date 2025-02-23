@@ -16,6 +16,7 @@ def main():
     build_dir = os.getenv("BUILD_DIR", "")
     artifact_name = os.getenv("ARTIFACT_NAME", "")
     developer_id_app = os.getenv("DEVELOPER_ID_APPLICATION", "")
+    macos_arch = os.getenv("MACOS_ARCH", "x86_64,arm64")
 
     # root
     root = ET.Element("installer-gui-script", minSpecVersion="1")
@@ -33,7 +34,7 @@ def main():
     options = ET.SubElement(root, "options",
                             customize="always",
                             rootVolumeOnly="true",
-                            hostArchitectures="x86_64,arm64")
+                            hostArchitectures=macos_arch)
     # domain
     domain = ET.SubElement(root, "domain",
                            enable_anywhere="false",

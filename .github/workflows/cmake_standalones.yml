@@ -1,0 +1,234 @@
+name: Standalone
+
+on:
+  workflow_dispatch:
+
+# When pushing new commits, cancel any running builds on that branch
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+  BUILD_DIR: Builds
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DISPLAY: :0 # linux pluginval needs this
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  IPP_DIR: C:\Program Files (x86)\Intel\oneAPI\ipp\latest\lib\cmake\ipp
+
+# jobs are run in paralell on different machines
+# all steps run in series
+jobs:
+  build_and_test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-22.04
+            plugin_os_format: "Standalone"
+            juce_branch: "juce7"
+            app_suffix: ""
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
+          - name: Linux-ARM64
+            os: ubuntu-22.04-arm
+            plugin_os_format: "Standalone"
+            juce_branch: "juce7"
+            app_suffix: ""
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
+          - name: macOS
+            os: macos-15
+            plugin_os_format: "Standalone"
+            juce_branch: "main"
+            app_suffix: ".app"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64"
+          - name: Windows
+            os: windows-latest
+            plugin_os_format: "Standalone"
+            juce_branch: "main"
+            app_suffix: ".exe"
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+          - name: Windows-Software
+            os: windows-latest
+            plugin_os_format: "Standalone"
+            juce_branch: "juce7"
+            app_suffix: ".exe"
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+    steps:
+      - name: Set up Clang (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 17
+
+      # This also starts up our "fake" display Xvfb, needed for pluginval
+      - name: Install JUCE's Linux Deps (Linux)
+        if: runner.os == 'Linux'
+        # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
+        run: |
+          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev xvfb ninja-build
+          sudo /usr/bin/Xvfb $DISPLAY &
+
+      - name: Set up Developer Command Prompt (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Cache IPP (Windows)
+        if: runner.os == 'Windows'
+        id: cache-ipp
+        uses: actions/cache@v4
+        with:
+          key: ipp-v6
+          path: C:\Program Files (x86)\Intel
+
+      - name: Install IPP (Windows)
+        if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
+        shell: bash
+        run: |
+          curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/2e89fab4-e1c7-4f14-a1ef-6cddba8c5fa7/intel-ipp-2022.0.0.796_offline.exe
+          ./oneapi.exe -s -x -f oneapi
+          ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
+
+      - name: Save IPP cache (even on CI fail)
+        if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
+        uses: actions/cache/save@v4
+        with:
+          path: C:\Program Files (x86)\Intel
+          key: ipp-v6
+
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: choco install ninja
+
+      - name: Install macOS Deps
+        if: ${{ runner.os == 'macOS' }}
+        run: brew install ninja osxutils
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Import Certificates (macOS)
+        uses: apple-actions/import-codesign-certs@v3 # only exists as a tag right now
+        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '') }}
+        with:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
+        env:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+
+      - name: Configure
+        shell: bash
+        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+        env:
+          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+          JUCE_BRANCH: ${{ matrix.juce_branch }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
+
+      - name: Test
+        working-directory: ${{ env.BUILD_DIR }}
+        run: ctest --output-on-failure -j4 -VV
+
+      - name: Read in .env from CMake # see GitHubENV.cmake
+        shell: bash
+        run: |
+          cat .env # show us the config
+          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+
+      - name: Set additional env vars for next steps
+        shell: bash
+        run: |
+          ARTIFACTS_PATH=${{ env.BUILD_DIR }}/${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}
+          echo "ARTIFACTS_PATH=$ARTIFACTS_PATH" >> $GITHUB_ENV
+          echo "VST3_PATH=$ARTIFACTS_PATH/VST3/${{ env.PRODUCT_NAME }}.vst3" >> $GITHUB_ENV
+          echo "AU_PATH=$ARTIFACTS_PATH/AU/${{ env.PRODUCT_NAME }}.component" >> $GITHUB_ENV
+          echo "LV2_PATH=$ARTIFACTS_PATH/LV2/${{ env.PRODUCT_NAME }}.lv2" >> $GITHUB_ENV
+          echo "AAX_PATH=aax_releases/${{ matrix.name }}/${{ env.PRODUCT_NAME }}.aaxplugin" >> $GITHUB_ENV
+          echo "Standalone_PATH=$ARTIFACTS_PATH/Standalone/${{ env.PRODUCT_NAME }}${{ matrix.app_suffix }}" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
+
+      - name: Codesign and Create Individual Packages (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          python3 -u packaging/packager_macOS.py
+        env:
+          DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
+          MACOS_ARCH: "arm64"
+
+      - name: Sign Final Package (macOS)
+        if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV != '') }}
+        run: productsign --sign "${{ secrets.APPLE_INSTALLER_DEV }}" "${{ env.ARTIFACT_NAME }}_unsigned.pkg" "${{ env.ARTIFACT_NAME }}.pkg"
+        env:
+          APPLE_INSTALLER_DEV: ${{ secrets.APPLE_INSTALLER_DEV }}
+
+      - name: Rename Final Package (macOS)
+        if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV == '') }}
+        run: mv "${{ env.ARTIFACT_NAME }}_unsigned.pkg" "${{ env.ARTIFACT_NAME }}.pkg"
+        env:
+          APPLE_INSTALLER_DEV: ${{ secrets.APPLE_INSTALLER_DEV }}
+
+      - name: Notarize and Staple PKG (macOS)
+        if: ${{ (runner.os == 'macOS') && (env.NOTARIZATION_USERNAME != '')}}
+        run: |
+          xcrun notarytool submit "${{ env.ARTIFACT_NAME }}.pkg" --apple-id ${{ secrets.NOTARIZATION_USERNAME }} --password ${{ secrets.NOTARIZATION_PASSWORD }} --team-id ${{ secrets.TEAM_ID }} --wait
+          xcrun stapler staple "${{ env.ARTIFACT_NAME }}.pkg"
+        env:
+          NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
+
+      - name: Create DMG (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          mkdir "${{ env.ARTIFACTS_PATH }}/dmgtmp"
+          mv "${{ env.ARTIFACT_NAME }}.pkg" "${{ env.ARTIFACTS_PATH }}/dmgtmp"
+          hdiutil create "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -ov -volname "${{ env.ARTIFACT_NAME }}" -fs HFS+ -srcfolder "${{ env.ARTIFACTS_PATH }}/dmgtmp"
+          hdiutil convert "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -format UDZO -o "${{ env.ARTIFACT_NAME }}.dmg"
+
+      - name: Upload DMG (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}.dmg
+          path: "${{ env.ARTIFACT_NAME }}.dmg"
+
+      - name: Generate InnoScript (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          python3 -u packaging/packager_Windows.py
+          cat "packaging\installer.iss"
+
+      - name: Generate Installer (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          iscc "packaging\installer.iss"
+          mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
+
+      - name: Upload Exe (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}.exe
+          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
+
+      - name: Generate Zip (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        working-directory: ${{ env.ARTIFACTS_PATH }}
+        run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" "-xr!lib${{ env.PRODUCT_NAME }}_SharedCode.a" .
+
+      - name: Upload Zip (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}.zip
+          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
