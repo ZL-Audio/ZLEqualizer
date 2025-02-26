@@ -17,6 +17,7 @@ namespace zlPanel {
             isThresholdAutoParas[i] = processorRef.parameters.getParameter(zlDSP::dynamicLearn::ID + suffix);
             isDynamicOnParas[i] = processorRef.parameters.getParameter(zlDSP::dynamicON::ID + suffix);
         }
+        bandIdxPara = processorRef.parametersNA.getParameter(zlState::selectedBandIdx::ID);
         lookAndFeelChanged();
     }
 
@@ -30,6 +31,7 @@ namespace zlPanel {
     }
 
     void LoudnessDisplay::checkVisible() {
+        bandIdx = static_cast<size_t>(bandIdxPara->convertFrom0to1(bandIdxPara->getValue()));
         const auto f = (isThresholdAutoParas[bandIdx]->getValue() < 0.5f)
                               && (isDynamicOnParas[bandIdx]->getValue() > 0.5f);
         setVisible(f && shouldVisible && colour.getFloatAlpha() > 0.005f);
