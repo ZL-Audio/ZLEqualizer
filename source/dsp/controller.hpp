@@ -160,8 +160,14 @@ namespace zlDSP {
             return tFilters[idx];
         }
 
+        void setEditorOn(const bool x) { isEditorOn.store(x); }
+
     private:
         juce::AudioProcessor &processorRef;
+
+        std::atomic<bool> isEditorOn{false};
+        bool currentIsEditorOn{false};
+
         std::array<zlFilter::Empty<FloatType>, bandNUM> bFilters, tFilters;
 
         std::array<zlFilter::DynamicIIR<FloatType, FilterSize>, bandNUM> filters =
