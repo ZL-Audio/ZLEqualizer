@@ -21,10 +21,6 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void attachGroup(const size_t idx) {
-            bandIdx = idx;
-        }
-
         void checkVisible();
 
         void lookAndFeelChanged() override;
@@ -39,7 +35,7 @@ namespace zlPanel {
         size_t bandIdx{0};
         std::array<juce::RangedAudioParameter *, zlState::bandNUM> isDynamicOnParas{};
         std::array<juce::RangedAudioParameter *, zlState::bandNUM> isThresholdAutoParas{};
-        bool shouldPaint{false};
+        juce::RangedAudioParameter *bandIdxPara;
         juce::Colour colour;
         bool shouldVisible{false};
     };
