@@ -17,6 +17,7 @@ namespace zlPanel {
             isThresholdAutoParas[i] = processorRef.parameters.getParameter(zlDSP::dynamicLearn::ID + suffix);
             isDynamicOnParas[i] = processorRef.parameters.getParameter(zlDSP::dynamicON::ID + suffix);
         }
+        lookAndFeelChanged();
     }
 
     void LoudnessDisplay::paint(juce::Graphics &g) {
@@ -24,7 +25,7 @@ namespace zlPanel {
         const auto p = 1. + std::clamp(loudness, -80.0, 0.0) / 80;
         auto bound = getLocalBounds().toFloat();
         bound = bound.withWidth(bound.getWidth() * static_cast<float>(p));
-        g.setColour(uiBase.getTextColor().withAlpha(.33f));
+        g.setColour(colour);
         g.fillRect(bound);
     }
 
@@ -38,5 +39,10 @@ namespace zlPanel {
             }
             previousTime = currentTime;
         }
+    }
+
+    void LoudnessDisplay::lookAndFeelChanged() {
+        colour = uiBase.getColourByIdx(zlInterface::sideLoudnessColour);
+        setVisible(colour.getFloatAlpha() > 0.005f);
     }
 } // zlPanel

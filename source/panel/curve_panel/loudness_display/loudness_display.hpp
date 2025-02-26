@@ -27,6 +27,8 @@ namespace zlPanel {
 
         void checkRepaint();
 
+        void lookAndFeelChanged() override;
+
     private:
         PluginProcessor &processorRef;
         zlInterface::UIBase &uiBase;
@@ -36,6 +38,7 @@ namespace zlPanel {
         std::array<juce::RangedAudioParameter *, zlState::bandNUM> isDynamicOnParas{};
         std::array<juce::RangedAudioParameter *, zlState::bandNUM> isThresholdAutoParas{};
         bool shouldPaint{false};
+        juce::Colour colour;
     };
 } // zlPanel
 

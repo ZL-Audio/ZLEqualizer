@@ -31,6 +31,7 @@ namespace zlPanel {
           gridSelector(base, *this),
           tagSelector(base, *this),
           gainSelector(base, *this),
+          sideLoudnessSelector(base, *this),
           cMap1Selector(base), cMap2Selector(base) {
         juce::ignoreUnused(pRef);
         if (!settingDirectory.isDirectory()) {

@@ -27,6 +27,7 @@ namespace zlInterface {
         gridColour,
         tagColour,
         gainColour,
+        sideLoudnessColour,
         colourNum
     };
 
@@ -60,7 +61,7 @@ namespace zlInterface {
         "text", "background",
         "shadow", "glow",
         "pre", "post", "side",
-        "grid", "tag", "gain"
+        "grid", "tag", "gain", "side_loudness"
     };
 
     static constexpr size_t ColorMap1Size = 10;
