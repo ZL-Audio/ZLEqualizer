@@ -118,6 +118,10 @@ namespace zlDSP {
             return currentThreshold[idx].load();
         }
 
+        FloatType getSideLoudness(const size_t idx) const {
+            return sideLoudness[idx].load();
+        }
+
         zlPhase::PhaseFlip<FloatType> &getPhaseFlipper() { return phaseFlipper; }
 
         void setFilterStructure(const filterStructure::FilterStructure x) {
@@ -236,6 +240,7 @@ namespace zlDSP {
         std::array<zlCompressor::RMSTracker<FloatType>, 5> trackers;
         std::array<bool, 5> useTrackers{};
         std::array<FloatType, 5> trackerBaselines{};
+        std::array<std::atomic<FloatType>, bandNUM> sideLoudness{};
 
         std::atomic<bool> sideChain;
 

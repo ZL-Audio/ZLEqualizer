@@ -20,6 +20,7 @@ namespace zlPanel {
           fftPanel(controllerRef.getAnalyzer(), base),
           conflictPanel(controllerRef.getConflictAnalyzer(), base),
           sumPanel(parametersRef, base, controllerRef, baseFilters, mainFilters),
+          loudnessDisplay(processorRef, base),
           buttonPanel(processorRef, base),
           soloPanel(parametersRef, parametersNARef, base, controllerRef, buttonPanel),
           matchPanel(processor.getController().getMatchAnalyzer(), parametersNARef, base),
@@ -44,13 +45,15 @@ namespace zlPanel {
         }
         addAndMakeVisible(sumPanel);
         addAndMakeVisible(soloPanel);
+        addAndMakeVisible(loudnessDisplay);
         addAndMakeVisible(buttonPanel);
         addChildComponent(matchPanel);
         parameterChanged(zlDSP::scale::ID, parametersRef.getRawParameterValue(zlDSP::scale::ID)->load());
         parametersRef.addParameterListener(zlDSP::scale::ID, this);
         parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
         parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
-        parameterChanged(zlState::minimumFFTDB::ID, parametersNARef.getRawParameterValue(zlState::minimumFFTDB::ID)->load());
+        parameterChanged(zlState::minimumFFTDB::ID,
+                         parametersNARef.getRawParameterValue(zlState::minimumFFTDB::ID)->load());
         parametersNARef.addParameterListener(zlState::minimumFFTDB::ID, this);
         startThread(juce::Thread::Priority::low);
 
@@ -91,6 +94,12 @@ namespace zlPanel {
         soloPanel.setBounds(bound);
         buttonPanel.setBounds(bound);
         matchPanel.setBounds(bound);
+
+        auto lBound = getLocalBounds().toFloat();
+        lBound = juce::Rectangle<float>(lBound.getX() + lBound.getWidth() * 0.666f,
+            lBound.getBottom() - uiBase.getFontSize() * .5f,
+            lBound.getWidth() * .09f, uiBase.getFontSize() * .5f);
+        loudnessDisplay.setBounds(lBound.toNearestInt());
     }
 
     void CurvePanel::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -120,6 +129,7 @@ namespace zlPanel {
             matchPanel.setVisible(f);
             buttonPanel.setVisible(!f);
             soloPanel.setVisible(!f);
+            loudnessDisplay.setVisible(!f);
         } else if (property == zlInterface::identifiers[static_cast<size_t>(
                        zlInterface::settingIdx::uiSettingPanelShow)]) {
             const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::uiSettingPanelShow));
@@ -134,7 +144,8 @@ namespace zlPanel {
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
-            for (const auto &panel : singlePanels) {
+            loudnessDisplay.checkRepaint();
+            for (const auto &panel: singlePanels) {
                 panel->updateDragger();
             }
             if (showMatchPanel.load()) {
