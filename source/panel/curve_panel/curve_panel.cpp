@@ -129,7 +129,7 @@ namespace zlPanel {
             matchPanel.setVisible(f);
             buttonPanel.setVisible(!f);
             soloPanel.setVisible(!f);
-            loudnessDisplay.setVisible(!f);
+            loudnessDisplay.updateVisible(!f);
         } else if (property == zlInterface::identifiers[static_cast<size_t>(
                        zlInterface::settingIdx::uiSettingPanelShow)]) {
             const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::uiSettingPanelShow));
@@ -144,7 +144,7 @@ namespace zlPanel {
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
-            loudnessDisplay.checkRepaint();
+            loudnessDisplay.checkVisible();
             for (const auto &panel: singlePanels) {
                 panel->updateDragger();
             }

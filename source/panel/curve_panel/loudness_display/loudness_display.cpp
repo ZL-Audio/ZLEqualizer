@@ -29,20 +29,17 @@ namespace zlPanel {
         g.fillRect(bound);
     }
 
-    void LoudnessDisplay::checkRepaint() {
-        const auto currentTime = juce::Time::getCurrentTime();
-        if ((currentTime - previousTime).inMilliseconds() >= 33) {
-            const bool newShouldPaint = (isThresholdAutoParas[bandIdx]->getValue() < 0.5f)
-                                        && (isDynamicOnParas[bandIdx]->getValue() > 0.5f);
-            if (shouldPaint || shouldPaint != newShouldPaint) {
-                shouldPaint = newShouldPaint;
-            }
-            previousTime = currentTime;
-        }
+    void LoudnessDisplay::checkVisible() {
+        const auto f = (isThresholdAutoParas[bandIdx]->getValue() < 0.5f)
+                              && (isDynamicOnParas[bandIdx]->getValue() > 0.5f);
+        setVisible(f && shouldVisible && colour.getFloatAlpha() > 0.005f);
     }
 
     void LoudnessDisplay::lookAndFeelChanged() {
         colour = uiBase.getColourByIdx(zlInterface::sideLoudnessColour);
-        setVisible(colour.getFloatAlpha() > 0.005f);
+    }
+
+    void LoudnessDisplay::updateVisible(const bool x) {
+        shouldVisible = x;
     }
 } // zlPanel

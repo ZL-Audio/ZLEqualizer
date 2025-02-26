@@ -25,9 +25,11 @@ namespace zlPanel {
             bandIdx = idx;
         }
 
-        void checkRepaint();
+        void checkVisible();
 
         void lookAndFeelChanged() override;
+
+        void updateVisible(bool x);
 
     private:
         PluginProcessor &processorRef;
@@ -39,6 +41,7 @@ namespace zlPanel {
         std::array<juce::RangedAudioParameter *, zlState::bandNUM> isThresholdAutoParas{};
         bool shouldPaint{false};
         juce::Colour colour;
+        bool shouldVisible{false};
     };
 } // zlPanel
 
