@@ -17,6 +17,7 @@ namespace zlPanel {
           scalePanel(p, uiBase),
           statePanel(p, uiBase, uiSettingPanel),
           uiSettingPanel(p, uiBase) {
+        processorRef.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(scalePanel);
         addAndMakeVisible(controlPanel);
@@ -30,6 +31,7 @@ namespace zlPanel {
     }
 
     MainPanel::~MainPanel() {
+        processorRef.getController().setEditorOn(false);
         state.removeParameterListener(zlState::fftExtraTilt::ID, this);
         state.removeParameterListener(zlState::fftExtraSpeed::ID, this);
         state.removeParameterListener(zlState::refreshRate::ID, this);

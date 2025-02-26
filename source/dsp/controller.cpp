@@ -121,6 +121,7 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+        currentIsEditorOn = isEditorOn.load();
         if (mFilterStructure.load() != currentFilterStructure) {
             currentFilterStructure = mFilterStructure.load();
             updateFilterStructure();
@@ -213,8 +214,10 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                  juce::AudioBuffer<FloatType> &subSideBuffer) {
-        fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
-        matchAnalyzer.process(subMainBuffer, subSideBuffer);
+        if (currentIsEditorOn) {
+            fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
+            matchAnalyzer.process(subMainBuffer, subSideBuffer);
+        }
 
         if (currentIsEffectON) {
             if (currentUseSolo) {
@@ -227,12 +230,14 @@ namespace zlDSP {
             processSubBufferOnOff<true>(subMainBuffer, subSideBuffer);
         }
 
-        fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
-        fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
-        fftAnalyzer.process();
-        conflictAnalyzer.pushMainBuffer(subMainBuffer);
-        conflictAnalyzer.pushRefBuffer(subSideBuffer);
-        conflictAnalyzer.process();
+        if (currentIsEditorOn) {
+            fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
+            fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
+            fftAnalyzer.process();
+            conflictAnalyzer.pushMainBuffer(subMainBuffer);
+            conflictAnalyzer.pushRefBuffer(subSideBuffer);
+            conflictAnalyzer.process();
+        }
     }
 
     template<typename FloatType>
@@ -308,7 +313,7 @@ namespace zlDSP {
         if (!isBypassed) {
             for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
                 const auto i = dynamicONIndices[idx];
-                if (isHistON[i].load()) {
+                if (currentIsHistON[i]) {
                     const auto depThres =
                             currentThreshold[i].load() + FloatType(40) +
                             static_cast<FloatType>(threshold::range.snapToLegalValue(
@@ -354,7 +359,7 @@ namespace zlDSP {
                 mainIdeals[i].setQ(filters[i].getMainFilter().template getQ<false>());
                 mainIIRs[i].setGain(filters[i].getMainFilter().template getGain<false>());
                 mainIIRs[i].setQ(filters[i].getMainFilter().template getQ<false>());
-                if (isHistON[i].load()) {
+                if (currentIsHistON[i]) {
                     const auto diff = filters[i].getBaseLine() - filters[i].getTracker().getMomentaryLoudness();
                     if (diff <= 100) {
                         const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
@@ -362,6 +367,8 @@ namespace zlDSP {
                         subHistograms[i].push(static_cast<size_t>(histIdx));
                         atomicHistograms[i].sync(histograms[i]);
                     }
+                } else if (currentIsEditorOn) {
+                    sideLoudness[i].store(filters[i].getTracker().getMomentaryLoudness() - filters[i].getBaseLine());
                 }
             }
         }
