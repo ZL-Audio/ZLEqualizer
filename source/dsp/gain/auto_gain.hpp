@@ -56,7 +56,7 @@ namespace zlGain {
         template<bool isBypassed=false>
         void processPost(juce::dsp::AudioBlock<FloatType> block) {
             if (currentIsON) {
-                if (preRMS > FloatType(0.00001)) {
+                if (preRMS > FloatType(0.00001) && block.getNumSamples() > 0) {
                     postRMS = std::max(calculateRMS(block), FloatType(0.000000001));
                     gain.store(gainDSP.getCurrentGainLinear());
                     gainDSP.setGainLinear(preRMS / postRMS);
@@ -79,7 +79,7 @@ namespace zlGain {
             gainDSP.setRampDurationSeconds(newDurationSeconds);
         }
 
-        void enable(bool f) {
+        void enable(const bool f) {
             if (f) {
                 isON.store(true);
             } else {
