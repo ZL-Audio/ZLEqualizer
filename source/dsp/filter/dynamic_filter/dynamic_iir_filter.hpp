@@ -149,10 +149,10 @@ namespace zlFilter {
             const auto currentLoudness = tracker.getMomentaryLoudness() - compBaseline;
             // calculate the reduction
             const auto reducedLoudness = currentLoudness - computer.eval(currentLoudness);
-            // smooth the reduction
-            const auto smoothLoudness = follower.processSample(reducedLoudness);
             // calculate gain/Q mix portion
-            auto portion = std::min(smoothLoudness / computer.getReductionAtKnee(), FloatType(1));
+            auto portion = std::min(reducedLoudness / computer.getReductionAtKnee(), FloatType(1));
+            // smooth the portion
+            portion = follower.processSample(portion);
             if (currentDynamicBypass) {
                 portion = 0;
             }
