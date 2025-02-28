@@ -79,7 +79,7 @@ namespace zlGain {
             gainDSP.setRampDurationSeconds(newDurationSeconds);
         }
 
-        void enable(bool f) {
+        void enable(const bool f) {
             if (f) {
                 isON.store(true);
             } else {

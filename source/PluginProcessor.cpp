@@ -153,6 +153,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                    juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
+    if (buffer.getNumSamples() == 0) return; // ignore empty blocks
     doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
     switch (channelLayout) {
         case ChannelLayout::main1aux0: {
@@ -220,6 +221,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
+    if (buffer.getNumSamples() == 0) return; // ignore empty blocks
     doubleBuffer.setSize(4, buffer.getNumSamples(), false, false, true);
     switch (channelLayout) {
         case ChannelLayout::main1aux0: {
