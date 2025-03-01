@@ -20,7 +20,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif ()
 
 # Checkout JUCE version
-if ((CMAKE_SYSTEM_NAME STREQUAL "Linux" OR "$ENV{JUCE_BRANCH}" STREQUAL "juce7") AND GIT_EXECUTABLE)
+if (("$ENV{JUCE_BRANCH}" STREQUAL "juce7") AND GIT_EXECUTABLE)
     execute_process(
             COMMAND "${GIT_EXECUTABLE}" checkout "fd933dfac612fcb0bbb1443395da3b5b289604f4"
             RESULT_VARIABLE RES
