@@ -13,7 +13,7 @@
 #include "k_weighting_filter.hpp"
 
 namespace zlLoudness {
-    template<typename FloatType, size_t MaxChannels = 2>
+    template<typename FloatType, size_t MaxChannels = 2, bool UseLowPass = false>
     class LUFSMeter {
     public:
         LUFSMeter() {
@@ -73,7 +73,7 @@ namespace zlLoudness {
         }
 
     private:
-        KWeightingFilter<FloatType> kWeightingFilter;
+        KWeightingFilter<FloatType, UseLowPass> kWeightingFilter;
         juce::AudioBuffer<FloatType> smallBuffer;
         int currentIdx{0}, maxIdx{0};
         FloatType meanMul{1};

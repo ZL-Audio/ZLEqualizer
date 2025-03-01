@@ -13,7 +13,7 @@
 #include "../filter/filter.hpp"
 
 namespace zlLoudness {
-    template<typename FloatType>
+    template<typename FloatType, bool UseLowPass = false>
     class KWeightingFilter {
     public:
         KWeightingFilter() = default;
@@ -27,11 +27,20 @@ namespace zlLoudness {
                 w1, 0.500242812458813));
             highShelfF.updateFromBiquad(zlFilter::MartinCoeff::get2HighShelf(
                 w2, 1.5847768458311522, 0.7096433028107384));
+            if (UseLowPass) {
+                lowPassF.prepare(spec);
+                const auto w3 = zlFilter::ppi * 22000.0 / spec.sampleRate;
+                lowPassF.updateFromBiquad(zlFilter::MartinCoeff::get2LowPass(
+                    w3, 0.7071067811865476));
+            }
         }
 
         void reset() {
             highPassF.reset();
             highShelfF.reset();
+            if (UseLowPass) {
+                lowPassF.reset();
+            }
         }
 
         void process(juce::AudioBuffer<FloatType> &buffer) {
@@ -41,6 +50,9 @@ namespace zlLoudness {
                     auto sample = *(writerPointer[channel] + i);
                     sample = highPassF.processSample(channel, sample);
                     sample = highShelfF.processSample(channel, sample);
+                    if (UseLowPass) {
+                        sample = lowPassF.processSample(channel, sample);
+                    }
                     *(writerPointer[channel] + i) = sample;
                 }
             }
@@ -48,8 +60,8 @@ namespace zlLoudness {
         }
 
     private:
-        zlFilter::IIRBase<FloatType> highPassF, highShelfF;
-        static constexpr FloatType bias = 1.0051643348917434;
+        zlFilter::IIRBase<FloatType> highPassF, highShelfF, lowPassF;
+        static constexpr FloatType bias = FloatType(1.0051643348917434);
     };
 }
 
