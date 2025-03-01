@@ -18,7 +18,9 @@ namespace zlDSP {
         : processorRef(processor),
           parameterRef(parameters), parameterNARef(parametersNA),
           controllerRef(controller),
-          decaySpeed(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]) {
+          decaySpeed(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]),
+          agcUpdater(parameters, zlDSP::autoGain::ID),
+          gainUpdater(parameters, zlDSP::outputGain::ID) {
         juce::ignoreUnused(parameterRef);
         addListeners();
         initDefaultValues();
@@ -60,7 +62,7 @@ namespace zlDSP {
             controllerRef.setEffectON(newValue > .5f);
         } else if (parameterID == phaseFlip::ID) {
             controllerRef.getPhaseFlipper().setON(newValue > .5f);
-        }else if (parameterID == staticAutoGain::ID) {
+        } else if (parameterID == staticAutoGain::ID) {
             controllerRef.setSgcON(newValue > .5f);
         } else if (parameterID == autoGain::ID) {
             controllerRef.getAutoGain().enable(newValue > .5f);
@@ -167,6 +169,15 @@ namespace zlDSP {
                 zlState::conflictStrength::formatV(static_cast<FloatType>(newValue)));
         } else if (parameterID == zlState::conflictScale::ID) {
             controllerRef.getConflictAnalyzer().setConflictScale(static_cast<FloatType>(newValue));
+        } else if (parameterID == loudnessMatcherON::ID) {
+            if (newValue > .5f) {
+                controllerRef.setLoudnessMatcherON(true);
+            } else {
+                controllerRef.setLoudnessMatcherON(false);
+                const auto newGain = -controllerRef.getLoudnessMatcherDiff();
+                agcUpdater.update(0.f);
+                gainUpdater.update(zlDSP::outputGain::convertTo01(static_cast<float>(newGain)));
+            }
         }
     }
 

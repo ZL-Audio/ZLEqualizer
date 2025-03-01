@@ -36,6 +36,7 @@ namespace zlLoudness {
             std::fill(histogramSums.begin(), histogramSums.end(), FloatType(0));
             currentIdx = 0;
             smallBuffer.clear();
+            readyCount = 0;
         }
 
         void process(juce::AudioBuffer<FloatType> &buffer) {
@@ -48,18 +49,28 @@ namespace zlLoudness {
             juce::dsp::AudioBlock<FloatType> smallBlock(smallBuffer);
             while (numTotal - startIdx >= maxIdx - currentIdx) {
                 // now we get a full 100ms small block
-                smallBlock.copyFrom(block,
-                                    static_cast<size_t>(startIdx),
-                                    static_cast<size_t>(currentIdx),
-                                    static_cast<size_t>(maxIdx - currentIdx));
+                const auto subBlock = block.getSubBlock(static_cast<size_t>(startIdx),
+                                                        static_cast<size_t>(maxIdx - currentIdx));
+                auto smallSubBlock = smallBlock.getSubBlock(static_cast<size_t>(currentIdx),
+                                                            static_cast<size_t>(maxIdx - currentIdx));
+                smallSubBlock.copyFrom(subBlock);
                 startIdx += maxIdx - currentIdx;
                 currentIdx = 0;
                 update();
             }
+            if (numTotal - startIdx > 0) {
+                const auto subBlock = block.getSubBlock(static_cast<size_t>(startIdx),
+                static_cast<size_t>(numTotal - startIdx));
+                auto smallSubBlock = smallBlock.getSubBlock(static_cast<size_t>(currentIdx),
+                static_cast<size_t>(numTotal - startIdx));
+                smallSubBlock.copyFrom(subBlock);
+                currentIdx += numTotal - startIdx;
+            }
         }
 
-        FloatType getIntegratedLUFS() const {
+        FloatType getIntegratedLoudness() const {
             const auto totalCount = std::reduce(histogram.begin(), histogram.end(), FloatType(0));
+            if (totalCount < FloatType(0.5)) { return FloatType(0); }
             const auto totalSum = std::reduce(histogramSums.begin(), histogramSums.end(), FloatType(0));
             const auto totalLUFS = totalSum / totalCount;
             if (totalLUFS <= FloatType(-60)) {
@@ -76,6 +87,7 @@ namespace zlLoudness {
         KWeightingFilter<FloatType, UseLowPass> kWeightingFilter;
         juce::AudioBuffer<FloatType> smallBuffer;
         int currentIdx{0}, maxIdx{0};
+        int readyCount{0};
         FloatType meanMul{1};
         std::array<FloatType, 4> sumSquares{};
 
@@ -84,6 +96,10 @@ namespace zlLoudness {
         std::array<FloatType, MaxChannels> weights;
 
         void update() {
+            if (readyCount < 3) {
+                readyCount += 1;
+                return;
+            }
             // perform K-weighting filtering
             kWeightingFilter.process(smallBuffer);
             // calculate the sum square of the small block
@@ -91,11 +107,11 @@ namespace zlLoudness {
             for (int channel = 0; channel < smallBuffer.getNumChannels(); ++channel) {
                 const auto readerPointer = smallBuffer.getReadPointer(channel);
                 FloatType channelSumSquare = 0;
-                for (int i = 0; i < maxIdx; ++i) {
+                for (int i = 0; i < smallBuffer.getNumSamples(); ++i) {
                     const auto sample = *(readerPointer + i);
                     channelSumSquare += sample * sample;
                 }
-                sumSquare += channelSumSquare * weights[channel];
+                sumSquare += channelSumSquare * weights[static_cast<size_t>(channel)];
             }
             // shift circular sumSquares
             sumSquares[0] = sumSquares[1];

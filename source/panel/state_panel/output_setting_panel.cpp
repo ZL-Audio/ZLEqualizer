@@ -19,17 +19,21 @@ namespace zlPanel {
               uiBase(base),
               phaseC("phase", uiBase),
               agcC("A", uiBase),
+              lmC("L", uiBase),
               scaleS("Scale", uiBase),
               outGainS("Out Gain", uiBase),
               phaseDrawable(
                   juce::Drawable::createFromImageData(BinaryData::fadphase_svg,
                                                       BinaryData::fadphase_svgSize)),
               agcDrawable(juce::Drawable::createFromImageData(BinaryData::autogaincompensation_svg,
-                                                              BinaryData::autogaincompensation_svgSize)) {
+                                                              BinaryData::autogaincompensation_svgSize)),
+              lmDrawable(juce::Drawable::createFromImageData(BinaryData::loudnessmatch_svg,
+                                                             BinaryData::loudnessmatch_svgSize)) {
             phaseC.setDrawable(phaseDrawable.get());
             agcC.setDrawable(agcDrawable.get());
+            lmC.setDrawable(lmDrawable.get());
 
-            for (auto &c: {&phaseC, &agcC}) {
+            for (auto &c: {&phaseC, &agcC, &lmC}) {
                 c->getLAF().enableShadow(false);
                 c->getLAF().setShrinkScale(0.f);
                 addAndMakeVisible(c);
@@ -38,8 +42,8 @@ namespace zlPanel {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.f);
                 addAndMakeVisible(c);
             }
-            attach({&phaseC.getButton(), &agcC.getButton()},
-                   {zlDSP::phaseFlip::ID, zlDSP::autoGain::ID},
+            attach({&phaseC.getButton(), &agcC.getButton(), &lmC.getButton()},
+                   {zlDSP::phaseFlip::ID, zlDSP::autoGain::ID, zlDSP::loudnessMatcherON::ID},
                    parametersRef, buttonAttachments);
             attach({&scaleS.getSlider(), &outGainS.getSlider()},
                    {zlDSP::scale::ID, zlDSP::outputGain::ID},
@@ -54,13 +58,14 @@ namespace zlPanel {
             using Fr = juce::Grid::Fr;
 
             grid.templateRows = {Track(Fr(60)), Track(Fr(60)), Track(Fr(60))};
-            grid.templateColumns = {Track(Fr(50)), Track(Fr(50))};
+            grid.templateColumns = {Track(Fr(50)), Track(Fr(50)), Track(Fr(50))};
 
             grid.items = {
-                juce::GridItem(scaleS).withArea(1, 1, 2, 3),
+                juce::GridItem(scaleS).withArea(1, 1, 2, 4),
                 juce::GridItem(phaseC).withArea(2, 1),
                 juce::GridItem(agcC).withArea(2, 2),
-                juce::GridItem(outGainS).withArea(3, 1, 4, 3)
+                juce::GridItem(lmC).withArea(2, 3),
+                juce::GridItem(outGainS).withArea(3, 1, 4, 4)
             };
 
             grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .2125f));
@@ -73,7 +78,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
 
-        zlInterface::CompactButton phaseC, agcC;
+        zlInterface::CompactButton phaseC, agcC, lmC;
         juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > buttonAttachments{};
 
         zlInterface::CompactLinearSlider scaleS, outGainS;
@@ -81,6 +86,7 @@ namespace zlPanel {
 
         const std::unique_ptr<juce::Drawable> phaseDrawable;
         const std::unique_ptr<juce::Drawable> agcDrawable;
+        const std::unique_ptr<juce::Drawable> lmDrawable;
     };
 
     OutputSettingPanel::OutputSettingPanel(PluginProcessor &p,

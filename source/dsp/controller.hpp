@@ -24,6 +24,7 @@
 #include "phase/phase.hpp"
 #include "container/container.hpp"
 #include "eq_match/eq_match.hpp"
+#include "loudness/loudness.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -162,6 +163,14 @@ namespace zlDSP {
 
         void setEditorOn(const bool x) { isEditorOn.store(x); }
 
+        void setLoudnessMatcherON(const bool x) {
+            isLoudnessMatcherON.store(x);
+        }
+
+        FloatType getLoudnessMatcherDiff() const {
+            return loudnessMatcher.getDiff();
+        }
+
     private:
         juce::AudioProcessor &processorRef;
 
@@ -291,6 +300,10 @@ namespace zlDSP {
 
         std::atomic<filterStructure::FilterStructure> mFilterStructure{filterStructure::minimum};
         filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
+
+        zlLoudness::LUFSMatcher<FloatType, 2, false> loudnessMatcher;
+        bool currentIsLoudnessMatcherON{false};
+        std::atomic<bool> isLoudnessMatcherON{false};
 
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);

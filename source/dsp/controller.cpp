@@ -110,6 +110,8 @@ namespace zlDSP {
         dummySideDelay.setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
         dummySideDelay.prepare(subSpec);
 
+        loudnessMatcher.prepare(subSpec);
+
         for (auto &t: trackers) {
             t.prepare(subSpec.sampleRate);
         }
@@ -168,6 +170,13 @@ namespace zlDSP {
         if (toUpdateHist.exchange(false)) {
             updateHistograms();
         }
+        if (currentIsLoudnessMatcherON != isLoudnessMatcherON.load()) {
+            currentIsLoudnessMatcherON = isLoudnessMatcherON.load();
+            if (currentIsLoudnessMatcherON) {
+                loudnessMatcher.reset();
+            }
+        }
+
         currentIsEffectON = isEffectON.load();
 
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
@@ -248,6 +257,9 @@ namespace zlDSP {
             } else if (currentFilterStructure == filterStructure::mixed) {
                 processMixedCorrection<isBypassed>(subMainBuffer);
             }
+        }
+        if (currentIsLoudnessMatcherON) {
+            loudnessMatcher.process(dummyMainBuffer, subMainBuffer);
         }
         autoGain.processPre(dummyMainBuffer);
         autoGain.template processPost<isBypassed>(subMainBuffer);

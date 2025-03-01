@@ -48,10 +48,10 @@ namespace zlLoudness {
             for (int i = 0; i < buffer.getNumSamples(); ++i) {
                 for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
                     auto sample = *(writerPointer[channel] + i);
-                    sample = highPassF.processSample(channel, sample);
-                    sample = highShelfF.processSample(channel, sample);
+                    sample = highPassF.processSample(static_cast<size_t>(channel), sample);
+                    sample = highShelfF.processSample(static_cast<size_t>(channel), sample);
                     if (UseLowPass) {
-                        sample = lowPassF.processSample(channel, sample);
+                        sample = lowPassF.processSample(static_cast<size_t>(channel), sample);
                     }
                     *(writerPointer[channel] + i) = sample;
                 }
