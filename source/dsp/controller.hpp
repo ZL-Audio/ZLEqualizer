@@ -301,7 +301,7 @@ namespace zlDSP {
         std::atomic<filterStructure::FilterStructure> mFilterStructure{filterStructure::minimum};
         filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
 
-        zlLoudness::LUFSMatcher<FloatType, 2, false> loudnessMatcher;
+        zlLoudness::LUFSMatcher<FloatType, 2, true> loudnessMatcher;
         bool currentIsLoudnessMatcherON{false};
         std::atomic<bool> isLoudnessMatcherON{false};
 
