@@ -20,9 +20,6 @@ namespace zlFFT {
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         fftAnalyzer.prepare(spec);
-        preBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
-        postBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
-        sideBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
     }
 
     template<typename FloatType>
@@ -32,37 +29,6 @@ namespace zlFFT {
             currentPreON = isPreON.load();
             currentPostON = isPostON.load();
             currentSideON = isSideON.load();
-        }
-    }
-
-    template<typename FloatType>
-    void PrePostFFTAnalyzer<FloatType>::pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        if (currentPreON) {
-            preBuffer.makeCopyOf(buffer, true);
-        }
-    }
-
-    template<typename FloatType>
-    void PrePostFFTAnalyzer<FloatType>::pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        if (currentPostON) {
-            postBuffer.makeCopyOf(buffer, true);
-        }
-    }
-
-    template<typename FloatType>
-    void PrePostFFTAnalyzer<FloatType>::pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        if (currentSideON) {
-            sideBuffer.makeCopyOf(buffer, true);
-        }
-    }
-
-    template<typename FloatType>
-    void PrePostFFTAnalyzer<FloatType>::process() {
-        if (toReset.exchange(false)) {
-            fftAnalyzer.reset();
-        }
-        if (currentON) {
-            fftAnalyzer.process({preBuffer, postBuffer, sideBuffer});
         }
     }
 

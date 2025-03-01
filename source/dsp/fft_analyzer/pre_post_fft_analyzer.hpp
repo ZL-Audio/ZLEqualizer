@@ -29,14 +29,6 @@ namespace zlFFT {
 
         void prepareBuffer();
 
-        void pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void process();
-
         void process(juce::AudioBuffer<FloatType> &pre,
                      juce::AudioBuffer<FloatType> &post,
                      juce::AudioBuffer<FloatType> &side);
@@ -62,7 +54,6 @@ namespace zlFFT {
 
     private:
         MultipleFFTAnalyzer<FloatType, 3, pointNum> fftAnalyzer;
-        juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
         std::atomic<bool> isON{false};
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
         bool currentON{false}, currentPreON{true}, currentPostON{true}, currentSideON{false};

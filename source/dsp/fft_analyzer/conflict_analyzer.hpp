@@ -51,12 +51,6 @@ namespace zlFFT {
 
         void setConflictScale(const FloatType x) { conflictScale.store(x); }
 
-        void pushMainBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void pushRefBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void process();
-
         void process(juce::AudioBuffer<FloatType> &pre,
                      juce::AudioBuffer<FloatType> &post);
 
@@ -71,7 +65,6 @@ namespace zlFFT {
 
     private:
         MultipleFFTAnalyzer<FloatType, 2, pointNum> syncAnalyzer;
-        juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
         std::atomic<bool> isON{false}, isConflictReady{false}, toReset{false};
         bool currentIsON{false};
