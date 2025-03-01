@@ -21,10 +21,12 @@ namespace zlLoudness {
         void prepare(const juce::dsp::ProcessSpec &spec) {
             highPassF.prepare(spec);
             highShelfF.prepare(spec);
+            const auto w1 = zlFilter::ppi * 38.13713296248405 / spec.sampleRate;
+            const auto w2 = zlFilter::ppi * 1500.6868667368922 / spec.sampleRate;
             highPassF.updateFromBiquad(zlFilter::MartinCoeff::get2HighPass(
-                37.5, 0.5));
+                w1, 0.500242812458813));
             highShelfF.updateFromBiquad(zlFilter::MartinCoeff::get2HighShelf(
-                1500.0, 1.5848931924611136, 0.7071067811865476));
+                w2, 1.5847768458311522, 0.7096433028107384));
         }
 
         void reset() {
@@ -42,10 +44,12 @@ namespace zlLoudness {
                     *(writerPointer[channel] + i) = sample;
                 }
             }
+            buffer.applyGain(bias);
         }
 
     private:
         zlFilter::IIRBase<FloatType> highPassF, highShelfF;
+        static constexpr FloatType bias = 1.0051643348917434;
     };
 }
 
