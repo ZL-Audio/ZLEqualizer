@@ -278,10 +278,10 @@ namespace zlDSP {
         bool currentIsEffectON{true};
 
         zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzer;
-
         zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer;
-
         zlEqMatch::EqMatchAnalyzer<FloatType> matchAnalyzer;
+        juce::AudioBuffer<FloatType> dummyMainBuffer, dummySideBuffer;
+        zlDelay::SampleDelay<FloatType> dummyMainDelay, dummySideDelay;
 
         std::atomic<double> sampleRate{48000};
 

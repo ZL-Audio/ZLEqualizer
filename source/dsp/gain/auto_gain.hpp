@@ -30,18 +30,25 @@ namespace zlGain {
             gainDSP.setRampDurationSeconds(1.0);
         }
 
-        void processPre(juce::AudioBuffer<FloatType> &buffer) {
-            auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-            processPre(block);
-        }
-
-        void processPre(juce::dsp::AudioBlock<FloatType> block) {
+        void prepareBuffer() {
             if (isON.load() != currentIsON) {
                 currentIsON = isON.load();
                 gainDSP.setGainLinear(1);
                 gainDSP.reset();
                 gain.store(FloatType(1));
             }
+        }
+
+        void processPre(juce::AudioBuffer<FloatType> &buffer) {
+            prepareBuffer();
+            if (currentIsON) {
+                auto block = juce::dsp::AudioBlock<FloatType>(buffer);
+                preRMS = std::max(calculateRMS(block), FloatType(0.000000001));
+            }
+        }
+
+        void processPre(juce::dsp::AudioBlock<FloatType> block) {
+            prepareBuffer();
             if (currentIsON) {
                 preRMS = std::max(calculateRMS(block), FloatType(0.000000001));
             }
@@ -49,29 +56,16 @@ namespace zlGain {
 
         template<bool isBypassed=false>
         void processPost(juce::AudioBuffer<FloatType> &buffer) {
-            auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-            processPost(block);
+            if (currentIsON) {
+                auto block = juce::dsp::AudioBlock<FloatType>(buffer);
+                processPostBlockInternal<isBypassed>(block);
+            }
         }
 
         template<bool isBypassed=false>
         void processPost(juce::dsp::AudioBlock<FloatType> block) {
             if (currentIsON) {
-                if (preRMS > FloatType(0.00001)) {
-                    postRMS = std::max(calculateRMS(block), FloatType(0.000000001));
-                    gain.store(gainDSP.getCurrentGainLinear());
-                    gainDSP.setGainLinear(preRMS / postRMS);
-                }
-                if (!isBypassed) {
-                    juce::dsp::ProcessContextReplacing<FloatType> context(block);
-                    gainDSP.process(context);
-                    for (size_t channel = 0; channel < block.getNumChannels(); ++channel) {
-                        juce::FloatVectorOperations::clip(block.getChannelPointer(channel),
-                                                          block.getChannelPointer(channel),
-                                                          static_cast<FloatType>(-1.0),
-                                                          static_cast<FloatType>(1.0),
-                                                          static_cast<int>(block.getNumSamples()));
-                    }
-                }
+                processPostBlockInternal<isBypassed>(block);
             }
         }
 
@@ -98,6 +92,26 @@ namespace zlGain {
         std::atomic<FloatType> gain;
         FloatType preRMS, postRMS;
         OriginGain<FloatType> gainDSP;
+
+        template<bool isBypassed=false>
+        void processPostBlockInternal(juce::dsp::AudioBlock<FloatType> block) {
+            if (preRMS > FloatType(0.00001)) {
+                postRMS = std::max(calculateRMS(block), FloatType(0.000000001));
+                gain.store(gainDSP.getCurrentGainLinear());
+                gainDSP.setGainLinear(preRMS / postRMS);
+            }
+            if (!isBypassed) {
+                juce::dsp::ProcessContextReplacing<FloatType> context(block);
+                gainDSP.process(context);
+                for (size_t channel = 0; channel < block.getNumChannels(); ++channel) {
+                    juce::FloatVectorOperations::clip(block.getChannelPointer(channel),
+                                                      block.getChannelPointer(channel),
+                                                      static_cast<FloatType>(-1.0),
+                                                      static_cast<FloatType>(1.0),
+                                                      static_cast<int>(block.getNumSamples()));
+                }
+            }
+        }
 
         FloatType calculateRMS(juce::dsp::AudioBlock<FloatType> block) {
             FloatType _ms = 0;

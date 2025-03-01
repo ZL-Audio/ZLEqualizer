@@ -32,6 +32,8 @@ namespace zlFFT {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        void prepareBuffer();
+
         void start() {
             toReset.store(true);
             startThread(juce::Thread::Priority::low);
@@ -55,6 +57,9 @@ namespace zlFFT {
 
         void process();
 
+        void process(juce::AudioBuffer<FloatType> &pre,
+                     juce::AudioBuffer<FloatType> &post);
+
         void setLeftRight(const float left, const float right) {
             x1.store(left);
             x2.store(right);
@@ -63,8 +68,6 @@ namespace zlFFT {
         void updateGradient(juce::ColourGradient &gradient);
 
         MultipleFFTAnalyzer<FloatType, 2, pointNum> &getSyncFFT() { return syncAnalyzer; }
-
-        zlDelay::SampleDelay<FloatType> &getSideDelay() { return sideDelay; }
 
     private:
         MultipleFFTAnalyzer<FloatType, 2, pointNum> syncAnalyzer;
@@ -76,7 +79,6 @@ namespace zlFFT {
         std::atomic<float> x1{0.f}, x2{1.f};
         std::array<float, pointNum / 4> conflicts{};
         std::array<std::atomic<float>, pointNum / 4> conflictsP{};
-        zlDelay::SampleDelay<FloatType> sideDelay;
 
         const juce::Colour gColour = juce::Colours::red;
 

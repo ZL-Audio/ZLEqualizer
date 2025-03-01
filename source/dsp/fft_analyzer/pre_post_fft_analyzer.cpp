@@ -26,16 +26,19 @@ namespace zlFFT {
     }
 
     template<typename FloatType>
-    void PrePostFFTAnalyzer<FloatType>::pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
+    void PrePostFFTAnalyzer<FloatType>::prepareBuffer() {
         currentON = isON.load();
         if (currentON) {
             currentPreON = isPreON.load();
             currentPostON = isPostON.load();
             currentSideON = isSideON.load();
         }
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
         if (currentPreON) {
             preBuffer.makeCopyOf(buffer, true);
-            preDelay.process(preBuffer);
         }
     }
 
@@ -50,7 +53,6 @@ namespace zlFFT {
     void PrePostFFTAnalyzer<FloatType>::pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer) {
         if (currentSideON) {
             sideBuffer.makeCopyOf(buffer, true);
-            sideDelay.process(sideBuffer);
         }
     }
 
@@ -61,6 +63,18 @@ namespace zlFFT {
         }
         if (currentON) {
             fftAnalyzer.process({preBuffer, postBuffer, sideBuffer});
+        }
+    }
+
+    template<typename FloatType>
+    void PrePostFFTAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &pre,
+                                                juce::AudioBuffer<FloatType> &post,
+                                                juce::AudioBuffer<FloatType> &side) {
+        if (toReset.exchange(false)) {
+            fftAnalyzer.reset();
+        }
+        if (currentON) {
+            fftAnalyzer.process({pre, post, side});
         }
     }
 
