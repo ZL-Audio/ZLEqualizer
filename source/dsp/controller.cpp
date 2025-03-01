@@ -117,6 +117,7 @@ namespace zlDSP {
         }
 
         toUpdateLRs.store(true);
+        triggerAsyncUpdate();
     }
 
     template<typename FloatType>
