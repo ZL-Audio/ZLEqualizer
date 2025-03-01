@@ -13,9 +13,9 @@
 namespace zlPanel {
     class OutputCallOutBox final : public juce::Component {
     public:
-        explicit OutputCallOutBox(juce::AudioProcessorValueTreeState &parameters,
+        explicit OutputCallOutBox(PluginProcessor &p,
                                   zlInterface::UIBase &base)
-            : parametersRef(parameters),
+            : processorRef(p), parametersRef(p.parameters),
               uiBase(base),
               phaseC("phase", uiBase),
               agcC("A", uiBase),
@@ -28,7 +28,9 @@ namespace zlPanel {
               agcDrawable(juce::Drawable::createFromImageData(BinaryData::autogaincompensation_svg,
                                                               BinaryData::autogaincompensation_svgSize)),
               lmDrawable(juce::Drawable::createFromImageData(BinaryData::loudnessmatch_svg,
-                                                             BinaryData::loudnessmatch_svgSize)) {
+                                                             BinaryData::loudnessmatch_svgSize)),
+              agcUpdater(p.parameters, zlDSP::autoGain::ID),
+              gainUpdater(p.parameters, zlDSP::outputGain::ID) {
             phaseC.setDrawable(phaseDrawable.get());
             agcC.setDrawable(agcDrawable.get());
             lmC.setDrawable(lmDrawable.get());
@@ -48,6 +50,12 @@ namespace zlPanel {
             attach({&scaleS.getSlider(), &outGainS.getSlider()},
                    {zlDSP::scale::ID, zlDSP::outputGain::ID},
                    parametersRef, sliderAttachments);
+
+            lmC.getButton().onClick = [this]() {
+                const auto newGain = -processorRef.getController().getLoudnessMatcherDiff();
+                agcUpdater.updateSync(0.f);
+                gainUpdater.updateSync(zlDSP::outputGain::convertTo01(static_cast<float>(newGain)));
+            };
         }
 
         ~OutputCallOutBox() override = default;
@@ -75,11 +83,12 @@ namespace zlPanel {
         }
 
     private:
+        PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef;
         zlInterface::UIBase &uiBase;
 
         zlInterface::CompactButton phaseC, agcC, lmC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > buttonAttachments{};
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments{};
 
         zlInterface::CompactLinearSlider scaleS, outGainS;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
@@ -87,6 +96,8 @@ namespace zlPanel {
         const std::unique_ptr<juce::Drawable> phaseDrawable;
         const std::unique_ptr<juce::Drawable> agcDrawable;
         const std::unique_ptr<juce::Drawable> lmDrawable;
+
+        zlChore::ParaUpdater agcUpdater, gainUpdater;
     };
 
     OutputSettingPanel::OutputSettingPanel(PluginProcessor &p,
@@ -131,7 +142,7 @@ namespace zlPanel {
         if (getTopLevelComponent() == nullptr) {
             return;
         }
-        auto content = std::make_unique<OutputCallOutBox>(parametersRef, uiBase);
+        auto content = std::make_unique<OutputCallOutBox>(processorRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.5f),
                          juce::roundToInt(uiBase.getFontSize() * 7.75f));
 

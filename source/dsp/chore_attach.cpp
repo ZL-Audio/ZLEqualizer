@@ -18,9 +18,7 @@ namespace zlDSP {
         : processorRef(processor),
           parameterRef(parameters), parameterNARef(parametersNA),
           controllerRef(controller),
-          decaySpeed(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]),
-          agcUpdater(parameters, zlDSP::autoGain::ID),
-          gainUpdater(parameters, zlDSP::outputGain::ID) {
+          decaySpeed(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]) {
         juce::ignoreUnused(parameterRef);
         addListeners();
         initDefaultValues();
@@ -174,9 +172,6 @@ namespace zlDSP {
                 controllerRef.setLoudnessMatcherON(true);
             } else {
                 controllerRef.setLoudnessMatcherON(false);
-                const auto newGain = -controllerRef.getLoudnessMatcherDiff();
-                agcUpdater.update(0.f);
-                gainUpdater.update(zlDSP::outputGain::convertTo01(static_cast<float>(newGain)));
             }
         }
     }

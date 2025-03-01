@@ -32,7 +32,6 @@ namespace zlDSP {
         Controller<FloatType> &controllerRef;
         std::atomic<float> decaySpeed;
         std::array<std::atomic<int>, 3> isFFTON{1, 1, 0};
-        zlChore::ParaUpdater agcUpdater, gainUpdater;
 
         constexpr static std::array IDs{
             sideChain::ID, dynLookahead::ID,
