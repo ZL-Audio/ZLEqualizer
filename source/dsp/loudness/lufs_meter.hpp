@@ -96,10 +96,6 @@ namespace zlLoudness {
         std::array<FloatType, MaxChannels> weights;
 
         void update() {
-            if (readyCount < 3) {
-                readyCount += 1;
-                return;
-            }
             // perform K-weighting filtering
             kWeightingFilter.process(smallBuffer);
             // calculate the sum square of the small block
@@ -118,6 +114,10 @@ namespace zlLoudness {
             sumSquares[1] = sumSquares[2];
             sumSquares[2] = sumSquares[3];
             sumSquares[3] = sumSquare;
+            if (readyCount < 3) {
+                readyCount += 1;
+                return;
+            }
             // calculate the mean square
             const auto meanSquare = (sumSquares[0] + sumSquares[1] + sumSquares[2] + sumSquares[3]) * meanMul;
             // update histogram
