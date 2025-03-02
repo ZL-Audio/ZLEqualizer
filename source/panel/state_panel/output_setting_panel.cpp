@@ -52,9 +52,11 @@ namespace zlPanel {
                    parametersRef, sliderAttachments);
 
             lmC.getButton().onClick = [this]() {
-                const auto newGain = -processorRef.getController().getLoudnessMatcherDiff();
-                agcUpdater.updateSync(0.f);
-                gainUpdater.updateSync(zlDSP::outputGain::convertTo01(static_cast<float>(newGain)));
+                if (!lmC.getButton().getToggleState()) {
+                    const auto newGain = -processorRef.getController().getLoudnessMatcherDiff();
+                    agcUpdater.updateSync(0.f);
+                    gainUpdater.updateSync(zlDSP::outputGain::convertTo01(static_cast<float>(newGain)));
+                }
             };
         }
 
