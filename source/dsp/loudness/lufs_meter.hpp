@@ -72,14 +72,17 @@ namespace zlLoudness {
             const auto totalCount = std::reduce(histogram.begin(), histogram.end(), FloatType(0));
             if (totalCount < FloatType(0.5)) { return FloatType(0); }
             const auto totalSum = std::reduce(histogramSums.begin(), histogramSums.end(), FloatType(0));
-            const auto totalLUFS = totalSum / totalCount;
+            const auto totalMeanSquare = totalSum / totalCount;
+            const auto totalLUFS = FloatType(-0.691) + FloatType(10) * std::log10(totalMeanSquare);
             if (totalLUFS <= FloatType(-60)) {
                 return totalLUFS;
             } else {
                 const auto endIdx = static_cast<size_t>(std::round(-(totalLUFS - FloatType(10)) * FloatType(10)));
                 const auto subCount = std::reduce(histogram.begin(), histogram.begin() + endIdx, FloatType(0));
                 const auto subSum = std::reduce(histogramSums.begin(), histogramSums.begin() + endIdx, FloatType(0));
-                return subSum / subCount;
+                const auto subMeanSquare = subSum / subCount;
+                const auto subLUFS = FloatType(-0.691) + FloatType(10) * std::log10(subMeanSquare);
+                return subLUFS;
             }
         }
 
@@ -126,7 +129,7 @@ namespace zlLoudness {
                 const auto LKFS = std::min(-FloatType(0.691) + FloatType(10) * std::log10(meanSquare), FloatType(0));
                 const auto histIdx = static_cast<size_t>(std::round(-LKFS * FloatType(10)));
                 histogram[histIdx] += FloatType(1);
-                histogramSums[histIdx] += LKFS;
+                histogramSums[histIdx] += meanSquare;
             }
         }
     };
