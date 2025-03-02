@@ -24,6 +24,7 @@ namespace zlPanel {
               fftSideON("Side:", zlState::fftSideON::choices, uiBase),
               ffTSpeed("", zlState::ffTSpeed::choices, uiBase),
               fftTilt("", zlState::ffTTilt::choices, uiBase) {
+            setBufferedToImage(true);
             for (auto &c: {&fftPreON, &fftPostON, &fftSideON}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.5f);

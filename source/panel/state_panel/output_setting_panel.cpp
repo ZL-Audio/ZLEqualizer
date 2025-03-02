@@ -31,6 +31,7 @@ namespace zlPanel {
                                                              BinaryData::loudnessmatch_svgSize)),
               agcUpdater(p.parameters, zlDSP::autoGain::ID),
               gainUpdater(p.parameters, zlDSP::outputGain::ID) {
+            setBufferedToImage(true);
             phaseC.setDrawable(phaseDrawable.get());
             agcC.setDrawable(agcDrawable.get());
             lmC.setDrawable(lmDrawable.get());
@@ -111,6 +112,7 @@ namespace zlPanel {
           currentScale(*parametersRef.getRawParameterValue(zlDSP::scale::ID)),
           callOutBoxLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
+        lmPara = parametersRef.getParameter(zlDSP::loudnessMatcherON::ID);
         lookAndFeelChanged();
     }
 
@@ -161,10 +163,14 @@ namespace zlPanel {
         const auto currentGain = processorRef.getController().getGainCompensation();
         showGain = !showGain;
         if (showGain) {
-            if (currentGain <= 0.04) {
-                gainString = juce::String(currentGain, 1, false);
+            if (lmPara->getValue() < .5f) {
+                if (currentGain <= 0.04) {
+                    gainString = juce::String(currentGain, 1, false);
+                } else {
+                    gainString = "+" + juce::String(currentGain, 1, false);
+                }
             } else {
-                gainString = "+" + juce::String(currentGain, 1, false);
+                gainString = "L";
             }
             scaleString = juce::String(static_cast<int>(std::round(currentScale.load()))) + "%";
         }
