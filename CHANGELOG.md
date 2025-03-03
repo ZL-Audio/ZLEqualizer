@@ -4,6 +4,30 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.6.0
+
+- BREAKING: use the new compressor model from ZL Compressor
+  - dynamic filters will sound a bit different
+  - dynamic filters (especially if under dynamic high-quality mode) become more efficient
+  - dynamic filters will produce expected results under extreme knee width settings (see #156)
+- BREAKING: smooth filter frequency/gain/Q changes
+  - quick move/automation of frequency/gain/Q will have fewer artifacts
+  - filter parameter automation will take more CPU usage cause it now changes filters per sample (see the manual)
+- change the external side-chain button position to the top-right corner
+  - since it is not a per-band parameter, top-right corner seems to be a better place
+- change several button icons (see the manual)
+  - the old ones are not intuitive enough
+- add FFT db scale choice (see #147 and the manual)
+- add loudness match (see #154 and the manual)
+- add solo shortcuts (by right-mouse-button double-clicking with Ctrl/Command on the band button)
+- add side-chain swap (see the manual)
+- fix macOS standalone audio input permission request (see #146)
+- fix curve db scale (see #148)
+- fix multi-band selection (see #149)
+- improve GUI performance
+- improve DSP performance (especially for high-order filters and dynamic filters)
+- improve stability
+
 ## 0.5.0
 
 - BREAKING: change dynamic link to UI setting (the parameter is now shared across all instances)

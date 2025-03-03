@@ -482,6 +482,13 @@ namespace zlDSP {
         int static constexpr defaultI = 0;
     };
 
+    class loudnessMatcherON : public BoolParameters<loudnessMatcherON> {
+    public:
+        auto static constexpr ID = "loudness_matcher_on";
+        auto static constexpr name = "LoudnessMatcherON";
+        auto static constexpr defaultV = false;
+    };
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         for (int i = 0; i < bandNUM; ++i) {
@@ -492,7 +499,8 @@ namespace zlDSP {
                    dynLookahead::get(), dynRMS::get(), dynSmooth::get(),
                    effectON::get(), phaseFlip::get(), staticAutoGain::get(), autoGain::get(),
                    scale::get(), outputGain::get(),
-                   filterStructure::get(), dynHQ::get(), zeroLatency::get());
+                   filterStructure::get(), dynHQ::get(), zeroLatency::get(),
+                   loudnessMatcherON::get());
         return layout;
     }
 

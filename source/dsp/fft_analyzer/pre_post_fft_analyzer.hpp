@@ -27,13 +27,11 @@ namespace zlFFT {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
-        void pushPreFFTBuffer(juce::AudioBuffer<FloatType> &buffer);
+        void prepareBuffer();
 
-        void pushPostFFTBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void pushSideFFTBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void process();
+        void process(juce::AudioBuffer<FloatType> &pre,
+                     juce::AudioBuffer<FloatType> &post,
+                     juce::AudioBuffer<FloatType> &side);
 
         MultipleFFTAnalyzer<FloatType, 3, pointNum> &getMultipleFFT() { return fftAnalyzer; }
 
@@ -54,13 +52,8 @@ namespace zlFFT {
         void updatePaths(juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
                          juce::Rectangle<float> bound, float minimumFFTDB);
 
-        zlDelay::SampleDelay<FloatType> &getPreDelay() { return preDelay; }
-
-        zlDelay::SampleDelay<FloatType> &getSideDelay() { return sideDelay; }
-
     private:
         MultipleFFTAnalyzer<FloatType, 3, pointNum> fftAnalyzer;
-        juce::AudioBuffer<FloatType> preBuffer, postBuffer, sideBuffer;
         std::atomic<bool> isON{false};
         std::atomic<bool> isPreON{true}, isPostON{true}, isSideON{false};
         bool currentON{false}, currentPreON{true}, currentPostON{true}, currentSideON{false};
@@ -68,7 +61,6 @@ namespace zlFFT {
         std::atomic<bool> isBoundReady{false};
         std::atomic<bool> isPathReady{false};
         std::atomic<bool> toReset{false};
-        zlDelay::SampleDelay<FloatType> preDelay, sideDelay;
 
         void run() override;
 

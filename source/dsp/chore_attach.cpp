@@ -60,7 +60,7 @@ namespace zlDSP {
             controllerRef.setEffectON(newValue > .5f);
         } else if (parameterID == phaseFlip::ID) {
             controllerRef.getPhaseFlipper().setON(newValue > .5f);
-        }else if (parameterID == staticAutoGain::ID) {
+        } else if (parameterID == staticAutoGain::ID) {
             controllerRef.setSgcON(newValue > .5f);
         } else if (parameterID == autoGain::ID) {
             controllerRef.getAutoGain().enable(newValue > .5f);
@@ -167,6 +167,12 @@ namespace zlDSP {
                 zlState::conflictStrength::formatV(static_cast<FloatType>(newValue)));
         } else if (parameterID == zlState::conflictScale::ID) {
             controllerRef.getConflictAnalyzer().setConflictScale(static_cast<FloatType>(newValue));
+        } else if (parameterID == loudnessMatcherON::ID) {
+            if (newValue > .5f) {
+                controllerRef.setLoudnessMatcherON(true);
+            } else {
+                controllerRef.setLoudnessMatcherON(false);
+            }
         }
     }
 

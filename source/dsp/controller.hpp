@@ -24,6 +24,7 @@
 #include "phase/phase.hpp"
 #include "container/container.hpp"
 #include "eq_match/eq_match.hpp"
+#include "loudness/loudness.hpp"
 
 namespace zlDSP {
     template<typename FloatType>
@@ -118,6 +119,10 @@ namespace zlDSP {
             return currentThreshold[idx].load();
         }
 
+        FloatType getSideLoudness(const size_t idx) const {
+            return sideLoudness[idx].load();
+        }
+
         zlPhase::PhaseFlip<FloatType> &getPhaseFlipper() { return phaseFlipper; }
 
         void setFilterStructure(const filterStructure::FilterStructure x) {
@@ -156,8 +161,22 @@ namespace zlDSP {
             return tFilters[idx];
         }
 
+        void setEditorOn(const bool x) { isEditorOn.store(x); }
+
+        void setLoudnessMatcherON(const bool x) {
+            isLoudnessMatcherON.store(x);
+        }
+
+        FloatType getLoudnessMatcherDiff() const {
+            return loudnessMatcher.getDiff();
+        }
+
     private:
         juce::AudioProcessor &processorRef;
+
+        std::atomic<bool> isEditorOn{false};
+        bool currentIsEditorOn{false};
+
         std::array<zlFilter::Empty<FloatType>, bandNUM> bFilters, tFilters;
 
         std::array<zlFilter::DynamicIIR<FloatType, FilterSize>, bandNUM> filters =
@@ -236,6 +255,7 @@ namespace zlDSP {
         std::array<zlCompressor::RMSTracker<FloatType>, 5> trackers;
         std::array<bool, 5> useTrackers{};
         std::array<FloatType, 5> trackerBaselines{};
+        std::array<std::atomic<FloatType>, bandNUM> sideLoudness{};
 
         std::atomic<bool> sideChain;
 
@@ -267,10 +287,10 @@ namespace zlDSP {
         bool currentIsEffectON{true};
 
         zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzer;
-
         zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer;
-
         zlEqMatch::EqMatchAnalyzer<FloatType> matchAnalyzer;
+        juce::AudioBuffer<FloatType> dummyMainBuffer, dummySideBuffer;
+        zlDelay::SampleDelay<FloatType> dummyMainDelay, dummySideDelay;
 
         std::atomic<double> sampleRate{48000};
 
@@ -280,6 +300,10 @@ namespace zlDSP {
 
         std::atomic<filterStructure::FilterStructure> mFilterStructure{filterStructure::minimum};
         filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
+
+        zlLoudness::LUFSMatcher<FloatType, 2, true> loudnessMatcher;
+        bool currentIsLoudnessMatcherON{false};
+        std::atomic<bool> isLoudnessMatcherON{false};
 
         void processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                               juce::AudioBuffer<FloatType> &subSideBuffer);

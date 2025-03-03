@@ -32,6 +32,8 @@ namespace zlFFT {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
+        void prepareBuffer();
+
         void start() {
             toReset.store(true);
             startThread(juce::Thread::Priority::low);
@@ -49,11 +51,8 @@ namespace zlFFT {
 
         void setConflictScale(const FloatType x) { conflictScale.store(x); }
 
-        void pushMainBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void pushRefBuffer(juce::AudioBuffer<FloatType> &buffer);
-
-        void process();
+        void process(juce::AudioBuffer<FloatType> &pre,
+                     juce::AudioBuffer<FloatType> &post);
 
         void setLeftRight(const float left, const float right) {
             x1.store(left);
@@ -64,11 +63,8 @@ namespace zlFFT {
 
         MultipleFFTAnalyzer<FloatType, 2, pointNum> &getSyncFFT() { return syncAnalyzer; }
 
-        zlDelay::SampleDelay<FloatType> &getSideDelay() { return sideDelay; }
-
     private:
         MultipleFFTAnalyzer<FloatType, 2, pointNum> syncAnalyzer;
-        juce::AudioBuffer<FloatType> mainBuffer, refBuffer;
         std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
         std::atomic<bool> isON{false}, isConflictReady{false}, toReset{false};
         bool currentIsON{false};
@@ -76,7 +72,6 @@ namespace zlFFT {
         std::atomic<float> x1{0.f}, x2{1.f};
         std::array<float, pointNum / 4> conflicts{};
         std::array<std::atomic<float>, pointNum / 4> conflictsP{};
-        zlDelay::SampleDelay<FloatType> sideDelay;
 
         const juce::Colour gColour = juce::Colours::red;
 

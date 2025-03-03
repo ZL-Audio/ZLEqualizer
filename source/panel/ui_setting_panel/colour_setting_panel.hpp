@@ -16,7 +16,7 @@
 namespace zlPanel {
     class ColourSettingPanel final : public juce::Component {
     public:
-        static constexpr float heightP = 52.f;
+        static constexpr float heightP = 56.f;
 
         explicit ColourSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
@@ -38,8 +38,8 @@ namespace zlPanel {
         zlInterface::NameLookAndFeel nameLAF;
         zlInterface::ColourOpacitySelector textSelector, backgroundSelector, shadowSelector, glowSelector;
         zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
-        zlInterface::ColourOpacitySelector gainSelector;
-        static constexpr size_t numSelectors = 10;
+        zlInterface::ColourOpacitySelector gainSelector, sideLoudnessSelector;
+        static constexpr size_t numSelectors = 11;
         std::array<juce::Label, numSelectors> selectorLabels;
         std::array<zlInterface::ColourOpacitySelector *, numSelectors> selectors{
             &textSelector,
@@ -51,7 +51,8 @@ namespace zlPanel {
             &sideSelector,
             &gridSelector,
             &tagSelector,
-            &gainSelector
+            &gainSelector,
+            &sideLoudnessSelector
         };
         std::array<std::string, numSelectors> selectorNames{
             "Text Colour",
@@ -64,6 +65,7 @@ namespace zlPanel {
             "Grid Colour",
             "Tag Colour",
             "Gain Colour",
+            "Side Loudness Colour"
         };
 
         std::array<zlInterface::colourIdx, numSelectors> colourIdx {
@@ -76,7 +78,8 @@ namespace zlPanel {
             zlInterface::colourIdx::sideColour,
             zlInterface::colourIdx::gridColour,
             zlInterface::colourIdx::tagColour,
-            zlInterface::colourIdx::gainColour
+            zlInterface::colourIdx::gainColour,
+            zlInterface::colourIdx::sideLoudnessColour
         };
 
         std::array<std::string, numSelectors> tagNames{

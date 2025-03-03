@@ -29,8 +29,6 @@ namespace zlFFT {
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         syncAnalyzer.prepare(spec);
-        mainBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
-        refBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
     }
 
     template<typename FloatType>
@@ -41,25 +39,14 @@ namespace zlFFT {
     }
 
     template<typename FloatType>
-    void ConflictAnalyzer<FloatType>::pushMainBuffer(juce::AudioBuffer<FloatType> &buffer) {
+    void ConflictAnalyzer<FloatType>::prepareBuffer() {
         currentIsON = isON.load();
-        if (currentIsON) {
-            mainBuffer.makeCopyOf(buffer, true);
-        }
     }
 
     template<typename FloatType>
-    void ConflictAnalyzer<FloatType>::pushRefBuffer(juce::AudioBuffer<FloatType> &buffer) {
+    void ConflictAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &pre, juce::AudioBuffer<FloatType> &post) {
         if (currentIsON) {
-            refBuffer.makeCopyOf(buffer, true);
-            sideDelay.process(refBuffer);
-        }
-    }
-
-    template<typename FloatType>
-    void ConflictAnalyzer<FloatType>::process() {
-        if (currentIsON) {
-            syncAnalyzer.process({mainBuffer, refBuffer});
+            syncAnalyzer.process({pre, post});
         }
     }
 

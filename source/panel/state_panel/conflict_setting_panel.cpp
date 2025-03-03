@@ -21,6 +21,7 @@ namespace zlPanel {
               conflictC("DET:", zlState::conflictON::choices, uiBase),
               strengthS("Strength", uiBase),
               scaleS("Scale", uiBase) {
+            setBufferedToImage(true);
             conflictC.getLabelLAF().setFontScale(1.5f);
             conflictC.setLabelScale(.5f);
             conflictC.setLabelPos(zlInterface::ClickCombobox::left);

@@ -20,6 +20,7 @@
 #include "button_panel/button_panel.hpp"
 #include "conflict_panel/conflict_panel.hpp"
 #include "match_panel/match_panel.hpp"
+#include "loudness_display/loudness_display.hpp"
 
 namespace zlPanel {
     class CurvePanel final : public juce::Component,
@@ -48,6 +49,7 @@ namespace zlPanel {
         FFTPanel fftPanel;
         ConflictPanel conflictPanel;
         SumPanel sumPanel;
+        LoudnessDisplay loudnessDisplay;
         ButtonPanel buttonPanel;
         SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;

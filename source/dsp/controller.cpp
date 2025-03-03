@@ -101,26 +101,28 @@ namespace zlDSP {
             g.prepare(subSpec);
         }
         fftAnalyzer.prepare(subSpec);
-        fftAnalyzer.getPreDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
-        fftAnalyzer.getPreDelay().prepare(subSpec);
-        fftAnalyzer.getSideDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
-        fftAnalyzer.getSideDelay().prepare(subSpec);
-
         conflictAnalyzer.prepare(subSpec);
-        conflictAnalyzer.getSideDelay().setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
-        conflictAnalyzer.getSideDelay().prepare(subSpec);
-
         matchAnalyzer.prepare(subSpec);
+        dummyMainBuffer.setSize(static_cast<int>(subSpec.numChannels), static_cast<int>(subSpec.maximumBlockSize));
+        dummyMainDelay.setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
+        dummyMainDelay.prepare(subSpec);
+        dummySideBuffer.setSize(static_cast<int>(subSpec.numChannels), static_cast<int>(subSpec.maximumBlockSize));
+        dummySideDelay.setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
+        dummySideDelay.prepare(subSpec);
+
+        loudnessMatcher.prepare(subSpec);
 
         for (auto &t: trackers) {
             t.prepare(subSpec.sampleRate);
         }
 
         toUpdateLRs.store(true);
+        triggerAsyncUpdate();
     }
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
+        currentIsEditorOn = isEditorOn.load();
         if (mFilterStructure.load() != currentFilterStructure) {
             currentFilterStructure = mFilterStructure.load();
             updateFilterStructure();
@@ -168,6 +170,13 @@ namespace zlDSP {
         if (toUpdateHist.exchange(false)) {
             updateHistograms();
         }
+        if (currentIsLoudnessMatcherON != isLoudnessMatcherON.load()) {
+            currentIsLoudnessMatcherON = isLoudnessMatcherON.load();
+            if (currentIsLoudnessMatcherON) {
+                loudnessMatcher.reset();
+            }
+        }
+
         currentIsEffectON = isEffectON.load();
 
         juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
@@ -213,9 +222,6 @@ namespace zlDSP {
     template<typename FloatType>
     void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                  juce::AudioBuffer<FloatType> &subSideBuffer) {
-        fftAnalyzer.pushPreFFTBuffer(subMainBuffer);
-        matchAnalyzer.process(subMainBuffer, subSideBuffer);
-
         if (currentIsEffectON) {
             if (currentUseSolo) {
                 processSubBufferOnOff<true>(subMainBuffer, subSideBuffer);
@@ -226,35 +232,44 @@ namespace zlDSP {
         } else {
             processSubBufferOnOff<true>(subMainBuffer, subSideBuffer);
         }
-
-        fftAnalyzer.pushSideFFTBuffer(subSideBuffer);
-        fftAnalyzer.pushPostFFTBuffer(subMainBuffer);
-        fftAnalyzer.process();
-        conflictAnalyzer.pushMainBuffer(subMainBuffer);
-        conflictAnalyzer.pushRefBuffer(subSideBuffer);
-        conflictAnalyzer.process();
     }
 
     template<typename FloatType>
     template<bool isBypassed>
     void Controller<FloatType>::processSubBufferOnOff(juce::AudioBuffer<FloatType> &subMainBuffer,
                                                       juce::AudioBuffer<FloatType> &subSideBuffer) {
+        dummyMainBuffer.makeCopyOf(subMainBuffer, true);
+        dummyMainDelay.process(dummyMainBuffer);
+        if (currentIsEditorOn) {
+            dummySideBuffer.makeCopyOf(subSideBuffer, true);
+            dummySideDelay.process(dummySideBuffer);
+            matchAnalyzer.process(subMainBuffer, subSideBuffer);
+        }
         if (currentFilterStructure == filterStructure::linear) {
             processLinear<isBypassed>(subMainBuffer);
         } else {
-            autoGain.processPre(subMainBuffer);
             processDynamic<isBypassed>(subMainBuffer, subSideBuffer);
             if (currentFilterStructure == filterStructure::parallel) {
                 processParallelPost<isBypassed>(subMainBuffer, subSideBuffer);
             }
-            autoGain.template processPost<isBypassed>(subMainBuffer);
             if (currentFilterStructure == filterStructure::matched) {
                 processPrototypeCorrection<isBypassed>(subMainBuffer);
             } else if (currentFilterStructure == filterStructure::mixed) {
                 processMixedCorrection<isBypassed>(subMainBuffer);
             }
         }
+        if (currentIsLoudnessMatcherON) {
+            loudnessMatcher.process(dummyMainBuffer, subMainBuffer);
+        }
+        autoGain.processPre(dummyMainBuffer);
+        autoGain.template processPost<isBypassed>(subMainBuffer);
         outputGain.template process<isBypassed>(subMainBuffer);
+        if (currentIsEditorOn) {
+            fftAnalyzer.prepareBuffer();
+            fftAnalyzer.process(dummyMainBuffer, subMainBuffer, dummySideBuffer);
+            conflictAnalyzer.prepareBuffer();
+            conflictAnalyzer.process(subMainBuffer, dummySideBuffer);
+        }
     }
 
     template<typename FloatType>
@@ -308,7 +323,7 @@ namespace zlDSP {
         if (!isBypassed) {
             for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
                 const auto i = dynamicONIndices[idx];
-                if (isHistON[i].load()) {
+                if (currentIsHistON[i]) {
                     const auto depThres =
                             currentThreshold[i].load() + FloatType(40) +
                             static_cast<FloatType>(threshold::range.snapToLegalValue(
@@ -354,7 +369,7 @@ namespace zlDSP {
                 mainIdeals[i].setQ(filters[i].getMainFilter().template getQ<false>());
                 mainIIRs[i].setGain(filters[i].getMainFilter().template getGain<false>());
                 mainIIRs[i].setQ(filters[i].getMainFilter().template getQ<false>());
-                if (isHistON[i].load()) {
+                if (currentIsHistON[i]) {
                     const auto diff = filters[i].getBaseLine() - filters[i].getTracker().getMomentaryLoudness();
                     if (diff <= 100) {
                         const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
@@ -362,6 +377,8 @@ namespace zlDSP {
                         subHistograms[i].push(static_cast<size_t>(histIdx));
                         atomicHistograms[i].sync(histograms[i]);
                     }
+                } else if (currentIsEditorOn) {
+                    sideLoudness[i].store(filters[i].getTracker().getMomentaryLoudness() - filters[i].getBaseLine());
                 }
             }
         }
@@ -711,9 +728,8 @@ namespace zlDSP {
         }
         if (newLatency != latency.load()) {
             const auto delayInSeconds = static_cast<FloatType>(newLatency) / static_cast<FloatType>(sampleRate.load());
-            fftAnalyzer.getPreDelay().setDelaySeconds(delayInSeconds);
-            fftAnalyzer.getSideDelay().setDelaySeconds(delayInSeconds);
-            conflictAnalyzer.getSideDelay().setDelaySeconds(delayInSeconds);
+            dummyMainDelay.setDelaySeconds(delayInSeconds);
+            dummySideDelay.setDelaySeconds(delayInSeconds);
             latency.store(newLatency);
             triggerAsyncUpdate();
         }

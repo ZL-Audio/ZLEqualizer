@@ -22,6 +22,7 @@ namespace zlPanel {
               rmsS("RMS", uiBase),
               smoothS("Smooth", uiBase),
               dynHQC("HQ:", zlDSP::dynHQ::choices, uiBase) {
+            setBufferedToImage(true);
             for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.01f);
                 addAndMakeVisible(c);

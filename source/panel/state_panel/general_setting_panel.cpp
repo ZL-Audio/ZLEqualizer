@@ -20,6 +20,7 @@ namespace zlPanel {
               uiBase(base),
               filterStructure("", zlDSP::filterStructure::choices, uiBase),
               zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase) {
+            setBufferedToImage(true);
             for (auto &c: {&filterStructure}) {
                 addAndMakeVisible(c);
             }
