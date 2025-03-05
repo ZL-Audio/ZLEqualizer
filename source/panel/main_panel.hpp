@@ -42,6 +42,9 @@ namespace zlPanel {
         StatePanel statePanel;
         UISettingPanel uiSettingPanel;
 
+        zlInterface::TooltipLookAndFeel tooltipLAF;
+        juce::TooltipWindow tooltipWindow;
+
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void handleAsyncUpdate() override;

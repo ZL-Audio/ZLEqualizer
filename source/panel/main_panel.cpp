@@ -16,13 +16,19 @@ namespace zlPanel {
           curvePanel(p, uiBase),
           scalePanel(p, uiBase),
           statePanel(p, uiBase, uiSettingPanel),
-          uiSettingPanel(p, uiBase) {
+          uiSettingPanel(p, uiBase),
+          tooltipLAF(uiBase) {
         processorRef.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(scalePanel);
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
         addChildComponent(uiSettingPanel);
+
+        tooltipWindow.setLookAndFeel(&tooltipLAF);
+        tooltipWindow.setOpaque(false);
+        curvePanel.addChildComponent(tooltipWindow);
+
         updateFFTs();
 
         state.addParameterListener(zlState::fftExtraTilt::ID, this);

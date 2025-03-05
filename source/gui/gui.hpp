@@ -19,5 +19,6 @@
 #include "colour_selector/colour_selector.hpp"
 #include "colour_selector/colour_opacity_selector.hpp"
 #include "colour_selector/colour_map_selector.hpp"
+#include "tooltip/tooltip_look_and_feel.hpp"
 
 #endif //ZL_GUI_H
