@@ -59,14 +59,23 @@ namespace zlPanel {
             if (dynONC.getButton().getToggleState()) {
                 processorRef.getFiltersAttach().turnOnDynamic(currentBand);
                 dynLinkValue = static_cast<float>(uiBase.getDynLink());
+                {
+                    auto *para = parametersRef.getParameter(
+                    zlDSP::appendSuffix(zlDSP::bypass::ID, currentBand));
+                    para->beginChangeGesture();
+                    para->setValueNotifyingHost(0.f);
+                    para->endChangeGesture();
+                }
             } else {
                 processorRef.getFiltersAttach().turnOffDynamic(currentBand);
             }
-            auto *para = parametersRef.getParameter(
-                zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
-            para->beginChangeGesture();
-            para->setValueNotifyingHost(dynLinkValue);
-            para->endChangeGesture();
+            {
+                auto *para = parametersRef.getParameter(
+                    zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
+                para->beginChangeGesture();
+                para->setValueNotifyingHost(dynLinkValue);
+                para->endChangeGesture();
+            }
         };
 
         dynLC.setDrawable(dynLeDrawable.get());
