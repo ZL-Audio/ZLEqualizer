@@ -19,7 +19,7 @@ namespace zlPanel {
           parametersNARef(parametersNA),
           uiBase(base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          button(base, drawable.get()) {
+          button(base, drawable.get(), nullptr, zlInterface::multilingual::labels::bandOff) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         button.getButton().onClick = [this]() {
             const auto currentBand = bandIdx.load();

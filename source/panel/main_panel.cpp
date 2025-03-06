@@ -27,6 +27,7 @@ namespace zlPanel {
 
         tooltipWindow.setLookAndFeel(&tooltipLAF);
         tooltipWindow.setOpaque(false);
+        tooltipWindow.setBufferedToImage(true);
         curvePanel.addChildComponent(tooltipWindow);
 
         updateFFTs();

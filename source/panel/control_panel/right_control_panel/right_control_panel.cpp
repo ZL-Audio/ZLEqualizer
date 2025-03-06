@@ -16,16 +16,16 @@ namespace zlPanel {
         : uiBase(base),
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
-          dynBypassC("B", base),
-          dynSoloC("S", base),
-          dynRelativeC("R", base),
-          sideChainC("S", base),
-          sideFreqC("FREQ", base),
-          sideQC("Q", base),
-          thresC("Threshold", base),
-          kneeC("Knee", base),
-          attackC("Attack", base),
-          releaseC("Release", base),
+          dynBypassC("B", base, zlInterface::multilingual::labels::bandDynamicBypass),
+          dynSoloC("S", base, zlInterface::multilingual::labels::bandDynamicSolo),
+          dynRelativeC("R", base, zlInterface::multilingual::labels::bandDynamicRelative),
+          sideChainC("S", base, zlInterface::multilingual::labels::bandSideSwap),
+          sideFreqC("FREQ", base, zlInterface::multilingual::labels::bandDynamicSideFreq),
+          sideQC("Q", base, zlInterface::multilingual::labels::bandDynamicSideQ),
+          thresC("Threshold", base, zlInterface::multilingual::labels::bandDynamicThreshold),
+          kneeC("Knee", base, zlInterface::multilingual::labels::bandDynamicKnee),
+          attackC("Attack", base, zlInterface::multilingual::labels::bandDynamicAttack),
+          releaseC("Release", base, zlInterface::multilingual::labels::bandDynamicRelease),
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
@@ -38,7 +38,7 @@ namespace zlPanel {
             const auto isByPassed = static_cast<float>(dynBypassC.getButton().getToggleState());
             const auto currentBand = bandIdx.load();
             const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
                     const auto activeID = zlState::appendSuffix(zlDSP::dynamicBypass::ID, idx);
                     const auto para = parametersRef.getParameter(activeID);

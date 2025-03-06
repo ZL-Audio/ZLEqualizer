@@ -18,9 +18,9 @@ namespace zlPanel {
                                     zlInterface::UIBase &base)
             : parametersNARef(parametersNA),
               uiBase(base),
-              conflictC("DET:", zlState::conflictON::choices, uiBase),
-              strengthS("Strength", uiBase),
-              scaleS("Scale", uiBase) {
+              conflictC("DET:", zlState::conflictON::choices, uiBase, zlInterface::multilingual::labels::collisionDET),
+              strengthS("Strength", uiBase, zlInterface::multilingual::labels::collisionStrength),
+              scaleS("Scale", uiBase, zlInterface::multilingual::labels::collisionScale) {
             setBufferedToImage(true);
             conflictC.getLabelLAF().setFontScale(1.5f);
             conflictC.setLabelScale(.5f);

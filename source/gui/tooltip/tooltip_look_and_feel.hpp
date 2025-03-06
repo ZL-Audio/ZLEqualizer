@@ -28,14 +28,15 @@ namespace zlInterface {
             const auto w = static_cast<int>(std::ceil(tl.getWidth() + uiBase.getFontSize() * .25f));
             const auto h = static_cast<int>(std::ceil(tl.getHeight() + uiBase.getFontSize() * .25f));
             const auto padding = static_cast<int>(std::round(uiBase.getFontSize() * .5f));
-            return juce::Rectangle<int>(
-                        screenPos.x > parentArea.getCentreX()
-                            ? parentArea.getX() + padding
-                            : parentArea.getRight() - w - padding,
-                        screenPos.y > parentArea.getCentreY()
-                            ? parentArea.getY() + padding
-                            : parentArea.getBottom() - h - padding,
-                        w, h);
+            if (screenPos.x > parentArea.getCentreX() && screenPos.y < parentArea.getCentreY()) {
+                return juce::Rectangle<int>(parentArea.getX() + padding,
+                                            parentArea.getY() + padding,
+                                            w, h);
+            } else {
+                return juce::Rectangle<int>(parentArea.getRight() - w - padding,
+                                            parentArea.getY() + padding,
+                                            w, h);
+            }
         }
 
         void drawTooltip(juce::Graphics &g, const juce::String &text, const int width, const int height) override {

@@ -17,7 +17,8 @@ namespace zlInterface {
     public:
         explicit ClickButton(UIBase &base,
                              juce::Drawable *normalImage = nullptr,
-                             juce::Drawable *normalOnImage = nullptr)
+                             juce::Drawable *normalOnImage = nullptr,
+                             const multilingual::labels labelIdx = multilingual::labels::labelNum)
             : uiBase(base), normal(normalImage), normalOn(normalOnImage) {
             if (normalOnImage != nullptr) {
                 button.setToggleable(true);
@@ -26,6 +27,10 @@ namespace zlInterface {
             button.setColour(juce::DrawableButton::backgroundColourId, juce::Colours::white.withAlpha(0.f));
             button.setColour(juce::DrawableButton::backgroundOnColourId, juce::Colours::white.withAlpha(0.f));
             addAndMakeVisible(button);
+
+            if (labelIdx != multilingual::labels::labelNum) {
+                button.setTooltip(uiBase.getToolTipText(labelIdx));
+            }
         }
 
         ~ClickButton() override = default;

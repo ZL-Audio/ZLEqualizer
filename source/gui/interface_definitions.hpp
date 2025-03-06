@@ -14,6 +14,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "../state/state_definitions.hpp"
+#include "multilingual/multilingual.hpp"
 
 namespace zlInterface {
     enum colourIdx {
@@ -183,6 +184,11 @@ namespace zlInterface {
     public:
         explicit UIBase(juce::AudioProcessorValueTreeState &apvts)
             : state(apvts), fontSize{0.f} {
+            const auto displayedLang = juce::SystemStats::getDisplayLanguage();
+            if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
+                || displayedLang.startsWith("zh-")) {
+                langIdx = multilingual::languages::lang_zh_cn;
+            }
             loadFromAPVTS();
         }
 
@@ -388,6 +394,20 @@ namespace zlInterface {
             return property == identifiers[static_cast<size_t>(idx)];
         }
 
+        std::string getToolTipText(const zlInterface::multilingual::labels label) const {
+            switch (langIdx) {
+                case multilingual::languages::lang_en: {
+                    return multilingual::en::texts[static_cast<size_t>(label)];
+                }
+                case multilingual::languages::lang_zh_cn: {
+                    return multilingual::zh_cn::texts[static_cast<size_t>(label)];
+                }
+                default: {
+                    return multilingual::en::texts[static_cast<size_t>(label)];
+                }
+            }
+        }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         juce::ValueTree valueTree{"ui_setting"};
@@ -422,6 +442,8 @@ namespace zlInterface {
         size_t cMap2Idx{zlState::colourMapIdx::seabornBrightDark};
 
         int fftOrderIdx{1};
+
+        multilingual::languages langIdx{multilingual::languages::lang_en};
     };
 }
 

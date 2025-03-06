@@ -19,9 +19,11 @@
 namespace zlInterface {
     class CompactLinearSlider : public juce::Component,
                                 private juce::Label::Listener,
-                                private juce::Slider::Listener {
+                                private juce::Slider::Listener,
+                                public juce::SettableTooltipClient {
     public:
-        explicit CompactLinearSlider(const juce::String &labelText, UIBase &base);
+        explicit CompactLinearSlider(const juce::String &labelText, UIBase &base,
+                                     multilingual::labels labelIdx = multilingual::labels::labelNum);
 
         ~CompactLinearSlider() override;
 

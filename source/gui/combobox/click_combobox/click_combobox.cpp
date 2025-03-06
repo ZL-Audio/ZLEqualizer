@@ -10,7 +10,9 @@
 #include "click_combobox.hpp"
 
 namespace zlInterface {
-    ClickCombobox::ClickCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base)
+    ClickCombobox::ClickCombobox(const juce::String &labelText, const juce::StringArray &choices,
+                                 UIBase &base,
+                                 const multilingual::labels labelIdx)
         : compactBox("", choices, base),
           label("", juce::DrawableButton::ButtonStyle::ImageFitted),
           labelLAF(base, labelText) {
@@ -19,6 +21,11 @@ namespace zlInterface {
         label.setLookAndFeel(&labelLAF);
         label.onClick = [this]() { selectRight(); };
         addAndMakeVisible(label);
+
+        if (labelIdx != multilingual::labels::labelNum) {
+            compactBox.setTooltip(base.getToolTipText(labelIdx));
+            label.setTooltip(base.getToolTipText(labelIdx));
+        }
     }
 
     ClickCombobox::~ClickCombobox() {

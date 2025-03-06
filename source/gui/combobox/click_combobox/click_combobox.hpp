@@ -21,7 +21,8 @@ namespace zlInterface {
             left, right, top, bottom
         };
 
-        ClickCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base);
+        ClickCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base,
+            multilingual::labels labelIdx = multilingual::labels::labelNum);
 
         ~ClickCombobox() override;
 

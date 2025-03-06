@@ -10,7 +10,8 @@
 #include "compact_linear_slider.hpp"
 
 namespace zlInterface {
-    CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base)
+    CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base,
+                                             const multilingual::labels labelIdx)
         : uiBase(base),
           sliderLookAndFeel(base), nameLookAndFeel(base), textLookAndFeel(base),
           slider(base) {
@@ -45,6 +46,10 @@ namespace zlInterface {
         addAndMakeVisible(label);
 
         setEditable(true);
+
+        if (labelIdx != multilingual::labels::labelNum) {
+            SettableTooltipClient::setTooltip(uiBase.getToolTipText(labelIdx));
+        }
     }
 
     CompactLinearSlider::~CompactLinearSlider() {
