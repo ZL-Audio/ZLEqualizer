@@ -18,10 +18,10 @@ namespace zlPanel {
                                 zlInterface::UIBase &base)
             : parametersRef(parameters),
               uiBase(base),
-              lookaheadS("Lookahead", uiBase),
-              rmsS("RMS", uiBase),
-              smoothS("Smooth", uiBase),
-              dynHQC("HQ:", zlDSP::dynHQ::choices, uiBase) {
+              lookaheadS("Lookahead", uiBase, zlInterface::multilingual::labels::lookahead),
+              rmsS("RMS", uiBase, zlInterface::multilingual::labels::rms),
+              smoothS("Smooth", uiBase, zlInterface::multilingual::labels::smooth),
+              dynHQC("HQ:", zlDSP::dynHQ::choices, uiBase, zlInterface::multilingual::labels::highQuality) {
             setBufferedToImage(true);
             for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.01f);

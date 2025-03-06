@@ -16,18 +16,26 @@ namespace zlPanel {
           curvePanel(p, uiBase),
           scalePanel(p, uiBase),
           statePanel(p, uiBase, uiSettingPanel),
-          uiSettingPanel(p, uiBase) {
+          uiSettingPanel(p, uiBase),
+          tooltipLAF(uiBase), tooltipWindow(&curvePanel) {
         processorRef.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(scalePanel);
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
         addChildComponent(uiSettingPanel);
+
+        tooltipWindow.setLookAndFeel(&tooltipLAF);
+        tooltipWindow.setOpaque(false);
+        tooltipWindow.setBufferedToImage(true);
+
         updateFFTs();
 
         state.addParameterListener(zlState::fftExtraTilt::ID, this);
         state.addParameterListener(zlState::fftExtraSpeed::ID, this);
         state.addParameterListener(zlState::refreshRate::ID, this);
+
+        lookAndFeelChanged();
     }
 
     MainPanel::~MainPanel() {
@@ -66,6 +74,10 @@ namespace zlPanel {
     void MainPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         juce::ignoreUnused(parameterID, newValue);
         triggerAsyncUpdate();
+    }
+
+    void MainPanel::lookAndFeelChanged() {
+        tooltipWindow.setON(uiBase.getTooltipON());
     }
 
     void MainPanel::parentHierarchyChanged() {

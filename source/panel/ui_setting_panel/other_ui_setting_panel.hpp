@@ -34,8 +34,8 @@ private:
     zlInterface::UIBase &uiBase;
     zlInterface::NameLookAndFeel nameLAF;
 
-    juce::Label renderingEngineLabel;
-    zlInterface::CompactCombobox renderingEngineBox;
+    // juce::Label renderingEngineLabel;
+    // zlInterface::CompactCombobox renderingEngineBox;
     juce::Label refreshRateLabel;
     zlInterface::CompactCombobox refreshRateBox;
     juce::Label fftLabel;
@@ -47,6 +47,8 @@ private:
     zlInterface::CompactCombobox defaultPassFilterSlopeBox;
     juce::Label dynLinkLabel;
     zlInterface::CompactCombobox dynLinkBox;
+    juce::Label tooltipLabel;
+    zlInterface::CompactCombobox tooltipONBox, tooltipLangBox;
 };
 
 } // zlPanel

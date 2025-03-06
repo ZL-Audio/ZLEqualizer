@@ -15,15 +15,17 @@ namespace zlPanel {
         : processorRef(p), uiBase(base),
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
-          bypassC("B", base),
-          soloC("S", base), dynONC("D", base), dynLC("L", base),
-          fTypeC("", zlDSP::fType::choices, base),
-          slopeC("", zlDSP::slope::choices, base),
-          stereoC("", zlDSP::lrType::choices, base),
-          lrBox(zlState::selectedBandIdx::choices, base),
-          freqC("FREQ", base),
-          gainC("GAIN", base),
-          qC("Q", base),
+          bypassC("B", base, zlInterface::multilingual::labels::bandBypass),
+          soloC("S", base, zlInterface::multilingual::labels::bandSolo),
+          dynONC("D", base, zlInterface::multilingual::labels::bandDynamic),
+          dynLC("L", base, zlInterface::multilingual::labels::bandDynamicAuto),
+          fTypeC("", zlDSP::fType::choices, base, zlInterface::multilingual::labels::bandType),
+          slopeC("", zlDSP::slope::choices, base, zlInterface::multilingual::labels::bandSlope),
+          stereoC("", zlDSP::lrType::choices, base, zlInterface::multilingual::labels::bandStereoMode),
+          lrBox(zlState::selectedBandIdx::choices, base, zlInterface::multilingual::labels::bandSelector),
+          freqC("FREQ", base, zlInterface::multilingual::labels::bandFreq),
+          gainC("GAIN", base, zlInterface::multilingual::labels::bandGain),
+          qC("Q", base, zlInterface::multilingual::labels::bandQ),
           resetComponent(p.parameters, p.parametersNA, base),
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
@@ -57,14 +59,23 @@ namespace zlPanel {
             if (dynONC.getButton().getToggleState()) {
                 processorRef.getFiltersAttach().turnOnDynamic(currentBand);
                 dynLinkValue = static_cast<float>(uiBase.getDynLink());
+                {
+                    auto *para = parametersRef.getParameter(
+                    zlDSP::appendSuffix(zlDSP::bypass::ID, currentBand));
+                    para->beginChangeGesture();
+                    para->setValueNotifyingHost(0.f);
+                    para->endChangeGesture();
+                }
             } else {
                 processorRef.getFiltersAttach().turnOffDynamic(currentBand);
             }
-            auto *para = parametersRef.getParameter(
-                zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
-            para->beginChangeGesture();
-            para->setValueNotifyingHost(dynLinkValue);
-            para->endChangeGesture();
+            {
+                auto *para = parametersRef.getParameter(
+                    zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
+                para->beginChangeGesture();
+                para->setValueNotifyingHost(dynLinkValue);
+                para->endChangeGesture();
+            }
         };
 
         dynLC.setDrawable(dynLeDrawable.get());

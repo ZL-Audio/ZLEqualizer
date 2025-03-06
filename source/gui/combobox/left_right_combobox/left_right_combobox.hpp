@@ -14,15 +14,17 @@
 #include "left_right_button_look_and_feel.hpp"
 
 namespace zlInterface {
-    class LeftRightCombobox final : public juce::Component {
+    class LeftRightCombobox final : public juce::Component,
+                                    public juce::SettableTooltipClient {
     public:
-        explicit LeftRightCombobox(const juce::StringArray &choices, UIBase &base);
+        explicit LeftRightCombobox(const juce::StringArray &choices, UIBase &base,
+                                   multilingual::labels labelIdx = multilingual::labels::labelNum);
 
         ~LeftRightCombobox() override;
 
         void resized() override;
 
-        inline juce::ComboBox& getBox() {return box;}
+        inline juce::ComboBox &getBox() { return box; }
 
         inline void setPadding(const float lr, const float ub) {
             lrPad.store(lr);

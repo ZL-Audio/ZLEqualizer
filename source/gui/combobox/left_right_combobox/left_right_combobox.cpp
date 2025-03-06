@@ -10,11 +10,12 @@
 #include "left_right_combobox.hpp"
 
 namespace zlInterface {
-    LeftRightCombobox::LeftRightCombobox(const juce::StringArray &choices, UIBase &base)
+    LeftRightCombobox::LeftRightCombobox(const juce::StringArray &choices, UIBase &base,
+                                         const multilingual::labels labelIdx)
         : uiBase(base),
-    leftButton("", juce::DrawableButton::ButtonStyle::ImageFitted),
-    rightButton("", juce::DrawableButton::ButtonStyle::ImageFitted),
-    lLAF(base), rLAF(base),  lookAndFeel(base) {
+          leftButton("", juce::DrawableButton::ButtonStyle::ImageFitted),
+          rightButton("", juce::DrawableButton::ButtonStyle::ImageFitted),
+          lLAF(base), rLAF(base), lookAndFeel(base) {
         box.addItemList(choices, 1);
         box.setScrollWheelEnabled(false);
         box.setLookAndFeel(&lookAndFeel);
@@ -27,11 +28,13 @@ namespace zlInterface {
         leftButton.onClick = [this]() { selectLeft(); };
         rightButton.onClick = [this]() { selectRight(); };
 
-        setInterceptsMouseClicks(false, true);
-
         addAndMakeVisible(box);
         addAndMakeVisible(leftButton);
         addAndMakeVisible(rightButton);
+
+        if (labelIdx != multilingual::labels::labelNum) {
+            SettableTooltipClient::setTooltip(uiBase.getToolTipText(labelIdx));
+        }
     }
 
     LeftRightCombobox::~LeftRightCombobox() {

@@ -10,7 +10,8 @@
 #include "two_value_rotary_slider.hpp"
 
 namespace zlInterface {
-    TwoValueRotarySlider::TwoValueRotarySlider(const juce::String &labelText, UIBase &base)
+    TwoValueRotarySlider::TwoValueRotarySlider(const juce::String &labelText, UIBase &base,
+                                               const multilingual::labels labelIdx)
         : uiBase(base),
           slider1LAF(base), slider2LAF(base),
           slider1(base), slider2(base),
@@ -64,6 +65,10 @@ namespace zlInterface {
         label2.setJustificationType(juce::Justification::centred);
         label1.addListener(this);
         label2.addListener(this);
+
+        if (labelIdx != multilingual::labels::labelNum) {
+            SettableTooltipClient::setTooltip(uiBase.getToolTipText(labelIdx));
+        }
     }
 
     TwoValueRotarySlider::~TwoValueRotarySlider() {
@@ -187,7 +192,7 @@ namespace zlInterface {
     void TwoValueRotarySlider::mouseDoubleClick(const juce::MouseEvent &event) {
         if (uiBase.getIsSliderDoubleClickOpenEditor() != event.mods.isCommandDown()) {
             const auto portion = static_cast<float>(event.getPosition().getY()
-                ) / static_cast<float>(getLocalBounds().getHeight());
+                                 ) / static_cast<float>(getLocalBounds().getHeight());
             if (portion < .5f || !showSlider2.load()) {
                 label1.showEditor();
                 return;

@@ -15,9 +15,11 @@
 #include "compact_combobox_look_and_feel.hpp"
 
 namespace zlInterface {
-    class CompactCombobox final : public juce::Component {
+    class CompactCombobox final : public juce::Component,
+                                  public juce::SettableTooltipClient {
     public:
-        CompactCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base);
+        CompactCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base,
+                        multilingual::labels labelIdx = multilingual::labels::labelNum);
 
         ~CompactCombobox() override;
 

@@ -11,8 +11,10 @@
 
 namespace zlInterface {
     CompactCombobox::CompactCombobox(const juce::String &labelText, const juce::StringArray &choices,
-                                     UIBase &base) : uiBase(base), boxLookAndFeel(base),
-                                                     animator{} {
+                                     UIBase &base, const multilingual::labels labelIdx)
+        : uiBase(base),
+          boxLookAndFeel(base),
+          animator{} {
         juce::ignoreUnused(labelText);
         comboBox.addItemList(choices, 1);
         comboBox.setScrollWheelEnabled(false);
@@ -22,6 +24,10 @@ namespace zlInterface {
         addAndMakeVisible(comboBox);
 
         setEditable(true);
+
+        if (labelIdx != multilingual::labels::labelNum) {
+            SettableTooltipClient::setTooltip(uiBase.getToolTipText(labelIdx));
+        }
     }
 
 

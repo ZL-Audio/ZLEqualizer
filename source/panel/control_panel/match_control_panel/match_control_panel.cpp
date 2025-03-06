@@ -15,17 +15,17 @@ namespace zlPanel {
           startDrawable(juce::Drawable::createFromImageData(BinaryData::playfill_svg, BinaryData::playfill_svgSize)),
           pauseDrawable(juce::Drawable::createFromImageData(BinaryData::pauseline_svg, BinaryData::pauseline_svgSize)),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
-          sideChooseBox("", {"Side", "Preset", "Flat"}, base),
-          fitAlgoBox("", {"LD", "GN", "GN+"}, base),
-          weightSlider("Weight", base),
-          smoothSlider("Smooth", base),
-          slopeSlider("Slope", base),
-          numBandSlider("Num Band", base),
-          learnButton(base, startDrawable.get(), pauseDrawable.get()),
-          saveButton(base, saveDrawable.get()),
-          fitButton(base, startDrawable.get()),
+          sideChooseBox("", {"Side", "Preset", "Flat"}, base, zlInterface::multilingual::labels::matchTarget),
+          fitAlgoBox("", {"LD", "GN", "GN+"}, base, zlInterface::multilingual::labels::matchAlgo),
+          weightSlider("Weight", base, zlInterface::multilingual::labels::matchWeight),
+          smoothSlider("Smooth", base, zlInterface::multilingual::labels::matchSmooth),
+          slopeSlider("Slope", base, zlInterface::multilingual::labels::matchSlope),
+          numBandSlider("Num Band", base, zlInterface::multilingual::labels::matchNumBand),
+          learnButton(base, startDrawable.get(), pauseDrawable.get(),
+                      zlInterface::multilingual::labels::matchStartLearn),
+          saveButton(base, saveDrawable.get(), nullptr, zlInterface::multilingual::labels::matchSave),
+          fitButton(base, startDrawable.get(), nullptr, zlInterface::multilingual::labels::matchStartFit),
           matchRunner(p, uiBase, analyzer.getDiffs(), numBandSlider) {
-        juce::ignoreUnused(p);
         uiBase.getValueTree().addListener(this);
         // create preset directory if not exists
         if (!presetDirectory.isDirectory()) {

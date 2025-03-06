@@ -18,8 +18,10 @@ namespace zlPanel {
                                    zlInterface::UIBase &base)
             : parametersRef(parameters),
               uiBase(base),
-              filterStructure("", zlDSP::filterStructure::choices, uiBase),
-              zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase) {
+              filterStructure("", zlDSP::filterStructure::choices, uiBase,
+                              zlInterface::multilingual::labels::filterStructure),
+              zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase,
+                       zlInterface::multilingual::labels::zeroLatency) {
             setBufferedToImage(true);
             for (auto &c: {&filterStructure}) {
                 addAndMakeVisible(c);
@@ -119,7 +121,7 @@ namespace zlPanel {
         }
         auto content = std::make_unique<GeneralCallOutBox>(parametersRef, uiBase);
         content->setSize(juce::roundToInt(uiBase.getFontSize() * 10.f),
-                         juce::roundToInt(uiBase.getFontSize() * 4.4f));//4.3525f));
+                         juce::roundToInt(uiBase.getFontSize() * 4.4f)); //4.3525f));
 
         auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
                                                            getBounds(),

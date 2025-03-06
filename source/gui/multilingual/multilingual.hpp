@@ -7,18 +7,20 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_GUI_H
-#define ZL_GUI_H
+#ifndef ZL_INTERFACE_MULTILINGUAL_HPP
+#define ZL_INTERFACE_MULTILINGUAL_HPP
 
-#include "interface_definitions.hpp"
-#include "button/button.hpp"
-#include "combobox/combobox.hpp"
-#include "slider/slider.hpp"
-#include "dragger2d/dragger2d.hpp"
-#include "calloutbox/call_out_box_laf.hpp"
-#include "colour_selector/colour_selector.hpp"
-#include "colour_selector/colour_opacity_selector.hpp"
-#include "colour_selector/colour_map_selector.hpp"
-#include "tooltip/tooltip.hpp"
+#include "labels.hpp"
+#include "en.hpp"
+#include "zh_cn.hpp"
 
-#endif //ZL_GUI_H
+namespace zlInterface::multilingual {
+    enum languages {
+        lang_system,
+        lang_en,
+        lang_zh_cn,
+        langNum
+    };
+}
+
+#endif //ZL_INTERFACE_MULTILINGUAL_HPP

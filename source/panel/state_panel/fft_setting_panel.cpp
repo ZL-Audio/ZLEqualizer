@@ -19,11 +19,11 @@ namespace zlPanel {
                                zlInterface::UIBase &base)
             : parametersNARef(parametersNA),
               uiBase(base),
-              fftPreON("Pre:", zlState::fftPreON::choices, uiBase),
-              fftPostON("Post:", zlState::fftPostON::choices, uiBase),
-              fftSideON("Side:", zlState::fftSideON::choices, uiBase),
-              ffTSpeed("", zlState::ffTSpeed::choices, uiBase),
-              fftTilt("", zlState::ffTTilt::choices, uiBase) {
+              fftPreON("Pre:", zlState::fftPreON::choices, uiBase, zlInterface::multilingual::labels::fftPre),
+              fftPostON("Post:", zlState::fftPostON::choices, uiBase, zlInterface::multilingual::labels::fftPost),
+              fftSideON("Side:", zlState::fftSideON::choices, uiBase, zlInterface::multilingual::labels::fftSide),
+              ffTSpeed("", zlState::ffTSpeed::choices, uiBase, zlInterface::multilingual::labels::fftDecay),
+              fftTilt("", zlState::ffTTilt::choices, uiBase, zlInterface::multilingual::labels::fftSlope) {
             setBufferedToImage(true);
             for (auto &c: {&fftPreON, &fftPostON, &fftSideON}) {
                 c->getLabelLAF().setFontScale(1.5f);

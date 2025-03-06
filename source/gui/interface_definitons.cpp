@@ -277,6 +277,8 @@ namespace zlInterface {
         fftOrderIdx = static_cast<int>(loadPara(zlState::ffTOrder::ID));
         dynLink.store(static_cast<bool>(loadPara(zlState::dynLink::ID)));
         renderingEngine.store(static_cast<int>(loadPara(zlState::renderingEngine::ID)));
+        tooltipON = static_cast<bool>(loadPara(zlState::tooltipON::ID));
+        langIdx = static_cast<multilingual::languages>(loadPara(zlState::tooltipLang::ID));
     }
 
     void UIBase::saveToAPVTS() const {
@@ -326,5 +328,7 @@ namespace zlInterface {
         savePara(zlState::ffTOrder::ID, zlState::ffTOrder::convertTo01(fftOrderIdx));
         savePara(zlState::dynLink::ID, zlState::dynLink::convertTo01(dynLink.load()));
         savePara(zlState::renderingEngine::ID, zlState::renderingEngine::convertTo01(renderingEngine.load()));
+        savePara(zlState::tooltipON::ID, zlState::tooltipON::convertTo01(static_cast<int>(tooltipON)));
+        savePara(zlState::tooltipLang::ID, zlState::tooltipLang::convertTo01(langIdx));
     }
 }

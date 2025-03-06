@@ -19,7 +19,8 @@
 namespace zlInterface {
     class CompactButton final : public juce::Component {
     public:
-        explicit CompactButton(const juce::String &labelText, UIBase &base);
+        explicit CompactButton(const juce::String &labelText, UIBase &base,
+                               multilingual::labels labelIdx = multilingual::labels::labelNum);
 
         ~CompactButton() override;
 

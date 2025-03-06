@@ -21,9 +21,9 @@ namespace zlPanel {
           conflictSettingPanel(p, base),
           generalSettingPanel(p, base),
           matchSettingPanel(base),
-          effectC("", uiBase),
-          sideC("", uiBase),
-          sgcC("", uiBase),
+          effectC("", uiBase, zlInterface::multilingual::labels::bypass),
+          sideC("", uiBase, zlInterface::multilingual::labels::externalSideChain),
+          sgcC("", uiBase, zlInterface::multilingual::labels::staticGC),
           effectDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg,
                                                   BinaryData::fadpowerswitch_svgSize)),

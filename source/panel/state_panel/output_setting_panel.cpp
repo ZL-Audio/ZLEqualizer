@@ -17,11 +17,11 @@ namespace zlPanel {
                                   zlInterface::UIBase &base)
             : processorRef(p), parametersRef(p.parameters),
               uiBase(base),
-              phaseC("phase", uiBase),
-              agcC("A", uiBase),
-              lmC("L", uiBase),
-              scaleS("Scale", uiBase),
-              outGainS("Out Gain", uiBase),
+              phaseC("phase", uiBase, zlInterface::multilingual::labels::phaseFlip),
+              agcC("A", uiBase, zlInterface::multilingual::labels::autoGC),
+              lmC("L", uiBase, zlInterface::multilingual::labels::loudnessMatch),
+              scaleS("Scale", uiBase, zlInterface::multilingual::labels::scale),
+              outGainS("Out Gain", uiBase, zlInterface::multilingual::labels::outputGain),
               phaseDrawable(
                   juce::Drawable::createFromImageData(BinaryData::fadphase_svg,
                                                       BinaryData::fadphase_svgSize)),

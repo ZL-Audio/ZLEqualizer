@@ -29,10 +29,10 @@ namespace zlCompressor {
         /**
          * call before prepare to play
          * set the maximum time length of the tracker
-         * @param millisecond the maximum time length of the tracker
+         * @param second the maximum time length of the tracker
          */
-        void setMaximumMomentarySeconds(const FloatType millisecond) {
-            maximumTimeLength = millisecond;
+        void setMaximumMomentarySeconds(const FloatType second) {
+            maximumTimeLength = second;
         }
 
         /**
@@ -42,7 +42,7 @@ namespace zlCompressor {
         void prepare(const double sr) {
             sampleRate.store(sr);
             setMaximumMomentarySize(
-                static_cast<size_t>(static_cast<double>(maximumTimeLength) * 1000.0 * sr));
+                static_cast<size_t>(static_cast<double>(maximumTimeLength) * sr));
             reset();
             setMomentarySeconds(timeLength.load());
         }
@@ -94,11 +94,11 @@ namespace zlCompressor {
         /**
          * thread-safe, lock-free
          * set the time length of the tracker
-         * @param millisecond the time length of the tracker
+         * @param second the time length of the tracker
          */
-        void setMomentarySeconds(const FloatType millisecond) {
-            timeLength.store(millisecond);
-            setMomentarySize(static_cast<size_t>(static_cast<double>(millisecond) * 1000.0 * sampleRate.load()));
+        void setMomentarySeconds(const FloatType second) {
+            timeLength.store(second);
+            setMomentarySize(static_cast<size_t>(static_cast<double>(second) * sampleRate.load()));
             toUpdate.store(true);
         }
 

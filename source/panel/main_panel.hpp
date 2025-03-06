@@ -32,6 +32,8 @@ namespace zlPanel {
 
         void parentHierarchyChanged() override;
 
+        void lookAndFeelChanged() override;
+
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &state;
@@ -41,6 +43,9 @@ namespace zlPanel {
         ScalePanel scalePanel;
         StatePanel statePanel;
         UISettingPanel uiSettingPanel;
+
+        zlInterface::TooltipLookAndFeel tooltipLAF;
+        zlInterface::TooltipWindow tooltipWindow;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

@@ -22,9 +22,11 @@
 namespace zlInterface {
     class TwoValueRotarySlider final : public juce::Component,
                                        private juce::Label::Listener,
-                                       private juce::Slider::Listener {
+                                       private juce::Slider::Listener,
+                                       public juce::SettableTooltipClient {
     public:
-        explicit TwoValueRotarySlider(const juce::String &labelText, UIBase &base);
+        explicit TwoValueRotarySlider(const juce::String &labelText, UIBase &base,
+                                      multilingual::labels labelIdx = multilingual::labels::labelNum);
 
         ~TwoValueRotarySlider() override;
 

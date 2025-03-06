@@ -10,8 +10,9 @@
 #include "compact_button.hpp"
 
 namespace zlInterface {
-    CompactButton::CompactButton(const juce::String &labelText, UIBase &base) : uiBase(base), lookAndFeel(uiBase),
-        animator{} {
+    CompactButton::CompactButton(const juce::String &labelText, UIBase &base, const multilingual::labels labelIdx)
+        : uiBase(base), lookAndFeel(uiBase),
+          animator{} {
         button.setClickingTogglesState(true);
         button.setButtonText(labelText);
         button.setLookAndFeel(&lookAndFeel);
@@ -19,6 +20,9 @@ namespace zlInterface {
         addAndMakeVisible(button);
 
         setEditable(true);
+        if (labelIdx != multilingual::labels::labelNum) {
+            button.setTooltip(uiBase.getToolTipText(labelIdx));
+        }
     }
 
     CompactButton::~CompactButton() {
