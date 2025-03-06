@@ -56,8 +56,11 @@ namespace zlInterface {
                                           const float w, const float h) const {
             juce::AttributedString s;
             s.setJustification(juce::Justification::centredLeft);
+#if (JUCE_MAJOR_VERSION < 8)
+            s.append(text, uiBase.getFontSize() * 1.5f, uiBase.getTextColor());
+#else
             s.append(text, juce::FontOptions(uiBase.getFontSize() * 1.5f), uiBase.getTextColor());
-
+#endif
             juce::TextLayout tl;
             tl.createLayout(s, w, h);
             return tl;
