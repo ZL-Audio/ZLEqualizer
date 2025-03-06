@@ -473,7 +473,7 @@ namespace zlState {
     public:
         auto static constexpr ID = "tool_tip_on";
         auto static constexpr name = "";
-        inline auto static const choices = juce::StringArray {"OFF", "ON"};
+        inline auto static const choices = juce::StringArray{"OFF", "ON"};
         int static constexpr defaultI = 1;
     };
 
@@ -481,7 +481,12 @@ namespace zlState {
     public:
         auto static constexpr ID = "tool_tip_lang";
         auto static constexpr name = "";
-        inline auto static const choices = juce::StringArray {"System", "English", juce::String(juce::CharPointer_UTF8("中文"))};
+        inline auto static const choices = juce::StringArray{
+            "System",
+            "English",
+            juce::String(juce::CharPointer_UTF8("简体中文")),
+            juce::String(juce::CharPointer_UTF8("繁體中文"))
+        };
         int static constexpr defaultI = 0;
     };
 

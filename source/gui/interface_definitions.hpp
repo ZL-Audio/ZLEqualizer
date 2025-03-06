@@ -187,9 +187,14 @@ namespace zlInterface {
             loadFromAPVTS();
             if (langIdx == multilingual::languages::lang_system) {
                 const auto displayedLang = juce::SystemStats::getDisplayLanguage();
+                // Chinese
                 if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
                     || displayedLang.startsWith("zh-")) {
-                    actualLangIdx = multilingual::languages::lang_zh_cn;
+                    if (displayedLang == "zh-tw" || displayedLang == "zh-TW" || displayedLang == "zh-Hant") {
+                        actualLangIdx = multilingual::languages::lang_zh_Hant;
+                    } else {
+                        actualLangIdx = multilingual::languages::lang_zh_Hans;
+                    }
                 }
             } else {
                 actualLangIdx = langIdx;
@@ -411,8 +416,11 @@ namespace zlInterface {
                 case multilingual::languages::lang_en: {
                     return multilingual::en::texts[static_cast<size_t>(label)];
                 }
-                case multilingual::languages::lang_zh_cn: {
-                    return multilingual::zh_cn::texts[static_cast<size_t>(label)];
+                case multilingual::languages::lang_zh_Hans: {
+                    return multilingual::zh_Hans::texts[static_cast<size_t>(label)];
+                }
+                case multilingual::languages::lang_zh_Hant: {
+                    return multilingual::zh_Hant::texts[static_cast<size_t>(label)];
                 }
                 case multilingual::languages::lang_system:
                 case multilingual::languages::langNum:

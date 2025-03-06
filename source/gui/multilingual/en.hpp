@@ -24,7 +24,7 @@ namespace zlInterface::multilingual::en {
         "Adjust the Q factor of the selected frequency band. The larger the Q value, the narrower the bandwidth.",
         "Choose the frequency band with the left/right arrow.",
         "Press: turn on the dynamic behaviour of the selected frequency band.",
-        "Press: turn on automatic threshold of the selected frequency band.\nRelease: turn off automatic threshold of the selected frequency band and applies the learned threshold.",
+        "Press: turn on automatic threshold of the selected frequency band.\nRelease: turn off automatic threshold of the selected frequency band and apply the learned threshold.",
         "Click: turn off the selected frequency band.",
         "Release: bypass the dynamic behaviour of the selected band.",
         "Press: solo the side-chain audio of the selected band.",

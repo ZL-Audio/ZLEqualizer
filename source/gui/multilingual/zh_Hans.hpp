@@ -12,7 +12,7 @@
 
 #include <array>
 
-namespace zlInterface::multilingual::zh_cn {
+namespace zlInterface::multilingual::zh_Hans {
     static constexpr std::array texts = {
         "按下：打开所选频段。\n释放：旁通所选频段。",
         "按下：监听当前频段所作用的音频。",

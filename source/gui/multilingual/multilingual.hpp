@@ -12,13 +12,15 @@
 
 #include "labels.hpp"
 #include "en.hpp"
-#include "zh_cn.hpp"
+#include "zh_Hans.hpp"
+#include "zh_Hant.hpp"
 
 namespace zlInterface::multilingual {
     enum languages {
         lang_system,
         lang_en,
-        lang_zh_cn,
+        lang_zh_Hans,
+        lang_zh_Hant,
         langNum
     };
 }
