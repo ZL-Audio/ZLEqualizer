@@ -42,7 +42,7 @@ namespace zlInterface {
         void drawTooltip(juce::Graphics &g, const juce::String &text, const int width, const int height) override {
             const juce::Rectangle<float> bound{static_cast<float>(width), static_cast<float>(height)};
 
-            g.setColour(uiBase.getBackgroundColor().withAlpha(.5f));
+            g.setColour(uiBase.getBackgroundColor().withAlpha(.875f));
             g.fillRect(bound);
 
             const auto tl = getTipTextLayout(text, bound.getWidth(), bound.getHeight());

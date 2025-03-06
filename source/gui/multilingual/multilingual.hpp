@@ -16,8 +16,10 @@
 
 namespace zlInterface::multilingual {
     enum languages {
+        lang_system,
         lang_en,
-        lang_zh_cn
+        lang_zh_cn,
+        langNum
     };
 }
 

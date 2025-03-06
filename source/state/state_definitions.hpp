@@ -469,6 +469,22 @@ namespace zlState {
         int static constexpr defaultI = 5;
     };
 
+    class tooltipON : public ChoiceParameters<tooltipON> {
+    public:
+        auto static constexpr ID = "tool_tip_on";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray {"OFF", "ON"};
+        int static constexpr defaultI = 1;
+    };
+
+    class tooltipLang : public ChoiceParameters<tooltipLang> {
+    public:
+        auto static constexpr ID = "tool_tip_lang";
+        auto static constexpr name = "";
+        inline auto static const choices = juce::StringArray {"System", "English", juce::String(juce::CharPointer_UTF8("中文"))};
+        int static constexpr defaultI = 0;
+    };
+
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
@@ -512,6 +528,7 @@ namespace zlState {
         addOneColour(layout, "gain", 255 - 8, 255 - 9, 255 - 11, true, 1.f);
         addOneColour(layout, "side_loudness", 255 - 8, 255 - 9, 255 - 11, true, .33f);
         layout.add(colourMap1Idx::get(), colourMap2Idx::get());
+        layout.add(tooltipON::get(), tooltipLang::get());
         return layout;
     }
 }

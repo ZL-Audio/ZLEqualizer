@@ -184,12 +184,16 @@ namespace zlInterface {
     public:
         explicit UIBase(juce::AudioProcessorValueTreeState &apvts)
             : state(apvts), fontSize{0.f} {
-            const auto displayedLang = juce::SystemStats::getDisplayLanguage();
-            if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
-                || displayedLang.startsWith("zh-")) {
-                langIdx = multilingual::languages::lang_zh_cn;
-            }
             loadFromAPVTS();
+            if (langIdx == multilingual::languages::lang_system) {
+                const auto displayedLang = juce::SystemStats::getDisplayLanguage();
+                if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
+                    || displayedLang.startsWith("zh-")) {
+                    actualLangIdx = multilingual::languages::lang_zh_cn;
+                }
+            } else {
+                actualLangIdx = langIdx;
+            }
         }
 
         void setFontSize(const float fSize) { fontSize = fSize; }
@@ -380,6 +384,14 @@ namespace zlInterface {
 
         void setRenderingEngine(const int x) { renderingEngine.store(x); }
 
+        bool getTooltipON() const { return tooltipON; }
+
+        void setTooltipON(const bool x) { tooltipON = x; }
+
+        int getLangIdx() const { return static_cast<int>(langIdx); }
+
+        void setLangIdx(const int x) { langIdx = static_cast<multilingual::languages>(x); }
+
         juce::ValueTree &getValueTree() { return valueTree; }
 
         juce::var getProperty(const settingIdx idx) const {
@@ -402,6 +414,8 @@ namespace zlInterface {
                 case multilingual::languages::lang_zh_cn: {
                     return multilingual::zh_cn::texts[static_cast<size_t>(label)];
                 }
+                case multilingual::languages::lang_system:
+                case multilingual::languages::langNum:
                 default: {
                     return multilingual::en::texts[static_cast<size_t>(label)];
                 }
@@ -443,7 +457,9 @@ namespace zlInterface {
 
         int fftOrderIdx{1};
 
+        bool tooltipON{true};
         multilingual::languages langIdx{multilingual::languages::lang_en};
+        multilingual::languages actualLangIdx{multilingual::languages::lang_en};
     };
 }
 

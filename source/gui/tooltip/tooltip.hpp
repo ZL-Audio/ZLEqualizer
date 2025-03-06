@@ -7,18 +7,10 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_GUI_H
-#define ZL_GUI_H
+#ifndef ZL_INTERFACE_TOOLTIP_HPP
+#define ZL_INTERFACE_TOOLTIP_HPP
 
-#include "interface_definitions.hpp"
-#include "button/button.hpp"
-#include "combobox/combobox.hpp"
-#include "slider/slider.hpp"
-#include "dragger2d/dragger2d.hpp"
-#include "calloutbox/call_out_box_laf.hpp"
-#include "colour_selector/colour_selector.hpp"
-#include "colour_selector/colour_opacity_selector.hpp"
-#include "colour_selector/colour_map_selector.hpp"
-#include "tooltip/tooltip.hpp"
+#include "tooltip_window.hpp"
+#include "tooltip_look_and_feel.hpp"
 
-#endif //ZL_GUI_H
+#endif //ZL_INTERFACE_TOOLTIP_HPP
