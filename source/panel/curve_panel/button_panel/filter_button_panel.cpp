@@ -19,7 +19,9 @@ namespace zlPanel {
           band{bandIdx} {
         dragger.addMouseListener(this, true);
         dragger.getButton().setBufferedToImage(true);
+        dragger.setBroughtToFrontOnMouseClick(true);
         targetDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::upDownArrow);
+        targetDragger.setBroughtToFrontOnMouseClick(true);
         sideDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::rectangle);
         lookAndFeelChanged();
         for (const auto &idx: IDs) {

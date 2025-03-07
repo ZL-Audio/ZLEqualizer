@@ -23,6 +23,14 @@
 #include "loudness_display/loudness_display.hpp"
 
 namespace zlPanel {
+    class CacheComponent final : public juce::Component {
+    public:
+        CacheComponent() {
+            setInterceptsMouseClicks(false, false);
+            setBufferedToImage(true);
+        }
+    };
+
     class CurvePanel final : public juce::Component,
                              private juce::AudioProcessorValueTreeState::Listener,
                              private juce::ValueTree::Listener,
@@ -53,6 +61,9 @@ namespace zlPanel {
         ButtonPanel buttonPanel;
         SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
+        CacheComponent cacheComponent;
+        std::array<std::atomic<float>, zlState::bandNUM> repaintCounts{};
+        std::array<bool, zlState::bandNUM> isCached{};
         MatchPanel matchPanel;
         juce::Time currentT;
         juce::VBlankAttachment vblank;

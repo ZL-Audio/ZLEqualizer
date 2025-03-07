@@ -23,6 +23,7 @@ namespace zlPanel {
           loudnessDisplay(processorRef, base),
           buttonPanel(processorRef, base),
           soloPanel(parametersRef, parametersNARef, base, controllerRef, buttonPanel),
+          cacheComponent(),
           matchPanel(processor.getController().getMatchAnalyzer(), parametersNARef, base),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
@@ -32,22 +33,23 @@ namespace zlPanel {
                 f.prepareDBSize(ws.size());
             }
         }
-        addAndMakeVisible(backgroundPanel);
-        addAndMakeVisible(fftPanel);
-        addAndMakeVisible(conflictPanel);
+        addAndMakeVisible(backgroundPanel, 0);
+        addAndMakeVisible(fftPanel, 1);
+        addAndMakeVisible(conflictPanel, 2);
+        addAndMakeVisible(cacheComponent, 3);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             const auto idx = zlState::bandNUM - i - 1;
             singlePanels[i] =
                     std::make_unique<SinglePanel>(idx, parametersRef, parametersNARef, base, controllerRef,
                                                   baseFilters[idx], targetFilters[idx], mainFilters[idx],
                                                   buttonPanel.getSideDragger(idx));
-            addAndMakeVisible(*singlePanels[i]);
+            addAndMakeVisible(*singlePanels[i], 4);
         }
-        addAndMakeVisible(sumPanel);
-        addAndMakeVisible(soloPanel);
-        addAndMakeVisible(loudnessDisplay);
-        addAndMakeVisible(buttonPanel);
-        addChildComponent(matchPanel);
+        addAndMakeVisible(sumPanel, 5);
+        addAndMakeVisible(soloPanel, 6);
+        addAndMakeVisible(loudnessDisplay, 7);
+        addAndMakeVisible(buttonPanel, 8);
+        addChildComponent(matchPanel, 9);
         parameterChanged(zlDSP::scale::ID, parametersRef.getRawParameterValue(zlDSP::scale::ID)->load());
         parametersRef.addParameterListener(zlDSP::scale::ID, this);
         parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
@@ -87,6 +89,7 @@ namespace zlPanel {
         backgroundPanel.setBounds(bound);
         fftPanel.setBounds(bound);
         conflictPanel.setBounds(bound);
+        cacheComponent.setBounds(bound);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound);
         }
@@ -97,8 +100,8 @@ namespace zlPanel {
 
         auto lBound = getLocalBounds().toFloat();
         lBound = juce::Rectangle<float>(lBound.getX() + lBound.getWidth() * 0.666f,
-            lBound.getBottom() - uiBase.getFontSize() * .5f,
-            lBound.getWidth() * .09f, uiBase.getFontSize() * .5f);
+                                        lBound.getBottom() - uiBase.getFontSize() * .5f,
+                                        lBound.getWidth() * .09f, uiBase.getFontSize() * .5f);
         loudnessDisplay.setBounds(lBound.toNearestInt());
     }
 
@@ -145,6 +148,15 @@ namespace zlPanel {
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
+            for (size_t i = 0; i < zlState::bandNUM; ++i) {
+                if (repaintCounts[i].load() > 100.f && !isCached[i]) {
+                    isCached[i] = true;
+                    cacheComponent.addAndMakeVisible(singlePanels[i].get(), -1);
+                } else if (repaintCounts[i].load() < 100.f && isCached[i]) {
+                    isCached[i] = false;
+                    addAndMakeVisible(singlePanels[i].get(), 4);
+                }
+            }
             for (const auto &panel: singlePanels) {
                 panel->updateDragger();
             }
@@ -168,9 +180,12 @@ namespace zlPanel {
             if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
                 fftPanel.updatePaths();
             }
-            for (const auto &sP: singlePanels) {
-                if (sP->checkRepaint()) {
-                    sP->run();
+            for (size_t i = 0; i < zlState::bandNUM; ++i) {
+                if (singlePanels[i]->checkRepaint()) {
+                    singlePanels[i]->run();
+                    repaintCounts[i].store(0.f);
+                } else {
+                    repaintCounts[i].fetch_add(1.f);
                 }
             }
             sumPanel.run();

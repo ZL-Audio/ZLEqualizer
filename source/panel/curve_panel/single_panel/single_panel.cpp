@@ -156,6 +156,7 @@ namespace zlPanel {
     }
 
     bool SinglePanel::checkRepaint() {
+        if (!active.load()) return false;
         if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
             return true;
         } else if (toRepaint.exchange(false)) {
