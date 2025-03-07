@@ -51,7 +51,7 @@ namespace zlPanel {
 
         std::atomic<double> sideQ{0.707};
         std::atomic<bool> toUpdate{false};
-        float currentBW;
+        float currentBW{0.f};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
     };

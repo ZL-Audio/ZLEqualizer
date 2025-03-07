@@ -28,8 +28,7 @@ namespace zlPanel {
                              zlDSP::Controller<double> &controller,
                              zlFilter::Ideal<double, 16> &baseFilter,
                              zlFilter::Ideal<double, 16> &targetFilter,
-                             zlFilter::Ideal<double, 16> &mainFilter,
-                             zlInterface::Dragger &sideDragger);
+                             zlFilter::Ideal<double, 16> &mainFilter);
 
         ~SinglePanel() override;
 
@@ -58,10 +57,6 @@ namespace zlPanel {
 
         void lookAndFeelChanged() override;
 
-        void updateDragger() {
-            sidePanel.updateDragger();
-        }
-
     private:
         juce::Path curvePath, shadowPath, dynPath;
         juce::Path recentCurvePath, recentShadowPath, recentDynPath;
@@ -82,7 +77,6 @@ namespace zlPanel {
         std::atomic<bool> skipRepaint{false};
         std::atomic<bool> toRepaint{false};
         std::atomic<bool> avoidRepaint{false};
-        SidePanel sidePanel;
         std::atomic<float> centeredDB{0.f};
         std::atomic<double> baseFreq{1000.0}, baseGain{0.0};
         std::atomic<double> currentBaseGain{0.0}, currentTargetGain{0.0};

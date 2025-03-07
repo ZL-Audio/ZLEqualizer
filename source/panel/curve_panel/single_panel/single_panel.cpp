@@ -17,13 +17,11 @@ namespace zlPanel {
                              zlDSP::Controller<double> &controller,
                              zlFilter::Ideal<double, 16> &baseFilter,
                              zlFilter::Ideal<double, 16> &targetFilter,
-                             zlFilter::Ideal<double, 16> &mainFilter,
-                             zlInterface::Dragger &sideDragger)
+                             zlFilter::Ideal<double, 16> &mainFilter)
         : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base), controllerRef(controller),
           resetAttach(bandIdx, parameters, parametersNA),
-          baseF(baseFilter), targetF(targetFilter), mainF(mainFilter),
-          sidePanel(bandIdx, parameters, parametersNA, base, controller, sideDragger) {
+          baseF(baseFilter), targetF(targetFilter), mainF(mainFilter) {
         curvePath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
         shadowPath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3 + 12));
         dynPath.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 6 + 12));
@@ -51,7 +49,6 @@ namespace zlPanel {
         }
 
         setInterceptsMouseClicks(false, false);
-        addAndMakeVisible(sidePanel);
         skipRepaint.store(false);
         lookAndFeelChanged();
     }
@@ -145,7 +142,6 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         atomicBottomLeft.store(bound.getBottomLeft());
         atomicBottomRight.store(bound.getBottomRight());
-        sidePanel.setBounds(getLocalBounds());
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         atomicBound.store(bound);
         toRepaint.store(true);

@@ -17,6 +17,7 @@
 #include "sum_panel/sum_panel.hpp"
 #include "sum_panel/solo_panel.hpp"
 #include "single_panel/single_panel.hpp"
+#include "single_panel/side_panel.hpp"
 #include "button_panel/button_panel.hpp"
 #include "conflict_panel/conflict_panel.hpp"
 #include "match_panel/match_panel.hpp"
@@ -61,6 +62,7 @@ namespace zlPanel {
         ButtonPanel buttonPanel;
         SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
+        std::array<std::unique_ptr<SidePanel>, zlState::bandNUM> sidePanels;
         CacheComponent cacheComponent;
         std::array<std::atomic<float>, zlState::bandNUM> repaintCounts{};
         std::array<bool, zlState::bandNUM> isCached{};

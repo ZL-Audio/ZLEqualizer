@@ -37,19 +37,24 @@ namespace zlPanel {
         addAndMakeVisible(fftPanel, 1);
         addAndMakeVisible(conflictPanel, 2);
         addAndMakeVisible(cacheComponent, 3);
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            const auto idx = zlState::bandNUM - i - 1;
-            singlePanels[i] =
-                    std::make_unique<SinglePanel>(idx, parametersRef, parametersNARef, base, controllerRef,
-                                                  baseFilters[idx], targetFilters[idx], mainFilters[idx],
-                                                  buttonPanel.getSideDragger(idx));
-            addAndMakeVisible(*singlePanels[i], 4);
+        for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            const auto i = zlState::bandNUM - idx - 1;
+            singlePanels[idx] =
+                    std::make_unique<SinglePanel>(i, parametersRef, parametersNARef, base, controllerRef,
+                                                  baseFilters[i], targetFilters[i], mainFilters[i]);
+            addAndMakeVisible(*singlePanels[idx], 4);
         }
-        addAndMakeVisible(sumPanel, 5);
-        addAndMakeVisible(soloPanel, 6);
-        addAndMakeVisible(loudnessDisplay, 7);
-        addAndMakeVisible(buttonPanel, 8);
-        addChildComponent(matchPanel, 9);
+        for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            const auto i = zlState::bandNUM - idx - 1;
+            sidePanels[idx] = std::make_unique<SidePanel>(i, parametersRef, parametersNARef, base, controllerRef,
+                                                        buttonPanel.getSideDragger(i));
+            addAndMakeVisible(*sidePanels[idx], 5);
+        }
+        addAndMakeVisible(sumPanel, 6);
+        addAndMakeVisible(soloPanel, 7);
+        addAndMakeVisible(loudnessDisplay, 8);
+        addAndMakeVisible(buttonPanel, 9);
+        addChildComponent(matchPanel, 10);
         parameterChanged(zlDSP::scale::ID, parametersRef.getRawParameterValue(zlDSP::scale::ID)->load());
         parametersRef.addParameterListener(zlDSP::scale::ID, this);
         parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
@@ -92,6 +97,10 @@ namespace zlPanel {
         cacheComponent.setBounds(bound);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound);
+        }
+        const auto sideBound = bound.toFloat().withTop(bound.toFloat().getBottom() - 2.f * uiBase.getFontSize());
+        for (size_t i = 0; i < zlState::bandNUM; ++i) {
+            sidePanels[i]->setBounds(sideBound.toNearestInt());
         }
         sumPanel.setBounds(bound);
         soloPanel.setBounds(bound);
@@ -157,7 +166,7 @@ namespace zlPanel {
                     addAndMakeVisible(singlePanels[i].get(), 4);
                 }
             }
-            for (const auto &panel: singlePanels) {
+            for (const auto &panel: sidePanels) {
                 panel->updateDragger();
             }
             if (showMatchPanel.load()) {

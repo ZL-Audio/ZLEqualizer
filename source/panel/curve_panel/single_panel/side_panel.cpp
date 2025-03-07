@@ -53,13 +53,12 @@ namespace zlPanel {
         if (!isVisible()) {
             return;
         }
-        auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 4 * uiBase.getFontSize());
+        const auto bound = getLocalBounds().toFloat();
 
         const auto x = static_cast<float>(sideDraggerRef.getButton().getBounds().getCentreX());
         const auto thickness = uiBase.getFontSize() * 0.15f;
         g.setColour(colour);
-        g.drawLine(x - currentBW, bound.getBottom(), x + currentBW, bound.getBottom(), thickness);
+        g.drawLine(x - currentBW, bound.getY(), x + currentBW, bound.getY(), thickness);
     }
 
     void SidePanel::parameterChanged(const juce::String &parameterID, float newValue) {
