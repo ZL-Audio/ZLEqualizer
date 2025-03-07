@@ -18,6 +18,7 @@
 
 namespace zlPanel {
     class ScalePanel final : public juce::Component,
+                             public juce::SettableTooltipClient,
                              private juce::AsyncUpdater {
     public:
         ScalePanel(PluginProcessor &processor,

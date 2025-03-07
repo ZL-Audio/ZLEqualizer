@@ -164,7 +164,7 @@ namespace zlPanel {
             localBound.removeFromLeft(bound.getWidth() * .05f);
             const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
             tooltipONBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            localBound.removeFromLeft(uiBase.getFontSize() * 3.f);
             tooltipLangBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
     }

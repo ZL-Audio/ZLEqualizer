@@ -1,6 +1,6 @@
 [submodule "JUCE"]
 	path = JUCE
-	url = https://github.com/juce-framework/JUCE/
+	url = https://github.com/ZL-Audio/JUCE
 	branch = master
 [submodule "modules/friz"]
 	path = modules/friz

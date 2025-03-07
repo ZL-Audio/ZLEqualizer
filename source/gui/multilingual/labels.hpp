@@ -65,6 +65,15 @@ namespace zlInterface::multilingual {
         matchAlgo,
         matchStartFit,
         matchNumBand,
+        dbScale,
+        eqMatch,
+        minimumPhase,
+        stateVariable,
+        parallelPhase,
+        matchedPhase,
+        mixedPhase,
+        linearPhase,
+        pluginLogo,
         labelNum
     };
 }

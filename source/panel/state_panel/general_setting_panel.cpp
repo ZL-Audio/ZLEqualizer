@@ -19,7 +19,13 @@ namespace zlPanel {
             : parametersRef(parameters),
               uiBase(base),
               filterStructure("", zlDSP::filterStructure::choices, uiBase,
-                              zlInterface::multilingual::labels::filterStructure),
+                              zlInterface::multilingual::labels::filterStructure,
+                              {zlInterface::multilingual::labels::minimumPhase,
+                              zlInterface::multilingual::labels::stateVariable,
+                              zlInterface::multilingual::labels::parallelPhase,
+                              zlInterface::multilingual::labels::matchedPhase,
+                              zlInterface::multilingual::labels::mixedPhase,
+                              zlInterface::multilingual::labels::linearPhase}),
               zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase,
                        zlInterface::multilingual::labels::zeroLatency) {
             setBufferedToImage(true);

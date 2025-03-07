@@ -44,11 +44,11 @@ namespace zlInterface::multilingual::en {
         "Press: turn on Automatic Gain Compensation. AGC is accurate in the long term. However, AGC will affect the dynamic of the signal.",
         "Press: when you press it, it starts to measure the integrated loudness of the input signal and the output signal.\nRelease: when you release it, it turns AGC off and updates the Output Gain to the difference between two loudness values.",
         "Adjust the output gain of the plugin.",
-        "Choose the state of the input FFT analyzer. FRZ can freeze the analyzer.",
-        "Choose the state of the output FFT analyzer. FRZ can freeze the analyzer.",
-        "Choose the state of the side-chain FFT analyzer. FRZ can freeze the analyzer.",
-        "Adjust the decay speed of the FFT analyzer.",
-        "Adjust the slope of the FFT analyzer (does not affect the actual signal).",
+        "Choose the state of the input spectrum analyzer. FRZ can freeze the analyzer.",
+        "Choose the state of the output spectrum analyzer. FRZ can freeze the analyzer.",
+        "Choose the state of the side-chain spectrum analyzer. FRZ can freeze the analyzer.",
+        "Adjust the decay speed of the spectrum analyzer.",
+        "Adjust the slope of the spectrum analyzer (does not affect the actual signal).",
         "Adjust the lookahead time of of the side-chain signal (by introducing latency).",
         "Adjust the length of RMS. As RMS increases, the attack/release will be slower and smoother.",
         "Adjust the smoothness of the release.",
@@ -56,7 +56,7 @@ namespace zlInterface::multilingual::en {
         "Choose the state of Collision Detection.",
         "Adjust the strength of Collision Detection. If you increase strength, the detected areas will become larger and darker.",
         "Adjust the scale of Collision Detection. If you increase the scale, the detected areas will become darker.",
-        "Choose the structure of filters. See the manual for details.",
+        "Choose the structure of filters.",
         "Choose the state of Zero Latency. When Zero Latency is on, the extra latency is zero. However, the buffer size will slightly affect dynamic effects and parameter automation.",
         "Choose the target curve.\nSide: learned from the side chain signal.\nPreset: loaded from a preset file.\nFlat: set as a flat -4.5 dB/oct line.",
         "Adjust the weight of the curve learning model. The larger the weight, the more the model learns from the loud part of the signal.",
@@ -66,7 +66,16 @@ namespace zlInterface::multilingual::en {
         "Adjust the slope of the difference curve.",
         "Choose the fitting algorithm.\nLD: local gradient-based algorithm (fast).\nGN: global gradient-free algorithm (recommended).\nGN+: global gradient-free algorithm (slow, allows filters to have higher slopes).",
         "Click: start the curve fitting.",
-        "Adjust the number of bands used for fitting. When the fitting is completed, the curve fitting model will suggest the number of bands. You can change it afterward."
+        "Adjust the number of bands used for fitting. When the fitting is completed, the curve fitting model will suggest the number of bands. You can change it afterward.",
+        "Choose the dB scale of filter response curves (left) and spectrum analyzers (right).",
+        "Click: open the Equalizer Match panel. The Equalizer Match has four steps:\n1. Choose the target curve.\n2. Start the learning.\n3. Adjust the difference.\n4. Start the fitting.",
+        "Most common filter structure of equalizers. Filter response is very close to analog prototype. Suitable for modulation.",
+        "Most common filter structure of crossovers. Filter causes more phase shift. Suitable for fast modulation.",
+        "Peak/Shelf filters are placed parallely. Filter response is different from the displayed curve. Suitable for modulation.",
+        "Minimum Phase structure with additional corrections. Filter response is almost identical to analog prototype. NOT suitable for modulation.",
+        "Minimum Phase structure with additional corrections. Filter has analog prototype magnitude response and less phase shift at high-end. NOT suitable for modulation.",
+        "Filter has analog prototype magnitude response and zero phase response. NOT suitable for modulation. Dynamic effect does not work.",
+        "Double Click: open UI Settings."
     };
 }
 

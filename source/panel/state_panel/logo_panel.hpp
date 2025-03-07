@@ -15,7 +15,7 @@
 #include "../ui_setting_panel/ui_setting_panel.hpp"
 
 namespace zlPanel {
-    class LogoPanel final : public juce::Component {
+    class LogoPanel final : public juce::Component, public juce::SettableTooltipClient {
     public:
         explicit LogoPanel(PluginProcessor &p,
         zlInterface::UIBase &base,

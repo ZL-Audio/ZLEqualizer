@@ -13,9 +13,9 @@
 #include "../../gui/gui.hpp"
 
 namespace zlPanel {
-    class MatchSettingPanel final : public juce::Component {
+    class MatchSettingPanel final : public juce::Component,
+                                    public juce::SettableTooltipClient {
     public:
-
         explicit MatchSettingPanel(zlInterface::UIBase &base);
 
         void resized() override;

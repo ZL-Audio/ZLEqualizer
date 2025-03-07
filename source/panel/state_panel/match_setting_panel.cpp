@@ -23,6 +23,8 @@ namespace zlPanel {
 
         uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, false);
         uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
+
+        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::eqMatch));
     }
 
     void MatchSettingPanel::resized() {

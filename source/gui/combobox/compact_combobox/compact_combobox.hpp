@@ -19,7 +19,8 @@ namespace zlInterface {
                                   public juce::SettableTooltipClient {
     public:
         CompactCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base,
-                        multilingual::labels labelIdx = multilingual::labels::labelNum);
+                        multilingual::labels labelIdx = multilingual::labels::labelNum,
+                        const std::vector<multilingual::labels> &itemLabelIndices = {});
 
         ~CompactCombobox() override;
 

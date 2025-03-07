@@ -11,12 +11,26 @@
 
 namespace zlInterface {
     CompactCombobox::CompactCombobox(const juce::String &labelText, const juce::StringArray &choices,
-                                     UIBase &base, const multilingual::labels labelIdx)
+                                     UIBase &base, const multilingual::labels labelIdx,
+                                     const std::vector<multilingual::labels> &itemLabelIndices)
         : uiBase(base),
           boxLookAndFeel(base),
           animator{} {
         juce::ignoreUnused(labelText);
-        comboBox.addItemList(choices, 1);
+        if (itemLabelIndices.size() < static_cast<size_t>(choices.size())) {
+            comboBox.addItemList(choices, 1);
+        } else {
+            const auto menu = comboBox.getRootMenu();
+            for (int i = 0; i < choices.size(); ++i) {
+                juce::PopupMenu::Item item;
+                item.itemID = i + 1;
+                item.text = choices[i];
+                item.tooltipText = uiBase.getToolTipText(itemLabelIndices[static_cast<size_t>(i)]);
+                item.isEnabled = true;
+                item.isTicked = false;
+                menu->addItem(item);
+            }
+        }
         comboBox.setScrollWheelEnabled(false);
         comboBox.setInterceptsMouseClicks(false, false);
         comboBox.setLookAndFeel(&boxLookAndFeel);

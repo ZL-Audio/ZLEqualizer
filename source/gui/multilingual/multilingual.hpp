@@ -14,6 +14,7 @@
 #include "en.hpp"
 #include "zh_Hans.hpp"
 #include "zh_Hant.hpp"
+#include "it.hpp"
 
 namespace zlInterface::multilingual {
     enum languages {

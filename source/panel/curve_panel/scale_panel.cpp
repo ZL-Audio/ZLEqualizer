@@ -32,6 +32,8 @@ namespace zlPanel {
         addAndMakeVisible(scaleBox);
         addAndMakeVisible(minFFTBox);
         triggerAsyncUpdate();
+
+        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::dbScale));
     }
 
     ScalePanel::~ScalePanel() = default;
