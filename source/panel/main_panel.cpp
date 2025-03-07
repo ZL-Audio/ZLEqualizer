@@ -83,6 +83,7 @@ namespace zlPanel {
     void MainPanel::parentHierarchyChanged() {
         if (const auto peer = getPeer()) {
             peer->setCurrentRenderingEngine(uiBase.getRenderingEngine());
+            // curvePanel.setIsHardware(peer->getCurrentRenderingEngine() == 1);
         }
     }
 

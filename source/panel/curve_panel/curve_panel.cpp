@@ -36,27 +36,23 @@ namespace zlPanel {
         addAndMakeVisible(backgroundPanel, 0);
         addAndMakeVisible(fftPanel, 1);
         addAndMakeVisible(conflictPanel, 2);
-        addAndMakeVisible(cacheComponent, 3);
+        // addAndMakeVisible(cacheComponent, 3);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            repaintCounts[i].store(1000);
-        }
+        // for (size_t i = 0; i < zlState::bandNUM; ++i) {
+        //     repaintCounts[i].store(1000);
+        // }
         addAndMakeVisible(dummyComponent, 4);
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-            const auto i = idx;//zlState::bandNUM - idx - 1;
+            const auto i = idx;
             singlePanels[idx] =
                     std::make_unique<SinglePanel>(i, parametersRef, parametersNARef, base, controllerRef,
                                                   baseFilters[i], targetFilters[i], mainFilters[i]);
-            if (idx != currentBandIdx.load()) {
-                cacheComponent.addAndMakeVisible(*singlePanels[idx]);
-            } else {
-                dummyComponent.addAndMakeVisible(*singlePanels[idx]);
-            }
+            dummyComponent.addAndMakeVisible(*singlePanels[idx]);
         }
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-            const auto i = idx;// zlState::bandNUM - idx - 1;
+            const auto i = idx;
             sidePanels[idx] = std::make_unique<SidePanel>(i, parametersRef, parametersNARef, base, controllerRef,
                                                         buttonPanel.getSideDragger(i));
             addAndMakeVisible(*sidePanels[idx], 5);
@@ -106,7 +102,7 @@ namespace zlPanel {
         backgroundPanel.setBounds(bound);
         fftPanel.setBounds(bound);
         conflictPanel.setBounds(bound);
-        cacheComponent.setBounds(bound);
+        // cacheComponent.setBounds(bound);
         dummyComponent.setBounds(bound);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound);
@@ -172,16 +168,17 @@ namespace zlPanel {
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
-            const auto refreshRate = static_cast<int>(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
-            for (size_t i = 0; i < zlState::bandNUM; ++i) {
-                if (repaintCounts[i].load() > refreshRate && !isCached[i]) {
-                    isCached[i] = true;
-                    cacheComponent.addAndMakeVisible(singlePanels[i].get());
-                } else if (repaintCounts[i].load() < refreshRate && isCached[i]) {
-                    isCached[i] = false;
-                    dummyComponent.addAndMakeVisible(singlePanels[i].get());
-                }
-            }
+            singlePanels[currentBandIdx.load()]->toFront(false);
+            // const auto refreshRate = static_cast<int>(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
+            // for (size_t i = 0; i < zlState::bandNUM; ++i) {
+            //     if (repaintCounts[i].load() > refreshRate && !isCached[i] && isHardware) {
+            //         isCached[i] = true;
+            //         cacheComponent.addAndMakeVisible(singlePanels[i].get());
+            //     } else if (repaintCounts[i].load() < refreshRate && isCached[i]) {
+            //         isCached[i] = false;
+            //         dummyComponent.addAndMakeVisible(singlePanels[i].get());
+            //     }
+            // }
             for (const auto &panel: sidePanels) {
                 panel->updateDragger();
             }
@@ -205,16 +202,17 @@ namespace zlPanel {
             if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
                 fftPanel.updatePaths();
             }
-            const auto refreshRate = static_cast<int>(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
+            // const auto refreshRate = static_cast<int>(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 if (singlePanels[i]->checkRepaint()) {
                     singlePanels[i]->run();
-                    repaintCounts[i].store(0);
-                } else {
-                    repaintCounts[i].store(std::min(refreshRate + 1, repaintCounts[i].load() + 1));
+                    // repaintCounts[i].store(0);
                 }
+                // } else {
+                //     repaintCounts[i].store(std::min(refreshRate + 1, repaintCounts[i].load() + 1));
+                // }
             }
-            repaintCounts[currentBandIdx.load()].store(0);
+            // repaintCounts[currentBandIdx.load()].store(0);
             sumPanel.run();
             if (showMatchPanel.load()) {
                 matchPanel.updatePaths();
