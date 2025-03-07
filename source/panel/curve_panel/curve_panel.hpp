@@ -72,6 +72,7 @@ namespace zlPanel {
         DummyComponent dummyComponent{};
         std::array<std::atomic<int>, zlState::bandNUM> repaintCounts{};
         std::array<bool, zlState::bandNUM> isCached{};
+        std::atomic<size_t> currentBandIdx;
         MatchPanel matchPanel;
         juce::Time currentT;
         juce::VBlankAttachment vblank;
