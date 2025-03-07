@@ -53,6 +53,10 @@ namespace zlPanel {
 
         void resized() override;
 
+        // void setIsHardware(const bool x) {
+        //     isHardware = x;
+        // }
+
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -71,7 +75,7 @@ namespace zlPanel {
         CacheComponent cacheComponent;
         DummyComponent dummyComponent{};
         std::array<std::atomic<int>, zlState::bandNUM> repaintCounts{};
-        std::array<bool, zlState::bandNUM> isCached{};
+        // std::array<bool, zlState::bandNUM> isCached{};
         std::atomic<size_t> currentBandIdx;
         MatchPanel matchPanel;
         juce::Time currentT;
@@ -80,6 +84,8 @@ namespace zlPanel {
 
         std::atomic<bool> showMatchPanel{false};
         bool showUISettingsPanel{false};
+
+        // bool isHardware{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
