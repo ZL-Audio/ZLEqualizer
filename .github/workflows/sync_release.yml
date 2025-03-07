@@ -26,14 +26,14 @@ jobs:
         path: "release_repo"
         ssh-key: ${{ secrets.SSH_RELEASE_DEPLOY_KEY }}
     - name: Download current release assets (macOS)
-      uses: robinraju/release-downloader@v1.11
+      uses: robinraju/release-downloader@v1.12
       with:
         latest: true
         preRelease: true
         fileName: "*dmg"
         out-file-path: "current_release"
     - name: Download current release assets (Windows)
-      uses: robinraju/release-downloader@v1.11
+      uses: robinraju/release-downloader@v1.12
       with:
         latest: true
         preRelease: true
