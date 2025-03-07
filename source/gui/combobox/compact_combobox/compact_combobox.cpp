@@ -17,6 +17,9 @@ namespace zlInterface {
           boxLookAndFeel(base),
           animator{} {
         juce::ignoreUnused(labelText);
+#if (JUCE_MAJOR_VERSION < 8)
+        comboBox.addItemList(choices, 1);
+#else
         if (itemLabelIndices.size() < static_cast<size_t>(choices.size())) {
             comboBox.addItemList(choices, 1);
         } else {
@@ -31,6 +34,8 @@ namespace zlInterface {
                 menu->addItem(item);
             }
         }
+#endif
+
         comboBox.setScrollWheelEnabled(false);
         comboBox.setInterceptsMouseClicks(false, false);
         comboBox.setLookAndFeel(&boxLookAndFeel);
