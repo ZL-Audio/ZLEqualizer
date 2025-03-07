@@ -153,7 +153,7 @@ namespace zlPanel {
 
     bool SinglePanel::checkRepaint() {
         if (!active.load()) return false;
-        if (baseF.getMagOutdated() || targetF.getMagOutdated()) {
+        if (baseF.getMagOutdated() || (dynON.load() && targetF.getMagOutdated())) {
             return true;
         } else if (toRepaint.exchange(false)) {
             return true;
