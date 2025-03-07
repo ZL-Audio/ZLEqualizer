@@ -487,7 +487,7 @@ namespace zlPanel {
             const auto f2 = panels[idx]->getDragger().getLAF().getIsSelected();
             if (f1 != f2) {
                 panels[idx]->getDragger().getLAF().setIsSelected(f1);
-                panels[idx]->repaint();
+                panels[idx]->getDragger().getButton().repaint();
             }
         }
         if (currentSelectedNum > 0) {

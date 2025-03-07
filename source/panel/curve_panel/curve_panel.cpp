@@ -37,12 +37,13 @@ namespace zlPanel {
         addAndMakeVisible(fftPanel, 1);
         addAndMakeVisible(conflictPanel, 2);
         addAndMakeVisible(cacheComponent, 3);
+        addAndMakeVisible(dummyComponent, 4);
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
             const auto i = zlState::bandNUM - idx - 1;
             singlePanels[idx] =
                     std::make_unique<SinglePanel>(i, parametersRef, parametersNARef, base, controllerRef,
                                                   baseFilters[i], targetFilters[i], mainFilters[i]);
-            addAndMakeVisible(*singlePanels[idx], 4);
+            dummyComponent.addAndMakeVisible(*singlePanels[idx]);
         }
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
             const auto i = zlState::bandNUM - idx - 1;
@@ -95,6 +96,7 @@ namespace zlPanel {
         fftPanel.setBounds(bound);
         conflictPanel.setBounds(bound);
         cacheComponent.setBounds(bound);
+        dummyComponent.setBounds(bound);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound);
         }
@@ -158,12 +160,12 @@ namespace zlPanel {
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
-                if (repaintCounts[i].load() > 100.f && !isCached[i]) {
+                if (repaintCounts[i].load() > 100 && !isCached[i]) {
                     isCached[i] = true;
-                    cacheComponent.addAndMakeVisible(singlePanels[i].get(), -1);
-                } else if (repaintCounts[i].load() < 100.f && isCached[i]) {
+                    cacheComponent.addAndMakeVisible(singlePanels[i].get());
+                } else if (repaintCounts[i].load() < 100 && isCached[i]) {
                     isCached[i] = false;
-                    addAndMakeVisible(singlePanels[i].get(), 4);
+                    dummyComponent.addAndMakeVisible(singlePanels[i].get());
                 }
             }
             for (const auto &panel: sidePanels) {
@@ -194,7 +196,7 @@ namespace zlPanel {
                     singlePanels[i]->run();
                     repaintCounts[i].store(0.f);
                 } else {
-                    repaintCounts[i].fetch_add(1.f);
+                    repaintCounts[i].store(std::min(101, repaintCounts[i].load() + 1));
                 }
             }
             sumPanel.run();

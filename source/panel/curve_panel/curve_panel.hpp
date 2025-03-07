@@ -24,6 +24,11 @@
 #include "loudness_display/loudness_display.hpp"
 
 namespace zlPanel {
+    class DummyComponent final : public juce::Component {
+    public:
+        DummyComponent() = default;
+    };
+
     class CacheComponent final : public juce::Component {
     public:
         CacheComponent() {
@@ -64,7 +69,8 @@ namespace zlPanel {
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
         std::array<std::unique_ptr<SidePanel>, zlState::bandNUM> sidePanels;
         CacheComponent cacheComponent;
-        std::array<std::atomic<float>, zlState::bandNUM> repaintCounts{};
+        DummyComponent dummyComponent{};
+        std::array<std::atomic<int>, zlState::bandNUM> repaintCounts{};
         std::array<bool, zlState::bandNUM> isCached{};
         MatchPanel matchPanel;
         juce::Time currentT;
