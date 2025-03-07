@@ -25,6 +25,12 @@ namespace zlFFT {
 
         explicit PrePostFFTAnalyzer(size_t fftOrder = 12);
 
+        ~PrePostFFTAnalyzer() override {
+            if (isThreadRunning()) {
+                stopThread(-1);
+            }
+        }
+
         void prepare(const juce::dsp::ProcessSpec &spec);
 
         void prepareBuffer();
