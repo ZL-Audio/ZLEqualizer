@@ -33,6 +33,8 @@ public:
 
     void visibilityChanged() override;
 
+    void setRendererList(const juce::StringArray &rendererList);
+
 private:
     PluginProcessor &pRef;
     zlInterface::UIBase &uiBase;

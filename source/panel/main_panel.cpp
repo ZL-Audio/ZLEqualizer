@@ -82,7 +82,15 @@ namespace zlPanel {
 
     void MainPanel::parentHierarchyChanged() {
         if (const auto peer = getPeer()) {
-            peer->setCurrentRenderingEngine(uiBase.getRenderingEngine());
+            auto renderEngineIdx = uiBase.getRenderingEngine();
+            const auto rendererList = peer->getAvailableRenderingEngines();
+            uiSettingPanel.setRendererList(rendererList);
+            if (renderEngineIdx >= rendererList.size()) {
+                renderEngineIdx = rendererList.size() - 1;
+                uiBase.setRenderingEngine(renderEngineIdx);
+                uiBase.saveToAPVTS();
+            }
+            peer->setCurrentRenderingEngine(renderEngineIdx);
             // curvePanel.setIsHardware(peer->getCurrentRenderingEngine() == 1);
         }
     }

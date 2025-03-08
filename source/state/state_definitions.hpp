@@ -425,7 +425,7 @@ namespace zlState {
         auto static constexpr ID = "rendering_engine";
         auto static constexpr name = "Rendering Engine";
         inline auto static const choices = juce::StringArray{
-            "Software", "Hardware"
+            "Software", "Hardware", "Unknown", "Unknown", "Unknown"
         };
         int static constexpr defaultI = 1;
     };
