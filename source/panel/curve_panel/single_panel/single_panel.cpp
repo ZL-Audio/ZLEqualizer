@@ -66,6 +66,7 @@ namespace zlPanel {
     }
 
     void SinglePanel::paint(juce::Graphics &g) {
+        DBG("paint " + std::to_string(idx));
         if (!active.load()) {
             return;
         }

@@ -26,14 +26,8 @@
 namespace zlPanel {
     class DummyComponent final : public juce::Component {
     public:
-        DummyComponent() = default;
-    };
-
-    class CacheComponent final : public juce::Component {
-    public:
-        CacheComponent() {
+        DummyComponent() {
             setInterceptsMouseClicks(false, false);
-            setBufferedToImage(true);
         }
     };
 
@@ -72,10 +66,10 @@ namespace zlPanel {
         SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
         std::array<std::unique_ptr<SidePanel>, zlState::bandNUM> sidePanels;
-        CacheComponent cacheComponent;
+        DummyComponent cacheComponent{};
         DummyComponent dummyComponent{};
         std::array<std::atomic<int>, zlState::bandNUM> repaintCounts{};
-        // std::array<bool, zlState::bandNUM> isCached{};
+        std::array<bool, zlState::bandNUM> isCached{};
         std::atomic<size_t> currentBandIdx;
         MatchPanel matchPanel;
         juce::Time currentT;
