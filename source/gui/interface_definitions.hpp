@@ -415,6 +415,9 @@ namespace zlInterface {
                 case multilingual::languages::lang_ja: {
                     return multilingual::ja::texts[static_cast<size_t>(label)];
                 }
+                case multilingual::languages::lang_de: {
+                    return multilingual::de::texts[static_cast<size_t>(label)];
+                }
                 case multilingual::languages::lang_system:
                 case multilingual::languages::langNum:
                 default: {

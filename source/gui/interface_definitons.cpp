@@ -344,11 +344,15 @@ namespace zlInterface {
                     actualLangIdx = multilingual::languages::lang_zh_Hans;
                 }
             } else if (displayedLang == "it" || displayedLang == "ita" ||
-                displayedLang.startsWith("it-") || displayedLang.startsWith("ita-")) {
+                       displayedLang.startsWith("it-") || displayedLang.startsWith("ita-")) {
                 actualLangIdx = multilingual::languages::lang_it;
             } else if (displayedLang == "ja" || displayedLang == "jpn" ||
-                displayedLang.startsWith("ja-") || displayedLang.startsWith("jpn-")) {
+                       displayedLang.startsWith("ja-") || displayedLang.startsWith("jpn-")) {
                 actualLangIdx = multilingual::languages::lang_ja;
+            } else if (displayedLang == "de" || displayedLang == "deu" || displayedLang == "ger" ||
+                       displayedLang.startsWith("de-") || displayedLang.startsWith("deu-") ||
+                       displayedLang.startsWith("ger-")) {
+                actualLangIdx = multilingual::languages::lang_de;
             } else {
                 actualLangIdx = multilingual::languages::lang_en;
             }
