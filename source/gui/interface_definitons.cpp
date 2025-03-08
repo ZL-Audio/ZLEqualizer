@@ -337,7 +337,7 @@ namespace zlInterface {
             const auto displayedLang = juce::SystemStats::getDisplayLanguage();
             if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
                 || displayedLang.startsWith("zh-")) {
-                if (displayedLang == "zh-tw" || displayedLang == "zh-TW" || displayedLang == "zh-Hant") {
+                if (displayedLang.startsWith("zh-Hant") || displayedLang.startsWith("zh-hant")) {
                     actualLangIdx = multilingual::languages::lang_zh_Hant;
                 } else {
                     actualLangIdx = multilingual::languages::lang_zh_Hans;
