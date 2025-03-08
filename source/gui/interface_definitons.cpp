@@ -353,6 +353,9 @@ namespace zlInterface {
                        displayedLang.startsWith("de-") || displayedLang.startsWith("deu-") ||
                        displayedLang.startsWith("ger-")) {
                 actualLangIdx = multilingual::languages::lang_de;
+            } else if (displayedLang == "es" || displayedLang == "spa" ||
+                       displayedLang.startsWith("es-") || displayedLang.startsWith("spa-")) {
+                actualLangIdx = multilingual::languages::lang_es;
             } else {
                 actualLangIdx = multilingual::languages::lang_en;
             }
