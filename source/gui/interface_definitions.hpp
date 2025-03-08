@@ -399,7 +399,7 @@ namespace zlInterface {
         }
 
         std::string getToolTipText(const zlInterface::multilingual::labels label) const {
-            switch (langIdx) {
+            switch (actualLangIdx) {
                 case multilingual::languages::lang_en: {
                     return multilingual::en::texts[static_cast<size_t>(label)];
                 }

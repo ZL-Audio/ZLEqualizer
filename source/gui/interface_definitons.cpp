@@ -335,7 +335,6 @@ namespace zlInterface {
     void UIBase::updateActualLangIdx() {
         if (langIdx == multilingual::languages::lang_system) {
             const auto displayedLang = juce::SystemStats::getDisplayLanguage();
-            // Chinese
             if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
                 || displayedLang.startsWith("zh-")) {
                 if (displayedLang == "zh-tw" || displayedLang == "zh-TW" || displayedLang == "zh-Hant") {
