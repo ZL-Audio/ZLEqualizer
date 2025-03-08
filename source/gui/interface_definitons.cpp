@@ -331,4 +331,35 @@ namespace zlInterface {
         savePara(zlState::tooltipON::ID, zlState::tooltipON::convertTo01(static_cast<int>(tooltipON)));
         savePara(zlState::tooltipLang::ID, zlState::tooltipLang::convertTo01(langIdx));
     }
+
+    void UIBase::updateActualLangIdx() {
+        if (langIdx == multilingual::languages::lang_system) {
+            const auto displayedLang = juce::SystemStats::getDisplayLanguage();
+            if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
+                || displayedLang.startsWith("zh-")) {
+                if (displayedLang.startsWith("zh-Hant") || displayedLang.startsWith("zh-hant")) {
+                    actualLangIdx = multilingual::languages::lang_zh_Hant;
+                } else {
+                    actualLangIdx = multilingual::languages::lang_zh_Hans;
+                }
+            } else if (displayedLang == "it" || displayedLang == "ita" ||
+                       displayedLang.startsWith("it-") || displayedLang.startsWith("ita-")) {
+                actualLangIdx = multilingual::languages::lang_it;
+            } else if (displayedLang == "ja" || displayedLang == "jpn" ||
+                       displayedLang.startsWith("ja-") || displayedLang.startsWith("jpn-")) {
+                actualLangIdx = multilingual::languages::lang_ja;
+            } else if (displayedLang == "de" || displayedLang == "deu" || displayedLang == "ger" ||
+                       displayedLang.startsWith("de-") || displayedLang.startsWith("deu-") ||
+                       displayedLang.startsWith("ger-")) {
+                actualLangIdx = multilingual::languages::lang_de;
+            } else if (displayedLang == "es" || displayedLang == "spa" ||
+                       displayedLang.startsWith("es-") || displayedLang.startsWith("spa-")) {
+                actualLangIdx = multilingual::languages::lang_es;
+            } else {
+                actualLangIdx = multilingual::languages::lang_en;
+            }
+        } else {
+            actualLangIdx = langIdx;
+        }
+    }
 }

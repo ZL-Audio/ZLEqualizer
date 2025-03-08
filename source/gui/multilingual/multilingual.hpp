@@ -15,6 +15,9 @@
 #include "zh_Hans.hpp"
 #include "zh_Hant.hpp"
 #include "it.hpp"
+#include "ja.hpp"
+#include "de.hpp"
+#include "es.hpp"
 
 namespace zlInterface::multilingual {
     enum languages {
@@ -22,6 +25,10 @@ namespace zlInterface::multilingual {
         lang_en,
         lang_zh_Hans,
         lang_zh_Hant,
+        lang_it,
+        lang_ja,
+        lang_de,
+        lang_es,
         langNum
     };
 }
