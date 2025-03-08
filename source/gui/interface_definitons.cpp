@@ -331,4 +331,24 @@ namespace zlInterface {
         savePara(zlState::tooltipON::ID, zlState::tooltipON::convertTo01(static_cast<int>(tooltipON)));
         savePara(zlState::tooltipLang::ID, zlState::tooltipLang::convertTo01(langIdx));
     }
+
+    void UIBase::updateActualLangIdx() {
+        if (langIdx == multilingual::languages::lang_system) {
+            const auto displayedLang = juce::SystemStats::getDisplayLanguage();
+            // Chinese
+            if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
+                || displayedLang.startsWith("zh-")) {
+                if (displayedLang == "zh-tw" || displayedLang == "zh-TW" || displayedLang == "zh-Hant") {
+                    actualLangIdx = multilingual::languages::lang_zh_Hant;
+                } else {
+                    actualLangIdx = multilingual::languages::lang_zh_Hans;
+                }
+            } else if (displayedLang == "it" || displayedLang == "ita" ||
+                displayedLang.startsWith("it-") || displayedLang.startsWith("ita-")) {
+                actualLangIdx = multilingual::languages::lang_it;
+            }
+        } else {
+            actualLangIdx = langIdx;
+        }
+    }
 }

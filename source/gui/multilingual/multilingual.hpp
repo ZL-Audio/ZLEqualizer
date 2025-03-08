@@ -22,6 +22,7 @@ namespace zlInterface::multilingual {
         lang_en,
         lang_zh_Hans,
         lang_zh_Hant,
+        lang_it,
         langNum
     };
 }

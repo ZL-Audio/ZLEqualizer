@@ -185,20 +185,7 @@ namespace zlInterface {
         explicit UIBase(juce::AudioProcessorValueTreeState &apvts)
             : state(apvts), fontSize{0.f} {
             loadFromAPVTS();
-            if (langIdx == multilingual::languages::lang_system) {
-                const auto displayedLang = juce::SystemStats::getDisplayLanguage();
-                // Chinese
-                if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
-                    || displayedLang.startsWith("zh-")) {
-                    if (displayedLang == "zh-tw" || displayedLang == "zh-TW" || displayedLang == "zh-Hant") {
-                        actualLangIdx = multilingual::languages::lang_zh_Hant;
-                    } else {
-                        actualLangIdx = multilingual::languages::lang_zh_Hans;
-                    }
-                }
-            } else {
-                actualLangIdx = langIdx;
-            }
+            updateActualLangIdx();
         }
 
         void setFontSize(const float fSize) { fontSize = fSize; }
@@ -422,6 +409,9 @@ namespace zlInterface {
                 case multilingual::languages::lang_zh_Hant: {
                     return multilingual::zh_Hant::texts[static_cast<size_t>(label)];
                 }
+                case multilingual::languages::lang_it: {
+                    return multilingual::it::texts[static_cast<size_t>(label)];
+                }
                 case multilingual::languages::lang_system:
                 case multilingual::languages::langNum:
                 default: {
@@ -468,6 +458,8 @@ namespace zlInterface {
         bool tooltipON{true};
         multilingual::languages langIdx{multilingual::languages::lang_en};
         multilingual::languages actualLangIdx{multilingual::languages::lang_en};
+
+        void updateActualLangIdx();
     };
 }
 

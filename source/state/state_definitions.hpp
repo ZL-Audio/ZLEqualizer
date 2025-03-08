@@ -485,7 +485,8 @@ namespace zlState {
             "System",
             "English",
             juce::String(juce::CharPointer_UTF8("简体中文")),
-            juce::String(juce::CharPointer_UTF8("繁體中文"))
+            juce::String(juce::CharPointer_UTF8("繁體中文")),
+            juce::String(juce::CharPointer_UTF8("Italiano")),
         };
         int static constexpr defaultI = 0;
     };
