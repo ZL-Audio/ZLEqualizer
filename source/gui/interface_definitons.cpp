@@ -346,6 +346,11 @@ namespace zlInterface {
             } else if (displayedLang == "it" || displayedLang == "ita" ||
                 displayedLang.startsWith("it-") || displayedLang.startsWith("ita-")) {
                 actualLangIdx = multilingual::languages::lang_it;
+            } else if (displayedLang == "ja" || displayedLang == "jpn" ||
+                displayedLang.startsWith("ja-") || displayedLang.startsWith("jpn-")) {
+                actualLangIdx = multilingual::languages::lang_ja;
+            } else {
+                actualLangIdx = multilingual::languages::lang_en;
             }
         } else {
             actualLangIdx = langIdx;
