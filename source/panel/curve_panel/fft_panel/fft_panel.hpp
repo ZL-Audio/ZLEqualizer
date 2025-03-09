@@ -26,7 +26,7 @@ namespace zlPanel {
 
         void resized() override;
 
-        void updatePaths();
+        void updatePaths(float physicalPixelScaleFactor);
 
         void visibilityChanged() override;
 
@@ -37,11 +37,12 @@ namespace zlPanel {
     private:
         zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
         zlInterface::UIBase &uiBase;
-        juce::Path path1{}, path2{}, path3{};
-        juce::Path recentPath1{}, recentPath2{}, recentPath3{};
+        juce::Path prePath{}, postPath{}, postStrokePath{}, sidePath{};
+        juce::Path recentPrePath{}, recentPostPath{}, recentPostStrokePath{}, recentSidePath{};
         juce::SpinLock pathLock;
         AtomicPoint leftCorner, rightCorner;
         AtomicBound atomicBound;
+        std::atomic<float> curveThickness{0.f};
         std::atomic<bool> firstPath = true;
         std::atomic<float> minimumFFTDB{-72.f};
     };

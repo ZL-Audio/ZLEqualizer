@@ -91,7 +91,7 @@ namespace zlPanel {
                 uiBase.saveToAPVTS();
             }
             peer->setCurrentRenderingEngine(renderEngineIdx);
-            // curvePanel.setIsHardware(peer->getCurrentRenderingEngine() == 1);
+            uiBase.setIsRenderingHardware(!rendererList[renderEngineIdx].contains("Software"));
         }
     }
 

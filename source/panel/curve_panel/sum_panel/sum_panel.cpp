@@ -49,14 +49,26 @@ namespace zlPanel {
                 useLRMS[idx] = true;
             }
         }
-        for (size_t j = 0; j < useLRMS.size(); ++j) {
-            if (!useLRMS[j]) { continue; }
-            g.setColour(colours[j]);
-            const juce::GenericScopedTryLock lock(pathLocks[j]);
-            if (lock.isLocked()) {
-                g.strokePath(recentPaths[j], juce::PathStrokeType(
-                                 uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness(),
-                                 juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        if (uiBase.getIsRenderingHardware()) {
+            const auto currentThickness = curveThickness.load();
+            for (size_t j = 0; j < useLRMS.size(); ++j) {
+                if (!useLRMS[j]) { continue; }
+                g.setColour(colours[j]);
+                const juce::GenericScopedTryLock lock(pathLocks[j]);
+                if (lock.isLocked()) {
+                    g.strokePath(recentPaths[j], juce::PathStrokeType(
+                                     currentThickness,
+                                     juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+                }
+            }
+        } else {
+            for (size_t j = 0; j < useLRMS.size(); ++j) {
+                if (!useLRMS[j]) { continue; }
+                g.setColour(colours[j]);
+                const juce::GenericScopedTryLock lock(pathLocks[j]);
+                if (lock.isLocked()) {
+                    g.fillPath(recentPaths[j]);
+                }
             }
         }
     }
@@ -73,8 +85,9 @@ namespace zlPanel {
         return false;
     }
 
-    void SumPanel::run() {
+    void SumPanel::run(const float physicalPixelScaleFactor) {
         juce::ScopedNoDenormals noDenormals;
+        const auto isHardware = uiBase.getIsRenderingHardware();
         std::array<bool, 5> useLRMS{false, false, false, false, false};
         for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
             const auto idx = static_cast<size_t>(lrTypes[i].load());
@@ -101,10 +114,23 @@ namespace zlPanel {
             }
 
             drawCurve(paths[j], dBs, maximumDB.load(), atomicBound.load(), false, true);
+            if (!isHardware) {
+                juce::PathStrokeType stroke{
+                    curveThickness.load(), juce::PathStrokeType::curved, juce::PathStrokeType::rounded
+                };
+                stroke.createStrokedPath(strokePaths[j], paths[j], {}, physicalPixelScaleFactor);
+            }
         }
-        for (size_t j = 0; j < useLRMS.size(); ++j) {
-            juce::GenericScopedLock lock(pathLocks[j]);
-            recentPaths[j] = paths[j];
+        if (isHardware) {
+            for (size_t j = 0; j < useLRMS.size(); ++j) {
+                juce::GenericScopedLock lock(pathLocks[j]);
+                recentPaths[j] = paths[j];
+            }
+        } else {
+            for (size_t j = 0; j < useLRMS.size(); ++j) {
+                juce::GenericScopedLock lock(pathLocks[j]);
+                recentPaths[j] = strokePaths[j];
+            }
         }
     }
 
@@ -125,11 +151,17 @@ namespace zlPanel {
             bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize()
         });
         toRepaint.store(true);
+        updateCurveThickness();
     }
 
     void SumPanel::lookAndFeelChanged() {
         for (size_t j = 0; j < colours.size(); ++j) {
             colours[j] = uiBase.getColorMap2(j);
         }
+        updateCurveThickness();
+    }
+
+    void SumPanel::updateCurveThickness() {
+        curveThickness.store(uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness());
     }
 } // zlPanel
