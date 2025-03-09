@@ -78,6 +78,7 @@ namespace zlPanel {
 
     void OtherUISettingPanel::loadSetting() {
         renderingEngineBox.getBox().setSelectedId(static_cast<int>(uiBase.getRenderingEngine()) + 1);
+        DBG(uiBase.getRenderingEngine() + 1);
         refreshRateBox.getBox().setSelectedId(static_cast<int>(uiBase.getRefreshRateID()) + 1);
         fftTiltSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraTilt()));
         fftSpeedSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraSpeed()));
@@ -114,7 +115,7 @@ namespace zlPanel {
             auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
             renderingEngineLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.6f;
             renderingEngineBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
             bound.removeFromTop(uiBase.getFontSize());
@@ -166,6 +167,16 @@ namespace zlPanel {
             tooltipONBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
             localBound.removeFromLeft(uiBase.getFontSize() * 3.f);
             tooltipLangBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
+        }
+    }
+
+    void OtherUISettingPanel::setRendererList(const juce::StringArray &rendererList) {
+        auto idx = renderingEngineBox.getBox().getSelectedItemIndex();
+        renderingEngineBox.getBox().clear();
+        renderingEngineBox.getBox().addItemList(rendererList, 1);
+        if (idx >= 0) {
+            idx = std::min(idx, renderingEngineBox.getBox().getNumItems() - 1);
+            renderingEngineBox.getBox().setSelectedItemIndex(idx);
         }
     }
 } // zlPanel

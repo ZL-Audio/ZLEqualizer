@@ -19,7 +19,8 @@
 
 namespace zlPanel {
     class SinglePanel final : public juce::Component,
-                              private juce::AudioProcessorValueTreeState::Listener {
+                              private juce::AudioProcessorValueTreeState::Listener,
+                              private juce::AsyncUpdater {
     public:
         explicit SinglePanel(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
@@ -53,12 +54,12 @@ namespace zlPanel {
                 static_cast<float>(currentTargetGain.load() * x))));
         }
 
-        void run();
+        void run(float physicalPixelScaleFactor);
 
         void lookAndFeelChanged() override;
 
     private:
-        juce::Path curvePath, shadowPath, dynPath;
+        juce::Path curvePath, strokePath, shadowPath, dynPath;
         juce::Path recentCurvePath, recentShadowPath, recentDynPath;
         juce::SpinLock curveLock, shadowLock, dynLock;
 
@@ -73,6 +74,7 @@ namespace zlPanel {
         std::atomic<float> maximumDB;
         AtomicBound atomicBound;
         AtomicPoint atomicBottomLeft, atomicBottomRight;
+        std::atomic<float> curveThickness{0.f};
 
         std::atomic<bool> skipRepaint{false};
         std::atomic<bool> toRepaint{false};
@@ -96,6 +98,8 @@ namespace zlPanel {
         juce::Colour colour;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void handleAsyncUpdate() override;
     };
 } // zlPanel
 

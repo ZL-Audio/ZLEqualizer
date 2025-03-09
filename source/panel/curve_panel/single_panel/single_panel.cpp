@@ -69,15 +69,18 @@ namespace zlPanel {
         if (!active.load()) {
             return;
         }
-        auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
-        thickness *= uiBase.getSingleCurveThickness();
-        g.setColour(colour);
         // draw curve
         {
+            g.setColour(colour);
             const juce::GenericScopedTryLock lock(curveLock);
             if (lock.isLocked()) {
-                g.strokePath(recentCurvePath, juce::PathStrokeType(thickness, juce::PathStrokeType::curved,
-                                                                   juce::PathStrokeType::rounded));
+                if (uiBase.getIsRenderingHardware()) {
+                    g.strokePath(recentCurvePath, juce::PathStrokeType(curveThickness.load(),
+                                                                       juce::PathStrokeType::curved,
+                                                                       juce::PathStrokeType::rounded));
+                } else {
+                    g.fillPath(recentCurvePath);
+                }
             }
         }
         // draw shadow
@@ -145,6 +148,7 @@ namespace zlPanel {
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
         atomicBound.store(bound);
         toRepaint.store(true);
+        handleAsyncUpdate();
     }
 
     bool SinglePanel::willRepaint() const {
@@ -164,6 +168,7 @@ namespace zlPanel {
     void SinglePanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
             selected.store(static_cast<size_t>(newValue) == idx);
+            if (!uiBase.getIsRenderingHardware()) triggerAsyncUpdate();
         } else {
             if (parameterID.startsWith(zlState::active::ID)) {
                 active.store(newValue > .5f);
@@ -201,7 +206,7 @@ namespace zlPanel {
         toRepaint.store(true);
     }
 
-    void SinglePanel::run() {
+    void SinglePanel::run(const float physicalPixelScaleFactor) {
         juce::ScopedNoDenormals noDenormals;
         const auto bound = atomicBound.load();
         const auto bottomLeft = atomicBottomLeft.load();
@@ -218,8 +223,16 @@ namespace zlPanel {
             } else {
                 centeredDB.store(0.f);
             }
-            juce::GenericScopedLock lock(curveLock);
-            recentCurvePath = curvePath;
+            if (uiBase.getIsRenderingHardware()) {
+                juce::GenericScopedLock lock(curveLock);
+                recentCurvePath = curvePath;
+            } else {
+                juce::PathStrokeType stroke(curveThickness.load(), juce::PathStrokeType::curved,
+                                            juce::PathStrokeType::rounded);
+                stroke.createStrokedPath(strokePath, curvePath, {}, physicalPixelScaleFactor);
+                juce::GenericScopedLock lock(curveLock);
+                recentCurvePath = strokePath;
+            }
         }
         // draw shadow
         {
@@ -269,5 +282,12 @@ namespace zlPanel {
 
     void SinglePanel::lookAndFeelChanged() {
         colour = uiBase.getColorMap1(idx);
+        handleAsyncUpdate();
+    }
+
+    void SinglePanel::handleAsyncUpdate() {
+        auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
+        thickness *= uiBase.getSingleCurveThickness();
+        curveThickness.store(thickness);
     }
 } // zlPanel

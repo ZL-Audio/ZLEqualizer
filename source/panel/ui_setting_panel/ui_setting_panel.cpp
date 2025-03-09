@@ -185,4 +185,8 @@ namespace zlPanel {
     void UISettingPanel::visibilityChanged() {
         uiBase.setProperty(zlInterface::settingIdx::uiSettingPanelShow, isVisible());
     }
+
+    void UISettingPanel::setRendererList(const juce::StringArray &rendererList) {
+        otherPanel.setRendererList(rendererList);
+    }
 } // zlPanel

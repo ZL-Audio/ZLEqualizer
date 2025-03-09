@@ -23,24 +23,29 @@ namespace zlPanel {
     void FFTPanel::paint(juce::Graphics &g) {
         juce::GenericScopedTryLock lock{pathLock};
         if (!lock.isLocked()) { return; }
-        if (analyzerRef.getPreON() && !recentPath1.isEmpty()) {
+        if (analyzerRef.getPreON() && !recentPrePath.isEmpty()) {
             g.setColour(uiBase.getColourByIdx(zlInterface::preColour));
-            g.fillPath(recentPath1);
+            g.fillPath(recentPrePath);
         }
-
-        if (analyzerRef.getPostON() && !recentPath2.isEmpty()) {
+        if (analyzerRef.getPostON() && !recentPostPath.isEmpty()) {
             g.setColour(uiBase.getTextColor().withAlpha(0.5f));
-            const auto thickness = uiBase.getFontSize() * 0.1f;
-            g.strokePath(recentPath2,
-                         juce::PathStrokeType(thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+            if (uiBase.getIsRenderingHardware()) {
+                g.strokePath(recentPostPath, juce::PathStrokeType{
+                                 curveThickness.load(),
+                                 juce::PathStrokeType::curved,
+                                 juce::PathStrokeType::rounded
+                             });
+            } else {
+                g.fillPath(recentPostStrokePath);
+            }
 
             g.setColour(uiBase.getColourByIdx(zlInterface::postColour));
-            g.fillPath(recentPath2);
+            g.fillPath(recentPostPath);
         }
 
-        if (analyzerRef.getSideON() && !recentPath3.isEmpty()) {
+        if (analyzerRef.getSideON() && !recentSidePath.isEmpty()) {
             g.setColour(uiBase.getColourByIdx(zlInterface::sideColour));
-            g.fillPath(recentPath3);
+            g.fillPath(recentSidePath);
         }
     }
 
@@ -49,24 +54,36 @@ namespace zlPanel {
         leftCorner.store({bound.getX() * 0.9f, bound.getBottom() * 1.1f});
         rightCorner.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
         atomicBound.store(bound);
+        curveThickness.store(uiBase.getFontSize() * 0.1f);
     }
 
-    void FFTPanel::updatePaths() {
-        analyzerRef.updatePaths(path1, path2, path3, atomicBound.load(), minimumFFTDB.load());
-        for (auto &path: {&path1, &path2, &path3}) {
+    void FFTPanel::updatePaths(const float physicalPixelScaleFactor) {
+        analyzerRef.updatePaths(prePath, postPath, sidePath, atomicBound.load(), minimumFFTDB.load());
+        for (auto &path: {&prePath, &postPath, &sidePath}) {
             if (!path->isEmpty()) {
                 path->lineTo(rightCorner.load());
                 path->lineTo(leftCorner.load());
                 path->closeSubPath();
             }
         } {
-            juce::GenericScopedLock lock{pathLock};
-            recentPath1 = path1;
-            recentPath2 = path2;
+            if (uiBase.getIsRenderingHardware()) {
+                juce::GenericScopedLock lock{pathLock};
+                recentPrePath = prePath;
+                recentPostPath = postPath;
+            } else {
+                juce::PathStrokeType stroke{
+                    curveThickness.load(), juce::PathStrokeType::curved, juce::PathStrokeType::rounded
+                };
+                stroke.createStrokedPath(postStrokePath, postPath, {}, physicalPixelScaleFactor);
+                juce::GenericScopedLock lock{pathLock};
+                recentPrePath = prePath;
+                recentPostPath = postPath;
+                recentPostStrokePath = postStrokePath;
+            }
         }
         if (analyzerRef.getSideON()) {
             juce::GenericScopedLock lock{pathLock};
-            recentPath3 = path3;
+            recentSidePath = sidePath;
         }
     }
 

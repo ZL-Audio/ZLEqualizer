@@ -23,7 +23,6 @@ namespace zlPanel {
           loudnessDisplay(processorRef, base),
           buttonPanel(processorRef, base),
           soloPanel(parametersRef, parametersNARef, base, controllerRef, buttonPanel),
-          cacheComponent(),
           matchPanel(processor.getController().getMatchAnalyzer(), parametersNARef, base),
           currentT(juce::Time::getCurrentTime()),
           vblank(this, [this]() { repaintCallBack(); }) {
@@ -36,13 +35,9 @@ namespace zlPanel {
         addAndMakeVisible(backgroundPanel, 0);
         addAndMakeVisible(fftPanel, 1);
         addAndMakeVisible(conflictPanel, 2);
-        // addAndMakeVisible(cacheComponent, 3);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
-        // for (size_t i = 0; i < zlState::bandNUM; ++i) {
-        //     repaintCounts[i].store(1000);
-        // }
         addAndMakeVisible(dummyComponent, 4);
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
             const auto i = idx;
@@ -87,6 +82,9 @@ namespace zlPanel {
 
     void CurvePanel::paint(juce::Graphics &g) {
         juce::ignoreUnused(g);
+        if (!uiBase.getIsRenderingHardware()) {
+            physicalPixelScaleFactor.store(g.getInternalContext().getPhysicalPixelScaleFactor());
+        }
     }
 
     void CurvePanel::paintOverChildren(juce::Graphics &g) {
@@ -102,7 +100,6 @@ namespace zlPanel {
         backgroundPanel.setBounds(bound);
         fftPanel.setBounds(bound);
         conflictPanel.setBounds(bound);
-        // cacheComponent.setBounds(bound);
         dummyComponent.setBounds(bound);
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound);
@@ -169,16 +166,6 @@ namespace zlPanel {
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
             singlePanels[currentBandIdx.load()]->toFront(false);
-            // const auto refreshRate = static_cast<int>(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
-            // for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            //     if (repaintCounts[i].load() > refreshRate && !isCached[i] && isHardware) {
-            //         isCached[i] = true;
-            //         cacheComponent.addAndMakeVisible(singlePanels[i].get());
-            //     } else if (repaintCounts[i].load() < refreshRate && isCached[i]) {
-            //         isCached[i] = false;
-            //         dummyComponent.addAndMakeVisible(singlePanels[i].get());
-            //     }
-            // }
             for (const auto &panel: sidePanels) {
                 panel->updateDragger();
             }
@@ -198,22 +185,17 @@ namespace zlPanel {
         while (!threadShouldExit()) {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
+            const auto factor = physicalPixelScaleFactor.load();
             const auto &analyzer = controllerRef.getAnalyzer();
             if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
-                fftPanel.updatePaths();
+                fftPanel.updatePaths(factor);
             }
-            // const auto refreshRate = static_cast<int>(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
                 if (singlePanels[i]->checkRepaint()) {
-                    singlePanels[i]->run();
-                    // repaintCounts[i].store(0);
+                    singlePanels[i]->run(factor);
                 }
-                // } else {
-                //     repaintCounts[i].store(std::min(refreshRate + 1, repaintCounts[i].load() + 1));
-                // }
             }
-            // repaintCounts[currentBandIdx.load()].store(0);
-            sumPanel.run();
+            sumPanel.run(factor);
             if (showMatchPanel.load()) {
                 matchPanel.updatePaths();
             }

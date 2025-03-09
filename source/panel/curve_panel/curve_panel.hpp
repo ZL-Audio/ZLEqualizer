@@ -26,14 +26,8 @@
 namespace zlPanel {
     class DummyComponent final : public juce::Component {
     public:
-        DummyComponent() = default;
-    };
-
-    class CacheComponent final : public juce::Component {
-    public:
-        CacheComponent() {
+        DummyComponent() {
             setInterceptsMouseClicks(false, false);
-            setBufferedToImage(true);
         }
     };
 
@@ -53,10 +47,6 @@ namespace zlPanel {
 
         void resized() override;
 
-        // void setIsHardware(const bool x) {
-        //     isHardware = x;
-        // }
-
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -72,10 +62,7 @@ namespace zlPanel {
         SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
         std::array<std::unique_ptr<SidePanel>, zlState::bandNUM> sidePanels;
-        CacheComponent cacheComponent;
         DummyComponent dummyComponent{};
-        std::array<std::atomic<int>, zlState::bandNUM> repaintCounts{};
-        // std::array<bool, zlState::bandNUM> isCached{};
         std::atomic<size_t> currentBandIdx;
         MatchPanel matchPanel;
         juce::Time currentT;
@@ -85,7 +72,7 @@ namespace zlPanel {
         std::atomic<bool> showMatchPanel{false};
         bool showUISettingsPanel{false};
 
-        // bool isHardware{false};
+        std::atomic<float> physicalPixelScaleFactor{1.f};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

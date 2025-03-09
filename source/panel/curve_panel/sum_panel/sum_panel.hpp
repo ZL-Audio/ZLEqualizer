@@ -39,12 +39,12 @@ namespace zlPanel {
 
         void resized() override;
 
-        void run();
+        void run(float physicalPixelScaleFactor);
 
         void lookAndFeelChanged() override;
 
     private:
-        std::array<juce::Path, 5> paths, recentPaths;
+        std::array<juce::Path, 5> paths, recentPaths, strokePaths;
         std::array<juce::SpinLock, 5> pathLocks;
         std::array<juce::Colour, 5> colours;
         juce::AudioProcessorValueTreeState &parametersRef;
@@ -54,6 +54,7 @@ namespace zlPanel {
         std::atomic<float> maximumDB;
         std::vector<double> dBs{};
         AtomicBound atomicBound;
+        std::atomic<float> curveThickness{0.f};
 
         static constexpr std::array changeIDs{
             zlDSP::bypass::ID, zlDSP::lrType::ID
@@ -65,6 +66,8 @@ namespace zlPanel {
         std::atomic<bool> toRepaint{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        void updateCurveThickness();
     };
 } // zlPanel
 

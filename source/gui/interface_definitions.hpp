@@ -429,6 +429,10 @@ namespace zlInterface {
             }
         }
 
+        void setIsRenderingHardware(const bool x) { isRenderingHardware.store(x); }
+
+        bool getIsRenderingHardware() const { return isRenderingHardware.load(); }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         juce::ValueTree valueTree{"ui_setting"};
@@ -447,6 +451,7 @@ namespace zlInterface {
         std::atomic<int> defaultPassFilterSlope{1};
         std::atomic<bool> dynLink{true};
         std::atomic<int> renderingEngine{1};
+        std::atomic<bool> isRenderingHardware{true};
 
         float loadPara(const std::string &id) const {
             return state.getRawParameterValue(id)->load();
