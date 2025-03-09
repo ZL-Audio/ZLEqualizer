@@ -74,7 +74,7 @@ namespace zlInterface::multilingual::it {
         "Filtri Peak/Shelf in parallelo. La risposta complessiva differisce dalla curva visualizzata. Adatta per la modulazione.",
         "Filtro a Fase Minima con correzioni aggiuntive. La risposta è quasi identica al prototipo analogico. NON adatta per la modulazione.",
         "Filtro a Fase Minima con correzioni aggiuntive. Ha una risposta in ampiezza simile al prototipo analogico e un minore sfasamento alle alte frequenze. NON adatta per la modulazione.",
-        "Filtro a Fase Nulla con risposta in ampiezza analoga al prototipo analogico. NON adatto per la modulazione. L'effetto dinamico non funziona.",
+        "Filtro a Fase Lineare con risposta in ampiezza analoga al prototipo analogico. NON adatto per la modulazione. L'effetto dinamico non funziona.",
         "Doppio clic: apri le impostazioni dell'interfaccia utente (UI Settings)."
     };
 }
