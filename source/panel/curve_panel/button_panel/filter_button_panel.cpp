@@ -187,7 +187,6 @@ namespace zlPanel {
         targetDragger.repaint();
         sideDragger.repaint();
         buttonPopUp.componentMovedOrResized(dragger.getButton(), true, true);
-        buttonPopUp.repaint();
     }
 
     void FilterButtonPanel::updateAttachment() {

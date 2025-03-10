@@ -24,13 +24,6 @@
 #include "loudness_display/loudness_display.hpp"
 
 namespace zlPanel {
-    class DummyComponent final : public juce::Component {
-    public:
-        DummyComponent() {
-            setInterceptsMouseClicks(false, false);
-        }
-    };
-
     class CurvePanel final : public juce::Component,
                              private juce::AudioProcessorValueTreeState::Listener,
                              private juce::ValueTree::Listener,
@@ -62,7 +55,7 @@ namespace zlPanel {
         SoloPanel soloPanel;
         std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
         std::array<std::unique_ptr<SidePanel>, zlState::bandNUM> sidePanels;
-        DummyComponent dummyComponent{};
+        juce::Component dummyComponent{};
         std::atomic<size_t> currentBandIdx;
         MatchPanel matchPanel;
         juce::Time currentT;

@@ -13,49 +13,39 @@
 #include "../../../gui/gui.hpp"
 #include "../../../state/state.hpp"
 #include "../../panel_definitons.hpp"
-#include "button_pop_up_background.hpp"
 
 namespace zlPanel {
-    class ButtonPopUp final : public juce::Component,
-                              public juce::ComponentListener {
-    public:
-        explicit ButtonPopUp(size_t bandIdx,
+
+class ButtonPopUpBackground: public juce::Component {
+public:
+        explicit ButtonPopUpBackground(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
                              zlInterface::UIBase &base);
 
-        ~ButtonPopUp() override;
+        ~ButtonPopUpBackground() override = default;
 
-        void updateBounds() {
-            if (toUpdateBounds == true) {
-                toUpdateBounds = false;
-                handleAsyncUpdate();
-                setBounds(popUpBound.toNearestInt());
-            }
-        }
+        void paint(juce::Graphics &g) override;
 
         void resized() override;
-
-        void componentMovedOrResized(Component &component, bool wasMoved, bool wasResized) override;
-
-        void setFType(const zlFilter::FilterType f) {
-            fType.store(f);
-        }
 
     private:
         size_t band;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
 
-        juce::RangedAudioParameter *freqPara;
-
-        static constexpr float width{7.7916666f}, height{4.16667f};
+        std::atomic<float> width{7.7916666f}, height{4.16667f};
         std::atomic<zlFilter::FilterType> fType;
 
-        ButtonPopUpBackground background;
+        zlInterface::CompactButton bypassC, soloC;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
+        const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable;
 
-        juce::Label pitchLabel;
-        zlInterface::NameLookAndFeel pitchLAF;
+        zlInterface::CompactCombobox fTypeC;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
+
+        const std::unique_ptr<juce::Drawable> drawable;
+        zlInterface::ClickButton button;
 
         static constexpr std::array pitchLookUp{
             "A", "A#", "B", "C",
@@ -63,9 +53,10 @@ namespace zlPanel {
             "F", "F#", "G", "G#"
         };
 
-        void handleAsyncUpdate();
+        std::atomic<float> freq{1000.f};
 
-        bool toUpdateBounds{false};
+        std::atomic<bool> toUpdateBounds{false};
         juce::Rectangle<float> popUpBound;
-    };
+};
+
 } // zlPanel
