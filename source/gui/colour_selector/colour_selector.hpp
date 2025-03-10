@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_COLOUR_SELECTOR_H
-#define ZL_COLOUR_SELECTOR_H
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_gui_extra/juce_gui_extra.h>
@@ -51,5 +50,3 @@ namespace zlInterface {
         juce::Colour colour = juce::Colours::red;
     };
 } // zlInterface
-
-#endif //ZL_COLOUR_SELECTOR_H

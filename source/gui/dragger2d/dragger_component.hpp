@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLTest_DRAGGER_COMPONENT_HPP
-#define ZLTest_DRAGGER_COMPONENT_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -45,9 +44,9 @@ namespace zlInterface {
 
         float getYPortion() const;
 
-        void setScale(const float x) {scale.store(x);}
+        void setScale(const float x) { scale.store(x); }
 
-        float getScale() const {return scale.load();}
+        float getScale() const { return scale.load(); }
 
         class Listener {
         public:
@@ -76,7 +75,7 @@ namespace zlInterface {
 
         void setActive(const bool f) { draggerLAF.setActive(f); }
 
-        DraggerLookAndFeel &getLAF() {return draggerLAF;}
+        DraggerLookAndFeel &getLAF() { return draggerLAF; }
 
         void setXYEnabled(const bool x, const bool y) {
             xEnabled = x;
@@ -99,11 +98,9 @@ namespace zlInterface {
         std::atomic<float> xPortion, yPortion;
 
         juce::Rectangle<float> buttonArea;
-        float lPadding {0.f}, rPadding {0.f}, uPadding {0.f}, bPadding {0.f};
-        std::atomic<float> scale {1.f};
+        float lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, bPadding{0.f};
+        std::atomic<float> scale{1.f};
 
         juce::ListenerList<Listener> listeners;
     };
 } // zlInterface
-
-#endif //ZLTest_DRAGGER_COMPONENT_HPP

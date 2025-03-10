@@ -7,10 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQMATCH_EQ_MATCH_HPP
-#define ZLEQMATCH_EQ_MATCH_HPP
+#pragma once
 
 #include "eq_match_analyzer.hpp"
 #include "eq_match_optimizer.hpp"
-
-#endif //ZLEQMATCH_EQ_MATCH_HPP

@@ -7,11 +7,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_LOUDNESS_HPP
-#define ZL_LOUDNESS_HPP
+#pragma once
 
 #include "k_weighting_filter.hpp"
 #include "lufs_meter.hpp"
 #include "lufs_matcher.hpp"
-
-#endif //ZL_LOUDNESS_HPP

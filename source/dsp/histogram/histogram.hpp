@@ -7,10 +7,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLHISTOGRAM_HPP
-#define ZLHISTOGRAM_HPP
+#pragma once
 
 #include "atomic_histogram.hpp"
 #include "simple_histogram.hpp"
 
-#endif //ZLHISTOGRAM_HPP
+

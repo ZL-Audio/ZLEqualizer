@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_SUM_PANEL_HPP
-#define ZLEqualizer_SUM_PANEL_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -70,5 +69,3 @@ namespace zlPanel {
         void updateCurveThickness();
     };
 } // zlPanel
-
-#endif //ZLEqualizer_SUM_PANEL_HPP

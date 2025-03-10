@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLCompressor. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_COMPRESSOR_KNEE_COMPUTER_HPP
-#define ZL_COMPRESSOR_KNEE_COMPUTER_HPP
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -64,7 +63,7 @@ namespace zlCompressor {
             }
         }
 
-        FloatType eval(FloatType x)  {
+        FloatType eval(FloatType x) {
             if (x <= lowThres) {
                 return x;
             } else if (x >= highThres) {
@@ -82,7 +81,7 @@ namespace zlCompressor {
          * @param x input level (in dB)
          * @return current compression (in dB)
          */
-        FloatType process(FloatType x)  {
+        FloatType process(FloatType x) {
             return eval(x) - x;
         }
 
@@ -173,5 +172,3 @@ namespace zlCompressor {
         }
     };
 } // KneeComputer
-
-#endif //ZL_COMPRESSOR_KNEE_COMPUTER_HPP

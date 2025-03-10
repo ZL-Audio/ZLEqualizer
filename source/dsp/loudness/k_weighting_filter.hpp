@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_LOUDNESS_K_WEIGHTING_FILTER_HPP
-#define ZL_LOUDNESS_K_WEIGHTING_FILTER_HPP
+#pragma once
 
 #include "../filter/filter.hpp"
 
@@ -64,5 +63,3 @@ namespace zlLoudness {
         static constexpr FloatType bias = FloatType(1.0051643348917434);
     };
 }
-
-#endif //ZL_LOUDNESS_K_WEIGHTING_FILTER_HPP

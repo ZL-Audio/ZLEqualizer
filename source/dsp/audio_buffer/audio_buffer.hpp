@@ -7,10 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_AUDIO_BUFFER_HPP
-#define ZLEQUALIZER_AUDIO_BUFFER_HPP
+#pragma once
 
 #include "fifo_audio_buffer.hpp"
 #include "fixed_audio_buffer.hpp"
-
-#endif //ZLEQUALIZER_AUDIO_BUFFER_HPP

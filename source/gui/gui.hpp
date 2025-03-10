@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_GUI_H
-#define ZL_GUI_H
+#pragma once
 
 #include "interface_definitions.hpp"
 #include "button/button.hpp"
@@ -20,5 +19,3 @@
 #include "colour_selector/colour_opacity_selector.hpp"
 #include "colour_selector/colour_map_selector.hpp"
 #include "tooltip/tooltip.hpp"
-
-#endif //ZL_GUI_H

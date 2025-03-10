@@ -7,11 +7,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLINTERFACE_BUTTON_H
-#define ZLINTERFACE_BUTTON_H
+#pragma once
 
 #include "compact_button/compact_button.hpp"
 #include "click_button/click_button.hpp"
 #include "button_attachment.hpp"
-
-#endif //ZLINTERFACE_BUTTON_H

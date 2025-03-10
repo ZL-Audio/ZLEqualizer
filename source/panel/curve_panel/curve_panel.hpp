@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_CURVE_PANEL_HPP
-#define ZLPANEL_CURVE_PANEL_HPP
+#pragma once
 
 #include "../../PluginProcessor.hpp"
 #include "../../dsp/dsp.hpp"
@@ -77,6 +76,3 @@ namespace zlPanel {
         void run() override;
     };
 }
-
-
-#endif //ZLPANEL_CURVE_PANEL_HPP

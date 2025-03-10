@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_STATE_PANEL_HPP
-#define ZLEqualizer_STATE_PANEL_HPP
+#pragma once
 
 #include "../../PluginProcessor.hpp"
 #include "../ui_setting_panel/ui_setting_panel.hpp"
@@ -48,5 +47,3 @@ namespace zlPanel {
         const std::unique_ptr<juce::Drawable> sgcDrawable;
     };
 } // zlPanel
-
-#endif //ZLEqualizer_STATE_PANEL_HPP

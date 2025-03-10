@@ -7,10 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_IIR_FILTER_HPP
-#define ZLEQUALIZER_IIR_FILTER_HPP
+#pragma once
 
 #include "single_filter.hpp"
 #include "single_idle_filter.hpp"
-
-#endif //ZLEQUALIZER_IIR_FILTER_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef MATCH_CONTROL_PANEL_HPP
-#define MATCH_CONTROL_PANEL_HPP
+#pragma once
 
 #include "BinaryData.h"
 
@@ -62,5 +61,3 @@ namespace zlPanel {
         void saveToPreset();
     };
 } // zlPanel
-
-#endif //MATCH_CONTROL_PANEL_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_MS_SPLITTER_HPP
-#define ZLEQUALIZER_MS_SPLITTER_HPP
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -31,21 +30,19 @@ namespace zlSplitter {
          * split the audio buffer into internal mid buffer and side buffer
          * @param buffer
          */
-        void split(juce::AudioBuffer <FloatType> &buffer);
+        void split(juce::AudioBuffer<FloatType> &buffer);
 
         /**
          * combine the internal mid buffer and side buffer into the audio buffer
          * @param buffer
          */
-        void combine(juce::AudioBuffer <FloatType> &buffer);
+        void combine(juce::AudioBuffer<FloatType> &buffer);
 
         inline juce::AudioBuffer<FloatType> &getMBuffer() { return mBuffer; }
 
         inline juce::AudioBuffer<FloatType> &getSBuffer() { return sBuffer; }
 
     private:
-        juce::AudioBuffer <FloatType> mBuffer, sBuffer;
+        juce::AudioBuffer<FloatType> mBuffer, sBuffer;
     };
 }
-
-#endif //ZLEQUALIZER_MS_SPLITTER_HPP

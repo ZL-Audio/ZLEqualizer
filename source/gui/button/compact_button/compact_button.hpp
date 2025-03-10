@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef COMPACT_BUTTON_H
-#define COMPACT_BUTTON_H
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <friz/friz.h>
@@ -60,6 +59,3 @@ namespace zlInterface {
         friz::Animator animator;
     };
 }
-
-
-#endif //COMPACT_BUTTON_H

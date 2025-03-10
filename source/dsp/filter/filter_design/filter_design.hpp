@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef FILTER_DESIGN_HPP
-#define FILTER_DESIGN_HPP
+#pragma once
 
 #include "../helpers.hpp"
 
@@ -206,5 +205,3 @@ namespace zlFilter::FilterDesign {
         }
     }
 }
-
-#endif //FILTER_DESIGN_HPP

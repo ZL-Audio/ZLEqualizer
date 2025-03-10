@@ -7,10 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLCHORE_HPP
-#define ZLCHORE_HPP
+#pragma once
 
 #include "para_updater.hpp"
 #include "smoothed_value.hpp"
-
-#endif //ZLCHORE_HPP

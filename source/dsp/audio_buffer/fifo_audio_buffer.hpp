@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLECOMP_FIFOAUDIOBUFFER_H
-#define ZLECOMP_FIFOAUDIOBUFFER_H
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -54,5 +53,3 @@ namespace zlAudioBuffer {
         juce::AudioBuffer<FloatType> buffer;
     };
 }
-
-#endif //ZLECOMP_FIFOAUDIOBUFFER_H

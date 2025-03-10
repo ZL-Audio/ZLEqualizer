@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef MATCH_RUNNER_HPP
-#define MATCH_RUNNER_HPP
+#pragma once
 
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
@@ -76,5 +75,3 @@ namespace zlPanel {
         static constexpr double mseRelThreshold = 1.f / 30.f;
     };
 } // zlPanel
-
-#endif //MATCH_RUNNER_HPP

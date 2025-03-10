@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_CONTAINER_FIXED_MAX_SIZE_ARRAY_HPP
-#define ZL_CONTAINER_FIXED_MAX_SIZE_ARRAY_HPP
+#pragma once
 
 #include <array>
 
@@ -59,5 +58,3 @@ namespace zlContainer {
         size_t mSize = 0;
     };
 }
-
-#endif //ZL_CONTAINER_FIXED_MAX_SIZE_ARRAY_HPP

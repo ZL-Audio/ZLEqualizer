@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_FILTER_HPP
-#define ZL_FILTER_HPP
+#pragma once
 
 #include "iir_filter/iir_filter.hpp"
 #include "ideal_filter/ideal_filter.hpp"
@@ -16,5 +15,3 @@
 #include "filter_design/filter_design.hpp"
 #include "static_frequency_array.hpp"
 #include "fir_correction/fir_correction.hpp"
-
-#endif //ZL_FILTER_HPP

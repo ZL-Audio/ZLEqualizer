@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_STATIC_OMEGA_ARRAY_HPP
-#define ZLPANEL_STATIC_OMEGA_ARRAY_HPP
+#pragma once
 
 #include <array>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -304,5 +303,3 @@ namespace zlPanel {
         minimizer.finish();
     }
 }
-
-#endif //ZLPANEL_STATIC_OMEGA_ARRAY_HPP

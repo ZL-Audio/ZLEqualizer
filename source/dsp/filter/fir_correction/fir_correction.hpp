@@ -7,12 +7,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_FIR_CORRECTION_HPP
-#define ZLFILTER_FIR_CORRECTION_HPP
+#pragma once
 
 #include "correction_helper.hpp"
 #include "prototype_correction.hpp"
 #include "mixed_correction.hpp"
 #include "fir_filter.hpp"
-
-#endif //ZLFILTER_FIR_CORRECTION_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_COLOUR_MAP_SELECTOR_HPP
-#define ZL_COLOUR_MAP_SELECTOR_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../interface_definitions.hpp"
@@ -34,5 +33,3 @@ namespace zlInterface {
         void comboBoxChanged(juce::ComboBox *comboBoxThatHasChanged) override;
     };
 } // zlInterface
-
-#endif //ZL_COLOUR_MAP_SELECTOR_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_INTERFACE_TOOLTIP_LOOK_AND_FELL_HPP
-#define ZL_INTERFACE_TOOLTIP_LOOK_AND_FELL_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../interface_definitions.hpp"
@@ -67,5 +66,3 @@ namespace zlInterface {
         }
     };
 }
-
-#endif //ZL_INTERFACE_TOOLTIP_LOOK_AND_FELL_HPP

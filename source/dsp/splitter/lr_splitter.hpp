@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_LRSPLITER_H
-#define ZLEQUALIZER_LRSPLITER_H
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -47,5 +46,3 @@ namespace zlSplitter {
         juce::AudioBuffer<FloatType> lBuffer, rBuffer;
     };
 }
-
-#endif //ZLEQUALIZER_LRSPLITER_H

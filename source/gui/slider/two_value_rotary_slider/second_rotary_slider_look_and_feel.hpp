@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef TWO_VALUE_ROTARY_SLIDER_LOOK_AND_FEEL_H
-#define TWO_VALUE_ROTARY_SLIDER_LOOK_AND_FEEL_H
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -68,5 +67,3 @@ namespace zlInterface {
         UIBase *uiBase;
     };
 }
-
-#endif //TWO_VALUE_ROTARY_SLIDER_LOOK_AND_FEEL_H

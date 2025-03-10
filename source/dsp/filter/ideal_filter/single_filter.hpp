@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_IDEAL_SINGLE_FILTER_HPP
-#define ZLFILTER_IDEAL_SINGLE_FILTER_HPP
+#pragma once
 
 #include "ideal_base.hpp"
 #include "coeff/ideal_coeff.hpp"
@@ -190,5 +189,3 @@ namespace zlFilter {
         }
     };
 }
-
-#endif //ZLFILTER_IDEAL_SINGLE_FILTER_HPP

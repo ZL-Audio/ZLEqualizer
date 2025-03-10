@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef STATIC_GAIN_COMPENSATION_HPP
-#define STATIC_GAIN_COMPENSATION_HPP
+#pragma once
 
 #include <juce_dsp/juce_dsp.h>
 #include "empty_filter.hpp"
@@ -18,7 +17,8 @@ namespace zlFilter {
     class StaticGainCompensation {
     public:
         explicit StaticGainCompensation(Empty<FloatType> &filter)
-            : target(filter) {}
+            : target(filter) {
+        }
 
         FloatType getGain() {
             if (toUpdate.exchange(false)) {
@@ -125,7 +125,8 @@ namespace zlFilter {
         void update() {
             switch (target.getFilterType()) {
                 case peak: {
-                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) / FloatType(18);
+                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) /
+                                         FloatType(18);
                     const auto f = target.getFreq();
                     const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
                     const auto q = juce::jlimit(FloatType(0.1), FloatType(5), target.getQ());
@@ -133,14 +134,16 @@ namespace zlFilter {
                     break;
                 }
                 case lowShelf: {
-                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) / FloatType(18);
+                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) /
+                                         FloatType(18);
                     const auto f = target.getFreq();
                     const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
                     gainDB = (FloatType(0.88) + portion * FloatType(0.66)) * getLowShelfEstimation(f, g);
                     break;
                 }
                 case highShelf: {
-                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) / FloatType(18);
+                    const auto portion = juce::jmax(std::abs(target.getGain()) - FloatType(12), FloatType(0)) /
+                                         FloatType(18);
                     const auto f = target.getFreq();
                     const auto g = juce::jlimit(FloatType(-12), FloatType(12), target.getGain());
                     gainDB = (FloatType(0.5) + portion * FloatType(0.375)) * getHighShelfEstimation(f, g);
@@ -159,5 +162,3 @@ namespace zlFilter {
         }
     };
 } // zlIIR
-
-#endif //STATIC_GAIN_COMPENSATION_HPP

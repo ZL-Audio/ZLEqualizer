@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_CORRECTION_HELPER_HPP
-#define ZLFILTER_CORRECTION_HELPER_HPP
+#pragma once
 
 #include <cmath>
 #include <array>
@@ -17,7 +16,7 @@
 
 namespace zlFilter {
     template<typename FloatType>
-    void calculateWsForPrototype(std::vector<std::complex<FloatType>> &ws) {
+    void calculateWsForPrototype(std::vector<std::complex<FloatType> > &ws) {
         const auto delta = static_cast<FloatType>(pi) / static_cast<double>(ws.size() - 1);
         double w = 0.f;
         for (size_t i = 0; i < ws.size(); ++i) {
@@ -27,7 +26,7 @@ namespace zlFilter {
     }
 
     template<typename FloatType>
-    void calculateWsForBiquad(std::vector<std::complex<FloatType>> &ws) {
+    void calculateWsForBiquad(std::vector<std::complex<FloatType> > &ws) {
         const auto delta = static_cast<FloatType>(pi) / static_cast<double>(ws.size() - 1);
         double w = 0.f;
         for (size_t i = 0; i < ws.size(); ++i) {
@@ -36,5 +35,3 @@ namespace zlFilter {
         }
     }
 }
-
-#endif //ZLFILTER_CORRECTION_HELPER_HPP

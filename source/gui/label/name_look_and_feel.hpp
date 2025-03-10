@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_NAME_LOOK_AND_FEEL_H
-#define ZL_NAME_LOOK_AND_FEEL_H
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -61,5 +60,3 @@ namespace zlInterface {
         UIBase *uiBase;
     };
 }
-
-#endif //ZL_NAME_LOOK_AND_FEEL_H

@@ -7,13 +7,10 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_DSP_H
-#define ZLEqualizer_DSP_H
+#pragma once
 
 #include "dsp_definitions.hpp"
 #include "controller.hpp"
 #include "filters_attach.hpp"
 #include "solo_attach.hpp"
 #include "chore_attach.hpp"
-
-#endif //ZLEqualizer_DSP_H

@@ -7,9 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLHISTOGRAM_SIMPLE_HISTOGRAM_HPP
-#define ZLHISTOGRAM_SIMPLE_HISTOGRAM_HPP
-#include <juce_dsp/juce_dsp.h>
+#pragma once
 
 namespace zlHistogram {
     template<typename FloatType, size_t Size>
@@ -65,4 +63,3 @@ namespace zlHistogram {
         FloatType decayRate{FloatType(0.9997697679981565)}; // np.power(0.1, 1/10000)
     };
 }
-#endif //ZLHISTOGRAM_SIMPLE_HISTOGRAM_HPP

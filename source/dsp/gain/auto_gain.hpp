@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_AUTO_GAIN_HPP
-#define ZLEqualizer_AUTO_GAIN_HPP
+#pragma once
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -54,7 +53,7 @@ namespace zlGain {
             }
         }
 
-        template<bool isBypassed=false>
+        template<bool isBypassed = false>
         void processPost(juce::AudioBuffer<FloatType> &buffer) {
             if (currentIsON) {
                 auto block = juce::dsp::AudioBlock<FloatType>(buffer);
@@ -62,7 +61,7 @@ namespace zlGain {
             }
         }
 
-        template<bool isBypassed=false>
+        template<bool isBypassed = false>
         void processPost(juce::dsp::AudioBlock<FloatType> block) {
             if (currentIsON) {
                 processPostBlockInternal<isBypassed>(block);
@@ -93,7 +92,7 @@ namespace zlGain {
         FloatType preRMS, postRMS;
         OriginGain<FloatType> gainDSP;
 
-        template<bool isBypassed=false>
+        template<bool isBypassed = false>
         void processPostBlockInternal(juce::dsp::AudioBlock<FloatType> block) {
             if (preRMS > FloatType(0.00001)) {
                 postRMS = std::max(calculateRMS(block), FloatType(0.000000001));
@@ -125,5 +124,3 @@ namespace zlGain {
         }
     };
 } // zlGain
-
-#endif //ZLEqualizer_AUTO_GAIN_HPP

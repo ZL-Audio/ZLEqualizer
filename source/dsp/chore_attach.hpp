@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_CHORE_ATTACH_HPP
-#define ZLEqualizer_CHORE_ATTACH_HPP
+#pragma once
 
 #include "controller.hpp"
 #include "../state/state_definitions.hpp"
@@ -66,7 +65,7 @@ namespace zlDSP {
             zlState::conflictScale::ID
         };
 
-        constexpr static std::array defaultNAVs {
+        constexpr static std::array defaultNAVs{
             static_cast<float>(zlState::fftPreON::defaultI),
             static_cast<float>(zlState::fftPostON::defaultI),
             static_cast<float>(zlState::fftSideON::defaultI),
@@ -82,5 +81,3 @@ namespace zlDSP {
         void initDefaultValues();
     };
 } // zlDSP
-
-#endif //ZLEqualizer_CHORE_ATTACH_HPP

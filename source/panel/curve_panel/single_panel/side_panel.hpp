@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_SIDE_PANEL_HPP
-#define ZLEqualizer_SIDE_PANEL_HPP
+#pragma once
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
@@ -56,5 +55,3 @@ namespace zlPanel {
         void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
-
-#endif //ZLEqualizer_SIDE_PANEL_HPP

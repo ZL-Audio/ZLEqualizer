@@ -7,11 +7,10 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_STATE_HPP
-#define ZLEqualizer_STATE_HPP
+#pragma once
 
 #include "dummy_processor.hpp"
 #include "property.hpp"
 #include "state_definitions.hpp"
 
-#endif //ZLEqualizer_STATE_HPP
+

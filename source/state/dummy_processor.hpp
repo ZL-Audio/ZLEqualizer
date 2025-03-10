@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_DUMMY_PROCESSOR_H
-#define ZL_DUMMY_PROCESSOR_H
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -68,4 +67,3 @@ namespace zlState {
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DummyProcessor)
     };
 }
-#endif //ZL_DUMMY_PROCESSOR_H

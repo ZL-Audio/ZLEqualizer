@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_LOGO_PANEL_HPP
-#define ZLEqualizer_LOGO_PANEL_HPP
+#pragma once
 
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
@@ -18,8 +17,8 @@ namespace zlPanel {
     class LogoPanel final : public juce::Component, public juce::SettableTooltipClient {
     public:
         explicit LogoPanel(PluginProcessor &p,
-        zlInterface::UIBase &base,
-        UISettingPanel &uiSettingPanel);
+                           zlInterface::UIBase &base,
+                           UISettingPanel &uiSettingPanel);
 
         void paint(juce::Graphics &g) override;
 
@@ -32,8 +31,6 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         UISettingPanel &panelToShow;
         const std::unique_ptr<juce::Drawable> brandDrawable, logoDrawable;
-        juce::Justification justification {juce::Justification::topLeft};
+        juce::Justification justification{juce::Justification::topLeft};
     };
 } // zlPanel
-
-#endif //ZLEqualizer_LOGO_PANEL_HPP

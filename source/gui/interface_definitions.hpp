@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_INTERFACE_DEFINES_H
-#define ZL_INTERFACE_DEFINES_H
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -476,5 +475,3 @@ namespace zlInterface {
         void updateActualLangIdx();
     };
 }
-
-#endif //ZL_INTERFACE_DEFINES_H

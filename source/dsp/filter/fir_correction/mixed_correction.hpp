@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_MIXED_CORRECTION_HPP
-#define ZLFILTER_MIXED_CORRECTION_HPP
+#pragma once
 
 #include <cmath>
 
@@ -220,7 +219,7 @@ namespace zlFilter {
                 const auto i = filterIndices[idx];
                 if (!bypassMask[i]) {
                     needToUpdate = needToUpdate || idealFs[i].updateMixPhaseResponse(
-                        wis1, startMixIdx, endMixIdx, correctionMix);
+                                       wis1, startMixIdx, endMixIdx, correctionMix);
                     needToUpdate = needToUpdate || iirFs[i].updateResponse(wis2);
                 }
             }
@@ -260,5 +259,3 @@ namespace zlFilter {
         }
     };
 }
-
-#endif //ZLFILTER_MIXED_CORRECTION_HPP

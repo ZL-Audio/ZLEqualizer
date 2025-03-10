@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLCHORE_PARA_UPDATER_HPP
-#define ZLCHORE_PARA_UPDATER_HPP
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -44,5 +43,3 @@ namespace zlChore {
         }
     };
 }
-
-#endif //ZLCHORE_PARA_UPDATER_HPP

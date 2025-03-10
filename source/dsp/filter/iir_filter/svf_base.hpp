@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef SVF_BASE_HPP
-#define SVF_BASE_HPP
+#pragma once
 
 namespace zlFilter {
     template<typename SampleType>
@@ -93,7 +92,7 @@ namespace zlFilter {
             return yHP - R2 * yBP + yLP;
         }
 
-        void updateFromBiquad(const std::array<double, 6>& coeffs) {
+        void updateFromBiquad(const std::array<double, 6> &coeffs) {
             const auto temp1 = std::sqrt(std::abs((-coeffs[0] - coeffs[1] - coeffs[2])));
             const auto temp2 = std::sqrt(std::abs((-coeffs[0] + coeffs[1] - coeffs[2])));
             g = static_cast<SampleType>(temp1 / temp2);
@@ -110,5 +109,3 @@ namespace zlFilter {
         std::vector<SampleType> s1, s2;
     };
 }
-
-#endif //SVF_BASE_HPP

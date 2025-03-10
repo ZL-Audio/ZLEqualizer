@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_RIGHT_CONTROL_PANEL_HPP
-#define ZLEqualizer_RIGHT_CONTROL_PANEL_HPP
+#pragma once
 
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
@@ -37,7 +36,7 @@ namespace zlPanel {
         std::atomic<bool> dynEditable{false};
 
         zlInterface::CompactButton dynBypassC, dynSoloC, dynRelativeC, sideChainC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
 
         zlInterface::TwoValueRotarySlider sideFreqC, sideQC;
         zlInterface::CompactLinearSlider thresC, kneeC, attackC, releaseC;
@@ -54,6 +53,3 @@ namespace zlPanel {
         void updateMouseDragSensitivity();
     };
 }
-
-
-#endif //ZLEqualizer_RIGHT_CONTROL_PANEL_HPP

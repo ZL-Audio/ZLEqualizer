@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_OUTPUT_SETTING_PANEL_HPP
-#define ZLEqualizer_OUTPUT_SETTING_PANEL_HPP
+#pragma once
 
 #include "../../state/state.hpp"
 #include "../../gui/gui.hpp"
@@ -36,7 +35,7 @@ namespace zlPanel {
         juce::RangedAudioParameter *lmPara;
         zlInterface::UIBase &uiBase;
         std::atomic<float> &currentScale;
-        juce::String gainString {"0.0"}, scaleString{"100.0%"};
+        juce::String gainString{"0.0"}, scaleString{"100.0%"};
         bool showGain{false};
         juce::Rectangle<float> gainBound, scaleBound;
         juce::Path backgroundPath;
@@ -51,5 +50,3 @@ namespace zlPanel {
         void lookAndFeelChanged() override;
     };
 } // zlPanel
-
-#endif //ZLEqualizer_OUTPUT_SETTING_PANEL_HPP

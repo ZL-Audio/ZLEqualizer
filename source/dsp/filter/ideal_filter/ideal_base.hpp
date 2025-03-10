@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_IDEAL_BASE_HPP
-#define ZLFILTER_IDEAL_BASE_HPP
+#pragma once
 
 #include <array>
 #include <complex>
@@ -75,5 +74,3 @@ namespace zlFilter {
         }
     };
 }
-
-#endif //ZLFILTER_IDEAL_BASE_HPP

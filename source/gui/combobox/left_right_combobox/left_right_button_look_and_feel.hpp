@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_LEFT_RIGHT_BUTTON_LOOK_AND_FEEL_HPP
-#define ZLEqualizer_LEFT_RIGHT_BUTTON_LOOK_AND_FEEL_HPP
+#pragma once
 
 namespace zlInterface {
     class LeftRightButtonLookAndFeel : public juce::LookAndFeel_V4 {
@@ -34,13 +33,11 @@ namespace zlInterface {
                 path.lineTo(bound.getBottomLeft());
                 path.lineTo(bound.getRight(), bound.getCentreY());
             } else if (0.2f < d && d < 0.3f) {
-
             } else if (0.45f < d && d < 0.55f) {
                 path.startNewSubPath(bound.getTopRight());
                 path.lineTo(bound.getBottomRight());
                 path.lineTo(bound.getX(), bound.getCentreY());
             } else if (0.7f < d && d < 0.8f) {
-
             }
             path.closeSubPath();
             g.fillPath(path);
@@ -56,10 +53,8 @@ namespace zlInterface {
 
     private:
         std::atomic<bool> editable = true;
-        std::atomic<float> buttonDepth = 0.f, direction=0.f;
+        std::atomic<float> buttonDepth = 0.f, direction = 0.f;
 
         UIBase &uiBase;
     };
 }
-
-#endif //ZLEqualizer_LEFT_RIGHT_BUTTON_LOOK_AND_FEEL_HPP

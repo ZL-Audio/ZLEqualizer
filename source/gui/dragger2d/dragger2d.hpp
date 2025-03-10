@@ -7,10 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLTest_DRAGGER2D_HPP
-#define ZLTest_DRAGGER2D_HPP
+#pragma once
 
 #include "dragger_component.hpp"
 #include "dragger_parameter_attach.hpp"
-
-#endif //ZLTest_DRAGGER2D_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_RESET_ATTACH_HPP
-#define ZLPANEL_RESET_ATTACH_HPP
+#pragma once
 
 #include "../../../dsp/dsp.hpp"
 
@@ -86,5 +85,3 @@ namespace zlPanel {
         }
     };
 }
-
-#endif //ZLPANEL_RESET_ATTACH_HPP

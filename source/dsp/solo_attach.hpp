@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_SOLO_ATTACH_HPP
-#define ZLEqualizer_SOLO_ATTACH_HPP
+#pragma once
 
 #include "controller.hpp"
 #include "chore/chore.hpp"
@@ -55,5 +54,3 @@ namespace zlDSP {
         void initDefaultValues();
     };
 }
-
-#endif //ZLEqualizer_SOLO_ATTACH_HPP

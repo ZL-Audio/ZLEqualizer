@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_LEFT_RIGHT_COMBOBOX_LOOK_AND_FEEL_HPP
-#define ZLEqualizer_LEFT_RIGHT_COMBOBOX_LOOK_AND_FEEL_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -60,5 +59,3 @@ namespace zlInterface {
         UIBase *uiBase;
     };
 }
-
-#endif //ZLEqualizer_LEFT_RIGHT_COMBOBOX_LOOK_AND_FEEL_HPP

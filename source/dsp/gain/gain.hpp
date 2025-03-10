@@ -7,11 +7,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_GAIN_HPP
-#define ZLEqualizer_GAIN_HPP
+#pragma once
 
 #include "origin_gain.hpp"
 #include "simple_gain.hpp"
 #include "auto_gain.hpp"
-
-#endif //ZLEqualizer_GAIN_HPP

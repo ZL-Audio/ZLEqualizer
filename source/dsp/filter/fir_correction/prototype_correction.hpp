@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_PROTOTYPE_CORRECTION_HPP
-#define ZLFILTER_PROTOTYPE_CORRECTION_HPP
+#pragma once
 
 #include <cmath>
 
@@ -250,5 +249,3 @@ namespace zlFilter {
         }
     };
 }
-
-#endif //ZLFILTER_PROTOTYPE_CORRECTION_HPP

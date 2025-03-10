@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_LEFT_CONTROL_PANEL_HPP
-#define ZLEqualizer_LEFT_CONTROL_PANEL_HPP
+#pragma once
 
 #include "BinaryData.h"
 
@@ -40,7 +39,7 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
 
         zlInterface::CompactButton bypassC, soloC, dynONC, dynLC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
 
         zlInterface::CompactCombobox fTypeC, slopeC, stereoC;
         zlInterface::LeftRightCombobox lrBox;
@@ -64,6 +63,3 @@ namespace zlPanel {
         void updateMouseDragSensitivity();
     };
 }
-
-
-#endif //ZLEqualizer_LEFT_CONTROL_PANEL_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef UI_SETTING_PANEL_H
-#define UI_SETTING_PANEL_H
+#pragma once
 
 #include "../../PluginProcessor.hpp"
 #include "colour_setting_panel.hpp"
@@ -16,51 +15,48 @@
 #include "other_ui_setting_panel.hpp"
 
 namespace zlPanel {
+    class UISettingPanel final : public juce::Component {
+    public:
+        explicit UISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
-class UISettingPanel final : public juce::Component {
-public:
-    explicit UISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        ~UISettingPanel() override;
 
-    ~UISettingPanel() override;
+        void paint(juce::Graphics &g) override;
 
-    void paint(juce::Graphics &g) override;
+        void resized() override;
 
-    void resized() override;
+        void loadSetting();
 
-    void loadSetting();
+        void mouseDown(const juce::MouseEvent &event) override;
 
-    void mouseDown(const juce::MouseEvent &event) override;
+        void visibilityChanged() override;
 
-    void visibilityChanged() override;
+        void setRendererList(const juce::StringArray &rendererList);
 
-    void setRendererList(const juce::StringArray &rendererList);
+    private:
+        PluginProcessor &pRef;
+        zlInterface::UIBase &uiBase;
+        juce::Viewport viewPort;
+        ColourSettingPanel colourPanel;
+        ControlSettingPanel controlPanel;
+        OtherUISettingPanel otherPanel;
+        const std::unique_ptr<juce::Drawable> saveDrawable, closeDrawable, resetDrawable;
+        zlInterface::ClickButton saveButton, closeButton, resetButton;
 
-private:
-    PluginProcessor &pRef;
-    zlInterface::UIBase &uiBase;
-    juce::Viewport viewPort;
-    ColourSettingPanel colourPanel;
-    ControlSettingPanel controlPanel;
-    OtherUISettingPanel otherPanel;
-    const std::unique_ptr<juce::Drawable> saveDrawable, closeDrawable, resetDrawable;
-    zlInterface::ClickButton saveButton, closeButton, resetButton;
+        zlInterface::NameLookAndFeel panelNameLAF;
+        std::array<juce::Label, 3> panelLabels;
 
-    zlInterface::NameLookAndFeel panelNameLAF;
-    std::array<juce::Label, 3> panelLabels;
+        juce::Label versionLabel;
+        zlInterface::NameLookAndFeel labelLAF;
 
-    juce::Label versionLabel;
-    zlInterface::NameLookAndFeel labelLAF;
+        enum panelIdx {
+            colourP,
+            controlP,
+            otherP
+        };
 
-    enum panelIdx {
-        colourP,
-        controlP,
-        otherP
+        panelIdx currentPanelIdx = colourP;
+
+        void changeDisplayPanel();
     };
-    panelIdx currentPanelIdx = colourP;
-
-    void changeDisplayPanel();
-};
-
 } // zlPanel
-
-#endif //UI_SETTING_PANEL_H
