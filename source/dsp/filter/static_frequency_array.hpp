@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_STATIC_FREQUENCY_ARRAY_H
-#define ZLFILTER_STATIC_FREQUENCY_ARRAY_H
+#pragma once
 
 namespace zlFilter {
     /** stl does not support constexpr log/pow, np.logspace(1, np.log10(22000), 800) */
@@ -215,5 +214,3 @@ namespace zlFilter {
         2.13733653e+04, 2.15802348e+04, 2.17891066e+04, 2.20000000e+04
     };
 }
-
-#endif //ZLFILTER_STATIC_FREQUENCY_ARRAY_H

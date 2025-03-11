@@ -7,7 +7,4 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_CONVOLUTION_UNIFORM_PARTITION_CONV_HPP
-#define ZL_CONVOLUTION_UNIFORM_PARTITION_CONV_HPP
-
-#endif //ZL_CONVOLUTION_UNIFORM_PARTITION_CONV_HPP
+#pragma once

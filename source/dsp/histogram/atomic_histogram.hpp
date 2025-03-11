@@ -7,9 +7,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLHISTOGRAM_ATOMIC_HISTOGRAM_HPP
-#define ZLHISTOGRAM_ATOMIC_HISTOGRAM_HPP
-#include <juce_dsp/juce_dsp.h>
+#pragma once
+#include <array>
+#include <atomic>
 
 #include "simple_histogram.hpp"
 
@@ -53,7 +53,7 @@ namespace zlHistogram {
             }
             const auto targetHits = x * cumHits.back();
             auto it = std::lower_bound(cumHits.begin(), cumHits.end(), targetHits);
-            if(it != cumHits.end()) {
+            if (it != cumHits.end()) {
                 const auto i = static_cast<size_t>(std::distance(cumHits.begin(), it));
                 return static_cast<FloatType>(i) + (cumHits[i] - targetHits) / std::max(hits[i].load(), FloatType(1));
             } else {
@@ -67,5 +67,3 @@ namespace zlHistogram {
         int syncCount{0};
     };
 }
-
-#endif //ZLHISTOGRAM_ATOMIC_HISTOGRAM_HPP

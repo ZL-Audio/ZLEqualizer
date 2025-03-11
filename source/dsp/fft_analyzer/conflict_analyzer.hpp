@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_CONFLICT_ANALYZER_HPP
-#define ZLEqualizer_CONFLICT_ANALYZER_HPP
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -80,5 +79,3 @@ namespace zlFFT {
         void handleAsyncUpdate() override;
     };
 } // zlFFT
-
-#endif //ZLEqualizer_CONFLICT_ANALYZER_HPP

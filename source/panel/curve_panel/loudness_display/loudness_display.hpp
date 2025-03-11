@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_LOUDNESS_DISPLAY_HPP
-#define ZLPANEL_LOUDNESS_DISPLAY_HPP
+#pragma once
 
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
@@ -40,5 +39,3 @@ namespace zlPanel {
         bool shouldVisible{false};
     };
 } // zlPanel
-
-#endif //ZLPANEL_LOUDNESS_DISPLAY_HPP

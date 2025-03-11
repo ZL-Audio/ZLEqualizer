@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_DRAGGER_CONSTRAINER_HPP
-#define ZLEqualizer_DRAGGER_CONSTRAINER_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -72,5 +71,3 @@ namespace zlInterface {
         std::atomic<bool> enableX{true}, enableY{true};
     };
 }
-
-#endif //ZLEqualizer_DRAGGER_CONSTRAINER_HPP

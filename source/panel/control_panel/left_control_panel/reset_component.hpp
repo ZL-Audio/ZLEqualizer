@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_RESET_COMPONENT_HPP
-#define ZLEqualizer_RESET_COMPONENT_HPP
+#pragma once
 
 #include "BinaryData.h"
 
@@ -36,5 +35,3 @@ namespace zlPanel {
         std::atomic<size_t> bandIdx;
     };
 } // zlPanel
-
-#endif //ZLEqualizer_RESET_COMPONENT_HPP

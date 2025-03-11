@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_EMPTY_SINGLE_FILTER_HPP
-#define ZLFILTER_EMPTY_SINGLE_FILTER_HPP
+#pragma once
 
 #include "../filter_design/filter_design.hpp"
 #include <atomic>
@@ -75,5 +74,3 @@ namespace zlFilter {
         std::atomic<FilterType> filterType = FilterType::peak;
     };
 }
-
-#endif //ZLFILTER_EMPTY_SINGLE_FILTER_HPP

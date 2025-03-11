@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_ANALOG_FUNC_HPP
-#define ZLEQUALIZER_ANALOG_FUNC_HPP
+#pragma once
 
 #include <cmath>
 #include <array>
@@ -37,5 +36,3 @@ namespace zlFilter {
         static double get2Magnitude2(const std::array<double, 6> &coeff, double w);
     };
 }
-
-#endif //ZLEQUALIZER_ANALOG_FUNC_HPP

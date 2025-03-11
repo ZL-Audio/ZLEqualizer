@@ -7,12 +7,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_FFT_ANALYZER_HPP
-#define ZLEqualizer_FFT_ANALYZER_HPP
+#pragma once
 
 #include "pre_post_fft_analyzer.hpp"
 #include "conflict_analyzer.hpp"
 #include "multiple_fft_analyzer.hpp"
 #include "average_fft_analyzer.hpp"
-
-#endif //ZLEqualizer_FFT_ANALYZER_HPP

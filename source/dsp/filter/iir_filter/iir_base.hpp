@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef IIR_BASE_HPP
-#define IIR_BASE_HPP
+#pragma once
 
 #include <numbers>
 
@@ -31,11 +30,11 @@ namespace zlFilter {
                                                     const std::complex<SampleType> &wi) {
             const auto wi2 = wi * wi;
             return (static_cast<SampleType>(coeff[3]) +
-                static_cast<SampleType>(coeff[4]) * wi +
-                static_cast<SampleType>(coeff[5]) * wi2) / (
-                    static_cast<SampleType>(coeff[0]) +
-                    static_cast<SampleType>(coeff[1]) * wi +
-                    static_cast<SampleType>(coeff[2]) * wi2);
+                    static_cast<SampleType>(coeff[4]) * wi +
+                    static_cast<SampleType>(coeff[5]) * wi2) / (
+                       static_cast<SampleType>(coeff[0]) +
+                       static_cast<SampleType>(coeff[1]) * wi +
+                       static_cast<SampleType>(coeff[2]) * wi2);
         }
 
         IIRBase() = default;
@@ -116,5 +115,3 @@ namespace zlFilter {
         std::vector<SampleType> s1, s2;
     };
 }
-
-#endif //IIR_BASE_HPP

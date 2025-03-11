@@ -7,14 +7,12 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_PROPERTY_H
-#define ZL_PROPERTY_H
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
 namespace zlState {
-
     class Property {
     public:
         Property();
@@ -31,14 +29,13 @@ namespace zlState {
 
         inline auto static const path =
                 juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-                        .getChildFile("Audio")
-                        .getChildFile("Presets")
-                        .getChildFile(JucePlugin_Manufacturer)
-                        .getChildFile(JucePlugin_Name);
+                .getChildFile("Audio")
+                .getChildFile("Presets")
+                .getChildFile(JucePlugin_Manufacturer)
+                .getChildFile(JucePlugin_Name);
         inline auto static const uiPath =
                 path.getChildFile("ui.xml");
     };
-
 }
 
-#endif // ZL_PROPERTY_H
+

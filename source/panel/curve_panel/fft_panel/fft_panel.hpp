@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_FFT_PANEL_HPP
-#define ZLPANEL_FFT_PANEL_HPP
+#pragma once
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
@@ -47,5 +46,3 @@ namespace zlPanel {
         std::atomic<float> minimumFFTDB{-72.f};
     };
 } // zlPanel
-
-#endif //ZLPANEL_FFT_PANEL_HPP

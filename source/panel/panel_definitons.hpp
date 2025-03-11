@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_PANEL_DEFINITONS_HPP
-#define ZLEqualizer_PANEL_DEFINITONS_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -27,10 +26,10 @@ namespace zlPanel {
     inline void attach(const std::vector<juce::Button *> &buttons,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,
-                       juce::OwnedArray<zlInterface::ButtonCusAttachment<true>> &attachments) {
+                       juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > &attachments) {
         for (size_t i = 0; i < buttons.size(); ++i) {
             attachments.add(
-                std::make_unique<zlInterface::ButtonCusAttachment<true>>(
+                std::make_unique<zlInterface::ButtonCusAttachment<true> >(
                     parameters, ids[i], *buttons[i]));
         }
     }
@@ -38,10 +37,10 @@ namespace zlPanel {
     inline void attach(const std::vector<juce::Button *> &buttons,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,
-                       juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> &attachments) {
+                       juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > &attachments) {
         for (size_t i = 0; i < buttons.size(); ++i) {
             attachments.add(
-                std::make_unique<zlInterface::ButtonCusAttachment<false>>(
+                std::make_unique<zlInterface::ButtonCusAttachment<false> >(
                     parameters, ids[i], *buttons[i]));
         }
     }
@@ -68,5 +67,3 @@ namespace zlPanel {
         }
     }
 }
-
-#endif //ZLEqualizer_PANEL_DEFINITONS_HPP

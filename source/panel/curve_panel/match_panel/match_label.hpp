@@ -7,27 +7,22 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_MATCH_LABEL_HPP
-#define ZLPANEL_MATCH_LABEL_HPP
+#pragma once
 
 #include "../../../gui/gui.hpp"
 
 namespace zlPanel {
+    class MatchLabel : public juce::Component {
+    public:
+        explicit MatchLabel(zlInterface::UIBase &base);
 
-class MatchLabel : public juce::Component {
-public:
-    explicit MatchLabel(zlInterface::UIBase &base);
+        void paint(juce::Graphics &g) override;
 
-    void paint(juce::Graphics &g) override;
+        void resized() override;
 
-    void resized() override;
-
-private:
-    zlInterface::UIBase &uiBase;
-    zlInterface::NameLookAndFeel labelLAF;
-    juce::Label runningLabel;
-};
-
+    private:
+        zlInterface::UIBase &uiBase;
+        zlInterface::NameLookAndFeel labelLAF;
+        juce::Label runningLabel;
+    };
 } // zlPanel
-
-#endif //ZLPANEL_MATCH_LABEL_HPP

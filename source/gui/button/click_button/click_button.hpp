@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef CLICK_BUTTON_HPP
-#define CLICK_BUTTON_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -88,5 +87,3 @@ namespace zlInterface {
         std::unique_ptr<juce::Drawable> normalImg, normalOnImg, overImg, overOnImg;
     };
 } // zlInterface
-
-#endif //CLICK_BUTTON_HPP

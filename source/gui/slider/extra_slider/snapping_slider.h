@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef SNAPPING_SLIDER_H
-#define SNAPPING_SLIDER_H
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -37,4 +36,3 @@ namespace zlInterface {
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SnappingSlider)
     };
 }
-#endif //SNAPPING_SLIDER_H

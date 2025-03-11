@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLTest_DRAGGER_PARAMETER_ATTACH_HPP
-#define ZLTest_DRAGGER_PARAMETER_ATTACH_HPP
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -50,5 +49,3 @@ namespace zlInterface {
         std::atomic<bool> isXAttached{true}, isYAttached{true};
     };
 } // zlInterface
-
-#endif //ZLTest_DRAGGER_PARAMETER_ATTACH_HPP

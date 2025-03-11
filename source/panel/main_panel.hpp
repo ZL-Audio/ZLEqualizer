@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_MAIN_PANEL_HPP
-#define ZLEqualizer_MAIN_PANEL_HPP
+#pragma once
 
 #include "../PluginProcessor.hpp"
 #include "control_panel/control_panel.hpp"
@@ -54,6 +53,3 @@ namespace zlPanel {
         void updateFFTs();
     };
 }
-
-
-#endif //ZLEqualizer_MAIN_PANEL_HPP

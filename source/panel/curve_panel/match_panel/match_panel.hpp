@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_MATCH_PANEL_HPP
-#define ZLPANEL_MATCH_PANEL_HPP
+#pragma once
 
 #include "match_analyzer_panel.hpp"
 
@@ -40,5 +39,3 @@ namespace zlPanel {
         MatchAnalyzerPanel matchAnalyzerPanel;
     };
 } // zlPanel
-
-#endif //ZLPANEL_MATCH_PANEL_HPP

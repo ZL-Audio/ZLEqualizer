@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_LOUDNESS_LUFS_METER_HPP
-#define ZL_LOUDNESS_LUFS_METER_HPP
+#pragma once
 
 #include "k_weighting_filter.hpp"
 
@@ -60,9 +59,9 @@ namespace zlLoudness {
             }
             if (numTotal - startIdx > 0) {
                 const auto subBlock = block.getSubBlock(static_cast<size_t>(startIdx),
-                static_cast<size_t>(numTotal - startIdx));
+                                                        static_cast<size_t>(numTotal - startIdx));
                 auto smallSubBlock = smallBlock.getSubBlock(static_cast<size_t>(currentIdx),
-                static_cast<size_t>(numTotal - startIdx));
+                                                            static_cast<size_t>(numTotal - startIdx));
                 smallSubBlock.copyFrom(subBlock);
                 currentIdx += numTotal - startIdx;
             }
@@ -134,5 +133,3 @@ namespace zlLoudness {
         }
     };
 }
-
-#endif //ZL_LOUDNESS_LUFS_METER_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_LOUDNESS_LUFS_MATCHER_HPP
-#define ZL_LOUDNESS_LUFS_MATCHER_HPP
+#pragma once
 
 #include "lufs_meter.hpp"
 
@@ -54,5 +53,3 @@ namespace zlLoudness {
         double sampleRate{48000}, currentCount{0};
     };
 }
-
-#endif //ZL_LOUDNESS_LUFS_MATCHER_HPP

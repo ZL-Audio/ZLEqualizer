@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_GRID_PANEL_HPP
-#define ZLEqualizer_GRID_PANEL_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -46,5 +45,3 @@ namespace zlPanel {
         std::array<juce::Rectangle<float>, 10> textBounds;
     };
 }
-
-#endif //ZLEqualizer_GRID_PANEL_HPP

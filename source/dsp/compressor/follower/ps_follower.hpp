@@ -7,10 +7,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLCompressor. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_COMPRESSOR_PS_FOLLOWER_HPP
-#define ZL_COMPRESSOR_PS_FOLLOWER_HPP
+#pragma once
 
-#include <juce_dsp/juce_dsp.h>
 #include <numbers>
 
 namespace zlCompressor {
@@ -30,7 +28,7 @@ namespace zlCompressor {
          * @tparam toReset whether to reset the internal state
          * @param sr sampleRate
          */
-        template <bool toReset=true>
+        template<bool toReset = true>
         void prepare(const double sr) {
             expFactor = -2.0 * std::numbers::pi * 1000.0 / sr;
             if (toReset) {
@@ -149,12 +147,11 @@ namespace zlCompressor {
                 if (currentAttackTime < 0.001 || std::abs(currentPunchPortion) < 0.001) {
                     punch = FloatType(0);
                 } else {
-                    punch = static_cast<FloatType>(std::exp(expFactor / currentAttackTime / std::abs(currentPunchPortion)));
+                    punch = static_cast<FloatType>(std::exp(
+                        expFactor / currentAttackTime / std::abs(currentPunchPortion)));
                 }
                 punchC = FloatType(1) - punch;
             }
         }
     };
 }
-
-#endif //ZL_COMPRESSOR_PS_FOLLOWER_HPP

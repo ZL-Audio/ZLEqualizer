@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_SAMPLE_DELAY_HPP
-#define ZLEqualizer_SAMPLE_DELAY_HPP
+#pragma once
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -55,5 +54,3 @@ namespace zlDelay {
         juce::dsp::DelayLine<FloatType> delayDSP;
     };
 } // zlDelay
-
-#endif //ZLEqualizer_SAMPLE_DELAY_HPP

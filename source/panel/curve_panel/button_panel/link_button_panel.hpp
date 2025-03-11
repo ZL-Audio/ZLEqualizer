@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef LINK_BUTTON_PANEL_HPP
-#define LINK_BUTTON_PANEL_HPP
+#pragma once
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
@@ -42,7 +41,7 @@ namespace zlPanel {
         zlInterface::CompactButton dynLinkC;
         float buttonSize{}, buttonBottom{};
         std::atomic<bool> buttonChanged{false};
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false>> buttonAttachments;
+        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
         const std::unique_ptr<juce::Drawable> linkDrawable;
 
         std::atomic<size_t> bandIdx;
@@ -55,5 +54,3 @@ namespace zlPanel {
         void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
-
-#endif //LINK_BUTTON_PANEL_HPP

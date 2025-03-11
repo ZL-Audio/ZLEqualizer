@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_FILTERS_ATTACH_HPP
-#define ZLEQUALIZER_FILTERS_ATTACH_HPP
+#pragma once
 
 #include "controller.hpp"
 #include "chore/chore.hpp"
@@ -70,8 +69,10 @@ namespace zlDSP {
             targetGain::ID, targetQ::ID, sideFreq::ID, sideQ::ID,
             dynamicBypass::ID, singleDynLink::ID
         };
-        constexpr static std::array dynamicResetIDs{dynamicLearn::ID, dynamicBypass::ID,
-            sideSolo::ID, dynamicRelative::ID};
+        constexpr static std::array dynamicResetIDs{
+            dynamicLearn::ID, dynamicBypass::ID,
+            sideSolo::ID, dynamicRelative::ID
+        };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
@@ -83,5 +84,3 @@ namespace zlDSP {
         std::array<std::atomic<bool>, bandNUM> sDynLink{};
     };
 }
-
-#endif //ZLEQUALIZER_FILTERS_ATTACH_HPP

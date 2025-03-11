@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_CONTAINER_CIRCULAR_BUFFER_HPP
-#define ZL_CONTAINER_CIRCULAR_BUFFER_HPP
+#pragma once
 
 #include <vector>
 
@@ -55,5 +54,3 @@ namespace zlContainer {
         int pos = 0, currentNum = 0;
     };
 }
-
-#endif //ZL_CONTAINER_CIRCULAR_BUFFER_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_FILTER_BUTTON_PANEL_HPP
-#define ZLEqualizer_FILTER_BUTTON_PANEL_HPP
+#pragma once
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
@@ -35,6 +34,8 @@ namespace zlPanel {
 
         zlInterface::Dragger &getSideDragger() { return sideDragger; }
 
+        ButtonPopUp &getPopUp() { return buttonPopUp; }
+
         bool getSelected() { return dragger.getButton().getToggleState(); }
 
         void setSelected(bool f);
@@ -45,7 +46,6 @@ namespace zlPanel {
             if (toUpdateDraggers.exchange(false)) {
                 handleAsyncUpdate();
             }
-            buttonPopUp.updateBounds();
         }
 
         void mouseDoubleClick(const juce::MouseEvent &event) override;
@@ -101,5 +101,3 @@ namespace zlPanel {
         };
     };
 } // zlPanel
-
-#endif //ZLEqualizer_FILTER_BUTTON_PANEL_HPP

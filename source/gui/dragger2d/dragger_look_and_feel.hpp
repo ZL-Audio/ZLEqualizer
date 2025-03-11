@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLTest_DRAGGER_LOOK_AND_FEEL_HPP
-#define ZLTest_DRAGGER_LOOK_AND_FEEL_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -67,7 +66,7 @@ namespace zlInterface {
 
         void setIsSelected(const bool f) { isSelected.store(f); }
 
-        bool getIsSelected() const {return isSelected.load();}
+        bool getIsSelected() const { return isSelected.load(); }
 
         void setDraggerShape(const DraggerShape s) { draggerShape.store(s); }
 
@@ -166,5 +165,3 @@ namespace zlInterface {
         UIBase &uiBase;
     };
 }
-
-#endif //ZLTest_DRAGGER_LOOK_AND_FEEL_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef COMPACT_LINEAR_SLIDER_H
-#define COMPACT_LINEAR_SLIDER_H
+#pragma once
 
 #include <friz/friz.h>
 
@@ -89,5 +88,3 @@ namespace zlInterface {
         void leaveAnimation();
     };
 }
-
-#endif //COMPACT_LINEAR_SLIDER_H

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_INTERFACE_MULTILINGUAL_HPP
-#define ZL_INTERFACE_MULTILINGUAL_HPP
+#pragma once
 
 #include "labels.hpp"
 #include "en.hpp"
@@ -32,5 +31,3 @@ namespace zlInterface::multilingual {
         langNum
     };
 }
-
-#endif //ZL_INTERFACE_MULTILINGUAL_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLCompressor. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_COMPRESSOR_RMS_TRACKER_HPP
-#define ZL_COMPRESSOR_RMS_TRACKER_HPP
+#pragma once
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -154,5 +153,3 @@ namespace zlCompressor {
         }
     };
 }
-
-#endif //ZL_COMPRESSOR_RMS_TRACKER_HPP

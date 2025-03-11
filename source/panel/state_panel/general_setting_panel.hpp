@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_GENERAL_SETTING_PANEL_HPP
-#define ZLEqualizer_GENERAL_SETTING_PANEL_HPP
+#pragma once
 
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
@@ -38,5 +37,3 @@ namespace zlPanel {
         void openCallOutBox();
     };
 } // zlPanel
-
-#endif //ZLEqualizer_GENERAL_SETTING_PANEL_HPP

@@ -7,52 +7,47 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef OTHER_UI_SETTING_PANEL_HPP
-#define OTHER_UI_SETTING_PANEL_HPP
+#pragma once
 
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
+    class OtherUISettingPanel final : public juce::Component {
+    public:
+        static constexpr float heightP = 4.f * 7.f;
 
-class OtherUISettingPanel final : public juce::Component {
-public:
-    static constexpr float heightP = 4.f * 7.f;
+        explicit OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
-    explicit OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        void loadSetting();
 
-    void loadSetting();
+        void saveSetting();
 
-    void saveSetting();
+        void resetSetting();
 
-    void resetSetting();
+        void resized() override;
 
-    void resized() override;
+        void setRendererList(const juce::StringArray &rendererList);
 
-    void setRendererList(const juce::StringArray &rendererList);
+    private:
+        PluginProcessor &pRef;
+        zlInterface::UIBase &uiBase;
+        zlInterface::NameLookAndFeel nameLAF;
 
-private:
-    PluginProcessor &pRef;
-    zlInterface::UIBase &uiBase;
-    zlInterface::NameLookAndFeel nameLAF;
-
-    juce::Label renderingEngineLabel;
-    zlInterface::CompactCombobox renderingEngineBox;
-    juce::Label refreshRateLabel;
-    zlInterface::CompactCombobox refreshRateBox;
-    juce::Label fftLabel;
-    zlInterface::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
-    zlInterface::CompactCombobox fftOrderBox;
-    juce::Label curveThickLabel;
-    zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
-    juce::Label defaultPassFilterSlopeLabel;
-    zlInterface::CompactCombobox defaultPassFilterSlopeBox;
-    juce::Label dynLinkLabel;
-    zlInterface::CompactCombobox dynLinkBox;
-    juce::Label tooltipLabel;
-    zlInterface::CompactCombobox tooltipONBox, tooltipLangBox;
-};
-
+        juce::Label renderingEngineLabel;
+        zlInterface::CompactCombobox renderingEngineBox;
+        juce::Label refreshRateLabel;
+        zlInterface::CompactCombobox refreshRateBox;
+        juce::Label fftLabel;
+        zlInterface::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
+        zlInterface::CompactCombobox fftOrderBox;
+        juce::Label curveThickLabel;
+        zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
+        juce::Label defaultPassFilterSlopeLabel;
+        zlInterface::CompactCombobox defaultPassFilterSlopeBox;
+        juce::Label dynLinkLabel;
+        zlInterface::CompactCombobox dynLinkBox;
+        juce::Label tooltipLabel;
+        zlInterface::CompactCombobox tooltipONBox, tooltipLangBox;
+    };
 } // zlPanel
-
-#endif //OTHER_UI_SETTING_PANEL_HPP

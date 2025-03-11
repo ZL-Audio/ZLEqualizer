@@ -7,9 +7,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_PHASE_PHASE_HPP
-#define ZL_PHASE_PHASE_HPP
+#pragma once
 
 #include "phase_flip.hpp"
-
-#endif //ZL_PHASE_PHASE_HPP

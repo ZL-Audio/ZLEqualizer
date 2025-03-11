@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_BACKGROUND_PANEL_HPP
-#define ZLEqualizer_BACKGROUND_PANEL_HPP
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -33,5 +32,3 @@ namespace zlPanel {
         GridPanel gridPanel;
     };
 }
-
-#endif //ZLEqualizer_BACKGROUND_PANEL_HPP

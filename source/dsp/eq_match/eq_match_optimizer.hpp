@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQMATCH_EQ_MATCH_OPTIMIZER_HPP
-#define ZLEQMATCH_EQ_MATCH_OPTIMIZER_HPP
+#pragma once
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
@@ -141,7 +140,9 @@ namespace zlEqMatch {
                 // choose the order with the min mse
                 const auto idx = static_cast<size_t>(
                     std::min_element(mseByOrders.begin(), mseByOrders.end()) - mseByOrders.begin());
-                const size_t actualIdx = mseByOrders[idx] <= mseByOrders[0] - highOrderEps ? idx : static_cast<size_t>(0);
+                const size_t actualIdx = mseByOrders[idx] <= mseByOrders[0] - highOrderEps
+                                             ? idx
+                                             : static_cast<size_t>(0);
                 // store optimal mse and filter parameters
                 mseS[i] = mseByOrders[actualIdx];
                 filters[i].setFilterType(filterTypeByOrders[actualIdx]);
@@ -185,6 +186,7 @@ namespace zlEqMatch {
         std::vector<double> mDiffs;
         std::vector<double> mWs;
         std::atomic<bool> shouldExit{false};
+
         struct optFData {
             size_t startIdx;
             size_t endIdx;
@@ -281,5 +283,3 @@ namespace zlEqMatch {
         }
     };
 } // zlEqMatch
-
-#endif //ZLEQMATCH_EQ_MATCH_OPTIMIZER_HPP

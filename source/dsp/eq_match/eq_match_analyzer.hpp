@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQMATCH_EQ_MATCH_ANALYZER_HPP
-#define ZLEQMATCH_EQ_MATCH_ANALYZER_HPP
+#pragma once
 
 #include "../fft_analyzer/fft_analyzer.hpp"
 
@@ -48,7 +47,7 @@ namespace zlEqMatch {
         void setTargetPreset(const std::array<float, pointNum> &dBs);
 
         void updatePaths(juce::Path &mainP, juce::Path &targetP, juce::Path &diffP,
-            juce::Rectangle<float> bound, std::array<float, 3> minDBs);
+                         juce::Rectangle<float> bound, std::array<float, 3> minDBs);
 
         void setSmooth(const float x) {
             smooth.store(x);
@@ -119,5 +118,3 @@ namespace zlEqMatch {
         }
     };
 } // zlEqMatch
-
-#endif //ZLEQMATCH_EQ_MATCH_ANALYZER_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_SIMPLE_GAIN_HPP
-#define ZLEqualizer_SIMPLE_GAIN_HPP
+#pragma once
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -27,14 +26,14 @@ namespace zlGain {
             gainDSP.prepare(spec);
         }
 
-        template<bool isBypassed=false>
+        template<bool isBypassed = false>
         void process(juce::AudioBuffer<FloatType> &buffer) {
             if (isBypassed) { return; }
             auto block = juce::dsp::AudioBlock<FloatType>(buffer);
             process(block);
         }
 
-        template<bool isBypassed=false>
+        template<bool isBypassed = false>
         void process(juce::dsp::AudioBlock<FloatType> block) {
             if (isBypassed) { return; }
             if (std::abs(gain.load() - 1) <= FloatType(1e-6)) { return; }
@@ -58,5 +57,3 @@ namespace zlGain {
         juce::dsp::Gain<FloatType> gainDSP;
     };
 } // zlGain
-
-#endif //ZLEqualizer_SIMPLE_GAIN_HPP

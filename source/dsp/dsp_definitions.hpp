@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_DSP_DEFINITIONS_HPP
-#define ZLEQUALIZER_DSP_DEFINITIONS_HPP
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -31,7 +30,7 @@ namespace zlDSP {
                 return v < xMid ? std::log(v / xMin) / rng1 : FloatType(.5) + std::log(v / xMid) / rng2;
             },
             [=](FloatType, FloatType, const FloatType v) {
-                const FloatType x = xMin + xInterval * std::round ((v - xMin) / xInterval);
+                const FloatType x = xMin + xInterval * std::round((v - xMin) / xInterval);
                 return x <= xMin ? xMin : (x >= xMax ? xMax : x);
             }
         };
@@ -150,6 +149,7 @@ namespace zlDSP {
         };
         int static constexpr defaultI = 1;
         static constexpr std::array<size_t, 7> orderArray{1, 2, 4, 6, 8, 12, 16};
+
         static int convertToIdx(const size_t order) {
             switch (order) {
                 case 1: return 0;
@@ -515,5 +515,3 @@ namespace zlDSP {
         para->endChangeGesture();
     }
 }
-
-#endif //ZLEQUALIZER_DSP_DEFINITIONS_HPP

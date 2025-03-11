@@ -7,9 +7,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_DYNAMIC_FILTER_HPP
-#define ZLEQUALIZER_DYNAMIC_FILTER_HPP
+#pragma once
 
 #include "dynamic_iir_filter.hpp"
-
-#endif //ZLEQUALIZER_DYNAMIC_FILTER_HPP

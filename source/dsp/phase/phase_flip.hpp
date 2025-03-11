@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_PHASE_PHASE_FLIP_HPP
-#define ZL_PHASE_PHASE_FLIP_HPP
+#pragma once
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -30,5 +29,3 @@ namespace zlPhase {
         std::atomic<bool> isON;
     };
 } // zlPhase
-
-#endif //ZL_PHASE_PHASE_FLIP_HPP

@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLCHORE_SMOOTHED_VALUE_HPP
-#define ZLCHORE_SMOOTHED_VALUE_HPP
+#pragma once
 
 namespace zlChore {
     enum SmoothedTypes {
@@ -134,5 +133,3 @@ namespace zlChore {
         bool isIncreasing{};
     };
 }
-
-#endif //ZLCHORE_SMOOTHED_VALUE_HPP

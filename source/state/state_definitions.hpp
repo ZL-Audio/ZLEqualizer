@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_STATE_DEFINITIONS_H
-#define ZL_STATE_DEFINITIONS_H
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -542,4 +541,4 @@ namespace zlState {
     }
 }
 
-#endif //ZL_STATE_DEFINITIONS_H
+

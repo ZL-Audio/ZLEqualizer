@@ -7,10 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_HELPER_HPP
-#define ZLPANEL_HELPER_HPP
+#pragma once
 
 #include "path_minimizer.hpp"
 #include "atomic_bound.hpp"
-
-#endif //ZLPANEL_HELPER_HPP

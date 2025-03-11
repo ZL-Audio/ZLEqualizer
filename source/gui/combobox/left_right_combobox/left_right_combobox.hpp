@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_LEFT_RIGHT_COMBOBOX_HPP
-#define ZLEqualizer_LEFT_RIGHT_COMBOBOX_HPP
+#pragma once
 
 #include "left_right_combobox_look_and_feel.hpp"
 #include "left_right_button_look_and_feel.hpp"
@@ -45,5 +44,3 @@ namespace zlInterface {
         std::atomic<float> lrPad = 0, ubPad = 0;
     };
 } // zlInterface
-
-#endif //ZLEqualizer_LEFT_RIGHT_COMBOBOX_HPP

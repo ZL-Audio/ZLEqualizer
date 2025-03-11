@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_INTERFACE_MULTILINGUAL_ES_HPP
-#define ZL_INTERFACE_MULTILINGUAL_ES_HPP
+#pragma once
 
 #include <array>
 
@@ -78,5 +77,3 @@ namespace zlInterface::multilingual::es {
         "Doble clic: abre la Configuración de la Interfaz de Usuario (UI Settings)."
     };
 }
-
-#endif //ZL_INTERFACE_MULTILINGUAL_ES_HPP

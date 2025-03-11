@@ -7,9 +7,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_INTERPOLATION_HPP
-#define ZL_INTERPOLATION_HPP
+#pragma once
 
 #include "seq_makima.hpp"
-
-#endif //ZL_INTERPOLATION_HPP

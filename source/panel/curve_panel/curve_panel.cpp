@@ -39,6 +39,7 @@ namespace zlPanel {
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
         addAndMakeVisible(dummyComponent, 4);
+        dummyComponent.setInterceptsMouseClicks(false, false);
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
             const auto i = idx;
             singlePanels[idx] =

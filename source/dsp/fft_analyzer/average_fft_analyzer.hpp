@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFFT_AVERAGE_FFT_ANALYZER_HPP
-#define ZLFFT_AVERAGE_FFT_ANALYZER_HPP
+#pragma once
 
 #include "../../state/state_definitions.hpp"
 #include "../interpolation/interpolation.hpp"
@@ -386,5 +385,3 @@ namespace zlFFT {
         }
     };
 }
-
-#endif //ZLFFT_AVERAGE_FFT_ANALYZER_HPP

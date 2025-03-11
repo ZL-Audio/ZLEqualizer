@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_DYNAMIC_IIR_FILTER_HPP
-#define ZLFILTER_DYNAMIC_IIR_FILTER_HPP
+#pragma once
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -200,6 +199,3 @@ namespace zlFilter {
         }
     };
 }
-
-
-#endif //ZLFILTER_DYNAMIC_IIR_FILTER_HPP

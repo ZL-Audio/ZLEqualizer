@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_HELPERS_HPP
-#define ZLFILTER_HELPERS_HPP
+#pragma once
 
 #include <cmath>
 #include <array>
@@ -46,5 +45,3 @@ namespace zlFilter {
         return {w0 / scale, w0 * scale};
     }
 }
-
-#endif //ZLFILTER_HELPERS_HPP

@@ -7,10 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_SPLITTER_HPP
-#define ZLEQUALIZER_SPLITTER_HPP
+#pragma once
 
 #include "lr_splitter.hpp"
 #include "ms_splitter.hpp"
-
-#endif //ZLEQUALIZER_SPLITTER_HPP

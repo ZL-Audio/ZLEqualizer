@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_MARTIN_COEFFS_H
-#define ZLFILTER_MARTIN_COEFFS_H
+#pragma once
 
 #include "analog_func.hpp"
 #include <numbers>
@@ -61,5 +60,3 @@ namespace zlFilter {
                                                   const std::array<double, 3> &b);
     };
 }
-
-#endif //ZLFILTER_MARTIN_COEFFS_H

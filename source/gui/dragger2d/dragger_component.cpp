@@ -30,14 +30,16 @@ namespace zlInterface {
         juce::ignoreUnused(g);
     }
 
-    void Dragger::updateButton() {
+    bool Dragger::updateButton() {
         if (dummyButtonChanged.exchange(false)) {
             button.setBounds(dummyButton.getBounds());
             auto bound = button.getLocalBounds().toFloat();
             const auto radius = std::min(bound.getHeight(), bound.getWidth());
             bound = bound.withSizeKeepingCentre(radius, radius);
             draggerLAF.updatePaths(bound);
+            return true;
         }
+        return false;
     }
 
     void Dragger::mouseDown(const juce::MouseEvent &event) {

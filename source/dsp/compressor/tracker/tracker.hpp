@@ -7,9 +7,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLCompressor. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_COMPRESSOR_TRACKER_HPP
-#define ZL_COMPRESSOR_TRACKER_HPP
+#pragma once
 
 #include "rms_tracker.hpp"
-
-#endif //ZL_COMPRESSOR_TRACKER_HPP

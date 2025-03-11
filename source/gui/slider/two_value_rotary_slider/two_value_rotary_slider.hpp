@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef TWO_VALUE_ROTARY_SLIDER_COMPONENT_H
-#define TWO_VALUE_ROTARY_SLIDER_COMPONENT_H
+#pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <friz/friz.h>
@@ -123,5 +122,3 @@ namespace zlInterface {
         void leaveAnimation();
     };
 }
-
-#endif //TWO_VALUE_ROTARY_SLIDER_COMPONENT_H

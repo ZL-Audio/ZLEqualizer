@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFILTER_IDLEIIR_HPP
-#define ZLFILTER_IDLEIIR_HPP
+#pragma once
 
 #include "../filter_design/filter_design.hpp"
 #include "coeff/martin_coeff.hpp"
@@ -67,7 +66,7 @@ namespace zlFilter {
             std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
         }
 
-        bool updateResponse(const std::vector<std::complex<FloatType>> &wis) {
+        bool updateResponse(const std::vector<std::complex<FloatType> > &wis) {
             if (toUpdatePara.exchange(false)) {
                 updateParas();
                 std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
@@ -81,7 +80,7 @@ namespace zlFilter {
 
         std::vector<std::complex<FloatType> > &getResponse() { return response; }
 
-        void setToUpdate() {toUpdatePara.store(true);}
+        void setToUpdate() { toUpdatePara.store(true); }
 
     private:
         std::array<std::array<double, 6>, FilterSize> coeffs{};
@@ -113,5 +112,3 @@ namespace zlFilter {
         }
     };
 }
-
-#endif //ZLFILTER_IDLEIIR_HPP

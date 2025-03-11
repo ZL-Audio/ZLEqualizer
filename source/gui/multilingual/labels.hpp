@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_INTERFACE_MULTILINGUAL_LABELS_HPP
-#define ZL_INTERFACE_MULTILINGUAL_LABELS_HPP
+#pragma once
 
 namespace zlInterface::multilingual {
     enum labels {
@@ -77,5 +76,3 @@ namespace zlInterface::multilingual {
         labelNum
     };
 }
-
-#endif //ZL_INTERFACE_MULTILINGUAL_LABELS_HPP

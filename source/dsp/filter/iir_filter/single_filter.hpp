@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_SINGLE_FILTER_HPP
-#define ZLEQUALIZER_SINGLE_FILTER_HPP
+#pragma once
 
 #include <juce_dsp/juce_dsp.h>
 #include "../filter_design/filter_design.hpp"
@@ -37,7 +36,6 @@ namespace zlFilter {
                 for (size_t i = 0; i < currentFilterNum; ++i) {
                     svfFilters[i].reset();
                 }
-
             }
         }
 
@@ -134,7 +132,8 @@ namespace zlFilter {
                                 skipSmooth();
                             }
                             const auto multiplier2 = parallelMultiplier;
-                            const auto w = static_cast<FloatType>(buffer.getNumSamples() - 1) / static_cast<FloatType>(buffer.getNumSamples());
+                            const auto w = static_cast<FloatType>(buffer.getNumSamples() - 1) / static_cast<FloatType>(
+                                               buffer.getNumSamples());
                             const auto multiplier1 = multiplier0 * w + multiplier2 * (FloatType(1) - w);
                             buffer.applyGainRamp(0, buffer.getNumSamples(), multiplier1, multiplier2);
                         } else {
@@ -441,5 +440,3 @@ namespace zlFilter {
         }
     };
 }
-
-#endif //ZLEQUALIZER_SINGLE_FILTER_HPP

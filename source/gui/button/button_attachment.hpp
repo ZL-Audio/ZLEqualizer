@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLGUI_BUTTON_CUS_ATTACHMENT_HPP
-#define ZLGUI_BUTTON_CUS_ATTACHMENT_HPP
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -64,5 +63,3 @@ namespace zlInterface {
         bool ignoreCallbacks = false;
     };
 }
-
-#endif //ZLGUI_BUTTON_CUS_ATTACHMENT_HPP

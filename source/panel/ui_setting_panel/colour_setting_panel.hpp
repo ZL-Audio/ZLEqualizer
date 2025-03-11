@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef COLOUR_UI_SETTING_PANEL_HPP
-#define COLOUR_UI_SETTING_PANEL_HPP
+#pragma once
 
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
@@ -68,7 +67,7 @@ namespace zlPanel {
             "Side Loudness Colour"
         };
 
-        std::array<zlInterface::colourIdx, numSelectors> colourIdx {
+        std::array<zlInterface::colourIdx, numSelectors> colourIdx{
             zlInterface::colourIdx::textColour,
             zlInterface::colourIdx::backgroundColour,
             zlInterface::colourIdx::shadowColour,
@@ -106,5 +105,3 @@ namespace zlPanel {
                 .getChildFile("Shared Settings");
     };
 } // zlPanel
-
-#endif //COLOUR_UI_SETTING_PANEL_HPP

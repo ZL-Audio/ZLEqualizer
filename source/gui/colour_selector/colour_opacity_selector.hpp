@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_COLOUR_OPACITY_SELECTOR_HPP
-#define ZL_COLOUR_OPACITY_SELECTOR_HPP
+#pragma once
 
 #include "colour_selector.hpp"
 #include "../slider/slider.hpp"
@@ -45,5 +44,3 @@ namespace zlInterface {
         void sliderValueChanged(juce::Slider *s) override;
     };
 } // zlInterface
-
-#endif //ZL_COLOUR_OPACITY_SELECTOR_HPP

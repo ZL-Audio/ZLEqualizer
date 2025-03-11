@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_CONTROLLER_HPP
-#define ZLEQUALIZER_CONTROLLER_HPP
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -367,5 +366,3 @@ namespace zlDSP {
         void updateHistograms();
     };
 }
-
-#endif //ZLEQUALIZER_CONTROLLER_HPP

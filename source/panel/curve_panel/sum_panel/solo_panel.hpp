@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_SOLO_PANEL_HPP
-#define ZLEqualizer_SOLO_PANEL_HPP
+#pragma once
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
@@ -37,12 +36,10 @@ namespace zlPanel {
         float currentX{0.}, currentBW{0.};
         double soloQ{0.};
         std::atomic<size_t> selectBandIdx{0};
-        std::vector<std::unique_ptr<zlChore::ParaUpdater>> soloUpdaters, sideSoloUpdaters;
+        std::vector<std::unique_ptr<zlChore::ParaUpdater> > soloUpdaters, sideSoloUpdaters;
 
         void handleAsyncUpdate();
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
 } // zlPanel
-
-#endif //ZLEqualizer_SOLO_PANEL_HPP

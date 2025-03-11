@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLFFT_PRE_POST_FFT_ANALYZER_HPP
-#define ZLFFT_PRE_POST_FFT_ANALYZER_HPP
+#pragma once
 
 #include "multiple_fft_analyzer.hpp"
 #include "../delay/delay.hpp"
@@ -73,5 +72,3 @@ namespace zlFFT {
         void handleAsyncUpdate() override;
     };
 } // zlFFT
-
-#endif //ZLFFT_PRE_POST_FFT_ANALYZER_HPP

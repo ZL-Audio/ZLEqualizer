@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_INTERFACE_MULTILINGUAL_ZH_HANS_HPP
-#define ZL_INTERFACE_MULTILINGUAL_ZH_HANS_HPP
+#pragma once
 
 #include <array>
 
@@ -78,5 +77,3 @@ namespace zlInterface::multilingual::zh_Hans {
         "双击：打开用户界面设置。"
     };
 }
-
-#endif //ZL_INTERFACE_MULTILINGUAL_ZH_HANS_HPP

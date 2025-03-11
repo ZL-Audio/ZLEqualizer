@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef COMPACT_COMBOBOX_H
-#define COMPACT_COMBOBOX_H
+#pragma once
 
 #include <friz/friz.h>
 
@@ -56,6 +55,3 @@ namespace zlInterface {
         static constexpr int animationId = 1;
     };
 }
-
-
-#endif //COMPACT_COMBOBOX_H

@@ -7,11 +7,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEQUALIZER_COMPRESSOR_HPP
-#define ZLEQUALIZER_COMPRESSOR_HPP
+#pragma once
 
 #include "tracker/tracker.hpp"
 #include "computer/computer.hpp"
 #include "follower/follower.hpp"
-
-#endif //ZLEQUALIZER_COMPRESSOR_HPP

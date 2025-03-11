@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLPANEL_MATCH_ANALYZER_PANEL_HPP
-#define ZLPANEL_MATCH_ANALYZER_PANEL_HPP
+#pragma once
 
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
@@ -82,12 +81,11 @@ namespace zlPanel {
 
         void getIdxDBromPoint(const juce::Point<int> &p, size_t &idx, float &dB) const {
             const auto bound = getLocalBounds().toFloat();
-            const auto idxInt = juce::roundToInt(250.f * (static_cast<float>(p.getX()) - bound.getX()) / bound.getWidth());
+            const auto idxInt = juce::roundToInt(
+                250.f * (static_cast<float>(p.getX()) - bound.getX()) / bound.getWidth());
             idx = static_cast<size_t>(std::clamp(idxInt, 0, 250));
             const auto yP = (static_cast<float>(p.getY()) - bound.getY()) / bound.getHeight() - .5f;
-            dB =  -maximumDB.load() * dBScale.load() * yP;
+            dB = -maximumDB.load() * dBScale.load() * yP;
         }
     };
 } // zlPanel
-
-#endif //ZLPANEL_MATCH_ANALYZER_PANEL_HPP

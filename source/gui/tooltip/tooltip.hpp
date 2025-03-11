@@ -7,10 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZL_INTERFACE_TOOLTIP_HPP
-#define ZL_INTERFACE_TOOLTIP_HPP
+#pragma once
 
 #include "tooltip_window.hpp"
 #include "tooltip_look_and_feel.hpp"
-
-#endif //ZL_INTERFACE_TOOLTIP_HPP

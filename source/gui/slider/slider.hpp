@@ -7,11 +7,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLINTERFACE_SLIDER_H
-#define ZLINTERFACE_SLIDER_H
+#pragma once
 
 #include "compact_linear_slider/compact_linear_slider.hpp"
 #include "two_value_rotary_slider/two_value_rotary_slider.hpp"
 #include "extra_slider/snapping_slider.h"
-
-#endif //ZLINTERFACE_SLIDER_H

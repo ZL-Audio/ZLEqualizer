@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLEqualizer_CLICK_COMBOBOX_HPP
-#define ZLEqualizer_CLICK_COMBOBOX_HPP
+#pragma once
 
 #include "../compact_combobox/compact_combobox.hpp"
 #include "../../label/name_look_and_feel.hpp"
@@ -22,7 +21,7 @@ namespace zlInterface {
         };
 
         ClickCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base,
-            multilingual::labels labelIdx = multilingual::labels::labelNum);
+                      multilingual::labels labelIdx = multilingual::labels::labelNum);
 
         ~ClickCombobox() override;
 
@@ -46,5 +45,3 @@ namespace zlInterface {
         void selectRight();
     };
 } // zlInterface
-
-#endif //ZLEqualizer_CLICK_COMBOBOX_HPP

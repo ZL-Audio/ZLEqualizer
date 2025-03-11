@@ -7,61 +7,56 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef CONTROL_UI_SETTING_PANEL_HPP
-#define CONTROL_UI_SETTING_PANEL_HPP
+#pragma once
 
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
+    class ControlSettingPanel final : public juce::Component {
+    public:
+        static constexpr float heightP = 20.f;
 
-class ControlSettingPanel final : public juce::Component {
-public:
-    static constexpr float heightP = 20.f;
+        explicit ControlSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
-    explicit ControlSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        ~ControlSettingPanel() override;
 
-    ~ControlSettingPanel() override;
+        void loadSetting();
 
-    void loadSetting();
+        void saveSetting();
 
-    void saveSetting();
+        void resetSetting();
 
-    void resetSetting();
+        void resized() override;
 
-    void resized() override;
+        void mouseDown(const juce::MouseEvent &event) override;
 
-    void mouseDown(const juce::MouseEvent &event) override;
+    private:
+        PluginProcessor &pRef;
+        zlInterface::UIBase &uiBase;
+        zlInterface::NameLookAndFeel nameLAF;
 
-private:
-    PluginProcessor &pRef;
-    zlInterface::UIBase &uiBase;
-    zlInterface::NameLookAndFeel nameLAF;
+        juce::Label wheelLabel;
+        juce::Label dragLabel;
+        std::array<zlInterface::CompactLinearSlider, 4> sensitivitySliders;
+        zlInterface::CompactCombobox wheelReverseBox;
+        juce::Label rotaryStyleLabel;
+        zlInterface::CompactCombobox rotaryStyleBox;
+        zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
+        juce::Label sliderDoubleClickLabel;
+        zlInterface::CompactCombobox sliderDoubleClickBox;
 
-    juce::Label wheelLabel;
-    juce::Label dragLabel;
-    std::array<zlInterface::CompactLinearSlider, 4> sensitivitySliders;
-    zlInterface::CompactCombobox wheelReverseBox;
-    juce::Label rotaryStyleLabel;
-    zlInterface::CompactCombobox rotaryStyleBox;
-    zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
-    juce::Label sliderDoubleClickLabel;
-    zlInterface::CompactCombobox sliderDoubleClickBox;
+        juce::Label importLabel, exportLabel;
+        std::unique_ptr<juce::FileChooser> myChooser;
+        inline auto static const settingDirectory =
+                juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                .getChildFile("Audio")
+                .getChildFile("Presets")
+                .getChildFile(JucePlugin_Manufacturer)
+                .getChildFile("Shared Settings");
 
-    juce::Label importLabel, exportLabel;
-    std::unique_ptr<juce::FileChooser> myChooser;
-    inline auto static const settingDirectory =
-            juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-            .getChildFile("Audio")
-            .getChildFile("Presets")
-            .getChildFile(JucePlugin_Manufacturer)
-            .getChildFile("Shared Settings");
+        void importControls();
 
-    void importControls();
-
-    void exportControls();
-};
-
+        void exportControls();
+    };
 } // zlPanel
-
-#endif //CONTROL_UI_SETTING_PANEL_HPP

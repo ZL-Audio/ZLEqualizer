@@ -7,8 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ZLECOMP_FIXEDAUDIOBUFFER_H
-#define ZLECOMP_FIXEDAUDIOBUFFER_H
+#pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -62,5 +61,3 @@ namespace zlAudioBuffer {
         std::atomic<juce::uint32> latencyInSamples{0};
     };
 }
-
-#endif //ZLECOMP_FIXEDAUDIOBUFFER_H

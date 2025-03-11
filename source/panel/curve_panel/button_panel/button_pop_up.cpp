@@ -14,123 +14,36 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
         : band{bandIdx}, parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
-          bypassC("B", base),
-          soloC("S", base),
-          bypassDrawable(
-              juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
-          soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
-          fTypeC("", zlDSP::fType::choices, base),
-          pitchLAF(base),
-          drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          button(base, drawable.get()) {
-        juce::ignoreUnused(parametersNARef);
+          background(bandIdx, parameters, parametersNA, base), pitchLabel(base) {
+        juce::ignoreUnused(parametersRef, parametersNARef);
+        freqPara = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, band));
 
-        bypassC.getLAF().enableShadow(false);
-        bypassC.getLAF().setReverse(true);
-        soloC.getLAF().enableShadow(false);
-        bypassC.setDrawable(bypassDrawable.get());
-        soloC.setDrawable(soloDrawable.get());
-        for (auto &c: {&bypassC, &soloC}) {
-            addAndMakeVisible(c);
-            c->setBufferedToImage(true);
-        }
-        attach({&bypassC.getButton(), &soloC.getButton()},
-               {
-                   zlDSP::appendSuffix(zlDSP::bypass::ID, bandIdx),
-                   zlDSP::appendSuffix(zlDSP::solo::ID, bandIdx)
-               },
-               parametersRef, buttonAttachments);
+        addAndMakeVisible(background);
 
-        bypassC.getButton().onClick = [this]() {
-            const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
-            const auto currentBand = band.load();
-            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlDSP::bypass::ID, idx);
-                    parametersRef.getParameter(activeID)->beginChangeGesture();
-                    parametersRef.getParameter(activeID)->setValueNotifyingHost(isByPassed);
-                    parametersRef.getParameter(activeID)->endChangeGesture();
-                }
-            }
-        };
-
-        fTypeC.getLAF().setFontScale(1.25f);
-        for (auto &c: {&fTypeC}) {
-            addAndMakeVisible(c);
-        }
-        fTypeC.setBufferedToImage(true);
-        attach({&fTypeC.getBox()},
-               {zlDSP::appendSuffix(zlDSP::fType::ID, bandIdx)},
-               parametersRef, boxAttachments);
-
-        const auto freqId = zlDSP::appendSuffix(zlDSP::freq::ID, band.load());
-
-        parametersRef.addParameterListener(freqId, this);
-        parameterChanged(freqId, parametersRef.getRawParameterValue(freqId)->load());
-
-        pitchLabel.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(pitchLabel);
-
-        button.getButton().onClick = [this]() {
-            const auto currentBand = band.load();
-            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
-                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlState::active::ID, idx);
-                    parametersNARef.getParameter(activeID)->beginChangeGesture();
-                    parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
-                    parametersNARef.getParameter(activeID)->endChangeGesture();
-                }
-            }
-        };
-        button.setPadding(.05f, .05f, .05f, .05f);
-        addAndMakeVisible(button);
-        button.setBufferedToImage(true);
     }
 
     ButtonPopUp::~ButtonPopUp() {
         pitchLabel.setLookAndFeel(nullptr);
-        parametersRef.removeParameterListener(zlDSP::appendSuffix(zlDSP::freq::ID, band.load()), this);
-    }
-
-    void ButtonPopUp::paint(juce::Graphics &g) {
-        g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
-        g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
-        g.setFont(uiBase.getFontSize() * 1.2f);
-        g.setColour(uiBase.getTextColor());
-        auto textBound = pitchLabel.getBoundsInParent().toFloat();
-        textBound.removeFromRight(uiBase.getFontSize() * .25f);
-        g.drawText(pitchString, textBound, juce::Justification::centredRight, false);
     }
 
     void ButtonPopUp::resized() {
-        pitchLAF.setPadding(0, uiBase.getFontSize() * .25f, 0, 0);
+        const auto currentBound = getLocalBounds();
+        if (previousBound.getHeight() != currentBound.getHeight() ||
+            previousBound.getWidth() != currentBound.getWidth()) {
+            previousBound = currentBound;
+            background.setBounds(currentBound);
 
-        juce::Grid grid;
-        using Track = juce::Grid::TrackInfo;
-        using Fr = juce::Grid::Fr;
+            auto bound = currentBound.toFloat();
+            bound.removeFromBottom(bound.getHeight() * .4f);
+            bound.removeFromLeft(bound.getWidth() * .705882f);
+            bound.removeFromRight(uiBase.getFontSize() * .25f);
 
-        grid.templateRows = {Track(Fr(60)), Track(Fr(40))};
-        grid.templateColumns = {
-            Track(Fr(30)), Track(Fr(30)), Track(Fr(25))
-        };
-        grid.items = {
-            juce::GridItem(bypassC).withArea(1, 1),
-            juce::GridItem(soloC).withArea(1, 2),
-            juce::GridItem(pitchLabel).withArea(1, 3),
-            juce::GridItem(button).withArea(2, 3, 3, 4),
-            juce::GridItem(fTypeC).withArea(2, 1, 3, 3)
-        };
-
-        const auto bound = getLocalBounds().toFloat();
-        grid.performLayout(bound.toNearestInt());
+            pitchLabel.setBounds(bound.toNearestInt());
+        }
     }
 
-    void ButtonPopUp::componentMovedOrResized(Component &component, bool wasMoved, bool wasResized) {
-        juce::ignoreUnused(wasMoved, wasResized);
+    void ButtonPopUp::updateBounds(const juce::Component &component) {
         if (getParentComponent() == nullptr || component.getParentComponent() == nullptr) {
             return;
         }
@@ -139,51 +52,68 @@ namespace zlPanel {
         const auto shiftX = compBound.getCentreX() - compParentBound.getCentreX();
         const auto shiftY = compBound.getCentreY() - compParentBound.getCentreY();
         const auto shiftYPortion = shiftY / (compParentBound.getHeight() - uiBase.getFontSize()) * 2;
-        auto direction = -1.f;
+
         switch (fType.load()) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
-                direction = (shiftYPortion > 0.f && shiftYPortion < 0.5f) || (shiftYPortion < -0.5f) ? 1.f : -1.f;
+                if (direction > 0.f) {
+                    if (shiftYPortion > .5f || (shiftYPortion < -0.1f && shiftYPortion > -0.4f)) {
+                        direction = -1.f;
+                    }
+                } else {
+                    if (shiftYPortion < -0.5f || (shiftYPortion > 0.1f && shiftYPortion < 0.4f)) {
+                        direction = 1.f;
+                    }
+                }
                 break;
             }
             case zlFilter::FilterType::lowShelf:
             case zlFilter::FilterType::highShelf:
             case zlFilter::FilterType::tiltShelf: {
-                direction = (shiftYPortion > 0.f) ? 1.f : -1.f;
+                if (direction > 0.f && shiftYPortion < -0.2f) {
+                    direction = -1.f;
+                } else if (direction < 0.f && shiftYPortion > 0.2f) {
+                    direction = 1.f;
+                }
                 break;
             }
             case zlFilter::FilterType::notch:
             case zlFilter::FilterType::lowPass:
             case zlFilter::FilterType::highPass:
             case zlFilter::FilterType::bandPass: {
+                direction = -1.f;
                 break;
             }
         }
 
+        const auto width = widthP * uiBase.getFontSize();
+        const auto height = heightP * uiBase.getFontSize();
         const auto bound = getParentComponent()->getLocalBounds().toFloat();
-        const auto finalY = bound.getCentreY() + direction * height.load() * uiBase.getFontSize() + shiftY;
-        const auto finalX = juce::jlimit(bound.getX() + width.load() * uiBase.getFontSize() / 2,
-                                         bound.getRight() - width.load() * uiBase.getFontSize() / 2,
+        const auto finalY = bound.getCentreY() + direction * height + shiftY;
+        const auto finalX = juce::jlimit(bound.getX() + width * .5f,
+                                         bound.getRight() - width * .5f,
                                          bound.getCentreX() + shiftX);
 
-        popUpBound = juce::Rectangle<float>(
-            width.load() * uiBase.getFontSize(),
-            height.load() * uiBase.getFontSize()).withCentre({finalX, finalY});
-        toUpdateBounds.store(true);
+        const auto popUpBound = juce::Rectangle<float>(
+            width, height).withCentre({finalX, finalY});
+
+        const auto actualBound = juce::Rectangle<int>(
+            juce::roundToInt(popUpBound.getX()), juce::roundToInt(popUpBound.getY()),
+            juce::roundToInt(width), juce::roundToInt(height));
+
+        updateLabel();
+        setBounds(actualBound);
     }
 
-    void ButtonPopUp::parameterChanged(const juce::String &parameterID, float newValue) {
-        juce::ignoreUnused(parameterID);
-        freq.store(newValue);
-        triggerAsyncUpdate();
-    }
-
-    void ButtonPopUp::handleAsyncUpdate() {
-        const auto pitchIdx = juce::roundToInt(12 * std::log2(freq.load() / 440.f));
+    void ButtonPopUp::updateLabel() {
+        const auto freq = zlDSP::freq::range.convertFrom0to1(freqPara->getValue());
+        const auto pitchIdx = juce::roundToInt(12 * std::log2(freq / 440.f));
         const auto pitchIdx1 = (pitchIdx + 240) % 12;
         const auto pitchIdx2 = (pitchIdx + 240) / 12 - 16;
-        pitchString = pitchIdx2 >= 0
-                                     ? std::string(pitchLookUp[static_cast<size_t>(pitchIdx1)]) + std::to_string(pitchIdx2)
+        const auto pitchString = pitchIdx2 >= 0
+                                     ? std::string(pitchLookUp[static_cast<size_t>(pitchIdx1)]) + std::to_string(
+                                           pitchIdx2)
                                      : "A0";
+        pitchLabel.setText(pitchString);
     }
 } // zlPanel
