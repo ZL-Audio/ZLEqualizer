@@ -337,7 +337,6 @@ namespace zlPanel {
             para->endChangeGesture();
         } else {
             toAttachGroup.store(true);
-            triggerAsyncUpdate();
         }
     }
 
@@ -346,7 +345,6 @@ namespace zlPanel {
             const auto idx = static_cast<size_t>(newValue);
             selectBandIdx.store(idx);
             toAttachGroup.store(true);
-            triggerAsyncUpdate();
         } else if (parameterID == zlState::maximumDB::ID) {
             const auto idx = static_cast<size_t>(newValue);
             for (const auto &p: panels) {
@@ -355,11 +353,12 @@ namespace zlPanel {
             maximumDB.store(zlState::maximumDB::dBs[idx]);
         } else {
             // the parameter is freq/gain/Q
+            if (!isDuringLasso.load()) return;
             const auto currentBand = selectBandIdx.load();
+            if (!uiBase.getIsBandSelected(currentBand)) return;
             const auto value = static_cast<double>(newValue);
             if (parameterID.startsWith(zlDSP::freq::ID)) {
                 const auto ratio = static_cast<float>(value / previousFreqs[currentBand].load());
-                if (!uiBase.getIsBandSelected(currentBand)) return;
                 for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                     if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
                         const auto shiftFreq = previousFreqs[idx].load() * ratio;
@@ -368,7 +367,6 @@ namespace zlPanel {
                     }
                 }
             } else if (parameterID.startsWith(zlDSP::gain::ID)) {
-                if (!uiBase.getIsBandSelected(currentBand)) return;
                 if (isLeftClick.load()) {
                     if (std::abs(previousGains[currentBand].load()) <= 0.1f) return;
                     const auto scale = newValue / previousGains[currentBand].load();
@@ -391,7 +389,6 @@ namespace zlPanel {
                 }
             } else if (parameterID.startsWith(zlDSP::Q::ID)) {
                 const auto ratio = static_cast<float>(value / previousQs[currentBand].load());
-                if (!uiBase.getIsBandSelected(currentBand)) return;
                 for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
                     if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
                         const auto shiftQ = ratio * previousQs[idx].load();
@@ -415,7 +412,7 @@ namespace zlPanel {
         }
     }
 
-    void ButtonPanel::handleAsyncUpdate() {
+    void ButtonPanel::updateAttach() {
         if (toAttachGroup.exchange(false)) {
             const auto idx = selectBandIdx.load();
             attachGroup(idx);
@@ -435,7 +432,6 @@ namespace zlPanel {
             panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
             panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
         }
-        repaint();
     }
 
     size_t ButtonPanel::findAvailableBand() const {
@@ -496,6 +492,9 @@ namespace zlPanel {
             }
             previousLassoNum = currentSelectedNum;
             loadPreviousParameters();
+            isDuringLasso.store(true);
+        } else {
+            isDuringLasso.store(false);
         }
     }
 

@@ -163,6 +163,7 @@ namespace zlPanel {
         const juce::Time nowT = juce::Time::getCurrentTime();
         const auto refreshRateMul = showMatchPanel.load() ? static_cast<juce::int64>(2) : static_cast<juce::int64>(1);
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
+            buttonPanel.updateAttach();
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
