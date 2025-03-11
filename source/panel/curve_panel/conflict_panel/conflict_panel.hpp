@@ -29,9 +29,9 @@ namespace zlPanel {
         void updateGradient() {
             if (analyzer.getON()) {
                 analyzer.updateGradient(gradient);
-                isGradientInit.store(true);
+                setVisible(true);
             } else {
-                isGradientInit.store(false);
+                setVisible(false);
             }
         }
 
@@ -40,6 +40,5 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         juce::Path path;
         juce::ColourGradient gradient;
-        std::atomic<bool> isGradientInit{false};
     };
 } // zlPanel

@@ -22,10 +22,8 @@ namespace zlPanel {
     }
 
     void ConflictPanel::paint(juce::Graphics &g) {
-        if (isGradientInit.load()) {
-            g.setGradientFill(gradient);
-            g.fillRect(getLocalBounds());
-        }
+        g.setGradientFill(gradient);
+        g.fillRect(getLocalBounds());
     }
 
     void ConflictPanel::resized() {

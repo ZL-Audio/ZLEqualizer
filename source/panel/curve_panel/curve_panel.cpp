@@ -34,7 +34,7 @@ namespace zlPanel {
         }
         addAndMakeVisible(backgroundPanel, 0);
         addAndMakeVisible(fftPanel, 1);
-        addAndMakeVisible(conflictPanel, 2);
+        addChildComponent(conflictPanel, 2);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
@@ -54,7 +54,7 @@ namespace zlPanel {
             addAndMakeVisible(*sidePanels[idx], 5);
         }
         addAndMakeVisible(sumPanel, 6);
-        addAndMakeVisible(soloPanel, 7);
+        addChildComponent(soloPanel, 7);
         addAndMakeVisible(loudnessDisplay, 8);
         addAndMakeVisible(buttonPanel, 9);
         addChildComponent(matchPanel, 10);
@@ -149,7 +149,6 @@ namespace zlPanel {
             showMatchPanel.store(f);
             matchPanel.setVisible(f);
             buttonPanel.setVisible(!f);
-            soloPanel.setVisible(!f);
             loudnessDisplay.updateVisible(!f);
         } else if (property == zlInterface::identifiers[static_cast<size_t>(
                        zlInterface::settingIdx::uiSettingPanelShow)]) {
@@ -167,6 +166,7 @@ namespace zlPanel {
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
+            soloPanel.checkVisible();
             for (const auto &panel: singlePanels) {
                 panel->updateVisible();
             }

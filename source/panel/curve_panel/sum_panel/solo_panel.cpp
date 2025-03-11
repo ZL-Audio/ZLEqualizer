@@ -39,9 +39,6 @@ namespace zlPanel {
     }
 
     void SoloPanel::paint(juce::Graphics &g) {
-        if (!controllerRef.getSolo()) {
-            return;
-        }
         const size_t bandIdx = selectBandIdx.load();
 
         g.setColour(uiBase.getTextColor().withAlpha(.1f));
