@@ -28,14 +28,19 @@ namespace zlPanel {
     }
 
     void ButtonPopUp::resized() {
-        background.setBounds(getLocalBounds());
+        const auto currentBound = getLocalBounds();
+        if (previousBound.getHeight() != currentBound.getHeight() ||
+            previousBound.getWidth() != currentBound.getWidth()) {
+            previousBound = currentBound;
+            background.setBounds(currentBound);
 
-        auto bound = getLocalBounds().toFloat();
-        bound.removeFromBottom(bound.getHeight() * .4f);
-        bound.removeFromLeft(bound.getWidth() * .705882f);
-        bound.removeFromRight(uiBase.getFontSize() * .25f);
+            auto bound = currentBound.toFloat();
+            bound.removeFromBottom(bound.getHeight() * .4f);
+            bound.removeFromLeft(bound.getWidth() * .705882f);
+            bound.removeFromRight(uiBase.getFontSize() * .25f);
 
-        pitchLabel.setBounds(bound.toNearestInt());
+            pitchLabel.setBounds(bound.toNearestInt());
+        }
     }
 
     void ButtonPopUp::updateBounds(const juce::Component &component) {
@@ -66,9 +71,9 @@ namespace zlPanel {
             case zlFilter::FilterType::highShelf:
             case zlFilter::FilterType::tiltShelf: {
                 if (direction > 0.f && shiftYPortion < -0.2f) {
-                        direction = -1.f;
+                    direction = -1.f;
                 } else if (direction < 0.f && shiftYPortion > 0.2f) {
-                        direction = 1.f;
+                    direction = 1.f;
                 }
                 break;
             }
@@ -81,18 +86,23 @@ namespace zlPanel {
             }
         }
 
+        const auto width = widthP * uiBase.getFontSize();
+        const auto height = heightP * uiBase.getFontSize();
         const auto bound = getParentComponent()->getLocalBounds().toFloat();
-        const auto finalY = bound.getCentreY() + direction * height * uiBase.getFontSize() + shiftY;
-        const auto finalX = juce::jlimit(bound.getX() + width * uiBase.getFontSize() / 2,
-                                         bound.getRight() - width * uiBase.getFontSize() / 2,
+        const auto finalY = bound.getCentreY() + direction * height + shiftY;
+        const auto finalX = juce::jlimit(bound.getX() + width * .5f,
+                                         bound.getRight() - width * .5f,
                                          bound.getCentreX() + shiftX);
 
-       const auto popUpBound = juce::Rectangle<float>(
-            width * uiBase.getFontSize(),
-            height * uiBase.getFontSize()).withCentre({finalX, finalY});
+        const auto popUpBound = juce::Rectangle<float>(
+            width, height).withCentre({finalX, finalY});
+
+        const auto actualBound = juce::Rectangle<int>(
+            juce::roundToInt(popUpBound.getX()), juce::roundToInt(popUpBound.getY()),
+            juce::roundToInt(width), juce::roundToInt(height));
 
         updateLabel();
-        setBounds(popUpBound.toNearestInt());
+        setBounds(actualBound);
     }
 
     void ButtonPopUp::updateLabel() {
@@ -101,7 +111,8 @@ namespace zlPanel {
         const auto pitchIdx1 = (pitchIdx + 240) % 12;
         const auto pitchIdx2 = (pitchIdx + 240) / 12 - 16;
         const auto pitchString = pitchIdx2 >= 0
-                                     ? std::string(pitchLookUp[static_cast<size_t>(pitchIdx1)]) + std::to_string(pitchIdx2)
+                                     ? std::string(pitchLookUp[static_cast<size_t>(pitchIdx1)]) + std::to_string(
+                                           pitchIdx2)
                                      : "A0";
         pitchLabel.setText(pitchString);
     }

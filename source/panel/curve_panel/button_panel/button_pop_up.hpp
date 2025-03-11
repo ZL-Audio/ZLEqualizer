@@ -60,9 +60,10 @@ namespace zlPanel {
 
         juce::RangedAudioParameter *freqPara;
 
-        static constexpr float width{7.7916666f}, height{4.16667f};
+        static constexpr float widthP{7.7916666f}, heightP{4.16667f};
         std::atomic<zlFilter::FilterType> fType;
         float direction = -1.f;
+        juce::Rectangle<int> previousBound;
 
         ButtonPopUpBackground background;
 
