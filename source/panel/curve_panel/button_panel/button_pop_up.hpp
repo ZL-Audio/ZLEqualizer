@@ -62,6 +62,7 @@ namespace zlPanel {
 
         static constexpr float width{7.7916666f}, height{4.16667f};
         std::atomic<zlFilter::FilterType> fType;
+        float direction = -1.f;
 
         ButtonPopUpBackground background;
 
@@ -74,7 +75,5 @@ namespace zlPanel {
         };
 
         void updateLabel();
-
-        juce::Rectangle<float> popUpBound;
     };
 } // zlPanel

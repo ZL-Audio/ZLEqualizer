@@ -47,24 +47,36 @@ namespace zlPanel {
         const auto shiftX = compBound.getCentreX() - compParentBound.getCentreX();
         const auto shiftY = compBound.getCentreY() - compParentBound.getCentreY();
         const auto shiftYPortion = shiftY / (compParentBound.getHeight() - uiBase.getFontSize()) * 2;
-        auto direction = -1.f;
 
         switch (fType.load()) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
-                direction = (shiftYPortion > 0.f && shiftYPortion < 0.5f) || (shiftYPortion < -0.5f) ? 1.f : -1.f;
+                if (direction > 0.f) {
+                    if (shiftYPortion > .5f || (shiftYPortion < -0.1f && shiftYPortion > -0.4f)) {
+                        direction = -1.f;
+                    }
+                } else {
+                    if (shiftYPortion < -0.5f || (shiftYPortion > 0.1f && shiftYPortion < 0.4f)) {
+                        direction = 1.f;
+                    }
+                }
                 break;
             }
             case zlFilter::FilterType::lowShelf:
             case zlFilter::FilterType::highShelf:
             case zlFilter::FilterType::tiltShelf: {
-                direction = (shiftYPortion > 0.f) ? 1.f : -1.f;
+                if (direction > 0.f && shiftYPortion < -0.2f) {
+                        direction = -1.f;
+                } else if (direction < 0.f && shiftYPortion > 0.2f) {
+                        direction = 1.f;
+                }
                 break;
             }
             case zlFilter::FilterType::notch:
             case zlFilter::FilterType::lowPass:
             case zlFilter::FilterType::highPass:
             case zlFilter::FilterType::bandPass: {
+                direction = -1.f;
                 break;
             }
         }
@@ -75,7 +87,7 @@ namespace zlPanel {
                                          bound.getRight() - width * uiBase.getFontSize() / 2,
                                          bound.getCentreX() + shiftX);
 
-        popUpBound = juce::Rectangle<float>(
+       const auto popUpBound = juce::Rectangle<float>(
             width * uiBase.getFontSize(),
             height * uiBase.getFontSize()).withCentre({finalX, finalY});
 

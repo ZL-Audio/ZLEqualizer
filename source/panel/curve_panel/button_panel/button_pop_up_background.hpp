@@ -46,17 +46,6 @@ public:
 
         const std::unique_ptr<juce::Drawable> drawable;
         zlInterface::ClickButton button;
-
-        static constexpr std::array pitchLookUp{
-            "A", "A#", "B", "C",
-            "C#", "D", "D#", "E",
-            "F", "F#", "G", "G#"
-        };
-
-        std::atomic<float> freq{1000.f};
-
-        std::atomic<bool> toUpdateBounds{false};
-        juce::Rectangle<float> popUpBound;
 };
 
 } // zlPanel
