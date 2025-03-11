@@ -31,6 +31,8 @@ namespace zlPanel {
             setVisible(controllerRef.getSolo());
         }
 
+        void turnOffSolo() const;
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;

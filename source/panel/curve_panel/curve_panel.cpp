@@ -50,7 +50,7 @@ namespace zlPanel {
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
             const auto i = idx;
             sidePanels[idx] = std::make_unique<SidePanel>(i, parametersRef, parametersNARef, base, controllerRef,
-                                                        buttonPanel.getSideDragger(i));
+                                                          buttonPanel.getSideDragger(i));
             addAndMakeVisible(*sidePanels[idx], 5);
         }
         addAndMakeVisible(sumPanel, 6);
@@ -150,6 +150,7 @@ namespace zlPanel {
             matchPanel.setVisible(f);
             buttonPanel.setVisible(!f);
             loudnessDisplay.updateVisible(!f);
+            if (f) { soloPanel.turnOffSolo(); }
         } else if (property == zlInterface::identifiers[static_cast<size_t>(
                        zlInterface::settingIdx::uiSettingPanelShow)]) {
             const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::uiSettingPanelShow));
