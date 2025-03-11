@@ -56,7 +56,6 @@ namespace zlPanel {
 
                 if (isActiveTarget.load()) {
                     buttonPopUp.toFront(false);
-                    buttonPopUp.componentMovedOrResized(dragger.getButton(), true, true);
                     buttonPopUp.setVisible(true);
                 }
             } else {
@@ -75,7 +74,6 @@ namespace zlPanel {
         };
 
         setInterceptsMouseClicks(false, true);
-        dragger.getButton().addComponentListener(&buttonPopUp);
         dragger.setInterceptsMouseClicks(false, true);
         targetDragger.setInterceptsMouseClicks(false, true);
         sideDragger.setInterceptsMouseClicks(false, true);

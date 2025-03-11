@@ -18,6 +18,25 @@
 namespace zlPanel {
     class ButtonPopUp final : public juce::Component,
                               public juce::ComponentListener {
+    private:
+        class PitchLabel final : public juce::Component {
+        public:
+            explicit PitchLabel(zlInterface::UIBase &base) : uiBase(base) {
+            }
+
+            void paint(juce::Graphics &g) override {
+                g.setFont(uiBase.getFontSize() * 1.2f);
+                g.setColour(uiBase.getTextColor());
+                g.drawText(label, getLocalBounds(), juce::Justification::centredRight, false);
+            }
+
+            void setText(const juce::String &x) { label = x; }
+
+        private:
+            zlInterface::UIBase &uiBase;
+            juce::String label;
+        };
+
     public:
         explicit ButtonPopUp(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
@@ -26,17 +45,9 @@ namespace zlPanel {
 
         ~ButtonPopUp() override;
 
-        void updateBounds() {
-            if (toUpdateBounds == true) {
-                toUpdateBounds = false;
-                handleAsyncUpdate();
-                setBounds(popUpBound.toNearestInt());
-            }
-        }
-
         void resized() override;
 
-        void componentMovedOrResized(Component &component, bool wasMoved, bool wasResized) override;
+        void updateBounds(const juce::Component &component);
 
         void setFType(const zlFilter::FilterType f) {
             fType.store(f);
@@ -54,8 +65,7 @@ namespace zlPanel {
 
         ButtonPopUpBackground background;
 
-        juce::Label pitchLabel;
-        zlInterface::NameLookAndFeel pitchLAF;
+        PitchLabel pitchLabel;
 
         static constexpr std::array pitchLookUp{
             "A", "A#", "B", "C",
@@ -63,9 +73,8 @@ namespace zlPanel {
             "F", "F#", "G", "G#"
         };
 
-        void handleAsyncUpdate();
+        void updateLabel();
 
-        bool toUpdateBounds{false};
         juce::Rectangle<float> popUpBound;
     };
 } // zlPanel

@@ -34,6 +34,8 @@ namespace zlPanel {
 
         zlInterface::Dragger &getSideDragger() { return sideDragger; }
 
+        ButtonPopUp &getPopUp() { return buttonPopUp; }
+
         bool getSelected() { return dragger.getButton().getToggleState(); }
 
         void setSelected(bool f);
@@ -44,7 +46,6 @@ namespace zlPanel {
             if (toUpdateDraggers.exchange(false)) {
                 handleAsyncUpdate();
             }
-            buttonPopUp.updateBounds();
         }
 
         void mouseDoubleClick(const juce::MouseEvent &event) override;

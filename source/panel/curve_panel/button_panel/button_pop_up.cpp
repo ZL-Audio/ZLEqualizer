@@ -14,17 +14,12 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
         : band{bandIdx}, parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
-          background(bandIdx, parameters, parametersNA, base),
-          pitchLAF(base) {
+          background(bandIdx, parameters, parametersNA, base), pitchLabel(base) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         freqPara = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, band));
 
         addAndMakeVisible(background);
 
-        pitchLAF.setFontScale(1.2f);
-        pitchLabel.setLookAndFeel(&pitchLAF);
-        pitchLabel.setJustificationType(juce::Justification::centredRight);
-        pitchLabel.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(pitchLabel);
     }
 
@@ -43,8 +38,7 @@ namespace zlPanel {
         pitchLabel.setBounds(bound.toNearestInt());
     }
 
-    void ButtonPopUp::componentMovedOrResized(Component &component, bool wasMoved, bool wasResized) {
-        juce::ignoreUnused(wasMoved, wasResized);
+    void ButtonPopUp::updateBounds(const juce::Component &component) {
         if (getParentComponent() == nullptr || component.getParentComponent() == nullptr) {
             return;
         }
@@ -84,10 +78,12 @@ namespace zlPanel {
         popUpBound = juce::Rectangle<float>(
             width * uiBase.getFontSize(),
             height * uiBase.getFontSize()).withCentre({finalX, finalY});
-        toUpdateBounds = true;
+
+        updateLabel();
+        setBounds(popUpBound.toNearestInt());
     }
 
-    void ButtonPopUp::handleAsyncUpdate() {
+    void ButtonPopUp::updateLabel() {
         const auto freq = zlDSP::freq::range.convertFrom0to1(freqPara->getValue());
         const auto pitchIdx = juce::roundToInt(12 * std::log2(freq / 440.f));
         const auto pitchIdx1 = (pitchIdx + 240) % 12;
@@ -95,6 +91,6 @@ namespace zlPanel {
         const auto pitchString = pitchIdx2 >= 0
                                      ? std::string(pitchLookUp[static_cast<size_t>(pitchIdx1)]) + std::to_string(pitchIdx2)
                                      : "A0";
-        pitchLabel.setText(pitchString, juce::NotificationType::dontSendNotification);
+        pitchLabel.setText(pitchString);
     }
 } // zlPanel

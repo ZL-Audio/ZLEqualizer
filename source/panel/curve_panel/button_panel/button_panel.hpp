@@ -39,10 +39,13 @@ namespace zlPanel {
 
         void updateDraggers() const {
             for (const auto &p: panels) {
-                p->getDragger().updateButton();
+                const auto f = p->getDragger().updateButton();
                 p->getTargetDragger().updateButton();
                 p->getSideDragger().updateButton();
                 p->updateDraggers();
+                if (f && p->getPopUp().isVisible()) {
+                    p->getPopUp().updateBounds(p->getDragger().getButton());
+                }
             }
             for (const auto &p: linkButtons) {
                 p->updateBound();
