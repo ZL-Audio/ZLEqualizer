@@ -29,7 +29,6 @@ namespace zlPanel {
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         juce::ignoreUnused(controllerRef);
 
-        skipRepaint.store(true);
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
         parameterChanged(zlState::active::ID + suffix,
@@ -49,7 +48,6 @@ namespace zlPanel {
         }
 
         setInterceptsMouseClicks(false, false);
-        skipRepaint.store(false);
         lookAndFeelChanged();
     }
 
@@ -66,9 +64,7 @@ namespace zlPanel {
     }
 
     void SinglePanel::paint(juce::Graphics &g) {
-        if (!active.load()) {
-            return;
-        }
+        if (avoidRepaint.load()) return;
         // draw curve
         {
             g.setColour(colour);
@@ -111,15 +107,11 @@ namespace zlPanel {
             g.setColour(colour);
             switch (baseF.getFilterType()) {
                 case zlFilter::FilterType::peak:
-                case zlFilter::FilterType::bandShelf: {
-                    const auto x1 = freqToX(baseFreq.load(), bound);
-                    const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(baseGain.load()), maximumDB.load(), bound);
-                    g.drawLine(x1, y1, x1, y2, linkThickness);
+                case zlFilter::FilterType::bandShelf:
+                case zlFilter::FilterType::lowShelf:
+                case zlFilter::FilterType::highShelf: {
                     break;
                 }
-                case zlFilter::FilterType::lowShelf:
-                case zlFilter::FilterType::highShelf:
                 case zlFilter::FilterType::tiltShelf: {
                     const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
@@ -149,10 +141,6 @@ namespace zlPanel {
         atomicBound.store(bound);
         toRepaint.store(true);
         handleAsyncUpdate();
-    }
-
-    bool SinglePanel::willRepaint() const {
-        return toRepaint.load();
     }
 
     bool SinglePanel::checkRepaint() {
@@ -215,7 +203,9 @@ namespace zlPanel {
         // draw curve
         baseFreq.store(static_cast<double>(baseF.getFreq()));
         baseGain.store(static_cast<double>(baseF.getGain())); {
-            baseF.updateMagnitude(ws);
+            if (baseF.updateMagnitude(ws)) {
+                avoidRepaint.store(false);
+            }
             curvePath.clear();
             if (active.load()) {
                 drawCurve(curvePath, baseF.getDBs(), maxDB, bound);

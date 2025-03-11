@@ -41,9 +41,16 @@ namespace zlPanel {
             toRepaint.store(true);
         }
 
-        bool checkRepaint();
+        void updateVisible() {
+            if (active.load() != isVisible()) {
+                setVisible(active.load());
+                if (!isVisible()) {
+                    avoidRepaint.store(true);
+                }
+            }
+        }
 
-        bool willRepaint() const;
+        bool checkRepaint();
 
         void setScale(const double x) {
             scale.store(x);
@@ -75,9 +82,8 @@ namespace zlPanel {
         AtomicPoint atomicBottomLeft, atomicBottomRight;
         std::atomic<float> curveThickness{0.f};
 
-        std::atomic<bool> skipRepaint{false};
         std::atomic<bool> toRepaint{false};
-        std::atomic<bool> avoidRepaint{false};
+        std::atomic<bool> avoidRepaint{true};
         std::atomic<float> centeredDB{0.f};
         std::atomic<double> baseFreq{1000.0}, baseGain{0.0};
         std::atomic<double> currentBaseGain{0.0}, currentTargetGain{0.0};

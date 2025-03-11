@@ -166,6 +166,9 @@ namespace zlPanel {
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
+            for (const auto &panel: singlePanels) {
+                panel->updateVisible();
+            }
             singlePanels[currentBandIdx.load()]->toFront(false);
             for (const auto &panel: sidePanels) {
                 panel->updateDragger();
