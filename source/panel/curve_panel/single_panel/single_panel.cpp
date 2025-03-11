@@ -101,10 +101,6 @@ namespace zlPanel {
         }
         // draw the line between the curve and the button
         {
-            const auto linkThickness = uiBase.getFontSize() * 0.065f * uiBase.getSingleCurveThickness();
-            auto bound = getLocalBounds().toFloat();
-            bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
-            g.setColour(colour);
             switch (baseF.getFilterType()) {
                 case zlFilter::FilterType::peak:
                 case zlFilter::FilterType::bandShelf:
@@ -113,6 +109,10 @@ namespace zlPanel {
                     break;
                 }
                 case zlFilter::FilterType::tiltShelf: {
+                    const auto linkThickness = uiBase.getFontSize() * 0.065f * uiBase.getSingleCurveThickness();
+                    auto bound = getLocalBounds().toFloat();
+                    bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+                    g.setColour(colour);
                     const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(baseGain.load()) / 2, maximumDB.load(), bound);
@@ -123,6 +123,10 @@ namespace zlPanel {
                 case zlFilter::FilterType::lowPass:
                 case zlFilter::FilterType::highPass:
                 case zlFilter::FilterType::bandPass: {
+                    const auto linkThickness = uiBase.getFontSize() * 0.065f * uiBase.getSingleCurveThickness();
+                    auto bound = getLocalBounds().toFloat();
+                    bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+                    g.setColour(colour);
                     const auto x1 = freqToX(baseFreq.load(), bound);
                     const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);
@@ -155,8 +159,11 @@ namespace zlPanel {
 
     void SinglePanel::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == zlState::selectedBandIdx::ID) {
-            selected.store(static_cast<size_t>(newValue) == idx);
-            if (!uiBase.getIsRenderingHardware()) triggerAsyncUpdate();
+            const auto newSelected = static_cast<size_t>(newValue) == idx;
+            if (newSelected != selected.load()) {
+                selected.store(static_cast<size_t>(newValue) == idx);
+                triggerAsyncUpdate();
+            }
         } else {
             if (parameterID.startsWith(zlState::active::ID)) {
                 active.store(newValue > .5f);
