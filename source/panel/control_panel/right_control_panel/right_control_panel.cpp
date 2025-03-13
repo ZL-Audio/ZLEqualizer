@@ -54,12 +54,15 @@ namespace zlPanel {
         dynRelativeC.getLAF().setScale(1.25f);
         sideChainC.getLAF().setScale(1.25f);
         for (auto &c: {&dynBypassC, &dynSoloC, &dynRelativeC, &sideChainC}) {
+            c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
         for (auto &c: {&sideFreqC, &sideQC}) {
+            c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
         for (auto &c: {&thresC, &kneeC, &attackC, &releaseC}) {
+            c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
         lookAndFeelChanged();

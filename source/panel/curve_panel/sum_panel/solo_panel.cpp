@@ -35,13 +35,11 @@ namespace zlPanel {
     }
 
     SoloPanel::~SoloPanel() {
+        turnOffSolo();
         parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
     }
 
     void SoloPanel::paint(juce::Graphics &g) {
-        if (!controllerRef.getSolo()) {
-            return;
-        }
         const size_t bandIdx = selectBandIdx.load();
 
         g.setColour(uiBase.getTextColor().withAlpha(.1f));
@@ -115,5 +113,12 @@ namespace zlPanel {
             sideSoloUpdaters[previousBandIdx]->update(0.f);
         }
         selectBandIdx.store(currentBandIdx);
+    }
+
+    void SoloPanel::turnOffSolo() const {
+        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+            soloUpdaters[i]->updateSync(0.f);
+            sideSoloUpdaters[i]->updateSync(0.f);
+        }
     }
 } // zlPanel

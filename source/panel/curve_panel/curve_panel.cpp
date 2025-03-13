@@ -34,7 +34,7 @@ namespace zlPanel {
         }
         addAndMakeVisible(backgroundPanel, 0);
         addAndMakeVisible(fftPanel, 1);
-        addAndMakeVisible(conflictPanel, 2);
+        addChildComponent(conflictPanel, 2);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
@@ -50,11 +50,11 @@ namespace zlPanel {
         for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
             const auto i = idx;
             sidePanels[idx] = std::make_unique<SidePanel>(i, parametersRef, parametersNARef, base, controllerRef,
-                                                        buttonPanel.getSideDragger(i));
+                                                          buttonPanel.getSideDragger(i));
             addAndMakeVisible(*sidePanels[idx], 5);
         }
         addAndMakeVisible(sumPanel, 6);
-        addAndMakeVisible(soloPanel, 7);
+        addChildComponent(soloPanel, 7);
         addAndMakeVisible(loudnessDisplay, 8);
         addAndMakeVisible(buttonPanel, 9);
         addChildComponent(matchPanel, 10);
@@ -149,8 +149,8 @@ namespace zlPanel {
             showMatchPanel.store(f);
             matchPanel.setVisible(f);
             buttonPanel.setVisible(!f);
-            soloPanel.setVisible(!f);
             loudnessDisplay.updateVisible(!f);
+            if (f) { soloPanel.turnOffSolo(); }
         } else if (property == zlInterface::identifiers[static_cast<size_t>(
                        zlInterface::settingIdx::uiSettingPanelShow)]) {
             const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::uiSettingPanelShow));
@@ -163,9 +163,14 @@ namespace zlPanel {
         const juce::Time nowT = juce::Time::getCurrentTime();
         const auto refreshRateMul = showMatchPanel.load() ? static_cast<juce::int64>(2) : static_cast<juce::int64>(1);
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
+            buttonPanel.updateAttach();
             buttonPanel.updateDraggers();
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
+            soloPanel.checkVisible();
+            for (const auto &panel: singlePanels) {
+                panel->updateVisible();
+            }
             singlePanels[currentBandIdx.load()]->toFront(false);
             for (const auto &panel: sidePanels) {
                 panel->updateDragger();

@@ -87,16 +87,26 @@ namespace zlPanel {
         };
 
         for (auto &c: {&bypassC, &soloC, &dynONC, &dynLC}) {
+            c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
         for (auto &c: {&fTypeC, &slopeC, &stereoC}) {
+            c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
-        for (auto &c: {&freqC, &gainC, &qC}) {
+        for (auto &c: {&freqC}) {
             addAndMakeVisible(c);
         }
+        for (auto &c: {&gainC, &qC}) {
+            addAndMakeVisible(c);
+        }
+        qC.setBufferedToImage(true);
+        lrBox.setBufferedToImage(true);
         addAndMakeVisible(lrBox);
+        resetComponent.setBufferedToImage(true);
         addAndMakeVisible(resetComponent);
+
+        setOpaque(true);
     }
 
     LeftControlPanel::~LeftControlPanel() {
@@ -108,6 +118,7 @@ namespace zlPanel {
     }
 
     void LeftControlPanel::paint(juce::Graphics &g) {
+        g.fillAll(uiBase.getBackgroundColor());
         const auto bound = getLocalBounds().toFloat();
         uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
     }
@@ -136,7 +147,10 @@ namespace zlPanel {
             juce::GridItem(dynLC).withArea(4, 7, 7, 8),
         };
 
-        for (auto &s: {&freqC, &gainC, &qC}) {
+        for (auto &s: {&freqC}) {
+            s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
+        }
+        for (auto &s: {&gainC, &qC}) {
             s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
         }
         lrBox.setPadding(uiBase.getFontSize() * 2.f, 0.f);
@@ -191,6 +205,9 @@ namespace zlPanel {
                    zlDSP::Q::ID + suffix, zlDSP::targetQ::ID + suffix
                },
                parametersRef, sliderAttachments);
+        freqC.updateDisplay();
+        gainC.updateDisplay();
+        qC.updateDisplay();
         parameterChanged(zlDSP::fType::ID + suffix,
                          parametersRef.getRawParameterValue(zlDSP::fType::ID + suffix)->load());
         parameterChanged(zlDSP::dynamicON::ID + suffix,
@@ -259,7 +276,12 @@ namespace zlPanel {
     void LeftControlPanel::updateMouseDragSensitivity() {
         const auto style = uiBase.getRotaryStyle();
         const auto sensitivity = juce::roundToInt(uiBase.getRotaryDragSensitivity() * uiBase.getFontSize());
-        for (auto &c: {&freqC, &gainC, &qC}) {
+        for (auto &c: {&freqC}) {
+            c->getSlider1().setSliderStyle(style);
+            c->getSlider2().setSliderStyle(style);
+            c->setMouseDragSensitivity(sensitivity);
+        }
+        for (auto &c: {&gainC, &qC}) {
             c->getSlider1().setSliderStyle(style);
             c->getSlider2().setSliderStyle(style);
             c->setMouseDragSensitivity(sensitivity);

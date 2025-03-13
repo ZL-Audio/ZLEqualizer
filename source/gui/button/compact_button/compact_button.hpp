@@ -32,6 +32,7 @@ namespace zlInterface {
         inline void setEditable(const bool x) {
             lookAndFeel.setEditable(x);
             button.setInterceptsMouseClicks(x, false);
+            repaint();
         }
 
         inline void setDrawable(juce::Drawable *x) { lookAndFeel.setDrawable(x); }

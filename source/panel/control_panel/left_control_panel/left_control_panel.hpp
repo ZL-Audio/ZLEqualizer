@@ -45,7 +45,8 @@ namespace zlPanel {
         zlInterface::LeftRightCombobox lrBox;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
 
-        zlInterface::TwoValueRotarySlider freqC, gainC, qC;
+        zlInterface::TwoValueRotarySlider<true, false> freqC;
+        zlInterface::TwoValueRotarySlider<true, true>gainC, qC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
 
         ResetComponent resetComponent;

@@ -19,7 +19,6 @@ namespace zlPanel {
     class ButtonPanel final : public juce::Component,
                               private juce::LassoSource<size_t>,
                               private juce::AudioProcessorValueTreeState::Listener,
-                              private juce::AsyncUpdater,
                               private juce::ChangeListener {
     public:
         explicit ButtonPanel(PluginProcessor &processor,
@@ -36,6 +35,8 @@ namespace zlPanel {
         zlInterface::Dragger &getSideDragger(const size_t idx) const {
             return panels[idx]->getSideDragger();
         }
+
+        void updateAttach();
 
         void updateDraggers() const {
             for (const auto &p: panels) {
@@ -87,8 +88,6 @@ namespace zlPanel {
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
-        void handleAsyncUpdate() override;
-
         inline static float xtoFreq(const float x, const juce::Rectangle<float> bound) {
             const auto portion = (x - bound.getX()) / bound.getWidth();
             return std::exp(portion *
@@ -104,6 +103,7 @@ namespace zlPanel {
         size_t findAvailableBand() const;
 
         juce::LassoComponent<size_t> lassoComponent;
+        std::atomic<bool> isDuringLasso{false};
         juce::SelectedItemSet<size_t> itemsSet;
         int previousLassoNum{0};
         std::atomic<bool> isLeftClick{true};
