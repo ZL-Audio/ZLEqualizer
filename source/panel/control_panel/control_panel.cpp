@@ -68,6 +68,8 @@ namespace zlPanel {
         const auto idx = bandIdx.load();
         leftControlPanel.attachGroup(idx);
         rightControlPanel.attachGroup(idx);
-        rightControlPanel.setVisible(dynamicON[idx].load());
+        const auto f = dynamicON[idx].load();
+        leftControlPanel.getDynamicAutoButton().setVisible(f);
+        rightControlPanel.setVisible(f);
     }
 } // zlPanel
