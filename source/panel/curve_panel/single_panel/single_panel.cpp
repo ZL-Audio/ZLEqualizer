@@ -105,32 +105,24 @@ namespace zlPanel {
                 case zlFilter::FilterType::peak:
                 case zlFilter::FilterType::bandShelf:
                 case zlFilter::FilterType::lowShelf:
-                case zlFilter::FilterType::highShelf: {
+                case zlFilter::FilterType::highShelf:
+                case zlFilter::FilterType::bandPass: {
                     break;
                 }
                 case zlFilter::FilterType::tiltShelf: {
-                    const auto linkThickness = uiBase.getFontSize() * 0.065f * uiBase.getSingleCurveThickness();
-                    auto bound = getLocalBounds().toFloat();
-                    bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+                    const auto linkThickness = uiBase.getFontSize() * 0.075f * uiBase.getSingleCurveThickness();
+                    const auto pos1 = buttonPos.load(), pos2 = buttonCurvePos.load();
                     g.setColour(colour);
-                    const auto x1 = freqToX(baseFreq.load(), bound);
-                    const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(baseGain.load()) / 2, maximumDB.load(), bound);
-                    g.drawLine(x1, y1, x1, y2, linkThickness);
+                    g.drawLine(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), linkThickness);
                     break;
                 }
                 case zlFilter::FilterType::notch:
                 case zlFilter::FilterType::lowPass:
-                case zlFilter::FilterType::highPass:
-                case zlFilter::FilterType::bandPass: {
-                    const auto linkThickness = uiBase.getFontSize() * 0.065f * uiBase.getSingleCurveThickness();
-                    auto bound = getLocalBounds().toFloat();
-                    bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+                case zlFilter::FilterType::highPass: {
+                    const auto linkThickness = uiBase.getFontSize() * 0.075f * uiBase.getSingleCurveThickness();
+                    const auto pos1 = buttonPos.load(), pos2 = buttonCurvePos.load();
                     g.setColour(colour);
-                    const auto x1 = freqToX(baseFreq.load(), bound);
-                    const auto y1 = dbToY(centeredDB.load(), maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);
-                    g.drawLine(x1, y1, x1, y2, linkThickness);
+                    g.drawLine(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), linkThickness);
                     break;
                 }
             }
@@ -167,8 +159,6 @@ namespace zlPanel {
         } else {
             if (parameterID.startsWith(zlState::active::ID)) {
                 active.store(newValue > .5f);
-                baseFreq.store(10.0);
-                baseGain.store(0.0);
             } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
                 dynON.store(newValue > .5f);
             } else if (parameterID.startsWith(zlDSP::fType::ID)) {
@@ -207,18 +197,18 @@ namespace zlPanel {
         const auto bottomLeft = atomicBottomLeft.load();
         const auto bottomRight = atomicBottomRight.load();
         const auto maxDB = maximumDB.load();
+        float centeredDB{0.f};
         // draw curve
-        baseFreq.store(static_cast<double>(baseF.getFreq()));
-        baseGain.store(static_cast<double>(baseF.getGain())); {
+        const auto baseFreq = static_cast<double>(baseF.getFreq());
+        const auto baseGain = static_cast<double>(baseF.getGain());
+        const auto targetGain = static_cast<double>(targetF.getGain()); {
             if (baseF.updateMagnitude(ws)) {
                 avoidRepaint.store(false);
             }
             curvePath.clear();
             if (active.load()) {
                 drawCurve(curvePath, baseF.getDBs(), maxDB, bound);
-                centeredDB.store(static_cast<float>(baseF.getDB(0.0001308996938995747 * baseFreq.load())));
-            } else {
-                centeredDB.store(0.f);
+                centeredDB = static_cast<float>(baseF.getDB(0.0001308996938995747 * baseFreq));
             }
             if (uiBase.getIsRenderingHardware()) {
                 juce::GenericScopedLock lock(curveLock);
@@ -274,6 +264,52 @@ namespace zlPanel {
             }
             juce::GenericScopedLock lock(dynLock);
             recentDynPath = dynPath;
+        }
+        // update button pos
+        {
+            switch (baseF.getFilterType()) {
+                case zlFilter::FilterType::lowShelf:
+                case zlFilter::FilterType::highShelf: {
+                    const auto x1 = freqToX(baseFreq, bound);
+                    const auto y1 = dbToY(static_cast<float>(baseGain) * .5f, maximumDB.load(), bound);
+                    const auto y3 = dbToY(static_cast<float>(targetGain) * .5f, maximumDB.load(), bound);
+                    buttonPos.store(juce::Point<float>(x1, y1));
+                    targetButtonPos.store(juce::Point<float>(x1, y3));
+                    break;
+                }
+                case zlFilter::FilterType::peak:
+                case zlFilter::FilterType::bandShelf: {
+                    const auto x1 = freqToX(baseFreq, bound);
+                    const auto y1 = dbToY(centeredDB, maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(baseGain), maximumDB.load(), bound);
+                    const auto y3 = dbToY(static_cast<float>(targetGain), maximumDB.load(), bound);
+                    buttonCurvePos.store(juce::Point<float>(x1, y1));
+                    buttonPos.store(juce::Point<float>(x1, y2));
+                    targetButtonPos.store(juce::Point<float>(x1, y3));
+                    break;
+                }
+                case zlFilter::FilterType::tiltShelf: {
+                    const auto x1 = freqToX(baseFreq, bound);
+                    const auto y1 = dbToY(centeredDB, maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(baseGain) * .5f, maximumDB.load(), bound);
+                    const auto y3 = dbToY(static_cast<float>(targetGain) * .5f, maximumDB.load(), bound);
+                    buttonCurvePos.store(juce::Point<float>(x1, y1));
+                    buttonPos.store(juce::Point<float>(x1, y2));
+                    targetButtonPos.store(juce::Point<float>(x1, y3));
+                    break;
+                }
+                case zlFilter::FilterType::notch:
+                case zlFilter::FilterType::lowPass:
+                case zlFilter::FilterType::highPass:
+                case zlFilter::FilterType::bandPass: {
+                    const auto x1 = freqToX(baseFreq, bound);
+                    const auto y1 = dbToY(centeredDB, maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);
+                    buttonCurvePos.store(juce::Point<float>(x1, y1));
+                    buttonPos.store(juce::Point<float>(x1, y2));
+                    break;
+                }
+            }
         }
     }
 

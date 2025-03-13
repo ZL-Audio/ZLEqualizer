@@ -12,53 +12,53 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace zlPanel {
+    template <typename FloatType>
     class AtomicBound {
     public:
         AtomicBound() = default;
 
-        void store(const juce::Rectangle<float> &bound) {
+        void store(const juce::Rectangle<FloatType> &bound) {
             x.store(bound.getX());
             y.store(bound.getY());
             width.store(bound.getWidth());
             height.store(bound.getHeight());
         }
 
-        juce::Rectangle<float> load() const {
+        juce::Rectangle<FloatType> load() const {
             return {x.load(), y.load(), width.load(), height.load()};
         }
 
-        float getX() const { return x.load(); }
+        FloatType getX() const { return x.load(); }
 
-        float getY() const { return y.load(); }
+        FloatType getY() const { return y.load(); }
 
-        float getWidth() const { return width.load(); }
+        FloatType getWidth() const { return width.load(); }
 
-        float getHeight() const { return height.load(); }
+        FloatType getHeight() const { return height.load(); }
 
     private:
-        std::atomic<float> x{0.f}, y{0.f}, width{0.f}, height{0.f};
+        std::atomic<FloatType> x{}, y{}, width{}, height{};
     };
 
-    class AtomicPoint{
+    template <typename FloatType>
+    class AtomicPoint {
     public:
         AtomicPoint() = default;
 
-        void store(const juce::Point<float> &p) {
+        void store(const juce::Point<FloatType> &p) {
             x.store(p.getX());
             y.store(p.getY());
         }
 
-        juce::Point<float> load() const {
+        juce::Point<FloatType> load() const {
             return {x.load(), y.load()};
         }
 
-        float getX() const { return x.load(); }
+        FloatType getX() const { return x.load(); }
 
-        float getY() const { return y.load(); }
+        FloatType getY() const { return y.load(); }
 
     private:
-        std::atomic<float> x{0.f}, y{0.f};
+        std::atomic<FloatType> x{}, y{};
     };
 }
-
-

@@ -38,6 +38,20 @@ namespace zlPanel {
 
         void updateAttach();
 
+        void updateDragger(const size_t idx,
+                           const juce::Point<float> pos,
+                           const juce::Point<float> targetPos) {
+            const auto &p = panels[idx];
+            const auto f = p->getDragger().updateButton(pos.roundToInt());
+            p->getTargetDragger().updateButton(targetPos.roundToInt());
+            p->getSideDragger().updateButton();
+            p->updateDraggers();
+            if (f) {
+                p->getPopUp().updateBounds(p->getDragger().getButton());
+            }
+            linkButtons[idx]->updateBound();
+        }
+
         void updateDraggers() const {
             for (const auto &p: panels) {
                 const auto f = p->getDragger().updateButton();

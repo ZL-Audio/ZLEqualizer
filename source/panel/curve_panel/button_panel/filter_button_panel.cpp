@@ -228,6 +228,9 @@ namespace zlPanel {
     }
 
     void FilterButtonPanel::updateBounds() {
+        dragger.setBounds(getLocalBounds());
+        targetDragger.setBounds(getLocalBounds());
+        sideDragger.setBounds(getLocalBounds());
         auto bound = getLocalBounds().toFloat();
         bound.removeFromRight((1 - 0.98761596f) * bound.getWidth() - uiBase.getFontSize() * scale * .5f);
         dragger.setPadding(0.f, uiBase.getFontSize() * scale * .5f, uiBase.getFontSize() * scale * .5f,
@@ -239,37 +242,37 @@ namespace zlPanel {
         switch (fType.load()) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
-                dragger.setBounds(
+                dragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() - (2 - scale) * uiBase.getFontSize()).toNearestInt());
-                targetDragger.setBounds(
+                        bound.getHeight() - (2 - scale) * uiBase.getFontSize()));
+                targetDragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() - (2 - scale) * uiBase.getFontSize()).toNearestInt());
+                        bound.getHeight() - (2 - scale) * uiBase.getFontSize()));
                 break;
             }
             case zlFilter::FilterType::lowShelf:
             case zlFilter::FilterType::highShelf:
             case zlFilter::FilterType::tiltShelf: {
-                dragger.setBounds(
+                dragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() * .5f - (1 - scale) * uiBase.getFontSize()).toNearestInt());
-                targetDragger.setBounds(
+                        bound.getHeight() * .5f - (1 - scale) * uiBase.getFontSize()));
+                targetDragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() * .5f - (1 - scale) * uiBase.getFontSize()).toNearestInt());
+                        bound.getHeight() * .5f - (1 - scale) * uiBase.getFontSize()));
                 break;
             }
             case zlFilter::FilterType::notch:
             case zlFilter::FilterType::lowPass:
             case zlFilter::FilterType::highPass:
             case zlFilter::FilterType::bandPass: {
-                dragger.setBounds(
+                dragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        scale * uiBase.getFontSize()).toNearestInt());
+                        scale * uiBase.getFontSize()));
                 break;
             }
         }
@@ -278,6 +281,7 @@ namespace zlPanel {
             bound.getWidth(), scale * uiBase.getFontSize()
         };
         sideDragger.setBounds(sideBound.toNearestInt());
+        sideDragger.setButtonArea(sideBound);
     }
 
     void FilterButtonPanel::updateTargetAttachment() {

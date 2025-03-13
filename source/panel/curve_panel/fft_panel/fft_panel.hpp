@@ -39,8 +39,8 @@ namespace zlPanel {
         juce::Path prePath{}, postPath{}, postStrokePath{}, sidePath{};
         juce::Path recentPrePath{}, recentPostPath{}, recentPostStrokePath{}, recentSidePath{};
         juce::SpinLock pathLock;
-        AtomicPoint leftCorner, rightCorner;
-        AtomicBound atomicBound;
+        AtomicPoint<float> leftCorner, rightCorner;
+        AtomicBound<float> atomicBound;
         std::atomic<float> curveThickness{0.f};
         std::atomic<bool> firstPath = true;
         std::atomic<float> minimumFFTDB{-72.f};

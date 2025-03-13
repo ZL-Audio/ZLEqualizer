@@ -49,8 +49,8 @@ namespace zlPanel {
         juce::Path path1{}, path2{}, path3{};
         juce::Path recentPath1{}, recentPath2{}, recentPath3{};
         juce::SpinLock pathLock;
-        AtomicPoint leftCorner, rightCorner;
-        AtomicBound atomicBound;
+        AtomicPoint<float> leftCorner, rightCorner;
+        AtomicBound<float> atomicBound;
         float backgroundAlpha = .5f;
         bool showAverage{true};
         std::atomic<float> dBScale{1.f};

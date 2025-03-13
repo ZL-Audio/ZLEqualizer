@@ -17,8 +17,9 @@ namespace zlInterface {
         button.setClickingTogglesState(false);
         button.setLookAndFeel(&draggerLAF);
         addAndMakeVisible(button);
-        addChildComponent(preButton);
-        addChildComponent(dummyButton);
+        dummyComponent.addChildComponent(preButton);
+        dummyComponent.addChildComponent(dummyButton);
+        addChildComponent(dummyComponent);
     }
 
     Dragger::~Dragger() {
@@ -28,6 +29,20 @@ namespace zlInterface {
 
     void Dragger::paint(juce::Graphics &g) {
         juce::ignoreUnused(g);
+    }
+
+    bool Dragger::updateButton(const juce::Point<int> &center) {
+        if (button.getBounds().getCentre() != center) {
+            // DBG(std::to_string(center.getX()) + "\t" + std::to_string(center.getY()));
+            // DBG(std::to_string(dummyButton.getBounds().getX()) + "\t" + std::to_string(dummyButton.getBounds().getY()));
+            // DBG("\n");
+            const auto bound = button.getBounds().withCentre(center);
+            button.setBounds(bound);
+            // auto floatBound = bound.toFloat();
+            // draggerLAF.updatePaths(floatBound);
+            return true;
+        }
+        return false;
     }
 
     bool Dragger::updateButton() {
@@ -103,20 +118,23 @@ namespace zlInterface {
         }
     }
 
-    void Dragger::resized() {
-        const auto bound = getLocalBounds().toFloat();
+    void Dragger::setButtonArea(juce::Rectangle<float> bound) {
+        dummyComponent.setBounds(bound.toNearestInt());
         buttonArea = juce::Rectangle<float>(lPadding, uPadding,
                                             bound.getWidth() - lPadding - rPadding,
                                             bound.getHeight() - uPadding - bPadding);
-        auto buttonBound = juce::Rectangle<float>(uiBase.getFontSize() * scale.load(),
-                                                  uiBase.getFontSize() * scale.load());
+        auto buttonBound = juce::Rectangle<float>(uiBase.getFontSize() * scale,
+                                                  uiBase.getFontSize() * scale);
         buttonBound.setCentre(buttonArea.getX() + xPortion.load() * buttonArea.getWidth(),
                               buttonArea.getBottom() - yPortion.load() * buttonArea.getHeight());
         preButton.setBounds(buttonBound.toNearestInt());
         dummyButton.setBounds(buttonBound.toNearestInt());
+        button.setBounds(buttonBound.toNearestInt());
+        auto lafBound = button.getLocalBounds().toFloat();
+        draggerLAF.updatePaths(lafBound);
         dummyButtonChanged.store(true);
         // set constrainer
-        const auto minimumOffset = uiBase.getFontSize() * scale.load() * .5f;
+        const auto minimumOffset = uiBase.getFontSize() * scale * .5f;
         constrainer.setMinimumOnscreenAmounts(static_cast<int>(std::floor(minimumOffset + uPadding + .5f)),
                                               static_cast<int>(std::floor(minimumOffset + lPadding + .5f)),
                                               static_cast<int>(std::floor(minimumOffset + bPadding + .5f)),
