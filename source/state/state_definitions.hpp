@@ -421,12 +421,12 @@ namespace zlState {
 
     class renderingEngine : public ChoiceParameters<renderingEngine> {
     public:
-        auto static constexpr ID = "rendering_engine";
-        auto static constexpr name = "Rendering Engine";
+        auto static constexpr ID = "renderer";
+        auto static constexpr name = "Renderer";
         inline auto static const choices = juce::StringArray{
-            "Software", "Hardware", "Unknown", "Unknown", "Unknown"
+            "Auto", "Software", "Hardware", "Unknown", "Unknown", "Unknown"
         };
-        int static constexpr defaultI = 1;
+        int static constexpr defaultI = 0;
     };
 
     class colourMapIdx : public ChoiceParameters<colourMapIdx> {
@@ -540,5 +540,3 @@ namespace zlState {
         return layout;
     }
 }
-
-
