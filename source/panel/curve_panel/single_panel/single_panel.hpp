@@ -62,6 +62,8 @@ namespace zlPanel {
 
         void run(float physicalPixelScaleFactor);
 
+        juce::Point<float> getButtonPos() const { return buttonPos.load(); }
+
         void lookAndFeelChanged() override;
 
     private:
@@ -78,13 +80,13 @@ namespace zlPanel {
 
         std::atomic<bool> dynON, selected, active;
         std::atomic<float> maximumDB;
-        AtomicBound atomicBound;
-        AtomicPoint atomicBottomLeft, atomicBottomRight;
+        AtomicBound<float> atomicBound;
+        AtomicPoint<float> atomicBottomLeft, atomicBottomRight;
         std::atomic<float> curveThickness{0.f};
 
         std::atomic<bool> toRepaint{false};
         std::atomic<bool> avoidRepaint{true};
-        std::atomic<float> centeredDB{0.f};
+        AtomicPoint<float> buttonPos, buttonCurvePos;
         std::atomic<double> baseFreq{1000.0}, baseGain{0.0};
         std::atomic<double> currentBaseGain{0.0}, currentTargetGain{0.0};
         std::atomic<double> scale{1.0};

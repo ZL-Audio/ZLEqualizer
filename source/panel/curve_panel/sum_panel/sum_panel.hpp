@@ -52,7 +52,7 @@ namespace zlPanel {
         std::array<zlFilter::Ideal<double, 16>, zlState::bandNUM> &mMainFilters;
         std::atomic<float> maximumDB;
         std::vector<double> dBs{};
-        AtomicBound atomicBound;
+        AtomicBound<float> atomicBound;
         std::atomic<float> curveThickness{0.f};
 
         static constexpr std::array changeIDs{
