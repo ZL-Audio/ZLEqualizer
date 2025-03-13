@@ -14,7 +14,7 @@
 namespace zlInterface {
     class SnappingSlider final : public juce::Slider {
     public:
-        explicit SnappingSlider(UIBase &base) : juce::Slider(), uiBase(base) {
+        explicit SnappingSlider(UIBase &base, const juce::String &name = "") : juce::Slider(name), uiBase(base) {
         }
 
         void mouseWheelMove(const juce::MouseEvent &e, const juce::MouseWheelDetails &wheel) override {

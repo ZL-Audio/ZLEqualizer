@@ -38,7 +38,7 @@ namespace zlPanel {
         zlInterface::CompactButton dynBypassC, dynSoloC, dynRelativeC, sideChainC;
         juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
 
-        zlInterface::TwoValueRotarySlider sideFreqC, sideQC;
+        zlInterface::TwoValueRotarySlider<true, false> sideFreqC, sideQC;
         zlInterface::CompactLinearSlider thresC, kneeC, attackC, releaseC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
 

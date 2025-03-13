@@ -50,6 +50,7 @@ namespace zlInterface {
             nameLookAndFeel.setEditable(x);
             textLookAndFeel.setEditable(x);
             setInterceptsMouseClicks(x, false);
+            repaint();
         }
 
         inline void setPadding(const float lr, const float ub) {
