@@ -53,6 +53,8 @@ namespace zlPanel {
             fType.store(f);
         }
 
+        void visibilityChanged() override;
+
     private:
         size_t band;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;

@@ -19,7 +19,6 @@ namespace zlPanel {
         freqPara = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, band));
 
         addAndMakeVisible(background);
-
         addAndMakeVisible(pitchLabel);
     }
 
@@ -115,5 +114,9 @@ namespace zlPanel {
                                            pitchIdx2)
                                      : "A0";
         pitchLabel.setText(pitchString);
+    }
+
+    void ButtonPopUp::visibilityChanged() {
+        setBounds({-1000, -1000, 0, 0});
     }
 } // zlPanel
