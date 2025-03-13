@@ -68,12 +68,7 @@ namespace zlPanel {
         lookAndFeelChanged();
     }
 
-    RightControlPanel::~RightControlPanel() {
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
-            const std::string suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
-            parametersRef.removeParameterListener(zlDSP::dynamicON::ID + suffix, this);
-        }
-    }
+    RightControlPanel::~RightControlPanel() {}
 
     void RightControlPanel::paint(juce::Graphics &g) {
         const auto bound = getLocalBounds().toFloat();
@@ -121,15 +116,9 @@ namespace zlPanel {
         updateMouseDragSensitivity();
     }
 
-    void RightControlPanel::attachGroup(size_t idx) {
-        const std::string oldSuffix = bandIdx.load() < 10
-                                          ? "0" + std::to_string(bandIdx.load())
-                                          : std::to_string(bandIdx.load());
-        parametersRef.removeParameterListener(zlDSP::dynamicON::ID + oldSuffix, this);
-
+    void RightControlPanel::attachGroup(const size_t idx) {
         bandIdx.store(idx);
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
-        parametersRef.addParameterListener(zlDSP::dynamicON::ID + suffix, this);
 
         buttonAttachments.clear(true);
         sliderAttachments.clear(true);
@@ -149,30 +138,6 @@ namespace zlPanel {
         attach({&sideFreqC.getSlider1(), &sideQC.getSlider1()},
                {zlDSP::sideFreq::ID + suffix, zlDSP::sideQ::ID + suffix},
                parametersRef, sliderAttachments);
-        parameterChanged(zlDSP::dynamicON::ID + suffix,
-                         parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
-    }
-
-    void RightControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
-            dynEditable.store(newValue > .5f);
-            triggerAsyncUpdate();
-        }
-    }
-
-    void RightControlPanel::handleAsyncUpdate() {
-        const auto f = dynEditable.load();
-        dynBypassC.setEditable(f);
-        dynSoloC.setEditable(f);
-        dynRelativeC.setEditable(f);
-        sideChainC.setEditable(f);
-        thresC.setEditable(f);
-        attackC.setEditable(f);
-        kneeC.setEditable(f);
-        releaseC.setEditable(f);
-        sideFreqC.setEditable(f);
-        sideQC.setEditable(f);
-        repaint();
     }
 
     void RightControlPanel::updateMouseDragSensitivity() {

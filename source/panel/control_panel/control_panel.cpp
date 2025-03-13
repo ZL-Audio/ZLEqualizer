@@ -14,20 +14,29 @@
 namespace zlPanel {
     ControlPanel::ControlPanel(PluginProcessor &p,
                                zlInterface::UIBase &base)
-        : parametersNARef(p.parametersNA), uiBase(base),
+        : parametersRef(p.parameters), parametersNARef(p.parametersNA), uiBase(base),
           leftControlPanel(p, base),
           rightControlPanel(p, base),
           matchControlPanel(p, base) {
+        addAndMakeVisible(leftControlPanel);
+        addChildComponent(rightControlPanel);
+        addChildComponent(matchControlPanel);
+        for (size_t i = 0; i < zlState::bandNUM; ++i) {
+            const auto idx = zlDSP::appendSuffix(zlDSP::dynamicON::ID, i);
+            dynamicON[i].store(parametersRef.getRawParameterValue(idx)->load() > .5f);
+            parametersRef.addParameterListener(idx, this);
+        }
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
-        addAndMakeVisible(leftControlPanel);
-        addAndMakeVisible(rightControlPanel);
-        addChildComponent(matchControlPanel);
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
     }
 
     ControlPanel::~ControlPanel() {
         parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
+        for (size_t i = 0; i < zlState::bandNUM; ++i) {
+            const auto idx = zlDSP::appendSuffix(zlDSP::dynamicON::ID, i);
+            parametersRef.removeParameterListener(idx, this);
+        }
     }
 
     void ControlPanel::resized() {
@@ -46,11 +55,19 @@ namespace zlPanel {
         if (parameterID == zlState::selectedBandIdx::ID) {
             bandIdx.store(static_cast<size_t>(newValue));
             triggerAsyncUpdate();
+        } else {
+            const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
+            dynamicON[idx].store(newValue > .5f);
+            if (idx == bandIdx.load()) {
+                triggerAsyncUpdate();
+            }
         }
     }
 
     void ControlPanel::handleAsyncUpdate() {
-        leftControlPanel.attachGroup(bandIdx.load());
-        rightControlPanel.attachGroup(bandIdx.load());
+        const auto idx = bandIdx.load();
+        leftControlPanel.attachGroup(idx);
+        rightControlPanel.attachGroup(idx);
+        rightControlPanel.setVisible(dynamicON[idx].load());
     }
 } // zlPanel
