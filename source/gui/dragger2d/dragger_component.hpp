@@ -48,6 +48,8 @@ namespace zlInterface {
 
         void setScale(const float x) { scale = x; }
 
+        void visibilityChanged() override;
+
         class Listener {
         public:
             virtual ~Listener() = default;

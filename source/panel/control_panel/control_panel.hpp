@@ -28,9 +28,11 @@ namespace zlPanel {
         void resized() override;
 
     private:
+        juce::AudioProcessorValueTreeState &parametersRef;
         juce::AudioProcessorValueTreeState &parametersNARef;
         zlInterface::UIBase &uiBase;
         std::atomic<size_t> bandIdx{0};
+        std::array<std::atomic<bool>, zlState::bandNUM> dynamicON{};
         LeftControlPanel leftControlPanel;
         RightControlPanel rightControlPanel;
         MatchControlPanel matchControlPanel;

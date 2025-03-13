@@ -33,13 +33,8 @@ namespace zlInterface {
 
     bool Dragger::updateButton(const juce::Point<int> &center) {
         if (button.getBounds().getCentre() != center) {
-            // DBG(std::to_string(center.getX()) + "\t" + std::to_string(center.getY()));
-            // DBG(std::to_string(dummyButton.getBounds().getX()) + "\t" + std::to_string(dummyButton.getBounds().getY()));
-            // DBG("\n");
             const auto bound = button.getBounds().withCentre(center);
             button.setBounds(bound);
-            // auto floatBound = bound.toFloat();
-            // draggerLAF.updatePaths(floatBound);
             return true;
         }
         return false;
@@ -130,6 +125,7 @@ namespace zlInterface {
         preButton.setBounds(buttonBound.toNearestInt());
         dummyButton.setBounds(buttonBound.toNearestInt());
         button.setBounds(buttonBound.toNearestInt());
+        updateButton({-1000, -1000});
         auto lafBound = button.getLocalBounds().toFloat();
         draggerLAF.updatePaths(lafBound);
         dummyButtonChanged.store(true);
@@ -175,5 +171,9 @@ namespace zlInterface {
 
     float Dragger::getYPortion() const {
         return yPortion.load();
+    }
+
+    void Dragger::visibilityChanged() {
+        updateButton({-1000, -1000});
     }
 } // zlInterface

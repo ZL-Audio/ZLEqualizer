@@ -33,6 +33,8 @@ namespace zlPanel {
 
         void attachGroup(size_t idx);
 
+        zlInterface::CompactButton &getDynamicAutoButton() { return dynLC; }
+
     private:
         PluginProcessor &processorRef;
         zlInterface::UIBase &uiBase;
@@ -46,7 +48,7 @@ namespace zlPanel {
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
 
         zlInterface::TwoValueRotarySlider<true, false> freqC;
-        zlInterface::TwoValueRotarySlider<true, true>gainC, qC;
+        zlInterface::TwoValueRotarySlider<true, true> gainC, qC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
 
         ResetComponent resetComponent;

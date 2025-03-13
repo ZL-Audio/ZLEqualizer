@@ -14,9 +14,7 @@
 #include "../../panel_definitons.hpp"
 
 namespace zlPanel {
-    class RightControlPanel final : public juce::Component,
-                                    private juce::AudioProcessorValueTreeState::Listener,
-                                    private juce::AsyncUpdater {
+    class RightControlPanel final : public juce::Component {
     public:
         explicit RightControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
@@ -45,10 +43,6 @@ namespace zlPanel {
         const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable, relativeDrawable, sideDrawable;
 
         std::atomic<size_t> bandIdx;
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
-
-        void handleAsyncUpdate() override;
 
         void updateMouseDragSensitivity();
     };
