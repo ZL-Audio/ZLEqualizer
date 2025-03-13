@@ -64,6 +64,8 @@ namespace zlPanel {
 
         juce::Point<float> getButtonPos() const { return buttonPos.load(); }
 
+        juce::Point<float> getTargetButtonPos() const {return targetButtonPos.load();}
+
         void lookAndFeelChanged() override;
 
     private:
@@ -86,8 +88,7 @@ namespace zlPanel {
 
         std::atomic<bool> toRepaint{false};
         std::atomic<bool> avoidRepaint{true};
-        AtomicPoint<float> buttonPos, buttonCurvePos;
-        std::atomic<double> baseFreq{1000.0}, baseGain{0.0};
+        AtomicPoint<float> buttonPos, buttonCurvePos, targetButtonPos;
         std::atomic<double> currentBaseGain{0.0}, currentTargetGain{0.0};
         std::atomic<double> scale{1.0};
 

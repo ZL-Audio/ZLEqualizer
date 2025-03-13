@@ -164,7 +164,12 @@ namespace zlPanel {
         const auto refreshRateMul = showMatchPanel.load() ? static_cast<juce::int64>(2) : static_cast<juce::int64>(1);
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
             buttonPanel.updateAttach();
-            buttonPanel.updateDraggers();
+            // buttonPanel.updateDraggers();
+            for (size_t i = 0; i < zlState::bandNUM; ++i) {
+                buttonPanel.updateDragger(i,
+                                          singlePanels[i]->getButtonPos(),
+                                          singlePanels[i]->getTargetButtonPos());
+            }
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();
             soloPanel.checkVisible();

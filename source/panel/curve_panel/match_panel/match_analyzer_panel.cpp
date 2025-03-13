@@ -97,8 +97,11 @@ namespace zlPanel {
         dBScale.store((1.f + uiBase.getFontSize() * 2.f / bound.getHeight()) * 2.f);
         matchLabel.setBounds(getLocalBounds());
         lowDragger.setBounds(getLocalBounds());
+        lowDragger.setButtonArea(getLocalBounds().toFloat());
         highDragger.setBounds(getLocalBounds());
+        highDragger.setButtonArea(getLocalBounds().toFloat());
         shiftDragger.setBounds(getLocalBounds());
+        shiftDragger.setButtonArea(getLocalBounds().toFloat());
         shiftDragger.setPadding(0.f, 0.f, uiBase.getFontSize(), uiBase.getFontSize());
     }
 

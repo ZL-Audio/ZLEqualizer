@@ -26,13 +26,15 @@ namespace zlInterface {
 
         bool updateButton();
 
+        bool updateButton(const juce::Point<int> &center);
+
         void mouseDown(const juce::MouseEvent &event) override;
 
         void mouseUp(const juce::MouseEvent &event) override;
 
         void mouseDrag(const juce::MouseEvent &event) override;
 
-        void resized() override;
+        void setButtonArea(juce::Rectangle<float> bound);
 
         juce::ToggleButton &getButton() { return button; }
 
@@ -44,9 +46,7 @@ namespace zlInterface {
 
         float getYPortion() const;
 
-        void setScale(const float x) { scale.store(x); }
-
-        float getScale() const { return scale.load(); }
+        void setScale(const float x) { scale = x; }
 
         class Listener {
         public:
@@ -84,7 +84,7 @@ namespace zlInterface {
 
     private:
         UIBase &uiBase;
-
+        juce::Component dummyComponent;
         juce::Component preButton, dummyButton;
         juce::Rectangle<int> preBound, dummyBound;
         bool isShiftDown{false};
@@ -99,7 +99,7 @@ namespace zlInterface {
 
         juce::Rectangle<float> buttonArea;
         float lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, bPadding{0.f};
-        std::atomic<float> scale{1.f};
+        float scale{1.f};
 
         juce::ListenerList<Listener> listeners;
     };
