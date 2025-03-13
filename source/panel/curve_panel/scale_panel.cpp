@@ -19,21 +19,23 @@ namespace zlPanel {
         scaleBox.getLAF().setFontScale(zlInterface::FontLarge);
         scaleBox.getBox().setJustificationType(juce::Justification::centredRight);
         scaleBox.getBox().onChange = [this]() {
-            triggerAsyncUpdate();
+            handleAsyncUpdate();
         };
         minFFTBox.getLAF().setFontScale(zlInterface::FontLarge);
         minFFTBox.getBox().setJustificationType(juce::Justification::centredRight);
         minFFTBox.getBox().onChange = [this]() {
-            triggerAsyncUpdate();
+            handleAsyncUpdate();
         };
         attach({&scaleBox.getBox(), &minFFTBox.getBox()},
                {zlState::maximumDB::ID, zlState::minimumFFTDB::ID},
                parametersNARef, boxAttachments);
         addAndMakeVisible(scaleBox);
         addAndMakeVisible(minFFTBox);
-        triggerAsyncUpdate();
+        handleAsyncUpdate();
 
         SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::dbScale));
+
+        setBufferedToImage(true);
     }
 
     ScalePanel::~ScalePanel() = default;

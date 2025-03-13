@@ -25,6 +25,7 @@ namespace zlPanel {
         uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
 
         SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::eqMatch));
+        setBufferedToImage(true);
     }
 
     void MatchSettingPanel::resized() {

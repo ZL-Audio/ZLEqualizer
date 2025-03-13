@@ -48,6 +48,7 @@ namespace zlPanel {
             c->getLAF().enableShadow(false);
             c->getLAF().setShrinkScale(.0f);
             addAndMakeVisible(c);
+            c->setBufferedToImage(true);
         }
 
         attach({

@@ -28,7 +28,6 @@ namespace zlPanel {
                               zlInterface::multilingual::labels::linearPhase}),
               zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase,
                        zlInterface::multilingual::labels::zeroLatency) {
-            setBufferedToImage(true);
             for (auto &c: {&filterStructure}) {
                 addAndMakeVisible(c);
             }
@@ -45,6 +44,7 @@ namespace zlPanel {
                        zlDSP::filterStructure::ID, zlDSP::zeroLatency::ID
                    },
                    parametersRef, boxAttachments);
+            setBufferedToImage(true);
         }
 
         ~GeneralCallOutBox() override = default;
@@ -91,6 +91,7 @@ namespace zlPanel {
         name.setInterceptsMouseClicks(false, false);
         name.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(name);
+        setBufferedToImage(true);
     }
 
     GeneralSettingPanel::~GeneralSettingPanel() {
