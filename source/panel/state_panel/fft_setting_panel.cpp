@@ -24,7 +24,6 @@ namespace zlPanel {
               fftSideON("Side:", zlState::fftSideON::choices, uiBase, zlInterface::multilingual::labels::fftSide),
               ffTSpeed("", zlState::ffTSpeed::choices, uiBase, zlInterface::multilingual::labels::fftDecay),
               fftTilt("", zlState::ffTTilt::choices, uiBase, zlInterface::multilingual::labels::fftSlope) {
-            setBufferedToImage(true);
             for (auto &c: {&fftPreON, &fftPostON, &fftSideON}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.5f);
@@ -45,6 +44,7 @@ namespace zlPanel {
                        zlState::ffTSpeed::ID, zlState::ffTTilt::ID
                    },
                    parametersNARef, boxAttachments);
+            setBufferedToImage(true);
         }
 
         ~FFTCallOutBox() override = default;
@@ -94,6 +94,7 @@ namespace zlPanel {
         name.setInterceptsMouseClicks(false, false);
         name.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(name);
+        setBufferedToImage(true);
     }
 
     FFTSettingPanel::~FFTSettingPanel() {

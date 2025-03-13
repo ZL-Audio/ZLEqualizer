@@ -19,6 +19,7 @@ namespace zlPanel {
           logoDrawable(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
         juce::ignoreUnused(stateRef);
         SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::pluginLogo));
+        setBufferedToImage(true);
     }
 
     void LogoPanel::paint(juce::Graphics &g) {

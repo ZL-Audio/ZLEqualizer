@@ -21,7 +21,6 @@ namespace zlPanel {
               conflictC("DET:", zlState::conflictON::choices, uiBase, zlInterface::multilingual::labels::collisionDET),
               strengthS("Strength", uiBase, zlInterface::multilingual::labels::collisionStrength),
               scaleS("Scale", uiBase, zlInterface::multilingual::labels::collisionScale) {
-            setBufferedToImage(true);
             conflictC.getLabelLAF().setFontScale(1.5f);
             conflictC.setLabelScale(.5f);
             conflictC.setLabelPos(zlInterface::ClickCombobox::left);
@@ -39,6 +38,7 @@ namespace zlPanel {
                        zlState::conflictScale::ID
                    },
                    parametersNARef, sliderAttachments);
+            setBufferedToImage(true);
         }
 
         ~ConflictCallOutBox() override = default;
@@ -89,6 +89,7 @@ namespace zlPanel {
         name.setInterceptsMouseClicks(false, false);
         name.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(name);
+        setBufferedToImage(true);
     }
 
     ConflictSettingPanel::~ConflictSettingPanel() {

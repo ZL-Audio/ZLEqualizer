@@ -22,7 +22,6 @@ namespace zlPanel {
               rmsS("RMS", uiBase, zlInterface::multilingual::labels::rms),
               smoothS("Smooth", uiBase, zlInterface::multilingual::labels::smooth),
               dynHQC("HQ:", zlDSP::dynHQ::choices, uiBase, zlInterface::multilingual::labels::highQuality) {
-            setBufferedToImage(true);
             for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.01f);
                 addAndMakeVisible(c);
@@ -47,6 +46,7 @@ namespace zlPanel {
                        zlDSP::dynHQ::ID
                    },
                    parametersRef, boxAttachments);
+            setBufferedToImage(true);
         }
 
         ~CompCallOutBox() override = default;
@@ -97,6 +97,7 @@ namespace zlPanel {
         name.setInterceptsMouseClicks(false, false);
         name.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(name);
+        setBufferedToImage(true);
     }
 
     CompSettingPanel::~CompSettingPanel() {
