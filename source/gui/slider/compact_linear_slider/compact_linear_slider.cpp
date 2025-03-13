@@ -53,7 +53,6 @@ namespace zlInterface {
     }
 
     CompactLinearSlider::~CompactLinearSlider() {
-        animator.cancelAllAnimations(false);
     }
 
     void CompactLinearSlider::resized() {
@@ -90,7 +89,8 @@ namespace zlInterface {
         textLookAndFeel.setAlpha(1.f);
         nameLookAndFeel.setAlpha(0.f);
         slider.mouseEnter(event);
-        animator.cancelAnimation(animationId, false);
+        textLookAndFeel.setAlpha(1.f);
+        nameLookAndFeel.setAlpha(0.f);
         text.repaint();
         label.repaint();
     }
@@ -104,7 +104,10 @@ namespace zlInterface {
             return;
         }
 
-        leaveAnimation();
+        textLookAndFeel.setAlpha(0.f);
+        nameLookAndFeel.setAlpha(1.f);
+        text.repaint();
+        label.repaint();
     }
 
     void CompactLinearSlider::mouseMove(const juce::MouseEvent &event) {
@@ -156,7 +159,10 @@ namespace zlInterface {
 
         slider.setValue(actualValue, juce::sendNotificationAsync);
 
-        leaveAnimation();
+        textLookAndFeel.setAlpha(0.f);
+        nameLookAndFeel.setAlpha(1.f);
+        text.repaint();
+        label.repaint();
     }
 
     void CompactLinearSlider::sliderValueChanged(juce::Slider *) {
@@ -184,22 +190,5 @@ namespace zlInterface {
             }
         }
         return labelToDisplay;
-    }
-
-    void CompactLinearSlider::leaveAnimation() {
-        if (animator.getAnimation(animationId) != nullptr)
-            return;
-        auto frizEffect{
-            friz::makeAnimation<friz::Parametric, 1>(
-                animationId, {1.5f}, {0.f}, 1000, friz::Parametric::kLinear)
-        };
-        frizEffect->updateFn = [this](int, const auto &vals) {
-            auto val = juce::jmin(vals[0], 1.0f);
-            textLookAndFeel.setAlpha(val);
-            nameLookAndFeel.setAlpha(1.f - val);
-            text.repaint();
-            label.repaint();
-        };
-        animator.addAnimation(std::move(frizEffect));
     }
 }

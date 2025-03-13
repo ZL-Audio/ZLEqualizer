@@ -14,8 +14,7 @@ namespace zlInterface {
                                      UIBase &base, const multilingual::labels labelIdx,
                                      const std::vector<multilingual::labels> &itemLabelIndices)
         : uiBase(base),
-          boxLookAndFeel(base),
-          animator{} {
+          boxLookAndFeel(base) {
         juce::ignoreUnused(labelText);
 #if (JUCE_MAJOR_VERSION < 8)
         comboBox.addItemList(choices, 1);
@@ -51,7 +50,7 @@ namespace zlInterface {
 
 
     CompactCombobox::~CompactCombobox() {
-        animator.cancelAllAnimations(false);
+        // animator.cancelAllAnimations(false);
         comboBox.setLookAndFeel(nullptr);
     }
 
@@ -76,34 +75,14 @@ namespace zlInterface {
 
     void CompactCombobox::mouseEnter(const juce::MouseEvent &event) {
         comboBox.mouseEnter(event);
-        animator.cancelAnimation(animationId, false);
-        if (animator.getAnimation(animationId) != nullptr)
-            return;
-        auto frizEffect{
-            friz::makeAnimation<friz::Parametric, 1>(
-                animationId, {boxLookAndFeel.getBoxAlpha()}, {1.f}, 1000, friz::Parametric::kEaseInQuad)
-        };
-        frizEffect->updateFn = [this](int, const auto &vals) {
-            boxLookAndFeel.setBoxAlpha(vals[0]);
-            comboBox.repaint();
-        };
-        animator.addAnimation(std::move(frizEffect));
+        boxLookAndFeel.setBoxAlpha(1.f);
+        comboBox.repaint();
     }
 
     void CompactCombobox::mouseExit(const juce::MouseEvent &event) {
         comboBox.mouseExit(event);
-        animator.cancelAnimation(animationId, false);
-        if (animator.getAnimation(animationId) != nullptr)
-            return;
-        auto frizEffect{
-            friz::makeAnimation<friz::Parametric, 1>(
-                animationId, {boxLookAndFeel.getBoxAlpha()}, {0.f}, 1000, friz::Parametric::kEaseOutQuad)
-        };
-        frizEffect->updateFn = [this](int, const auto &vals) {
-            boxLookAndFeel.setBoxAlpha(vals[0]);
-            comboBox.repaint();
-        };
-        animator.addAnimation(std::move(frizEffect));
+        boxLookAndFeel.setBoxAlpha(0.f);
+        comboBox.repaint();
     }
 
     void CompactCombobox::mouseMove(const juce::MouseEvent &event) {

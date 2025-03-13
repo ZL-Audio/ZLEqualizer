@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <friz/friz.h>
-
 #include "../../label/name_look_and_feel.hpp"
 #include "compact_linear_slider_look_and_feel.hpp"
 #include "../extra_slider/snapping_slider.h"
@@ -71,9 +69,6 @@ namespace zlInterface {
         SnappingSlider slider;
         juce::Label label, text;
 
-        friz::Animator animator{};
-        static constexpr int animationId = 1;
-
         std::atomic<float> lrPad = 0, ubPad = 0;
 
         juce::String getDisplayValue(juce::Slider &s);
@@ -85,7 +80,5 @@ namespace zlInterface {
         void editorHidden(juce::Label *l, juce::TextEditor &editor) override;
 
         void sliderValueChanged(juce::Slider *slider) override;
-
-        void leaveAnimation();
     };
 }

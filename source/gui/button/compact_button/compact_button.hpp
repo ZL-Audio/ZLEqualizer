@@ -10,7 +10,6 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-#include <friz/friz.h>
 
 #include "../../interface_definitions.hpp"
 #include "compact_button_look_and_feel.hpp"
@@ -52,11 +51,7 @@ namespace zlInterface {
 
         juce::ToggleButton button;
         CompactButtonLookAndFeel lookAndFeel;
-        static constexpr int animationId = 1;
-        static constexpr int animationDuration = 200;
 
         std::atomic<bool> fit = false;
-
-        friz::Animator animator;
     };
 }

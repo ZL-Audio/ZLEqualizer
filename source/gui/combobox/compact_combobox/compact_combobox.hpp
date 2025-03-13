@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <friz/friz.h>
-
 #include "compact_combobox_look_and_feel.hpp"
 
 namespace zlInterface {
@@ -50,8 +48,5 @@ namespace zlInterface {
         zlInterface::UIBase &uiBase;
         CompactComboboxLookAndFeel boxLookAndFeel;
         juce::ComboBox comboBox;
-
-        friz::Animator animator;
-        static constexpr int animationId = 1;
     };
 }
