@@ -34,8 +34,9 @@ namespace zlPanel {
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         juce::RangedAudioParameter *lmPara;
         zlInterface::UIBase &uiBase;
-        std::atomic<float> &currentScale;
-        juce::String gainString{"0.0"}, scaleString{"100.0%"};
+        std::atomic<float> &scale;
+        float currentGain{0.f}, currentScale{100.f};
+        juce::String gainString{"0.0"}, scaleString{"100%"};
         bool showGain{false};
         juce::Rectangle<float> gainBound, scaleBound;
         juce::Path backgroundPath;

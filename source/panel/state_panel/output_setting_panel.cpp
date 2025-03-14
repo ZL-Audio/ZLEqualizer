@@ -109,11 +109,12 @@ namespace zlPanel {
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           uiBase(base),
-          currentScale(*parametersRef.getRawParameterValue(zlDSP::scale::ID)),
+          scale(*parametersRef.getRawParameterValue(zlDSP::scale::ID)),
           callOutBoxLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         lmPara = parametersRef.getParameter(zlDSP::loudnessMatcherON::ID);
         lookAndFeelChanged();
+        setBufferedToImage(true);
     }
 
     OutputSettingPanel::~OutputSettingPanel() {
@@ -160,9 +161,11 @@ namespace zlPanel {
     }
 
     void OutputSettingPanel::timerCallback() {
-        const auto currentGain = processorRef.getController().getGainCompensation();
-        showGain = !showGain;
-        if (showGain) {
+        const auto newGain = static_cast<float>(processorRef.getController().getGainCompensation());
+        const auto newScale = scale.load();
+        if (std::abs(newGain - currentGain) > 0.0 || std::abs(newScale - currentScale) > 0.0) {
+            currentGain = newGain;
+            currentScale = newScale;
             if (lmPara->getValue() < .5f) {
                 if (currentGain <= 0.04) {
                     gainString = juce::String(currentGain, 1, false);
@@ -172,9 +175,9 @@ namespace zlPanel {
             } else {
                 gainString = "L";
             }
-            scaleString = juce::String(static_cast<int>(std::round(currentScale.load()))) + "%";
+            scaleString = juce::String(static_cast<int>(std::round(scale.load()))) + "%";
+            repaint();
         }
-        repaint();
     }
 
     void OutputSettingPanel::lookAndFeelChanged() {
