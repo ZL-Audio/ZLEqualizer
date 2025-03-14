@@ -39,32 +39,28 @@ namespace zlPanel {
         void updateAttach();
 
         void updateDragger(const size_t idx,
-                           const juce::Point<float> pos,
-                           const juce::Point<float> targetPos) {
+                           const juce::Point<float> pos) {
             const auto &p = panels[idx];
-            const auto f = p->getDragger().updateButton(pos.roundToInt());
-            p->getTargetDragger().updateButton(targetPos.roundToInt());
-            p->getSideDragger().updateButton();
-            p->updateDraggers();
-            if (f) {
-                p->getPopUp().updateBounds(p->getDragger().getButton());
-            }
-            linkButtons[idx]->updateBound();
-        }
-
-        void updateDraggers() const {
-            for (const auto &p: panels) {
-                const auto f = p->getDragger().updateButton();
-                p->getTargetDragger().updateButton();
-                p->getSideDragger().updateButton();
-                p->updateDraggers();
-                if (f && p->getPopUp().isVisible()) {
+            if (p->getDragger().isVisible()) {
+                const auto f = p->getDragger().updateButton(pos.roundToInt());
+                if (f) {
                     p->getPopUp().updateBounds(p->getDragger().getButton());
                 }
             }
-            for (const auto &p: linkButtons) {
-                p->updateBound();
-            }
+            p->updateDraggers();
+        }
+
+        void updateOtherDraggers(const size_t idx, const juce::Point<float> targetPos) {
+            const auto &p = panels[idx];
+            p->getTargetDragger().updateButton(targetPos.roundToInt());
+            p->getSideDragger().updateButton();
+            linkButtons[idx]->updateBound();
+        }
+
+        void updateOthers(const size_t idx) {
+            const auto &p = panels[idx];
+            p->getPopUp().updateBounds(p->getDragger().getButton());
+            linkButtons[idx]->updateBound();
         }
 
         void resized() override;

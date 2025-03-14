@@ -56,6 +56,7 @@ namespace zlPanel {
         std::array<std::unique_ptr<SidePanel>, zlState::bandNUM> sidePanels;
         juce::Component dummyComponent{};
         std::atomic<size_t> currentBandIdx;
+        size_t previousBandIdx{zlState::bandNUM + 1};
         MatchPanel matchPanel;
         juce::Time currentT;
         juce::VBlankAttachment vblank;
