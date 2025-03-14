@@ -29,6 +29,8 @@ namespace zlPanel {
         parameterChanged(zlState::selectedBandIdx::ID,
                          parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
         parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
+
+        setOpaque(true);
     }
 
     ControlPanel::~ControlPanel() {
@@ -39,15 +41,20 @@ namespace zlPanel {
         }
     }
 
+    void ControlPanel::paint(juce::Graphics &g) {
+        g.fillAll(uiBase.getBackgroundColor());
+    }
+
     void ControlPanel::resized() {
         const auto bound = getLocalBounds().toFloat();
         const auto actualBound = uiBase.getRoundedShadowRectangleArea(bound, uiBase.getFontSize(), {});
+
         const auto leftWidth = actualBound.getWidth() * (33.f / 63.f) + (bound.getWidth() - actualBound.getWidth()) *
                                .5f;
-        auto rightBound = getLocalBounds().toFloat();
-        const auto leftBound = rightBound.removeFromLeft(leftWidth);
-        leftControlPanel.setBounds(leftBound.toNearestInt());
-        rightControlPanel.setBounds(rightBound.toNearestInt());
+        auto rightBound = getLocalBounds();
+        const auto leftBound = rightBound.removeFromLeft(juce::roundToInt(leftWidth));
+        leftControlPanel.setBounds(leftBound);
+        rightControlPanel.setBounds(rightBound);
         matchControlPanel.setBounds(getLocalBounds());
     }
 

@@ -27,6 +27,8 @@ namespace zlPanel {
 
         void resized() override;
 
+        void paint(juce::Graphics &g) override;
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
         juce::AudioProcessorValueTreeState &parametersNARef;

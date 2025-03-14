@@ -69,39 +69,37 @@ namespace zlPanel {
     }
 
     void StatePanel::resized() {
-        auto bound = getLocalBounds().toFloat();
-        const auto logoBound = bound.removeFromLeft(bound.getWidth() * .125f);
-        logoPanel.setBounds(logoBound.toNearestInt());
-        const auto height = bound.getHeight();
+        auto bound = getLocalBounds();
+        const auto logoBound = bound.removeFromLeft(
+            juce::roundToInt(static_cast<float>(bound.getWidth()) * .125f));
+        logoPanel.setBounds(logoBound);
 
-        const auto effectBound = bound.removeFromRight(height * .85f);
-        effectC.setBounds(effectBound.toNearestInt());
+        const auto height = static_cast<float>(bound.getHeight());
 
-        const auto sideBound = bound.removeFromRight(height * .85f);
-        sideC.setBounds(sideBound.toNearestInt());
+        const auto effectBound = bound.removeFromRight(juce::roundToInt(height * .85f));
+        effectC.setBounds(effectBound);
 
-        const auto sgcBound = bound.removeFromRight(height * .85f);
-        sgcC.setBounds(sgcBound.toNearestInt());
-        bound.removeFromRight(height * .25f);
+        const auto sideBound = bound.removeFromRight(juce::roundToInt(height * .85f));
+        sideC.setBounds(sideBound);
 
-        bound.removeFromBottom(uiBase.getFontSize() * .5f);
+        const auto sgcBound = bound.removeFromRight(juce::roundToInt(height * .85f));
+        sgcC.setBounds(sgcBound);
+        bound.removeFromRight(juce::roundToInt(height * .25f));
 
-        const auto outputSettingBound = bound.removeFromRight(height * labelSize);
-        outputSettingPanel.setBounds(outputSettingBound.toNearestInt());
-        bound.removeFromRight(height * .5f);
-        const auto fftSettingBound = bound.removeFromRight(height * labelSize);
-        fftSettingPanel.setBounds(fftSettingBound.toNearestInt());
-        bound.removeFromRight(height * .5f);
-        const auto compSettingBound = bound.removeFromRight(height * labelSize);
-        compSettingPanel.setBounds(compSettingBound.toNearestInt());
-        bound.removeFromRight(height * .5f);
-        const auto conflictSettingBound = bound.removeFromRight(height * labelSize);
-        conflictSettingPanel.setBounds(conflictSettingBound.toNearestInt());
-        bound.removeFromRight(height * .5f);
-        const auto generalSettingBound = bound.removeFromRight(height * labelSize);
-        generalSettingPanel.setBounds(generalSettingBound.toNearestInt());
-        bound.removeFromRight(height * .5f);
-        const auto matchSettingBound = bound.removeFromRight(height * labelSize);
-        matchSettingPanel.setBounds(matchSettingBound.toNearestInt());
+        bound.removeFromBottom(juce::roundToInt(uiBase.getFontSize() * .5f));
+
+        const auto labelWidth = juce::roundToInt(height * labelSize);
+        const auto gapWidth = juce::roundToInt(height * .5f);
+        outputSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        bound.removeFromRight(gapWidth);
+        fftSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        bound.removeFromRight(gapWidth);
+        compSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        bound.removeFromRight(gapWidth);
+        conflictSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        bound.removeFromRight(gapWidth);
+        generalSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        bound.removeFromRight(gapWidth);
+        matchSettingPanel.setBounds(bound.removeFromRight(labelWidth));
     }
 } // zlPanel

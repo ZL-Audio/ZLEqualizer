@@ -50,25 +50,26 @@ namespace zlPanel {
     }
 
     void MainPanel::resized() {
-        auto bound = getLocalBounds().toFloat();
-        if (bound.getHeight() < 0.47f * bound.getWidth()) {
-            bound.setHeight(0.47f * bound.getWidth());
+        auto bound = getLocalBounds();
+        if (static_cast<float>(bound.getHeight()) < 0.47f * static_cast<float>(bound.getWidth())) {
+            bound.setHeight(juce::roundToInt(0.47f * static_cast<float>(bound.getWidth())));
         }
-        const auto fontSize = bound.getWidth() * 0.014287762237762238f;
+
+        const auto fontSize = static_cast<float>(bound.getWidth()) * 0.014287762237762238f;
         uiBase.setFontSize(fontSize);
 
-        auto stateBound = bound.removeFromTop(fontSize * 2.625381664859529f);
-        statePanel.setBounds(stateBound.toNearestInt());
-        stateBound = stateBound.removeFromRight(stateBound.getHeight());
-        stateBound.removeFromBottom(fontSize * .5f);
+        const auto stateBound = bound.removeFromTop(juce::roundToInt(fontSize * 2.625381664859529f));
+        statePanel.setBounds(stateBound);
 
         uiSettingPanel.setBounds(getLocalBounds());
 
-        const auto controlBound = bound.removeFromBottom(fontSize * 7.348942487176095f);
-        controlPanel.setBounds(controlBound.toNearestInt());
-        const auto scaleBound = bound.removeFromRight(uiBase.getFontSize() * 4.2f);
+        const auto controlBound = bound.removeFromBottom(juce::roundToInt(fontSize * 7.348942487176095f));
+        controlPanel.setBounds(controlBound);
+
+        const auto scaleBound = bound.removeFromRight(juce::roundToInt(uiBase.getFontSize() * 4.2f));
         curvePanel.setBounds(bound.toNearestInt());
         scalePanel.setBounds(scaleBound.toNearestInt());
+        DBG(std::to_string(controlPanel.getBounds().getY()) + "\t" + std::to_string(curvePanel.getBounds().getBottom()));;
     }
 
     void MainPanel::parameterChanged(const juce::String &parameterID, float newValue) {
