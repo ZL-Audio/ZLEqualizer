@@ -342,7 +342,11 @@ namespace zlState {
         inline auto static const choices = juce::StringArray{
             "25 Hz", "30 Hz", "60 Hz", "90 Hz", "120 Hz"
         };
+#if defined(JUCE_MAC)
         int static constexpr defaultI = 2;
+#else
+        int static constexpr defaultI = 1;
+#endif
         inline static std::array<int, 5> ms{
             39, 33, 16, 11, 8
         };
