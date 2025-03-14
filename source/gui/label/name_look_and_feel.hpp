@@ -16,8 +16,7 @@
 namespace zlInterface {
     class NameLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
-        explicit NameLookAndFeel(UIBase &base) {
-            uiBase = &base;
+        explicit NameLookAndFeel(UIBase &base) : uiBase(base) {
         }
 
         void drawLabel(juce::Graphics &g, juce::Label &label) override {
@@ -25,11 +24,11 @@ namespace zlInterface {
                 return;
             }
             if (editable) {
-                g.setColour(uiBase->getTextColor().withMultipliedAlpha(alpha.load()));
+                g.setColour(uiBase.getTextColor().withMultipliedAlpha(alpha.load()));
             } else {
-                g.setColour(uiBase->getTextInactiveColor().withMultipliedAlpha(alpha.load()));
+                g.setColour(uiBase.getTextInactiveColor().withMultipliedAlpha(alpha.load()));
             }
-            g.setFont(uiBase->getFontSize() * fontScale.load());
+            g.setFont(uiBase.getFontSize() * fontScale.load());
             auto bound = label.getLocalBounds().toFloat();
             bound.removeFromTop(uPadding.load());
             bound.removeFromBottom(dPadding.load());
@@ -57,6 +56,6 @@ namespace zlInterface {
         std::atomic<float> fontScale{FontNormal};
         std::atomic<float> lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, dPadding{0.f};
 
-        UIBase *uiBase;
+        UIBase &uiBase;
     };
 }
