@@ -180,11 +180,10 @@ namespace zlPanel {
         if (toUpdateBounds.exchange(false)) {
             updateBounds();
         }
-        dragger.repaint();
+        // dragger.repaint();
         dragger.getButton().repaint();
-        targetDragger.repaint();
-        sideDragger.repaint();
-        buttonPopUp.componentMovedOrResized(dragger.getButton(), true, true);
+        // targetDragger.repaint();
+        // sideDragger.repaint();
     }
 
     void FilterButtonPanel::updateAttachment() {
