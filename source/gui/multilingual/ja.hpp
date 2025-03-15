@@ -15,7 +15,7 @@ namespace zlInterface::multilingual::ja {
     static constexpr std::array texts = {
         "押す：選択したバンドをオンにする。\n離す：選択したバンドをバイパスする。",
         "押す：選択した周波数帯の影響を受けるオーディオをソロにする。",
-        "選択した周波数帯の種類を選択する。Peak（ピーク）、Low Shelf（ローシェルフ）、Low Pass（ローパス）、High Shelf（ハイシェルフ）、High Pass（ハイパス）、Notch（ノッチ）、Band Pass（バンドパス）、Tilt Shelf（ティルトシェルフ）.",
+        "選択した周波数帯の種類を選択する。Peak、Low Shelf、Low Pass（ローパス）、High Shelf、High Pass（ハイパス）、Notch、Band Pass（バンドパス）、Tilt Shelf.",
         "選択した周波数帯のスロープを選択する。スロープが高いと、フィルターの応答曲線がより急激に変化する。",
         "選択した周波数帯のステレオモードを選択する。Stereo（ステレオ）、Left（左）、Right（右）、Mid（ミッド）、Side（サイド）.",
         "選択した周波数帯の中心周波数を調整する.",

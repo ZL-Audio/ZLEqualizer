@@ -15,7 +15,7 @@ namespace zlInterface::multilingual::es {
     static constexpr std::array texts = {
         "Presiona: activa la banda seleccionada.\nSuelta: omite la banda seleccionada.",
         "Presiona: activa el solo del audio afectado por la banda de frecuencia seleccionada.",
-        "Elige el tipo de la banda de frecuencia seleccionada. Peak (pico), Low Shelf (refuerzo bajo), Low Pass (pasa bajos), High Shelf (refuerzo alto), High Pass (pasa altos), Notch (notch), Band Pass (pasa banda), Tilt Shelf (estante inclinado).",
+        "Elige el tipo de la banda de frecuencia seleccionada. Peak, Low Shelf, Low Pass (pasa bajos), High Shelf, High Pass (pasa altos), Notch, Band Pass (pasa banda), Tilt Shelf.",
         "Elige la pendiente de la banda de frecuencia seleccionada. Una pendiente mayor hará que la curva de respuesta del filtro cambie de forma más pronunciada.",
         "Elige el modo estéreo de la banda de frecuencia seleccionada. Stereo (estéreo), Left (izquierda), Right (derecha), Mid (central), Side (lateral).",
         "Ajusta la frecuencia central de la banda de frecuencia seleccionada.",

@@ -15,7 +15,7 @@ namespace zlInterface::multilingual::de {
     static constexpr std::array texts = {
         "Drücken: Schalte das ausgewählte Band ein.\nLoslassen: Bypasse das ausgewählte Band.",
         "Drücken: Aktiviere Solo für das vom ausgewählten Frequenzband betroffene Audio.",
-        "Wählen Sie den Typ des ausgewählten Frequenzbands. Peak（Spitze）、Low Shelf（Tiefanhebung）、Low Pass（Tiefpass）、High Shelf（Hochanhebung）、High Pass（Hochpass）、Notch（Kerbe）、Band Pass（Bandpass）、Tilt Shelf（Kippfilter）.",
+        "Wählen Sie den Typ des ausgewählten Frequenzbands. Peak、Low Shelf、Low Pass（Tiefpass）、High Shelf、High Pass（Hochpass）、Notch、Band Pass（Bandpass）、Tilt Shelf.",
         "Wählen Sie die Steilheit des ausgewählten Frequenzbands. Eine höhere Steilheit bewirkt, dass die Antwortkurve des Filters steiler verläuft.",
         "Wählen Sie den Stereo-Modus des ausgewählten Frequenzbands. Stereo（Stereo）、Left（links）、Right（rechts）、Mid（Mitte）、Side（Seiten）.",
         "Stellen Sie die Mittenfrequenz des ausgewählten Frequenzbands ein.",
