@@ -41,13 +41,18 @@ namespace zlPanel {
         g.fillPath(path);
     }
 
-    void DynamicSettingPanel::mouseEnter(const juce::MouseEvent &event) {
+    void DynamicSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
         if (uiBase.getBoxProperty(zlInterface::boxIdx::dynamicBox)) {
             uiBase.setBoxProperty(zlInterface::boxIdx::dynamicBox, false);
         } else {
             uiBase.openOneBox(zlInterface::boxIdx::dynamicBox);
         }
+    }
+
+    void DynamicSettingPanel::mouseEnter(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        uiBase.openOneBox(zlInterface::boxIdx::dynamicBox);
     }
 
     void DynamicSettingPanel::resized() {

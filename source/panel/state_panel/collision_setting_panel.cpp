@@ -45,13 +45,18 @@ namespace zlPanel {
         g.fillPath(path);
     }
 
-    void CollisionSettingPanel::mouseEnter(const juce::MouseEvent &event) {
+    void CollisionSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
         if (uiBase.getBoxProperty(zlInterface::boxIdx::collisionBox)) {
             uiBase.setBoxProperty(zlInterface::boxIdx::collisionBox, false);
         } else {
             uiBase.openOneBox(zlInterface::boxIdx::collisionBox);
         }
+    }
+
+    void CollisionSettingPanel::mouseEnter(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        uiBase.openOneBox(zlInterface::boxIdx::collisionBox);
     }
 
     void CollisionSettingPanel::resized() {

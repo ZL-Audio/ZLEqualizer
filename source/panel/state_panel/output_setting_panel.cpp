@@ -43,13 +43,18 @@ namespace zlPanel {
         }
     }
 
-    void OutputSettingPanel::mouseEnter(const juce::MouseEvent &event) {
+    void OutputSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
         if (uiBase.getBoxProperty(zlInterface::boxIdx::outputBox)) {
             uiBase.setBoxProperty(zlInterface::boxIdx::outputBox, false);
         } else {
             uiBase.openOneBox(zlInterface::boxIdx::outputBox);
         }
+    }
+
+    void OutputSettingPanel::mouseEnter(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        uiBase.openOneBox(zlInterface::boxIdx::outputBox);
     }
 
     void OutputSettingPanel::timerCallback() {

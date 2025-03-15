@@ -25,6 +25,8 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
+        void mouseDown(const juce::MouseEvent &event) override;
+
         void mouseEnter(const juce::MouseEvent &event) override;
 
         void resized() override;
