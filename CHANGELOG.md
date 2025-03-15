@@ -17,6 +17,8 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
   - since it is not a per-band parameter, top-right corner seems to be a better place
 - change several button icons (see the manual)
   - the old ones are not intuitive enough
+- add English 简体中文 繁體中文 Italiano 日本語 Deutsch Español tooltips
+  - 日本語 Deutsch Español tooltips are translated by ChatGPT. I cannot ensure the accuracy of the translation. If you observe incorrect translations, please report them to me or submit a pull request.
 - add FFT db scale choice (see #147 and the manual)
 - add loudness match (see #154 and the manual)
 - add solo shortcuts (by right-mouse-button double-clicking with Ctrl/Command on the band button)
