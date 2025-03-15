@@ -101,31 +101,10 @@ namespace zlPanel {
         }
         // draw the line between the curve and the button
         {
-            switch (baseF.getFilterType()) {
-                case zlFilter::FilterType::peak:
-                case zlFilter::FilterType::bandShelf:
-                case zlFilter::FilterType::lowShelf:
-                case zlFilter::FilterType::highShelf:
-                case zlFilter::FilterType::bandPass: {
-                    break;
-                }
-                case zlFilter::FilterType::tiltShelf: {
-                    const auto linkThickness = uiBase.getFontSize() * 0.075f * uiBase.getSingleCurveThickness();
-                    const auto pos1 = buttonPos.load(), pos2 = buttonCurvePos.load();
-                    g.setColour(colour);
-                    g.drawLine(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), linkThickness);
-                    break;
-                }
-                case zlFilter::FilterType::notch:
-                case zlFilter::FilterType::lowPass:
-                case zlFilter::FilterType::highPass: {
-                    const auto linkThickness = uiBase.getFontSize() * 0.075f * uiBase.getSingleCurveThickness();
-                    const auto pos1 = buttonPos.load(), pos2 = buttonCurvePos.load();
-                    g.setColour(colour);
-                    g.drawLine(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), linkThickness);
-                    break;
-                }
-            }
+            const auto linkThickness = uiBase.getFontSize() * 0.075f * uiBase.getSingleCurveThickness();
+            const auto pos1 = buttonPos.load(), pos2 = buttonCurvePos.load();
+            g.setColour(colour);
+            g.drawLine(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), linkThickness);
         }
     }
 
@@ -199,9 +178,7 @@ namespace zlPanel {
         const auto maxDB = maximumDB.load();
         float centeredDB{0.f};
         // draw curve
-        const auto baseFreq = static_cast<double>(baseF.getFreq());
-        const auto baseGain = static_cast<double>(baseF.getGain());
-        const auto targetGain = static_cast<double>(targetF.getGain()); {
+        const auto baseFreq = static_cast<double>(baseF.getFreq()); {
             if (baseF.updateMagnitude(ws)) {
                 avoidRepaint.store(false);
             }
@@ -271,9 +248,11 @@ namespace zlPanel {
                 case zlFilter::FilterType::lowShelf:
                 case zlFilter::FilterType::highShelf: {
                     const auto x1 = freqToX(baseFreq, bound);
-                    const auto y1 = dbToY(static_cast<float>(baseGain) * .5f, maximumDB.load(), bound);
-                    const auto y3 = dbToY(static_cast<float>(targetGain) * .5f, maximumDB.load(), bound);
-                    buttonPos.store(juce::Point<float>(x1, y1));
+                    const auto y1 = dbToY(static_cast<float>(baseF.getGain()) * .5f, maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(currentBaseGain.load()) * .5f, maximumDB.load(), bound);
+                    const auto y3 = dbToY(static_cast<float>(currentTargetGain.load()) * .5f, maximumDB.load(), bound);
+                    buttonCurvePos.store(juce::Point<float>(x1, y1));
+                    buttonPos.store(juce::Point<float>(x1, y2));
                     targetButtonPos.store(juce::Point<float>(x1, y3));
                     break;
                 }
@@ -281,8 +260,8 @@ namespace zlPanel {
                 case zlFilter::FilterType::bandShelf: {
                     const auto x1 = freqToX(baseFreq, bound);
                     const auto y1 = dbToY(centeredDB, maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(baseGain), maximumDB.load(), bound);
-                    const auto y3 = dbToY(static_cast<float>(targetGain), maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(currentBaseGain.load()), maximumDB.load(), bound);
+                    const auto y3 = dbToY(static_cast<float>(currentTargetGain.load()), maximumDB.load(), bound);
                     buttonCurvePos.store(juce::Point<float>(x1, y1));
                     buttonPos.store(juce::Point<float>(x1, y2));
                     targetButtonPos.store(juce::Point<float>(x1, y3));
@@ -291,8 +270,8 @@ namespace zlPanel {
                 case zlFilter::FilterType::tiltShelf: {
                     const auto x1 = freqToX(baseFreq, bound);
                     const auto y1 = dbToY(centeredDB, maximumDB.load(), bound);
-                    const auto y2 = dbToY(static_cast<float>(baseGain) * .5f, maximumDB.load(), bound);
-                    const auto y3 = dbToY(static_cast<float>(targetGain) * .5f, maximumDB.load(), bound);
+                    const auto y2 = dbToY(static_cast<float>(currentBaseGain.load()) * .5f, maximumDB.load(), bound);
+                    const auto y3 = dbToY(static_cast<float>(currentTargetGain.load()) * .5f, maximumDB.load(), bound);
                     buttonCurvePos.store(juce::Point<float>(x1, y1));
                     buttonPos.store(juce::Point<float>(x1, y2));
                     targetButtonPos.store(juce::Point<float>(x1, y3));
