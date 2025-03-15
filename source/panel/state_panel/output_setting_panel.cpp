@@ -46,6 +46,7 @@ namespace zlPanel {
 
     void OutputSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
+        stopTimer(1);
         if (uiBase.getBoxProperty(zlInterface::boxIdx::outputBox)) {
             uiBase.setBoxProperty(zlInterface::boxIdx::outputBox, false);
         } else {

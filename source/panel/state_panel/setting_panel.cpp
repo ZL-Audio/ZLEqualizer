@@ -48,6 +48,7 @@ namespace zlPanel {
 
     void SettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
+        stopTimer();
         if (uiBase.getBoxProperty(mIdx)) {
             uiBase.setBoxProperty(mIdx, false);
         } else {
