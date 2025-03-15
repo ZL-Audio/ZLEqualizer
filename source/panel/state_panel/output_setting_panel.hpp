@@ -25,7 +25,7 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void mouseDown(const juce::MouseEvent &event) override;
+        void mouseEnter(const juce::MouseEvent &event) override;
 
         void resized() override;
 
@@ -36,15 +36,11 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         std::atomic<float> &scale;
         float currentGain{0.f}, currentScale{100.f};
+        bool currentLearning{false};
         juce::String gainString{"0.0"}, scaleString{"100%"};
         bool showGain{false};
         juce::Rectangle<float> gainBound, scaleBound;
         juce::Path backgroundPath;
-
-        zlInterface::CallOutBoxLAF callOutBoxLAF;
-        juce::Component::SafePointer<juce::CallOutBox> boxPointer;
-
-        void openCallOutBox();
 
         void timerCallback() override;
 

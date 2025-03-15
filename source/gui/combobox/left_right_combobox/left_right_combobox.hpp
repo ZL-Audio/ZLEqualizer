@@ -26,8 +26,8 @@ namespace zlInterface {
         inline juce::ComboBox &getBox() { return box; }
 
         inline void setPadding(const float lr, const float ub) {
-            lrPad.store(lr);
-            ubPad.store(ub);
+            lrPad = lr;
+            ubPad = ub;
         }
 
         void selectLeft();
@@ -41,6 +41,6 @@ namespace zlInterface {
         juce::ComboBox box;
         LeftRightComboboxLookAndFeel lookAndFeel;
 
-        std::atomic<float> lrPad = 0, ubPad = 0;
+        float lrPad = 0, ubPad = 0;
     };
 } // zlInterface

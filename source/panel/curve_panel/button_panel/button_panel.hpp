@@ -19,7 +19,8 @@ namespace zlPanel {
     class ButtonPanel final : public juce::Component,
                               private juce::LassoSource<size_t>,
                               private juce::AudioProcessorValueTreeState::Listener,
-                              private juce::ChangeListener {
+                              private juce::ChangeListener,
+                              private juce::Timer {
     public:
         explicit ButtonPanel(PluginProcessor &processor,
                              zlInterface::UIBase &base);
@@ -64,6 +65,10 @@ namespace zlPanel {
         }
 
         void resized() override;
+
+        void mouseEnter(const juce::MouseEvent &event) override;
+
+        void mouseExit(const juce::MouseEvent &event) override;
 
         void mouseDown(const juce::MouseEvent &event) override;
 
@@ -126,6 +131,8 @@ namespace zlPanel {
         juce::SelectedItemSet<size_t> &getLassoSelection() override;
 
         void changeListenerCallback(juce::ChangeBroadcaster *source) override;
+
+        void timerCallback() override;
 
         void attachGroup(size_t idx);
 

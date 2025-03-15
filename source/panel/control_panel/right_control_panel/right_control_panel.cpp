@@ -19,7 +19,7 @@ namespace zlPanel {
           dynBypassC("B", base, zlInterface::multilingual::labels::bandDynamicBypass),
           dynSoloC("S", base, zlInterface::multilingual::labels::bandDynamicSolo),
           dynRelativeC("R", base, zlInterface::multilingual::labels::bandDynamicRelative),
-          sideChainC("S", base, zlInterface::multilingual::labels::bandSideSwap),
+          swapC("S", base, zlInterface::multilingual::labels::bandSideSwap),
           sideFreqC("FREQ", base, zlInterface::multilingual::labels::bandDynamicSideFreq),
           sideQC("Q", base, zlInterface::multilingual::labels::bandDynamicSideQ),
           thresC("Threshold", base, zlInterface::multilingual::labels::bandDynamicThreshold),
@@ -30,7 +30,7 @@ namespace zlPanel {
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
           relativeDrawable(juce::Drawable::createFromImageData(BinaryData::relative_svg, BinaryData::relative_svgSize)),
-          sideDrawable(juce::Drawable::createFromImageData(BinaryData::swap_svg, BinaryData::swap_svgSize)) {
+          swapDrawable(juce::Drawable::createFromImageData(BinaryData::swap_svg, BinaryData::swap_svgSize)) {
         juce::ignoreUnused(parametersNARef);
         dynBypassC.setDrawable(bypassDrawable.get());
         dynBypassC.getLAF().setReverse(true);
@@ -50,10 +50,10 @@ namespace zlPanel {
         };
         dynSoloC.setDrawable(soloDrawable.get());
         dynRelativeC.setDrawable(relativeDrawable.get());
-        sideChainC.setDrawable(sideDrawable.get());
+        swapC.setDrawable(swapDrawable.get());
         dynRelativeC.getLAF().setScale(1.25f);
-        sideChainC.getLAF().setScale(1.25f);
-        for (auto &c: {&dynBypassC, &dynSoloC, &dynRelativeC, &sideChainC}) {
+        swapC.getLAF().setScale(1.25f);
+        for (auto &c: {&dynBypassC, &dynSoloC, &dynRelativeC, &swapC}) {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
@@ -68,7 +68,8 @@ namespace zlPanel {
         lookAndFeelChanged();
     }
 
-    RightControlPanel::~RightControlPanel() {}
+    RightControlPanel::~RightControlPanel() {
+    }
 
     void RightControlPanel::paint(juce::Graphics &g) {
         const auto bound = getLocalBounds().toFloat();
@@ -76,39 +77,46 @@ namespace zlPanel {
     }
 
     void RightControlPanel::resized() {
-        juce::Grid grid;
-        using Track = juce::Grid::TrackInfo;
-        using Fr = juce::Grid::Fr;
+        // update padding
+        {
+            for (auto &s: {&sideFreqC, &sideQC}) {
+                s->setPadding(std::round(uiBase.getFontSize() * 0.5f), 0.f);
+            }
 
-        grid.templateRows = {Track(Fr(1)), Track(Fr(1))};
-        grid.templateColumns = {
-            Track(Fr(3)), Track(Fr(3)), Track(Fr(6)),
-            Track(Fr(6)), Track(Fr(6)), Track(Fr(6))
-        };
-        grid.items = {
-            juce::GridItem(dynBypassC).withArea(1, 1),
-            juce::GridItem(dynRelativeC).withArea(1, 2),
-            juce::GridItem(thresC).withArea(1, 3),
-            juce::GridItem(attackC).withArea(1, 4),
-            juce::GridItem(sideFreqC).withArea(1, 5, 3, 6),
-            juce::GridItem(sideQC).withArea(1, 6, 3, 7),
-            juce::GridItem(dynSoloC).withArea(2, 1),
-            juce::GridItem(sideChainC).withArea(2, 2),
-            juce::GridItem(kneeC).withArea(2, 3),
-            juce::GridItem(releaseC).withArea(2, 4),
-        };
-
-        for (auto &s: {&sideFreqC, &sideQC}) {
-            s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
+            for (auto &s: {&thresC, &kneeC, &attackC, &releaseC}) {
+                s->setPadding(std::round(uiBase.getFontSize() * 0.5f),
+                              std::round(uiBase.getFontSize() * 0.6f));
+            }
         }
-
-        for (auto &s: {&thresC, &kneeC, &attackC, &releaseC}) {
-            s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
+        // update bounds
+        auto bound = getLocalBounds(); {
+            const auto pad = static_cast<int>(uiBase.getFontSize() * .5f);
+            bound = bound.withSizeKeepingCentre(bound.getWidth() - 2 * pad, bound.getHeight() - 2 * pad);
         }
-
-        auto bound = getLocalBounds().toFloat();
-        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
-        grid.performLayout(bound.toNearestInt());
+        const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * buttonWidthP);
+        const auto buttonHeight = std::min(static_cast<int>(uiBase.getFontSize() * buttonHeightP),
+                                           bound.getHeight() / 2);
+        const auto sliderWidth = static_cast<int>(std::round(uiBase.getFontSize() * rSliderWidthP)); {
+            auto mBound = bound.removeFromLeft(buttonWidth);
+            dynBypassC.setBounds(mBound.removeFromTop(buttonHeight));
+            dynSoloC.setBounds(mBound.removeFromBottom(buttonHeight));
+        } {
+            auto mBound = bound.removeFromLeft(buttonWidth);
+            dynRelativeC.setBounds(mBound.removeFromTop(buttonHeight));
+            swapC.setBounds(mBound.removeFromBottom(buttonHeight));
+        }
+        sideQC.setBounds(bound.removeFromRight(sliderWidth));
+        sideFreqC.setBounds(bound.removeFromRight(sliderWidth));
+        const auto remainingWidth = bound.getWidth() / 2; {
+            auto mBound = bound.removeFromLeft(remainingWidth);
+            thresC.setBounds(mBound.removeFromTop(buttonHeight));
+            kneeC.setBounds(mBound.removeFromBottom(buttonHeight));
+        } {
+            auto mBound = bound.removeFromLeft(remainingWidth);
+            attackC.setBounds(mBound.removeFromTop(buttonHeight));
+            releaseC.setBounds(mBound.removeFromBottom(buttonHeight));
+        }
+        // update sliders' dragging distance
         updateMouseDragSensitivity();
     }
 
@@ -123,7 +131,7 @@ namespace zlPanel {
         buttonAttachments.clear(true);
         sliderAttachments.clear(true);
 
-        attach({&dynBypassC.getButton(), &dynSoloC.getButton(), &dynRelativeC.getButton(), &sideChainC.getButton()},
+        attach({&dynBypassC.getButton(), &dynSoloC.getButton(), &dynRelativeC.getButton(), &swapC.getButton()},
                {
                    zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix,
                    zlDSP::dynamicRelative::ID + suffix, zlDSP::sideSwap::ID + suffix

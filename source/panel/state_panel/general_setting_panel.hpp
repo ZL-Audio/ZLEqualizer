@@ -24,16 +24,12 @@ namespace zlPanel {
 
         void paint(juce::Graphics &g) override;
 
-        void mouseDown(const juce::MouseEvent &event) override;
+        void mouseEnter(const juce::MouseEvent &event) override;
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        juce::Label name;
         zlInterface::NameLookAndFeel nameLAF;
-        zlInterface::CallOutBoxLAF callOutBoxLAF;
-        juce::Component::SafePointer<juce::CallOutBox> boxPointer;
-
-        void openCallOutBox();
+        juce::Label name;
     };
 } // zlPanel

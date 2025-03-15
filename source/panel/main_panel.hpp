@@ -15,6 +15,7 @@
 #include "curve_panel/scale_panel.hpp"
 #include "state_panel/state_panel.hpp"
 #include "ui_setting_panel/ui_setting_panel.hpp"
+#include "call_out_box/call_out_box.hpp"
 
 namespace zlPanel {
     class MainPanel final : public juce::Component,
@@ -42,6 +43,12 @@ namespace zlPanel {
         ScalePanel scalePanel;
         StatePanel statePanel;
         UISettingPanel uiSettingPanel;
+
+        OutputBox outputBox;
+        AnalyzerBox analyzerBox;
+        DynamicBox dynamicBox;
+        CollisionBox collisionBox;
+        GeneralBox generalBox;
 
         zlInterface::TooltipLookAndFeel tooltipLAF;
         zlInterface::TooltipWindow tooltipWindow;

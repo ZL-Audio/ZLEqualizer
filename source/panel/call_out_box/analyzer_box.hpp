@@ -7,15 +7,15 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "fft_setting_panel.hpp"
+#pragma once
 
-#include "../../state/state.hpp"
-#include "../panel_definitons.hpp"
+#include "../../gui/gui.hpp"
+#include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
-    class FFTCallOutBox final : public juce::Component {
+    class AnalyzerBox final : public juce::Component, private juce::ValueTree::Listener {
     public:
-        explicit FFTCallOutBox(juce::AudioProcessorValueTreeState &parametersNA,
+        explicit AnalyzerBox(juce::AudioProcessorValueTreeState &parametersNA,
                                zlInterface::UIBase &base)
             : parametersNARef(parametersNA),
               uiBase(base),
@@ -45,11 +45,30 @@ namespace zlPanel {
                    },
                    parametersNARef, boxAttachments);
             setBufferedToImage(true);
+
+            uiBase.getBoxTree().addListener(this);
         }
 
-        ~FFTCallOutBox() override = default;
+        ~AnalyzerBox() override {
+            uiBase.getBoxTree().removeListener(this);
+        }
+
+        void paint(juce::Graphics &g) override {
+            g.fillAll(uiBase.getBackgroundColor());
+        }
+
+        juce::Rectangle<int> getIdealBound() const {
+            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
+            const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * 2.5);
+            const auto boxHeight = juce::roundToInt(boxHeightP * uiBase.getFontSize());
+            return {buttonWidth * 3, boxHeight * 5 + padSize};
+        }
 
         void resized() override {
+            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
+            auto bound = getLocalBounds();
+            bound.removeFromBottom(padSize);
+
             juce::Grid grid;
             using Track = juce::Grid::TrackInfo;
             using Fr = juce::Grid::Fr;
@@ -64,10 +83,7 @@ namespace zlPanel {
                 juce::GridItem(ffTSpeed).withArea(4, 1),
                 juce::GridItem(fftTilt).withArea(5, 1)
             };
-            grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
-            auto bound = getLocalBounds().toFloat();
-            bound.removeFromTop(uiBase.getFontSize() * .2f);
-            grid.performLayout(bound.toNearestInt());
+            grid.performLayout(bound);
         }
 
     private:
@@ -77,68 +93,14 @@ namespace zlPanel {
         zlInterface::ClickCombobox fftPreON, fftPostON, fftSideON;
         zlInterface::CompactCombobox ffTSpeed, fftTilt;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
+
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                      const juce::Identifier &property) override {
+            juce::ignoreUnused(treeWhosePropertyHasChanged);
+            if (uiBase.isBoxProperty(zlInterface::boxIdx::analyzerBox, property)) {
+                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlInterface::boxIdx::analyzerBox));
+                setVisible(f);
+            }
+        }
     };
-
-    FFTSettingPanel::FFTSettingPanel(PluginProcessor &p,
-                                     zlInterface::UIBase &base)
-        : parametersRef(p.parameters),
-          parametersNARef(p.parametersNA),
-          uiBase(base),
-          nameLAF(uiBase),
-          callOutBoxLAF(uiBase) {
-        juce::ignoreUnused(parametersRef, parametersNARef);
-        name.setText("Analyzer", juce::sendNotification);
-        nameLAF.setFontScale(1.375f);
-        name.setLookAndFeel(&nameLAF);
-        name.setEditable(false);
-        name.setInterceptsMouseClicks(false, false);
-        name.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(name);
-        setBufferedToImage(true);
-    }
-
-    FFTSettingPanel::~FFTSettingPanel() {
-        name.setLookAndFeel(nullptr);
-        if (boxPointer.getComponent() != nullptr) {
-            boxPointer->setLookAndFeel(nullptr);
-        }
-    }
-
-    void FFTSettingPanel::paint(juce::Graphics &g) {
-        g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
-        g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
-        juce::Path path;
-        const auto bound = getLocalBounds().toFloat();
-        path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                 uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
-                                 false, false, true, true);
-        g.fillPath(path);
-    }
-
-    void FFTSettingPanel::mouseDown(const juce::MouseEvent &event) {
-        juce::ignoreUnused(event);
-        openCallOutBox();
-    }
-
-    void FFTSettingPanel::resized() {
-        name.setBounds(getLocalBounds());
-    }
-
-    void FFTSettingPanel::openCallOutBox() {
-        if (getTopLevelComponent() == nullptr) {
-            return;
-        }
-        auto content = std::make_unique<FFTCallOutBox>(parametersNARef, uiBase);
-        content->setSize(juce::roundToInt(uiBase.getFontSize() * 7.f),
-                         juce::roundToInt(uiBase.getFontSize() * 11.2f));
-
-        auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
-                                                           getBounds(),
-                                                           getParentComponent()->getParentComponent());
-        box.setLookAndFeel(&callOutBoxLAF);
-        box.setArrowSize(0);
-        box.sendLookAndFeelChange();
-        boxPointer = &box;
-    }
-} // zlPanel
+}

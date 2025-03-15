@@ -58,18 +58,16 @@ namespace zlPanel {
             float dynLinkValue = 0.0;
             if (dynONC.getButton().getToggleState()) {
                 processorRef.getFiltersAttach().turnOnDynamic(currentBand);
-                dynLinkValue = static_cast<float>(uiBase.getDynLink());
-                {
+                dynLinkValue = static_cast<float>(uiBase.getDynLink()); {
                     auto *para = parametersRef.getParameter(
-                    zlDSP::appendSuffix(zlDSP::bypass::ID, currentBand));
+                        zlDSP::appendSuffix(zlDSP::bypass::ID, currentBand));
                     para->beginChangeGesture();
                     para->setValueNotifyingHost(0.f);
                     para->endChangeGesture();
                 }
             } else {
                 processorRef.getFiltersAttach().turnOffDynamic(currentBand);
-            }
-            {
+            } {
                 auto *para = parametersRef.getParameter(
                     zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
                 para->beginChangeGesture();
@@ -124,45 +122,49 @@ namespace zlPanel {
     }
 
     void LeftControlPanel::resized() {
-        juce::Grid grid;
-        using Track = juce::Grid::TrackInfo;
-        using Fr = juce::Grid::Fr;
-
-        grid.templateRows = {Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1))};
-        grid.templateColumns = {
-            Track(Fr(30)), Track(Fr(60)),
-            Track(Fr(60)), Track(Fr(60)), Track(Fr(60)), Track(Fr(30)), Track(Fr(30))
-        };
-        grid.items = {
-            juce::GridItem(bypassC).withArea(1, 1, 4, 2),
-            juce::GridItem(fTypeC).withArea(1, 2, 3, 3),
-            juce::GridItem(freqC).withArea(1, 3, 7, 4),
-            juce::GridItem(gainC).withArea(1, 4, 7, 5),
-            juce::GridItem(qC).withArea(1, 5, 7, 6),
-            juce::GridItem(soloC).withArea(4, 1, 7, 2),
-            juce::GridItem(slopeC).withArea(3, 2, 5, 3),
-            juce::GridItem(stereoC).withArea(5, 2, 7, 3),
-            juce::GridItem(lrBox).withArea(2, 6, 4, 8),
-            juce::GridItem(dynONC).withArea(4, 6, 7, 7),
-            juce::GridItem(dynLC).withArea(4, 7, 7, 8),
-        };
-
-        for (auto &s: {&freqC}) {
-            s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
+        // update padding
+        {
+            for (auto &s: {&freqC}) {
+                s->setPadding(std::round(uiBase.getFontSize() * 0.5f), 0.f);
+            }
+            for (auto &s: {&gainC, &qC}) {
+                s->setPadding(std::round(uiBase.getFontSize() * 0.5f), 0.f);
+            }
+            lrBox.setPadding(std::round(uiBase.getFontSize() * 2.5f), 0.f);
         }
-        for (auto &s: {&gainC, &qC}) {
-            s->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
+        // update bounds
+        auto bound = getLocalBounds(); {
+            const auto pad = static_cast<int>(uiBase.getFontSize() * .5f);
+            bound = bound.withSizeKeepingCentre(bound.getWidth() - 2 * pad, bound.getHeight() - 2 * pad);
         }
-        lrBox.setPadding(uiBase.getFontSize() * 2.f, 0.f);
-
-        auto bound = getLocalBounds().toFloat();
-        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
-        grid.performLayout(bound.toNearestInt());
-
-        const auto resetBound = juce::Rectangle<float>(bound.getTopRight().getX() - 1.5f * uiBase.getFontSize(),
-                                                       bound.getTopRight().getY(),
-                                                       1.5f * uiBase.getFontSize(), 1.5f * uiBase.getFontSize());
-        resetComponent.setBounds(resetBound.toNearestInt());
+        const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * buttonWidthP);
+        const auto buttonHeight = std::min(static_cast<int>(uiBase.getFontSize() * buttonHeightP),
+                                           bound.getHeight() / 2);
+        const auto sliderWidth = static_cast<int>(std::round(uiBase.getFontSize() * rSliderWidthP)); {
+            auto mBound = bound.removeFromLeft(buttonWidth);
+            bypassC.setBounds(mBound.removeFromTop(buttonHeight));
+            soloC.setBounds(mBound.removeFromBottom(buttonHeight));
+        } {
+            auto mBound = bound.removeFromLeft(bound.getWidth() - (buttonWidth * 2 + sliderWidth * 3));
+            const auto boxHeight = mBound.getHeight() / 3;
+            fTypeC.setBounds(mBound.removeFromTop(boxHeight));
+            slopeC.setBounds(mBound.removeFromTop(boxHeight));
+            stereoC.setBounds(mBound.removeFromTop(boxHeight));
+        }
+        freqC.setBounds(bound.removeFromLeft(sliderWidth));
+        gainC.setBounds(bound.removeFromLeft(sliderWidth));
+        qC.setBounds(bound.removeFromLeft(sliderWidth)); {
+            auto mBound = bound.removeFromBottom(buttonHeight);
+            dynONC.setBounds(mBound.removeFromLeft(buttonWidth));
+            dynLC.setBounds(mBound);
+            lrBox.setBounds(bound);
+        } {
+            const auto resetWidth = juce::roundToInt(1.5f * uiBase.getFontSize());
+            bound = bound.removeFromRight(resetWidth);
+            bound = bound.removeFromTop(resetWidth);
+            resetComponent.setBounds(bound);
+        }
+        // update sliders' dragging distance
         updateMouseDragSensitivity();
     }
 

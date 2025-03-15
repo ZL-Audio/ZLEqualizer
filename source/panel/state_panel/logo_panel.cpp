@@ -63,6 +63,7 @@ namespace zlPanel {
     }
 
     void LogoPanel::mouseDoubleClick(const juce::MouseEvent &event) {
+        uiBase.closeAllBox();
         if (event.mods.isCommandDown()) {
             getParentComponent()->getParentComponent()->getParentComponent()->setSize(
                 static_cast<int>(zlState::windowW::defaultV),

@@ -12,10 +12,10 @@
 #include "../../PluginProcessor.hpp"
 #include "../ui_setting_panel/ui_setting_panel.hpp"
 #include "logo_panel.hpp"
-#include "fft_setting_panel.hpp"
-#include "comp_setting_panel.hpp"
+#include "analyzer_setting_panel.hpp"
+#include "dynamic_setting_panel.hpp"
 #include "output_setting_panel.hpp"
-#include "conflict_setting_panel.hpp"
+#include "collision_setting_panel.hpp"
 #include "general_setting_panel.hpp"
 #include "match_setting_panel.hpp"
 
@@ -33,10 +33,10 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersNARef;
         LogoPanel logoPanel;
-        FFTSettingPanel fftSettingPanel;
-        CompSettingPanel compSettingPanel;
+        AnalyzerSettingPanel analyzerSettingPanel;
+        DynamicSettingPanel dynamicSettingPanel;
         OutputSettingPanel outputSettingPanel;
-        ConflictSettingPanel conflictSettingPanel;
+        CollisionSettingPanel collisionSettingPanel;
         GeneralSettingPanel generalSettingPanel;
         MatchSettingPanel matchSettingPanel;
 

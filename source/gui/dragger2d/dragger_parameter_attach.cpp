@@ -51,7 +51,9 @@ namespace zlInterface {
     }
 
     void DraggerParameterAttach::draggerValueChanged(Dragger *) {
-        if (isXAttached.load()) attachmentX.setValueAsPartOfGesture(rangeX.convertFrom0to1(dragger.getXPortion()));
-        if (isYAttached.load()) attachmentY.setValueAsPartOfGesture(rangeY.convertFrom0to1(dragger.getYPortion()));
+        if (isXAttached.load()) attachmentX.setValueAsPartOfGesture(rangeX.convertFrom0to1(
+            std::clamp(dragger.getXPortion(), 0.f, 1.f)));
+        if (isYAttached.load()) attachmentY.setValueAsPartOfGesture(rangeY.convertFrom0to1(
+            std::clamp(dragger.getYPortion(), 0.f, 1.f)));
     }
 } // zlInterface

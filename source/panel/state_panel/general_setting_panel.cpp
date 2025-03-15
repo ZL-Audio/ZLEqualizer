@@ -12,77 +12,14 @@
 #include "../panel_definitons.hpp"
 
 namespace zlPanel {
-    class GeneralCallOutBox final : public juce::Component {
-    public:
-        explicit GeneralCallOutBox(juce::AudioProcessorValueTreeState &parameters,
-                                   zlInterface::UIBase &base)
-            : parametersRef(parameters),
-              uiBase(base),
-              filterStructure("", zlDSP::filterStructure::choices, uiBase,
-                              zlInterface::multilingual::labels::filterStructure,
-                              {zlInterface::multilingual::labels::minimumPhase,
-                              zlInterface::multilingual::labels::stateVariable,
-                              zlInterface::multilingual::labels::parallelPhase,
-                              zlInterface::multilingual::labels::matchedPhase,
-                              zlInterface::multilingual::labels::mixedPhase,
-                              zlInterface::multilingual::labels::linearPhase}),
-              zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase,
-                       zlInterface::multilingual::labels::zeroLatency) {
-            for (auto &c: {&filterStructure}) {
-                addAndMakeVisible(c);
-            }
-            for (auto &c: {&zeroLATC}) {
-                c->getLabelLAF().setFontScale(1.5f);
-                c->setLabelScale(.625f);
-                c->setLabelPos(zlInterface::ClickCombobox::left);
-                addAndMakeVisible(c);
-            }
-            attach({
-                       &filterStructure.getBox(), &zeroLATC.getCompactBox().getBox()
-                   },
-                   {
-                       zlDSP::filterStructure::ID, zlDSP::zeroLatency::ID
-                   },
-                   parametersRef, boxAttachments);
-            setBufferedToImage(true);
-        }
 
-        ~GeneralCallOutBox() override = default;
-
-        void resized() override {
-            juce::Grid grid;
-            using Track = juce::Grid::TrackInfo;
-            using Fr = juce::Grid::Fr;
-
-            grid.templateRows = {Track(Fr(44)), Track(Fr(44))};
-            grid.templateColumns = {Track(Fr(50))};
-
-            grid.items = {
-                juce::GridItem(filterStructure).withArea(1, 1),
-                juce::GridItem(zeroLATC).withArea(2, 1),
-            };
-            grid.setGap(juce::Grid::Px(uiBase.getFontSize() * .4125f));
-            auto bound = getLocalBounds().toFloat();
-            bound.removeFromTop(uiBase.getFontSize() * .2f);
-            grid.performLayout(bound.toNearestInt());
-        }
-
-    private:
-        juce::AudioProcessorValueTreeState &parametersRef;
-        zlInterface::UIBase &uiBase;
-
-        zlInterface::CompactCombobox filterStructure;
-        zlInterface::ClickCombobox zeroLATC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
-    };
 
     GeneralSettingPanel::GeneralSettingPanel(PluginProcessor &p,
                                              zlInterface::UIBase &base)
         : parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           uiBase(base),
-          nameLAF(uiBase),
-          callOutBoxLAF(uiBase) {
+          nameLAF(uiBase) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         name.setText("General", juce::sendNotification);
         nameLAF.setFontScale(1.375f);
@@ -94,12 +31,7 @@ namespace zlPanel {
         setBufferedToImage(true);
     }
 
-    GeneralSettingPanel::~GeneralSettingPanel() {
-        name.setLookAndFeel(nullptr);
-        if (boxPointer.getComponent() != nullptr) {
-            boxPointer->setLookAndFeel(nullptr);
-        }
-    }
+    GeneralSettingPanel::~GeneralSettingPanel() = default;
 
     void GeneralSettingPanel::paint(juce::Graphics &g) {
         g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
@@ -113,29 +45,16 @@ namespace zlPanel {
         g.fillPath(path);
     }
 
-    void GeneralSettingPanel::mouseDown(const juce::MouseEvent &event) {
+    void GeneralSettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        openCallOutBox();
+        if (uiBase.getBoxProperty(zlInterface::boxIdx::generalBox)) {
+            uiBase.setBoxProperty(zlInterface::boxIdx::generalBox, false);
+        } else {
+            uiBase.openOneBox(zlInterface::boxIdx::generalBox);
+        }
     }
 
     void GeneralSettingPanel::resized() {
         name.setBounds(getLocalBounds());
-    }
-
-    void GeneralSettingPanel::openCallOutBox() {
-        if (getTopLevelComponent() == nullptr) {
-            return;
-        }
-        auto content = std::make_unique<GeneralCallOutBox>(parametersRef, uiBase);
-        content->setSize(juce::roundToInt(uiBase.getFontSize() * 10.f),
-                         juce::roundToInt(uiBase.getFontSize() * 4.4f)); //4.3525f));
-
-        auto &box = juce::CallOutBox::launchAsynchronously(std::move(content),
-                                                           getBounds(),
-                                                           getParentComponent()->getParentComponent());
-        box.setLookAndFeel(&callOutBoxLAF);
-        box.setArrowSize(0);
-        box.sendLookAndFeelChange();
-        boxPointer = &box;
     }
 } // zlPanel

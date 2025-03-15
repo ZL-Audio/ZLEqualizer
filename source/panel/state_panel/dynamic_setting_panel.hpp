@@ -13,28 +13,23 @@
 #include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
-    class CompSettingPanel final : public juce::Component {
+    class DynamicSettingPanel final : public juce::Component {
     public:
-        explicit CompSettingPanel(PluginProcessor &p,
-                                  zlInterface::UIBase &base);
+        explicit DynamicSettingPanel(PluginProcessor &p,
+                                     zlInterface::UIBase &base);
 
-        ~CompSettingPanel() override;
+        ~DynamicSettingPanel() override;
 
         void resized() override;
 
         void paint(juce::Graphics &g) override;
 
-        void mouseDown(const juce::MouseEvent &event) override;
+        void mouseEnter(const juce::MouseEvent &event) override;
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        juce::Label name;
-
         zlInterface::NameLookAndFeel nameLAF;
-        zlInterface::CallOutBoxLAF callOutBoxLAF;
-        juce::Component::SafePointer<juce::CallOutBox> boxPointer;
-
-        void openCallOutBox();
+        juce::Label name;
     };
 } // zlPanel

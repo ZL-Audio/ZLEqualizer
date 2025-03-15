@@ -17,6 +17,11 @@ namespace zlPanel {
           scalePanel(p, uiBase),
           statePanel(p, uiBase, uiSettingPanel),
           uiSettingPanel(p, uiBase),
+          outputBox(p, uiBase),
+          analyzerBox(p.parametersNA, uiBase),
+          dynamicBox(p.parameters, uiBase),
+          collisionBox(p.parametersNA, uiBase),
+          generalBox(p.parameters, uiBase),
           tooltipLAF(uiBase), tooltipWindow(&curvePanel) {
         processorRef.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);
@@ -24,6 +29,12 @@ namespace zlPanel {
         addAndMakeVisible(controlPanel);
         addAndMakeVisible(statePanel);
         addChildComponent(uiSettingPanel);
+
+        addChildComponent(outputBox);
+        addChildComponent(analyzerBox);
+        addChildComponent(dynamicBox);
+        addChildComponent(collisionBox);
+        addChildComponent(generalBox);
 
         tooltipWindow.setLookAndFeel(&tooltipLAF);
         tooltipWindow.setOpaque(false);
@@ -34,6 +45,8 @@ namespace zlPanel {
         state.addParameterListener(zlState::fftExtraTilt::ID, this);
         state.addParameterListener(zlState::fftExtraSpeed::ID, this);
         state.addParameterListener(zlState::refreshRate::ID, this);
+
+        uiBase.closeAllBox();
 
         lookAndFeelChanged();
     }
@@ -59,7 +72,37 @@ namespace zlPanel {
         uiBase.setFontSize(fontSize);
 
         const auto stateBound = bound.removeFromTop(juce::roundToInt(fontSize * 2.625381664859529f));
-        statePanel.setBounds(stateBound);
+        statePanel.setBounds(stateBound); {
+            auto x = stateBound.getRight();
+            const auto y = stateBound.getBottom() + 1 - juce::roundToInt(uiBase.getFontSize() * .4f);
+            const auto height = static_cast<float>(stateBound.getHeight()); {
+                x -= static_cast<int>(uiBase.getFontSize() * 2.5) * 3;
+                x -= static_cast<int>(uiBase.getFontSize() * 2.5) / 4;
+            }
+            const auto labelWidth = juce::roundToInt(height * 2.75f);
+            const auto gapWidth = juce::roundToInt(height * .5f);
+
+            x -= labelWidth / 2; {
+                const auto mBound = outputBox.getIdealBound();
+                outputBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+            }
+            x -= (labelWidth + gapWidth); {
+                const auto mBound = analyzerBox.getIdealBound();
+                analyzerBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+            }
+            x -= (labelWidth + gapWidth); {
+                const auto mBound = dynamicBox.getIdealBound();
+                dynamicBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+            }
+            x -= (labelWidth + gapWidth); {
+                const auto mBound = collisionBox.getIdealBound();
+                collisionBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+            }
+            x -= (labelWidth + gapWidth); {
+                const auto mBound = generalBox.getIdealBound();
+                generalBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+            }
+        }
 
         uiSettingPanel.setBounds(getLocalBounds());
 
@@ -69,7 +112,6 @@ namespace zlPanel {
         const auto scaleBound = bound.removeFromRight(juce::roundToInt(uiBase.getFontSize() * 4.2f));
         curvePanel.setBounds(bound.toNearestInt());
         scalePanel.setBounds(scaleBound.toNearestInt());
-        DBG(std::to_string(controlPanel.getBounds().getY()) + "\t" + std::to_string(curvePanel.getBounds().getBottom()));;
     }
 
     void MainPanel::parameterChanged(const juce::String &parameterID, float newValue) {

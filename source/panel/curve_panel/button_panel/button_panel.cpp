@@ -193,7 +193,22 @@ namespace zlPanel {
         }
     }
 
+    void ButtonPanel::mouseEnter(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        startTimer(500);
+    }
+
+    void ButtonPanel::mouseExit(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        stopTimer();
+    }
+
+    void ButtonPanel::timerCallback() {
+        uiBase.closeAllBox();
+    }
+
     void ButtonPanel::mouseDown(const juce::MouseEvent &event) {
+        uiBase.closeAllBox();
         if (event.originalComponent != this) {
             isLeftClick.store(!event.mods.isRightButtonDown());
             return;

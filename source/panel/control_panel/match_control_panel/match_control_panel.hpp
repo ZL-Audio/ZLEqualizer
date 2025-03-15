@@ -29,7 +29,6 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        static constexpr float weightP = 0.05216f * 7.f;
         zlInterface::UIBase &uiBase;
         zlEqMatch::EqMatchAnalyzer<double> &analyzer;
 
@@ -39,6 +38,8 @@ namespace zlPanel {
         zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider;
         zlInterface::CompactLinearSlider numBandSlider;
         zlInterface::ClickButton learnButton, saveButton, fitButton;
+
+        juce::Rectangle<int> internalBound;
 
         MatchRunner matchRunner;
 

@@ -57,6 +57,21 @@ namespace zlInterface {
         juce::Identifier("match_shift"), juce::Identifier("match_fit_running")
     };
 
+    enum boxIdx {
+        outputBox,
+        analyzerBox,
+        dynamicBox,
+        collisionBox,
+        generalBox,
+        boxNum
+    };
+
+    inline std::array boxIdentifiers{
+        juce::Identifier("output_box"),
+        juce::Identifier("analyzer_box"), juce::Identifier("dynamic_box"),
+        juce::Identifier("collision_box"), juce::Identifier("general_box")
+    };
+
     inline std::array<std::string, colourNum> colourNames{
         "text", "background",
         "shadow", "glow",
@@ -397,6 +412,32 @@ namespace zlInterface {
             return property == identifiers[static_cast<size_t>(idx)];
         }
 
+        juce::ValueTree &getBoxTree() { return boxTree; }
+
+        juce::var getBoxProperty(const boxIdx idx) const {
+            return boxTree.getProperty(boxIdentifiers[static_cast<size_t>(idx)]);
+        }
+
+        void setBoxProperty(const boxIdx idx, const juce::var &v) {
+            boxTree.setProperty(boxIdentifiers[idx], v, nullptr);
+        }
+
+        static bool isBoxProperty(const boxIdx idx, const juce::Identifier &property) {
+            return property == boxIdentifiers[static_cast<size_t>(idx)];
+        }
+
+        void openOneBox(const boxIdx idx) {
+            for (const auto &midx: {generalBox, collisionBox, dynamicBox, analyzerBox, outputBox}) {
+                setBoxProperty(midx, midx == idx);
+            }
+        }
+
+        void closeAllBox() {
+            for (const auto &idx: {generalBox, collisionBox, dynamicBox, analyzerBox, outputBox}) {
+                boxTree.setProperty(boxIdentifiers[idx], false, nullptr);
+            }
+        }
+
         std::string getToolTipText(const zlInterface::multilingual::labels label) const {
             switch (actualLangIdx) {
                 case multilingual::languages::lang_en: {
@@ -435,6 +476,7 @@ namespace zlInterface {
     private:
         juce::AudioProcessorValueTreeState &state;
         juce::ValueTree valueTree{"ui_setting"};
+        juce::ValueTree boxTree{"box_setting"};
 
         float fontSize{0.f};
         std::array<juce::Colour, colourNum> customColours;

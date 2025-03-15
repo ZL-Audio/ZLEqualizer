@@ -15,10 +15,10 @@ namespace zlPanel {
                            UISettingPanel &uiSettingPanel)
         : uiBase(base), parametersNARef(p.parametersNA),
           logoPanel(p, base, uiSettingPanel),
-          fftSettingPanel(p, base),
-          compSettingPanel(p, base),
+          analyzerSettingPanel(p, base),
+          dynamicSettingPanel(p, base),
           outputSettingPanel(p, base),
-          conflictSettingPanel(p, base),
+          collisionSettingPanel(p, base),
           generalSettingPanel(p, base),
           matchSettingPanel(base),
           effectC("", uiBase, zlInterface::multilingual::labels::bypass),
@@ -33,10 +33,10 @@ namespace zlPanel {
                                                           BinaryData::staticgaincompensation_svgSize)) {
         setInterceptsMouseClicks(false, true);
         addAndMakeVisible(logoPanel);
-        addAndMakeVisible(fftSettingPanel);
-        addAndMakeVisible(compSettingPanel);
+        addAndMakeVisible(analyzerSettingPanel);
+        addAndMakeVisible(dynamicSettingPanel);
         addAndMakeVisible(outputSettingPanel);
-        addAndMakeVisible(conflictSettingPanel);
+        addAndMakeVisible(collisionSettingPanel);
         addAndMakeVisible(generalSettingPanel);
         addAndMakeVisible(matchSettingPanel);
 
@@ -76,15 +76,17 @@ namespace zlPanel {
 
         const auto height = static_cast<float>(bound.getHeight());
 
-        const auto effectBound = bound.removeFromRight(juce::roundToInt(height * .85f));
+        const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * 2.5);
+        const auto effectBound = bound.removeFromRight(buttonWidth);
         effectC.setBounds(effectBound);
 
-        const auto sideBound = bound.removeFromRight(juce::roundToInt(height * .85f));
+        const auto sideBound = bound.removeFromRight(buttonWidth);
         sideC.setBounds(sideBound);
 
-        const auto sgcBound = bound.removeFromRight(juce::roundToInt(height * .85f));
+        const auto sgcBound = bound.removeFromRight(buttonWidth);
         sgcC.setBounds(sgcBound);
-        bound.removeFromRight(juce::roundToInt(height * .25f));
+
+        bound.removeFromRight(buttonWidth / 4);
 
         bound.removeFromBottom(juce::roundToInt(uiBase.getFontSize() * .5f));
 
@@ -92,11 +94,11 @@ namespace zlPanel {
         const auto gapWidth = juce::roundToInt(height * .5f);
         outputSettingPanel.setBounds(bound.removeFromRight(labelWidth));
         bound.removeFromRight(gapWidth);
-        fftSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        analyzerSettingPanel.setBounds(bound.removeFromRight(labelWidth));
         bound.removeFromRight(gapWidth);
-        compSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        dynamicSettingPanel.setBounds(bound.removeFromRight(labelWidth));
         bound.removeFromRight(gapWidth);
-        conflictSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        collisionSettingPanel.setBounds(bound.removeFromRight(labelWidth));
         bound.removeFromRight(gapWidth);
         generalSettingPanel.setBounds(bound.removeFromRight(labelWidth));
         bound.removeFromRight(gapWidth);

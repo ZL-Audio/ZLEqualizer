@@ -105,6 +105,8 @@ namespace zlPanel {
             uiBase.setProperty(zlInterface::settingIdx::matchFitRunning, true);
         };
         resetDefault();
+
+        setOpaque(true);
     }
 
     MatchControlPanel::~MatchControlPanel() {
@@ -113,45 +115,52 @@ namespace zlPanel {
     }
 
     void MatchControlPanel::paint(juce::Graphics &g) {
-        auto bound = getLocalBounds().toFloat();
         g.fillAll(uiBase.getColourByIdx(zlInterface::colourIdx::backgroundColour));
-        bound = bound.withSizeKeepingCentre(bound.getWidth() * weightP, bound.getHeight());
-        uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+        uiBase.fillRoundedShadowRectangle(g,
+                                          internalBound.toFloat(),
+                                          0.5f * uiBase.getFontSize(),
+                                          {.blurRadius = 0.25f});
     }
 
     void MatchControlPanel::resized() {
-        juce::Grid grid;
-        using Track = juce::Grid::TrackInfo;
-        using Fr = juce::Grid::Fr;
-
-        grid.templateRows = {Track(Fr(1)), Track(Fr(1))};
-        grid.templateColumns = {
-            Track(Fr(60)), Track(Fr(30)), Track(Fr(60)),
-            Track(Fr(30)), Track(Fr(30))
-        };
-
-        grid.items = {
-            juce::GridItem(sideChooseBox).withArea(1, 1),
-            juce::GridItem(weightSlider).withArea(2, 1),
-            juce::GridItem(learnButton).withArea(1, 2),
-            juce::GridItem(saveButton).withArea(2, 2),
-            juce::GridItem(smoothSlider).withArea(1, 3),
-            juce::GridItem(slopeSlider).withArea(2, 3),
-            juce::GridItem(fitAlgoBox).withArea(1, 4),
-            juce::GridItem(fitButton).withArea(1, 5),
-            juce::GridItem(numBandSlider).withArea(2, 4, 3, 6)
-        };
-
-        for (const auto &c: {
-                 &weightSlider, &smoothSlider, &slopeSlider, &numBandSlider
-             }) {
-            c->setPadding(uiBase.getFontSize() * 0.5f, 0.f);
+        // update padding
+        {
+            for (const auto &c: {
+                     &weightSlider, &smoothSlider, &slopeSlider, &numBandSlider
+                 }) {
+                c->setPadding(std::round(uiBase.getFontSize() * 0.5f),
+                              std::round(uiBase.getFontSize() * 0.6f));
+            }
         }
-
-        auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth() * weightP, bound.getHeight());
-        bound = uiBase.getRoundedShadowRectangleArea(bound, 0.5f * uiBase.getFontSize(), {});
-        grid.performLayout(bound.toNearestInt());
+        // update bounds
+        auto bound = getLocalBounds();
+        const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * buttonWidthP);
+        const auto sliderWidth = static_cast<int>(std::round(uiBase.getFontSize() * rSliderWidthP * 1.1f)); {
+            const auto pad = static_cast<int>(uiBase.getFontSize() * .5f);
+            internalBound = bound.withSizeKeepingCentre(buttonWidth + sliderWidth * 3 + 2 * pad, bound.getHeight());
+            bound = internalBound;
+            bound = bound.withSizeKeepingCentre(bound.getWidth() - 2 * pad, bound.getHeight() - 2 * pad);
+        }
+        const auto buttonHeight = std::min(static_cast<int>(uiBase.getFontSize() * buttonHeightP),
+                                           bound.getHeight() / 2); {
+            auto mBound = bound.removeFromLeft(sliderWidth);
+            sideChooseBox.setBounds(mBound.removeFromTop(buttonHeight));
+            weightSlider.setBounds(mBound.removeFromBottom(buttonHeight));
+        } {
+            auto mBound = bound.removeFromLeft(buttonWidth);
+            learnButton.setBounds(mBound.removeFromTop(buttonHeight));
+            saveButton.setBounds(mBound.removeFromBottom(buttonHeight));
+        } {
+            auto mBound = bound.removeFromLeft(sliderWidth);
+            smoothSlider.setBounds(mBound.removeFromTop(buttonHeight));
+            slopeSlider.setBounds(mBound.removeFromBottom(buttonHeight));
+        } {
+            auto mBound = bound.removeFromLeft(sliderWidth);
+            numBandSlider.setBounds(mBound.removeFromBottom(buttonHeight));
+            mBound = mBound.removeFromTop(buttonHeight);
+            fitAlgoBox.setBounds(mBound.removeFromLeft(buttonWidth));
+            fitButton.setBounds(mBound.removeFromRight(buttonWidth));
+        }
     }
 
     void MatchControlPanel::resetDefault() {

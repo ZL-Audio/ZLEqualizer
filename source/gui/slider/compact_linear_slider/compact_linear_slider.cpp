@@ -57,8 +57,8 @@ namespace zlInterface {
 
     void CompactLinearSlider::resized() {
         auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth() - lrPad.load(),
-                                            uiBase.getFontSize() * FontLarge * 1.75f - ubPad.load());
+        bound = bound.withSizeKeepingCentre(bound.getWidth() - lrPad,
+                                            bound.getHeight() - ubPad);
         slider.setBounds(bound.toNearestInt());
         text.setBounds(bound.toNearestInt());
         label.setBounds(bound.toNearestInt());

@@ -44,14 +44,16 @@ namespace zlInterface {
     }
 
     void LeftRightCombobox::resized() {
-        auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth() - lrPad.load(),
-                                            uiBase.getFontSize() - ubPad.load());
-        const auto leftBound = bound.removeFromLeft(uiBase.getFontSize());
-        const auto rightBound = bound.removeFromRight(uiBase.getFontSize());
-        leftButton.setBounds(leftBound.toNearestInt());
-        rightButton.setBounds(rightBound.toNearestInt());
-        box.setBounds(bound.toNearestInt());
+        auto tempBound = getLocalBounds().toFloat();
+        tempBound = tempBound.withSizeKeepingCentre(tempBound.getWidth() - lrPad,
+                                            uiBase.getFontSize() - ubPad);
+        auto bound = tempBound.toNearestInt().constrainedWithin(getLocalBounds());
+        const auto buttonSize = static_cast<int>(uiBase.getFontSize());
+        const auto leftBound = bound.removeFromLeft(buttonSize);
+        const auto rightBound = bound.removeFromRight(buttonSize);
+        leftButton.setBounds(leftBound);
+        rightButton.setBounds(rightBound);
+        box.setBounds(bound);
     }
 
     void LeftRightCombobox::selectLeft() {
