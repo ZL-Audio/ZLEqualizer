@@ -13,12 +13,12 @@
 #include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
-    class GeneralSettingPanel final : public juce::Component {
+    class SettingPanel final : public juce::Component, private juce::Timer {
     public:
-        explicit GeneralSettingPanel(PluginProcessor &p,
-                                     zlInterface::UIBase &base);
+        explicit SettingPanel(PluginProcessor &p, zlInterface::UIBase &base,
+            juce::String label, zlInterface::boxIdx idx);
 
-        ~GeneralSettingPanel() override;
+        ~SettingPanel() override;
 
         void resized() override;
 
@@ -28,10 +28,15 @@ namespace zlPanel {
 
         void mouseEnter(const juce::MouseEvent &event) override;
 
+        void mouseExit(const juce::MouseEvent &event) override;
+
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
         zlInterface::NameLookAndFeel nameLAF;
         juce::Label name;
+        zlInterface::boxIdx mIdx;
+
+        void timerCallback() override;
     };
 } // zlPanel

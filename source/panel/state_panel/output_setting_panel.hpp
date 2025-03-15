@@ -16,7 +16,7 @@
 
 namespace zlPanel {
     class OutputSettingPanel final : public juce::Component,
-                                     private juce::Timer {
+                                     private juce::MultiTimer {
     public:
         explicit OutputSettingPanel(PluginProcessor &p,
                                     zlInterface::UIBase &base);
@@ -28,6 +28,8 @@ namespace zlPanel {
         void mouseDown(const juce::MouseEvent &event) override;
 
         void mouseEnter(const juce::MouseEvent &event) override;
+
+        void mouseExit(const juce::MouseEvent &event) override;
 
         void resized() override;
 
@@ -44,8 +46,10 @@ namespace zlPanel {
         juce::Rectangle<float> gainBound, scaleBound;
         juce::Path backgroundPath;
 
-        void timerCallback() override;
+        void timerCallback(int timerID) override;
 
         void lookAndFeelChanged() override;
+
+        void updateGainValue();
     };
 } // zlPanel

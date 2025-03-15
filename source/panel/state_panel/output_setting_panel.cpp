@@ -11,8 +11,6 @@
 #include "../../dsp/dsp.hpp"
 
 namespace zlPanel {
-
-
     OutputSettingPanel::OutputSettingPanel(PluginProcessor &p,
                                            zlInterface::UIBase &base)
         : processorRef(p),
@@ -26,7 +24,10 @@ namespace zlPanel {
         setBufferedToImage(true);
     }
 
-    OutputSettingPanel::~OutputSettingPanel() = default;
+    OutputSettingPanel::~OutputSettingPanel() {
+        stopTimer(0);
+        stopTimer(1);
+    }
 
     void OutputSettingPanel::paint(juce::Graphics &g) {
         g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
@@ -54,10 +55,44 @@ namespace zlPanel {
 
     void OutputSettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        uiBase.openOneBox(zlInterface::boxIdx::outputBox);
+        startTimer(1, 100);
     }
 
-    void OutputSettingPanel::timerCallback() {
+    void OutputSettingPanel::mouseExit(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        stopTimer(1);
+    }
+
+    void OutputSettingPanel::timerCallback(const int timerID) {
+        if (timerID == 0) {
+            updateGainValue();
+        } else {
+            uiBase.openOneBox(zlInterface::boxIdx::outputBox);
+        }
+    }
+
+    void OutputSettingPanel::lookAndFeelChanged() {
+        if (uiBase.getColourByIdx(zlInterface::gainColour).getAlpha() > juce::uint8(0)) {
+            showGain = true;
+            startTimer(0, 1500);
+        } else {
+            stopTimer(0);
+            showGain = false;
+            repaint();
+        }
+    }
+
+    void OutputSettingPanel::resized() {
+        gainBound = getLocalBounds().toFloat();
+        scaleBound = gainBound.removeFromRight(gainBound.getWidth() * .5f);
+        const auto bound = getLocalBounds().toFloat();
+        backgroundPath.clear();
+        backgroundPath.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
+                                           uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
+                                           false, false, true, true);
+    }
+
+    void OutputSettingPanel::updateGainValue() {
         const auto newGain = static_cast<float>(processorRef.getController().getGainCompensation());
         const auto newScale = scale.load();
         const auto newLearning = lmPara->getValue() > .5f;
@@ -78,26 +113,5 @@ namespace zlPanel {
             scaleString = juce::String(static_cast<int>(std::round(scale.load()))) + "%";
             repaint();
         }
-    }
-
-    void OutputSettingPanel::lookAndFeelChanged() {
-        if (uiBase.getColourByIdx(zlInterface::gainColour).getAlpha() > juce::uint8(0)) {
-            showGain = true;
-            startTimer(1500);
-        } else {
-            stopTimer();
-            showGain = false;
-            repaint();
-        }
-    }
-
-    void OutputSettingPanel::resized() {
-        gainBound = getLocalBounds().toFloat();
-        scaleBound = gainBound.removeFromRight(gainBound.getWidth() * .5f);
-        const auto bound = getLocalBounds().toFloat();
-        backgroundPath.clear();
-        backgroundPath.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                           uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
-                                           false, false, true, true);
     }
 } // zlPanel

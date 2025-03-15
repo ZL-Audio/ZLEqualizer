@@ -7,17 +7,20 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "dynamic_setting_panel.hpp"
+#include "setting_panel.hpp"
+#include "../../state/state.hpp"
+#include "../panel_definitons.hpp"
 
 namespace zlPanel {
-    DynamicSettingPanel::DynamicSettingPanel(PluginProcessor &p,
-                                             zlInterface::UIBase &base)
+    SettingPanel::SettingPanel(PluginProcessor &p, zlInterface::UIBase &base,
+                               juce::String label, zlInterface::boxIdx idx)
         : parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           uiBase(base),
-          nameLAF(uiBase) {
+          nameLAF(uiBase),
+          mIdx(idx) {
         juce::ignoreUnused(parametersRef, parametersNARef);
-        name.setText("Dynamic", juce::sendNotification);
+        name.setText(label, juce::sendNotification);
         nameLAF.setFontScale(1.375f);
         name.setLookAndFeel(&nameLAF);
         name.setEditable(false);
@@ -27,9 +30,11 @@ namespace zlPanel {
         setBufferedToImage(true);
     }
 
-    DynamicSettingPanel::~DynamicSettingPanel() = default;
+    SettingPanel::~SettingPanel() {
+        stopTimer();
+    }
 
-    void DynamicSettingPanel::paint(juce::Graphics &g) {
+    void SettingPanel::paint(juce::Graphics &g) {
         g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
         g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
         g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
@@ -41,21 +46,30 @@ namespace zlPanel {
         g.fillPath(path);
     }
 
-    void DynamicSettingPanel::mouseDown(const juce::MouseEvent &event) {
+    void SettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        if (uiBase.getBoxProperty(zlInterface::boxIdx::dynamicBox)) {
-            uiBase.setBoxProperty(zlInterface::boxIdx::dynamicBox, false);
+        if (uiBase.getBoxProperty(mIdx)) {
+            uiBase.setBoxProperty(mIdx, false);
         } else {
-            uiBase.openOneBox(zlInterface::boxIdx::dynamicBox);
+            uiBase.openOneBox(mIdx);
         }
     }
 
-    void DynamicSettingPanel::mouseEnter(const juce::MouseEvent &event) {
+    void SettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        uiBase.openOneBox(zlInterface::boxIdx::dynamicBox);
+        startTimer(100);
     }
 
-    void DynamicSettingPanel::resized() {
+    void SettingPanel::mouseExit(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        stopTimer();
+    }
+
+    void SettingPanel::resized() {
         name.setBounds(getLocalBounds());
+    }
+
+    void SettingPanel::timerCallback() {
+        uiBase.openOneBox(mIdx);
     }
 } // zlPanel

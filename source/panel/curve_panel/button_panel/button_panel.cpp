@@ -89,6 +89,8 @@ namespace zlPanel {
         wheelAttachment[0].reset();
         wheelAttachment[1].reset();
         wheelAttachment[2].reset();
+
+        stopTimer();
     }
 
     void ButtonPanel::paint(juce::Graphics &g) {
