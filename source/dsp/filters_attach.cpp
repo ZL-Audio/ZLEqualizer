@@ -159,6 +159,9 @@ namespace zlDSP {
             controllerRef.getTargetFilter(idx).setFilterType(fType);
             controllerRef.getMainIdealFilter(idx).setFilterType(fType);
             controllerRef.getMainIIRFilter(idx).setFilterType(fType);
+            if (sDynLink[idx].load()) {
+                updateSideFQ(idx);
+            }
             controllerRef.updateSgc(idx);
         } else if (parameterID.startsWith(slope::ID)) {
             const auto newOrder = slope::orderArray[static_cast<size_t>(value)];
