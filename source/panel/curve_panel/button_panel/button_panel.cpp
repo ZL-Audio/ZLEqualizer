@@ -207,6 +207,7 @@ namespace zlPanel {
 
     void ButtonPanel::timerCallback() {
         uiBase.closeAllBox();
+        stopTimer();
     }
 
     void ButtonPanel::mouseDown(const juce::MouseEvent &event) {

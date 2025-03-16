@@ -7,11 +7,11 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "output_setting_panel.hpp"
+#include "output_value_panel.hpp"
 #include "../../dsp/dsp.hpp"
 
 namespace zlPanel {
-    OutputSettingPanel::OutputSettingPanel(PluginProcessor &p,
+    OutputValuePanel::OutputValuePanel(PluginProcessor &p,
                                            zlInterface::UIBase &base)
         : processorRef(p),
           parametersRef(p.parameters),
@@ -21,18 +21,15 @@ namespace zlPanel {
         juce::ignoreUnused(parametersRef, parametersNARef);
         lmPara = parametersRef.getParameter(zlDSP::loudnessMatcherON::ID);
         lookAndFeelChanged();
+        setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
     }
 
-    OutputSettingPanel::~OutputSettingPanel() {
+    OutputValuePanel::~OutputValuePanel() {
         stopTimer(0);
-        stopTimer(1);
     }
 
-    void OutputSettingPanel::paint(juce::Graphics &g) {
-        g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
-        g.fillPath(backgroundPath);
-
+    void OutputValuePanel::paint(juce::Graphics &g) {
         g.setFont(uiBase.getFontSize() * 1.375f);
         if (showGain) {
             g.setColour(uiBase.getColourByIdx(zlInterface::gainColour));
@@ -44,35 +41,13 @@ namespace zlPanel {
         }
     }
 
-    void OutputSettingPanel::mouseDown(const juce::MouseEvent &event) {
-        juce::ignoreUnused(event);
-        stopTimer(1);
-        if (uiBase.getBoxProperty(zlInterface::boxIdx::outputBox)) {
-            uiBase.setBoxProperty(zlInterface::boxIdx::outputBox, false);
-        } else {
-            uiBase.openOneBox(zlInterface::boxIdx::outputBox);
-        }
-    }
-
-    void OutputSettingPanel::mouseEnter(const juce::MouseEvent &event) {
-        juce::ignoreUnused(event);
-        startTimer(1, 100);
-    }
-
-    void OutputSettingPanel::mouseExit(const juce::MouseEvent &event) {
-        juce::ignoreUnused(event);
-        stopTimer(1);
-    }
-
-    void OutputSettingPanel::timerCallback(const int timerID) {
+    void OutputValuePanel::timerCallback(const int timerID) {
         if (timerID == 0) {
             updateGainValue();
-        } else {
-            uiBase.openOneBox(zlInterface::boxIdx::outputBox);
         }
     }
 
-    void OutputSettingPanel::lookAndFeelChanged() {
+    void OutputValuePanel::lookAndFeelChanged() {
         if (uiBase.getColourByIdx(zlInterface::gainColour).getAlpha() > juce::uint8(0)) {
             showGain = true;
             startTimer(0, 1500);
@@ -83,7 +58,7 @@ namespace zlPanel {
         }
     }
 
-    void OutputSettingPanel::resized() {
+    void OutputValuePanel::resized() {
         gainBound = getLocalBounds().toFloat();
         scaleBound = gainBound.removeFromRight(gainBound.getWidth() * .5f);
         const auto bound = getLocalBounds().toFloat();
@@ -93,7 +68,7 @@ namespace zlPanel {
                                            false, false, true, true);
     }
 
-    void OutputSettingPanel::updateGainValue() {
+    void OutputValuePanel::updateGainValue() {
         const auto newGain = static_cast<float>(processorRef.getController().getGainCompensation());
         const auto newScale = scale.load();
         const auto newLearning = lmPara->getValue() > .5f;

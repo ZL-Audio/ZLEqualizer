@@ -15,29 +15,23 @@
 #include "../panel_definitons.hpp"
 
 namespace zlPanel {
-    class OutputSettingPanel final : public juce::Component,
-                                     private juce::MultiTimer {
+    class OutputValuePanel final : public juce::Component,
+                                   private juce::MultiTimer {
     public:
-        explicit OutputSettingPanel(PluginProcessor &p,
-                                    zlInterface::UIBase &base);
+        explicit OutputValuePanel(PluginProcessor &p,
+                                  zlInterface::UIBase &base);
 
-        ~OutputSettingPanel() override;
+        ~OutputValuePanel() override;
 
         void paint(juce::Graphics &g) override;
-
-        void mouseDown(const juce::MouseEvent &event) override;
-
-        void mouseEnter(const juce::MouseEvent &event) override;
-
-        void mouseExit(const juce::MouseEvent &event) override;
 
         void resized() override;
 
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        juce::RangedAudioParameter *lmPara;
         zlInterface::UIBase &uiBase;
+        juce::RangedAudioParameter *lmPara;
         std::atomic<float> &scale;
         float currentGain{0.f}, currentScale{100.f};
         bool currentLearning{false};

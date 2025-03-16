@@ -12,7 +12,7 @@
 #include "../../PluginProcessor.hpp"
 #include "../ui_setting_panel/ui_setting_panel.hpp"
 #include "logo_panel.hpp"
-#include "output_setting_panel.hpp"
+#include "output_value_panel.hpp"
 #include "setting_panel.hpp"
 #include "match_setting_panel.hpp"
 
@@ -30,7 +30,8 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersNARef;
 
-        OutputSettingPanel outputSettingPanel;
+        OutputValuePanel outputValuePanel;
+        SettingPanel outputSettingPanel;
         SettingPanel analyzerSettingPanel;
         SettingPanel dynamicSettingPanel;
         SettingPanel collisionSettingPanel;

@@ -31,7 +31,8 @@ namespace zlPanel {
     }
 
     SettingPanel::~SettingPanel() {
-        stopTimer();
+        stopTimer(0);
+        stopTimer(1);
     }
 
     void SettingPanel::paint(juce::Graphics &g) {
@@ -48,7 +49,8 @@ namespace zlPanel {
 
     void SettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        stopTimer();
+        stopTimer(0);
+        if (isTimerRunning(1)) return;
         if (uiBase.getBoxProperty(mIdx)) {
             uiBase.setBoxProperty(mIdx, false);
         } else {
@@ -58,19 +60,26 @@ namespace zlPanel {
 
     void SettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        startTimer(100);
+        startTimer(0, 100);
+        startTimer(1, 500);
     }
 
     void SettingPanel::mouseExit(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        stopTimer();
+        stopTimer(0);
+        stopTimer(1);
     }
 
     void SettingPanel::resized() {
         name.setBounds(getLocalBounds());
     }
 
-    void SettingPanel::timerCallback() {
-        uiBase.openOneBox(mIdx);
+    void SettingPanel::timerCallback(const int timerID) {
+        if (timerID == 0) {
+            uiBase.openOneBox(mIdx);
+            stopTimer(0);
+        } else if (timerID == 1) {
+            stopTimer(1);
+        }
     }
 } // zlPanel

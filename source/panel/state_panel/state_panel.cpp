@@ -14,7 +14,8 @@ namespace zlPanel {
                            zlInterface::UIBase &base,
                            UISettingPanel &uiSettingPanel)
         : uiBase(base), parametersNARef(p.parametersNA),
-          outputSettingPanel(p, base),
+          outputValuePanel(p, base),
+          outputSettingPanel(p, base, "", zlInterface::boxIdx::outputBox),
           analyzerSettingPanel(p, base, "Analyzer", zlInterface::boxIdx::analyzerBox),
           dynamicSettingPanel(p, base, "Dynamic", zlInterface::boxIdx::dynamicBox),
 
@@ -33,13 +34,15 @@ namespace zlPanel {
           sgcDrawable(juce::Drawable::createFromImageData(BinaryData::staticgaincompensation_svg,
                                                           BinaryData::staticgaincompensation_svgSize)) {
         setInterceptsMouseClicks(false, true);
-        addAndMakeVisible(logoPanel);
+
+        addAndMakeVisible(outputSettingPanel);
+        addAndMakeVisible(outputValuePanel);
         addAndMakeVisible(analyzerSettingPanel);
         addAndMakeVisible(dynamicSettingPanel);
-        addAndMakeVisible(outputSettingPanel);
         addAndMakeVisible(collisionSettingPanel);
         addAndMakeVisible(generalSettingPanel);
         addAndMakeVisible(matchSettingPanel);
+        addAndMakeVisible(logoPanel);
 
         effectC.setDrawable(effectDrawable.get());
         sideC.setDrawable(sideDrawable.get());
@@ -93,7 +96,9 @@ namespace zlPanel {
 
         const auto labelWidth = juce::roundToInt(height * labelSize);
         const auto gapWidth = juce::roundToInt(height * .5f);
-        outputSettingPanel.setBounds(bound.removeFromRight(labelWidth));
+        const auto mBound = bound.removeFromRight(labelWidth);
+        outputValuePanel.setBounds(mBound);
+        outputSettingPanel.setBounds(mBound);
         bound.removeFromRight(gapWidth);
         analyzerSettingPanel.setBounds(bound.removeFromRight(labelWidth));
         bound.removeFromRight(gapWidth);
