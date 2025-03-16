@@ -26,6 +26,12 @@ namespace zlPanel {
 
         SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::eqMatch));
         setBufferedToImage(true);
+
+        uiBase.getValueTree().addListener(this);
+    }
+
+    MatchSettingPanel::~MatchSettingPanel() {
+        uiBase.getValueTree().removeListener(this);
     }
 
     void MatchSettingPanel::resized() {
@@ -33,9 +39,12 @@ namespace zlPanel {
     }
 
     void MatchSettingPanel::paint(juce::Graphics &g) {
-        g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
-        g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
+        if (static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow))) {
+            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
+        } else {
+            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.125f));
+        }
+
         juce::Path path;
         const auto bound = getLocalBounds().toFloat();
         path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
@@ -51,6 +60,14 @@ namespace zlPanel {
         uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, !f);
         if (!f) {
             uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
+        }
+    }
+
+    void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                                     const juce::Identifier &property) {
+        juce::ignoreUnused(treeWhosePropertyHasChanged);
+        if (uiBase.isProperty(zlInterface::settingIdx::matchPanelShow, property)) {
+            repaint();
         }
     }
 } // zlPanel

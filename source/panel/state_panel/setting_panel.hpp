@@ -13,10 +13,11 @@
 #include "../../PluginProcessor.hpp"
 
 namespace zlPanel {
-    class SettingPanel final : public juce::Component, private juce::MultiTimer {
+    class SettingPanel final : public juce::Component,
+                               private juce::MultiTimer, private juce::ValueTree::Listener {
     public:
         explicit SettingPanel(PluginProcessor &p, zlInterface::UIBase &base,
-                              juce::String label, zlInterface::boxIdx idx);
+                              const juce::String &label, zlInterface::boxIdx idx);
 
         ~SettingPanel() override;
 
@@ -38,5 +39,8 @@ namespace zlPanel {
         zlInterface::boxIdx mIdx;
 
         void timerCallback(int timerID) override;
+
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                      const juce::Identifier &property) override;
     };
 } // zlPanel

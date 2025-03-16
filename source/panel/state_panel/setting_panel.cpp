@@ -13,7 +13,7 @@
 
 namespace zlPanel {
     SettingPanel::SettingPanel(PluginProcessor &p, zlInterface::UIBase &base,
-                               juce::String label, zlInterface::boxIdx idx)
+                               const juce::String &label, zlInterface::boxIdx idx)
         : parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           uiBase(base),
@@ -28,17 +28,22 @@ namespace zlPanel {
         name.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(name);
         setBufferedToImage(true);
+
+        uiBase.getBoxTree().addListener(this);
     }
 
     SettingPanel::~SettingPanel() {
+        uiBase.getBoxTree().removeListener(this);
         stopTimer(0);
         stopTimer(1);
     }
 
     void SettingPanel::paint(juce::Graphics &g) {
-        g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
-        g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
+        if (static_cast<bool>(uiBase.getBoxProperty(mIdx))) {
+            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
+        } else {
+            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.125f));
+        }
         juce::Path path;
         const auto bound = getLocalBounds().toFloat();
         path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
@@ -81,5 +86,11 @@ namespace zlPanel {
         } else if (timerID == 1) {
             stopTimer(1);
         }
+    }
+
+    void SettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                                const juce::Identifier &property) {
+        juce::ignoreUnused(treeWhosePropertyHasChanged);
+        if (uiBase.isBoxProperty(mIdx, property)) repaint();
     }
 } // zlPanel

@@ -13,9 +13,12 @@
 
 namespace zlPanel {
     class MatchSettingPanel final : public juce::Component,
-                                    public juce::SettableTooltipClient {
+                                    public juce::SettableTooltipClient,
+                                    private juce::ValueTree::Listener {
     public:
         explicit MatchSettingPanel(zlInterface::UIBase &base);
+
+        ~MatchSettingPanel() override;
 
         void resized() override;
 
@@ -29,5 +32,8 @@ namespace zlPanel {
 
         zlInterface::NameLookAndFeel nameLAF;
         juce::Label name;
+
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                      const juce::Identifier &property) override;
     };
 } // zlPanel
