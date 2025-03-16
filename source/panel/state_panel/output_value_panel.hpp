@@ -16,7 +16,8 @@
 
 namespace zlPanel {
     class OutputValuePanel final : public juce::Component,
-                                   private juce::MultiTimer {
+                                   private juce::MultiTimer,
+                                   private juce::ValueTree::Listener {
     public:
         explicit OutputValuePanel(PluginProcessor &p,
                                   zlInterface::UIBase &base);
@@ -45,5 +46,8 @@ namespace zlPanel {
         void lookAndFeelChanged() override;
 
         void updateGainValue();
+
+        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                      const juce::Identifier &property) override;
     };
 } // zlPanel

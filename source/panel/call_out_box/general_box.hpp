@@ -57,17 +57,27 @@ namespace zlPanel {
         }
 
         void paint(juce::Graphics &g) override {
-            g.fillAll(uiBase.getBackgroundColor());
+            juce::Path path;
+            const auto bound = getLocalBounds().toFloat();
+            path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
+                                     std::round(uiBase.getFontSize() * .25f),
+                                     std::round(uiBase.getFontSize() * .25f),
+                                     false, false, true, true);
+            g.setColour(uiBase.getBackgroundColor());
+            g.fillPath(path);
         }
 
         juce::Rectangle<int> getIdealBound() const {
             const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
             const auto boxHeight = juce::roundToInt(boxHeightP * uiBase.getFontSize());
-            return {static_cast<int>(uiBase.getFontSize() * 10), boxHeight * 2 + padSize};
+            return {static_cast<int>(uiBase.getFontSize() * 10) + padSize * 2, boxHeight * 2 + padSize};
         }
 
         void resized() override {
             auto bound = getLocalBounds();
+            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
+            bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
+                                         bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
 
             const auto boxHeight = juce::roundToInt(boxHeightP * uiBase.getFontSize());
             filterStructure.setBounds(bound.removeFromTop(boxHeight));

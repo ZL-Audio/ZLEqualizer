@@ -16,17 +16,8 @@ namespace zlPanel {
                                const juce::String &label, zlInterface::boxIdx idx)
         : parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
-          uiBase(base),
-          nameLAF(uiBase),
-          mIdx(idx) {
+          uiBase(base), name(label), mIdx(idx) {
         juce::ignoreUnused(parametersRef, parametersNARef);
-        name.setText(label, juce::sendNotification);
-        nameLAF.setFontScale(1.375f);
-        name.setLookAndFeel(&nameLAF);
-        name.setEditable(false);
-        name.setInterceptsMouseClicks(false, false);
-        name.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(name);
         setBufferedToImage(true);
 
         uiBase.getBoxTree().addListener(this);
@@ -39,7 +30,8 @@ namespace zlPanel {
     }
 
     void SettingPanel::paint(juce::Graphics &g) {
-        if (static_cast<bool>(uiBase.getBoxProperty(mIdx))) {
+        const bool isBoxOpen = static_cast<bool>(uiBase.getBoxProperty(mIdx));
+        if (isBoxOpen) {
             g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
         } else {
             g.setColour(uiBase.getTextColor().withMultipliedAlpha(.125f));
@@ -50,6 +42,13 @@ namespace zlPanel {
                                  uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
                                  false, false, true, true);
         g.fillPath(path);
+        g.setFont(uiBase.getFontSize() * 1.375f);
+        if (isBoxOpen) {
+            g.setColour(uiBase.getTextColor());
+        } else {
+            g.setColour(uiBase.getTextColor().withAlpha(.75f));
+        }
+        g.drawText(name, bound, juce::Justification::centred);
     }
 
     void SettingPanel::mouseDown(const juce::MouseEvent &event) {
@@ -73,10 +72,6 @@ namespace zlPanel {
         juce::ignoreUnused(event);
         stopTimer(0);
         stopTimer(1);
-    }
-
-    void SettingPanel::resized() {
-        name.setBounds(getLocalBounds());
     }
 
     void SettingPanel::timerCallback(const int timerID) {

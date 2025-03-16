@@ -54,20 +54,28 @@ namespace zlPanel {
         }
 
         void paint(juce::Graphics &g) override {
-            g.fillAll(uiBase.getBackgroundColor());
+            juce::Path path;
+            const auto bound = getLocalBounds().toFloat();
+            path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
+                                     std::round(uiBase.getFontSize() * .25f),
+                                     std::round(uiBase.getFontSize() * .25f),
+                                     false, false, true, true);
+            g.setColour(uiBase.getBackgroundColor());
+            g.fillPath(path);
         }
 
         juce::Rectangle<int> getIdealBound() const {
             const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
             const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * 2.5);
             const auto boxHeight = juce::roundToInt(boxHeightP * uiBase.getFontSize());
-            return {buttonWidth * 3, boxHeight * 5 + padSize};
+            return {buttonWidth * 3 + padSize * 2, boxHeight * 5 + padSize};
         }
 
         void resized() override {
             const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
             auto bound = getLocalBounds();
-            bound.removeFromBottom(padSize);
+            bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
+                                         bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
 
             juce::Grid grid;
             using Track = juce::Grid::TrackInfo;

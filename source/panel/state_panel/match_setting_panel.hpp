@@ -20,18 +20,15 @@ namespace zlPanel {
 
         ~MatchSettingPanel() override;
 
-        void resized() override;
-
         void paint(juce::Graphics &g) override;
 
         void mouseDown(const juce::MouseEvent &event) override;
 
+        void mouseEnter(const juce::MouseEvent &event) override;
+
     private:
         zlInterface::UIBase &uiBase;
         juce::Identifier identifier{"match_panel"};
-
-        zlInterface::NameLookAndFeel nameLAF;
-        juce::Label name;
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;

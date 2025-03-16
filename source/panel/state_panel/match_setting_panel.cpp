@@ -11,15 +11,7 @@
 
 namespace zlPanel {
     MatchSettingPanel::MatchSettingPanel(zlInterface::UIBase &base)
-        : uiBase(base),
-          nameLAF(uiBase) {
-        name.setText("Match", juce::sendNotification);
-        nameLAF.setFontScale(1.375f);
-        name.setLookAndFeel(&nameLAF);
-        name.setEditable(false);
-        name.setInterceptsMouseClicks(false, false);
-        name.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(name);
+        : uiBase(base) {
 
         uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, false);
         uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
@@ -34,12 +26,9 @@ namespace zlPanel {
         uiBase.getValueTree().removeListener(this);
     }
 
-    void MatchSettingPanel::resized() {
-        name.setBounds(getLocalBounds());
-    }
-
     void MatchSettingPanel::paint(juce::Graphics &g) {
-        if (static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow))) {
+        const auto isMatchShow = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
+        if (isMatchShow) {
             g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
         } else {
             g.setColour(uiBase.getTextColor().withMultipliedAlpha(.125f));
@@ -51,16 +40,27 @@ namespace zlPanel {
                                  uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
                                  false, false, true, true);
         g.fillPath(path);
+
+        if (isMatchShow) {
+            g.setColour(uiBase.getTextColor());
+        } else {
+            g.setColour(uiBase.getTextColor().withAlpha(.75f));
+        }
+        g.drawText("Match", bound, juce::Justification::centred);
     }
 
     void MatchSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        uiBase.closeAllBox();
         const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
         uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, !f);
         if (!f) {
             uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
         }
+    }
+
+    void MatchSettingPanel::mouseEnter(const juce::MouseEvent &event) {
+        juce::ignoreUnused(event);
+        uiBase.closeAllBox();
     }
 
     void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,

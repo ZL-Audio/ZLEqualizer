@@ -21,8 +21,6 @@ namespace zlPanel {
 
         ~SettingPanel() override;
 
-        void resized() override;
-
         void paint(juce::Graphics &g) override;
 
         void mouseDown(const juce::MouseEvent &event) override;
@@ -34,8 +32,7 @@ namespace zlPanel {
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-        zlInterface::NameLookAndFeel nameLAF;
-        juce::Label name;
+        juce::String name;
         zlInterface::boxIdx mIdx;
 
         void timerCallback(int timerID) override;

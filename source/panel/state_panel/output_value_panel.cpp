@@ -12,7 +12,7 @@
 
 namespace zlPanel {
     OutputValuePanel::OutputValuePanel(PluginProcessor &p,
-                                           zlInterface::UIBase &base)
+                                       zlInterface::UIBase &base)
         : processorRef(p),
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
@@ -23,9 +23,12 @@ namespace zlPanel {
         lookAndFeelChanged();
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
+
+        uiBase.getBoxTree().addListener(this);
     }
 
     OutputValuePanel::~OutputValuePanel() {
+        uiBase.getBoxTree().removeListener(this);
         stopTimer(0);
     }
 
@@ -36,7 +39,11 @@ namespace zlPanel {
             g.drawText(gainString, gainBound, juce::Justification::centred);
             g.drawText(scaleString, scaleBound, juce::Justification::centred);
         } else {
-            g.setColour(uiBase.getTextColor());
+            if (static_cast<bool>(uiBase.getBoxProperty(zlInterface::boxIdx::outputBox))) {
+                g.setColour(uiBase.getTextColor());
+            } else {
+                g.setColour(uiBase.getTextColor().withMultipliedAlpha(.75f));
+            }
             g.drawText("Output", getLocalBounds().toFloat(), juce::Justification::centred);
         }
     }
@@ -87,6 +94,14 @@ namespace zlPanel {
                 gainString = "L";
             }
             scaleString = juce::String(static_cast<int>(std::round(scale.load()))) + "%";
+            repaint();
+        }
+    }
+
+    void OutputValuePanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+                                                    const juce::Identifier &property) {
+        juce::ignoreUnused(treeWhosePropertyHasChanged);
+        if (uiBase.isBoxProperty(zlInterface::boxIdx::outputBox, property)) {
             repaint();
         }
     }
