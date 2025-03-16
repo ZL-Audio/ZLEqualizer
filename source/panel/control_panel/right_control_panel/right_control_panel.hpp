@@ -15,12 +15,27 @@
 
 namespace zlPanel {
     class RightControlPanel final : public juce::Component {
+    private:
+        class Background final : public juce::Component {
+        public:
+            explicit Background(zlInterface::UIBase &base) : uiBase(base) {
+                setBufferedToImage(true);
+            }
+
+            void paint(juce::Graphics &g) override {
+                g.fillAll(uiBase.getBackgroundColor());
+                const auto bound = getLocalBounds().toFloat();
+                uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+            }
+
+        private:
+            zlInterface::UIBase &uiBase;
+        };
+
     public:
         explicit RightControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
         ~RightControlPanel() override;
-
-        void paint(juce::Graphics &g) override;
 
         void resized() override;
 
@@ -32,6 +47,8 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         std::atomic<bool> dynEditable{false};
+
+        Background background;
 
         zlInterface::CompactButton dynBypassC, dynSoloC, dynRelativeC, swapC;
         juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;

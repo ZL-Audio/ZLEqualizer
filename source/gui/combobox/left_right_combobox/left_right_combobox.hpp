@@ -41,6 +41,6 @@ namespace zlInterface {
         juce::ComboBox box;
         LeftRightComboboxLookAndFeel lookAndFeel;
 
-        float lrPad = 0, ubPad = 0;
+        float lrPad{0.f}, ubPad{0.f};
     };
 } // zlInterface

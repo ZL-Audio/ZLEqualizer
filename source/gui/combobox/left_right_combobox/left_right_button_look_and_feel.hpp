@@ -19,14 +19,14 @@ namespace zlInterface {
                                 bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override {
             juce::ignoreUnused(button, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
 
-            if (shouldDrawButtonAsDown && editable.load()) {
+            if (shouldDrawButtonAsDown && editable) {
                 g.setColour(uiBase.getTextColor());
             } else {
                 g.setColour(uiBase.getTextInactiveColor());
             }
 
             juce::Path path;
-            const auto d = direction.load();
+            const auto d = direction;
             const auto bound = button.getLocalBounds().toFloat();
             if (d < 0.1f) {
                 path.startNewSubPath(bound.getTopLeft());
@@ -43,17 +43,17 @@ namespace zlInterface {
             g.fillPath(path);
         }
 
-        inline void setEditable(const bool f) { editable.store(f); }
+        inline void setEditable(const bool f) { editable = f; }
 
-        inline float getDepth() const { return buttonDepth.load(); }
+        inline float getDepth() const { return buttonDepth; }
 
         inline void setDepth(const float x) { buttonDepth = x; }
 
-        inline void setDirection(const float x) { direction.store(x); }
+        inline void setDirection(const float x) { direction = x; }
 
     private:
-        std::atomic<bool> editable = true;
-        std::atomic<float> buttonDepth = 0.f, direction = 0.f;
+        bool editable{true};
+        float buttonDepth{0.f}, direction{0.f};
 
         UIBase &uiBase;
     };

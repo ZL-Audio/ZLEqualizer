@@ -13,7 +13,6 @@
 
 #include "../../interface_definitions.hpp"
 
-
 namespace zlInterface {
     class LeftRightComboboxLookAndFeel : public juce::LookAndFeel_V4 {
     public:
@@ -32,7 +31,7 @@ namespace zlInterface {
         }
 
         void drawLabel(juce::Graphics &g, juce::Label &label) override {
-            if (editable.load()) {
+            if (editable) {
                 g.setColour(uiBase->getTextColor());
             } else {
                 g.setColour(uiBase->getTextInactiveColor());
@@ -45,15 +44,10 @@ namespace zlInterface {
             return 1;
         }
 
-        inline void setEditable(bool f) { editable.store(f); }
-
-        inline void setBoxAlpha(const float x) { boxAlpha.store(x); }
-
-        inline float getBoxAlpha() const { return boxAlpha.load(); }
+        inline void setEditable(bool f) { editable = f; }
 
     private:
-        std::atomic<bool> editable = true;
-        std::atomic<float> boxAlpha;
+        bool editable{true};
         static constexpr float fontScale = 1.5f;
 
         UIBase *uiBase;

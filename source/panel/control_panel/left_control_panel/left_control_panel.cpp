@@ -15,6 +15,7 @@ namespace zlPanel {
         : processorRef(p), uiBase(base),
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
+          background(uiBase),
           bypassC("B", base, zlInterface::multilingual::labels::bandBypass),
           soloC("S", base, zlInterface::multilingual::labels::bandSolo),
           dynONC("D", base, zlInterface::multilingual::labels::bandDynamic),
@@ -35,6 +36,7 @@ namespace zlPanel {
           dynLeDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpreseta_svg, BinaryData::fadpreseta_svgSize)) {
         juce::ignoreUnused(parametersNARef);
+        addAndMakeVisible(background);
         bypassC.setDrawable(bypassDrawable.get());
         bypassC.getLAF().setReverse(true);
         bypassC.getButton().onClick = [this]() {
@@ -95,10 +97,10 @@ namespace zlPanel {
         for (auto &c: {&freqC}) {
             addAndMakeVisible(c);
         }
+        qC.setBufferedToImage(true);
         for (auto &c: {&gainC, &qC}) {
             addAndMakeVisible(c);
         }
-        qC.setBufferedToImage(true);
         lrBox.setBufferedToImage(true);
         addAndMakeVisible(lrBox);
         resetComponent.setBufferedToImage(true);
@@ -115,12 +117,6 @@ namespace zlPanel {
         }
     }
 
-    void LeftControlPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getBackgroundColor());
-        const auto bound = getLocalBounds().toFloat();
-        uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
-    }
-
     void LeftControlPanel::resized() {
         // update padding
         {
@@ -130,10 +126,10 @@ namespace zlPanel {
             for (auto &s: {&gainC, &qC}) {
                 s->setPadding(std::round(uiBase.getFontSize() * 0.5f), 0.f);
             }
-            lrBox.setPadding(std::round(uiBase.getFontSize() * 2.5f), 0.f);
         }
         // update bounds
-        auto bound = getLocalBounds(); {
+        auto bound = getLocalBounds();
+        background.setBounds(bound); {
             const auto pad = static_cast<int>(uiBase.getFontSize() * .5f);
             bound = bound.withSizeKeepingCentre(bound.getWidth() - 2 * pad, bound.getHeight() - 2 * pad);
         }
@@ -153,13 +149,16 @@ namespace zlPanel {
         }
         freqC.setBounds(bound.removeFromLeft(sliderWidth));
         gainC.setBounds(bound.removeFromLeft(sliderWidth));
-        qC.setBounds(bound.removeFromLeft(sliderWidth)); {
+        qC.setBounds(bound.removeFromLeft(sliderWidth));
+        const auto resetWidth = juce::roundToInt(1.5f * uiBase.getFontSize()); {
             auto mBound = bound.removeFromBottom(buttonHeight);
             dynONC.setBounds(mBound.removeFromLeft(buttonWidth));
             dynLC.setBounds(mBound);
-            lrBox.setBounds(bound);
+            mBound = bound;
+            mBound.removeFromLeft(juce::roundToInt(0.5f * uiBase.getFontSize()));
+            mBound.removeFromRight(juce::roundToInt(1.75f * uiBase.getFontSize()));
+            lrBox.setBounds(mBound);
         } {
-            const auto resetWidth = juce::roundToInt(1.5f * uiBase.getFontSize());
             bound = bound.removeFromRight(resetWidth);
             bound = bound.removeFromTop(resetWidth);
             resetComponent.setBounds(bound);

@@ -20,12 +20,27 @@ namespace zlPanel {
     class LeftControlPanel final : public juce::Component,
                                    private juce::AudioProcessorValueTreeState::Listener,
                                    private juce::AsyncUpdater {
+    private:
+        class Background final : public juce::Component {
+        public:
+            explicit Background(zlInterface::UIBase &base) : uiBase(base) {
+                setBufferedToImage(true);
+            }
+
+            void paint(juce::Graphics &g) override {
+                g.fillAll(uiBase.getBackgroundColor());
+                const auto bound = getLocalBounds().toFloat();
+                uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+            }
+
+        private:
+            zlInterface::UIBase &uiBase;
+        };
+
     public:
         explicit LeftControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
         ~LeftControlPanel() override;
-
-        void paint(juce::Graphics &g) override;
 
         void resized() override;
 
@@ -39,6 +54,8 @@ namespace zlPanel {
         PluginProcessor &processorRef;
         zlInterface::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+
+        Background background;
 
         zlInterface::CompactButton bypassC, soloC, dynONC, dynLC;
         juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;

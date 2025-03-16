@@ -16,6 +16,7 @@ namespace zlPanel {
         : uiBase(base),
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
+          background(uiBase),
           dynBypassC("B", base, zlInterface::multilingual::labels::bandDynamicBypass),
           dynSoloC("S", base, zlInterface::multilingual::labels::bandDynamicSolo),
           dynRelativeC("R", base, zlInterface::multilingual::labels::bandDynamicRelative),
@@ -32,6 +33,8 @@ namespace zlPanel {
           relativeDrawable(juce::Drawable::createFromImageData(BinaryData::relative_svg, BinaryData::relative_svgSize)),
           swapDrawable(juce::Drawable::createFromImageData(BinaryData::swap_svg, BinaryData::swap_svgSize)) {
         juce::ignoreUnused(parametersNARef);
+        addAndMakeVisible(background);
+
         dynBypassC.setDrawable(bypassDrawable.get());
         dynBypassC.getLAF().setReverse(true);
         dynBypassC.getButton().onClick = [this]() {
@@ -68,13 +71,7 @@ namespace zlPanel {
         lookAndFeelChanged();
     }
 
-    RightControlPanel::~RightControlPanel() {
-    }
-
-    void RightControlPanel::paint(juce::Graphics &g) {
-        const auto bound = getLocalBounds().toFloat();
-        uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
-    }
+    RightControlPanel::~RightControlPanel() = default;
 
     void RightControlPanel::resized() {
         // update padding
@@ -89,7 +86,8 @@ namespace zlPanel {
             }
         }
         // update bounds
-        auto bound = getLocalBounds(); {
+        auto bound = getLocalBounds();
+        background.setBounds(bound); {
             const auto pad = static_cast<int>(uiBase.getFontSize() * .5f);
             bound = bound.withSizeKeepingCentre(bound.getWidth() - 2 * pad, bound.getHeight() - 2 * pad);
         }
