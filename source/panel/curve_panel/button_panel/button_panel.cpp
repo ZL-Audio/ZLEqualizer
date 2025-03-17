@@ -22,9 +22,16 @@ namespace zlPanel {
           } {
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             const auto suffix = zlDSP::appendSuffix("", i);
-            freqUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(parametersRef, zlDSP::freq::ID + suffix);
-            gainUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(parametersRef, zlDSP::gain::ID + suffix);
-            QUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(parametersRef, zlDSP::Q::ID + suffix);
+            freqUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
+                parametersRef, zlDSP::freq::ID + suffix);
+            gainUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
+                parametersRef, zlDSP::gain::ID + suffix);
+            QUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
+                parametersRef, zlDSP::Q::ID + suffix);
+            targetGainUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
+                parametersRef, zlDSP::targetGain::ID + suffix);
+            targetQUpdaters[i] = std::make_unique<zlChore::ParaUpdater>(
+                parametersRef, zlDSP::targetQ::ID + suffix);
         }
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
             panels[i] = std::make_unique<FilterButtonPanel>(i, processorRef, base);
@@ -338,10 +345,10 @@ namespace zlPanel {
 
         for (size_t i = 0; i < initIDs.size(); ++i) {
             const auto paraID = zlDSP::appendSuffix(initIDs[i], idx);
-            auto *_para = parametersRef.getParameter(paraID);
-            _para->beginChangeGesture();
-            _para->setValueNotifyingHost(initValues[i]);
-            _para->endChangeGesture();
+            auto *para = parametersRef.getParameter(paraID);
+            para->beginChangeGesture();
+            para->setValueNotifyingHost(initValues[i]);
+            para->endChangeGesture();
         }
 
         if (event.mods.isCommandDown()) {
@@ -370,7 +377,7 @@ namespace zlPanel {
             }
             maximumDB.store(zlState::maximumDB::dBs[idx]);
         } else {
-            // the parameter is freq/gain/Q
+            // the parameter is freq/gain/Q/targetGain/targetQ
             if (!isDuringLasso.load()) return;
             const auto currentBand = selectBandIdx.load();
             if (!uiBase.getIsBandSelected(currentBand)) return;
@@ -412,6 +419,36 @@ namespace zlPanel {
                         const auto shiftQ = ratio * previousQs[idx].load();
                         const auto legalQ = zlDSP::Q::range.snapToLegalValue(shiftQ);
                         QUpdaters[idx]->update(zlDSP::Q::range.convertTo0to1(legalQ));
+                    }
+                }
+            } else if (parameterID.startsWith(zlDSP::targetGain::ID)) {
+                if (isLeftClick.load()) {
+                    if (std::abs(previousTargetGains[currentBand].load()) <= 0.1f) return;
+                    const auto scale = newValue / previousTargetGains[currentBand].load();
+                    for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                        if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
+                            const auto shiftGain = scale * previousTargetGains[idx].load();
+                            const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
+                            targetGainUpdaters[idx]->update(zlDSP::targetGain::convertTo01(legalGain));
+                        }
+                    }
+                } else {
+                    const auto shift = newValue - previousTargetGains[currentBand].load();
+                    for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                        if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
+                            const auto shiftGain = shift + previousTargetGains[idx].load();
+                            const auto legalGain = juce::jlimit(-maximumDB.load(), maximumDB.load(), shiftGain);
+                            targetGainUpdaters[idx]->update(zlDSP::targetGain::convertTo01(legalGain));
+                        }
+                    }
+                }
+            } else if (parameterID.startsWith(zlDSP::targetQ::ID)) {
+                const auto ratio = static_cast<float>(value / previousTargetQs[currentBand].load());
+                for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+                    if (idx != currentBand && uiBase.getIsBandSelected(idx)) {
+                        const auto shiftQ = ratio * previousTargetQs[idx].load();
+                        const auto legalQ = zlDSP::Q::range.snapToLegalValue(shiftQ);
+                        targetQUpdaters[idx]->update(zlDSP::targetQ::range.convertTo0to1(legalQ));
                     }
                 }
             }
@@ -524,6 +561,10 @@ namespace zlPanel {
                 gainUpdaters[idx]->getPara()->getValue()));
             previousQs[idx].store(zlDSP::Q::range.convertFrom0to1(
                 QUpdaters[idx]->getPara()->getValue()));
+            previousTargetGains[idx].store(zlDSP::targetGain::range.convertFrom0to1(
+                targetGainUpdaters[idx]->getPara()->getValue()));
+            previousTargetQs[idx].store(zlDSP::targetQ::range.convertFrom0to1(
+                targetQUpdaters[idx]->getPara()->getValue()));
         }
     }
 } // zlPanel

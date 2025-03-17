@@ -95,11 +95,14 @@ namespace zlPanel {
         std::atomic<float> maximumDB;
         std::atomic<size_t> selectBandIdx{0};
 
-        static constexpr std::array IDs{zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID};
+        static constexpr std::array IDs{
+            zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID, zlDSP::targetGain::ID, zlDSP::targetQ::ID
+        };
 
         static constexpr std::array NAIDs{zlState::maximumDB::ID, zlState::selectedBandIdx::ID};
 
         std::array<std::unique_ptr<zlChore::ParaUpdater>, zlState::bandNUM> freqUpdaters, gainUpdaters, QUpdaters;
+        std::array<std::unique_ptr<zlChore::ParaUpdater>, zlState::bandNUM> targetGainUpdaters, targetQUpdaters;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
@@ -123,6 +126,7 @@ namespace zlPanel {
         int previousLassoNum{0};
         std::atomic<bool> isLeftClick{true};
         std::array<std::atomic<float>, zlState::bandNUM> previousFreqs{}, previousGains{}, previousQs{};
+        std::array<std::atomic<float>, zlState::bandNUM> previousTargetGains{}, previousTargetQs{};
 
         std::atomic<bool> toAttachGroup{false};
 
