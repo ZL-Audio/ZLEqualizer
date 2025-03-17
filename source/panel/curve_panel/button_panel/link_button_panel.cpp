@@ -25,8 +25,7 @@ namespace zlPanel {
         dynLinkC.setDrawable(linkDrawable.get());
         attach({&dynLinkC.getButton()}, {zlDSP::appendSuffix(zlDSP::singleDynLink::ID, bandIdx)},
                parameters, buttonAttachments);
-        // dynLinkC.setBufferedToImage(true);
-        addChildComponent(dynLinkC);
+        addAndMakeVisible(dynLinkC);
         sideDraggerRef.addMouseListener(this, true);
 
         for (auto &ID: IDs) {
@@ -67,9 +66,9 @@ namespace zlPanel {
             auto buttonBound = juce::Rectangle<float>{buttonSize, buttonSize};
             buttonBound = buttonBound.withCentre({dynPos, buttonBottom});
             dynLinkC.setBounds(buttonBound.toNearestInt());
-            dynLinkC.setVisible(true);
+            setVisible(true);
         } else {
-            dynLinkC.setVisible(false);
+            setVisible(false);
         }
     }
 

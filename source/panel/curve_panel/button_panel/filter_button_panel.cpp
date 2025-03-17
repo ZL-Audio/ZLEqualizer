@@ -166,6 +166,7 @@ namespace zlPanel {
 
     void FilterButtonPanel::handleAsyncUpdate() {
         const auto f = isActiveTarget.load();
+        setVisible(f);
         dragger.setVisible(f);
         dragger.setInterceptsMouseClicks(false, f);
         if (!f) {
@@ -380,6 +381,12 @@ namespace zlPanel {
     void FilterButtonPanel::lookAndFeelChanged() {
         for (auto &d: {&sideDragger, &targetDragger, &dragger}) {
             d->getLAF().setColour(uiBase.getColorMap1(band.load()));
+        }
+    }
+
+    void FilterButtonPanel::visibilityChanged() {
+        if (!isVisible()) {
+            buttonPopUp.setBounds({-1000, -1000, 0, 0});
         }
     }
 } // zlPanel

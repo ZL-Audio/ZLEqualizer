@@ -68,8 +68,8 @@ namespace zlPanel {
             parameterChanged(idx, parametersNARef.getRawParameterValue(idx)->load());
         }
         for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            addAndMakeVisible(panels[i].get());
-            addAndMakeVisible(linkButtons[i].get());
+            addChildComponent(panels[i].get());
+            addChildComponent(linkButtons[i].get());
         }
         addAndMakeVisible(lassoComponent);
         itemsSet.addChangeListener(this);

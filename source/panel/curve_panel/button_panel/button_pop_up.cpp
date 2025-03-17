@@ -115,8 +115,4 @@ namespace zlPanel {
                                      : "A0";
         pitchLabel.setText(pitchString);
     }
-
-    void ButtonPopUp::visibilityChanged() {
-        setBounds({-1000, -1000, 0, 0});
-    }
 } // zlPanel

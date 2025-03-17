@@ -52,6 +52,8 @@ namespace zlPanel {
 
         void lookAndFeelChanged() override;
 
+        void visibilityChanged() override;
+
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
