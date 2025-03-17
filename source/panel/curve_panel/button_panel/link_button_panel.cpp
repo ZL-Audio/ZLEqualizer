@@ -51,9 +51,7 @@ namespace zlPanel {
     }
 
     void LinkButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        if (parameterID.startsWith(zlDSP::sideFreq::ID)) {
-            sideFreq.store(newValue);
-        } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
+        if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
             isDynamicON.store(newValue > .5f);
         } else if (parameterID.startsWith(zlState::selectedBandIdx::ID)) {
             isSelected.store(static_cast<size_t>(newValue) == bandIdx.load());

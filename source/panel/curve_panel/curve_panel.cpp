@@ -164,18 +164,24 @@ namespace zlPanel {
         const auto refreshRateMul = showMatchPanel.load() ? static_cast<juce::int64>(2) : static_cast<juce::int64>(1);
         if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
             buttonPanel.updateAttach();
+            auto isCurrentDraggerMoved = false;
             for (size_t i = 0; i < zlState::bandNUM; ++i) {
-                buttonPanel.updateDragger(i, singlePanels[i]->getButtonPos());
+                const auto f = buttonPanel.updateDragger(i, singlePanels[i]->getButtonPos());
+                if (i == previousBandIdx) isCurrentDraggerMoved = f;
             }
             if (previousBandIdx != currentBandIdx.load()) {
                 if (previousBandIdx < zlState::bandNUM) {
-                    buttonPanel.updateOthers(previousBandIdx);
+                    buttonPanel.updateLinkButton(previousBandIdx);
                 }
                 previousBandIdx = currentBandIdx.load();
-                buttonPanel.updateOthers(previousBandIdx);
+                buttonPanel.updatePopup(previousBandIdx);
+                buttonPanel.updateLinkButton(previousBandIdx);
+            } else {
+                buttonPanel.updateOtherDraggers(previousBandIdx,
+                    singlePanels[previousBandIdx]->getTargetButtonPos());
+                buttonPanel.updatePopup(previousBandIdx, isCurrentDraggerMoved);
+                buttonPanel.updateLinkButton(previousBandIdx);
             }
-            buttonPanel.updateOtherDraggers(previousBandIdx,
-                singlePanels[previousBandIdx]->getTargetButtonPos());
 
             conflictPanel.updateGradient();
             loudnessDisplay.checkVisible();

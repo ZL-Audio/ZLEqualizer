@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <limits>
+
 #include "../../../dsp/dsp.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../../state/state.hpp"

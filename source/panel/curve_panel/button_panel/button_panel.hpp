@@ -39,29 +39,31 @@ namespace zlPanel {
 
         void updateAttach();
 
-        void updateDragger(const size_t idx,
-                           const juce::Point<float> pos) {
+        bool updateDragger(const size_t idx, const juce::Point<float> pos) {
             const auto &p = panels[idx];
-            if (p->isVisible()) {
-                const auto f = p->getDragger().updateButton(pos.roundToInt());
-                if (f) {
-                    p->getPopUp().updateBounds(p->getDragger().getButton());
-                }
-            }
+            const auto f = p->isVisible()
+                               ? p->getDragger().updateButton(pos.roundToInt())
+                               : false;
             p->updateDraggers();
+            return f;
         }
 
         void updateOtherDraggers(const size_t idx, const juce::Point<float> targetPos) {
             const auto &p = panels[idx];
+            p->getPopUp().updateBounds(p->getDragger().getButton());
             p->getTargetDragger().updateButton(targetPos.roundToInt());
             p->getSideDragger().updateButton();
+        }
+
+        void updateLinkButton(const size_t idx) {
             linkButtons[idx]->updateBound();
         }
 
-        void updateOthers(const size_t idx) {
+        void updatePopup(const size_t idx, const bool isDraggerMoved = false) {
             const auto &p = panels[idx];
-            p->getPopUp().updateBounds(p->getDragger().getButton());
-            linkButtons[idx]->updateBound();
+            if (isDraggerMoved || p->getPopUp().getBounds().getX() < 0) {
+                p->getPopUp().updateBounds(p->getDragger().getButton());
+            }
         }
 
         void resized() override;
@@ -110,8 +112,7 @@ namespace zlPanel {
             const auto portion = (x - bound.getX()) / bound.getWidth();
             return std::exp(portion *
                             static_cast<float>(std::log(zlFilter::frequencies.back() / zlFilter::frequencies.front())))
-                   *
-                   static_cast<float>(zlFilter::frequencies.front());
+                   * static_cast<float>(zlFilter::frequencies.front());
         }
 
         inline static float yToDB(const float y, const float maxDB, const juce::Rectangle<float> bound) {

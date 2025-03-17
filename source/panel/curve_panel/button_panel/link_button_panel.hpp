@@ -46,7 +46,6 @@ namespace zlPanel {
 
         std::atomic<size_t> bandIdx;
         std::atomic<bool> isDynamicON{false}, isSelected{false};
-        std::atomic<float> sideFreq{1000.f};
 
         constexpr static std::array IDs{zlDSP::dynamicON::ID};
         constexpr static std::array NAIDs{zlState::selectedBandIdx::ID};

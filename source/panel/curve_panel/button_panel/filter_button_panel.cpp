@@ -343,8 +343,7 @@ namespace zlPanel {
             if (event.mods.isLeftButtonDown()) {
                 // turn on/off current band dynamic
                 const auto paraID = zlDSP::appendSuffix(zlDSP::dynamicON::ID, currentBand);
-                const auto newValue = 1.f - parametersRef.getRawParameterValue(paraID)->load();
-                {
+                const auto newValue = 1.f - parametersRef.getRawParameterValue(paraID)->load(); {
                     auto *para = parametersRef.getParameter(paraID);
                     para->beginChangeGesture();
                     para->setValueNotifyingHost(newValue);
@@ -356,8 +355,7 @@ namespace zlPanel {
                     dynLinkValue = static_cast<float>(uiBase.getDynLink());
                 } else {
                     processorRef.getFiltersAttach().turnOffDynamic(currentBand);
-                }
-                {
+                } {
                     auto *para = parametersRef.getParameter(
                         zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
                     para->beginChangeGesture();
@@ -366,7 +364,7 @@ namespace zlPanel {
                 }
             } else if (event.mods.isRightButtonDown()) {
                 auto *para = parametersRef.getParameter(
-                        zlDSP::appendSuffix(zlDSP::solo::ID, currentBand));
+                    zlDSP::appendSuffix(zlDSP::solo::ID, currentBand));
                 para->beginChangeGesture();
                 if (para->getValue() < 0.5f) {
                     para->setValueNotifyingHost(1.f);
@@ -386,7 +384,10 @@ namespace zlPanel {
 
     void FilterButtonPanel::visibilityChanged() {
         if (!isVisible()) {
-            buttonPopUp.setBounds({-1000, -1000, 0, 0});
+            buttonPopUp.setBounds({
+                std::numeric_limits<int>::min() / 2, std::numeric_limits<int>::min() / 2,
+                buttonPopUp.getBounds().getWidth(), buttonPopUp.getBounds().getHeight()
+            });
         }
     }
 } // zlPanel
