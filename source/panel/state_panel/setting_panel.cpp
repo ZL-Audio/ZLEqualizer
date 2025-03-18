@@ -64,8 +64,10 @@ namespace zlPanel {
 
     void SettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        startTimer(0, 100);
-        startTimer(1, 500);
+        if (!uiBase.getBoxProperty(mIdx)) {
+            startTimer(0, 100);
+            startTimer(1, 500);
+        }
     }
 
     void SettingPanel::mouseExit(const juce::MouseEvent &event) {
@@ -86,6 +88,6 @@ namespace zlPanel {
     void SettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                 const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (uiBase.isBoxProperty(mIdx, property)) repaint();
+        if (zlInterface::UIBase::isBoxProperty(mIdx, property)) repaint();
     }
 } // zlPanel

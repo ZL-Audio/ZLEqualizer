@@ -66,7 +66,7 @@ namespace zlPanel {
     void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                      const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (uiBase.isProperty(zlInterface::settingIdx::matchPanelShow, property)) {
+        if (zlInterface::UIBase::isProperty(zlInterface::settingIdx::matchPanelShow, property)) {
             repaint();
         }
     }

@@ -101,7 +101,7 @@ namespace zlPanel {
     void OutputValuePanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                     const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (uiBase.isBoxProperty(zlInterface::boxIdx::outputBox, property)) {
+        if (zlInterface::UIBase::isBoxProperty(zlInterface::boxIdx::outputBox, property)) {
             repaint();
         }
     }
