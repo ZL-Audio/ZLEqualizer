@@ -43,8 +43,7 @@ namespace zlInterface {
             g.setColour(colour);
             g.fillPath(innerPath);
 
-            if (label.load() != ' ') {
-                const auto l = std::string{label.load()};
+            if (label.length() > 0) {
                 if (colour.getPerceivedBrightness() <= .5f) {
                     g.setColour(juce::Colours::white);
                 } else {
@@ -54,7 +53,7 @@ namespace zlInterface {
                 auto bound = button.getLocalBounds().toFloat();
                 const auto radius = std::min(bound.getHeight(), bound.getWidth());
                 bound = bound.withSizeKeepingCentre(radius, radius);
-                g.drawText(l, bound, juce::Justification::centred);
+                g.drawText(label, bound, juce::Justification::centred);
             }
         }
 
@@ -151,7 +150,7 @@ namespace zlInterface {
             updateOnePath(innerPath, bound);
         }
 
-        void setLabel(const char l) { label.store(l); }
+        void setLabel(const juce::String &l) { label = l; }
 
         void setLabelScale(const float x) { labelScale = x; }
 
@@ -160,7 +159,7 @@ namespace zlInterface {
         juce::Path outlinePath, innerPath;
         std::atomic<bool> active{true}, isSelected{false};
         std::atomic<DraggerShape> draggerShape{DraggerShape::round};
-        std::atomic<char> label;
+        juce::String label;
         float labelScale = 1.f;
         UIBase &uiBase;
     };

@@ -14,9 +14,10 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
         : band{bandIdx}, parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
+          fType(*parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::fType::ID, band))),
+          freqPara(*parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::freq::ID, band))),
           background(bandIdx, parameters, parametersNA, base), pitchLabel(base) {
         juce::ignoreUnused(parametersRef, parametersNARef);
-        freqPara = parametersRef.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, band));
 
         addAndMakeVisible(background);
         addAndMakeVisible(pitchLabel);
@@ -52,7 +53,7 @@ namespace zlPanel {
         const auto shiftY = compBound.getCentreY() - compParentBound.getCentreY();
         const auto shiftYPortion = shiftY / (compParentBound.getHeight() - uiBase.getFontSize()) * 2;
 
-        switch (fType.load()) {
+        switch (static_cast<zlFilter::FilterType>(fType.load())) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
                 if (direction > 0.f) {
@@ -105,8 +106,7 @@ namespace zlPanel {
     }
 
     void ButtonPopUp::updateLabel() {
-        const auto freq = zlDSP::freq::range.convertFrom0to1(freqPara->getValue());
-        const auto pitchIdx = juce::roundToInt(12 * std::log2(freq / 440.f));
+        const auto pitchIdx = juce::roundToInt(12 * std::log2(freqPara.load() / 440.f));
         const auto pitchIdx1 = (pitchIdx + 240) % 12;
         const auto pitchIdx2 = (pitchIdx + 240) / 12 - 16;
         const auto pitchString = pitchIdx2 >= 0

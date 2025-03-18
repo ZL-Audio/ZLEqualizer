@@ -49,19 +49,13 @@ namespace zlPanel {
 
         void updateBounds(const juce::Component &component);
 
-        void setFType(const zlFilter::FilterType f) {
-            fType.store(f);
-        }
-
     private:
+        static constexpr float widthP{7.7916666f}, heightP{4.16667f};
+
         size_t band;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
         zlInterface::UIBase &uiBase;
-
-        juce::RangedAudioParameter *freqPara;
-
-        static constexpr float widthP{7.7916666f}, heightP{4.16667f};
-        std::atomic<zlFilter::FilterType> fType;
+        std::atomic<float> &fType, &freqPara;
         float direction = -1.f;
         juce::Rectangle<int> previousBound{}, previousCompBound{};
 

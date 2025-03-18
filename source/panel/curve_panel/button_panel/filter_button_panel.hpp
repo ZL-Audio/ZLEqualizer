@@ -66,15 +66,16 @@ namespace zlPanel {
         std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
         std::atomic<zlFilter::FilterType> fType;
         std::atomic<zlDSP::lrType::lrTypes> lrType;
-        std::atomic<size_t> band;
-        std::atomic<bool> isFilterTypeHasTarget{false}, isDynamicHasTarget{false},
-                isSelectedTarget{false}, isActiveTarget{false};
+        const size_t band;
+        std::atomic<float> &currentSelectedBandIdx;
+        std::atomic<bool> isDynamicHasTarget{false}, isSelectedTarget{false}, isActiveTarget{false};
 
         static constexpr std::array IDs{zlDSP::fType::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID};
         static constexpr std::array NAIDs{zlState::active::ID};
         static constexpr auto scale = 1.5f;
 
-        std::atomic<bool> toUpdateAttachment{false}, toUpdateBounds{false}, toUpdateTargetAttachment{false};
+        std::atomic<bool> toUpdateAttachment{false}, toUpdateBounds{false}, toUpdateTargetAttachment{false},
+                toUpdateDraggerLabel{false};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
@@ -87,6 +88,8 @@ namespace zlPanel {
         void updateBounds();
 
         void updateTargetAttachment();
+
+        void updateDraggerLabel();
 
         const juce::NormalisableRange<float> freqRange{
             10.f, 20000.f,

@@ -484,8 +484,6 @@ namespace zlPanel {
             wheelAttachment[2].reset();
             wheelAttachment[2] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
                 parametersRef, zlDSP::appendSuffix(zlDSP::sideQ::ID, selectBandIdx.load()), wheelSlider[2]);
-            panels[idx]->getTargetDragger().getButton().setToggleState(false, juce::sendNotification);
-            panels[idx]->getSideDragger().getButton().setToggleState(false, juce::sendNotification);
         }
     }
 
