@@ -40,7 +40,7 @@ namespace zlPanel {
                                  uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
                                  false, false, true, true);
         g.fillPath(path);
-
+        g.setFont(uiBase.getFontSize() * 1.375f);
         if (isMatchShow) {
             g.setColour(uiBase.getTextColor());
         } else {
