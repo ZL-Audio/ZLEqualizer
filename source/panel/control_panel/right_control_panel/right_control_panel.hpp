@@ -20,6 +20,7 @@ namespace zlPanel {
         public:
             explicit Background(zlInterface::UIBase &base) : uiBase(base) {
                 setBufferedToImage(true);
+                setOpaque(true);
             }
 
             void paint(juce::Graphics &g) override {

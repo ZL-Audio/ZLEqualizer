@@ -82,9 +82,11 @@ namespace zlPanel {
         for (const auto &c: {
                  &weightSlider, &smoothSlider, &slopeSlider, &numBandSlider
              }) {
+            c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
         for (const auto &c: {&learnButton, &saveButton, &fitButton}) {
+            c->setBufferedToImage(true);
             addAndMakeVisible(c);
             c->setPadding(.2f, .2f, .2f, .2f);
         }

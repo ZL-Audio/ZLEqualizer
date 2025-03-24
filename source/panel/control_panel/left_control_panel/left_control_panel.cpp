@@ -105,8 +105,6 @@ namespace zlPanel {
         addAndMakeVisible(lrBox);
         resetComponent.setBufferedToImage(true);
         addAndMakeVisible(resetComponent);
-
-        setOpaque(true);
     }
 
     LeftControlPanel::~LeftControlPanel() {
