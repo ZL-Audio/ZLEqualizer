@@ -31,10 +31,11 @@ namespace zlInterface {
         juce::ignoreUnused(g);
     }
 
-    bool Dragger::updateButton(const juce::Point<int> &center) {
-        if (button.getBounds().getCentre() != center) {
-            const auto bound = button.getBounds().withCentre(center);
-            button.setBounds(bound);
+    bool Dragger::updateButton(const juce::Point<float> &center) {
+        if (std::abs(previousX - center.x) > 0.1f || std::abs(previousY - center.y) > 0.1f) {
+            previousX = center.x;
+            previousY = center.y;
+            button.setTransform(juce::AffineTransform::translation(previousX, previousY));
             return true;
         }
         return false;
@@ -124,8 +125,9 @@ namespace zlInterface {
                               buttonArea.getBottom() - yPortion.load() * buttonArea.getHeight());
         preButton.setBounds(buttonBound.toNearestInt());
         dummyButton.setBounds(buttonBound.toNearestInt());
-        button.setBounds(buttonBound.toNearestInt());
-        updateButton({-1000, -1000});
+        const auto radius = static_cast<int>(std::round(uiBase.getFontSize() * scale * .5f));
+        button.setBounds(juce::Rectangle<int>(-radius, -radius, radius * 2, radius * 2));
+        updateButton({-99999.f, -99999.f});
         auto lafBound = button.getLocalBounds().toFloat();
         draggerLAF.updatePaths(lafBound);
         dummyButtonChanged.store(true);

@@ -26,7 +26,7 @@ namespace zlInterface {
 
         bool updateButton();
 
-        bool updateButton(const juce::Point<int> &center);
+        bool updateButton(const juce::Point<float> &center);
 
         void mouseDown(const juce::MouseEvent &event) override;
 
@@ -102,6 +102,7 @@ namespace zlInterface {
         juce::Rectangle<float> buttonArea;
         float lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, bPadding{0.f};
         float scale{1.f};
+        float previousX{-100000.f}, previousY{-100000.f};
 
         juce::ListenerList<Listener> listeners;
     };

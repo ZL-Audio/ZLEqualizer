@@ -42,7 +42,7 @@ namespace zlPanel {
         bool updateDragger(const size_t idx, const juce::Point<float> pos) {
             const auto &p = panels[idx];
             const auto f = p->isVisible()
-                               ? p->getDragger().updateButton(pos.roundToInt())
+                               ? p->getDragger().updateButton(pos)
                                : false;
             p->updateDraggers();
             return f;
@@ -51,7 +51,7 @@ namespace zlPanel {
         void updateOtherDraggers(const size_t idx, const juce::Point<float> targetPos) {
             const auto &p = panels[idx];
             p->getPopUp().updateBounds(p->getDragger().getButton());
-            p->getTargetDragger().updateButton(targetPos.roundToInt());
+            p->getTargetDragger().updateButton(targetPos);
             p->getSideDragger().updateButton();
         }
 

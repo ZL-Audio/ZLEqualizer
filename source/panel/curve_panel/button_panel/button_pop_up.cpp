@@ -94,8 +94,7 @@ namespace zlPanel {
                                          bound.getRight() - width * .5f,
                                          bound.getCentreX() + shiftX);
 
-        const auto popUpBound = juce::Rectangle<float>(
-            width, height).withCentre({finalX, finalY});
+        const auto popUpBound = juce::Rectangle<float>(width, height).withCentre({finalX, finalY});
 
         const auto actualBound = juce::Rectangle<int>(
             juce::roundToInt(popUpBound.getX()), juce::roundToInt(popUpBound.getY()),
