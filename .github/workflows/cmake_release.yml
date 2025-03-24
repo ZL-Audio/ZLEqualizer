@@ -29,31 +29,21 @@ jobs:
           - name: Linux
             os: ubuntu-22.04
             plugin_os_format: "VST3;LV2;Standalone"
-            juce_branch: "main"
             app_suffix: ""
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
           - name: Linux-ARM64
             os: ubuntu-22.04-arm
             plugin_os_format: "VST3;LV2;Standalone"
-            juce_branch: "main"
             app_suffix: ""
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
           - name: macOS
             os: macos-15
             plugin_os_format: "VST3;AU;Standalone"
-            juce_branch: "main"
             app_suffix: ".app"
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           - name: Windows
             os: windows-latest
             plugin_os_format: "VST3;LV2;Standalone"
-            juce_branch: "main"
-            app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
-          - name: Windows-Software
-            os: windows-latest
-            plugin_os_format: "VST3;LV2;Standalone"
-            juce_branch: "juce7"
             app_suffix: ".exe"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 
@@ -120,7 +110,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0
 
       - name: Import Certificates (macOS)
         uses: apple-actions/import-codesign-certs@v4 # only exists as a tag right now
@@ -136,7 +125,6 @@ jobs:
         run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
         env:
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
-          JUCE_BRANCH: ${{ matrix.juce_branch }}
 
       - name: Build
         shell: bash
@@ -156,7 +144,7 @@ jobs:
         run: git config --global http.postBuffer 1048576000
 
       - name: Download AAX pre-release repo
-        if: ${{ (runner.os != 'Linux') && (matrix.juce_branch != 'juce7') }}
+        if: ${{ (runner.os != 'Linux') }}
         uses: actions/checkout@v4
         with:
           repository: "ZL-Audio/ZLEqualizerAAX"

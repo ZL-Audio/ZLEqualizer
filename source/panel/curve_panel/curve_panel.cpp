@@ -24,8 +24,7 @@ namespace zlPanel {
           buttonPanel(processorRef, base),
           soloPanel(parametersRef, parametersNARef, base, controllerRef, buttonPanel),
           matchPanel(processor.getController().getMatchAnalyzer(), parametersNARef, base),
-          currentT(juce::Time::getCurrentTime()),
-          vblank(this, [this]() { repaintCallBack(); }) {
+          vblank(this, [this](const double t) { repaintCallBack(t); }) {
         for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {
             for (auto &f: *filters) {
                 f.prepare(48000.0);
@@ -158,11 +157,10 @@ namespace zlPanel {
         }
     }
 
-    void CurvePanel::repaintCallBack() {
+    void CurvePanel::repaintCallBack(const double nowT) {
         if (showUISettingsPanel) { return; }
-        const juce::Time nowT = juce::Time::getCurrentTime();
-        const auto refreshRateMul = showMatchPanel.load() ? static_cast<juce::int64>(2) : static_cast<juce::int64>(1);
-        if ((nowT - currentT).inMilliseconds() > uiBase.getRefreshRateMS() * refreshRateMul) {
+        const auto refreshRateMul = showMatchPanel.load() ? 2.0 : 1.0;
+        if ((nowT - currentT) * 1000.0 > static_cast<double>(uiBase.getRefreshRateMS()) * refreshRateMul) {
             buttonPanel.updateAttach();
             auto isCurrentDraggerMoved = false;
             for (size_t i = 0; i < zlState::bandNUM; ++i) {

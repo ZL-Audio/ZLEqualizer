@@ -306,8 +306,8 @@ namespace zlInterface {
             rotaryDragSensitivity = x;
         }
 
-        juce::int64 getRefreshRateMS() const {
-            return static_cast<juce::int64>(zlState::refreshRate::ms[refreshRateId.load()]);
+        int getRefreshRateMS() const {
+            return zlState::refreshRate::ms[refreshRateId.load()];
         }
 
         size_t getRefreshRateID() const {
