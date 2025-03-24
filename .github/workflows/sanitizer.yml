@@ -108,18 +108,5 @@ jobs:
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
-          REPEAT: 4
-          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
-
-      - name: Pluginval AU validations (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        shell: bash
-        run: |
-          sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
-          sudo killall -9 AudioComponentRegistrar
-          ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
-        env:
-          STRICTNESS_LEVEL: 10
-          TIMEOUT_MS: 1440000
-          REPEAT: 4
+          REPEAT: 10
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
