@@ -498,13 +498,13 @@ namespace zlPanel {
 
     void ButtonPanel::findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) {
         juce::ignoreUnused(itemsFound, area);
+        const auto floatArea = area.toFloat();
         for (size_t idx = 0; idx < panels.size(); ++idx) {
-            if (parametersNARef.getRawParameterValue(
-                    zlState::appendSuffix(zlState::active::ID, idx))->load() > .5f) {
-                auto bCenter = panels[idx]->getDragger().getButton().getBounds().toFloat().getCentre();
+            if (panels[idx]->isVisible()) {
+                const auto transform = panels[idx]->getDragger().getButton().getTransform();
                 const auto dPosition = panels[idx]->getDragger().getPosition().toFloat();
-                bCenter = bCenter.translated(dPosition.getX(), dPosition.getY());
-                if (area.contains(bCenter.roundToInt())) {
+                const auto bCenter = dPosition.transformedBy(transform);
+                if (floatArea.contains(bCenter)) {
                     itemsFound.add(idx);
                 }
             }
