@@ -76,7 +76,8 @@ namespace zlLoudness {
             if (totalLUFS <= FloatType(-60)) {
                 return totalLUFS;
             } else {
-                const auto endIdx = static_cast<size_t>(std::round(-(totalLUFS - FloatType(10)) * FloatType(10)));
+                const auto endIdx = static_cast<typename std::array<FloatType, 701>::difference_type>(
+                    std::round(-(totalLUFS - FloatType(10)) * FloatType(10)));
                 const auto subCount = std::reduce(histogram.begin(), histogram.begin() + endIdx, FloatType(0));
                 const auto subSum = std::reduce(histogramSums.begin(), histogramSums.begin() + endIdx, FloatType(0));
                 const auto subMeanSquare = subSum / subCount;
