@@ -30,7 +30,7 @@ jobs:
             os: macos-15
             pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
             plugin_os_format: "VST3;AU"
-            cmake_extra_flags:
+            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF
 
     steps:
       - name: Install macOS Deps
