@@ -1,4 +1,4 @@
-name: Thread Sanitizer
+name: Sanitizer
 
 on:
   workflow_dispatch:
@@ -13,7 +13,8 @@ env:
   BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  THREAD_SANITIZER_FLAG: True
+  ADDRESS_SANITIZER_FLAG: True
+  PLUGINVAL_DISABLED: Plugin state restoration
 
 # jobs are run in paralell on different machines
 # all steps run in series
@@ -25,8 +26,13 @@ jobs:
       fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
       matrix:
         include:
-          - name: macOS
-            os: macos-15
+          - name: macOS Address Sanitizer
+            os: macos-latest
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
+            plugin_os_format: "VST3;AU"
+            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF
+          - name: macOS Thread Sanitizer
+            os: macos-latest
             pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
             plugin_os_format: "VST3;AU"
             cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON
@@ -98,11 +104,11 @@ jobs:
       - name: Pluginval VST3 validations
         shell: bash
         run: |
-          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "Plugin state restoration"
+          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
-          REPEAT: 2
+          REPEAT: 4
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
 
       - name: Pluginval AU validations (macOS)
@@ -111,9 +117,9 @@ jobs:
         run: |
           sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
           sudo killall -9 AudioComponentRegistrar
-          ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "Plugin state restoration,Automation"
+          ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
-          REPEAT: 2
+          REPEAT: 4
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
