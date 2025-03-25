@@ -107,7 +107,7 @@ namespace zlPanel {
         const auto bound = getLocalBounds().toFloat();
         const auto idx = selectBandIdx.load();
         const auto &p = panels[idx];
-        if (!p->getDragger().getLAF().getActive()) {
+        if (!p->isVisible()) {
             return;
         }
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
