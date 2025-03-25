@@ -8,43 +8,39 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "ms_splitter.hpp"
+
 namespace zlSplitter {
     template<typename FloatType>
     void MSSplitter<FloatType>::reset() {
-        mBuffer.clear();
-        sBuffer.clear();
     }
 
     template<typename FloatType>
     void MSSplitter<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        mBuffer.setSize(1, static_cast<int>(spec.maximumBlockSize));
-        sBuffer.setSize(1, static_cast<int>(spec.maximumBlockSize));
+        juce::ignoreUnused(spec);
     }
 
     template<typename FloatType>
     void MSSplitter<FloatType>::split(juce::AudioBuffer<FloatType> &buffer) {
-        mBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
-        sBuffer.setSize(1, buffer.getNumSamples(), true, false, true);
-
-        auto lBuffer = buffer.getReadPointer(0);
-        auto rBuffer = buffer.getReadPointer(1);
-        auto _mBuffer = mBuffer.getWritePointer(0);
-        auto _sBuffer = sBuffer.getWritePointer(0);
+        auto l_buffer = buffer.getWritePointer(0);
+        auto r_buffer = buffer.getWritePointer(1);
         for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
-            _mBuffer[i] = FloatType(0.5) * (lBuffer[i] + rBuffer[i]);
-            _sBuffer[i] = FloatType(0.5) * (lBuffer[i] - rBuffer[i]);
+            const auto l = l_buffer[i], r = r_buffer[i];
+            l_buffer[i] = FloatType(0.5) * (l + r);
+            r_buffer[i] = FloatType(0.5) * (l - r);
         }
+
+        mBuffer.setDataToReferTo(buffer.getArrayOfWritePointers(), 1, 0, buffer.getNumSamples());
+        sBuffer.setDataToReferTo(buffer.getArrayOfWritePointers() + 1, 1, 0, buffer.getNumSamples());
     }
 
     template<typename FloatType>
     void MSSplitter<FloatType>::combine(juce::AudioBuffer<FloatType> &buffer) {
-        auto lBuffer = buffer.getWritePointer(0);
-        auto rBuffer = buffer.getWritePointer(1);
-        auto _mBuffer = mBuffer.getReadPointer(0);
-        auto _sBuffer = sBuffer.getReadPointer(0);
+        auto m_buffer = buffer.getWritePointer(0);
+        auto s_buffer = buffer.getWritePointer(1);
         for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
-            lBuffer[i] = _mBuffer[i] + _sBuffer[i];
-            rBuffer[i] = _mBuffer[i] - _sBuffer[i];
+            const auto m = m_buffer[i], s = s_buffer[i];
+            m_buffer[i] = m + s;
+            s_buffer[i] = m - s;
         }
     }
 
