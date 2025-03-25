@@ -60,7 +60,7 @@ namespace zlPanel {
 
     void LinkButtonPanel::updateBound() {
         if (isSelected.load() && isDynamicON.load()) {
-            const auto dynPos = static_cast<float>(sideDraggerRef.getButton().getBounds().getCentreX());
+            const auto dynPos = static_cast<float>(sideDraggerRef.getButton().getBoundsInParent().getCentreX());
             auto buttonBound = juce::Rectangle<float>{buttonSize, buttonSize};
             buttonBound = buttonBound.withCentre({dynPos, buttonBottom});
             dynLinkC.setBounds(buttonBound.toNearestInt());

@@ -55,7 +55,7 @@ namespace zlPanel {
         }
         const auto bound = getLocalBounds().toFloat();
 
-        const auto x = static_cast<float>(sideDraggerRef.getButton().getBounds().getCentreX());
+        const auto x = sideDraggerRef.getButton().getBoundsInParent().toFloat().getCentreX();
         const auto thickness = uiBase.getFontSize() * 0.15f;
         g.setColour(colour);
         g.drawLine(x - currentBW, bound.getY(), x + currentBW, bound.getY(), thickness);

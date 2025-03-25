@@ -42,22 +42,17 @@ namespace zlInterface {
     }
 
     bool Dragger::updateButton() {
-        if (dummyButtonChanged.exchange(false)) {
-            button.setBounds(dummyButton.getBounds());
-            auto bound = button.getLocalBounds().toFloat();
-            const auto radius = std::min(bound.getHeight(), bound.getWidth());
-            bound = bound.withSizeKeepingCentre(radius, radius);
-            draggerLAF.updatePaths(bound);
-            return true;
-        }
-        return false;
+        return updateButton(dummyButton.getBounds().toFloat().getCentre());
     }
 
     void Dragger::mouseDown(const juce::MouseEvent &event) {
         isSelected.store(true);
         button.setToggleState(true, juce::NotificationType::sendNotificationSync);
-        preBound = preButton.getBounds();
-        dummyBound = dummyButton.getBounds();
+        const auto bound = button.getBoundsInParent();
+        preButton.setBounds(bound);
+        dummyButton.setBounds(bound);
+        preBound = bound;
+        dummyBound = bound;
         isShiftDown = event.mods.isShiftDown();
         dragger.startDraggingComponent(&preButton, event);
         const BailOutChecker checker(this);
