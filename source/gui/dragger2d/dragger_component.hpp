@@ -39,7 +39,7 @@ namespace zlInterface {
 
         juce::ToggleButton &getButton() { return button; }
 
-        juce::Point<float> getButtonPos() const { return juce::Point<float>(previousX, previousY); }
+        juce::Point<float> getButtonPos() const { return buttonPos; }
 
         void setXPortion(float x);
 
@@ -88,16 +88,14 @@ namespace zlInterface {
 
     private:
         UIBase &uiBase;
-        bool isShiftDown{false};
         DraggerLookAndFeel draggerLAF;
         juce::ToggleButton button;
         float xPortion{0.f}, yPortion{0.f};
         float scale{1.f};
 
-        juce::Point<float> mouseDownPos{}, currentPos{};
+        juce::Point<float> globalPos{}, currentPos{};
         juce::Rectangle<float> buttonArea{};
-
-        float previousX{-100000.f}, previousY{-100000.f};
+        juce::Point<float> buttonPos{-100000.f, -100000.f};
 
         juce::ListenerList<Listener> listeners;
     };

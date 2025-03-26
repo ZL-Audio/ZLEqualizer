@@ -25,10 +25,9 @@ namespace zlInterface {
     }
 
     bool Dragger::updateButton(const juce::Point<float> &center) {
-        if (std::abs(previousX - center.x) > 0.1f || std::abs(previousY - center.y) > 0.1f) {
-            previousX = center.x;
-            previousY = center.y;
-            button.setTransform(juce::AffineTransform::translation(previousX, previousY));
+        if (std::abs(buttonPos.x - center.x) > 0.1f || std::abs(buttonPos.y - center.y) > 0.1f) {
+            buttonPos = center;
+            button.setTransform(juce::AffineTransform::translation(buttonPos.x, buttonPos.y));
             return true;
         }
         return false;
@@ -39,8 +38,8 @@ namespace zlInterface {
     }
 
     void Dragger::mouseDown(const juce::MouseEvent &e) {
-        isShiftDown = e.mods.isShiftDown();
-        mouseDownPos = e.position;
+        currentPos = buttonPos;
+        globalPos = e.position + buttonPos;
         button.setToggleState(true, juce::NotificationType::sendNotificationSync);
         const BailOutChecker checker(this);
         listeners.callChecked(checker, [&](Dragger::Listener &l) { l.dragStarted(this); });
@@ -53,21 +52,26 @@ namespace zlInterface {
     }
 
     void Dragger::mouseDrag(const juce::MouseEvent &e) {
-        auto shift = e.position - mouseDownPos + juce::Point<float>(previousX, previousY) - currentPos;
-        if (isShiftDown) {
+        // calculate shift and update global position
+        const auto newGlobalPos = e.position + buttonPos;
+        auto shift = newGlobalPos - globalPos;
+        globalPos = newGlobalPos;
+        // apply sensitivity
+        if (e.mods.isShiftDown()) {
             shift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
             shift.setY(shift.getY() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
         }
+        // update current position
         if (checkCenter) {
             currentPos = checkCenter(currentPos, currentPos + shift);
         } else {
             currentPos = currentPos + shift;
         }
         currentPos = buttonArea.getConstrainedPoint(currentPos);
-
+        // update x/y portion
         xPortion = (currentPos.getX() - buttonArea.getX()) / buttonArea.getWidth();
         yPortion = 1.f - (currentPos.getY() - buttonArea.getY()) / buttonArea.getHeight();
-
+        // call listeners
         const BailOutChecker checker(this);
         listeners.callChecked(checker, [&](Listener &l) { l.draggerValueChanged(this); });
     }
