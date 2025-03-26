@@ -12,7 +12,6 @@
 namespace zlInterface {
     Dragger::Dragger(UIBase &base)
         : uiBase(base), draggerLAF(base) {
-        addChildComponent(dummyComponent);
         button.addMouseListener(this, false);
         draggerLAF.setColour(uiBase.getColorMap1(1));
         button.setClickingTogglesState(false);
@@ -40,10 +39,8 @@ namespace zlInterface {
     }
 
     void Dragger::mouseDown(const juce::MouseEvent &e) {
-        dummyComponent.setBounds(button.getBoundsInParent().withSizeKeepingCentre(1, 1));
-        const auto event = e.getEventRelativeTo(&dummyComponent);
-        isShiftDown = event.mods.isShiftDown();
-        mouseDownPos = event.position;
+        isShiftDown = e.mods.isShiftDown();
+        mouseDownPos = e.position;
         button.setToggleState(true, juce::NotificationType::sendNotificationSync);
         const BailOutChecker checker(this);
         listeners.callChecked(checker, [&](Dragger::Listener &l) { l.dragStarted(this); });
@@ -56,8 +53,7 @@ namespace zlInterface {
     }
 
     void Dragger::mouseDrag(const juce::MouseEvent &e) {
-        const auto event = e.getEventRelativeTo(&dummyComponent);
-        auto shift = event.position - mouseDownPos;
+        auto shift = e.position - mouseDownPos + juce::Point<float>(previousX, previousY) - currentPos;
         if (isShiftDown) {
             shift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
             shift.setY(shift.getY() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
@@ -68,7 +64,6 @@ namespace zlInterface {
             currentPos = currentPos + shift;
         }
         currentPos = buttonArea.getConstrainedPoint(currentPos);
-        dummyComponent.setBounds(dummyComponent.getBoundsInParent().withPosition(currentPos.roundToInt()));
 
         xPortion = (currentPos.getX() - buttonArea.getX()) / buttonArea.getWidth();
         yPortion = 1.f - (currentPos.getY() - buttonArea.getY()) / buttonArea.getHeight();

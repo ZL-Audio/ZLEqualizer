@@ -90,7 +90,6 @@ namespace zlInterface {
         UIBase &uiBase;
         bool isShiftDown{false};
         DraggerLookAndFeel draggerLAF;
-        juce::Component dummyComponent;
         juce::ToggleButton button;
         float xPortion{0.f}, yPortion{0.f};
         float scale{1.f};
