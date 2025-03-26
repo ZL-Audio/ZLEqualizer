@@ -142,11 +142,11 @@ namespace zlPanel {
         void attachGroup(size_t idx);
 
         inline void drawFilterParas(juce::Graphics &g, zlFilter::FilterType fType,
-                                    double freq, double gain, const juce::Rectangle<float> &bound);
+                                    float freqP, float gainP, const juce::Rectangle<float> &bound);
 
-        inline void drawFreq(juce::Graphics &g, float freq, const juce::Rectangle<float> &bound, bool isTop);
+        inline void drawFreq(juce::Graphics &g, float freqP, const juce::Rectangle<float> &bound, bool isTop);
 
-        inline void drawGain(juce::Graphics &g, float gain, const juce::Rectangle<float> &bound, bool isLeft);
+        inline void drawGain(juce::Graphics &g, float gainP, const juce::Rectangle<float> &bound, bool isLeft);
 
         inline void loadPreviousParameters();
     };

@@ -30,12 +30,10 @@ namespace zlInterface {
         void drawToggleButton(juce::Graphics &g, juce::ToggleButton &button,
                               bool shouldDrawButtonAsHighlighted,
                               bool shouldDrawButtonAsDown) override {
-            if (!active.load()) { return; }
-
             if (shouldDrawButtonAsDown || button.getToggleState()) {
                 g.setColour(uiBase.getTextColor());
                 g.fillPath(outlinePath);
-            } else if (shouldDrawButtonAsHighlighted || isSelected.load()) {
+            } else if (shouldDrawButtonAsHighlighted || isSelected) {
                 g.setColour(uiBase.getTextColor().withMultipliedAlpha(0.5f));
                 g.fillPath(outlinePath);
             }
@@ -59,20 +57,16 @@ namespace zlInterface {
 
         inline void setColour(const juce::Colour c) { colour = c; }
 
-        void setActive(const bool f) { active.store(f); }
+        void setIsSelected(const bool f) { isSelected = f; }
 
-        bool getActive() const { return active.load(); }
+        bool getIsSelected() const { return isSelected; }
 
-        void setIsSelected(const bool f) { isSelected.store(f); }
-
-        bool getIsSelected() const { return isSelected.load(); }
-
-        void setDraggerShape(const DraggerShape s) { draggerShape.store(s); }
+        void setDraggerShape(const DraggerShape s) { draggerShape = s; }
 
         void updatePaths(juce::Rectangle<float> &bound) {
             outlinePath.clear();
             innerPath.clear();
-            switch (draggerShape.load()) {
+            switch (draggerShape) {
                 case round: {
                     updateRoundPaths(bound);
                     break;
@@ -157,8 +151,8 @@ namespace zlInterface {
     private:
         juce::Colour colour;
         juce::Path outlinePath, innerPath;
-        std::atomic<bool> active{true}, isSelected{false};
-        std::atomic<DraggerShape> draggerShape{DraggerShape::round};
+        bool isSelected{false};
+        DraggerShape draggerShape{DraggerShape::round};
         juce::String label;
         float labelScale = 1.f;
         UIBase &uiBase;

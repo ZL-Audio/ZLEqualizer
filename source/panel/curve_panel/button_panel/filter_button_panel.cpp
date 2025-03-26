@@ -192,24 +192,18 @@ namespace zlPanel {
         targetDragger.setBounds(getLocalBounds());
         sideDragger.setBounds(getLocalBounds());
         auto bound = getLocalBounds().toFloat();
-        bound.removeFromRight((1 - 0.98761596f) * bound.getWidth() - uiBase.getFontSize() * scale * .5f);
-        dragger.setPadding(0.f, uiBase.getFontSize() * scale * .5f, uiBase.getFontSize() * scale * .5f,
-                           uiBase.getFontSize() * scale * .5f);
-        targetDragger.setPadding(0.f, uiBase.getFontSize() * scale * .5f, uiBase.getFontSize() * scale * .5f,
-                                 uiBase.getFontSize() * scale * .5f);
-        sideDragger.setPadding(0.f, uiBase.getFontSize() * scale * .5f, uiBase.getFontSize() * scale * .5f,
-                               uiBase.getFontSize() * scale * .5f);
+        bound.removeFromRight((1 - 0.98761596f) * bound.getWidth());
         switch (fType.load()) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
                 dragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() - (2 - scale) * uiBase.getFontSize()));
+                        bound.getHeight() - 2 * uiBase.getFontSize()));
                 targetDragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() - (2 - scale) * uiBase.getFontSize()));
+                        bound.getHeight() - 2 * uiBase.getFontSize()));
                 break;
             }
             case zlFilter::FilterType::lowShelf:
@@ -218,11 +212,11 @@ namespace zlPanel {
                 dragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() * .5f - (1 - scale) * uiBase.getFontSize()));
+                        bound.getHeight() * .5f - 1 * uiBase.getFontSize()));
                 targetDragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() * .5f - (1 - scale) * uiBase.getFontSize()));
+                        bound.getHeight() * .5f - 1 * uiBase.getFontSize()));
                 break;
             }
             case zlFilter::FilterType::notch:
@@ -236,11 +230,11 @@ namespace zlPanel {
                 break;
             }
         }
-        const juce::Rectangle<float> sideBound{
+        juce::Rectangle<float> sideBound{
             bound.getX(), bound.getBottom() - 2 * uiBase.getFontSize() - .5f * scale * uiBase.getFontSize(),
             bound.getWidth(), scale * uiBase.getFontSize()
         };
-        sideDragger.setBounds(sideBound.toNearestInt());
+        sideBound = sideBound.withSizeKeepingCentre(sideBound.getWidth(), 1.f);
         sideDragger.setButtonArea(sideBound);
     }
 

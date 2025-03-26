@@ -13,16 +13,15 @@
 
 #include "../interface_definitions.hpp"
 #include "dragger_look_and_feel.hpp"
-#include "dragger_constrainer.hpp"
 
 namespace zlInterface {
     class Dragger final : public juce::Component {
     public:
+        std::function<juce::Point<float>(juce::Point<float> currentC, juce::Point<float> nextC)> checkCenter;
+
         explicit Dragger(UIBase &base);
 
         ~Dragger() override;
-
-        void paint(juce::Graphics &g) override;
 
         bool updateButton();
 
@@ -36,7 +35,11 @@ namespace zlInterface {
 
         void setButtonArea(juce::Rectangle<float> bound);
 
+        juce::Rectangle<float> getButtonArea() const { return buttonArea; }
+
         juce::ToggleButton &getButton() { return button; }
+
+        juce::Point<float> getButtonPos() const { return juce::Point<float>(previousX, previousY); }
 
         void setXPortion(float x);
 
@@ -67,41 +70,34 @@ namespace zlInterface {
         /** Removes a previously-registered listener. */
         void removeListener(Listener *listener);
 
-        void setPadding(const float left, const float right,
-                        const float upper, const float bottom) {
-            lPadding = left;
-            rPadding = right;
-            uPadding = upper;
-            bPadding = bottom;
-        }
-
-        void setActive(const bool f) { draggerLAF.setActive(f); }
-
         DraggerLookAndFeel &getLAF() { return draggerLAF; }
 
         void setXYEnabled(const bool x, const bool y) {
-            xEnabled = x;
-            yEnabled = y;
+            if (x && !y) {
+                checkCenter = [](const juce::Point<float> currentC,
+                                 const juce::Point<float> nextC) {
+                    return juce::Point<float>(nextC.x, currentC.y);
+                };
+            } else if (!x && y) {
+                checkCenter = [](const juce::Point<float> currentC,
+                                 const juce::Point<float> nextC) {
+                    return juce::Point<float>(currentC.x, nextC.y);
+                };
+            }
         }
 
     private:
         UIBase &uiBase;
-        juce::Component dummyComponent;
-        juce::Component preButton, dummyButton;
-        juce::Rectangle<int> preBound, dummyBound;
         bool isShiftDown{false};
-        juce::ToggleButton button;
-        std::atomic<bool> dummyButtonChanged{false};
         DraggerLookAndFeel draggerLAF;
-        juce::ComponentDragger dragger;
-        DraggerConstrainer constrainer;
-        bool xEnabled{true}, yEnabled{true};
-        std::atomic<bool> isSelected;
-        std::atomic<float> xPortion, yPortion;
-
-        juce::Rectangle<float> buttonArea;
-        float lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, bPadding{0.f};
+        juce::Component dummyComponent;
+        juce::ToggleButton button;
+        float xPortion{0.f}, yPortion{0.f};
         float scale{1.f};
+
+        juce::Point<float> mouseDownPos{}, currentPos{};
+        juce::Rectangle<float> buttonArea{};
+
         float previousX{-100000.f}, previousY{-100000.f};
 
         juce::ListenerList<Listener> listeners;

@@ -34,7 +34,6 @@ namespace zlPanel {
         }
         for (auto &d: {&lowDragger, &highDragger, &shiftDragger}) {
             d->setScale(scale);
-            d->setActive(true);
             d->getButton().setToggleState(true, juce::dontSendNotification);
             d->getLAF().setIsSelected(true);
             d->setInterceptsMouseClicks(false, true);
@@ -97,12 +96,13 @@ namespace zlPanel {
         dBScale.store((1.f + uiBase.getFontSize() * 2.f / bound.getHeight()) * 2.f);
         matchLabel.setBounds(getLocalBounds());
         lowDragger.setBounds(getLocalBounds());
-        lowDragger.setButtonArea(getLocalBounds().toFloat());
+        lowDragger.setButtonArea(bound);
         highDragger.setBounds(getLocalBounds());
-        highDragger.setButtonArea(getLocalBounds().toFloat());
+        highDragger.setButtonArea(bound);
         shiftDragger.setBounds(getLocalBounds());
-        shiftDragger.setButtonArea(getLocalBounds().toFloat());
-        shiftDragger.setPadding(0.f, 0.f, uiBase.getFontSize(), uiBase.getFontSize());
+        bound.removeFromTop(uiBase.getFontSize());
+        bound.removeFromBottom(uiBase.getFontSize());
+        shiftDragger.setButtonArea(bound);
     }
 
     void MatchAnalyzerPanel::updatePaths() {

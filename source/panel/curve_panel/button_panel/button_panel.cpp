@@ -104,43 +104,52 @@ namespace zlPanel {
         if (uiBase.getColourByIdx(zlInterface::tagColour).getFloatAlpha() < 0.01f) {
             return;
         }
-        const auto bound = getLocalBounds().toFloat();
         const auto idx = selectBandIdx.load();
         const auto &p = panels[idx];
         if (!p->isVisible()) {
             return;
         }
+        const auto bound = p->getDragger().getButtonArea();
         g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
         if (p->getDragger().getButton().getToggleState()) {
             const auto &f{controllerRef.getBaseFilter(idx)};
-            drawFilterParas(g, f.getFilterType(), f.getFreq(), f.getGain(), bound);
+            const auto buttonC = p->getDragger().getButtonPos();
+            const auto freqP = (buttonC.getX() - bound.getX()) / bound.getWidth();
+            const auto gainP = (buttonC.getY() - bound.getY()) / bound.getHeight();
+            drawFilterParas(g, f.getFilterType(), freqP, gainP, getLocalBounds().toFloat());
         } else if (p->getTargetDragger().getButton().getToggleState()) {
             const auto &f{controllerRef.getTargetFilter(idx)};
-            drawFilterParas(g, f.getFilterType(), f.getFreq(), f.getGain(), bound);
+            const auto buttonC = p->getDragger().getButtonPos();
+            const auto freqP = (buttonC.getX() - bound.getX()) / bound.getWidth();
+            const auto gainP = (buttonC.getY() - bound.getY()) / bound.getHeight();
+            drawFilterParas(g, f.getFilterType(), freqP, gainP, getLocalBounds().toFloat());
         } else if (p->getSideDragger().getButton().getToggleState()) {
             const auto &f{controllerRef.getFilter(idx).getSideFilter()};
-            drawFilterParas(g, f.getFilterType(), f.getFreq(), f.getGain(), bound);
+            const auto buttonC = p->getSideDragger().getButtonPos();
+            const auto freqP = (buttonC.getX() - bound.getX()) / bound.getWidth();
+            const auto gainP = (buttonC.getY() - bound.getY()) / bound.getHeight();
+            drawFilterParas(g, f.getFilterType(), freqP, gainP, getLocalBounds().toFloat());
         }
     }
 
     void ButtonPanel::drawFilterParas(juce::Graphics &g, const zlFilter::FilterType fType,
-                                      const double freq, const double gain, const juce::Rectangle<float> &bound) {
+                                      const float freqP, const float gainP, const juce::Rectangle<float> &bound) {
         switch (fType) {
             case zlFilter::FilterType::peak:
             case zlFilter::FilterType::bandShelf: {
-                drawGain(g, static_cast<float>(gain), bound, static_cast<float>(freq) <= 500.f);
+                drawGain(g, gainP, bound, freqP < .5f);
                 break;
             }
             case zlFilter::FilterType::lowShelf: {
-                drawGain(g, static_cast<float>(gain), bound, true);
+                drawGain(g, gainP, bound, true);
                 break;
             }
             case zlFilter::FilterType::highShelf: {
-                drawGain(g, static_cast<float>(gain), bound, false);
+                drawGain(g, gainP, bound, false);
                 break;
             }
             case zlFilter::FilterType::tiltShelf: {
-                drawGain(g, static_cast<float>(gain) * .5f, bound, false);
+                drawGain(g, gainP * .5f, bound, false);
                 break;
             }
             case zlFilter::FilterType::notch:
@@ -150,15 +159,15 @@ namespace zlPanel {
                 break;
             }
         }
-        drawFreq(g, static_cast<float>(freq), bound, false);
+        drawFreq(g, freqP, bound, false);
     }
 
-    void ButtonPanel::drawFreq(juce::Graphics &g, const float freq, const juce::Rectangle<float> &bound,
+    void ButtonPanel::drawFreq(juce::Graphics &g, const float freqP, const juce::Rectangle<float> &bound,
                                const bool isTop) {
         juce::ignoreUnused(isTop);
+        const auto freq = std::exp(freqP * std::log(2000.f)) * 10.f;
         const auto freqString = freq < 100 ? juce::String(freq, 2, false) : juce::String(freq, 1, false);
-        auto p = std::log(freq / 10.f) / std::log(2205.f);
-        p = juce::jlimit(0.025f, 0.97f, p);
+        const auto p = std::clamp(freqP, 0.025f, 0.975f) * 0.9873247325443818f;
         auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 5, uiBase.getFontSize() * 1.5f);
         textBound = textBound.withCentre({bound.getWidth() * p, bound.getBottom() - 0.75f * uiBase.getFontSize()});
         const auto colour = uiBase.getColourByIdx(zlInterface::tagColour);
@@ -168,22 +177,22 @@ namespace zlPanel {
         g.drawText(freqString, textBound, juce::Justification::centredBottom, false);
     }
 
-    void ButtonPanel::drawGain(juce::Graphics &g, const float gain, const juce::Rectangle<float> &bound,
+    void ButtonPanel::drawGain(juce::Graphics &g, const float gainP, const juce::Rectangle<float> &bound,
                                const bool isLeft) {
+        const auto gain = (-2.f * gainP + 1.f) * maximumDB.load();
         const auto tempBound = bound.withSizeKeepingCentre(bound.getWidth(),
                                                            bound.getHeight() - 2 * uiBase.getFontSize());
         const auto gString = std::abs(gain) < 10 ? juce::String(gain, 2, false) : juce::String(gain, 1, false);
-        const auto p = juce::jlimit(-0.5f, 0.5f, -.5f * gain / maximumDB.load());
         auto textBound = juce::Rectangle<float>(uiBase.getFontSize() * 2.7f, uiBase.getFontSize() * 1.5f);
         if (isLeft) {
             textBound = textBound.withCentre({
                 uiBase.getFontSize() * 1.35f,
-                tempBound.getY() + (0.5f + p) * tempBound.getHeight()
+                tempBound.getY() + gainP * tempBound.getHeight()
             });
         } else {
             textBound = textBound.withCentre({
                 tempBound.getRight() - uiBase.getFontSize() * 1.35f,
-                tempBound.getY() + (0.5f + p) * tempBound.getHeight()
+                tempBound.getY() + gainP * tempBound.getHeight()
             });
         }
         const auto colour = uiBase.getColourByIdx(zlInterface::tagColour);
@@ -274,6 +283,9 @@ namespace zlPanel {
             } else if (p.get()->getTargetDragger().isParentOf(event.originalComponent)) {
                 wheelSlider[1].mouseWheelMove(e, wheel);
             } else if (p.get()->getSideDragger().isParentOf(event.originalComponent)) {
+                if (!p.get()->getSideDragger().getButton().getToggleState()) {
+                    p.get()->getSideDragger().getButton().setToggleState(true, juce::sendNotificationSync);
+                }
                 wheelSlider[2].mouseWheelMove(e, wheel);
             }
         }
