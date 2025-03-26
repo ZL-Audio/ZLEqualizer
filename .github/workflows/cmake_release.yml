@@ -203,7 +203,7 @@ jobs:
         if: ${{ runner.os == 'macOS' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.dmg
+          name: ${{ matrix.name }}
           path: "${{ env.ARTIFACT_NAME }}.dmg"
 
       - name: Generate InnoScript (Windows)
@@ -224,7 +224,7 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.exe
+          name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
 
       - name: Generate Zip (Linux)
@@ -236,7 +236,7 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.zip
+          name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
 
   release:

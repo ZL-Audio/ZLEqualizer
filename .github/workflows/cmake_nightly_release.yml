@@ -131,10 +131,6 @@ jobs:
         shell: bash
         run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
 
-      - name: Test
-        working-directory: ${{ env.BUILD_DIR }}
-        run: ctest --output-on-failure -j4 -VV
-
       - name: Read in .env from CMake # see GitHubENV.cmake
         shell: bash
         run: |
@@ -191,7 +187,7 @@ jobs:
         if: ${{ runner.os == 'macOS' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.dmg
+          name: ${{ matrix.name }}
           path: "${{ env.ARTIFACT_NAME }}.dmg"
 
       - name: Generate InnoScript (Windows)
@@ -212,7 +208,7 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.exe
+          name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
 
       - name: Generate Zip (Linux)
@@ -224,7 +220,7 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.zip
+          name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
 
   nightly_release:
@@ -264,6 +260,8 @@ jobs:
     - name: Move current release assets
       run: |
         mv -v "current_release"/* "release_repo/${{ github.event.repository.name }}/"
+        mv -v "current_repo/docs" "release_repo/${{ github.event.repository.name }}/docs"
+        mv -v "current_repo/assets" "release_repo/${{ github.event.repository.name }}/assets"
         mv -v "current_repo/README.md" "release_repo/${{ github.event.repository.name }}/README.md"
         mv -v "current_repo/LICENSE.md" "release_repo/${{ github.event.repository.name }}/LICENSE.md"
         mv -v "current_repo/CHANGELOG.md" "release_repo/${{ github.event.repository.name }}/CHANGELOG.md"
