@@ -24,37 +24,24 @@ namespace zlInterface {
                 return;
             }
             if (editable) {
-                g.setColour(uiBase.getTextColor().withMultipliedAlpha(alpha.load()));
+                g.setColour(uiBase.getTextColor().withMultipliedAlpha(alpha));
             } else {
-                g.setColour(uiBase.getTextInactiveColor().withMultipliedAlpha(alpha.load()));
+                g.setColour(uiBase.getTextInactiveColor().withMultipliedAlpha(alpha));
             }
-            g.setFont(uiBase.getFontSize() * fontScale.load());
-            auto bound = label.getLocalBounds().toFloat();
-            bound.removeFromTop(uPadding.load());
-            bound.removeFromBottom(dPadding.load());
-            bound.removeFromLeft(lPadding.load());
-            bound.removeFromRight(rPadding.load());
-            g.drawText(label.getText(), bound, label.getJustificationType());
+            g.setFont(uiBase.getFontSize() * fontScale);
+            g.drawText(label.getText(), label.getLocalBounds().toFloat(), label.getJustificationType());
         }
 
-        inline void setEditable(const bool f) { editable.store(f); }
+        inline void setEditable(const bool f) { editable = f; }
 
-        inline void setAlpha(const float x) { alpha.store(x); }
+        inline void setAlpha(const float x) { alpha = x; }
 
-        inline void setFontScale(const float x) { fontScale.store(x); }
-
-        inline void setPadding(const float l, const float r, const float u, const float d) {
-            lPadding.store(l);
-            rPadding.store(r);
-            uPadding.store(u);
-            dPadding.store(d);
-        }
+        inline void setFontScale(const float x) { fontScale = x; }
 
     private:
-        std::atomic<bool> editable{true};
-        std::atomic<float> alpha{1.f};
-        std::atomic<float> fontScale{FontNormal};
-        std::atomic<float> lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, dPadding{0.f};
+        bool editable{true};
+        float alpha{1.f};
+        float fontScale{FontNormal};
 
         UIBase &uiBase;
     };

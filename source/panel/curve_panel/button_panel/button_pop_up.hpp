@@ -13,28 +13,43 @@
 #include "../../../gui/gui.hpp"
 #include "../../../state/state.hpp"
 #include "../../panel_definitons.hpp"
+#include "../../helper/helper.hpp"
 #include "button_pop_up_background.hpp"
 
 namespace zlPanel {
     class ButtonPopUp final : public juce::Component,
                               public juce::ComponentListener {
     private:
-        class PitchLabel final : public juce::Component {
+        class PitchLabel final : public juce::Component, private juce::Label::Listener {
         public:
-            explicit PitchLabel(zlInterface::UIBase &base) : uiBase(base) {
-            }
+            explicit PitchLabel(zlInterface::UIBase &base, juce::RangedAudioParameter *freq);
 
-            void paint(juce::Graphics &g) override {
-                g.setFont(uiBase.getFontSize() * 1.2f);
-                g.setColour(uiBase.getTextColor());
-                g.drawText(label, getLocalBounds(), juce::Justification::centredRight, false);
-            }
+            void setFreq(double freq);
 
-            void setText(const juce::String &x) { label = x; }
+            void resized() override {
+                label.setBounds(getLocalBounds());
+            }
 
         private:
             zlInterface::UIBase &uiBase;
-            juce::String label;
+            juce::RangedAudioParameter *freqPara;
+            zlInterface::NameLookAndFeel laf;
+            juce::Label label;
+
+            static constexpr std::array pitchLookUp{
+                "A", "A#", "B", "C",
+                "C#", "D", "D#", "E",
+                "F", "F#", "G", "G#"
+            };
+
+
+            void editorShown(juce::Label *, juce::TextEditor &editor) override;
+
+            void editorHidden(juce::Label *, juce::TextEditor &) override;
+
+            void labelTextChanged(juce::Label *labelThatHasChanged) override {
+                juce::ignoreUnused(labelThatHasChanged);
+            }
         };
 
     public:
@@ -49,6 +64,12 @@ namespace zlPanel {
 
         void updateBounds(const juce::Component &component);
 
+        void visibilityChanged() override {
+            if (isVisible()) {
+                setBounds(previousBound);
+            }
+        }
+
     private:
         static constexpr float widthP{7.7916666f}, heightP{4.16667f};
 
@@ -57,17 +78,11 @@ namespace zlPanel {
         zlInterface::UIBase &uiBase;
         std::atomic<float> &fType, &freqPara;
         float direction = -1.f;
-        juce::Rectangle<int> previousBound{}, previousCompBound{};
+        juce::Rectangle<int> previousBound{};
 
         ButtonPopUpBackground background;
 
         PitchLabel pitchLabel;
-
-        static constexpr std::array pitchLookUp{
-            "A", "A#", "B", "C",
-            "C#", "D", "D#", "E",
-            "F", "F#", "G", "G#"
-        };
 
         void updateLabel();
     };

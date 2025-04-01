@@ -10,13 +10,61 @@
 #include "button_pop_up.hpp"
 
 namespace zlPanel {
+    ButtonPopUp::PitchLabel::PitchLabel(zlInterface::UIBase &base, juce::RangedAudioParameter *freq)
+                : uiBase(base), freqPara(freq), laf(uiBase) {
+        label.setLookAndFeel(&laf);
+        label.setJustificationType(juce::Justification::centredRight);
+        laf.setFontScale(1.2f);
+        label.setEditable(false, true);
+        label.addListener(this);
+        addAndMakeVisible(label);
+        label.setBufferedToImage(true);
+    }
+
+    void ButtonPopUp::PitchLabel::setFreq(const double freq) {
+        const auto pitchIdx = juce::roundToInt(12 * std::log2(freq / 440.f));
+        const auto pitchIdx1 = (pitchIdx + 240) % 12;
+        const auto pitchIdx2 = (pitchIdx + 240) / 12 - 16;
+        const auto pitchString = pitchIdx2 >= 0
+                                     ? std::string(pitchLookUp[static_cast<size_t>(pitchIdx1)]) + std::to_string(
+                                           pitchIdx2)
+                                     : "A0";
+        label.setText(pitchString, juce::dontSendNotification);
+    }
+
+    void ButtonPopUp::PitchLabel::editorShown(juce::Label *, juce::TextEditor &editor) {
+        editor.setInputRestrictions(0, "0123456789.kKABCDEFGabcdefg#");
+
+        editor.setJustification(juce::Justification::centredRight);
+        editor.setColour(juce::TextEditor::outlineColourId, uiBase.getTextColor());
+        editor.setColour(juce::TextEditor::highlightedTextColourId, uiBase.getTextColor());
+        editor.applyFontToAllText(juce::FontOptions{uiBase.getFontSize() * 1.2f});
+        editor.applyColourToAllText(uiBase.getTextColor(), true);
+    }
+
+    void ButtonPopUp::PitchLabel::editorHidden(juce::Label *, juce::TextEditor &editor) {
+        const auto s = editor.getText();
+        double value;
+        if (const auto v = parseFreqPitchString(s)) {
+            value = v.value();
+        } else {
+            value = parseFreqValueString(s);
+        }
+        freqPara->beginChangeGesture();
+        freqPara->setValueNotifyingHost(freqPara->convertTo0to1(static_cast<float>(value)));
+        freqPara->endChangeGesture();
+
+        setFreq(value);
+    }
+
     ButtonPopUp::ButtonPopUp(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
         : band{bandIdx}, parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
           fType(*parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::fType::ID, band))),
           freqPara(*parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::freq::ID, band))),
-          background(bandIdx, parameters, parametersNA, base), pitchLabel(base) {
+          background(bandIdx, parameters, parametersNA, base),
+          pitchLabel(base, parameters.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, bandIdx))) {
         juce::ignoreUnused(parametersRef, parametersNARef);
 
         addAndMakeVisible(background);
@@ -29,18 +77,14 @@ namespace zlPanel {
 
     void ButtonPopUp::resized() {
         const auto currentBound = getLocalBounds();
-        if (previousBound.getHeight() != currentBound.getHeight() ||
-            previousBound.getWidth() != currentBound.getWidth()) {
-            previousBound = currentBound;
-            background.setBounds(currentBound);
+        background.setBounds(currentBound);
 
-            auto bound = currentBound.toFloat();
-            bound.removeFromBottom(bound.getHeight() * .4f);
-            bound.removeFromLeft(bound.getWidth() * .705882f);
-            bound.removeFromRight(uiBase.getFontSize() * .25f);
+        auto bound = currentBound.toFloat();
+        bound.removeFromBottom(bound.getHeight() * .4f);
+        bound.removeFromLeft(bound.getWidth() * .705882f);
+        bound.removeFromRight(uiBase.getFontSize() * .25f);
 
-            pitchLabel.setBounds(bound.toNearestInt());
-        }
+        pitchLabel.setBounds(bound.toNearestInt());
     }
 
     void ButtonPopUp::updateBounds(const juce::Component &component) {
@@ -100,18 +144,14 @@ namespace zlPanel {
             juce::roundToInt(popUpBound.getX()), juce::roundToInt(popUpBound.getY()),
             juce::roundToInt(width), juce::roundToInt(height));
 
-        updateLabel();
-        setBounds(actualBound);
+        if (actualBound != previousBound) {
+            previousBound = actualBound;
+            updateLabel();
+            setBounds(actualBound);
+        }
     }
 
     void ButtonPopUp::updateLabel() {
-        const auto pitchIdx = juce::roundToInt(12 * std::log2(freqPara.load() / 440.f));
-        const auto pitchIdx1 = (pitchIdx + 240) % 12;
-        const auto pitchIdx2 = (pitchIdx + 240) / 12 - 16;
-        const auto pitchString = pitchIdx2 >= 0
-                                     ? std::string(pitchLookUp[static_cast<size_t>(pitchIdx1)]) + std::to_string(
-                                           pitchIdx2)
-                                     : "A0";
-        pitchLabel.setText(pitchString);
+        pitchLabel.setFreq(freqPara.load());
     }
 } // zlPanel
