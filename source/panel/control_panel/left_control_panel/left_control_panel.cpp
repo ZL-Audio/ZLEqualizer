@@ -97,10 +97,20 @@ namespace zlPanel {
         for (auto &c: {&freqC}) {
             addAndMakeVisible(c);
         }
+        freqC.parseString = [](const juce::String s) {
+            if (const auto v = parseFreqPitchString(s)) {
+                return v.value();
+            } else {
+                return parseFreqValueString(s);
+            }
+        };
+        freqC.allowedChars = juce::String("0123456789.kKABCDEFGabcdefg#");
         qC.setBufferedToImage(true);
         for (auto &c: {&gainC, &qC}) {
             addAndMakeVisible(c);
         }
+        gainC.allowedChars = juce::String("-0123456789.");
+        qC.allowedChars = juce::String("0123456789.");
         lrBox.setBufferedToImage(true);
         addAndMakeVisible(lrBox);
         resetComponent.setBufferedToImage(true);

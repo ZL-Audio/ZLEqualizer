@@ -14,6 +14,7 @@
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../panel_definitons.hpp"
+#include "../../helper/helper.hpp"
 #include "reset_component.hpp"
 
 namespace zlPanel {

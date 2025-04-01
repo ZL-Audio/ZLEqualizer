@@ -23,6 +23,8 @@ namespace zlInterface {
                                        public juce::SettableTooltipClient {
     public:
         static constexpr float startAngle = 2.0943951023931953f, endAngle = 7.3303828583761845f;
+        std::function<double(juce::String s)> parseString;
+        juce::String allowedChars = "-0123456789.kK";
 
     private:
         class Background final : public juce::Component {
@@ -436,7 +438,7 @@ namespace zlInterface {
 
         void editorShown(juce::Label *l, juce::TextEditor &editor) override {
             juce::ignoreUnused(l);
-            editor.setInputRestrictions(0, "-0123456789.kK");
+            editor.setInputRestrictions(0, allowedChars);
 
             label.setVisible(false);
             label1.setVisible(true);
@@ -452,12 +454,14 @@ namespace zlInterface {
         }
 
         void editorHidden(juce::Label *l, juce::TextEditor &editor) override {
-            auto k = 1.0;
-            const auto text = editor.getText();
-            if (text.contains("k") || text.contains("K")) {
-                k = 1000.0;
+            double actualValue;
+            if (parseString) {
+                actualValue = parseString(editor.getText());
+            } else {
+                const auto text = editor.getText();
+                const auto k = (text.contains("k") || text.contains("K")) ? 1000.0 : 1.0;
+                actualValue = text.getDoubleValue() * k;
             }
-            const auto actualValue = text.getDoubleValue() * k;
 
             if (l == &label1) {
                 slider1.setValue(actualValue, juce::sendNotificationAsync);

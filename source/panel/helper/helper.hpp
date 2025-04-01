@@ -11,3 +11,4 @@
 
 #include "path_minimizer.hpp"
 #include "atomic_bound.hpp"
+#include "parse_freq_string.hpp"
