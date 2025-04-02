@@ -61,6 +61,13 @@ namespace zlInterface {
             shift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
             shift.setY(shift.getY() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
         }
+        if (e.mods.isCommandDown()) {
+            if (e.mods.isLeftButtonDown()) {
+                shift.setX(0.f);
+            } else {
+                shift.setY(0.f);
+            }
+        }
         // update current position
         if (checkCenter) {
             currentPos = checkCenter(currentPos, currentPos + shift);
