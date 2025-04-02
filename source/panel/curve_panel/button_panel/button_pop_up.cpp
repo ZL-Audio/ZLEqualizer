@@ -40,9 +40,14 @@ namespace zlPanel {
         editor.setColour(juce::TextEditor::highlightedTextColourId, uiBase.getTextColor());
         editor.applyFontToAllText(juce::FontOptions{uiBase.getFontSize() * 1.2f});
         editor.applyColourToAllText(uiBase.getTextColor(), true);
+
+        editor.addListener(this);
+        hasEditorChanged = false;
     }
 
     void ButtonPopUp::PitchLabel::editorHidden(juce::Label *, juce::TextEditor &editor) {
+        editor.removeListener(this);
+        if (!hasEditorChanged) return;
         const auto s = editor.getText();
         double value;
         if (const auto v = parseFreqPitchString(s)) {
@@ -55,6 +60,10 @@ namespace zlPanel {
         freqPara->endChangeGesture();
 
         setFreq(value);
+    }
+
+    void ButtonPopUp::PitchLabel::textEditorTextChanged(juce::TextEditor &) {
+        hasEditorChanged = true;
     }
 
     ButtonPopUp::ButtonPopUp(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,

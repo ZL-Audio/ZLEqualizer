@@ -20,7 +20,9 @@ namespace zlPanel {
     class ButtonPopUp final : public juce::Component,
                               public juce::ComponentListener {
     private:
-        class PitchLabel final : public juce::Component, private juce::Label::Listener {
+        class PitchLabel : public juce::Component,
+                           private juce::Label::Listener,
+                           private juce::TextEditor::Listener {
         public:
             explicit PitchLabel(zlInterface::UIBase &base, juce::RangedAudioParameter *freq);
 
@@ -35,6 +37,7 @@ namespace zlPanel {
             juce::RangedAudioParameter *freqPara;
             zlInterface::NameLookAndFeel laf;
             juce::Label label;
+            bool hasEditorChanged{false};
 
             static constexpr std::array pitchLookUp{
                 "A", "A#", "B", "C",
@@ -42,14 +45,13 @@ namespace zlPanel {
                 "F", "F#", "G", "G#"
             };
 
-
             void editorShown(juce::Label *, juce::TextEditor &editor) override;
 
             void editorHidden(juce::Label *, juce::TextEditor &) override;
 
-            void labelTextChanged(juce::Label *labelThatHasChanged) override {
-                juce::ignoreUnused(labelThatHasChanged);
-            }
+            void labelTextChanged(juce::Label *) override {}
+
+            void textEditorTextChanged(juce::TextEditor &) override;
         };
 
     public:
