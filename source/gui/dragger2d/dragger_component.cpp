@@ -55,7 +55,7 @@ namespace zlInterface {
         // calculate shift and update global position
         const auto newGlobalPos = e.position + buttonPos;
         auto shift = newGlobalPos - globalPos;
-        globalPos = newGlobalPos;
+        const auto oldShift = shift;
         // apply sensitivity
         if (e.mods.isShiftDown()) {
             shift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
@@ -69,12 +69,21 @@ namespace zlInterface {
             }
         }
         // update current position
+        const auto oldCurrentPos = currentPos;
         if (checkCenter) {
             currentPos = checkCenter(currentPos, currentPos + shift);
         } else {
             currentPos = currentPos + shift;
         }
         currentPos = buttonArea.getConstrainedPoint(currentPos);
+        // shift global position accordingly
+        const auto actualShift = currentPos - oldCurrentPos;
+        if (std::abs(shift.x) > 1e-10f) {
+            globalPos.x += actualShift.x / shift.x * oldShift.x;
+        }
+        if (std::abs(shift.y) > 1e-10f) {
+            globalPos.y += actualShift.y / shift.y * oldShift.y;
+        }
         // update x/y portion
         xPortion = (currentPos.getX() - buttonArea.getX()) / buttonArea.getWidth();
         yPortion = 1.f - (currentPos.getY() - buttonArea.getY()) / buttonArea.getHeight();
