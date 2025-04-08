@@ -1,7 +1,7 @@
 [submodule "JUCE"]
 	path = JUCE
 	url = https://github.com/ZL-Audio/JUCE
-	branch = develop
+	branch = master
 [submodule "nlopt"]
 	path = nlopt
 	url = https://github.com/ZL-Audio/nlopt
