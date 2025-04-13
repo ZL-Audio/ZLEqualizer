@@ -252,13 +252,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
-        fetch-depth: 0
+        fetch-depth: 1
+        fetch-tags: true
+        ref: ${{ github.ref }}
 
     - name: Get Artifacts
       uses: actions/download-artifact@v4
       with: 
         path: installers/
+
+    - name: Generate Signed Build Provenance Attestations
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: |
+          installers/*/*.exe
+          installers/*/*.zip
+          installers/*/*.dmg
 
     - name: Create Release
       run: gh release create ${{ github.ref_name }} --prerelease installers/*/*.exe installers/*/*.zip installers/*/*.dmg
