@@ -158,6 +158,7 @@ namespace zlPanel {
     }
 
     void CurvePanel::repaintCallBack(const double nowT) {
+        if (!uiBase.getIsShowing()) { return; }
         if (showUISettingsPanel) { return; }
         const auto refreshRateMul = showMatchPanel.load() ? 2.0 : 1.0;
         if ((nowT - currentT) * 1000.0 > static_cast<double>(uiBase.getRefreshRateMS()) * refreshRateMul) {
@@ -176,7 +177,7 @@ namespace zlPanel {
                 buttonPanel.updateLinkButton(previousBandIdx);
             } else {
                 buttonPanel.updateOtherDraggers(previousBandIdx,
-                    singlePanels[previousBandIdx]->getTargetButtonPos());
+                                                singlePanels[previousBandIdx]->getTargetButtonPos());
                 buttonPanel.updatePopup(previousBandIdx, isCurrentDraggerMoved);
                 buttonPanel.updateLinkButton(previousBandIdx);
             }

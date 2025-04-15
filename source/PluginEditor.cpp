@@ -31,12 +31,16 @@ PluginEditor::PluginEditor(PluginProcessor &p)
 
     // add main panel
     addAndMakeVisible(mainPanel);
+
+    startTimerHz(10);
 }
 
 PluginEditor::~PluginEditor() {
     for (auto &ID: IDs) {
         processorRef.state.removeParameterListener(ID, this);
     }
+
+    stopTimer();
 }
 
 void PluginEditor::paint(juce::Graphics &g) {
@@ -47,6 +51,18 @@ void PluginEditor::resized() {
     mainPanel.setBounds(getLocalBounds());
     lastUIWidth = getWidth();
     lastUIHeight = getHeight();
+}
+
+void PluginEditor::visibilityChanged() {
+    mainPanel.setIsShowing(isShowing());
+}
+
+void PluginEditor::parentHierarchyChanged() {
+    mainPanel.setIsShowing(isShowing());
+}
+
+void PluginEditor::minimisationStateChanged(bool isNowMinimised) {
+    mainPanel.setIsShowing(isShowing());
 }
 
 void PluginEditor::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -60,4 +76,8 @@ void PluginEditor::handleAsyncUpdate() {
     if (!isSizeChanged.exchange(false)) {
         sendLookAndFeelChange();
     }
+}
+
+void PluginEditor::timerCallback() {
+    mainPanel.setIsShowing(isShowing());
 }

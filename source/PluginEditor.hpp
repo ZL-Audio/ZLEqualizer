@@ -16,8 +16,9 @@
 
 //==============================================================================
 class PluginEditor : public juce::AudioProcessorEditor,
+                     private juce::Timer,
                      private juce::AudioProcessorValueTreeState::Listener,
-                     private juce::AsyncUpdater  {
+                     private juce::AsyncUpdater {
 public:
     explicit PluginEditor(PluginProcessor &);
 
@@ -27,6 +28,12 @@ public:
     void paint(juce::Graphics &) override;
 
     void resized() override;
+
+    void visibilityChanged() override;
+
+    void parentHierarchyChanged() override;
+
+    void minimisationStateChanged(bool isNowMinimised) override;
 
 private:
     PluginProcessor &processorRef;
@@ -59,8 +66,11 @@ private:
         zlState::defaultPassFilterSlope::ID
     };
 
+    void timerCallback() override;
+
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 
     void handleAsyncUpdate() override;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };

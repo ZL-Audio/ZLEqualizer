@@ -34,6 +34,8 @@ namespace zlPanel {
 
         void lookAndFeelChanged() override;
 
+        void setIsShowing(const bool x) { uiBase.setIsShowing(x); }
+
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &state;
