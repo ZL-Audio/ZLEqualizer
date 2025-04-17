@@ -34,7 +34,9 @@ namespace zlPanel {
 
         void lookAndFeelChanged() override;
 
-        void setIsShowing(const bool x) { uiBase.setIsShowing(x); }
+        void repaintCallBack(const double nowT) {
+            curvePanel.repaintCallBack(nowT);
+        }
 
     private:
         PluginProcessor &processorRef;

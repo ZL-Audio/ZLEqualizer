@@ -23,8 +23,7 @@ namespace zlPanel {
           loudnessDisplay(processorRef, base),
           buttonPanel(processorRef, base),
           soloPanel(parametersRef, parametersNARef, base, controllerRef, buttonPanel),
-          matchPanel(processor.getController().getMatchAnalyzer(), parametersNARef, base),
-          vblank(this, [this](const double t) { repaintCallBack(t); }) {
+          matchPanel(processor.getController().getMatchAnalyzer(), parametersNARef, base) {
         for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {
             for (auto &f: *filters) {
                 f.prepare(48000.0);
@@ -158,7 +157,6 @@ namespace zlPanel {
     }
 
     void CurvePanel::repaintCallBack(const double nowT) {
-        if (!uiBase.getIsShowing()) { return; }
         if (showUISettingsPanel) { return; }
         const auto refreshRateMul = showMatchPanel.load() ? 2.0 : 1.0;
         if ((nowT - currentT) * 1000.0 > static_cast<double>(uiBase.getRefreshRateMS()) * refreshRateMul) {

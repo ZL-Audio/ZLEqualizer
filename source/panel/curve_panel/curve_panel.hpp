@@ -39,6 +39,8 @@ namespace zlPanel {
 
         void resized() override;
 
+        void repaintCallBack(double nowT);
+
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
@@ -59,7 +61,6 @@ namespace zlPanel {
         size_t previousBandIdx{zlState::bandNUM + 1};
         MatchPanel matchPanel;
         double currentT{0.0};
-        juce::VBlankAttachment vblank;
         bool toNotify{false};
 
         std::atomic<bool> showMatchPanel{false};
@@ -71,8 +72,6 @@ namespace zlPanel {
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
-
-        void repaintCallBack(double nowT);
 
         void run() override;
     };

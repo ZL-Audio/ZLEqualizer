@@ -40,6 +40,9 @@ private:
     zlState::Property &property;
     std::atomic<bool> isSizeChanged{false};
 
+    std::unique_ptr<juce::VBlankAttachment> vblank;
+    bool isEditorShowing{false};
+
     zlPanel::MainPanel mainPanel;
 
     juce::Value lastUIWidth, lastUIHeight;
@@ -71,6 +74,8 @@ private:
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 
     void handleAsyncUpdate() override;
+
+    void updateIsShowing();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };

@@ -33,6 +33,8 @@ PluginEditor::PluginEditor(PluginProcessor &p)
     addAndMakeVisible(mainPanel);
 
     startTimerHz(10);
+
+    updateIsShowing();
 }
 
 PluginEditor::~PluginEditor() {
@@ -54,15 +56,15 @@ void PluginEditor::resized() {
 }
 
 void PluginEditor::visibilityChanged() {
-    mainPanel.setIsShowing(isShowing());
+    updateIsShowing();
 }
 
 void PluginEditor::parentHierarchyChanged() {
-    mainPanel.setIsShowing(isShowing());
+    updateIsShowing();
 }
 
-void PluginEditor::minimisationStateChanged(bool isNowMinimised) {
-    mainPanel.setIsShowing(isShowing());
+void PluginEditor::minimisationStateChanged(bool) {
+    updateIsShowing();
 }
 
 void PluginEditor::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -79,5 +81,17 @@ void PluginEditor::handleAsyncUpdate() {
 }
 
 void PluginEditor::timerCallback() {
-    mainPanel.setIsShowing(isShowing());
+    updateIsShowing();
+}
+
+void PluginEditor::updateIsShowing() {
+    if (isShowing() != isEditorShowing) {
+        isEditorShowing = isShowing();
+        if (isEditorShowing) {
+            vblank = std::make_unique<juce::VBlankAttachment>(
+                &mainPanel, [this](const double x) { mainPanel.repaintCallBack(x); });
+        } else {
+            vblank.reset();
+        }
+    }
 }
