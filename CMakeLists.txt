@@ -184,6 +184,7 @@ target_link_libraries(SharedCode
 
 # add nlopt
 set(BUILD_SHARED_LIBS OFF)
+set(DISABLE_FP_CONTRACT OFF)
 
 add_subdirectory(nlopt)
 
