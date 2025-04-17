@@ -31,11 +31,11 @@ jobs:
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             plugin_os_format: "AAX"
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-          - name: Windows
+          - name: Windows-x86
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             plugin_os_format: "AAX"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
 
     steps:
       - name: Set up Developer Command Prompt (Windows)
@@ -58,7 +58,7 @@ jobs:
           ./oneapi.exe -s -x -f oneapi
           ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
-      - name: Save IPP cache (even on CI fail)
+      - name: Save IPP cache (Windows)
         if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
         uses: actions/cache/save@v4
         with:
@@ -157,12 +157,12 @@ jobs:
     - name: Remove old AAX releases
       run: |
         rm -rf "release_repo/macOS"
-        rm -rf "release_repo/Windows"
+        rm -rf "release_repo/Windows-x86"
 
     - name: Move current AAX pre-releases
       run: |
         mv -v "macOS" "release_repo/macOS"
-        mv -v "Windows" "release_repo/Windows"
+        mv -v "Windows-x86" "release_repo/Windows-x86"
 
     - name: Commit AAX pre-release repo
       run: |

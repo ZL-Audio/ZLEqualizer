@@ -5,8 +5,13 @@ if (MSVC)
 else ()
     # See the implications here:
     # https://stackoverflow.com/q/45685487
-    target_compile_options(SharedCode INTERFACE $<$<CONFIG:RELEASE>:-O3 -fno-signed-zeros -freciprocal-math -ffp-contract=fast>)
-    target_compile_options(SharedCode INTERFACE $<$<CONFIG:RelWithDebInfo>:-O3 -fno-signed-zeros -freciprocal-math -ffp-contract=fast>)
+    if (WIN32)
+        target_compile_options(SharedCode INTERFACE $<$<CONFIG:RELEASE>:-O3 /fp:precise -fno-signed-zeros -freciprocal-math>)
+        target_compile_options(SharedCode INTERFACE $<$<CONFIG:RelWithDebInfo>:-O3 /fp:precise -fno-signed-zeros -freciprocal-math>)
+    else()
+        target_compile_options(SharedCode INTERFACE $<$<CONFIG:RELEASE>:-O3 -ffp-contract=fast -fno-signed-zeros -freciprocal-math>)
+        target_compile_options(SharedCode INTERFACE $<$<CONFIG:RelWithDebInfo>:-O3 -ffp-contract=fast -fno-signed-zeros -freciprocal-math>)
+    endif ()
 endif ()
 
 # Tell MSVC to properly report what c++ version is being used

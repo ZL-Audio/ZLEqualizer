@@ -46,7 +46,7 @@ jobs:
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             plugin_os_format: "VST3"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
 
     steps:
       - name: Set up Clang (Linux)
@@ -57,7 +57,7 @@ jobs:
           sudo ./llvm.sh 17
 
       # This also starts up our "fake" display Xvfb, needed for pluginval
-      - name: Install Linux Deps (Linux)
+      - name: Install Deps (Linux)
         if: runner.os == 'Linux'
         # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
         run: |
@@ -96,7 +96,7 @@ jobs:
         shell: bash
         run: choco install ninja
 
-      - name: Install macOS Deps (macOS)
+      - name: Install Deps (macOS)
         if: ${{ runner.os == 'macOS' }}
         run: brew install ninja osxutils
 

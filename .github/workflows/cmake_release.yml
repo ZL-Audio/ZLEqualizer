@@ -26,12 +26,12 @@ jobs:
       fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
       matrix:
         include:
-          - name: Linux
+          - name: Linux-x86
             os: ubuntu-22.04
             plugin_os_format: "VST3;LV2;Standalone"
             app_suffix: ""
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
-          - name: Linux-ARM64
+          - name: Linux-arm
             os: ubuntu-22.04-arm
             plugin_os_format: "VST3;LV2;Standalone"
             app_suffix: ""
@@ -41,11 +41,16 @@ jobs:
             plugin_os_format: "VST3;AU;Standalone"
             app_suffix: ".app"
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-          - name: Windows
+          - name: Windows-x86
             os: windows-latest
             plugin_os_format: "VST3;LV2;Standalone"
             app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+          - name: Windows-arm
+            os: windows-11-arm
+            plugin_os_format: "VST3;LV2;Standalone"
+            app_suffix: ".exe"
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
 
     steps:
       - name: Set up Clang (Linux)
@@ -56,7 +61,7 @@ jobs:
           sudo ./llvm.sh 17
 
       # This also starts up our "fake" display Xvfb, needed for pluginval
-      - name: Install JUCE's Linux Deps (Linux)
+      - name: Install Deps (Linux)
         if: runner.os == 'Linux'
         # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
         run: |
@@ -68,7 +73,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Cache IPP (Windows)
-        if: runner.os == 'Windows'
+        if: (runner.os == 'Windows') && (matrix.name != 'Windows-arm')
         id: cache-ipp
         uses: actions/cache@v4
         with:
@@ -76,50 +81,36 @@ jobs:
           path: C:\Program Files (x86)\Intel
 
       - name: Install IPP (Windows)
-        if: (runner.os == 'Windows') && (steps.cache-ipp.outputs.cache-hit != 'true')
+        if: (runner.os == 'Windows') && (matrix.name != 'Windows-arm') && (steps.cache-ipp.outputs.cache-hit != 'true')
         shell: bash
         run: |
           curl --output oneapi.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/2e89fab4-e1c7-4f14-a1ef-6cddba8c5fa7/intel-ipp-2022.0.0.796_offline.exe
           ./oneapi.exe -s -x -f oneapi
           ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
-      - name: Save IPP cache (even on CI fail)
-        if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
+      - name: Save IPP cache (Windows)
+        if: (runner.os == 'Windows') && (matrix.name != 'Windows-arm') && (steps.cache-ipp.outputs.cache-hit != 'true')
         uses: actions/cache/save@v4
         with:
           path: C:\Program Files (x86)\Intel
           key: ipp-v6
 
-      - name: Install Ninja (Windows)
+      - name: Install Deps (Windows)
         if: runner.os == 'Windows'
         shell: bash
-        run: choco install ninja
+        run: |
+          choco install ninja --no-progress -y
+          choco upgrade llvm --version 18.1.8 --no-progress -y
 
-      - name: Install macOS Deps
-        if: ${{ runner.os == 'macOS' }}
+      - name: Install Deps (macOS)
+        if: runner.os == 'macOS'
         run: brew install ninja osxutils
-
-      # This block can be removed once 15.1 is default (JUCE requires it when building on macOS 14)
-      - name: Use latest Xcode on system (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
 
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
-
-      - name: Import Certificates (macOS)
-        uses: apple-actions/import-codesign-certs@v5 # only exists as a tag right now
-        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '') }}
-        with:
-          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
-          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
-        env:
-          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
       - name: Configure
         shell: bash
@@ -145,7 +136,7 @@ jobs:
         run: git config --global http.postBuffer 1048576000
 
       - name: Download AAX pre-release repo
-        if: ${{ (runner.os != 'Linux') }}
+        if: (matrix.name == 'macOS') || (matrix.name == 'Windows-x86')
         uses: actions/checkout@v4
         with:
           repository: "ZL-Audio/ZLEqualizerAAX"
@@ -163,6 +154,15 @@ jobs:
           echo "AAX_PATH=aax_releases/${{ matrix.name }}/${{ env.PRODUCT_NAME }}.aaxplugin" >> $GITHUB_ENV
           echo "Standalone_PATH=$ARTIFACTS_PATH/Standalone/${{ env.PRODUCT_NAME }}${{ matrix.app_suffix }}" >> $GITHUB_ENV
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
+
+      - name: Import Certificates (macOS)
+        uses: apple-actions/import-codesign-certs@v5 # only exists as a tag right now
+        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '') }}
+        with:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
+        env:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
       - name: Codesign and Create Individual Packages (macOS)
         if: ${{ runner.os == 'macOS' }}

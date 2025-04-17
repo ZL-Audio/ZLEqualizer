@@ -42,7 +42,7 @@ jobs:
             os: windows-latest
             pluginval-binary: ./pluginval.exe
             plugin_os_format: "VST3"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
 
     steps:
       - name: Set up Clang (Linux)
@@ -53,7 +53,7 @@ jobs:
           sudo ./llvm.sh 17
 
       # This also starts up our "fake" display Xvfb, needed for pluginval
-      - name: Install JUCE's Linux Deps (Linux)
+      - name: Install Deps (Linux)
         if: runner.os == 'Linux'
         # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
         run: |
@@ -80,7 +80,7 @@ jobs:
           ./oneapi.exe -s -x -f oneapi
           ./oneapi/bootstrapper.exe -s -c --action install --components=intel.oneapi.win.ipp.devel --eula=accept -p=NEED_VS2022_INTEGRATION=1 --log-dir=.
 
-      - name: Save IPP cache (even on CI fail)
+      - name: Save IPP cache (Windows)
         if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
         uses: actions/cache/save@v4
         with:
@@ -92,7 +92,7 @@ jobs:
         shell: bash
         run: choco install ninja
 
-      - name: Install macOS Deps
+      - name: Install Deps (macOS)
         if: ${{ runner.os == 'macOS' }}
         run: brew install ninja osxutils
 
@@ -101,15 +101,6 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-
-      - name: Import Certificates (macOS)
-        uses: apple-actions/import-codesign-certs@v5 # only exists as a tag right now
-        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '')}}
-        with:
-          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
-          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
-        env:
-          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
       - name: Configure
         shell: bash
@@ -177,78 +168,3 @@ jobs:
           TIMEOUT_MS: 7200000
           REPEAT: 10
           RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
-
-      - name: Codesign and Create Individual Packages (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        run: |
-          python3 -u packaging/packager_macOS.py
-        env:
-          DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
-
-      - name: Sign Final Package (macOS)
-        if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV != '') }}
-        run: productsign --sign "${{ secrets.APPLE_INSTALLER_DEV }}" "${{ env.ARTIFACT_NAME }}_unsigned.pkg" "${{ env.ARTIFACT_NAME }}.pkg"
-        env:
-          APPLE_INSTALLER_DEV: ${{ secrets.APPLE_INSTALLER_DEV }}
-
-      - name: Rename Final Package (macOS)
-        if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV == '') }}
-        run: mv "${{ env.ARTIFACT_NAME }}_unsigned.pkg" "${{ env.ARTIFACT_NAME }}.pkg"
-        env:
-          APPLE_INSTALLER_DEV: ${{ secrets.APPLE_INSTALLER_DEV }}
-
-      - name: Notarize and Staple PKG (macOS)
-        if: ${{ (runner.os == 'macOS') && (env.NOTARIZATION_USERNAME != '')}}
-        run: |
-          xcrun notarytool submit "${{ env.ARTIFACT_NAME }}.pkg" --apple-id ${{ secrets.NOTARIZATION_USERNAME }} --password ${{ secrets.NOTARIZATION_PASSWORD }} --team-id ${{ secrets.TEAM_ID }} --wait
-          xcrun stapler staple "${{ env.ARTIFACT_NAME }}.pkg"
-        env:
-          NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
-
-      - name: Create DMG (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        run: |
-          mkdir "${{ env.ARTIFACTS_PATH }}/dmgtmp"
-          mv "${{ env.ARTIFACT_NAME }}.pkg" "${{ env.ARTIFACTS_PATH }}/dmgtmp"
-          hdiutil create "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -ov -volname "${{ env.ARTIFACT_NAME }}" -fs HFS+ -srcfolder "${{ env.ARTIFACTS_PATH }}/dmgtmp"
-          hdiutil convert "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -format UDZO -o "${{ env.ARTIFACT_NAME }}.dmg"
-
-      - name: Upload DMG (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.ARTIFACT_NAME }}.dmg
-          path: "${{ env.ARTIFACT_NAME }}.dmg"
-
-      - name: Generate InnoScript (Windows)
-        if: ${{ runner.os == 'Windows' }}
-        shell: bash
-        run: |
-          python3 -u packaging/packager_Windows.py
-          cat "packaging\installer.iss"
-
-      - name: Generate Installer (Windows)
-        if: ${{ runner.os == 'Windows' }}
-        shell: bash
-        run: |
-          iscc "packaging\installer.iss"
-          mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
-
-      - name: Upload Exe (Windows)
-        if: ${{ runner.os == 'Windows' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.ARTIFACT_NAME }}.exe
-          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
-
-      - name: Generate Zip (Linux)
-        if: ${{ runner.os == 'Linux' }}
-        working-directory: ${{ env.ARTIFACTS_PATH }}
-        run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" "-xr!lib${{ env.PRODUCT_NAME }}_SharedCode.a" .
-
-      - name: Upload Zip (Linux)
-        if: ${{ runner.os == 'Linux' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.ARTIFACT_NAME }}.zip
-          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
