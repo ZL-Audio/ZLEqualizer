@@ -10,8 +10,8 @@
 #include "main_panel.hpp"
 
 namespace zlPanel {
-    MainPanel::MainPanel(PluginProcessor &p)
-        : processorRef(p), state(p.state), uiBase(p.state),
+    MainPanel::MainPanel(PluginProcessor &p, zlInterface::UIBase &base)
+        : processorRef(p), state(p.state), uiBase(base),
           controlPanel(p, uiBase),
           curvePanel(p, uiBase),
           scalePanel(p, uiBase),

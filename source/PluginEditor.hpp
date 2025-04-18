@@ -41,8 +41,8 @@ private:
     std::atomic<bool> isSizeChanged{false};
 
     std::unique_ptr<juce::VBlankAttachment> vblank;
-    bool isEditorShowing{false};
 
+    zlInterface::UIBase uiBase;
     zlPanel::MainPanel mainPanel;
 
     juce::Value lastUIWidth, lastUIHeight;

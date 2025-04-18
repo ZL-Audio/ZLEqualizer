@@ -49,6 +49,7 @@ namespace zlPanel {
     }
 
     void OutputValuePanel::timerCallback(const int timerID) {
+        if (!uiBase.getIsEditorShowing()) return;
         if (timerID == 0) {
             updateGainValue();
         }

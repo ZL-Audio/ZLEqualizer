@@ -22,7 +22,7 @@ namespace zlPanel {
                             private juce::AudioProcessorValueTreeState::Listener,
                             private juce::AsyncUpdater {
     public:
-        explicit MainPanel(PluginProcessor &p);
+        explicit MainPanel(PluginProcessor &p, zlInterface::UIBase &base);
 
         ~MainPanel() override;
 
@@ -41,7 +41,7 @@ namespace zlPanel {
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &state;
-        zlInterface::UIBase uiBase;
+        zlInterface::UIBase &uiBase;
         ControlPanel controlPanel;
         CurvePanel curvePanel;
         ScalePanel scalePanel;

@@ -473,6 +473,10 @@ namespace zlInterface {
 
         bool getIsRenderingHardware() const { return isRenderingHardware.load(); }
 
+        void setIsEditorShowing(const bool x) { isEditorShowing = x; }
+
+        bool getIsEditorShowing() const { return isEditorShowing; }
+
     private:
         juce::AudioProcessorValueTreeState &state;
         juce::ValueTree valueTree{"ui_setting"};
@@ -493,6 +497,7 @@ namespace zlInterface {
         std::atomic<bool> dynLink{true};
         std::atomic<int> renderingEngine{1};
         std::atomic<bool> isRenderingHardware{true};
+        bool isEditorShowing{false};
 
         float loadPara(const std::string &id) const {
             return state.getRawParameterValue(id)->load();

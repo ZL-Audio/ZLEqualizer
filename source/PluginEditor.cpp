@@ -10,7 +10,11 @@
 #include "PluginEditor.hpp"
 
 PluginEditor::PluginEditor(PluginProcessor &p)
-    : AudioProcessorEditor(&p), processorRef(p), property(p.property), mainPanel(p) {
+    : AudioProcessorEditor(&p),
+      processorRef(p),
+      property(p.property),
+      uiBase(p.state),
+      mainPanel(p, uiBase) {
     for (auto &ID: IDs) {
         processorRef.state.addParameterListener(ID, this);
     }
@@ -32,7 +36,7 @@ PluginEditor::PluginEditor(PluginProcessor &p)
     // add main panel
     addAndMakeVisible(mainPanel);
 
-    startTimerHz(10);
+    startTimerHz(2);
 
     updateIsShowing();
 }
@@ -85,9 +89,9 @@ void PluginEditor::timerCallback() {
 }
 
 void PluginEditor::updateIsShowing() {
-    if (isShowing() != isEditorShowing) {
-        isEditorShowing = isShowing();
-        if (isEditorShowing) {
+    if (isShowing() != uiBase.getIsEditorShowing()) {
+        uiBase.setIsEditorShowing(isShowing());
+        if (uiBase.getIsEditorShowing()) {
             vblank = std::make_unique<juce::VBlankAttachment>(
                 &mainPanel, [this](const double x) { mainPanel.repaintCallBack(x); });
         } else {
