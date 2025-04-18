@@ -33,15 +33,12 @@ jobs:
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           - name: Windows-x86
             os: windows-latest
+            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             pluginval-binary: ./pluginval.exe
             plugin_os_format: "AAX"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
 
     steps:
-      - name: Set up Developer Command Prompt (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Cache IPP (Windows)
         if: runner.os == 'Windows'
         id: cache-ipp
@@ -96,15 +93,24 @@ jobs:
         env:
           p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
-      - name: Configure
+      - name: Configure and Build (macOS)
+        if: runner.os != 'Windows'
         shell: bash
-        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+        run: |
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
         env:
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
 
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
+      - name: Configure and Build (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call ${{ matrix.vcvars64_path }}
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
+        env:
+          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
 
       - name: Test
         working-directory: ${{ env.BUILD_DIR }}

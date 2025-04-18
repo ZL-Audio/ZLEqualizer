@@ -40,6 +40,7 @@ jobs:
             cmake_extra_flags:
           - name: Windows
             os: windows-latest
+            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             pluginval-binary: ./pluginval.exe
             plugin_os_format: "VST3"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
@@ -59,10 +60,6 @@ jobs:
         run: |
           sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev xvfb ninja-build
           sudo /usr/bin/Xvfb $DISPLAY &
-
-      - name: Set up Developer Command Prompt (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Cache IPP (Windows)
         if: runner.os == 'Windows'
@@ -102,15 +99,24 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Configure
+      - name: Configure and Build (Linux & macOS)
+        if: runner.os != 'Windows'
         shell: bash
-        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+        run: |
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
         env:
           PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
 
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
+      - name: Configure and Build (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call ${{ matrix.vcvars64_path }}
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
+        env:
+          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
 
       - name: Test
         working-directory: ${{ env.BUILD_DIR }}
