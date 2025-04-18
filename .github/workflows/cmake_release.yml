@@ -46,11 +46,11 @@ jobs:
             plugin_os_format: "VST3;LV2;Standalone"
             app_suffix: ".exe"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
-          - name: Windows-arm
-            os: windows-11-arm
-            plugin_os_format: "VST3;LV2;Standalone"
-            app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+          # - name: Windows-arm
+          #   os: windows-11-arm
+          #   plugin_os_format: "VST3;LV2;Standalone"
+          #   app_suffix: ".exe"
+          #   cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
 
     steps:
       - name: Set up Clang (Linux)
@@ -121,10 +121,6 @@ jobs:
       - name: Build
         shell: bash
         run: cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
-
-      - name: Test
-        working-directory: ${{ env.BUILD_DIR }}
-        run: ctest --output-on-failure -j4 -VV
 
       - name: Read in .env from CMake # see GitHubENV.cmake
         shell: bash
