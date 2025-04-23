@@ -48,6 +48,8 @@ JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
 [nlopt](https://github.com/stevengj/nlopt) by [Steven G. Johnson](https://github.com/stevengj)
 
+[kfr](https://github.com/kfrlib/kfr) by [KFR](https://github.com/kfrlib)
+
 [fft-juce](https://github.com/hollance/fft-juce) by [
 Matthijs Hollemans](https://github.com/hollance)
 

@@ -6,3 +6,6 @@
 	path = nlopt
 	url = https://github.com/ZL-Audio/nlopt
 	branch = master
+[submodule "kfr"]
+	path = kfr
+	url = https://github.com/kfrlib/kfr
