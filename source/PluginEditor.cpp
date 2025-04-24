@@ -42,6 +42,7 @@ PluginEditor::PluginEditor(PluginProcessor &p)
 }
 
 PluginEditor::~PluginEditor() {
+    vblank.reset();
     for (auto &ID: IDs) {
         processorRef.state.removeParameterListener(ID, this);
     }

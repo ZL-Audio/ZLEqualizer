@@ -40,10 +40,10 @@ private:
     zlState::Property &property;
     std::atomic<bool> isSizeChanged{false};
 
-    std::unique_ptr<juce::VBlankAttachment> vblank;
-
     zlInterface::UIBase uiBase;
     zlPanel::MainPanel mainPanel;
+
+    std::unique_ptr<juce::VBlankAttachment> vblank;
 
     juce::Value lastUIWidth, lastUIHeight;
     constexpr const static std::array IDs{
