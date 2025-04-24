@@ -28,13 +28,29 @@ See the releases for the latest version.
 
 ## Build from Source
 
-0. `git clone` this repo
+### Install Dependencies
 
-1. [Download CMAKE](https://cmake.org/download/) if you do not have it.
+Please make sure `Clang` (`AppleClang 16+` or `LLVM/Clang 17+`), `cmake` (minimum 3.25), `ninja` are installed and configured on your OS.
 
-2. Populate all submodules by running `git submodule update --init` in your repository directory.
+On Windows (with Intel chips), you may install Intel® Integrated Performance Primitives and set its path as an environment variable `IPP_DIR`. It is not a hard requirement as KFR has already been used for SIMD/DFT acceleration.
 
-3. Follow the [JUCE CMake API](https://github.com/juce-framework/JUCE/blob/master/docs/CMake%20API.md) to build the source.
+On Linux, you can install dependencies with the following command:
+
+```console
+sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev
+```
+
+### Clone and Build
+
+Once you have set up the environment, you can clone the ZL Equalizer code, populate all submodules, then configure & build the code. Please set the variable `ZL_JUCE_FORMATS` as a list of formats that you want, e.g., `"VST3;LV2"`.
+
+```console
+git clone https://github.com/ZL-Audio/ZLEqualizer
+cd ZLEqualizer
+git submodule update --init --recursive
+cmake -B Builds -G Ninja -DCMAKE_BUILD_TYPE=Release -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;LV2" .
+cmake --build Builds --config Release
+```
 
 ## License
 
