@@ -43,6 +43,16 @@ namespace zlFFT {
             backward(out_buffer, in_buffer);
         }
 
+        void forwardMagnitudeOnly(FloatType *buffer) {
+            forward(buffer, buffer);
+            auto *out = reinterpret_cast<std::complex<FloatType> *>(buffer);
+            for (size_t i = 0; i < (fft_size / 2) + 1; ++i) {
+                buffer[i] = std::abs(out[i]);
+            }
+        }
+
+        size_t getSize() const { return fft_size; }
+
     private:
         size_t fft_size{0};
         std::unique_ptr<kfr::dft_plan_real<FloatType> > fft_plan;

@@ -11,6 +11,7 @@
 
 #include "../../state/state_definitions.hpp"
 #include "../interpolation/interpolation.hpp"
+#include "../fft/fft.hpp"
 
 namespace zlFFTAnalyzer {
     /**
@@ -115,12 +116,9 @@ namespace zlFFTAnalyzer {
         }
 
         void setOrder(int fftOrder) {
-            fft = std::make_unique<juce::dsp::FFT>(fftOrder);
-            window = std::make_unique<
-                juce::dsp::WindowingFunction<float> >(static_cast<size_t>(fft->getSize()),
-                                                      juce::dsp::WindowingFunction<float>::hann,
-                                                      true);
-            fftSize.store(static_cast<size_t>(fft->getSize()));
+            fft.setOrder(static_cast<size_t>(fftOrder));
+            window.setWindow(fft.getSize(), juce::dsp::WindowingFunction<float>::hann, true);
+            fftSize.store(fft.getSize());
 
             deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
             decayRate.store(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]);
@@ -133,12 +131,12 @@ namespace zlFFTAnalyzer {
                 std::fill(smoothedDBs[i].begin(), smoothedDBs[i].end(), minDB * 2.f);
             }
 
-            const auto tempSize = fft->getSize();
-            fftBuffer.resize(static_cast<size_t>(tempSize * 2));
-            abstractFIFO.setTotalSize(tempSize);
+            const auto tempSize = fft.getSize();
+            fftBuffer.resize(tempSize * 2);
+            abstractFIFO.setTotalSize(static_cast<int>(tempSize));
             for (size_t i = 0; i < FFTNum; ++i) {
-                sampleFIFOs[i].resize(static_cast<size_t>(tempSize));
-                circularBuffers[i].resize(static_cast<size_t>(tempSize));
+                sampleFIFOs[i].resize(tempSize);
+                circularBuffers[i].resize(tempSize);
             }
         }
 
@@ -220,16 +218,15 @@ namespace zlFFTAnalyzer {
             } {
                 for (const auto &i: isONVector) {
                     std::copy(circularBuffers[i].begin(), circularBuffers[i].end(), fftBuffer.begin());
-                    window->multiplyWithWindowingTable(fftBuffer.data(), fftSize.load());
-                    fft->performFrequencyOnlyForwardTransform(fftBuffer.data());
+                    window.multiply(fftBuffer.data(), fftSize.load());
+                    fft.forwardMagnitudeOnly(fftBuffer.data());
                     const auto decay = actualDecayRate[i].load();
                     auto &smoothedDB{smoothedDBs[i]};
-                    const auto ampScale = 2.f / static_cast<float>(fftBuffer.size());
                     if (toReset[i].exchange(false)) {
                         std::fill(smoothedDB.begin(), smoothedDB.end(), minDB * 2.f);
                     }
                     for (size_t j = 0; j < smoothedDB.size(); ++j) {
-                        const auto currentDB = juce::Decibels::gainToDecibels(ampScale * fftBuffer[j], -240.f);
+                        const auto currentDB = juce::Decibels::gainToDecibels(2.f * fftBuffer[j], -240.f);
                         smoothedDB[j] = currentDB < smoothedDB[j]
                                             ? smoothedDB[j] * decay + currentDB * (1 - decay)
                                             : currentDB;
@@ -374,8 +371,8 @@ namespace zlFFTAnalyzer {
         std::array<std::atomic<float>, FFTNum> decayRates{}, actualDecayRate{};
         std::atomic<float> extraTilt{0.f}, extraSpeed{1.f};
 
-        std::unique_ptr<juce::dsp::FFT> fft;
-        std::unique_ptr<juce::dsp::WindowingFunction<float> > window;
+        zlFFT::KFREngine<float> fft;
+        zlFFT::WindowFunction<float> window;
         std::atomic<size_t> fftSize;
 
         std::atomic<float> sampleRate;

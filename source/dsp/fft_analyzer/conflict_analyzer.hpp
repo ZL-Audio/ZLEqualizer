@@ -13,7 +13,6 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include "multiple_fft_analyzer.hpp"
-#include "../delay/delay.hpp"
 
 namespace zlFFTAnalyzer {
     /**
