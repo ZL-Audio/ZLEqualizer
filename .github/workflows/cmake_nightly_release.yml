@@ -36,11 +36,16 @@ jobs:
             plugin_os_format: "VST3;LV2;Standalone"
             app_suffix: ""
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
-          - name: macOS
+          - name: macOS-x86
             os: macos-15
             plugin_os_format: "VST3;AU;Standalone"
             app_suffix: ".app"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64"
+          - name: macOS-arm
+            os: macos-15
+            plugin_os_format: "VST3;AU;Standalone"
+            app_suffix: ".app"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64"
           - name: Windows-x86
             os: windows-latest
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'

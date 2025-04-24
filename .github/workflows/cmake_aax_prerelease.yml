@@ -26,11 +26,16 @@ jobs:
       fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
       matrix:
         include:
-          - name: macOS
+          - name: macOS-x86
             os: macos-15
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             plugin_os_format: "AAX"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64"
+          - name: macOS-arm
+            os: macos-15
+            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+            plugin_os_format: "AAX"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64"
           - name: Windows-x86
             os: windows-latest
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
@@ -163,11 +168,15 @@ jobs:
     - name: Remove old AAX releases
       run: |
         rm -rf "release_repo/macOS"
+        rm -rf "release_repo/Windows"
+        rm -rf "release_repo/macOS-x86"
+        rm -rf "release_repo/macOS-arm"
         rm -rf "release_repo/Windows-x86"
 
     - name: Move current AAX pre-releases
       run: |
-        mv -v "macOS" "release_repo/macOS"
+        mv -v "macOS-x86" "release_repo/macOS-x86"
+        mv -v "macOS-arm" "release_repo/macOS-arm"
         mv -v "Windows-x86" "release_repo/Windows-x86"
 
     - name: Commit AAX pre-release repo
