@@ -156,14 +156,12 @@ namespace zlFFTAnalyzer {
                 if (!isON[i].load()) continue;
                 int j = 0;
                 const auto &buffer{buffers[i]};
-                const FloatType avgScale = FloatType(1) / static_cast<FloatType>(buffer.get().getNumChannels());
                 int shift = 0;
                 for (; j < scope.blockSize1; ++j) {
                     FloatType sample{0};
                     for (int channel = 0; channel < buffer.get().getNumChannels(); ++channel) {
                         sample += buffer.get().getSample(channel, j);
                     }
-                    sample *= avgScale;
                     sampleFIFOs[i][static_cast<size_t>(shift + scope.startIndex1)] = static_cast<float>(sample);
                     shift += 1;
                 }
@@ -173,7 +171,6 @@ namespace zlFFTAnalyzer {
                     for (int channel = 0; channel < buffer.get().getNumChannels(); ++channel) {
                         sample += buffer.get().getSample(channel, j);
                     }
-                    sample *= avgScale;
                     sampleFIFOs[i][static_cast<size_t>(shift + scope.startIndex2)] = static_cast<float>(sample);
                     shift += 1;
                 }
@@ -226,7 +223,7 @@ namespace zlFFTAnalyzer {
                         std::fill(smoothedDB.begin(), smoothedDB.end(), minDB * 2.f);
                     }
                     for (size_t j = 0; j < smoothedDB.size(); ++j) {
-                        const auto currentDB = juce::Decibels::gainToDecibels(2.f * fftBuffer[j], -240.f);
+                        const auto currentDB = juce::Decibels::gainToDecibels(fftBuffer[j], -240.f);
                         smoothedDB[j] = currentDB < smoothedDB[j]
                                             ? smoothedDB[j] * decay + currentDB * (1 - decay)
                                             : currentDB;
