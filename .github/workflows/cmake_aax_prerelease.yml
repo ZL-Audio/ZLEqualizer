@@ -29,19 +29,16 @@ jobs:
           - name: macOS-x86
             os: macos-15
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            plugin_os_format: "AAX"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DZL_JUCE_FORMATS="AAX"
           - name: macOS-arm
             os: macos-15
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            plugin_os_format: "AAX"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="AAX"
           - name: Windows-x86
             os: windows-latest
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             pluginval-binary: ./pluginval.exe
-            plugin_os_format: "AAX"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="AAX"
 
     steps:
       - name: Cache IPP (Windows)
@@ -98,14 +95,12 @@ jobs:
         env:
           p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
-      - name: Configure and Build (macOS)
+      - name: Configure and Build (Linux & macOS)
         if: runner.os != 'Windows'
         shell: bash
         run: |
           cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
-        env:
-          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
       - name: Configure and Build (Windows)
         if: runner.os == 'Windows'
@@ -113,9 +108,7 @@ jobs:
         run: |
           call ${{ matrix.vcvars64_path }}
           cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
-        env:
-          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
       - name: Test
         working-directory: ${{ env.BUILD_DIR }}

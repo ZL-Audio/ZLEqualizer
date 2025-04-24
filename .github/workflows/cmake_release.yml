@@ -28,35 +28,29 @@ jobs:
         include:
           - name: Linux-x86
             os: ubuntu-22.04
-            plugin_os_format: "VST3;LV2;Standalone"
             app_suffix: ""
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17 -DZL_JUCE_FORMATS="VST3;LV2;Standalone"
           - name: Linux-arm
             os: ubuntu-22.04-arm
-            plugin_os_format: "VST3;LV2;Standalone"
             app_suffix: ""
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17 -DZL_JUCE_FORMATS="VST3;LV2;Standalone"
           - name: macOS-x86
             os: macos-15
-            plugin_os_format: "VST3;AU;Standalone"
             app_suffix: ".app"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DZL_JUCE_FORMATS="VST3;AU;Standalone"
           - name: macOS-arm
             os: macos-15
-            plugin_os_format: "VST3;AU;Standalone"
             app_suffix: ".app"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="VST3;AU;Standalone"
           - name: Windows-x86
             os: windows-latest
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
-            plugin_os_format: "VST3;LV2;Standalone"
             app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone"
           # - name: Windows-arm
           #   os: windows-11-arm
-          #   plugin_os_format: "VST3;LV2;Standalone"
           #   app_suffix: ".exe"
-          #   cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+          #   cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone"
 
     steps:
       - name: Set up Clang (Linux)
@@ -119,9 +113,7 @@ jobs:
         shell: bash
         run: |
           cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
-        env:
-          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
       - name: Configure and Build (Windows)
         if: runner.os == 'Windows'
@@ -129,9 +121,7 @@ jobs:
         run: |
           call ${{ matrix.vcvars64_path }}
           cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
-        env:
-          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
       - name: Read in .env from CMake # see GitHubENV.cmake
         shell: bash

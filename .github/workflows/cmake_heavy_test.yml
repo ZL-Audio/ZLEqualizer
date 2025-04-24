@@ -31,19 +31,16 @@ jobs:
           - name: Linux
             os: ubuntu-22.04
             pluginval-binary: ./pluginval
-            plugin_os_format: "VST3"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17 -DKFR_ENABLE_MULTIARCH=OFF
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17 -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3"
           - name: macOS
             os: macos-15
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            plugin_os_format: "AU"
-            cmake_extra_flags:
+            cmake_extra_flags: -DZL_JUCE_FORMATS="AU"
           - name: Windows
             os: windows-latest
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             pluginval-binary: ./pluginval.exe
-            plugin_os_format: "VST3"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=OFF
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VTS3"
 
     steps:
       - name: Set up Clang (Linux)
@@ -103,20 +100,16 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
-        env:
-          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} -DZL_JUCE_FORMATS=${{ matrix.plugin_os_format}} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
       - name: Configure and Build (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           call ${{ matrix.vcvars64_path }}
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }} --parallel 4
-        env:
-          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} -DZL_JUCE_FORMATS=${{ matrix.plugin_os_format}} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
       - name: Test
         working-directory: ${{ env.BUILD_DIR }}
