@@ -12,7 +12,7 @@
 #include "../../state/state_definitions.hpp"
 #include "../interpolation/interpolation.hpp"
 
-namespace zlFFT {
+namespace zlFFTAnalyzer {
     /**
          * a fft analyzer which make sure that multiple FFTs are synchronized in time
          * @tparam FloatType the float type of input audio buffers

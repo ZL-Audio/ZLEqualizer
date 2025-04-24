@@ -10,7 +10,7 @@
 #include "conflict_panel.hpp"
 
 namespace zlPanel {
-    ConflictPanel::ConflictPanel(zlFFT::ConflictAnalyzer<double> &conflictAnalyzer, zlInterface::UIBase &base)
+    ConflictPanel::ConflictPanel(zlFFTAnalyzer::ConflictAnalyzer<double> &conflictAnalyzer, zlInterface::UIBase &base)
         : analyzer(conflictAnalyzer), uiBase(base) {
         analyzer.start();
         setInterceptsMouseClicks(false, false);

@@ -17,7 +17,7 @@
 namespace zlPanel {
     class ConflictPanel final : public juce::Component {
     public:
-        explicit ConflictPanel(zlFFT::ConflictAnalyzer<double> &conflictAnalyzer,
+        explicit ConflictPanel(zlFFTAnalyzer::ConflictAnalyzer<double> &conflictAnalyzer,
                                zlInterface::UIBase &base);
 
         ~ConflictPanel() override;
@@ -36,7 +36,7 @@ namespace zlPanel {
         }
 
     private:
-        zlFFT::ConflictAnalyzer<double> &analyzer;
+        zlFFTAnalyzer::ConflictAnalyzer<double> &analyzer;
         zlInterface::UIBase &uiBase;
         juce::Path path;
         juce::ColourGradient gradient;

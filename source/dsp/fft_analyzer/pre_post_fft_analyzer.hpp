@@ -12,7 +12,7 @@
 #include "multiple_fft_analyzer.hpp"
 #include "../delay/delay.hpp"
 
-namespace zlFFT {
+namespace zlFFTAnalyzer {
     /**
      * a fft analyzer which process pre, post and side audio buffers
      * @tparam FloatType the float type of input audio buffers

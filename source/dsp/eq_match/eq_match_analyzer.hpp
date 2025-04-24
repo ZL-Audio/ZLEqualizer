@@ -30,7 +30,7 @@ namespace zlEqMatch {
 
         void process(juce::AudioBuffer<FloatType> &bBuffer, juce::AudioBuffer<FloatType> &tBuffer);
 
-        zlFFT::AverageFFTAnalyzer<FloatType, 2, pointNum> &getAverageFFT() { return fftAnalyzer; }
+        zlFFTAnalyzer::AverageFFTAnalyzer<FloatType, 2, pointNum> &getAverageFFT() { return fftAnalyzer; }
 
         void setON(bool x);
 
@@ -78,7 +78,7 @@ namespace zlEqMatch {
         }
 
     private:
-        zlFFT::AverageFFTAnalyzer<FloatType, 2, pointNum> fftAnalyzer;
+        zlFFTAnalyzer::AverageFFTAnalyzer<FloatType, 2, pointNum> fftAnalyzer;
         std::array<float, pointNum> mainDBs{}, targetDBs{}, diffs{};
         std::array<std::atomic<float>, pointNum> atomicTargetDBs{}, atomicDiffs{};
         std::array<std::atomic<bool>, pointNum> drawingFlag;

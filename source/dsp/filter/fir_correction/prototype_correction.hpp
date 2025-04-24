@@ -13,6 +13,7 @@
 
 #include "../iir_filter/iir_filter.hpp"
 #include "../ideal_filter/ideal_filter.hpp"
+#include "../../fft/fft.hpp"
 #include "../../container/array.hpp"
 
 namespace zlFilter {
@@ -107,7 +108,7 @@ namespace zlFilter {
         std::vector<std::complex<FloatType> > &wis1, &wis2;
         float deltaDecay{0.f};
 
-        std::unique_ptr<juce::dsp::FFT> fft;
+        zlFFT::KFREngine<float> fft;
         std::unique_ptr<juce::dsp::WindowingFunction<float> > window;
 
         size_t fftOrder = defaultFFTOrder;
@@ -136,7 +137,7 @@ namespace zlFilter {
             hopSize = fftSize / overlap;
             latency.store(static_cast<int>(fftSize));
 
-            fft = std::make_unique<juce::dsp::FFT>(static_cast<int>(fftOrder));
+            fft.setOrder(fftOrder);
             window = std::make_unique<juce::dsp::WindowingFunction<float> >(
                 fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
 
@@ -166,9 +167,9 @@ namespace zlFilter {
                 if (!isBypassed) {
                     window->multiplyWithWindowingTable(fftPtr, fftSize);
 
-                    fft->performRealOnlyForwardTransform(fftPtr, true);
+                    fft.forward(fftPtr, fftPtr);
                     processSpectrum();
-                    fft->performRealOnlyInverseTransform(fftPtr);
+                    fft.backward(fftPtr, fftPtr);
 
                     window->multiplyWithWindowingTable(fftPtr, fftSize);
                     for (size_t i = 0; i < fftSize; ++i) {

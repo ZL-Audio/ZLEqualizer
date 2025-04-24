@@ -9,7 +9,7 @@
 
 #include "pre_post_fft_analyzer.hpp"
 
-namespace zlFFT {
+namespace zlFFTAnalyzer {
     template<typename FloatType>
     PrePostFFTAnalyzer<FloatType>::PrePostFFTAnalyzer(const size_t fftOrder)
         : Thread("pre_post_analyzer"),

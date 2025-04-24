@@ -85,9 +85,9 @@ namespace zlDSP {
 
         void setEffectON(const bool x) { isEffectON.store(x); }
 
-        zlFFT::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzer; }
+        zlFFTAnalyzer::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzer; }
 
-        zlFFT::ConflictAnalyzer<FloatType> &getConflictAnalyzer() { return conflictAnalyzer; }
+        zlFFTAnalyzer::ConflictAnalyzer<FloatType> &getConflictAnalyzer() { return conflictAnalyzer; }
 
         zlEqMatch::EqMatchAnalyzer<FloatType> &getMatchAnalyzer() { return matchAnalyzer; }
 
@@ -285,8 +285,8 @@ namespace zlDSP {
         std::atomic<bool> isEffectON{true};
         bool currentIsEffectON{true};
 
-        zlFFT::PrePostFFTAnalyzer<FloatType> fftAnalyzer;
-        zlFFT::ConflictAnalyzer<FloatType> conflictAnalyzer;
+        zlFFTAnalyzer::PrePostFFTAnalyzer<FloatType> fftAnalyzer;
+        zlFFTAnalyzer::ConflictAnalyzer<FloatType> conflictAnalyzer;
         zlEqMatch::EqMatchAnalyzer<FloatType> matchAnalyzer;
         juce::AudioBuffer<FloatType> dummyMainBuffer, dummySideBuffer;
         zlDelay::SampleDelay<FloatType> dummyMainDelay, dummySideDelay;

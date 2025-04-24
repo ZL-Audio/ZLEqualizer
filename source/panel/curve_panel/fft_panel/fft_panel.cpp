@@ -10,7 +10,7 @@
 #include "fft_panel.hpp"
 
 namespace zlPanel {
-    FFTPanel::FFTPanel(zlFFT::PrePostFFTAnalyzer<double> &analyzer,
+    FFTPanel::FFTPanel(zlFFTAnalyzer::PrePostFFTAnalyzer<double> &analyzer,
                        zlInterface::UIBase &base)
         : analyzerRef(analyzer), uiBase(base) {
         setInterceptsMouseClicks(false, false);

@@ -15,7 +15,7 @@
 #include "multiple_fft_analyzer.hpp"
 #include "../delay/delay.hpp"
 
-namespace zlFFT {
+namespace zlFFTAnalyzer {
     /**
      * a conflict fft analyzer
      * @tparam FloatType

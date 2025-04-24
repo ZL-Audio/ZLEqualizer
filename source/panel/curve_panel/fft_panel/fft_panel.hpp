@@ -16,7 +16,7 @@
 namespace zlPanel {
     class FFTPanel final : public juce::Component {
     public:
-        explicit FFTPanel(zlFFT::PrePostFFTAnalyzer<double> &analyzer,
+        explicit FFTPanel(zlFFTAnalyzer::PrePostFFTAnalyzer<double> &analyzer,
                           zlInterface::UIBase &base);
 
         ~FFTPanel() override;
@@ -34,7 +34,7 @@ namespace zlPanel {
         }
 
     private:
-        zlFFT::PrePostFFTAnalyzer<double> &analyzerRef;
+        zlFFTAnalyzer::PrePostFFTAnalyzer<double> &analyzerRef;
         zlInterface::UIBase &uiBase;
         juce::Path prePath{}, postPath{}, postStrokePath{}, sidePath{};
         juce::Path recentPrePath{}, recentPostPath{}, recentPostStrokePath{}, recentSidePath{};
