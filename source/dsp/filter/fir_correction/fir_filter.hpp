@@ -103,7 +103,7 @@ namespace zlFilter {
         std::vector<std::complex<FloatType> > &wis1;
 
         zlFFT::KFREngine<float> fft;
-        std::unique_ptr<juce::dsp::WindowingFunction<float> > window;
+        zlFFT::WindowFunction<float> window;
 
         size_t fftOrder = defaultFFTOrder;
         size_t fftSize = static_cast<size_t>(1) << fftOrder;
@@ -132,8 +132,7 @@ namespace zlFilter {
             latency.store(static_cast<int>(fftSize));
 
             fft.setOrder(fftOrder);
-            window = std::make_unique<juce::dsp::WindowingFunction<float> >(
-                fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
+            window.setWindow(fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
 
             inputFIFOs.resize(channelNum);
             outputFIFOs.resize(channelNum);
@@ -157,13 +156,13 @@ namespace zlFilter {
                 }
 
                 if (!isBypassed) {
-                    window->multiplyWithWindowingTable(fftPtr, fftSize);
+                    window.multiply(fftPtr, fftSize);
 
                     fft.forward(fftPtr, fftPtr);
                     processSpectrum();
                     fft.backward(fftPtr, fftPtr);
 
-                    window->multiplyWithWindowingTable(fftPtr, fftSize);
+                    window.multiply(fftPtr, fftSize);
                     for (size_t i = 0; i < fftSize; ++i) {
                         fftPtr[i] *= windowCorrection;
                     }

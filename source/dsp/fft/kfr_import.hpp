@@ -8,6 +8,9 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
-
-#include "kfr_engine.hpp"
-#include "window_function.hpp"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wall"
+#pragma clang diagnostic ignored "-Weverything"
+#include <kfr/kfr.h>
+#include <kfr/dft.hpp>
+#pragma clang diagnostic pop
