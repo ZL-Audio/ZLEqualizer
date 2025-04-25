@@ -108,15 +108,6 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Import Certificates (macOS)
-        uses: apple-actions/import-codesign-certs@v5 # only exists as a tag right now
-        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '') }}
-        with:
-          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
-          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
-        env:
-          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
-
       - name: Configure and Build (Linux & macOS)
         if: runner.os != 'Windows'
         shell: bash
@@ -148,6 +139,19 @@ jobs:
           echo "LV2_PATH=$ARTIFACTS_PATH/LV2/${{ env.PRODUCT_NAME }}.lv2" >> $GITHUB_ENV
           echo "Standalone_PATH=$ARTIFACTS_PATH/Standalone/${{ env.PRODUCT_NAME }}${{ matrix.app_suffix }}" >> $GITHUB_ENV
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
+
+      - name: Check dependencies
+        shell: bash
+        run: python3 -u packaging/check_dependency.py
+
+      - name: Import Certificates (macOS)
+        uses: apple-actions/import-codesign-certs@v5 # only exists as a tag right now
+        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '') }}
+        with:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
+        env:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
 
       - name: Codesign and Create Individual Packages (macOS)
         if: ${{ runner.os == 'macOS' }}
