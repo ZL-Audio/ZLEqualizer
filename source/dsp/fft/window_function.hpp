@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <numbers>
+#include <juce_dsp/juce_dsp.h>
 #include "kfr_import.hpp"
 
 namespace zlFFT {
