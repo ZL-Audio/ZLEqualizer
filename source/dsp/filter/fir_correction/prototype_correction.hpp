@@ -14,6 +14,7 @@
 #include "../iir_filter/iir_filter.hpp"
 #include "../ideal_filter/ideal_filter.hpp"
 #include "../../fft/fft.hpp"
+#include "../../vector/vector.hpp"
 #include "../../container/array.hpp"
 
 namespace zlFilter {
@@ -192,9 +193,7 @@ namespace zlFilter {
         void processSpectrum() {
             update();
             auto *cdata = reinterpret_cast<std::complex<float> *>(fftData.data());
-            for (size_t i = startDecayIdx; i < corrections.size(); ++i) {
-                cdata[i] = cdata[i] * corrections[i];
-            }
+            zlVector::multiply(cdata + startDecayIdx, corrections.data() + startDecayIdx, corrections.size() - startDecayIdx);
         }
 
         void update() {

@@ -9,11 +9,9 @@
 
 #pragma once
 
-#include <cmath>
-
-#include "../iir_filter/iir_filter.hpp"
 #include "../ideal_filter/ideal_filter.hpp"
 #include "../../fft/fft.hpp"
+#include "../../vector/vector.hpp"
 #include "../../container/array.hpp"
 
 namespace zlFilter {
@@ -99,7 +97,7 @@ namespace zlFilter {
 
         std::vector<std::complex<FloatType> > idealTotalResponse;
 
-        std::vector<float> corrections{}, dummyCorrections{};
+        kfr::univector<float> corrections{}, dummyCorrections{};
         std::vector<std::complex<FloatType> > &wis1;
 
         zlFFT::KFREngine<float> fft;
@@ -119,7 +117,8 @@ namespace zlFilter {
         // circular buffers for incoming and outgoing audio data.
         std::vector<std::vector<float> > inputFIFOs, outputFIFOs;
         // circular FFT working space which contains interleaved complex numbers.
-        std::vector<float> fftData;
+        kfr::univector<float> fftData;
+
         size_t fftDataPos = 0;
 
         std::atomic<int> latency{0};
@@ -183,9 +182,7 @@ namespace zlFilter {
 
         void processSpectrum() {
             update();
-            auto v1 = kfr::make_univector(fftData.data(), dummyCorrections.size());
-            auto v2 = kfr::make_univector(dummyCorrections);
-            v1 = v1 * v2;
+            zlVector::multiply(fftData.data(), dummyCorrections.data(), dummyCorrections.size());
         }
 
         void update() {
