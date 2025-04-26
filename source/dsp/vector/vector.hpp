@@ -17,12 +17,23 @@
 #pragma clang diagnostic pop
 
 namespace zlVector {
+    template<typename FloatType>
+    inline void copy(FloatType *out, const FloatType* in, const size_t size) {
+        auto v1 = kfr::make_univector(out, size);
+        auto v2 = kfr::make_univector(in, size);
+        v1 = v2;
+    }
+
     inline void convert(double *out, const float* in, const size_t size) {
-        kfr::convert(out, in, size);
+        for (size_t i = 0; i < size; ++i) {
+            out[i] = static_cast<double>(in[i]);
+        }
     }
 
     inline void convert(float *out, const double* in, const size_t size) {
-        kfr::convert(out, in, size);
+        for (size_t i = 0; i < size; ++i) {
+            out[i] = static_cast<float>(in[i]);
+        }
     }
 
     template<typename FloatType>

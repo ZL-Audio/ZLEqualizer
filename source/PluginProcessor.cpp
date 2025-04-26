@@ -315,34 +315,30 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
 
 void PluginProcessor::doubleBufferCopyFrom(const int destChan,
                                            const juce::AudioBuffer<float> &buffer, const int srcChan) {
-    auto *dest = doubleBuffer.getWritePointer(destChan);
-    auto *src = buffer.getReadPointer(srcChan);
-    for (int i = 0; i < buffer.getNumSamples(); ++i) {
-        dest[i] = static_cast<double>(src[i]);
-    }
+    zlVector::convert(doubleBuffer.getWritePointer(destChan),
+                      buffer.getReadPointer(srcChan),
+                      static_cast<size_t>(buffer.getNumSamples()));
 }
 
 void PluginProcessor::doubleBufferCopyFrom(const int destChan,
                                            const juce::AudioBuffer<double> &buffer, const int srcChan) {
-    juce::FloatVectorOperations::copy(doubleBuffer.getWritePointer(destChan),
-                                      buffer.getReadPointer(srcChan),
-                                      buffer.getNumSamples());
+    zlVector::copy(doubleBuffer.getWritePointer(destChan),
+                   buffer.getReadPointer(srcChan),
+                   static_cast<size_t>(buffer.getNumSamples()));
 }
 
 void PluginProcessor::doubleBufferCopyTo(const int srcChan,
                                          juce::AudioBuffer<float> &buffer, int const destChan) const {
-    auto *src = doubleBuffer.getReadPointer(srcChan);
-    auto *dest = buffer.getWritePointer(destChan);
-    for (int i = 0; i < buffer.getNumSamples(); ++i) {
-        dest[i] = static_cast<float>(src[i]);
-    }
+    zlVector::convert(buffer.getWritePointer(destChan),
+                      doubleBuffer.getReadPointer(srcChan),
+                      static_cast<size_t>(buffer.getNumSamples()));
 }
 
 void PluginProcessor::doubleBufferCopyTo(const int srcChan,
                                          juce::AudioBuffer<double> &buffer, int const destChan) const {
-    juce::FloatVectorOperations::copy(buffer.getWritePointer(destChan),
-                                      doubleBuffer.getReadPointer(srcChan),
-                                      buffer.getNumSamples());
+    zlVector::copy(buffer.getWritePointer(destChan),
+                   doubleBuffer.getReadPointer(srcChan),
+                   static_cast<size_t>(buffer.getNumSamples()));
 }
 
 juce::AudioProcessor *JUCE_CALLTYPE
