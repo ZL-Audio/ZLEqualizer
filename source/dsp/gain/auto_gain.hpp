@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <juce_dsp/juce_dsp.h>
-
 #include "origin_gain.hpp"
 
 namespace zlGain {
@@ -25,8 +23,7 @@ namespace zlGain {
         AutoGain() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
-            gainDSP.prepare(spec);
-            gainDSP.setRampDurationSeconds(1.0);
+            gainDSP.prepare(spec, 1.0);
         }
 
         void prepareBuffer() {
@@ -101,14 +98,15 @@ namespace zlGain {
             }
             if (!isBypassed) {
                 juce::dsp::ProcessContextReplacing<FloatType> context(block);
-                gainDSP.process(context);
+                gainDSP.template process<false>(block);
                 for (size_t channel = 0; channel < block.getNumChannels(); ++channel) {
-                    juce::FloatVectorOperations::clip(block.getChannelPointer(channel),
-                                                      block.getChannelPointer(channel),
-                                                      static_cast<FloatType>(-1.0),
-                                                      static_cast<FloatType>(1.0),
-                                                      static_cast<int>(block.getNumSamples()));
+                    zlVector::clamp(block.getChannelPointer(channel),
+                                    static_cast<FloatType>(-1.0),
+                                    static_cast<FloatType>(1.0),
+                                    static_cast<size_t>(block.getNumSamples()));
                 }
+            } else {
+                gainDSP.template process<true>(block);
             }
         }
 
@@ -116,9 +114,7 @@ namespace zlGain {
             FloatType _ms = 0;
             for (size_t channel = 0; channel < block.getNumChannels(); channel++) {
                 auto data = block.getChannelPointer(channel);
-                for (size_t i = 0; i < block.getNumSamples(); i++) {
-                    _ms += data[i] * data[i];
-                }
+                _ms += zlVector::sumsqr(data, block.getNumSamples());
             }
             return std::sqrt(_ms / static_cast<FloatType>(block.getNumChannels()));
         }

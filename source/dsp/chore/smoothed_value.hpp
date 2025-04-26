@@ -17,7 +17,11 @@ namespace zlChore {
     template<typename FloatType, SmoothedTypes smoothedType = SmoothedTypes::Lin>
     class SmoothedValue {
     public:
-        SmoothedValue(const FloatType x) {
+        SmoothedValue() {
+            setCurrentAndTarget(FloatType(0));
+        }
+
+        explicit SmoothedValue(const FloatType x) {
             setCurrentAndTarget(x);
         }
 
@@ -45,6 +49,10 @@ namespace zlChore {
 
         void setTarget(const FloatType x) {
             target = x;
+            if (std::abs(current - target) < FloatType(1e-10)) {
+                count = 0;
+                return;
+            }
             switch (smoothedType) {
                 case Lin: {
                     inc = (target - current) / static_cast<FloatType>(maxCount);
@@ -75,7 +83,7 @@ namespace zlChore {
 
         FloatType getTarget() const { return target; }
 
-        bool isSmoothing() const { return count > 0; }
+        [[nodiscard]] bool isSmoothing() const { return count > 0; }
 
         FloatType getNext() {
             if (count == 0) { return current; }

@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <juce_dsp/juce_dsp.h>
+#include "origin_gain.hpp"
 
 namespace zlGain {
     /**
@@ -23,14 +23,15 @@ namespace zlGain {
         Gain() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
-            gainDSP.prepare(spec);
+            gainDSP.prepare(spec, 1.0);
         }
 
         template<bool isBypassed = false>
         void process(juce::AudioBuffer<FloatType> &buffer) {
             if (isBypassed) { return; }
-            auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-            process(block);
+            if (std::abs(gain.load() - 1) <= FloatType(1e-6)) { return; }
+            gainDSP.setGainLinear(gain.load());
+            gainDSP.template process<false>(buffer);
         }
 
         template<bool isBypassed = false>
@@ -38,8 +39,7 @@ namespace zlGain {
             if (isBypassed) { return; }
             if (std::abs(gain.load() - 1) <= FloatType(1e-6)) { return; }
             gainDSP.setGainLinear(gain.load());
-            juce::dsp::ProcessContextReplacing<FloatType> context(block);
-            gainDSP.process(context);
+            gainDSP.template process<false>(block);
         }
 
         void setGainLinear(const FloatType x) { gain.store(x); }
@@ -54,6 +54,6 @@ namespace zlGain {
 
     private:
         std::atomic<FloatType> gain{FloatType(1)};
-        juce::dsp::Gain<FloatType> gainDSP;
+        OriginGain<FloatType> gainDSP;
     };
 } // zlGain

@@ -189,7 +189,7 @@ target_link_libraries(SharedCode INTERFACE nlopt)
 # add kfr
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(kfr)
-target_link_libraries(SharedCode INTERFACE kfr kfr_dft)
+target_link_libraries(SharedCode INTERFACE kfr kfr_dsp kfr_dft)
 
 # Link the nlopt targets our SharedCode target
 target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)
