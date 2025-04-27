@@ -34,7 +34,7 @@ Please make sure `Clang` (`AppleClang 16+` or `LLVM/Clang 17+`), `cmake` (minimu
 
 On Windows (with Intel chips), you may install Intel® Integrated Performance Primitives and set its path as an environment variable `IPP_DIR`. It is not a hard requirement as KFR has already been used for SIMD/DFT acceleration.
 
-On Linux, you can install dependencies with the following command:
+On Linux, you can install the remaining dependencies with the following command:
 
 ```console
 sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev
@@ -43,7 +43,6 @@ sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-de
 ### Clone and Build
 
 Once you have set up the environment, you can clone the ZL Equalizer code, populate all submodules, then configure & build the code. Please set the variable `ZL_JUCE_FORMATS` as a list of formats that you want, e.g., `"VST3;LV2"`.
-
 ```console
 git clone https://github.com/ZL-Audio/ZLEqualizer
 cd ZLEqualizer
@@ -51,6 +50,11 @@ git submodule update --init --recursive
 cmake -B Builds -G Ninja -DCMAKE_BUILD_TYPE=Release -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;LV2" .
 cmake --build Builds --config Release
 ```
+After building, the plugins should have been copied to the corresponding folders. You can also find the binary folders under `Builds/ZLEqualizer_artefacts/Release` and copy them manually.
+
+> If there are multiple compilers on your OS, you may need to pass extra flags to maker sure that cmake uses `LLVM/Clang`. On Linux, you may set `-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++`. On Windows, you may set `-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl`.
+
+> AAX plug-ins need to be digitally signed using PACE Anti-Piracy's signing tools before they will run in commercially available versions of Pro Tools.
 
 ## License
 
