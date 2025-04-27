@@ -39,6 +39,10 @@ project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 
 # Change me! Set the plugin formats you want built
 # Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
+if (NOT DEFINED ZL_JUCE_COPY_PLUGIN)
+    set (ZL_JUCE_COPY_PLUGIN TRUE)
+endif ()
+
 if (DEFINED ZL_JUCE_FORMATS)
     set(FORMATS "${ZL_JUCE_FORMATS}")
 else ()
@@ -91,7 +95,7 @@ juce_add_plugin("${PROJECT_NAME}"
         BUNDLE_ID "${BUNDLE_ID}"
 
         # On MacOS, plugin is copied to ~/Users/yourname/Library/Audio/Plug-Ins/
-        COPY_PLUGIN_AFTER_BUILD TRUE
+        COPY_PLUGIN_AFTER_BUILD ${ZL_JUCE_COPY_PLUGIN}
         AAX_COPY_DIR "${JUCE_AAX_COPY_DIR}"
 
         # Change me!
