@@ -21,13 +21,13 @@ namespace zlSplitter {
 
     template<typename FloatType>
     void MSSplitter<FloatType>::split(juce::AudioBuffer<FloatType> &buffer) {
-        auto l_buffer = buffer.getWritePointer(0);
-        auto r_buffer = buffer.getWritePointer(1);
-        for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
-            const auto l = l_buffer[i], r = r_buffer[i];
-            l_buffer[i] = FloatType(0.5) * (l + r);
-            r_buffer[i] = FloatType(0.5) * (l - r);
-        }
+        auto l_vector = kfr::make_univector(buffer.getWritePointer(0),
+            static_cast<size_t>(buffer.getNumSamples()));
+        auto r_vector = kfr::make_univector(buffer.getWritePointer(1),
+            static_cast<size_t>(buffer.getNumSamples()));
+
+        l_vector = FloatType(0.5) * (l_vector + r_vector);
+        r_vector = l_vector - r_vector;
 
         mBuffer.setDataToReferTo(buffer.getArrayOfWritePointers(), 1, 0, buffer.getNumSamples());
         sBuffer.setDataToReferTo(buffer.getArrayOfWritePointers() + 1, 1, 0, buffer.getNumSamples());
@@ -35,13 +35,12 @@ namespace zlSplitter {
 
     template<typename FloatType>
     void MSSplitter<FloatType>::combine(juce::AudioBuffer<FloatType> &buffer) {
-        auto m_buffer = buffer.getWritePointer(0);
-        auto s_buffer = buffer.getWritePointer(1);
-        for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
-            const auto m = m_buffer[i], s = s_buffer[i];
-            m_buffer[i] = m + s;
-            s_buffer[i] = m - s;
-        }
+        auto m_vector = kfr::make_univector(buffer.getWritePointer(0),
+            static_cast<size_t>(buffer.getNumSamples()));
+        auto s_vector = kfr::make_univector(buffer.getWritePointer(1),
+            static_cast<size_t>(buffer.getNumSamples()));
+        m_vector = m_vector + s_vector;
+        s_vector = m_vector - s_vector - s_vector;
     }
 
     template
