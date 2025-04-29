@@ -13,9 +13,8 @@
 
 #include "../iir_filter/iir_filter.hpp"
 #include "../ideal_filter/ideal_filter.hpp"
-#include "../../fft/fft.hpp"
-#include "../../vector/vector.hpp"
 #include "../../container/array.hpp"
+#include "fir_base.hpp"
 
 namespace zlFilter {
     /**
@@ -25,7 +24,7 @@ namespace zlFilter {
      * @tparam FilterSize the size of each filter
      */
     template<typename FloatType, size_t FilterNum, size_t FilterSize>
-    class PrototypeCorrection {
+    class PrototypeCorrection : public FIRBase<FloatType, 10> {
     public:
         static constexpr size_t defaultFFTOrder = 10;
         static constexpr size_t startDecayIdx = 2, endDecayIdx = 8;
@@ -41,56 +40,6 @@ namespace zlFilter {
               filterIndices(indices), bypassMask(mask),
               wis1(w1), wis2(w2) {
         }
-
-        void prepare(const juce::dsp::ProcessSpec &spec) {
-            if (spec.sampleRate <= 50000) {
-                setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder);
-            } else if (spec.sampleRate <= 100000) {
-                setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 1);
-            } else if (spec.sampleRate <= 200000) {
-                setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 2);
-            } else {
-                setOrder(static_cast<size_t>(spec.numChannels), defaultFFTOrder + 3);
-            }
-        }
-
-        void reset() {
-            pos = 0;
-            count = 0;
-            for (auto &fifo: inputFIFOs) {
-                fifo.resize(fftSize);
-                std::fill(fifo.begin(), fifo.end(), 0.f);
-            }
-            for (auto &fifo: outputFIFOs) {
-                fifo.resize(fftSize);
-                std::fill(fifo.begin(), fifo.end(), 0.f);
-            }
-            std::fill(fftData.begin(), fftData.end(), 0.f);
-        }
-
-        template<bool isBypassed = false>
-        void process(juce::AudioBuffer<FloatType> &buffer) {
-            for (size_t i = 0; i < static_cast<size_t>(buffer.getNumSamples()); ++i) {
-                for (size_t channel = 0; channel < static_cast<size_t>(buffer.getNumChannels()); ++channel) {
-                    auto writePointer = buffer.getWritePointer(static_cast<int>(channel), static_cast<int>(i));
-                    inputFIFOs[channel][pos] = static_cast<float>(*writePointer);
-                    *writePointer = static_cast<FloatType>(outputFIFOs[channel][pos]);
-                    outputFIFOs[channel][pos] = FloatType(0);
-                }
-
-                pos += 1;
-                if (pos == fftSize) {
-                    pos = 0;
-                }
-                count += 1;
-                if (count == hopSize) {
-                    count = 0;
-                    processFrame<isBypassed>();
-                }
-            }
-        }
-
-        int getLatency() const { return latency.load(); }
 
         void setToUpdate() { toUpdate.store(true); }
 
@@ -109,90 +58,19 @@ namespace zlFilter {
         std::vector<std::complex<FloatType> > &wis1, &wis2;
         float deltaDecay{0.f};
 
-        zlFFT::KFREngine<float> fft;
-        zlFFT::WindowFunction<float> window;
+        void setOrder(const size_t channelNum, const size_t order) override {
+            FIRBase<FloatType, 10>::setFFTOrder(channelNum, order);
 
-        size_t fftOrder = defaultFFTOrder;
-        size_t fftSize = static_cast<size_t>(1) << fftOrder;
-        size_t numBins = fftSize / 2 + 1;
-        size_t overlap = 4; // 75% overlap
-        size_t hopSize = fftSize / overlap;
-        static constexpr float windowCorrection = 2.0f / 3.0f;
-        static constexpr float bypassCorrection = 1.0f / 4.0f;
-        // counts up until the next hop.
-        size_t count = 0;
-        // write position in input FIFO and read position in output FIFO.
-        size_t pos = 0;
-        // circular buffers for incoming and outgoing audio data.
-        std::vector<std::vector<float> > inputFIFOs, outputFIFOs;
-        // circular FFT working space which contains interleaved complex numbers.
-        std::vector<float> fftData;
-        size_t fftDataPos = 0;
-
-        std::atomic<int> latency{0};
-
-        void setOrder(const size_t channelNum, const size_t order) {
-            fftOrder = order;
-            fftSize = static_cast<size_t>(1) << fftOrder;
-            numBins = fftSize / 2 + 1;
-            hopSize = fftSize / overlap;
-            latency.store(static_cast<int>(fftSize));
-
-            fft.setOrder(fftOrder);
-            window.setWindow(fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
-
-            inputFIFOs.resize(channelNum);
-            outputFIFOs.resize(channelNum);
-            fftData.resize(fftSize * 2);
-
-            corrections.resize(numBins);
+            corrections.resize(FIRBase<FloatType, 10>::numBins);
 
             deltaDecay = 1.f / static_cast<float>(endDecayIdx - startDecayIdx);
 
-            reset();
+            FIRBase<FloatType, 10>::reset();
         }
 
-        template<bool isBypassed = false>
-        void processFrame() {
-            for (size_t idx = 0; idx < inputFIFOs.size(); ++idx) {
-                const auto *inputPtr = inputFIFOs[idx].data();
-                auto *fftPtr = fftData.data();
-
-                // Copy the input FIFO into the FFT working space in two parts.
-                std::memcpy(fftPtr, inputPtr + pos, (fftSize - pos) * sizeof(float));
-                if (pos > 0) {
-                    std::memcpy(fftPtr + fftSize - pos, inputPtr, pos * sizeof(float));
-                }
-
-                if (!isBypassed) {
-                    window.multiply(fftPtr, fftSize);
-
-                    fft.forward(fftPtr, fftPtr);
-                    processSpectrum();
-                    fft.backward(fftPtr, fftPtr);
-
-                    window.multiply(fftPtr, fftSize);
-                    for (size_t i = 0; i < fftSize; ++i) {
-                        fftPtr[i] *= windowCorrection;
-                    }
-                } else {
-                    for (size_t i = 0; i < fftSize; ++i) {
-                        fftPtr[i] *= bypassCorrection;
-                    }
-                }
-
-                for (size_t i = 0; i < pos; ++i) {
-                    outputFIFOs[idx][i] += fftData[i + fftSize - pos];
-                }
-                for (size_t i = 0; i < fftSize - pos; ++i) {
-                    outputFIFOs[idx][i + pos] += fftData[i];
-                }
-            }
-        }
-
-        void processSpectrum() {
+        void processSpectrum() override {
             update();
-            auto *cdata = reinterpret_cast<std::complex<float> *>(fftData.data());
+            auto *cdata = reinterpret_cast<std::complex<float> *>(FIRBase<FloatType, 10>::fftData.data());
             zlVector::multiply(cdata + startDecayIdx, corrections.data() + startDecayIdx, corrections.size() - startDecayIdx);
         }
 

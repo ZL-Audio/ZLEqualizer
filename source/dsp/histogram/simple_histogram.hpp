@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../vector/vector.hpp"
+
 namespace zlHistogram {
     template<typename FloatType, size_t Size>
     class Histogram {
@@ -30,9 +32,7 @@ namespace zlHistogram {
          */
         void push(size_t x) {
             x = std::min(x, Size - 1);
-            for (auto &hit: hits) {
-                hit *= decayRate;
-            }
+            hits = hits * decayRate;
             hits[x] = hits[x] + FloatType(1);
         }
 
@@ -56,10 +56,10 @@ namespace zlHistogram {
             }
         }
 
-        std::array<FloatType, Size> &getHits() { return hits; }
+        kfr::univector<FloatType, Size> &getHits() { return hits; }
 
     private:
-        std::array<FloatType, Size> hits, cumHits;
+        kfr::univector<FloatType, Size> hits, cumHits;
         FloatType decayRate{FloatType(0.9997697679981565)}; // np.power(0.1, 1/10000)
     };
 }

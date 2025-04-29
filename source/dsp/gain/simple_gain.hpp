@@ -18,9 +18,9 @@ namespace zlGain {
      * @tparam FloatType
      */
     template<typename FloatType>
-    class Gain {
+    class SimpleGain {
     public:
-        Gain() = default;
+        SimpleGain() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
             gainDSP.prepare(spec, 1.0);
@@ -54,6 +54,6 @@ namespace zlGain {
 
     private:
         std::atomic<FloatType> gain{FloatType(1)};
-        OriginGain<FloatType> gainDSP;
+        Gain<FloatType> gainDSP;
     };
 } // zlGain

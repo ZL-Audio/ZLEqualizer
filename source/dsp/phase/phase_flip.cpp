@@ -9,10 +9,18 @@
 
 #include "phase_flip.hpp"
 
+#include "../vector/vector.hpp"
+
 namespace zlPhase {
     template<typename FloatType>
     void PhaseFlip<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        process(juce::dsp::AudioBlock<FloatType>(buffer));
+        if (isON.load()) {
+            const auto numSamples = static_cast<size_t>(buffer.getNumSamples());
+            const auto numChannels = buffer.getNumChannels();
+            for (int chan = 0; chan < numChannels; ++chan) {
+                zlVector::multiply(buffer.getWritePointer(chan), FloatType(-1.f), numSamples);
+            }
+        }
     }
 
     template<typename FloatType>
@@ -21,7 +29,7 @@ namespace zlPhase {
             const auto numSamples = block.getNumSamples();
             const auto numChannels = block.getNumChannels();
             for (size_t chan = 0; chan < numChannels; ++chan) {
-                juce::FloatVectorOperations::multiply(block.getChannelPointer(chan), FloatType(-1.f), numSamples);
+                zlVector::multiply(block.getChannelPointer(chan), FloatType(-1.f), numSamples);
             }
         }
     }

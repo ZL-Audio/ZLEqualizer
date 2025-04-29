@@ -216,7 +216,7 @@ namespace zlPanel {
             if (stream->isExhausted()) { return; }
             const auto start = stream->readNextLine();
             if (start.startsWith("#native")) {
-                std::array<float, 251> points;
+                std::array<float, 251> points{};
                 size_t idx = 0;
                 while (!stream->isExhausted() && idx < points.size()) {
                     points[idx] = stream->readNextLine().getFloatValue();

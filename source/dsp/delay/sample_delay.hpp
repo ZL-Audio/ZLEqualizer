@@ -51,6 +51,6 @@ namespace zlDelay {
         std::atomic<int> delaySamples{0};
         int currentDelaySamples{0};
         std::atomic<bool> toUpdateDelay{false};
-        juce::dsp::DelayLine<FloatType> delayDSP;
+        juce::dsp::DelayLine<FloatType, juce::dsp::DelayLineInterpolationTypes::None> delayDSP;
     };
 } // zlDelay

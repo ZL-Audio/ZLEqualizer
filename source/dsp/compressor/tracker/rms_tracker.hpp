@@ -12,6 +12,7 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include "../../container/container.hpp"
+#include "../../vector/vector.hpp"
 
 namespace zlCompressor {
     /**
@@ -77,9 +78,7 @@ namespace zlCompressor {
             FloatType _ms = 0;
             for (auto channel = 0; channel < buffer.getNumChannels(); channel++) {
                 auto data = buffer.getReadPointer(channel);
-                for (auto i = 0; i < buffer.getNumSamples(); i++) {
-                    _ms += data[i] * data[i];
-                }
+                _ms += zlVector::sumsqr(data, static_cast<size_t>(buffer.getNumSamples()));
             }
             _ms = _ms / static_cast<FloatType>(buffer.getNumSamples());
 

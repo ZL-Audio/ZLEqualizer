@@ -16,9 +16,9 @@
 
 namespace zlGain {
     template<typename FloatType>
-    class OriginGain {
+    class Gain {
     public:
-        OriginGain() noexcept = default;
+        Gain() noexcept = default;
 
         void reset() {
             gain.setCurrentAndTarget(FloatType(0));
@@ -72,13 +72,13 @@ namespace zlGain {
                 if (isBypassed) return;
                 for (size_t chan = 0; chan < block.getNumChannels(); ++chan) {
                     auto *channelData = block.getChannelPointer(chan);
-                    zlVector::multiply(channelData,  gainVs.data(), block.getNumSamples());
+                    zlVector::multiply(channelData, gainVs.data(), block.getNumSamples());
                 }
             }
         }
 
     private:
         zlChore::SmoothedValue<FloatType, zlChore::SmoothedTypes::FixLin> gain;
-        std::vector<FloatType> gainVs;
+        kfr::univector<FloatType> gainVs;
     };
 }

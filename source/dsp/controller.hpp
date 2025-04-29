@@ -91,7 +91,7 @@ namespace zlDSP {
 
         zlEqMatch::EqMatchAnalyzer<FloatType> &getMatchAnalyzer() { return matchAnalyzer; }
 
-        zlGain::Gain<FloatType> &getGainDSP() { return outputGain; }
+        zlGain::SimpleGain<FloatType> &getGainDSP() { return outputGain; }
 
         zlGain::AutoGain<FloatType> &getAutoGain() { return autoGain; }
 
@@ -199,7 +199,7 @@ namespace zlDSP {
                     return std::array{zlFilter::StaticGainCompensation<FloatType>{std::get<Is>(bFilters)}...};
                 }(std::make_index_sequence<std::tuple_size_v<decltype(bFilters)> >());
 
-        std::array<zlGain::Gain<FloatType>, 5> compensationGains;
+        std::array<zlGain::SimpleGain<FloatType>, 5> compensationGains;
         std::atomic<bool> isSgcON{false}, toUpdateSgc{false};
         bool currentIsSgcON{false};
 
@@ -278,7 +278,7 @@ namespace zlDSP {
 
         zlDelay::SampleDelay<FloatType> delay;
 
-        zlGain::Gain<FloatType> outputGain;
+        zlGain::SimpleGain<FloatType> outputGain;
 
         zlGain::AutoGain<FloatType> autoGain;
 

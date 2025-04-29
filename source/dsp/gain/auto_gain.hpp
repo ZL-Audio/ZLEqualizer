@@ -87,7 +87,7 @@ namespace zlGain {
         bool currentIsON{false};
         std::atomic<FloatType> gain;
         FloatType preRMS, postRMS;
-        OriginGain<FloatType> gainDSP;
+        Gain<FloatType> gainDSP;
 
         template<bool isBypassed = false>
         void processPostBlockInternal(juce::dsp::AudioBlock<FloatType> block) {
