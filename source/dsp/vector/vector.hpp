@@ -37,6 +37,13 @@ namespace zlVector {
     }
 
     template<typename FloatType>
+    inline void add(FloatType *in1, const FloatType in2, const size_t size) {
+        auto v1 = kfr::make_univector(in1, size);
+        auto v2 = kfr::make_univector(in2, size);
+        v1 = v1 + v2;
+    }
+
+    template<typename FloatType>
     inline void multiply(FloatType *in, const FloatType m, const size_t size) {
         auto v = kfr::make_univector(in, size);
         v = v * m;

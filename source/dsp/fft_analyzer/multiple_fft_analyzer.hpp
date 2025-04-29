@@ -117,7 +117,8 @@ namespace zlFFTAnalyzer {
 
         void setOrder(int fftOrder) {
             fft.setOrder(static_cast<size_t>(fftOrder));
-            window.setWindow(fft.getSize(), juce::dsp::WindowingFunction<float>::hann, true);
+            window.setWindow(fft.getSize(), juce::dsp::WindowingFunction<float>::hann,
+                             1.f / static_cast<float>(fft.getSize()), true, true);
             fftSize.store(fft.getSize());
 
             deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));

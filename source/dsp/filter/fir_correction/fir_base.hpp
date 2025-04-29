@@ -43,7 +43,7 @@ namespace zlFilter {
                 fifo.resize(fftSize);
                 std::fill(fifo.begin(), fifo.end(), 0.f);
             }
-            std::fill(fftData.begin(), fftData.end(), 0.f);
+            std::fill(fftIn.begin(), fftIn.end(), 0.f);
         }
 
         template<bool isBypassed = false>
@@ -72,7 +72,7 @@ namespace zlFilter {
 
     protected:
         zlFFT::KFREngine<float> fft;
-        zlFFT::WindowFunction<float> window;
+        zlFFT::WindowFunction<float> window1, window2;
 
         size_t fftOrder = defaultFFTOrder;
         size_t fftSize = static_cast<size_t>(1) << fftOrder;
@@ -88,7 +88,7 @@ namespace zlFilter {
         // circular buffers for incoming and outgoing audio data.
         std::vector<kfr::univector<float> > inputFIFOs, outputFIFOs;
         // circular FFT working space which contains interleaved complex numbers.
-        kfr::univector<float> fftData;
+        kfr::univector<float> fftIn, fftData;
 
         size_t fftDataPos = 0;
         std::atomic<int> latency{0};
@@ -102,47 +102,44 @@ namespace zlFilter {
             latency.store(static_cast<int>(fftSize));
 
             fft.setOrder(fftOrder);
-            window.setWindow(fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
+            window1.setWindow(fftSize, juce::dsp::WindowingFunction<float>::WindowingMethod::hann,
+                1.f / static_cast<float>(fftSize), false, true);
+            window2.setWindow(fftSize, juce::dsp::WindowingFunction<float>::WindowingMethod::hann,
+                windowCorrection, false, true);
 
             inputFIFOs.resize(channelNum);
             outputFIFOs.resize(channelNum);
+            fftIn.resize(fftSize);
             fftData.resize(fftSize * 2);
         }
 
         template<bool isBypassed = false>
         void processFrame() {
             for (size_t idx = 0; idx < inputFIFOs.size(); ++idx) {
-                const auto *inputPtr = inputFIFOs[idx].data();
-                auto *fftPtr = fftData.data();
 
                 // Copy the input FIFO into the FFT working space in two parts.
-                std::memcpy(fftPtr, inputPtr + pos, (fftSize - pos) * sizeof(float));
+                zlVector::copy(fftIn.data(), inputFIFOs[idx].data() + pos, fftSize - pos);
                 if (pos > 0) {
-                    std::memcpy(fftPtr + fftSize - pos, inputPtr, pos * sizeof(float));
+                    zlVector::copy(fftIn.data() + fftSize - pos, inputFIFOs[idx].data(), pos);
                 }
 
                 if (!isBypassed) {
-                    window.multiply(fftPtr, fftSize);
+                    window1.multiply(fftIn);
 
-                    fft.forward(fftPtr, fftPtr);
+                    fft.forward(fftIn.data(), fftData.data());
                     processSpectrum();
-                    fft.backward(fftPtr, fftPtr);
+                    fft.backward(fftData.data(), fftIn.data());
 
-                    window.multiply(fftPtr, fftSize);
-                    for (size_t i = 0; i < fftSize; ++i) {
-                        fftPtr[i] *= windowCorrection;
-                    }
+                    window2.multiply(fftIn);
                 } else {
-                    for (size_t i = 0; i < fftSize; ++i) {
-                        fftPtr[i] *= bypassCorrection;
-                    }
+                    fftIn = fftIn * bypassCorrection;
                 }
 
                 for (size_t i = 0; i < pos; ++i) {
-                    outputFIFOs[idx][i] += fftData[i + fftSize - pos];
+                    outputFIFOs[idx][i] += fftIn[i + fftSize - pos];
                 }
                 for (size_t i = 0; i < fftSize - pos; ++i) {
-                    outputFIFOs[idx][i + pos] += fftData[i];
+                    outputFIFOs[idx][i + pos] += fftIn[i];
                 }
             }
         }

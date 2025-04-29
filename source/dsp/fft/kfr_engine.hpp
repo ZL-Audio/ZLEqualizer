@@ -20,13 +20,10 @@ namespace zlFFT {
             fft_size = static_cast<size_t>(1) << order;
             fft_plan = std::make_unique<kfr::dft_plan_real<FloatType> >(fft_size);
             temp_buffer.resize(fft_plan->temp_size);
-            scale = FloatType(1) / static_cast<FloatType>(fft_plan->size);
         }
 
         void forward(FloatType *in_buffer, std::complex<FloatType> *out_buffer) {
             fft_plan->execute(out_buffer, in_buffer, temp_buffer.data());
-            auto vector = kfr::make_univector(out_buffer, fft_size);
-            vector = vector * scale;
         }
 
         void forward(FloatType *in_buffer, FloatType *float_out_buffer) {

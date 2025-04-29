@@ -10,7 +10,7 @@
 #pragma once
 
 #include <juce_dsp/juce_dsp.h>
-#include "kfr_import.hpp"
+#include "../vector/vector.hpp"
 
 namespace zlFFT {
     template<typename FloatType>
@@ -20,10 +20,21 @@ namespace zlFFT {
 
         void setWindow(size_t size,
                        typename juce::dsp::WindowingFunction<FloatType>::WindowingMethod method,
-                       bool normalise = true, FloatType beta = 0) {
-            window.resize(size);
-            juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(
-                window.data(), size, method, normalise, beta);
+                       const FloatType scale = FloatType(1),
+                       const bool normalise = true, const bool cycle = true, const FloatType beta = 0) {
+            if (cycle) {
+                std::vector<FloatType> tempWindow;
+                tempWindow.resize(size + 1);
+                juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(
+                    tempWindow.data(), size + 1, method, normalise, beta);
+                window.resize(size);
+                zlVector::copy(window.data(), tempWindow.data(), size);
+            } else {
+                window.resize(size);
+                juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(
+                    window.data(), size, method, normalise, beta);
+            }
+            window = window * scale;
         }
 
         void multiply(FloatType *buffer, size_t num_samples) {
@@ -32,7 +43,11 @@ namespace zlFFT {
             vector = vector * window_v;
         }
 
+        void multiply(kfr::univector<FloatType> &buffer) {
+            buffer = buffer * window;
+        }
+
     private:
-        std::vector<FloatType> window;
+        kfr::univector<FloatType> window;
     };
 }
