@@ -4,6 +4,24 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 0.6.2
+
+DSP
+
+- improve `Matched Phase`, `Mixed Phase`, `Linear Phase` performance
+
+GUI
+
+- fix hang-up when re-open GUI window in some hosts (see #194)
+
+**WARNING for macOS users**
+
+> There are one x86_64 version (for Intel chips) and one arm64 version (for Apple M chips). Please choose the correct installer.
+
+**WARNING for users who build from source**
+
+> The building instruction has been updated. Please read it carefully.
+
 ## 0.6.1
 
 DSP
