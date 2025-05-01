@@ -120,14 +120,6 @@ jobs:
           cat .env # show us the config
           cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
 
-      - name: Set additional env vars for next steps
-        shell: bash
-        run: |
-          ARTIFACTS_PATH=${{ env.BUILD_DIR }}/${{ env.PROJECT_NAME }}_artefacts/${{ env.BUILD_TYPE }}
-          echo "ARTIFACTS_PATH=$ARTIFACTS_PATH" >> $GITHUB_ENV
-          echo "AAX_PATH=$ARTIFACTS_PATH/AAX/${{ env.PRODUCT_NAME }}.axxplugin" >> $GITHUB_ENV
-          echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
-
       - name: Check AAX releases
         shell: bash
         run: |

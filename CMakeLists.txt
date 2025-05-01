@@ -37,8 +37,6 @@ set(LV2URI "https://github.com/ZL-Audio/${PROJECT_NAME}")
 # For simplicity, the name of the CMake project is also the name of the target
 project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 
-# Change me! Set the plugin formats you want built
-# Valid choices: AAX Unity VST VST3 AU AUv3 Standalone
 if (NOT DEFINED ZL_JUCE_COPY_PLUGIN)
     set (ZL_JUCE_COPY_PLUGIN TRUE)
 endif ()
