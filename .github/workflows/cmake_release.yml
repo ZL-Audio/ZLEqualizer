@@ -133,7 +133,7 @@ jobs:
         run: git config --global http.postBuffer 1048576000
 
       - name: Download AAX pre-release repo
-        if: (matrix.name == 'macOS') || (matrix.name == 'Windows-x86')
+        if: (matrix.name == 'macOS-x86') || (matrix.name == 'macOS-arm') || (matrix.name == 'Windows-x86')
         uses: actions/checkout@v4
         with:
           repository: "ZL-Audio/ZLEqualizerAAX"
