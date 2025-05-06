@@ -69,13 +69,13 @@ namespace zlPanel {
             switch (f.getFilterType()) {
                 case zlFilter::highPass:
                 case zlFilter::lowShelf: {
-                    bound = bound.removeFromLeft(currentX);
+                    bound.removeFromLeft(currentX);
                     g.fillRect(bound);
                     break;
                 }
                 case zlFilter::lowPass:
                 case zlFilter::highShelf: {
-                    bound.removeFromLeft(currentX);
+                    bound = bound.removeFromLeft(currentX);
                     g.fillRect(bound);
                     break;
                 }
