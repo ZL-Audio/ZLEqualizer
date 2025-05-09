@@ -14,8 +14,8 @@ namespace zlpanel {
     RightControlPanel::RightControlPanel(PluginProcessor &p,
                                          zlgui::UIBase &base)
         : uiBase(base),
-          parametersRef(p.parameters),
-          parametersNARef(p.parametersNA),
+          parameters_ref(p.parameters),
+          parameters_NA_ref(p.parameters_NA),
           background(uiBase),
           dynBypassC("B", base, zlgui::multilingual::labels::bandDynamicBypass),
           dynSoloC("S", base, zlgui::multilingual::labels::bandDynamicSolo),
@@ -32,7 +32,7 @@ namespace zlpanel {
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
           relativeDrawable(juce::Drawable::createFromImageData(BinaryData::relative_svg, BinaryData::relative_svgSize)),
           swapDrawable(juce::Drawable::createFromImageData(BinaryData::swap_svg, BinaryData::swap_svgSize)) {
-        juce::ignoreUnused(parametersNARef);
+        juce::ignoreUnused(parameters_NA_ref);
         addAndMakeVisible(background);
 
         dynBypassC.setDrawable(bypassDrawable.get());
@@ -44,7 +44,7 @@ namespace zlpanel {
             for (size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
                     const auto activeID = zlstate::appendSuffix(zlp::dynamicBypass::ID, idx);
-                    const auto para = parametersRef.getParameter(activeID);
+                    const auto para = parameters_ref.getParameter(activeID);
                     para->beginChangeGesture();
                     para->setValueNotifyingHost(isByPassed);
                     para->endChangeGesture();
@@ -134,16 +134,16 @@ namespace zlpanel {
                    zlp::dynamicBypass::ID + suffix, zlp::sideSolo::ID + suffix,
                    zlp::dynamicRelative::ID + suffix, zlp::sideSwap::ID + suffix
                },
-               parametersRef, buttonAttachments);
+               parameters_ref, buttonAttachments);
         attach({&thresC.getSlider(), &attackC.getSlider(), &kneeC.getSlider(), &releaseC.getSlider()},
                {
                    zlp::threshold::ID + suffix, zlp::attack::ID + suffix,
                    zlp::kneeW::ID + suffix, zlp::release::ID + suffix
                },
-               parametersRef, sliderAttachments);
+               parameters_ref, sliderAttachments);
         attach({&sideFreqC.getSlider1(), &sideQC.getSlider1()},
                {zlp::sideFreq::ID + suffix, zlp::sideQ::ID + suffix},
-               parametersRef, sliderAttachments);
+               parameters_ref, sliderAttachments);
     }
 
     void RightControlPanel::updateMouseDragSensitivity() {

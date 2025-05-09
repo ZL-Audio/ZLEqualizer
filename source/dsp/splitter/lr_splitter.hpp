@@ -38,11 +38,11 @@ namespace zldsp::splitter {
          */
         void combine(juce::AudioBuffer<FloatType> &buffer);
 
-        inline juce::AudioBuffer<FloatType> &getLBuffer() { return lBuffer; }
+        inline juce::AudioBuffer<FloatType> &getLBuffer() { return l_buffer_; }
 
-        inline juce::AudioBuffer<FloatType> &getRBuffer() { return rBuffer; }
+        inline juce::AudioBuffer<FloatType> &getRBuffer() { return r_buffer_; }
 
     private:
-        juce::AudioBuffer<FloatType> lBuffer, rBuffer;
+        juce::AudioBuffer<FloatType> l_buffer_, r_buffer_;
     };
 }

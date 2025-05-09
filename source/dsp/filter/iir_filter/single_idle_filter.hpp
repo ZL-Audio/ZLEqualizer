@@ -26,76 +26,76 @@ namespace zldsp::filter {
         IIRIdle() = default;
 
         void prepare(const double sampleRate) {
-            fs.store(sampleRate);
-            toUpdatePara.store(true);
+            fs_.store(sampleRate);
+            to_update_para_.store(true);
         }
 
         void setFreq(const FloatType x) {
-            freq.store(x);
-            toUpdatePara.store(true);
+            freq_.store(x);
+            to_update_para_.store(true);
         }
 
-        FloatType getFreq() const { return static_cast<FloatType>(freq.load()); }
+        FloatType getFreq() const { return static_cast<FloatType>(freq_.load()); }
 
         void setGain(const FloatType x) {
-            gain.store(x);
-            toUpdatePara.store(true);
+            gain_.store(x);
+            to_update_para_.store(true);
         }
 
-        FloatType getGain() const { return static_cast<FloatType>(gain.load()); }
+        FloatType getGain() const { return static_cast<FloatType>(gain_.load()); }
 
         void setQ(const FloatType x) {
-            q.store(x);
-            toUpdatePara.store(true);
+            q_.store(x);
+            to_update_para_.store(true);
         }
 
         void setFilterType(const FilterType x) {
-            filterType.store(x);
-            toUpdatePara.store(true);
+            filter_type_.store(x);
+            to_update_para_.store(true);
         }
 
-        FilterType getFilterType() const { return filterType.load(); }
+        FilterType getFilterType() const { return filter_type_.load(); }
 
         void setOrder(const size_t x) {
-            order.store(x);
-            toUpdatePara.store(true);
+            order_.store(x);
+            to_update_para_.store(true);
         }
 
         void prepareResponseSize(const size_t x) {
-            response.resize(x);
-            std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
+            response_.resize(x);
+            std::fill(response_.begin(), response_.end(), std::complex(FloatType(1), FloatType(0)));
         }
 
         bool updateResponse(const std::vector<std::complex<FloatType> > &wis) {
-            if (toUpdatePara.exchange(false)) {
+            if (to_update_para_.exchange(false)) {
                 updateParas();
-                std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    IIRBase<FloatType>::updateResponse(coeffs[i], wis, response);
+                std::fill(response_.begin(), response_.end(), std::complex(FloatType(1), FloatType(0)));
+                for (size_t i = 0; i < current_filter_num_; ++i) {
+                    IIRBase<FloatType>::updateResponse(coeffs_[i], wis, response_);
                 }
                 return true;
             }
             return false;
         }
 
-        std::vector<std::complex<FloatType> > &getResponse() { return response; }
+        std::vector<std::complex<FloatType> > &getResponse() { return response_; }
 
-        void setToUpdate() { toUpdatePara.store(true); }
+        void setToUpdate() { to_update_para_.store(true); }
 
     private:
-        std::array<std::array<double, 6>, FilterSize> coeffs{};
-        std::atomic<bool> toUpdatePara{true};
-        std::atomic<size_t> order{2};
-        size_t currentFilterNum{1};
-        std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
-        std::atomic<double> fs{48000.0};
-        std::atomic<FilterType> filterType = FilterType::peak;
-        std::vector<std::complex<FloatType> > response{};
+        std::array<std::array<double, 6>, FilterSize> coeffs_{};
+        std::atomic<bool> to_update_para_{true};
+        std::atomic<size_t> order_{2};
+        size_t current_filter_num_{1};
+        std::atomic<double> freq_{1000.0}, gain_{0.0}, q_{0.707};
+        std::atomic<double> fs_{48000.0};
+        std::atomic<FilterType> filter_type_{FilterType::kPeak};
+        std::vector<std::complex<FloatType> > response_{};
 
         void updateParas() {
-            currentFilterNum = updateIIRCoeffs(filterType.load(), order.load(),
-                                               freq.load(), fs.load(),
-                                               gain.load(), q.load(), coeffs);
+            current_filter_num_ = updateIIRCoeffs(filter_type_.load(), order_.load(),
+                                               freq_.load(), fs_.load(),
+                                               gain_.load(), q_.load(), coeffs_);
         }
 
         static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,

@@ -27,7 +27,7 @@ namespace zlpanel {
         void updateVisible(bool x);
 
     private:
-        PluginProcessor &processorRef;
+        PluginProcessor &processor_ref;
         zlgui::UIBase &uiBase;
         juce::Time previousTime{};
 

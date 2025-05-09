@@ -29,8 +29,8 @@ namespace zlpanel {
         void resized() override;
 
     private:
-        PluginProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        PluginProcessor &processor_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
         juce::RangedAudioParameter *lmPara;
         std::atomic<float> &scale;

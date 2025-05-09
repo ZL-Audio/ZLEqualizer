@@ -15,19 +15,19 @@ namespace zlpanel {
                        zlp::Controller<double> &controller,
                        std::array<zldsp::filter::Ideal<double, 16>, 16> &baseFilters,
                        std::array<zldsp::filter::Ideal<double, 16>, 16> &mainFilters)
-        : parametersRef(parameters),
+        : parameters_ref(parameters),
           uiBase(base), c(controller),
           mMainFilters(mainFilters) {
         juce::ignoreUnused(baseFilters);
         dBs.resize(ws.size());
         for (auto &path: paths) {
-            path.preallocateSpace(static_cast<int>(zldsp::filter::frequencies.size() * 3));
+            path.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 3));
         }
         for (size_t i = 0; i < zlp::bandNUM; ++i) {
             for (const auto &idx: changeIDs) {
                 const auto paraID = zlp::appendSuffix(idx, i);
-                parameterChanged(paraID, parametersRef.getRawParameterValue(paraID)->load());
-                parametersRef.addParameterListener(paraID, this);
+                parameterChanged(paraID, parameters_ref.getRawParameterValue(paraID)->load());
+                parameters_ref.addParameterListener(paraID, this);
             }
         }
         lookAndFeelChanged();
@@ -36,7 +36,7 @@ namespace zlpanel {
     SumPanel::~SumPanel() {
         for (size_t i = 0; i < zlp::bandNUM; ++i) {
             for (const auto &idx: changeIDs) {
-                parametersRef.removeParameterListener(zlp::appendSuffix(idx, i), this);
+                parameters_ref.removeParameterListener(zlp::appendSuffix(idx, i), this);
             }
         }
     }

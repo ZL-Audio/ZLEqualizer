@@ -16,30 +16,30 @@ namespace zldsp::chore {
     public:
         explicit ParaUpdater(const juce::AudioProcessorValueTreeState &parameter,
                              const std::string &parameter_idx) {
-            para = parameter.getParameter(parameter_idx);
+            para_ = parameter.getParameter(parameter_idx);
         }
 
         void update(const float para_value) {
-            value.store(para_value);
+            value_.store(para_value);
             triggerAsyncUpdate();
         }
 
         void updateSync(const float para_value) {
-            para->beginChangeGesture();
-            para->setValueNotifyingHost(para_value);
-            para->endChangeGesture();
+            para_->beginChangeGesture();
+            para_->setValueNotifyingHost(para_value);
+            para_->endChangeGesture();
         }
 
-        juce::RangedAudioParameter *getPara() const { return para; }
+        juce::RangedAudioParameter *getPara() const { return para_; }
 
     private:
-        juce::RangedAudioParameter *para;
-        std::atomic<float> value{};
+        juce::RangedAudioParameter *para_;
+        std::atomic<float> value_{};
 
         void handleAsyncUpdate() override {
-            para->beginChangeGesture();
-            para->setValueNotifyingHost(value.load());
-            para->endChangeGesture();
+            para_->beginChangeGesture();
+            para_->setValueNotifyingHost(value_.load());
+            para_->endChangeGesture();
         }
     };
 }

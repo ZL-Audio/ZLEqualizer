@@ -11,24 +11,24 @@
 
 namespace zldsp::analyzer {
     template<typename FloatType>
-    PrePostFFTAnalyzer<FloatType>::PrePostFFTAnalyzer(const size_t fftOrder)
+    PrePostFFTAnalyzer<FloatType>::PrePostFFTAnalyzer(const size_t fft_order)
         : Thread("pre_post_analyzer"),
-          fftAnalyzer(fftOrder) {
-        fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
+          fft_analyzer_(fft_order) {
+        fft_analyzer_.setON({is_pre_on_.load(), is_post_on_.load(), is_side_on_.load()});
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        fftAnalyzer.prepare(spec);
+        fft_analyzer_.prepare(spec);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::prepareBuffer() {
-        currentON = isON.load();
-        if (currentON) {
-            currentPreON = isPreON.load();
-            currentPostON = isPostON.load();
-            currentSideON = isSideON.load();
+        current_on_ = is_on_.load();
+        if (current_on_) {
+            current_pre_on_ = is_pre_on_.load();
+            current_post_on_ = is_post_on_.load();
+            current_side_on_ = is_side_on_.load();
         }
     }
 
@@ -36,17 +36,17 @@ namespace zldsp::analyzer {
     void PrePostFFTAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &pre,
                                                 juce::AudioBuffer<FloatType> &post,
                                                 juce::AudioBuffer<FloatType> &side) {
-        if (toReset.exchange(false)) {
-            fftAnalyzer.reset();
+        if (to_reset_.exchange(false)) {
+            fft_analyzer_.reset();
         }
-        if (currentON) {
-            fftAnalyzer.process({pre, post, side});
+        if (current_on_) {
+            fft_analyzer_.process({pre, post, side});
         }
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setON(const bool x) {
-        isON.store(x);
+        is_on_.store(x);
         if (!x) {
             triggerAsyncUpdate();
         }
@@ -54,31 +54,31 @@ namespace zldsp::analyzer {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPreON(const bool x) {
-        isPreON.store(x);
-        fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
-        toReset.store(true);
+        is_pre_on_.store(x);
+        fft_analyzer_.setON({is_pre_on_.load(), is_post_on_.load(), is_side_on_.load()});
+        to_reset_.store(true);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setPostON(const bool x) {
-        isPostON.store(x);
-        fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
-        toReset.store(true);
+        is_post_on_.store(x);
+        fft_analyzer_.setON({is_pre_on_.load(), is_post_on_.load(), is_side_on_.load()});
+        to_reset_.store(true);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::setSideON(const bool x) {
-        isSideON.store(x);
-        fftAnalyzer.setON({isPreON.load(), isPostON.load(), isSideON.load()});
-        toReset.store(true);
+        is_side_on_.store(x);
+        fft_analyzer_.setON({is_pre_on_.load(), is_post_on_.load(), is_side_on_.load()});
+        to_reset_.store(true);
     }
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::run() {
-        juce::ScopedNoDenormals noDenormals;
+        juce::ScopedNoDenormals no_denormals;
         while (!threadShouldExit()) {
-            fftAnalyzer.run();
-            isPathReady.store(true);
+            fft_analyzer_.run();
+            is_path_ready_.store(true);
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
         }
@@ -86,7 +86,7 @@ namespace zldsp::analyzer {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::handleAsyncUpdate() {
-        const auto x = isON.load();
+        const auto x = is_on_.load();
         if (x && !isThreadRunning()) {
             startThread(juce::Thread::Priority::low);
         } else if (!x && isThreadRunning()) {
@@ -98,14 +98,14 @@ namespace zldsp::analyzer {
 
     template<typename FloatType>
     void PrePostFFTAnalyzer<FloatType>::updatePaths(
-        juce::Path &prePath_, juce::Path &postPath_, juce::Path &sidePath_,
-        juce::Rectangle<float> bound, const float minimumFFTDB) {
-        if (isPathReady.load()) {
-            prePath_.clear();
-            postPath_.clear();
-            sidePath_.clear();
-            fftAnalyzer.createPath({prePath_, postPath_, sidePath_}, bound, minimumFFTDB);
-            isPathReady.store(false);
+        juce::Path &pre_path, juce::Path &post_path, juce::Path &side_path,
+        juce::Rectangle<float> bound, const float minimum_fft_db) {
+        if (is_path_ready_.load()) {
+            pre_path.clear();
+            post_path.clear();
+            side_path.clear();
+            fft_analyzer_.createPath({pre_path, post_path, side_path}, bound, minimum_fft_db);
+            is_path_ready_.store(false);
         }
         triggerAsyncUpdate();
     }

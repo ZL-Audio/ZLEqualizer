@@ -23,7 +23,7 @@ namespace zldsp::container {
         FixedMaxSizeArray() = default;
 
         FixedMaxSizeArray &operator =(const FixedMaxSizeArray<T, N> &that) {
-            for (size_t i = 0; i < mSize; ++i) {
+            for (size_t i = 0; i < size_; ++i) {
                 data[i] = that.data[i];
             }
             return *this;
@@ -34,19 +34,19 @@ namespace zldsp::container {
         }
 
         void push(const T x) {
-            if (mSize == N) {
-                mSize = 0;
+            if (size_ == N) {
+                size_ = 0;
             }
-            data[mSize] = x;
-            mSize++;
+            data[size_] = x;
+            size_++;
         }
 
         void clear() {
-            mSize = 0;
+            size_ = 0;
         }
 
         [[nodiscard]] size_t size() const {
-            return mSize;
+            return size_;
         }
 
         [[nodiscard]] static size_t capacity() {
@@ -55,6 +55,6 @@ namespace zldsp::container {
 
     private:
         std::array<T, N> data{};
-        size_t mSize = 0;
+        size_t size_ = 0;
     };
 }

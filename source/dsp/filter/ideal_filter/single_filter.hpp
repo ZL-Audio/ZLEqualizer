@@ -25,67 +25,67 @@ namespace zldsp::filter {
         explicit Ideal() = default;
 
         void prepare(const double sampleRate) {
-            fs.store(sampleRate);
-            toUpdatePara.store(true);
+            fs_.store(sampleRate);
+            to_update_para_.store(true);
         }
 
         void setFreq(const FloatType x) {
-            freq.store(x);
-            toUpdatePara.store(true);
+            freq_.store(x);
+            to_update_para_.store(true);
         }
 
-        FloatType getFreq() const { return static_cast<FloatType>(freq.load()); }
+        FloatType getFreq() const { return static_cast<FloatType>(freq_.load()); }
 
         void setGain(const FloatType x) {
-            if (std::abs(static_cast<double>(x) - gain.load()) > 1e-6) {
-                gain.store(x);
-                toUpdatePara.store(true);
+            if (std::abs(static_cast<double>(x) - gain_.load()) > 1e-6) {
+                gain_.store(x);
+                to_update_para_.store(true);
             }
         }
 
-        FloatType getGain() const { return static_cast<FloatType>(gain.load()); }
+        FloatType getGain() const { return static_cast<FloatType>(gain_.load()); }
 
         void setQ(const FloatType x) {
-            if (std::abs(static_cast<double>(x) - q.load()) > 1e-6) {
-                q.store(x);
-                toUpdatePara.store(true);
+            if (std::abs(static_cast<double>(x) - q_.load()) > 1e-6) {
+                q_.store(x);
+                to_update_para_.store(true);
             }
         }
 
-        FloatType getQ() const { return static_cast<FloatType>(q.load()); }
+        FloatType getQ() const { return static_cast<FloatType>(q_.load()); }
 
         void setFilterType(const FilterType x) {
-            filterType.store(x);
-            toUpdatePara.store(true);
+            filter_type_.store(x);
+            to_update_para_.store(true);
         }
 
-        FilterType getFilterType() const { return filterType.load(); }
+        FilterType getFilterType() const { return filter_type_.load(); }
 
         void setOrder(const size_t x) {
-            order.store(x);
-            toUpdatePara.store(true);
+            order_.store(x);
+            to_update_para_.store(true);
         }
 
-        size_t getOrder() const { return order.load(); }
+        size_t getOrder() const { return order_.load(); }
 
         void prepareResponseSize(const size_t x) {
-            response.resize(x);
-            std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
+            response_.resize(x);
+            std::fill(response_.begin(), response_.end(), std::complex(FloatType(1), FloatType(0)));
         }
 
         void prepareDBSize(const size_t x) {
-            dBs.resize(x);
-            gains.resize(x);
+            dbs_.resize(x);
+            gains_.resize(x);
         }
 
-        bool getMagOutdated() const { return toUpdatePara.load(); }
+        bool getMagOutdated() const { return to_update_para_.load(); }
 
         bool updateResponse(const std::vector<std::complex<FloatType> > &wis) {
-            if (toUpdatePara.exchange(false)) {
+            if (to_update_para_.exchange(false)) {
                 updateParas();
-                std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    IdealBase<FloatType>::updateResponse(coeffs[i], wis, response);
+                std::fill(response_.begin(), response_.end(), std::complex(FloatType(1), FloatType(0)));
+                for (size_t i = 0; i < current_filter_num_; ++i) {
+                    IdealBase<FloatType>::updateResponse(coeffs_[i], wis, response_);
                 }
                 return true;
             }
@@ -94,11 +94,11 @@ namespace zldsp::filter {
 
         bool updateMixPhaseResponse(const std::vector<std::complex<FloatType> > &wis,
                                     const size_t startMix, const size_t endMix, const std::vector<FloatType> &mix) {
-            if (toUpdatePara.exchange(false)) {
+            if (to_update_para_.exchange(false)) {
                 updateParas();
-                std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    IdealBase<FloatType>::updateMixResponse(coeffs[i], wis, response,
+                std::fill(response_.begin(), response_.end(), std::complex(FloatType(1), FloatType(0)));
+                for (size_t i = 0; i < current_filter_num_; ++i) {
+                    IdealBase<FloatType>::updateMixResponse(coeffs_[i], wis, response_,
                                                             startMix, endMix, mix);
                 }
                 return true;
@@ -107,14 +107,14 @@ namespace zldsp::filter {
         }
 
         bool updateZeroPhaseResponse(const std::vector<std::complex<FloatType> > &wis) {
-            if (toUpdatePara.exchange(false)) {
+            if (to_update_para_.exchange(false)) {
                 updateParas();
-                std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    IdealBase<FloatType>::updateResponse(coeffs[i], wis, response);
+                std::fill(response_.begin(), response_.end(), std::complex(FloatType(1), FloatType(0)));
+                for (size_t i = 0; i < current_filter_num_; ++i) {
+                    IdealBase<FloatType>::updateResponse(coeffs_[i], wis, response_);
                 }
-                for (size_t i = 0; i < response.size(); ++i) {
-                    response[i] = std::complex<FloatType>(std::abs(response[i]), FloatType(0));
+                for (size_t i = 0; i < response_.size(); ++i) {
+                    response_[i] = std::complex<FloatType>(std::abs(response_[i]), FloatType(0));
                 }
                 return true;
             }
@@ -122,13 +122,13 @@ namespace zldsp::filter {
         }
 
         bool updateMagnitude(const std::vector<FloatType> &ws) {
-            if (toUpdatePara.exchange(false)) {
+            if (to_update_para_.exchange(false)) {
                 updateParas();
-                std::fill(gains.begin(), gains.end(), FloatType(1));
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    IdealBase<FloatType>::updateMagnitude(coeffs[i], ws, gains);
+                std::fill(gains_.begin(), gains_.end(), FloatType(1));
+                for (size_t i = 0; i < current_filter_num_; ++i) {
+                    IdealBase<FloatType>::updateMagnitude(coeffs_[i], ws, gains_);
                 }
-                std::transform(gains.begin(), gains.end(), dBs.begin(),
+                std::transform(gains_.begin(), gains_.end(), dbs_.begin(),
                                [](auto &g) {
                                    return g > FloatType(0) ? std::log10(g) * FloatType(20) : FloatType(-480);
                                });
@@ -138,41 +138,41 @@ namespace zldsp::filter {
         }
 
         void addDBs(std::vector<FloatType> &x) {
-            std::transform(x.begin(), x.end(), dBs.begin(), x.begin(),
+            std::transform(x.begin(), x.end(), dbs_.begin(), x.begin(),
                            [](auto &c1, auto &c2) { return c1 + c2; });
         }
 
         std::vector<FloatType> &getDBs() {
-            return dBs;
+            return dbs_;
         }
 
         FloatType getDB(FloatType w) {
             double g0 = 1.0;
-            for (size_t i = 0; i < currentFilterNum; ++i) {
-                g0 *= IdealBase<FloatType>::getMagnitude(coeffs[i], w);
+            for (size_t i = 0; i < current_filter_num_; ++i) {
+                g0 *= IdealBase<FloatType>::getMagnitude(coeffs_[i], w);
             }
             return g0 > FloatType(0) ? std::log10(g0) * FloatType(20) : FloatType(-480);
         }
 
-        std::vector<std::complex<FloatType> > &getResponse() { return response; }
+        std::vector<std::complex<FloatType> > &getResponse() { return response_; }
 
-        void setToUpdate() { toUpdatePara.store(true); }
+        void setToUpdate() { to_update_para_.store(true); }
 
     private:
-        std::array<std::array<double, 6>, FilterSize> coeffs{};
-        std::atomic<bool> toUpdatePara{true};
-        std::atomic<size_t> order{2};
-        size_t currentFilterNum{1};
-        std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
-        std::atomic<double> fs{48000.0};
-        std::atomic<FilterType> filterType = FilterType::peak;
-        std::vector<FloatType> dBs{}, gains{};
-        std::vector<std::complex<FloatType> > response{};
+        std::array<std::array<double, 6>, FilterSize> coeffs_{};
+        std::atomic<bool> to_update_para_{true};
+        std::atomic<size_t> order_{2};
+        size_t current_filter_num_{1};
+        std::atomic<double> freq_{1000.0}, gain_{0.0}, q_{0.707};
+        std::atomic<double> fs_{48000.0};
+        std::atomic<FilterType> filter_type_ = FilterType::kPeak;
+        std::vector<FloatType> dbs_{}, gains_{};
+        std::vector<std::complex<FloatType> > response_{};
 
         void updateParas() {
-            currentFilterNum = updateIIRCoeffs(filterType.load(), order.load(),
-                                               freq.load(), fs.load(),
-                                               gain.load(), q.load(), coeffs);
+            current_filter_num_ = updateIIRCoeffs(filter_type_.load(), order_.load(),
+                                               freq_.load(), fs_.load(),
+                                               gain_.load(), q_.load(), coeffs_);
         }
 
         static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,

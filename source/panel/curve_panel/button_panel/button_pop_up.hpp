@@ -76,7 +76,7 @@ namespace zlpanel {
         static constexpr float widthP{7.7916666f}, heightP{4.16667f};
 
         size_t band;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
         std::atomic<float> &fType, &freqPara;
         float direction = -1.f;

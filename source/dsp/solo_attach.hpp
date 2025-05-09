@@ -25,9 +25,9 @@ namespace zlp {
         void addListeners();
 
     private:
-        juce::AudioProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parameterRef;
-        Controller<FloatType> &controllerRef;
+        juce::AudioProcessor &processor_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref;
+        Controller<FloatType> &controller_ref;
 
         std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlp::bandNUM> mainSoloUpdater, sideSoloUpdater;
 

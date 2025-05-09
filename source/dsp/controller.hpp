@@ -171,7 +171,7 @@ namespace zlp {
         }
 
     private:
-        juce::AudioProcessor &processorRef;
+        juce::AudioProcessor &processor_ref;
 
         std::atomic<bool> isEditorOn{false};
         bool currentIsEditorOn{false};

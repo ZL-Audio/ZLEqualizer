@@ -32,46 +32,46 @@ namespace zldsp::compressor {
          * @param second the maximum time length of the tracker
          */
         void setMaximumMomentarySeconds(const FloatType second) {
-            maximumTimeLength = second;
+            maximum_time_length_ = second;
         }
 
         /**
          * call before processing starts
-         * @param sr sampleRate
+         * @param sr sample_rate
          */
         void prepare(const double sr) {
-            sampleRate.store(sr);
+            sample_rate_.store(sr);
             setMaximumMomentarySize(
-                static_cast<size_t>(static_cast<double>(maximumTimeLength) * sr));
+                static_cast<size_t>(static_cast<double>(maximum_time_length_) * sr));
             reset();
-            setMomentarySeconds(timeLength.load());
+            setMomentarySeconds(time_length_.load());
         }
 
         /**
          * update values before processing a buffer
          */
         void prepareBuffer() {
-            if (toUpdate.exchange(false)) {
-                currentBufferSize = bufferSize.load();
-                while (loudnessBuffer.size() > currentBufferSize) {
-                    mLoudness -= loudnessBuffer.pop_front();
+            if (to_update_.exchange(false)) {
+                c_buffer_size_ = buffer_size_.load();
+                while (loudness_buffer_.size() > c_buffer_size_) {
+                    m_loudness_ -= loudness_buffer_.popFront();
                 }
                 if (isPeakMix) {
-                    currentPeakMix = peakMix.load();
-                    currentPeakMixC = FloatType(1) - currentPeakMix;
+                    c_peak_mix_ = peak_mix_.load();
+                    c_peak_mix_c_ = FloatType(1) - c_peak_mix_;
                 }
             }
         }
 
         void processSample(const FloatType x) {
             const FloatType square = isPeakMix
-                                         ? std::abs(x) * (currentPeakMix + std::abs(x) * currentPeakMixC)
+                                         ? std::abs(x) * (c_peak_mix_ + std::abs(x) * c_peak_mix_c_)
                                          : x * x;
-            if (loudnessBuffer.size() == currentBufferSize) {
-                mLoudness -= loudnessBuffer.pop_front();
+            if (loudness_buffer_.size() == c_buffer_size_) {
+                m_loudness_ -= loudness_buffer_.popFront();
             }
-            loudnessBuffer.push_back(square);
-            mLoudness += square;
+            loudness_buffer_.pushBack(square);
+            m_loudness_ += square;
         }
 
         void processBufferRMS(juce::AudioBuffer<FloatType> &buffer) {
@@ -82,11 +82,11 @@ namespace zldsp::compressor {
             }
             _ms = _ms / static_cast<FloatType>(buffer.getNumSamples());
 
-            if (loudnessBuffer.size() == currentBufferSize) {
-                mLoudness -= loudnessBuffer.pop_front();
+            if (loudness_buffer_.size() == c_buffer_size_) {
+                m_loudness_ -= loudness_buffer_.popFront();
             }
-            loudnessBuffer.push_back(_ms);
-            mLoudness += _ms;
+            loudness_buffer_.pushBack(_ms);
+            m_loudness_ += _ms;
         }
 
         /**
@@ -95,9 +95,9 @@ namespace zldsp::compressor {
          * @param second the time length of the tracker
          */
         void setMomentarySeconds(const FloatType second) {
-            timeLength.store(second);
-            setMomentarySize(static_cast<size_t>(static_cast<double>(second) * sampleRate.load()));
-            toUpdate.store(true);
+            time_length_.store(second);
+            setMomentarySize(static_cast<size_t>(static_cast<double>(second) * sample_rate_.load()));
+            to_update_.store(true);
         }
 
         /**
@@ -105,7 +105,7 @@ namespace zldsp::compressor {
          * get the time length of the tracker
          */
         inline size_t getMomentarySize() const {
-            return bufferSize.load();
+            return buffer_size_.load();
         }
 
         /**
@@ -114,41 +114,41 @@ namespace zldsp::compressor {
          * @param x the peak-mix portion
          */
         void setPeakMix(const FloatType x) {
-            peakMix.store(x);
-            toUpdate.store(true);
+            peak_mix_.store(x);
+            to_update_.store(true);
         }
 
         FloatType getMomentaryLoudness() {
-            FloatType meanSquare = mLoudness / static_cast<FloatType>(currentBufferSize);
+            FloatType meanSquare = m_loudness_ / static_cast<FloatType>(c_buffer_size_);
             return juce::Decibels::gainToDecibels(meanSquare, minusInfinityDB) * FloatType(0.5);
         }
 
     private:
-        FloatType mLoudness{0};
-        zldsp::container::CircularBuffer<FloatType> loudnessBuffer{1};
+        FloatType m_loudness_{0};
+        zldsp::container::CircularBuffer<FloatType> loudness_buffer_{1};
 
-        std::atomic<double> sampleRate{48000.0};
-        std::atomic<FloatType> timeLength{0};
-        FloatType maximumTimeLength{0};
-        size_t currentBufferSize{1};
-        std::atomic<size_t> bufferSize{1};
-        FloatType currentPeakMix{0}, currentPeakMixC{1};
-        std::atomic<FloatType> peakMix{0};
-        std::atomic<bool> toUpdate{true};
+        std::atomic<double> sample_rate_{48000.0};
+        std::atomic<FloatType> time_length_{0};
+        FloatType maximum_time_length_{0};
+        size_t c_buffer_size_{1};
+        std::atomic<size_t> buffer_size_{1};
+        FloatType c_peak_mix_{0}, c_peak_mix_c_{1};
+        std::atomic<FloatType> peak_mix_{0};
+        std::atomic<bool> to_update_{true};
 
         void reset() {
-            mLoudness = FloatType(0);
-            loudnessBuffer.clear();
+            m_loudness_ = FloatType(0);
+            loudness_buffer_.clear();
         }
 
         void setMomentarySize(size_t mSize) {
             mSize = std::max(static_cast<size_t>(1), mSize);
-            bufferSize.store(mSize);
+            buffer_size_.store(mSize);
         }
 
         void setMaximumMomentarySize(size_t mSize) {
             mSize = std::max(static_cast<size_t>(1), mSize);
-            loudnessBuffer.set_capacity(mSize);
+            loudness_buffer_.setCapacity(mSize);
         }
     };
 }

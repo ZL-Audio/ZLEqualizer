@@ -36,7 +36,7 @@ namespace zlpanel {
 
     private:
         size_t idx;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
         zldsp::filter::IIR<double, zlp::Controller<double>::FilterSize> &sideF;
         zlgui::Dragger &sideDraggerRef;

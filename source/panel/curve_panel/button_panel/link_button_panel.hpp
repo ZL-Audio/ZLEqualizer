@@ -35,7 +35,7 @@ namespace zlpanel {
         void resized() override;
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
         zlgui::Dragger &sideDraggerRef;
         zlgui::CompactButton dynLinkC;

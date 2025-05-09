@@ -71,6 +71,6 @@ namespace zldsp::filter {
         std::atomic<size_t> filterNum{1}, order{2};
         std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
         std::atomic<double> fs{48000.0};
-        std::atomic<FilterType> filterType = FilterType::peak;
+        std::atomic<FilterType> filterType = FilterType::kPeak;
     };
 }

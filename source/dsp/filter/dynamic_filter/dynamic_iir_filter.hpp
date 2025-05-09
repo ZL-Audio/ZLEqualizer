@@ -26,25 +26,25 @@ namespace zldsp::filter {
     class DynamicIIR {
     public:
         DynamicIIR(zldsp::filter::Empty<FloatType> &b, zldsp::filter::Empty<FloatType> &t)
-            : bFilter(b), tFilter(t) {
+            : b_filter_(b), t_filter_(t) {
         }
 
         void reset() {
-            mFilter.reset();
-            sFilter.reset();
+            m_filter_.reset();
+            s_filter_.reset();
         }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
-            mFilter.prepare(spec);
-            sFilter.template setOrder<false>(2);
-            sFilter.template setFilterType<false>(zldsp::filter::FilterType::bandPass);
-            sFilter.prepare(spec);
+            m_filter_.prepare(spec);
+            s_filter_.template setOrder<false>(2);
+            s_filter_.template setFilterType<false>(zldsp::filter::FilterType::kBandPass);
+            s_filter_.prepare(spec);
             const auto sr = spec.sampleRate / static_cast<double>(spec.maximumBlockSize);
-            follower.prepare(sr);
-            tracker.prepare(sr);
+            follower_.prepare(sr);
+            tracker_.prepare(sr);
 
-            computer.setRatio(FloatType(1000));
-            sBufferCopy.setSize(static_cast<int>(spec.numChannels),
+            computer_.setRatio(FloatType(1000));
+            s_buffer_copy_.setSize(static_cast<int>(spec.numChannels),
                                 static_cast<int>(spec.maximumBlockSize));
         }
 
@@ -56,145 +56,145 @@ namespace zldsp::filter {
         template<bool isBypassed = false>
         void process(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
             cacheCurrentValues();
-            mFilter.processPre(mBuffer);
-            if (currentDynamicON) {
-                if (!mFilter.getShouldNotBeParallel()) {
+            m_filter_.processPre(mBuffer);
+            if (c_dynamic_on_) {
+                if (!m_filter_.getShouldNotBeParallel()) {
                     processDynamic<isBypassed>(mBuffer, sBuffer);
                 }
             } else {
-                if (mFilter.getShouldBeParallel()) {
-                    mFilter.template process<isBypassed>(mFilter.getParallelBuffer());
-                } else if (!mFilter.getShouldNotBeParallel()) {
-                    mFilter.template process<isBypassed>(mBuffer);
+                if (m_filter_.getShouldBeParallel()) {
+                    m_filter_.template process<isBypassed>(m_filter_.getParallelBuffer());
+                } else if (!m_filter_.getShouldNotBeParallel()) {
+                    m_filter_.template process<isBypassed>(mBuffer);
                 }
             }
         }
 
         template<bool isBypassed = false>
         void processParallelPost(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
-            if (mFilter.getShouldNotBeParallel()) {
-                if (currentDynamicON) {
+            if (m_filter_.getShouldNotBeParallel()) {
+                if (c_dynamic_on_) {
                     processDynamic<isBypassed>(mBuffer, sBuffer);
                 } else {
-                    mFilter.template process<isBypassed>(mBuffer);
+                    m_filter_.template process<isBypassed>(mBuffer);
                 }
-            } else if (mFilter.getShouldBeParallel()) {
-                mFilter.template processParallelPost<isBypassed>(mBuffer);
+            } else if (m_filter_.getShouldBeParallel()) {
+                m_filter_.template processParallelPost<isBypassed>(mBuffer);
             }
         }
 
         static void processBypass() {
         }
 
-        IIR<FloatType, FilterSize> &getMainFilter() { return mFilter; }
+        IIR<FloatType, FilterSize> &getMainFilter() { return m_filter_; }
 
-        IIR<FloatType, FilterSize> &getSideFilter() { return sFilter; }
+        IIR<FloatType, FilterSize> &getSideFilter() { return s_filter_; }
 
-        zldsp::compressor::KneeComputer<FloatType, false, false> &getComputer() { return computer; }
+        zldsp::compressor::KneeComputer<FloatType, false, false> &getComputer() { return computer_; }
 
-        zldsp::compressor::RMSTracker<FloatType, false> &getTracker() { return tracker; }
+        zldsp::compressor::RMSTracker<FloatType, false> &getTracker() { return tracker_; }
 
-        zldsp::compressor::PSFollower<FloatType, true, false> &getFollower() { return follower; }
+        zldsp::compressor::PSFollower<FloatType, true, false> &getFollower() { return follower_; }
 
         void setActive(const bool x) {
             if (x) {
-                mFilter.setToRest();
+                m_filter_.setToRest();
             }
-            active.store(x);
+            active_.store(x);
         }
 
-        void setDynamicON(const bool x) { dynamicON.store(x); }
+        void setDynamicON(const bool x) { dynamic_on_.store(x); }
 
-        bool getDynamicON() const { return dynamicON.load(); }
+        bool getDynamicON() const { return dynamic_on_.load(); }
 
-        void setDynamicBypass(const bool x) { dynamicBypass.store(x); }
+        void setDynamicBypass(const bool x) { dynamic_bypass_.store(x); }
 
-        bool getDynamicBypass() const { return dynamicBypass.load(); }
+        bool getDynamicBypass() const { return dynamic_bypass_.load(); }
 
         void setFilterStructure(const FilterStructure x) {
-            filterStructure.store(x);
+            filter_structure_.store(x);
         }
 
-        void setIsPerSample(const bool x) { isPerSample.store(x); }
+        void setIsPerSample(const bool x) { is_per_sample_.store(x); }
 
-        void setBaseLine(const FloatType x) { compBaseline = x; }
+        void setBaseLine(const FloatType x) { comp_baseline_ = x; }
 
-        FloatType getBaseLine() const { return compBaseline; }
+        FloatType getBaseLine() const { return comp_baseline_; }
 
     private:
-        zldsp::filter::IIR<FloatType, FilterSize> mFilter, sFilter;
-        zldsp::filter::Empty<FloatType> &bFilter, &tFilter;
-        zldsp::compressor::KneeComputer<FloatType, false, false> computer;
-        zldsp::compressor::RMSTracker<FloatType, false> tracker;
-        zldsp::compressor::PSFollower<FloatType, true, false> follower;
-        FloatType compBaseline;
-        juce::AudioBuffer<FloatType> sBufferCopy;
-        std::atomic<bool> active{false}, dynamicON{false}, dynamicBypass{false};
-        bool currentDynamicON{false}, currentDynamicBypass{false};
-        std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
-        FilterStructure currentFilterStructure{FilterStructure::iir};
-        juce::AudioBuffer<FloatType> sampleBuffer;
-        std::atomic<bool> isPerSample{false};
-        bool currentIsPerSample{false};
+        zldsp::filter::IIR<FloatType, FilterSize> m_filter_, s_filter_;
+        zldsp::filter::Empty<FloatType> &b_filter_, &t_filter_;
+        zldsp::compressor::KneeComputer<FloatType, false, false> computer_;
+        zldsp::compressor::RMSTracker<FloatType, false> tracker_;
+        zldsp::compressor::PSFollower<FloatType, true, false> follower_;
+        FloatType comp_baseline_;
+        juce::AudioBuffer<FloatType> s_buffer_copy_;
+        std::atomic<bool> active_{false}, dynamic_on_{false}, dynamic_bypass_{false};
+        bool c_dynamic_on_{false}, c_dynamic_bypass_{false};
+        std::atomic<FilterStructure> filter_structure_{FilterStructure::kIIR};
+        FilterStructure current_filter_structure_{FilterStructure::kIIR};
+        juce::AudioBuffer<FloatType> sample_buffer_;
+        std::atomic<bool> is_per_sample_{false};
+        bool c_is_per_sample_{false};
 
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void processDynamic(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
-            sBufferCopy.makeCopyOf(sBuffer, true);
-            sFilter.processPre(sBufferCopy);
-            sFilter.process(sBufferCopy);
+            s_buffer_copy_.makeCopyOf(sBuffer, true);
+            s_filter_.processPre(s_buffer_copy_);
+            s_filter_.process(s_buffer_copy_);
             // feed side-chain into the tracker
-            tracker.processBufferRMS(sBufferCopy);
+            tracker_.processBufferRMS(s_buffer_copy_);
             // get loudness from tracker
-            const auto currentLoudness = tracker.getMomentaryLoudness() - compBaseline;
+            const auto currentLoudness = tracker_.getMomentaryLoudness() - comp_baseline_;
             // calculate the reduction
-            const auto reducedLoudness = currentLoudness - computer.eval(currentLoudness);
+            const auto reducedLoudness = currentLoudness - computer_.eval(currentLoudness);
             // calculate gain/Q mix portion
-            auto portion = std::min(reducedLoudness / computer.getReductionAtKnee(), FloatType(1));
+            auto portion = std::min(reducedLoudness / computer_.getReductionAtKnee(), FloatType(1));
             // smooth the portion
-            portion = follower.processSample(portion);
-            if (currentDynamicBypass) {
+            portion = follower_.processSample(portion);
+            if (c_dynamic_bypass_) {
                 portion = 0;
             }
-            if (currentIsPerSample) {
-                mFilter.template setGain<true, false, false>(
-                    (1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
-                mFilter.template setQ<true, false, false>((1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
+            if (c_is_per_sample_) {
+                m_filter_.template setGain<true, false, false>(
+                    (1 - portion) * b_filter_.getGain() + portion * t_filter_.getGain());
+                m_filter_.template setQ<true, false, false>((1 - portion) * b_filter_.getQ() + portion * t_filter_.getQ());
             } else {
-                mFilter.template setGain<true, false, true>(
-                    (1 - portion) * bFilter.getGain() + portion * tFilter.getGain());
-                mFilter.template setQ<true, false, true>((1 - portion) * bFilter.getQ() + portion * tFilter.getQ());
-                mFilter.updateCoeffs();
+                m_filter_.template setGain<true, false, true>(
+                    (1 - portion) * b_filter_.getGain() + portion * t_filter_.getGain());
+                m_filter_.template setQ<true, false, true>((1 - portion) * b_filter_.getQ() + portion * t_filter_.getQ());
+                m_filter_.updateCoeffs();
             }
-            if (mFilter.getShouldBeParallel()) {
-                mFilter.template process<isBypassed>(mFilter.getParallelBuffer());
+            if (m_filter_.getShouldBeParallel()) {
+                m_filter_.template process<IsBypassed>(m_filter_.getParallelBuffer());
             } else {
-                mFilter.template process<isBypassed>(mBuffer);
+                m_filter_.template process<IsBypassed>(mBuffer);
             }
         }
 
         void cacheCurrentValues() {
-            if (currentFilterStructure != filterStructure.load()) {
-                currentFilterStructure = filterStructure.load();
-                switch (currentFilterStructure) {
-                    case FilterStructure::iir:
-                    case FilterStructure::svf: {
-                        mFilter.setFilterStructure(currentFilterStructure);
-                        sFilter.setFilterStructure(currentFilterStructure);
+            if (current_filter_structure_ != filter_structure_.load()) {
+                current_filter_structure_ = filter_structure_.load();
+                switch (current_filter_structure_) {
+                    case FilterStructure::kIIR:
+                    case FilterStructure::kSVF: {
+                        m_filter_.setFilterStructure(current_filter_structure_);
+                        s_filter_.setFilterStructure(current_filter_structure_);
                         break;
                     }
-                    case FilterStructure::parallel: {
-                        mFilter.setFilterStructure(currentFilterStructure);
-                        sFilter.setFilterStructure(FilterStructure::iir);
+                    case FilterStructure::kParallel: {
+                        m_filter_.setFilterStructure(current_filter_structure_);
+                        s_filter_.setFilterStructure(FilterStructure::kIIR);
                     }
                 }
             }
-            currentDynamicON = dynamicON.load();
-            if (currentDynamicON) {
-                currentDynamicBypass = dynamicBypass.load();
-                currentIsPerSample = isPerSample.load();
-                computer.prepareBuffer();
-                tracker.prepareBuffer();
-                follower.prepareBuffer();
+            c_dynamic_on_ = dynamic_on_.load();
+            if (c_dynamic_on_) {
+                c_dynamic_bypass_ = dynamic_bypass_.load();
+                c_is_per_sample_ = is_per_sample_.load();
+                computer_.prepareBuffer();
+                tracker_.prepareBuffer();
+                follower_.prepareBuffer();
             }
         }
     };

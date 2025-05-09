@@ -15,11 +15,11 @@ namespace zlp {
                                         juce::AudioProcessorValueTreeState &parameters,
                                         juce::AudioProcessorValueTreeState &parametersNA,
                                         Controller<FloatType> &controller)
-        : processorRef(processor),
-          parameterRef(parameters), parameterNARef(parametersNA),
-          controllerRef(controller),
+        : processor_ref(processor),
+          parameters_ref(parameters), parameters_NA_ref(parametersNA),
+          controller_ref(controller),
           decaySpeed(zlstate::ffTSpeed::speeds[static_cast<size_t>(zlstate::ffTSpeed::defaultI)]) {
-        juce::ignoreUnused(parameterRef);
+        juce::ignoreUnused(parameters_ref);
         addListeners();
         initDefaultValues();
     }
@@ -27,81 +27,81 @@ namespace zlp {
     template<typename FloatType>
     ChoreAttach<FloatType>::~ChoreAttach() {
         for (auto &ID: IDs) {
-            parameterRef.removeParameterListener(ID, this);
+            parameters_ref.removeParameterListener(ID, this);
         }
         for (auto &ID: NAIDs) {
-            parameterNARef.removeParameterListener(ID, this);
+            parameters_NA_ref.removeParameterListener(ID, this);
         }
     }
 
     template<typename FloatType>
     void ChoreAttach<FloatType>::addListeners() {
         for (auto &ID: IDs) {
-            parameterRef.addParameterListener(ID, this);
+            parameters_ref.addParameterListener(ID, this);
         }
         for (auto &ID: NAIDs) {
-            parameterNARef.addParameterListener(ID, this);
+            parameters_NA_ref.addParameterListener(ID, this);
         }
     }
 
     template<typename FloatType>
     void ChoreAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
         if (parameterID == sideChain::ID) {
-            controllerRef.setSideChain(newValue > .5f);
+            controller_ref.setSideChain(newValue > .5f);
         } else if (parameterID == dynLookahead::ID) {
-            controllerRef.setLookAhead(static_cast<FloatType>(newValue));
+            controller_ref.setLookAhead(static_cast<FloatType>(newValue));
         } else if (parameterID == dynRMS::ID) {
-            controllerRef.setRMS(static_cast<FloatType>(newValue));
+            controller_ref.setRMS(static_cast<FloatType>(newValue));
         } else if (parameterID == dynSmooth::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
-                controllerRef.getFilter(i).getFollower().setSmooth(static_cast<FloatType>(newValue));
+                controller_ref.getFilter(i).getFollower().setSmooth(static_cast<FloatType>(newValue));
             }
         } else if (parameterID == effectON::ID) {
-            controllerRef.setEffectON(newValue > .5f);
+            controller_ref.setEffectON(newValue > .5f);
         } else if (parameterID == phaseFlip::ID) {
-            controllerRef.getPhaseFlipper().setON(newValue > .5f);
+            controller_ref.getPhaseFlipper().setON(newValue > .5f);
         } else if (parameterID == staticAutoGain::ID) {
-            controllerRef.setSgcON(newValue > .5f);
+            controller_ref.setSgcON(newValue > .5f);
         } else if (parameterID == autoGain::ID) {
-            controllerRef.getAutoGain().enable(newValue > .5f);
+            controller_ref.getAutoGain().enable(newValue > .5f);
         } else if (parameterID == scale::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
-                auto baseGain = parameterRef.getRawParameterValue(appendSuffix(gain::ID, i))->load();
-                auto targetGain = parameterRef.getRawParameterValue(appendSuffix(targetGain::ID, i))->load();
+                auto baseGain = parameters_ref.getRawParameterValue(appendSuffix(gain::ID, i))->load();
+                auto targetGain = parameters_ref.getRawParameterValue(appendSuffix(targetGain::ID, i))->load();
                 baseGain = zlp::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue));
                 targetGain = zlp::targetGain::range.snapToLegalValue(targetGain * scale::formatV(newValue));
-                controllerRef.getBaseFilter(i).setGain(baseGain);
-                controllerRef.getFilter(i).getMainFilter().setGain(baseGain);
-                controllerRef.getMainIIRFilter(i).setGain(baseGain);
-                controllerRef.getMainIdealFilter(i).setGain(baseGain);
-                controllerRef.getTargetFilter(i).setGain(targetGain);
+                controller_ref.getBaseFilter(i).setGain(baseGain);
+                controller_ref.getFilter(i).getMainFilter().setGain(baseGain);
+                controller_ref.getMainIIRFilter(i).setGain(baseGain);
+                controller_ref.getMainIdealFilter(i).setGain(baseGain);
+                controller_ref.getTargetFilter(i).setGain(targetGain);
             }
         } else if (parameterID == outputGain::ID) {
-            controllerRef.getGainDSP().setGainDecibels(static_cast<FloatType>(newValue));
+            controller_ref.getGainDSP().setGainDecibels(static_cast<FloatType>(newValue));
         } else if (parameterID == filterStructure::ID) {
-            controllerRef.setFilterStructure(static_cast<filterStructure::FilterStructure>(newValue));
+            controller_ref.setFilterStructure(static_cast<filterStructure::FilterStructure>(newValue));
         } else if (parameterID == dynHQ::ID) {
             for (size_t i = 0; i < bandNUM; ++i) {
-                controllerRef.getFilter(i).setIsPerSample(newValue > .5f);
+                controller_ref.getFilter(i).setIsPerSample(newValue > .5f);
             }
         } else if (parameterID == zeroLatency::ID) {
-            controllerRef.setZeroLatency(newValue > .5f);
+            controller_ref.setZeroLatency(newValue > .5f);
         } else if (parameterID == zlstate::fftPreON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
-                    controllerRef.getAnalyzer().setPreON(false);
+                    controller_ref.getAnalyzer().setPreON(false);
                     break;
                 case 1:
                     if (isFFTON[0].load() == 0) {
-                        controllerRef.getAnalyzer().setPreON(true);
+                        controller_ref.getAnalyzer().setPreON(true);
                     }
-                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(0, decaySpeed.load());
+                    controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(0, decaySpeed.load());
                     break;
                 case 2:
                     if (isFFTON[0].load() == 0) {
-                        controllerRef.getAnalyzer().setPreON(true);
+                        controller_ref.getAnalyzer().setPreON(true);
                     }
-                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(0, 1.f);
+                    controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(0, 1.f);
                     break;
                 default: {
                 }
@@ -110,19 +110,19 @@ namespace zlp {
         } else if (parameterID == zlstate::fftPostON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
-                    controllerRef.getAnalyzer().setPostON(false);
+                    controller_ref.getAnalyzer().setPostON(false);
                     break;
                 case 1:
                     if (isFFTON[1].load() == 0) {
-                        controllerRef.getAnalyzer().setPostON(true);
+                        controller_ref.getAnalyzer().setPostON(true);
                     }
-                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(1, decaySpeed.load());
+                    controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(1, decaySpeed.load());
                     break;
                 case 2:
                     if (isFFTON[1].load() == 0) {
-                        controllerRef.getAnalyzer().setPostON(true);
+                        controller_ref.getAnalyzer().setPostON(true);
                     }
-                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(1, 1.f);
+                    controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(1, 1.f);
                     break;
                 default: {
                 }
@@ -131,19 +131,19 @@ namespace zlp {
         } else if (parameterID == zlstate::fftSideON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
-                    controllerRef.getAnalyzer().setSideON(false);
+                    controller_ref.getAnalyzer().setSideON(false);
                     break;
                 case 1:
                     if (isFFTON[2].load() == 0) {
-                        controllerRef.getAnalyzer().setSideON(true);
+                        controller_ref.getAnalyzer().setSideON(true);
                     }
-                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(2, decaySpeed.load());
+                    controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(2, decaySpeed.load());
                     break;
                 case 2:
                     if (isFFTON[2].load() == 0) {
-                        controllerRef.getAnalyzer().setSideON(true);
+                        controller_ref.getAnalyzer().setSideON(true);
                     }
-                    controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(2, 1.f);
+                    controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(2, 1.f);
                     break;
                 default: {
                 }
@@ -153,25 +153,25 @@ namespace zlp {
             const auto idx = static_cast<size_t>(newValue);
             const auto speed = zlstate::ffTSpeed::speeds[idx];
             decaySpeed.store(speed);
-            if (isFFTON[0].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(0, speed);
-            if (isFFTON[1].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(1, speed);
-            if (isFFTON[2].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(2, speed);
+            if (isFFTON[0].load() != 2) controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(0, speed);
+            if (isFFTON[1].load() != 2) controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(1, speed);
+            if (isFFTON[2].load() != 2) controller_ref.getAnalyzer().getMultipleFFT().setDecayRate(2, speed);
         } else if (parameterID == zlstate::ffTTilt::ID) {
             const auto idx = static_cast<size_t>(newValue);
-            controllerRef.getAnalyzer().getMultipleFFT().setTiltSlope(zlstate::ffTTilt::slopes[idx]);
+            controller_ref.getAnalyzer().getMultipleFFT().setTiltSlope(zlstate::ffTTilt::slopes[idx]);
         } else if (parameterID == zlstate::conflictON::ID) {
             const auto f = newValue > .5f;
-            controllerRef.getConflictAnalyzer().setON(f);
+            controller_ref.getConflictAnalyzer().setON(f);
         } else if (parameterID == zlstate::conflictStrength::ID) {
-            controllerRef.getConflictAnalyzer().setStrength(
+            controller_ref.getConflictAnalyzer().setStrength(
                 zlstate::conflictStrength::formatV(static_cast<FloatType>(newValue)));
         } else if (parameterID == zlstate::conflictScale::ID) {
-            controllerRef.getConflictAnalyzer().setConflictScale(static_cast<FloatType>(newValue));
+            controller_ref.getConflictAnalyzer().setConflictScale(static_cast<FloatType>(newValue));
         } else if (parameterID == loudnessMatcherON::ID) {
             if (newValue > .5f) {
-                controllerRef.setLoudnessMatcherON(true);
+                controller_ref.setLoudnessMatcherON(true);
             } else {
-                controllerRef.setLoudnessMatcherON(false);
+                controller_ref.setLoudnessMatcherON(false);
             }
         }
     }

@@ -21,8 +21,8 @@ namespace zldsp::splitter {
 
     template<typename FloatType>
     void LRSplitter<FloatType>::split(juce::AudioBuffer<FloatType> &buffer) {
-        lBuffer.setDataToReferTo(buffer.getArrayOfWritePointers(), 1, 0, buffer.getNumSamples());
-        rBuffer.setDataToReferTo(buffer.getArrayOfWritePointers() + 1, 1, 0, buffer.getNumSamples());
+        l_buffer_.setDataToReferTo(buffer.getArrayOfWritePointers(), 1, 0, buffer.getNumSamples());
+        r_buffer_.setDataToReferTo(buffer.getArrayOfWritePointers() + 1, 1, 0, buffer.getNumSamples());
     }
 
     template<typename FloatType>

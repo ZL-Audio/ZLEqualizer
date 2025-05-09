@@ -14,7 +14,7 @@
 namespace zlpanel {
     ControlPanel::ControlPanel(PluginProcessor &p,
                                zlgui::UIBase &base)
-        : parametersRef(p.parameters), parametersNARef(p.parametersNA), uiBase(base),
+        : parameters_ref(p.parameters), parameters_NA_ref(p.parameters_NA), uiBase(base),
           leftControlPanel(p, base),
           rightControlPanel(p, base),
           matchControlPanel(p, base) {
@@ -23,21 +23,21 @@ namespace zlpanel {
         addChildComponent(matchControlPanel);
         for (size_t i = 0; i < zlstate::bandNUM; ++i) {
             const auto idx = zlp::appendSuffix(zlp::dynamicON::ID, i);
-            dynamicON[i].store(parametersRef.getRawParameterValue(idx)->load() > .5f);
-            parametersRef.addParameterListener(idx, this);
+            dynamicON[i].store(parameters_ref.getRawParameterValue(idx)->load() > .5f);
+            parameters_ref.addParameterListener(idx, this);
         }
         parameterChanged(zlstate::selectedBandIdx::ID,
-                         parametersNARef.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
-        parametersNARef.addParameterListener(zlstate::selectedBandIdx::ID, this);
+                         parameters_NA_ref.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
+        parameters_NA_ref.addParameterListener(zlstate::selectedBandIdx::ID, this);
 
         setOpaque(true);
     }
 
     ControlPanel::~ControlPanel() {
-        parametersNARef.removeParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref.removeParameterListener(zlstate::selectedBandIdx::ID, this);
         for (size_t i = 0; i < zlstate::bandNUM; ++i) {
             const auto idx = zlp::appendSuffix(zlp::dynamicON::ID, i);
-            parametersRef.removeParameterListener(idx, this);
+            parameters_ref.removeParameterListener(idx, this);
         }
     }
 

@@ -18,33 +18,33 @@ namespace zlpanel {
                              zldsp::filter::Ideal<double, 16> &baseFilter,
                              zldsp::filter::Ideal<double, 16> &targetFilter,
                              zldsp::filter::Ideal<double, 16> &mainFilter)
-        : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA),
-          uiBase(base), controllerRef(controller),
+        : idx(bandIdx), parameters_ref(parameters), parameters_NA_ref(parametersNA),
+          uiBase(base), controller_ref(controller),
           resetAttach(bandIdx, parameters, parametersNA),
           baseF(baseFilter), targetF(targetFilter), mainF(mainFilter) {
-        curvePath.preallocateSpace(static_cast<int>(zldsp::filter::frequencies.size() * 3 + 12));
-        shadowPath.preallocateSpace(static_cast<int>(zldsp::filter::frequencies.size() * 3 + 12));
-        dynPath.preallocateSpace(static_cast<int>(zldsp::filter::frequencies.size() * 6 + 12));
+        curvePath.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 3 + 12));
+        shadowPath.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 3 + 12));
+        dynPath.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 6 + 12));
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
-        juce::ignoreUnused(controllerRef);
+        juce::ignoreUnused(controller_ref);
 
         parameterChanged(zlstate::selectedBandIdx::ID,
-                         parametersNARef.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
+                         parameters_NA_ref.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
         parameterChanged(zlstate::active::ID + suffix,
-                         parametersNARef.getRawParameterValue(zlstate::active::ID + suffix)->load());
-        parametersNARef.addParameterListener(zlstate::selectedBandIdx::ID, this);
-        parametersNARef.addParameterListener(zlstate::active::ID + suffix, this);
+                         parameters_NA_ref.getRawParameterValue(zlstate::active::ID + suffix)->load());
+        parameters_NA_ref.addParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref.addParameterListener(zlstate::active::ID + suffix, this);
 
         for (auto &id: changeIDs) {
             const auto paraId = id + suffix;
-            parameterChanged(paraId, parametersRef.getRawParameterValue(paraId)->load());
-            parametersRef.addParameterListener(paraId, this);
+            parameterChanged(paraId, parameters_ref.getRawParameterValue(paraId)->load());
+            parameters_ref.addParameterListener(paraId, this);
         }
         for (auto &id: paraIDs) {
             const auto paraId = id + suffix;
-            parameterChanged(paraId, parametersRef.getRawParameterValue(paraId)->load());
-            parametersRef.addParameterListener(paraId, this);
+            parameterChanged(paraId, parameters_ref.getRawParameterValue(paraId)->load());
+            parameters_ref.addParameterListener(paraId, this);
         }
 
         setInterceptsMouseClicks(false, false);
@@ -54,13 +54,13 @@ namespace zlpanel {
     SinglePanel::~SinglePanel() {
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         for (auto &id: changeIDs) {
-            parametersRef.removeParameterListener(id + suffix, this);
+            parameters_ref.removeParameterListener(id + suffix, this);
         }
         for (auto &id: paraIDs) {
-            parametersRef.removeParameterListener(id + suffix, this);
+            parameters_ref.removeParameterListener(id + suffix, this);
         }
-        parametersNARef.removeParameterListener(zlstate::selectedBandIdx::ID, this);
-        parametersNARef.removeParameterListener(zlstate::active::ID + suffix, this);
+        parameters_NA_ref.removeParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref.removeParameterListener(zlstate::active::ID + suffix, this);
     }
 
     void SinglePanel::paint(juce::Graphics &g) {
@@ -206,20 +206,20 @@ namespace zlpanel {
             }
             if (active.load() && selected.load()) {
                 switch (baseF.getFilterType()) {
-                    case zldsp::filter::FilterType::peak:
-                    case zldsp::filter::FilterType::lowShelf:
-                    case zldsp::filter::FilterType::highShelf:
-                    case zldsp::filter::FilterType::notch:
-                    case zldsp::filter::FilterType::bandShelf:
-                    case zldsp::filter::FilterType::tiltShelf: {
+                    case zldsp::filter::FilterType::kPeak:
+                    case zldsp::filter::FilterType::kLowShelf:
+                    case zldsp::filter::FilterType::kHighShelf:
+                    case zldsp::filter::FilterType::kNotch:
+                    case zldsp::filter::FilterType::kBandShelf:
+                    case zldsp::filter::FilterType::kTiltShelf: {
                         shadowPath.lineTo(bound.getRight(), bound.getCentreY());
                         shadowPath.lineTo(bound.getX(), bound.getCentreY());
                         shadowPath.closeSubPath();
                         break;
                     }
-                    case zldsp::filter::FilterType::lowPass:
-                    case zldsp::filter::FilterType::highPass:
-                    case zldsp::filter::FilterType::bandPass: {
+                    case zldsp::filter::FilterType::kLowPass:
+                    case zldsp::filter::FilterType::kHighPass:
+                    case zldsp::filter::FilterType::kBandPass: {
                         shadowPath.lineTo(bottomRight);
                         shadowPath.lineTo(bottomLeft);
                         shadowPath.closeSubPath();
@@ -245,8 +245,8 @@ namespace zlpanel {
         // update button pos
         {
             switch (baseF.getFilterType()) {
-                case zldsp::filter::FilterType::lowShelf:
-                case zldsp::filter::FilterType::highShelf: {
+                case zldsp::filter::FilterType::kLowShelf:
+                case zldsp::filter::FilterType::kHighShelf: {
                     const auto x1 = freqToX(baseFreq, bound);
                     const auto y1 = dbToY(static_cast<float>(baseF.getGain()) * .5f, maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(currentBaseGain.load()) * .5f, maximumDB.load(), bound);
@@ -256,8 +256,8 @@ namespace zlpanel {
                     targetButtonPos.store(juce::Point<float>(x1, y3));
                     break;
                 }
-                case zldsp::filter::FilterType::peak:
-                case zldsp::filter::FilterType::bandShelf: {
+                case zldsp::filter::FilterType::kPeak:
+                case zldsp::filter::FilterType::kBandShelf: {
                     const auto x1 = freqToX(baseFreq, bound);
                     const auto y1 = dbToY(centeredDB, maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(currentBaseGain.load()), maximumDB.load(), bound);
@@ -267,7 +267,7 @@ namespace zlpanel {
                     targetButtonPos.store(juce::Point<float>(x1, y3));
                     break;
                 }
-                case zldsp::filter::FilterType::tiltShelf: {
+                case zldsp::filter::FilterType::kTiltShelf: {
                     const auto x1 = freqToX(baseFreq, bound);
                     const auto y1 = dbToY(centeredDB, maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(currentBaseGain.load()) * .5f, maximumDB.load(), bound);
@@ -277,10 +277,10 @@ namespace zlpanel {
                     targetButtonPos.store(juce::Point<float>(x1, y3));
                     break;
                 }
-                case zldsp::filter::FilterType::notch:
-                case zldsp::filter::FilterType::lowPass:
-                case zldsp::filter::FilterType::highPass:
-                case zldsp::filter::FilterType::bandPass: {
+                case zldsp::filter::FilterType::kNotch:
+                case zldsp::filter::FilterType::kLowPass:
+                case zldsp::filter::FilterType::kHighPass:
+                case zldsp::filter::FilterType::kBandPass: {
                     const auto x1 = freqToX(baseFreq, bound);
                     const auto y1 = dbToY(centeredDB, maximumDB.load(), bound);
                     const auto y2 = dbToY(static_cast<float>(0), maximumDB.load(), bound);

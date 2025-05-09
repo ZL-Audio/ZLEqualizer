@@ -17,7 +17,7 @@ namespace zlpanel {
     public:
         explicit AnalyzerBox(juce::AudioProcessorValueTreeState &parametersNA,
                                zlgui::UIBase &base)
-            : parametersNARef(parametersNA),
+            : parameters_NA_ref(parametersNA),
               uiBase(base),
               fftPreON("Pre:", zlstate::fftPreON::choices, uiBase, zlgui::multilingual::labels::fftPre),
               fftPostON("Post:", zlstate::fftPostON::choices, uiBase, zlgui::multilingual::labels::fftPost),
@@ -43,7 +43,7 @@ namespace zlpanel {
                        zlstate::fftPreON::ID, zlstate::fftPostON::ID, zlstate::fftSideON::ID,
                        zlstate::ffTSpeed::ID, zlstate::ffTTilt::ID
                    },
-                   parametersNARef, boxAttachments);
+                   parameters_NA_ref, boxAttachments);
             setBufferedToImage(true);
 
             uiBase.getBoxTree().addListener(this);
@@ -95,7 +95,7 @@ namespace zlpanel {
         }
 
     private:
-        juce::AudioProcessorValueTreeState &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_NA_ref;
         zlgui::UIBase &uiBase;
 
         zlgui::ClickCombobox fftPreON, fftPostON, fftSideON;

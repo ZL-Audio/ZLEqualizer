@@ -38,16 +38,16 @@ namespace zldsp::buffer {
 
         inline auto getNumChannels() const { return buffer.getNumChannels(); }
 
-        inline auto getNumSamples() const { return fifo.getTotalSize() - 1; }
+        inline auto getNumSamples() const { return fifo_.getTotalSize() - 1; }
 
-        inline auto getNumReady() const { return fifo.getNumReady(); }
+        inline auto getNumReady() const { return fifo_.getNumReady(); }
 
-        inline auto getFreeSpace() const { return fifo.getFreeSpace(); }
+        inline auto getFreeSpace() const { return fifo_.getFreeSpace(); }
 
-        inline auto isFull() const { return fifo.getFreeSpace() == 0; }
+        inline auto isFull() const { return fifo_.getFreeSpace() == 0; }
 
     private:
-        juce::AbstractFifo fifo;
+        juce::AbstractFifo fifo_;
 
         /*< The actual audio buffer */
         juce::AudioBuffer<FloatType> buffer;

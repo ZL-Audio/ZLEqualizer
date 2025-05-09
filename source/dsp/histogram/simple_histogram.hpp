@@ -21,10 +21,10 @@ namespace zldsp::histogram {
          * reset all counts
          */
         void reset(const FloatType x = FloatType(0)) {
-            std::fill(hits.begin(), hits.end(), x);
+            std::fill(hits_.begin(), hits_.end(), x);
         }
 
-        void setDecayRate(const FloatType x) { decayRate = x; }
+        void setDecayRate(const FloatType x) { decay_rate_ = x; }
 
         /**
          * add one to bin x
@@ -32,8 +32,8 @@ namespace zldsp::histogram {
          */
         void push(size_t x) {
             x = std::min(x, Size - 1);
-            hits = hits * decayRate;
-            hits[x] = hits[x] + FloatType(1);
+            hits_ = hits_ * decay_rate_;
+            hits_[x] = hits_[x] + FloatType(1);
         }
 
         /**
@@ -42,24 +42,24 @@ namespace zldsp::histogram {
          * @return
          */
         FloatType getPercentile(const FloatType x) {
-            cumHits[0] = hits[0];
+            cum_hits_[0] = hits_[0];
             for (size_t i = 1; i < Size; ++i) {
-                cumHits[i] = cumHits[i - 1] + hits[i];
+                cum_hits_[i] = cum_hits_[i - 1] + hits_[i];
             }
-            const auto targetHits = x * cumHits.back();
-            auto it = std::lower_bound(cumHits.begin(), cumHits.end(), targetHits);
-            if(it != cumHits.end()) {
-                const auto i = static_cast<size_t>(std::distance(cumHits.begin(), it));
-                return static_cast<FloatType>(i) + (cumHits[i] - targetHits) / std::max(hits[i], FloatType(1));
+            const auto targetHits = x * cum_hits_.back();
+            auto it = std::lower_bound(cum_hits_.begin(), cum_hits_.end(), targetHits);
+            if(it != cum_hits_.end()) {
+                const auto i = static_cast<size_t>(std::distance(cum_hits_.begin(), it));
+                return static_cast<FloatType>(i) + (cum_hits_[i] - targetHits) / std::max(hits_[i], FloatType(1));
             } else {
                 return FloatType(1);
             }
         }
 
-        kfr::univector<FloatType, Size> &getHits() { return hits; }
+        kfr::univector<FloatType, Size> &getHits() { return hits_; }
 
     private:
-        kfr::univector<FloatType, Size> hits, cumHits;
-        FloatType decayRate{FloatType(0.9997697679981565)}; // np.power(0.1, 1/10000)
+        kfr::univector<FloatType, Size> hits_, cum_hits_;
+        FloatType decay_rate_{FloatType(0.9997697679981565)}; // np.power(0.1, 1/10000)
     };
 }

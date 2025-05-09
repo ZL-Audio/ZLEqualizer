@@ -25,10 +25,10 @@ namespace zldsp::delay {
 
         void prepare(const juce::dsp::ProcessSpec &spec);
 
-        void reset() { delayDSP.reset(); }
+        void reset() { delay_dsp_.reset(); }
 
         void setMaximumDelayInSamples(const int maxDelayInSamples) {
-            delayDSP.setMaximumDelayInSamples(maxDelayInSamples);
+            delay_dsp_.setMaximumDelayInSamples(maxDelayInSamples);
         }
 
         void process(juce::AudioBuffer<FloatType> &buffer);
@@ -36,21 +36,21 @@ namespace zldsp::delay {
         void process(juce::dsp::AudioBlock<FloatType> block);
 
         void setDelaySeconds(const FloatType x) {
-            delaySeconds.store(x);
-            delaySamples.store(static_cast<int>(static_cast<double>(x) * sampleRate.load()));
-            toUpdateDelay.store(true);
+            delay_seconds_.store(x);
+            delay_samples_.store(static_cast<int>(static_cast<double>(x) * sample_rate_.load()));
+            to_update_delay_.store(true);
         }
 
         int getDelaySamples() const {
-            return delaySamples.load();
+            return delay_samples_.load();
         }
 
     private:
-        std::atomic<double> sampleRate{44100.0};
-        std::atomic<FloatType> delaySeconds{0};
-        std::atomic<int> delaySamples{0};
-        int currentDelaySamples{0};
-        std::atomic<bool> toUpdateDelay{false};
-        juce::dsp::DelayLine<FloatType, juce::dsp::DelayLineInterpolationTypes::None> delayDSP;
+        std::atomic<double> sample_rate_{44100.0};
+        std::atomic<FloatType> delay_seconds_{0};
+        std::atomic<int> delay_samples_{0};
+        int c_delay_samples_{0};
+        std::atomic<bool> to_update_delay_{false};
+        juce::dsp::DelayLine<FloatType, juce::dsp::DelayLineInterpolationTypes::None> delay_dsp_;
     };
 } // zldsp::delay

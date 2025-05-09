@@ -44,20 +44,20 @@ namespace zldsp::buffer {
         juce::dsp::AudioBlock<FloatType> getSubBlockChannels(int channelOffset, int numChannels);
 
         inline auto isSubReady() {
-            return input_buffer.getNumReady() >= subBuffer.getNumSamples();
+            return input_buffer_.getNumReady() >= subBuffer.getNumSamples();
         }
 
-        inline auto getMainSpec() { return main_spec; }
+        inline auto getMainSpec() { return main_spec_; }
 
-        inline auto getSubSpec() { return sub_spec; }
+        inline auto getSubSpec() { return sub_spec_; }
 
         inline juce::uint32 getLatencySamples() const {
-            return static_cast<juce::uint32>(latency_in_samples.load());
+            return static_cast<juce::uint32>(latency_in_samples_.load());
         }
 
     private:
-        FIFOAudioBuffer<FloatType> input_buffer, output_buffer;
-        juce::dsp::ProcessSpec sub_spec, main_spec;
-        std::atomic<juce::uint32> latency_in_samples{0};
+        FIFOAudioBuffer<FloatType> input_buffer_, output_buffer_;
+        juce::dsp::ProcessSpec sub_spec_, main_spec_;
+        std::atomic<juce::uint32> latency_in_samples_{0};
     };
 }

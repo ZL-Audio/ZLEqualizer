@@ -11,18 +11,18 @@
 
 namespace zlpanel {
     LoudnessDisplay::LoudnessDisplay(PluginProcessor &p, zlgui::UIBase &base)
-        : processorRef(p), uiBase(base) {
+        : processor_ref(p), uiBase(base) {
         for (size_t i = 0; i < zlstate::bandNUM; ++i) {
             const auto suffix = zlp::appendSuffix("", i);
-            isThresholdAutoParas[i] = processorRef.parameters.getParameter(zlp::dynamicLearn::ID + suffix);
-            isDynamicOnParas[i] = processorRef.parameters.getParameter(zlp::dynamicON::ID + suffix);
+            isThresholdAutoParas[i] = processor_ref.parameters.getParameter(zlp::dynamicLearn::ID + suffix);
+            isDynamicOnParas[i] = processor_ref.parameters.getParameter(zlp::dynamicON::ID + suffix);
         }
-        bandIdxPara = processorRef.parametersNA.getParameter(zlstate::selectedBandIdx::ID);
+        bandIdxPara = processor_ref.parameters_NA.getParameter(zlstate::selectedBandIdx::ID);
         lookAndFeelChanged();
     }
 
     void LoudnessDisplay::paint(juce::Graphics &g) {
-        const auto loudness = processorRef.getController().getSideLoudness(bandIdx);
+        const auto loudness = processor_ref.getController().getSideLoudness(bandIdx);
         const auto p = 1. + std::clamp(loudness, -80.0, 0.0) / 80;
         auto bound = getLocalBounds().toFloat();
         bound = bound.withWidth(bound.getWidth() * static_cast<float>(p));

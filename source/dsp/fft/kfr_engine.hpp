@@ -17,13 +17,13 @@ namespace zldsp::fft {
         KFREngine() = default;
 
         void setOrder(const size_t order) {
-            fft_size = static_cast<size_t>(1) << order;
-            fft_plan = std::make_unique<kfr::dft_plan_real<FloatType> >(fft_size);
-            temp_buffer.resize(fft_plan->temp_size);
+            fft_size_ = static_cast<size_t>(1) << order;
+            fft_plan_ = std::make_unique<kfr::dft_plan_real<FloatType> >(fft_size_);
+            temp_buffer_.resize(fft_plan_->temp_size);
         }
 
         void forward(FloatType *in_buffer, std::complex<FloatType> *out_buffer) {
-            fft_plan->execute(out_buffer, in_buffer, temp_buffer.data());
+            fft_plan_->execute(out_buffer, in_buffer, temp_buffer_.data());
         }
 
         void forward(FloatType *in_buffer, FloatType *float_out_buffer) {
@@ -32,7 +32,7 @@ namespace zldsp::fft {
         }
 
         void backward(std::complex<FloatType> *out_buffer, FloatType *in_buffer) {
-            fft_plan->execute(in_buffer, out_buffer, temp_buffer.data());
+            fft_plan_->execute(in_buffer, out_buffer, temp_buffer_.data());
         }
 
         void backward(FloatType *float_out_buffer, FloatType *in_buffer) {
@@ -43,17 +43,16 @@ namespace zldsp::fft {
         void forwardMagnitudeOnly(FloatType *buffer) {
             forward(buffer, buffer);
             auto *out = reinterpret_cast<std::complex<FloatType> *>(buffer);
-            for (size_t i = 0; i < (fft_size / 2) + 1; ++i) {
+            for (size_t i = 0; i < (fft_size_ / 2) + 1; ++i) {
                 buffer[i] = std::abs(out[i]);
             }
         }
 
-        [[nodiscard]] size_t getSize() const { return fft_size; }
+        [[nodiscard]] size_t getSize() const { return fft_size_; }
 
     private:
-        size_t fft_size{0};
-        FloatType scale{};
-        std::unique_ptr<kfr::dft_plan_real<FloatType> > fft_plan;
-        kfr::univector<kfr::u8> temp_buffer;
+        size_t fft_size_{0};
+        std::unique_ptr<kfr::dft_plan_real<FloatType> > fft_plan_;
+        kfr::univector<kfr::u8> temp_buffer_;
     };
 }

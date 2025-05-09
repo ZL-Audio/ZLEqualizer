@@ -74,9 +74,9 @@ namespace zlpanel {
         juce::SpinLock curveLock, shadowLock, dynLock;
 
         size_t idx;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
-        zlp::Controller<double> &controllerRef;
+        zlp::Controller<double> &controller_ref;
         zlpanel::ResetAttach resetAttach;
         zldsp::filter::Ideal<double, 16> &baseF, &targetF, &mainF;
 

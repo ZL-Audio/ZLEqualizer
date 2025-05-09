@@ -16,22 +16,22 @@ PluginProcessor::PluginProcessor()
           .withInput("Input", juce::AudioChannelSet::stereo(), true)
           .withInput("Aux", juce::AudioChannelSet::stereo(), true)
           .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-      ), dummyProcessor(),
+      ), dummy_processor(),
       parameters(*this, nullptr,
                  juce::Identifier("ZLEqualizerParameters"),
                  zlp::getParameterLayout()),
-      parametersNA(dummyProcessor, nullptr,
+      parameters_NA(dummy_processor, nullptr,
                    juce::Identifier("ZLEqualizerParametersNA"),
                    zlstate::getNAParameterLayout()),
-      state(dummyProcessor, nullptr,
+      state(dummy_processor, nullptr,
             juce::Identifier("ZLEqualizerState"),
             zlstate::getStateParameterLayout()),
       property(state),
       controller(*this, zlstate::ffTOrder::orders[
                      static_cast<size_t>(state.getRawParameterValue(zlstate::ffTOrder::ID)->load())]),
-      filtersAttach(*this, parameters, parametersNA, controller),
+      filtersAttach(*this, parameters, parameters_NA, controller),
       soloAttach(*this, parameters, controller),
-      choreAttach(*this, parameters, parametersNA, controller) {
+      choreAttach(*this, parameters, parameters_NA, controller) {
 }
 
 PluginProcessor::~PluginProcessor() = default;
@@ -299,7 +299,7 @@ juce::AudioProcessorEditor *PluginProcessor::createEditor() {
 void PluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
     auto tempTree = juce::ValueTree("ZLEqualizerParaState");
     tempTree.appendChild(parameters.copyState(), nullptr);
-    tempTree.appendChild(parametersNA.copyState(), nullptr);
+    tempTree.appendChild(parameters_NA.copyState(), nullptr);
     const std::unique_ptr<juce::XmlElement> xml(tempTree.createXml());
     copyXmlToBinary(*xml, destData);
 }
@@ -309,7 +309,7 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
     if (xmlState != nullptr && xmlState->hasTagName("ZLEqualizerParaState")) {
         const auto tempTree = juce::ValueTree::fromXml(*xmlState);
         parameters.replaceState(tempTree.getChildWithName(parameters.state.getType()));
-        parametersNA.replaceState(tempTree.getChildWithName(parametersNA.state.getType()));
+        parameters_NA.replaceState(tempTree.getChildWithName(parameters_NA.state.getType()));
     }
 }
 

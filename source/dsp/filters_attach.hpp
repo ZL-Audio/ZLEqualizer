@@ -37,9 +37,9 @@ namespace zlp {
         void updateSideFQ(size_t idx);
 
     private:
-        juce::AudioProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
-        Controller<FloatType> &controllerRef;
+        juce::AudioProcessor &processor_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        Controller<FloatType> &controller_ref;
         std::array<zldsp::filter::DynamicIIR<FloatType, Controller<FloatType>::FilterSize>, bandNUM> &filtersRef;
         std::array<std::string, bandNUM * 2> sideParaNames;
         std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, bandNUM> sideFreqUpdater, sideQUpdater;

@@ -13,9 +13,9 @@ namespace zlp {
     template<typename FloatType>
     SoloAttach<FloatType>::SoloAttach(juce::AudioProcessor &processor,
                                       juce::AudioProcessorValueTreeState &parameters,
-                                      Controller<FloatType> &controller) : processorRef(processor),
-                                                                           parameterRef(parameters),
-                                                                           controllerRef(controller) {
+                                      Controller<FloatType> &controller) : processor_ref(processor),
+                                                                           parameters_ref(parameters),
+                                                                           controller_ref(controller) {
         for (size_t i = 0; i < bandNUM; ++i) {
             const auto suffix = zlp::appendSuffix("", i);
             mainSoloUpdater[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, solo::ID + suffix);
@@ -30,7 +30,7 @@ namespace zlp {
         for (size_t i = 0; i < bandNUM; ++i) {
             const auto suffix = zlp::appendSuffix("", i);
             for (auto &ID: IDs) {
-                parameterRef.removeParameterListener(ID + suffix, this);
+                parameters_ref.removeParameterListener(ID + suffix, this);
             }
         }
     }
@@ -40,7 +40,7 @@ namespace zlp {
         for (size_t i = 0; i < bandNUM; ++i) {
             const auto suffix = zlp::appendSuffix("", i);
             for (auto &ID: IDs) {
-                parameterRef.addParameterListener(ID + suffix, this);
+                parameters_ref.addParameterListener(ID + suffix, this);
             }
         }
     }
@@ -61,13 +61,13 @@ namespace zlp {
                     soloIdx.store(idx);
                     soloIsSide.store(isSide);
                 }
-                controllerRef.setSolo(idx, isSide);
+                controller_ref.setSolo(idx, isSide);
             } else {
-                controllerRef.clearSolo(idx, isSide);
+                controller_ref.clearSolo(idx, isSide);
             }
         } else {
-            if (controllerRef.getSolo() && idx == soloIdx.load()) {
-                controllerRef.setSolo(soloIdx.load(), soloIsSide.load());
+            if (controller_ref.getSolo() && idx == soloIdx.load()) {
+                controller_ref.setSolo(soloIdx.load(), soloIsSide.load());
             }
         }
     }

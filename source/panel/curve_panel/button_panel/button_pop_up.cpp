@@ -68,13 +68,13 @@ namespace zlpanel {
 
     ButtonPopUp::ButtonPopUp(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA, zlgui::UIBase &base)
-        : band{bandIdx}, parametersRef(parameters), parametersNARef(parametersNA),
+        : band{bandIdx}, parameters_ref(parameters), parameters_NA_ref(parametersNA),
           uiBase(base),
-          fType(*parametersRef.getRawParameterValue(zlp::appendSuffix(zlp::fType::ID, band))),
-          freqPara(*parametersRef.getRawParameterValue(zlp::appendSuffix(zlp::freq::ID, band))),
+          fType(*parameters_ref.getRawParameterValue(zlp::appendSuffix(zlp::fType::ID, band))),
+          freqPara(*parameters_ref.getRawParameterValue(zlp::appendSuffix(zlp::freq::ID, band))),
           background(bandIdx, parameters, parametersNA, base),
           pitchLabel(base, parameters.getParameter(zlp::appendSuffix(zlp::freq::ID, bandIdx))) {
-        juce::ignoreUnused(parametersRef, parametersNARef);
+        juce::ignoreUnused(parameters_ref, parameters_NA_ref);
 
         addAndMakeVisible(background);
         addAndMakeVisible(pitchLabel);
@@ -107,8 +107,8 @@ namespace zlpanel {
         const auto shiftYPortion = shiftY / (compParentBound.getHeight() - uiBase.getFontSize()) * 2;
 
         switch (static_cast<zldsp::filter::FilterType>(fType.load())) {
-            case zldsp::filter::FilterType::peak:
-            case zldsp::filter::FilterType::bandShelf: {
+            case zldsp::filter::FilterType::kPeak:
+            case zldsp::filter::FilterType::kBandShelf: {
                 if (direction > 0.f) {
                     if (shiftYPortion > .5f || (shiftYPortion < -0.1f && shiftYPortion > -0.4f)) {
                         direction = -1.f;
@@ -120,9 +120,9 @@ namespace zlpanel {
                 }
                 break;
             }
-            case zldsp::filter::FilterType::lowShelf:
-            case zldsp::filter::FilterType::highShelf:
-            case zldsp::filter::FilterType::tiltShelf: {
+            case zldsp::filter::FilterType::kLowShelf:
+            case zldsp::filter::FilterType::kHighShelf:
+            case zldsp::filter::FilterType::kTiltShelf: {
                 if (direction > 0.f && shiftYPortion < -0.2f) {
                     direction = -1.f;
                 } else if (direction < 0.f && shiftYPortion > 0.2f) {
@@ -130,10 +130,10 @@ namespace zlpanel {
                 }
                 break;
             }
-            case zldsp::filter::FilterType::notch:
-            case zldsp::filter::FilterType::lowPass:
-            case zldsp::filter::FilterType::highPass:
-            case zldsp::filter::FilterType::bandPass: {
+            case zldsp::filter::FilterType::kNotch:
+            case zldsp::filter::FilterType::kLowPass:
+            case zldsp::filter::FilterType::kHighPass:
+            case zldsp::filter::FilterType::kBandPass: {
                 direction = -1.f;
                 break;
             }

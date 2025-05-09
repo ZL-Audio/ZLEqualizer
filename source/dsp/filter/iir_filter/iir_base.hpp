@@ -40,18 +40,18 @@ namespace zldsp::filter {
         IIRBase() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
-            s1.resize(spec.numChannels);
-            s2.resize(spec.numChannels);
+            s1_.resize(spec.numChannels);
+            s2_.resize(spec.numChannels);
             reset();
         }
 
         void reset() {
-            std::fill(s1.begin(), s1.end(), static_cast<SampleType>(0));
-            std::fill(s2.begin(), s2.end(), static_cast<SampleType>(0));
+            std::fill(s1_.begin(), s1_.end(), static_cast<SampleType>(0));
+            std::fill(s2_.begin(), s2_.end(), static_cast<SampleType>(0));
         }
 
         void snapToZero() {
-            for (auto v: {&s1, &s2}) {
+            for (auto v: {&s1_, &s2_}) {
                 for (auto &element: *v) {
                     juce::dsp::util::snapToZero(element);
                 }
@@ -60,31 +60,31 @@ namespace zldsp::filter {
 
         template<typename ProcessContext>
         void process(const ProcessContext &context) noexcept {
-            const auto &inputBlock = context.getInputBlock();
-            auto &outputBlock = context.getOutputBlock();
-            const auto numChannels = outputBlock.getNumChannels();
-            const auto numSamples = outputBlock.getNumSamples();
+            const auto &input_block = context.getInputBlock();
+            auto &output_block = context.getOutputBlock();
+            const auto num_channels = output_block.getNumChannels();
+            const auto num_samples = output_block.getNumSamples();
 
-            jassert(inputBlock.getNumChannels() <= s1.size());
-            jassert(inputBlock.getNumChannels() == numChannels);
-            jassert(inputBlock.getNumSamples() == numSamples);
+            jassert(input_block.getNumChannels() <= s1_.size());
+            jassert(input_block.getNumChannels() == num_channels);
+            jassert(input_block.getNumSamples() == num_samples);
 
             if (context.isBypassed) {
                 if (context.usesSeparateInputAndOutputBlocks()) {
-                    outputBlock.copyFrom(inputBlock);
+                    output_block.copyFrom(input_block);
                 }
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    auto *inputSamples = inputBlock.getChannelPointer(channel);
-                    for (size_t i = 0; i < numSamples; ++i) {
-                        processSample(channel, inputSamples[i]);
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    auto *input_samples = input_block.getChannelPointer(channel);
+                    for (size_t i = 0; i < num_samples; ++i) {
+                        processSample(channel, input_samples[i]);
                     }
                 }
             } else {
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    auto *inputSamples = inputBlock.getChannelPointer(channel);
-                    auto *outputSamples = outputBlock.getChannelPointer(channel);
-                    for (size_t i = 0; i < numSamples; ++i) {
-                        outputSamples[i] = processSample(channel, inputSamples[i]);
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    auto *input_samples = input_block.getChannelPointer(channel);
+                    auto *output_samples = output_block.getChannelPointer(channel);
+                    for (size_t i = 0; i < num_samples; ++i) {
+                        output_samples[i] = processSample(channel, input_samples[i]);
                     }
                 }
             }
@@ -95,23 +95,23 @@ namespace zldsp::filter {
         }
 
         SampleType processSample(const size_t channel, SampleType inputValue) {
-            const auto outputValue = inputValue * mCoeff[0] + s1[channel];
-            s1[channel] = (inputValue * mCoeff[1]) - (outputValue * mCoeff[3]) + s2[channel];
-            s2[channel] = (inputValue * mCoeff[2]) - (outputValue * mCoeff[4]);
+            const auto outputValue = inputValue * coeff_[0] + s1_[channel];
+            s1_[channel] = (inputValue * coeff_[1]) - (outputValue * coeff_[3]) + s2_[channel];
+            s2_[channel] = (inputValue * coeff_[2]) - (outputValue * coeff_[4]);
             return outputValue;
         }
 
         void updateFromBiquad(const std::array<double, 6> &coeff) {
-            const auto a0Inv = 1.0 / coeff[0];
-            mCoeff[0] = static_cast<SampleType>(coeff[3] * a0Inv);
-            mCoeff[1] = static_cast<SampleType>(coeff[4] * a0Inv);
-            mCoeff[2] = static_cast<SampleType>(coeff[5] * a0Inv);
-            mCoeff[3] = static_cast<SampleType>(coeff[1] * a0Inv);
-            mCoeff[4] = static_cast<SampleType>(coeff[2] * a0Inv);
+            const auto a0_inv = 1.0 / coeff[0];
+            coeff_[0] = static_cast<SampleType>(coeff[3] * a0_inv);
+            coeff_[1] = static_cast<SampleType>(coeff[4] * a0_inv);
+            coeff_[2] = static_cast<SampleType>(coeff[5] * a0_inv);
+            coeff_[3] = static_cast<SampleType>(coeff[1] * a0_inv);
+            coeff_[4] = static_cast<SampleType>(coeff[2] * a0_inv);
         }
 
     private:
-        std::array<SampleType, 5> mCoeff{0, 0, 0, 0, 0};
-        std::vector<SampleType> s1, s2;
+        std::array<SampleType, 5> coeff_{0, 0, 0, 0, 0};
+        std::vector<SampleType> s1_, s2_;
     };
 }

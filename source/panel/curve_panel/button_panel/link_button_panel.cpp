@@ -15,7 +15,7 @@ namespace zlpanel {
                                      juce::AudioProcessorValueTreeState &parametersNA,
                                      zlgui::UIBase &base,
                                      zlgui::Dragger &sideDragger)
-        : parametersRef(parameters), parametersNARef(parametersNA),
+        : parameters_ref(parameters), parameters_NA_ref(parametersNA),
           uiBase(base),
           sideDraggerRef(sideDragger),
           dynLinkC("L", base),
@@ -30,12 +30,12 @@ namespace zlpanel {
 
         for (auto &ID: IDs) {
             const auto suffixID = zlp::appendSuffix(ID, idx);
-            parametersRef.addParameterListener(suffixID, this);
-            parameterChanged(suffixID, parametersRef.getRawParameterValue(suffixID)->load());
+            parameters_ref.addParameterListener(suffixID, this);
+            parameterChanged(suffixID, parameters_ref.getRawParameterValue(suffixID)->load());
         }
         for (auto &ID: NAIDs) {
-            parametersNARef.addParameterListener(ID, this);
-            parameterChanged(ID, parametersNARef.getRawParameterValue(ID)->load());
+            parameters_NA_ref.addParameterListener(ID, this);
+            parameterChanged(ID, parameters_NA_ref.getRawParameterValue(ID)->load());
         }
         setInterceptsMouseClicks(false, true);
     }
@@ -43,10 +43,10 @@ namespace zlpanel {
     LinkButtonPanel::~LinkButtonPanel() {
         const auto idx = bandIdx.load();
         for (auto &ID: IDs) {
-            parametersRef.removeParameterListener(zlp::appendSuffix(ID, idx), this);
+            parameters_ref.removeParameterListener(zlp::appendSuffix(ID, idx), this);
         }
         for (auto &ID: NAIDs) {
-            parametersNARef.removeParameterListener(ID, this);
+            parameters_NA_ref.removeParameterListener(ID, this);
         }
     }
 
@@ -73,7 +73,7 @@ namespace zlpanel {
     void LinkButtonPanel::mouseDoubleClick(const juce::MouseEvent &event) {
         if (event.mods.isCommandDown() && event.mods.isRightButtonDown()) {
             const auto currentBand = bandIdx.load();
-            auto *para = parametersRef.getParameter(
+            auto *para = parameters_ref.getParameter(
                 zlp::appendSuffix(zlp::sideSolo::ID, currentBand));
             para->beginChangeGesture();
             if (para->getValue() < 0.5f) {

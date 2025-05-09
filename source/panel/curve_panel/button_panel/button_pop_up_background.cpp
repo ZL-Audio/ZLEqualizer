@@ -11,7 +11,7 @@
 
 namespace zlpanel {
     ButtonPopUpBackground::ButtonPopUpBackground(size_t bandIdx, juce::AudioProcessorValueTreeState &parameters, juce::AudioProcessorValueTreeState &parametersNA, zlgui::UIBase &base)
-        : band{bandIdx}, parametersRef(parameters), parametersNARef(parametersNA),
+        : band{bandIdx}, parameters_ref(parameters), parameters_NA_ref(parametersNA),
           uiBase(base),
           bypassC("B", base),
           soloC("S", base),
@@ -21,7 +21,7 @@ namespace zlpanel {
           fTypeC("", zlp::fType::choices, base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           button(base, drawable.get()) {
-        juce::ignoreUnused(parametersNARef);
+        juce::ignoreUnused(parameters_NA_ref);
         bypassC.getLAF().enableShadow(false);
         bypassC.getLAF().setReverse(true);
         soloC.getLAF().enableShadow(false);
@@ -35,7 +35,7 @@ namespace zlpanel {
                    zlp::appendSuffix(zlp::bypass::ID, bandIdx),
                    zlp::appendSuffix(zlp::solo::ID, bandIdx)
                },
-               parametersRef, buttonAttachments);
+               parameters_ref, buttonAttachments);
 
         bypassC.getButton().onClick = [this]() {
             const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
@@ -44,9 +44,9 @@ namespace zlpanel {
             for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
                     const auto activeID = zlstate::appendSuffix(zlp::bypass::ID, idx);
-                    parametersRef.getParameter(activeID)->beginChangeGesture();
-                    parametersRef.getParameter(activeID)->setValueNotifyingHost(isByPassed);
-                    parametersRef.getParameter(activeID)->endChangeGesture();
+                    parameters_ref.getParameter(activeID)->beginChangeGesture();
+                    parameters_ref.getParameter(activeID)->setValueNotifyingHost(isByPassed);
+                    parameters_ref.getParameter(activeID)->endChangeGesture();
                 }
             }
         };
@@ -57,7 +57,7 @@ namespace zlpanel {
         }
         attach({&fTypeC.getBox()},
                {zlp::appendSuffix(zlp::fType::ID, bandIdx)},
-               parametersRef, boxAttachments);
+               parameters_ref, boxAttachments);
 
         button.getButton().onClick = [this]() {
             const auto currentBand = band;
@@ -65,9 +65,9 @@ namespace zlpanel {
             for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
                     const auto activeID = zlstate::appendSuffix(zlstate::active::ID, idx);
-                    parametersNARef.getParameter(activeID)->beginChangeGesture();
-                    parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
-                    parametersNARef.getParameter(activeID)->endChangeGesture();
+                    parameters_NA_ref.getParameter(activeID)->beginChangeGesture();
+                    parameters_NA_ref.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
+                    parameters_NA_ref.getParameter(activeID)->endChangeGesture();
                 }
             }
         };

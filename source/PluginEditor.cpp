@@ -11,12 +11,12 @@
 
 PluginEditor::PluginEditor(PluginProcessor &p)
     : AudioProcessorEditor(&p),
-      processorRef(p),
+      processor_ref(p),
       property(p.property),
       uiBase(p.state),
       mainPanel(p, uiBase) {
     for (auto &ID: IDs) {
-        processorRef.state.addParameterListener(ID, this);
+        processor_ref.state.addParameterListener(ID, this);
     }
     // set font
     const auto sourceCodePro = juce::Typeface::createSystemTypefaceFor(
@@ -44,7 +44,7 @@ PluginEditor::PluginEditor(PluginProcessor &p)
 PluginEditor::~PluginEditor() {
     vblank.reset();
     for (auto &ID: IDs) {
-        processorRef.state.removeParameterListener(ID, this);
+        processor_ref.state.removeParameterListener(ID, this);
     }
 
     stopTimer();
@@ -79,7 +79,7 @@ void PluginEditor::parameterChanged(const juce::String &parameterID, float newVa
 }
 
 void PluginEditor::handleAsyncUpdate() {
-    property.saveAPVTS(processorRef.state);
+    property.saveAPVTS(processor_ref.state);
     if (!isSizeChanged.exchange(false)) {
         sendLookAndFeelChange();
     }

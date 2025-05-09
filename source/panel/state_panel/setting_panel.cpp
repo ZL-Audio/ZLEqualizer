@@ -14,10 +14,10 @@
 namespace zlpanel {
     SettingPanel::SettingPanel(PluginProcessor &p, zlgui::UIBase &base,
                                const juce::String &label, zlgui::boxIdx idx)
-        : parametersRef(p.parameters),
-          parametersNARef(p.parametersNA),
+        : parameters_ref(p.parameters),
+          parameters_NA_ref(p.parameters_NA),
           uiBase(base), name(label), mIdx(idx) {
-        juce::ignoreUnused(parametersRef, parametersNARef);
+        juce::ignoreUnused(parameters_ref, parameters_NA_ref);
         setBufferedToImage(true);
 
         uiBase.getBoxTree().addListener(this);

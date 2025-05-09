@@ -41,14 +41,14 @@ namespace zldsp::filter {
                 response[idx] *= getResponse(coeff, wis[idx]);
             }
             for (size_t idx = startMix; idx < endMix; ++idx) {
-                auto singleResponse = getResponse(coeff, wis[idx]);
-                singleResponse = std::polar<SampleType>(std::abs(singleResponse), std::arg(singleResponse) * mix[idx]);
-                response[idx] *= singleResponse;
+                auto single_response = getResponse(coeff, wis[idx]);
+                single_response = std::polar<SampleType>(std::abs(single_response), std::arg(single_response) * mix[idx]);
+                response[idx] *= single_response;
             }
             for (size_t idx = endMix; idx < wis.size(); ++idx) {
-                auto singleResponse = getResponse(coeff, wis[idx]);
-                singleResponse = std::polar<SampleType>(std::abs(singleResponse), SampleType(0));
-                response[idx] *= singleResponse;
+                auto single_response = getResponse(coeff, wis[idx]);
+                single_response = std::polar<SampleType>(std::abs(single_response), SampleType(0));
+                response[idx] *= single_response;
             }
         }
 

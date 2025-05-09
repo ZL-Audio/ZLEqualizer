@@ -15,8 +15,8 @@ namespace zlp {
                                             juce::AudioProcessorValueTreeState &parameters,
                                             juce::AudioProcessorValueTreeState &parametersNA,
                                             Controller<FloatType> &controller)
-        : processorRef(processor), parameterRef(parameters), parameterNARef(parametersNA),
-          controllerRef(controller), filtersRef(controller.getFilters()) {
+        : processor_ref(processor), parameters_ref(parameters), parameters_NA_ref(parametersNA),
+          controller_ref(controller), filtersRef(controller.getFilters()) {
         addListeners();
         initDefaultValues();
         for (size_t i = 0; i < bandNUM; ++i) {
@@ -33,10 +33,10 @@ namespace zlp {
         for (size_t i = 0; i < bandNUM; ++i) {
             const auto suffix = appendSuffix("", i);
             for (auto &ID: IDs) {
-                parameterRef.removeParameterListener(ID + suffix, this);
+                parameters_ref.removeParameterListener(ID + suffix, this);
             }
         }
-        parameterNARef.removeParameterListener(zlstate::maximumDB::ID, this);
+        parameters_NA_ref.removeParameterListener(zlstate::maximumDB::ID, this);
     }
 
     template<typename FloatType>
@@ -44,52 +44,52 @@ namespace zlp {
         for (size_t i = 0; i < bandNUM; ++i) {
             const auto suffix = appendSuffix("", i);
             for (auto &ID: IDs) {
-                parameterRef.addParameterListener(ID + suffix, this);
+                parameters_ref.addParameterListener(ID + suffix, this);
             }
-            parameterNARef.addParameterListener(zlstate::active::ID + suffix, this);
+            parameters_NA_ref.addParameterListener(zlstate::active::ID + suffix, this);
         }
-        parameterNARef.addParameterListener(zlstate::maximumDB::ID, this);
+        parameters_NA_ref.addParameterListener(zlstate::maximumDB::ID, this);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::turnOnDynamic(const size_t idx) {
         updateTargetFGQ(idx);
         updateSideFQ(idx);
-        const auto paraDynBypass = parameterRef.getParameter(zlp::appendSuffix(dynamicBypass::ID, idx));
+        const auto paraDynBypass = parameters_ref.getParameter(zlp::appendSuffix(dynamicBypass::ID, idx));
         updateParaNotifyHost(paraDynBypass, 0.f);
-        const auto paraDynLearn = parameterRef.getParameter(zlp::appendSuffix(dynamicLearn::ID, idx));
+        const auto paraDynLearn = parameters_ref.getParameter(zlp::appendSuffix(dynamicLearn::ID, idx));
         updateParaNotifyHost(paraDynLearn, 1.f);
-        const auto paraThreshold = parameterRef.getParameter(zlp::appendSuffix(threshold::ID, idx));
+        const auto paraThreshold = parameters_ref.getParameter(zlp::appendSuffix(threshold::ID, idx));
         updateParaNotifyHost(paraThreshold, .5f);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::turnOffDynamic(const size_t idx) {
-        controllerRef.setDynamicON(false, idx);
-        const auto paraDynBypass = parameterRef.getParameter(zlp::appendSuffix(dynamicBypass::ID, idx));
+        controller_ref.setDynamicON(false, idx);
+        const auto paraDynBypass = parameters_ref.getParameter(zlp::appendSuffix(dynamicBypass::ID, idx));
         updateParaNotifyHost(paraDynBypass, 1.f);
-        const auto paraDynLearn = parameterRef.getParameter(zlp::appendSuffix(dynamicLearn::ID, idx));
+        const auto paraDynLearn = parameters_ref.getParameter(zlp::appendSuffix(dynamicLearn::ID, idx));
         updateParaNotifyHost(paraDynLearn, 0.f);
-        const auto paraDynRelative = parameterRef.getParameter(zlp::appendSuffix(dynamicRelative::ID, idx));
+        const auto paraDynRelative = parameters_ref.getParameter(zlp::appendSuffix(dynamicRelative::ID, idx));
         updateParaNotifyHost(paraDynRelative, 0.f);
-        const auto paraSideSwap = parameterRef.getParameter(zlp::appendSuffix(sideSwap::ID, idx));
+        const auto paraSideSwap = parameters_ref.getParameter(zlp::appendSuffix(sideSwap::ID, idx));
         updateParaNotifyHost(paraSideSwap, 0.f);
-        const auto paraSideSolo = parameterRef.getParameter(zlp::appendSuffix(sideSolo::ID, idx));
+        const auto paraSideSolo = parameters_ref.getParameter(zlp::appendSuffix(sideSolo::ID, idx));
         updateParaNotifyHost(paraSideSolo, 0.f);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::turnOnDynamicAuto(const size_t idx) {
-        const auto paraThreshold = parameterRef.getParameter(zlp::appendSuffix(threshold::ID, idx));
+        const auto paraThreshold = parameters_ref.getParameter(zlp::appendSuffix(threshold::ID, idx));
         updateParaNotifyHost(paraThreshold, .5f);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::updateTargetFGQ(const size_t idx) {
-        auto tGain = static_cast<float>(controllerRef.getBaseFilter(idx).getGain());
-        switch (controllerRef.getBaseFilter(idx).getFilterType()) {
-            case zldsp::filter::FilterType::peak:
-            case zldsp::filter::FilterType::bandShelf: {
+        auto tGain = static_cast<float>(controller_ref.getBaseFilter(idx).getGain());
+        switch (controller_ref.getBaseFilter(idx).getFilterType()) {
+            case zldsp::filter::FilterType::kPeak:
+            case zldsp::filter::FilterType::kBandShelf: {
                 const auto maxDB = maximumDB.load();
                 if (tGain < -maxDB * .5f) {
                     tGain = juce::jlimit(-maxDB, maxDB, tGain -= maxDB * .125f);
@@ -102,9 +102,9 @@ namespace zlp {
                 }
                 break;
             }
-            case zldsp::filter::FilterType::lowShelf:
-            case zldsp::filter::FilterType::highShelf:
-            case zldsp::filter::FilterType::tiltShelf: {
+            case zldsp::filter::FilterType::kLowShelf:
+            case zldsp::filter::FilterType::kHighShelf:
+            case zldsp::filter::FilterType::kTiltShelf: {
                 if (tGain < 0) {
                     tGain += maximumDB.load() * .25f;
                 } else {
@@ -112,27 +112,27 @@ namespace zlp {
                 }
                 break;
             }
-            case zldsp::filter::FilterType::lowPass:
-            case zldsp::filter::FilterType::highPass:
-            case zldsp::filter::FilterType::notch:
-            case zldsp::filter::FilterType::bandPass:
+            case zldsp::filter::FilterType::kLowPass:
+            case zldsp::filter::FilterType::kHighPass:
+            case zldsp::filter::FilterType::kNotch:
+            case zldsp::filter::FilterType::kBandPass:
             default: {
                 break;
             }
         }
-        controllerRef.getTargetFilter(idx).setFreq(controllerRef.getBaseFilter(idx).getFreq());
-        controllerRef.getTargetFilter(idx).setFilterType(controllerRef.getBaseFilter(idx).getFilterType());
-        controllerRef.getTargetFilter(idx).setOrder(controllerRef.getBaseFilter(idx).getOrder());
-        const auto paraGain = parameterRef.getParameter(zlp::appendSuffix(targetGain::ID, idx));
+        controller_ref.getTargetFilter(idx).setFreq(controller_ref.getBaseFilter(idx).getFreq());
+        controller_ref.getTargetFilter(idx).setFilterType(controller_ref.getBaseFilter(idx).getFilterType());
+        controller_ref.getTargetFilter(idx).setOrder(controller_ref.getBaseFilter(idx).getOrder());
+        const auto paraGain = parameters_ref.getParameter(zlp::appendSuffix(targetGain::ID, idx));
         updateParaNotifyHost(paraGain, targetGain::convertTo01(tGain));
-        const auto paraQ = parameterRef.getParameter(zlp::appendSuffix(targetQ::ID, idx));
-        updateParaNotifyHost(paraQ, targetQ::convertTo01(static_cast<float>(controllerRef.getBaseFilter(idx).getQ())));
+        const auto paraQ = parameters_ref.getParameter(zlp::appendSuffix(targetQ::ID, idx));
+        updateParaNotifyHost(paraQ, targetQ::convertTo01(static_cast<float>(controller_ref.getBaseFilter(idx).getQ())));
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::updateSideFQ(const size_t idx) {
-        const auto &f{controllerRef.getBaseFilter(idx)};
-        auto [soloFreq, soloQ] = controllerRef.getSoloFilterParas(
+        const auto &f{controller_ref.getBaseFilter(idx)};
+        auto [soloFreq, soloQ] = controller_ref.getSoloFilterParas(
             f.getFilterType(), f.getFreq(), f.getQ());
         const auto soloFreq01 = sideFreq::convertTo01(static_cast<float>(soloFreq));
         const auto soloQ01 = sideQ::convertTo01(static_cast<float>(soloQ));
@@ -149,87 +149,87 @@ namespace zlp {
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
         auto value = static_cast<FloatType>(newValue);
         if (parameterID.startsWith(zlstate::active::ID)) {
-            controllerRef.setIsActive(idx, newValue > .5f);
+            controller_ref.setIsActive(idx, newValue > .5f);
         } else if (parameterID.startsWith(bypass::ID)) {
-            controllerRef.setBypass(idx, newValue > .5f);
+            controller_ref.setBypass(idx, newValue > .5f);
         } else if (parameterID.startsWith(fType::ID)) {
             const auto fType = static_cast<zldsp::filter::FilterType>(value);
-            controllerRef.getBaseFilter(idx).setFilterType(fType);
+            controller_ref.getBaseFilter(idx).setFilterType(fType);
             filtersRef[idx].getMainFilter().setFilterType(fType);
-            controllerRef.getTargetFilter(idx).setFilterType(fType);
-            controllerRef.getMainIdealFilter(idx).setFilterType(fType);
-            controllerRef.getMainIIRFilter(idx).setFilterType(fType);
+            controller_ref.getTargetFilter(idx).setFilterType(fType);
+            controller_ref.getMainIdealFilter(idx).setFilterType(fType);
+            controller_ref.getMainIIRFilter(idx).setFilterType(fType);
             if (sDynLink[idx].load()) {
                 updateSideFQ(idx);
             }
-            controllerRef.updateSgc(idx);
+            controller_ref.updateSgc(idx);
         } else if (parameterID.startsWith(slope::ID)) {
             const auto newOrder = slope::orderArray[static_cast<size_t>(value)];
-            controllerRef.getBaseFilter(idx).setOrder(newOrder);
+            controller_ref.getBaseFilter(idx).setOrder(newOrder);
             filtersRef[idx].getMainFilter().setOrder(newOrder);
-            controllerRef.getTargetFilter(idx).setOrder(newOrder);
-            controllerRef.getMainIdealFilter(idx).setOrder(newOrder);
-            controllerRef.getMainIIRFilter(idx).setOrder(newOrder);
+            controller_ref.getTargetFilter(idx).setOrder(newOrder);
+            controller_ref.getMainIdealFilter(idx).setOrder(newOrder);
+            controller_ref.getMainIIRFilter(idx).setOrder(newOrder);
         } else if (parameterID.startsWith(freq::ID)) {
-            controllerRef.getBaseFilter(idx).setFreq(value);
+            controller_ref.getBaseFilter(idx).setFreq(value);
             filtersRef[idx].getMainFilter().setFreq(value);
-            controllerRef.getTargetFilter(idx).setFreq(value);
-            controllerRef.getMainIdealFilter(idx).setFreq(value);
-            controllerRef.getMainIIRFilter(idx).setFreq(value);
+            controller_ref.getTargetFilter(idx).setFreq(value);
+            controller_ref.getMainIdealFilter(idx).setFreq(value);
+            controller_ref.getMainIIRFilter(idx).setFreq(value);
             if (sDynLink[idx].load()) {
                 updateSideFQ(idx);
             }
-            controllerRef.updateSgc(idx);
+            controller_ref.updateSgc(idx);
         } else if (parameterID.startsWith(gain::ID)) {
-            value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
+            value *= static_cast<FloatType>(scale::formatV(parameters_ref.getRawParameterValue(scale::ID)->load()));
             value = gain::range.snapToLegalValue(static_cast<float>(value));
-            controllerRef.getBaseFilter(idx).setGain(value);
+            controller_ref.getBaseFilter(idx).setGain(value);
             filtersRef[idx].getMainFilter().setGain(value);
-            controllerRef.getMainIdealFilter(idx).setGain(value);
-            controllerRef.getMainIIRFilter(idx).setGain(value);
-            controllerRef.updateSgc(idx);
+            controller_ref.getMainIdealFilter(idx).setGain(value);
+            controller_ref.getMainIIRFilter(idx).setGain(value);
+            controller_ref.updateSgc(idx);
         } else if (parameterID.startsWith(Q::ID)) {
-            controllerRef.getBaseFilter(idx).setQ(value);
+            controller_ref.getBaseFilter(idx).setQ(value);
             filtersRef[idx].getMainFilter().setQ(value);
-            controllerRef.getMainIdealFilter(idx).setQ(value);
-            controllerRef.getMainIIRFilter(idx).setQ(value);
+            controller_ref.getMainIdealFilter(idx).setQ(value);
+            controller_ref.getMainIIRFilter(idx).setQ(value);
             if (sDynLink[idx].load()) {
                 updateSideFQ(idx);
             }
-            controllerRef.updateSgc(idx);
+            controller_ref.updateSgc(idx);
         } else if (parameterID.startsWith(lrType::ID)) {
-            controllerRef.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
+            controller_ref.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
         } else if (parameterID.startsWith(dynamicON::ID)) {
-            controllerRef.setDynamicON(newValue > .5f, idx);
+            controller_ref.setDynamicON(newValue > .5f, idx);
         } else if (parameterID.startsWith(dynamicLearn::ID)) {
             const auto f = newValue > .5f;
-            if (!f && controllerRef.getLearningHistON(idx)) {
-                controllerRef.setLearningHistON(idx, false);
-                const auto &hist = controllerRef.getLearningHist(idx);
+            if (!f && controller_ref.getLearningHistON(idx)) {
+                controller_ref.setLearningHistON(idx, false);
+                const auto &hist = controller_ref.getLearningHist(idx);
                 const auto thresholdV = static_cast<float>(
-                    -hist.getPercentile(FloatType(0.5)) + controllerRef.getThreshold(idx) + FloatType(40));
+                    -hist.getPercentile(FloatType(0.5)) + controller_ref.getThreshold(idx) + FloatType(40));
                 const auto kneeV = static_cast<float>(
                                        hist.getPercentile(FloatType(0.95)) - hist.getPercentile(FloatType(0.05))
                                    ) / 120.f;
                 thresholdUpdater[idx]->update(threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)));
                 kneeUpdater[idx]->update(kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV)));
             } else {
-                controllerRef.setLearningHistON(idx, f);
+                controller_ref.setLearningHistON(idx, f);
             }
         } else if (parameterID.startsWith(dynamicBypass::ID)) {
             filtersRef[idx].setDynamicBypass(newValue > .5f);
         } else if (parameterID.startsWith(dynamicRelative::ID)) {
-            controllerRef.setRelative(idx, newValue > .5f);
+            controller_ref.setRelative(idx, newValue > .5f);
         } else if (parameterID.startsWith(sideSwap::ID)) {
-            controllerRef.setSideSwap(idx, newValue > .5f);
+            controller_ref.setSideSwap(idx, newValue > .5f);
         } else if (parameterID.startsWith(targetGain::ID)) {
-            value *= static_cast<FloatType>(scale::formatV(parameterRef.getRawParameterValue(scale::ID)->load()));
+            value *= static_cast<FloatType>(scale::formatV(parameters_ref.getRawParameterValue(scale::ID)->load()));
             value = targetGain::range.snapToLegalValue(static_cast<float>(value));
-            controllerRef.getTargetFilter(idx).setGain(value);
+            controller_ref.getTargetFilter(idx).setGain(value);
         } else if (parameterID.startsWith(targetQ::ID)) {
-            controllerRef.getTargetFilter(idx).setQ(value);
+            controller_ref.getTargetFilter(idx).setQ(value);
         } else if (parameterID.startsWith(threshold::ID)) {
-            controllerRef.setThreshold(idx, value);
+            controller_ref.setThreshold(idx, value);
             filtersRef[idx].getComputer().setThreshold(value);
         } else if (parameterID.startsWith(kneeW::ID)) {
             filtersRef[idx].getComputer().setKneeW(kneeW::formatV(value));

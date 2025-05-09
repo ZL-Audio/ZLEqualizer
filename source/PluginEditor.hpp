@@ -36,7 +36,7 @@ public:
     void minimisationStateChanged(bool isNowMinimised) override;
 
 private:
-    PluginProcessor &processorRef;
+    PluginProcessor &processor_ref;
     zlstate::Property &property;
     std::atomic<bool> isSizeChanged{false};
 

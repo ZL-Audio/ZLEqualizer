@@ -12,33 +12,33 @@
 namespace zldsp::delay {
     template<typename FloatType>
     void SampleDelay<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        delayDSP.prepare(spec);
-        sampleRate.store(spec.sampleRate);
-        delaySamples.store(static_cast<int>(static_cast<double>(delaySeconds.load()) * spec.sampleRate));
-        toUpdateDelay.store(true);
+        delay_dsp_.prepare(spec);
+        sample_rate_.store(spec.sampleRate);
+        delay_samples_.store(static_cast<int>(static_cast<double>(delay_seconds_.load()) * spec.sampleRate));
+        to_update_delay_.store(true);
     }
 
     template<typename FloatType>
     void SampleDelay<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        if (toUpdateDelay.exchange(false)) {
-            currentDelaySamples = delaySamples.load();
-            delayDSP.setDelay(static_cast<FloatType>(currentDelaySamples));
+        if (to_update_delay_.exchange(false)) {
+            c_delay_samples_ = delay_samples_.load();
+            delay_dsp_.setDelay(static_cast<FloatType>(c_delay_samples_));
         }
-        if (currentDelaySamples == 0) { return; }
+        if (c_delay_samples_ == 0) { return; }
         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
         juce::dsp::ProcessContextReplacing<FloatType> context(block);
-        delayDSP.process(context);
+        delay_dsp_.process(context);
     }
 
     template<typename FloatType>
     void SampleDelay<FloatType>::process(juce::dsp::AudioBlock<FloatType> block) {
-        if (toUpdateDelay.exchange(false)) {
-            currentDelaySamples = delaySamples.load();
-            delayDSP.setDelay(static_cast<FloatType>(currentDelaySamples));
+        if (to_update_delay_.exchange(false)) {
+            c_delay_samples_ = delay_samples_.load();
+            delay_dsp_.setDelay(static_cast<FloatType>(c_delay_samples_));
         }
-        if (currentDelaySamples == 0) { return; }
+        if (c_delay_samples_ == 0) { return; }
         juce::dsp::ProcessContextReplacing<FloatType> context(block);
-        delayDSP.process(context);
+        delay_dsp_.process(context);
     }
 
     template

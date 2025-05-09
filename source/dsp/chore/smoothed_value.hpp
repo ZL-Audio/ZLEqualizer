@@ -9,6 +9,9 @@
 
 #pragma once
 
+#include <cmath>
+#include <algorithm>
+
 namespace zldsp::chore {
     enum SmoothedTypes {
         Lin, Mul, FixLin, FixMul
@@ -29,115 +32,115 @@ namespace zldsp::chore {
             switch (SmoothedType) {
                 case Lin:
                 case Mul: {
-                    max_count = static_cast<int>(sampleRate * rampLengthInSeconds);
+                    max_count_ = static_cast<int>(sampleRate * rampLengthInSeconds);
                     break;
                 }
                 case FixLin: {
-                    inc = static_cast<FloatType>(1.0 / (sampleRate * rampLengthInSeconds));
-                    increase_inc = inc;
-                    decrease_inc = -inc;
+                    inc_ = static_cast<FloatType>(1.0 / (sampleRate * rampLengthInSeconds));
+                    increase_inc_ = inc_;
+                    decrease_inc_ = -inc_;
                     break;
                 }
                 case FixMul: {
-                    inc = static_cast<FloatType>(std::pow(2.0, 1.0 / (sampleRate * rampLengthInSeconds)));
-                    increase_inc = inc;
-                    decrease_inc = FloatType(1.0) / inc;
+                    inc_ = static_cast<FloatType>(std::pow(2.0, 1.0 / (sampleRate * rampLengthInSeconds)));
+                    increase_inc_ = inc_;
+                    decrease_inc_ = FloatType(1.0) / inc_;
                     break;
                 }
             }
         }
 
         void setTarget(const FloatType x) {
-            target = x;
-            if (std::abs(current - target) < FloatType(1e-10)) {
-                count = 0;
+            target_ = x;
+            if (std::abs(current_ - target_) < FloatType(1e-10)) {
+                count_ = 0;
                 return;
             }
             switch (SmoothedType) {
                 case Lin: {
-                    inc = (target - current) / static_cast<FloatType>(max_count);
-                    count = max_count;
+                    inc_ = (target_ - current_) / static_cast<FloatType>(max_count_);
+                    count_ = max_count_;
                     break;
                 }
                 case Mul: {
-                    inc = std::exp(std::log(target / current) / static_cast<FloatType>(max_count));
-                    count = max_count;
+                    inc_ = std::exp(std::log(target_ / current_) / static_cast<FloatType>(max_count_));
+                    count_ = max_count_;
                     break;
                 }
                 case FixLin:
                 case FixMul: {
-                    count = 1;
-                    is_increasing = target > current;
+                    count_ = 1;
+                    is_increasing_ = target_ > current_;
                     break;
                 }
             }
         }
 
         void setCurrentAndTarget(const FloatType x) {
-            current = x;
-            target = x;
-            count = 0;
+            current_ = x;
+            target_ = x;
+            count_ = 0;
         }
 
-        FloatType getCurrent() const { return current; }
+        FloatType getCurrent() const { return current_; }
 
-        FloatType getTarget() const { return target; }
+        FloatType getTarget() const { return target_; }
 
-        [[nodiscard]] bool isSmoothing() const { return count > 0; }
+        [[nodiscard]] bool isSmoothing() const { return count_ > 0; }
 
         FloatType getNext() {
-            if (count == 0) { return current; }
+            if (count_ == 0) { return current_; }
             switch (SmoothedType) {
                 case Lin: {
-                    current += inc;
-                    count -= 1;
-                    return current;
+                    current_ += inc_;
+                    count_ -= 1;
+                    return current_;
                 }
                 case Mul: {
-                    current *= inc;
-                    count -= 1;
-                    return current;
+                    current_ *= inc_;
+                    count_ -= 1;
+                    return current_;
                 }
                 case FixLin: {
-                    if (is_increasing) {
-                        current += increase_inc;
-                        if (current > target) {
-                            current = target;
-                            count = 0;
+                    if (is_increasing_) {
+                        current_ += increase_inc_;
+                        if (current_ > target_) {
+                            current_ = target_;
+                            count_ = 0;
                         }
                     } else {
-                        current += decrease_inc;
-                        if (current < target) {
-                            current = target;
-                            count = 0;
+                        current_ += decrease_inc_;
+                        if (current_ < target_) {
+                            current_ = target_;
+                            count_ = 0;
                         }
                     }
-                    return current;
+                    return current_;
                 }
                 case FixMul: {
-                    if (is_increasing) {
-                        current *= increase_inc;
-                        if (current > target) {
-                            current = target;
-                            count = 0;
+                    if (is_increasing_) {
+                        current_ *= increase_inc_;
+                        if (current_ > target_) {
+                            current_ = target_;
+                            count_ = 0;
                         }
                     } else {
-                        current *= decrease_inc;
-                        if (current < target) {
-                            current = target;
-                            count = 0;
+                        current_ *= decrease_inc_;
+                        if (current_ < target_) {
+                            current_ = target_;
+                            count_ = 0;
                         }
                     }
-                    return current;
+                    return current_;
                 }
-                default: return current;
+                default: return current_;
             }
         }
 
     private:
-        FloatType current{}, target{}, inc{};
-        FloatType increase_inc{}, decrease_inc{};
-        int max_count{}, count{};
-        bool is_increasing{};
+        FloatType current_{}, target_{}, inc_{};
+        FloatType increase_inc_{}, decrease_inc_{};
+        int max_count_{}, count_{};
+        bool is_increasing_{};
     };
 }

@@ -42,7 +42,7 @@ namespace zlpanel {
 
     private:
         zlgui::UIBase &uiBase;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zldsp::eq_match::EqMatchOptimizer<16> optimizer;
         std::array<std::atomic<float>, 251> &atomicDiffsRef;
         zlgui::CompactLinearSlider &slider;
@@ -62,7 +62,7 @@ namespace zlpanel {
                                       const juce::Identifier &property) override;
 
         void savePara(const std::string &id, const float x) const {
-            const auto para = parametersRef.getParameter(id);
+            const auto para = parameters_ref.getParameter(id);
             para->beginChangeGesture();
             para->setValueNotifyingHost(x);
             para->endChangeGesture();

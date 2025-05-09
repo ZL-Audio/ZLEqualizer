@@ -22,9 +22,9 @@ namespace zldsp::analyzer {
     template<typename FloatType>
     class ConflictAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
-        static constexpr size_t pointNum = 251;
+        static constexpr size_t kPointNum = 251;
 
-        explicit ConflictAnalyzer(size_t fftOrder = 12);
+        explicit ConflictAnalyzer(size_t fft_order = 12);
 
         ~ConflictAnalyzer() override;
 
@@ -33,7 +33,7 @@ namespace zldsp::analyzer {
         void prepareBuffer();
 
         void start() {
-            toReset.store(true);
+            to_reset_.store(true);
             startThread(juce::Thread::Priority::low);
         }
 
@@ -43,33 +43,33 @@ namespace zldsp::analyzer {
 
         void setON(bool x);
 
-        bool getON() const { return isON.load(); }
+        bool getON() const { return is_on_.load(); }
 
-        void setStrength(const FloatType x) { strength.store(x); }
+        void setStrength(const FloatType x) { strength_.store(x); }
 
-        void setConflictScale(const FloatType x) { conflictScale.store(x); }
+        void setConflictScale(const FloatType x) { conflict_scale_.store(x); }
 
         void process(juce::AudioBuffer<FloatType> &pre,
                      juce::AudioBuffer<FloatType> &post);
 
         void setLeftRight(const float left, const float right) {
-            x1.store(left);
-            x2.store(right);
+            x1_.store(left);
+            x2_.store(right);
         }
 
         void updateGradient(juce::ColourGradient &gradient);
 
-        MultipleFFTAnalyzer<FloatType, 2, pointNum> &getSyncFFT() { return syncAnalyzer; }
+        MultipleFFTAnalyzer<FloatType, 2, kPointNum> &getSyncFFT() { return sync_analyzer_; }
 
     private:
-        MultipleFFTAnalyzer<FloatType, 2, pointNum> syncAnalyzer;
-        std::atomic<FloatType> strength{.375f}, conflictScale{1.f};
-        std::atomic<bool> isON{false}, isConflictReady{false}, toReset{false};
-        bool currentIsON{false};
+        MultipleFFTAnalyzer<FloatType, 2, kPointNum> sync_analyzer_;
+        std::atomic<FloatType> strength_{.375f}, conflict_scale_{1.f};
+        std::atomic<bool> is_on_{false}, is_conflict_ready_{false}, to_reset_{false};
+        bool current_is_on_{false};
 
-        std::atomic<float> x1{0.f}, x2{1.f};
-        std::array<float, pointNum / 4> conflicts{};
-        std::array<std::atomic<float>, pointNum / 4> conflictsP{};
+        std::atomic<float> x1_{0.f}, x2_{1.f};
+        std::array<float, kPointNum / 4> conflicts_{};
+        std::array<std::atomic<float>, kPointNum / 4> conflicts_p_{};
 
         const juce::Colour gColour = juce::Colours::red;
 

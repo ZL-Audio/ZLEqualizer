@@ -28,7 +28,7 @@ namespace zlpanel {
         void attachGroup(size_t idx);
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
         const std::unique_ptr<juce::Drawable> drawable;
         zlgui::ClickButton button;

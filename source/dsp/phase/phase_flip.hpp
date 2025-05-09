@@ -11,6 +11,8 @@
 
 #include <juce_dsp/juce_dsp.h>
 
+#include "../vector/vector.hpp"
+
 namespace zldsp::phase {
     /**
      * phase-flip the input audio buffer
@@ -19,13 +21,29 @@ namespace zldsp::phase {
     template<typename FloatType>
     class PhaseFlip {
     public:
-        void process(juce::AudioBuffer<FloatType> &buffer);
+        void process(juce::AudioBuffer<FloatType> &buffer) {
+            if (is_on_.load()) {
+                const auto numSamples = static_cast<size_t>(buffer.getNumSamples());
+                const auto numChannels = buffer.getNumChannels();
+                for (int chan = 0; chan < numChannels; ++chan) {
+                    zldsp::vector::multiply(buffer.getWritePointer(chan), FloatType(-1.f), numSamples);
+                }
+            }
+        }
 
-        void process(juce::dsp::AudioBlock<FloatType> block);
+        void process(juce::dsp::AudioBlock<FloatType> block) {
+            if (is_on_.load()) {
+                const auto numSamples = block.getNumSamples();
+                const auto numChannels = block.getNumChannels();
+                for (size_t chan = 0; chan < numChannels; ++chan) {
+                    zldsp::vector::multiply(block.getChannelPointer(chan), FloatType(-1.f), numSamples);
+                }
+            }
+        }
 
-        void setON(const bool f) { isON.store(f); }
+        void setON(const bool f) { is_on_.store(f); }
 
     private:
-        std::atomic<bool> isON;
+        std::atomic<bool> is_on_;
     };
 } // zldsp::phase

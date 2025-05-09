@@ -20,37 +20,37 @@ namespace zldsp::container {
     class CircularBuffer {
     public:
         explicit CircularBuffer(const size_t capacity) {
-            data.resize(capacity);
+            data_.resize(capacity);
         }
 
-        [[nodiscard]] size_t capacity() const { return data.size(); }
+        [[nodiscard]] size_t capacity() const { return data_.size(); }
 
-        [[nodiscard]] size_t size() const { return static_cast<size_t>(currentNum); }
+        [[nodiscard]] size_t size() const { return static_cast<size_t>(c_num_); }
 
-        void set_capacity(const size_t capacity) {
-            data.resize(capacity);
+        void setCapacity(const size_t capacity) {
+            data_.resize(capacity);
         }
 
         void clear() {
-            std::fill(data.begin(), data.end(), T());
-            pos = 0;
-            currentNum = 0;
+            std::fill(data_.begin(), data_.end(), T());
+            pos_ = 0;
+            c_num_ = 0;
         }
 
-        void push_back(T x) {
-            data[static_cast<size_t>(pos)] = x;
-            pos = (pos + 1) % static_cast<int>(data.size());
-            currentNum = std::min(currentNum + 1, static_cast<int>(data.size()));
+        void pushBack(T x) {
+            data_[static_cast<size_t>(pos_)] = x;
+            pos_ = (pos_ + 1) % static_cast<int>(data_.size());
+            c_num_ = std::min(c_num_ + 1, static_cast<int>(data_.size()));
         }
 
-        T pop_front() {
-            const auto frontPos = (pos - currentNum + static_cast<int>(data.size())) % static_cast<int>(data.size());
-            currentNum -= 1;
-            return data[static_cast<size_t>(frontPos)];
+        T popFront() {
+            const auto front_pos = (pos_ - c_num_ + static_cast<int>(data_.size())) % static_cast<int>(data_.size());
+            c_num_ -= 1;
+            return data_[static_cast<size_t>(front_pos)];
         }
 
     private:
-        std::vector<T> data;
-        int pos = 0, currentNum = 0;
+        std::vector<T> data_;
+        int pos_ = 0, c_num_ = 0;
     };
 }

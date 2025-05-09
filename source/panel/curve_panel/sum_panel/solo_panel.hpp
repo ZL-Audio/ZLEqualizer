@@ -28,16 +28,16 @@ namespace zlpanel {
         void paint(juce::Graphics &g) override;
 
         void checkVisible() {
-            setVisible(controllerRef.getSolo());
+            setVisible(controller_ref.getSolo());
         }
 
         void turnOffSolo() const;
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
         zldsp::filter::IIR<double, zlp::Controller<double>::FilterSize> &soloF;
-        zlp::Controller<double> &controllerRef;
+        zlp::Controller<double> &controller_ref;
         ButtonPanel &buttonPanelRef;
         float currentX{0.}, currentBW{0.};
         double soloQ{0.};

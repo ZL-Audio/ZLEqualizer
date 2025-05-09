@@ -13,11 +13,11 @@ namespace zlpanel {
     MatchAnalyzerPanel::MatchAnalyzerPanel(zldsp::eq_match::EqMatchAnalyzer<double> &analyzer,
                                            juce::AudioProcessorValueTreeState &parametersNA,
                                            zlgui::UIBase &base)
-        : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base),
+        : analyzerRef(analyzer), parameters_NA_ref(parametersNA), uiBase(base),
           lowDragger(base), highDragger(base), shiftDragger(base),
           matchLabel(base) {
-        parametersNARef.addParameterListener(zlstate::maximumDB::ID, this);
-        parameterChanged(zlstate::maximumDB::ID, parametersNARef.getRawParameterValue(zlstate::maximumDB::ID)->load());
+        parameters_NA_ref.addParameterListener(zlstate::maximumDB::ID, this);
+        parameterChanged(zlstate::maximumDB::ID, parameters_NA_ref.getRawParameterValue(zlstate::maximumDB::ID)->load());
         setInterceptsMouseClicks(true, true);
         uiBase.getValueTree().addListener(this); {
             lowDragger.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::rightArrow);
@@ -47,7 +47,7 @@ namespace zlpanel {
 
     MatchAnalyzerPanel::~MatchAnalyzerPanel() {
         uiBase.getValueTree().removeListener(this);
-        parametersNARef.removeParameterListener(zlstate::maximumDB::ID, this);
+        parameters_NA_ref.removeParameterListener(zlstate::maximumDB::ID, this);
     }
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {

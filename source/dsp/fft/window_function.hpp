@@ -27,27 +27,27 @@ namespace zldsp::fft {
                 tempWindow.resize(size + 1);
                 juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(
                     tempWindow.data(), size + 1, method, normalise, beta);
-                window.resize(size);
-                zldsp::vector::copy(window.data(), tempWindow.data(), size);
+                window_.resize(size);
+                zldsp::vector::copy(window_.data(), tempWindow.data(), size);
             } else {
-                window.resize(size);
+                window_.resize(size);
                 juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(
-                    window.data(), size, method, normalise, beta);
+                    window_.data(), size, method, normalise, beta);
             }
-            window = window * scale;
+            window_ = window_ * scale;
         }
 
         void multiply(FloatType *buffer, size_t num_samples) {
             auto vector = kfr::make_univector(buffer, num_samples);
-            auto window_v = kfr::make_univector(window.data(), num_samples);
+            auto window_v = kfr::make_univector(window_.data(), num_samples);
             vector = vector * window_v;
         }
 
         void multiply(kfr::univector<FloatType> &buffer) {
-            buffer = buffer * window;
+            buffer = buffer * window_;
         }
 
     private:
-        kfr::univector<FloatType> window;
+        kfr::univector<FloatType> window_;
     };
 }

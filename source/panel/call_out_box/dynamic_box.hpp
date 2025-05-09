@@ -16,7 +16,7 @@ namespace zlpanel {
     class DynamicBox final : public juce::Component, private juce::ValueTree::Listener {
     public:
         explicit DynamicBox(juce::AudioProcessorValueTreeState &parameters, zlgui::UIBase &base)
-            : parametersRef(parameters),
+            : parameters_ref(parameters),
               uiBase(base),
               lookaheadS("Lookahead", uiBase, zlgui::multilingual::labels::lookahead),
               rmsS("RMS", uiBase, zlgui::multilingual::labels::rms),
@@ -31,7 +31,7 @@ namespace zlpanel {
                    {
                        zlp::dynLookahead::ID, zlp::dynRMS::ID, zlp::dynSmooth::ID
                    },
-                   parametersRef, sliderAttachments);
+                   parameters_ref, sliderAttachments);
             for (auto &c: {&dynHQC}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.5f);
@@ -44,7 +44,7 @@ namespace zlpanel {
                    {
                        zlp::dynHQ::ID
                    },
-                   parametersRef, boxAttachments);
+                   parameters_ref, boxAttachments);
             setBufferedToImage(true);
             uiBase.getBoxTree().addListener(this);
         }
@@ -92,7 +92,7 @@ namespace zlpanel {
         }
 
     private:
-        juce::AudioProcessorValueTreeState &parametersRef;
+        juce::AudioProcessorValueTreeState &parameters_ref;
         zlgui::UIBase &uiBase;
 
         zlgui::CompactLinearSlider lookaheadS, rmsS, smoothS;

@@ -31,7 +31,7 @@ public:
 
     private:
         size_t band;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
 
         std::atomic<float> width{7.7916666f}, height{4.16667f};

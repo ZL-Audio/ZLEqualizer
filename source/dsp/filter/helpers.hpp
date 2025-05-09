@@ -19,27 +19,27 @@ namespace zldsp::filter {
     constexpr static double ppi = 2 * std::numbers::pi;
 
     enum FilterType {
-        peak, lowShelf, lowPass, highShelf, highPass,
-        notch, bandPass, tiltShelf, bandShelf,
+        kPeak, kLowShelf, kLowPass, kHighShelf, kHighPass,
+        kNotch, kBandPass, kTiltShelf, kBandShelf,
     };
 
     enum FilterStructure {
-        iir, svf, parallel
+        kIIR, kSVF, kParallel
     };
 
-    inline double dot_product(const std::array<double, 3> &x, const std::array<double, 3> &y) {
+    inline double dotProduct(const std::array<double, 3> &x, const std::array<double, 3> &y) {
         return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
     }
 
-    inline double gain_to_db(const double gain) {
+    inline double gainToDB(const double gain) {
         return std::log10(std::max(std::abs(gain), 1e-16)) * 20;
     }
 
-    inline double db_to_gain(const double db) {
+    inline double dbToGain(const double db) {
         return std::pow(10, db * 0.05);
     }
 
-    inline std::array<double, 2> get_bandwidth(const double w0, const double q) {
+    inline std::array<double, 2> getBandwidth(const double w0, const double q) {
         const auto bw = 2 * std::asinh(0.5 / q) / std::log(2);
         const auto scale = std::pow(2, bw / 2);
         return {w0 / scale, w0 * scale};

@@ -26,9 +26,9 @@ namespace zlp {
         void addListeners();
 
     private:
-        juce::AudioProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
-        Controller<FloatType> &controllerRef;
+        juce::AudioProcessor &processor_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        Controller<FloatType> &controller_ref;
         std::atomic<float> decaySpeed;
         std::array<std::atomic<int>, 3> isFFTON{1, 1, 0};
 

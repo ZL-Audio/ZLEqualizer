@@ -11,7 +11,7 @@
 
 namespace zldsp::filter {
     /** stl does not support constexpr log/pow, np.logspace(1, np.log10(22000), 800) */
-    constexpr std::array<double, 800> frequencies = {
+    constexpr std::array<double, 800> kFrequencies = {
         1.00000000e+01, 1.00967885e+01, 1.01945137e+01, 1.02931849e+01,
         1.03928110e+01, 1.04934014e+01, 1.05949654e+01, 1.06975125e+01,
         1.08010521e+01, 1.09055938e+01, 1.10111473e+01, 1.11177225e+01,

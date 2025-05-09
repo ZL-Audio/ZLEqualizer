@@ -12,13 +12,13 @@
 namespace zlp {
     template<typename FloatType>
     Controller<FloatType>::Controller(juce::AudioProcessor &processor, const size_t fftOrder)
-        : processorRef(processor),
+        : processor_ref(processor),
           fftAnalyzer(fftOrder), conflictAnalyzer(fftOrder), matchAnalyzer(13) {
         for (size_t i = 0; i < bandNUM; ++i) {
             histograms[i].setDecayRate(FloatType(0.99999));
             subHistograms[i].setDecayRate(FloatType(0.9995));
         }
-        soloFilter.setFilterStructure(zldsp::filter::FilterStructure::svf);
+        soloFilter.setFilterStructure(zldsp::filter::FilterStructure::kSVF);
     }
 
     template<typename FloatType>
@@ -87,7 +87,7 @@ namespace zlp {
             f.prepareResponseSize(linearFilters[0].getCorrectionSize());
         }
 
-        soloFilter.setFilterType(zldsp::filter::FilterType::bandPass);
+        soloFilter.setFilterType(zldsp::filter::FilterType::kBandPass);
         soloFilter.prepare(subSpec);
 
         lrMainSplitter.prepare(subSpec);
@@ -577,15 +577,15 @@ namespace zlp {
             currentLatency += static_cast<int>(subBuffer.getLatencySamples());
         }
         currentLatency += latency.load();
-        processorRef.setLatencySamples(currentLatency);
+        processor_ref.setLatencySamples(currentLatency);
     }
 
     template<typename FloatType>
     std::tuple<FloatType, FloatType> Controller<FloatType>::getSoloFilterParas(
         const zldsp::filter::FilterType fType, const FloatType freq, const FloatType q) {
         switch (fType) {
-            case zldsp::filter::FilterType::highPass:
-            case zldsp::filter::FilterType::lowShelf: {
+            case zldsp::filter::FilterType::kHighPass:
+            case zldsp::filter::FilterType::kLowShelf: {
                 auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(freq));
                 auto scale = soloFreq;
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
@@ -594,8 +594,8 @@ namespace zlp {
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
             }
-            case zldsp::filter::FilterType::lowPass:
-            case zldsp::filter::FilterType::highShelf: {
+            case zldsp::filter::FilterType::kLowPass:
+            case zldsp::filter::FilterType::kHighShelf: {
                 auto soloFreq = static_cast<FloatType>(
                     std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(freq));
                 auto scale = soloFreq / freq;
@@ -605,13 +605,13 @@ namespace zlp {
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
             }
-            case zldsp::filter::FilterType::tiltShelf: {
+            case zldsp::filter::FilterType::kTiltShelf: {
                 return {freq, FloatType(0.025)};
             }
-            case zldsp::filter::FilterType::peak:
-            case zldsp::filter::FilterType::notch:
-            case zldsp::filter::FilterType::bandPass:
-            case zldsp::filter::FilterType::bandShelf:
+            case zldsp::filter::FilterType::kPeak:
+            case zldsp::filter::FilterType::kNotch:
+            case zldsp::filter::FilterType::kBandPass:
+            case zldsp::filter::FilterType::kBandShelf:
             default: {
                 return {freq, q};
             }
@@ -773,25 +773,25 @@ namespace zlp {
         switch (currentFilterStructure) {
             case filterStructure::minimum: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zldsp::filter::FilterStructure::iir);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::kIIR);
                 }
                 break;
             }
             case filterStructure::svf: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zldsp::filter::FilterStructure::svf);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::kSVF);
                 }
                 break;
             }
             case filterStructure::parallel: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zldsp::filter::FilterStructure::parallel);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::kParallel);
                 }
                 break;
             }
             case filterStructure::matched: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zldsp::filter::FilterStructure::iir);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::kIIR);
                 }
                 for (auto &f: mainIIRs) {
                     f.setToUpdate();
@@ -806,7 +806,7 @@ namespace zlp {
             }
             case filterStructure::mixed: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zldsp::filter::FilterStructure::iir);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::kIIR);
                 }
                 for (auto &f: mainIIRs) {
                     f.setToUpdate();

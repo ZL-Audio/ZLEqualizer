@@ -39,17 +39,17 @@ namespace zlpanel {
             auto item = &iterator.getItem();
             if (item->itemID == 1) {
                 item->setAction([this] {
-                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::matchSide);
+                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::kMatchSide);
                 });
             } else if (item->itemID == 2) {
                 item->setAction([this] {
                     loadFromPreset();
-                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::matchPreset);
+                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::kMatchPreset);
                 });
             } else if (item->itemID == 3) {
                 item->setAction([this] {
                     analyzer.setTargetSlope(0.f);
-                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::matchSlope);
+                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::kMatchSlope);
                 });
             }
         }
@@ -188,7 +188,7 @@ namespace zlpanel {
         matchRunner.setNumBand(static_cast<size_t>(8));
 
         sideChooseBox.getBox().setSelectedId(1, juce::dontSendNotification);
-        analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::MatchMode::matchSide);
+        analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::MatchMode::kMatchSide);
 
         fitAlgoBox.getBox().setSelectedId(2, juce::dontSendNotification);
         matchRunner.setMode(static_cast<size_t>(1));

@@ -86,10 +86,10 @@ namespace zlpanel {
         std::array<std::unique_ptr<FilterButtonPanel>, zlstate::bandNUM> panels;
         std::array<std::unique_ptr<LinkButtonPanel>, zlstate::bandNUM> linkButtons;
 
-        PluginProcessor &processorRef;
-        juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
+        PluginProcessor &processor_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
         zlgui::UIBase &uiBase;
-        zlp::Controller<double> &controllerRef;
+        zlp::Controller<double> &controller_ref;
 
         std::array<zlgui::SnappingSlider, 3> wheelSlider;
         std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>, 3> wheelAttachment;
@@ -111,8 +111,8 @@ namespace zlpanel {
         inline static float xtoFreq(const float x, const juce::Rectangle<float> bound) {
             const auto portion = (x - bound.getX()) / bound.getWidth();
             return std::exp(portion *
-                            static_cast<float>(std::log(zldsp::filter::frequencies.back() / zldsp::filter::frequencies.front())))
-                   * static_cast<float>(zldsp::filter::frequencies.front());
+                            static_cast<float>(std::log(zldsp::filter::kFrequencies.back() / zldsp::filter::kFrequencies.front())))
+                   * static_cast<float>(zldsp::filter::kFrequencies.front());
         }
 
         inline static float yToDB(const float y, const float maxDB, const juce::Rectangle<float> bound) {

@@ -12,16 +12,16 @@
 namespace zldsp::buffer {
     template<typename FloatType>
     FixedAudioBuffer<FloatType>::FixedAudioBuffer(int subBufferSize) :
-            input_buffer(2, 441), output_buffer(2, 441),
-            sub_spec{44100, 441, 2},
-            main_spec{44100, 441, 2} {
+            input_buffer_(2, 441), output_buffer_(2, 441),
+            sub_spec_{44100, 441, 2},
+            main_spec_{44100, 441, 2} {
         setSubBufferSize(subBufferSize);
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::clear() {
-        input_buffer.clear();
-        output_buffer.clear();
+        input_buffer_.clear();
+        output_buffer_.clear();
         subBuffer.clear();
     }
 
@@ -29,73 +29,73 @@ namespace zldsp::buffer {
     void FixedAudioBuffer<FloatType>::setSubBufferSize(int subBufferSize) {
         clear();
         // init internal spec
-        sub_spec = main_spec;
-        sub_spec.maximumBlockSize = static_cast<juce::uint32>(subBufferSize);
-        if (sub_spec.maximumBlockSize > 1) {
-            latency_in_samples.store(sub_spec.maximumBlockSize);
+        sub_spec_ = main_spec_;
+        sub_spec_.maximumBlockSize = static_cast<juce::uint32>(subBufferSize);
+        if (sub_spec_.maximumBlockSize > 1) {
+            latency_in_samples_.store(sub_spec_.maximumBlockSize);
         } else {
-            latency_in_samples.store(0);
+            latency_in_samples_.store(0);
         }
         // resize subBuffer, inputBuffer and outputBuffer
-        subBuffer.setSize(static_cast<int>(sub_spec.numChannels),
-                          static_cast<int>(sub_spec.maximumBlockSize));
-        input_buffer.setSize(static_cast<int>(main_spec.numChannels),
-                            static_cast<int>(main_spec.maximumBlockSize) + subBufferSize);
-        output_buffer.setSize(static_cast<int>(main_spec.numChannels),
-                             static_cast<int>(main_spec.maximumBlockSize) + subBufferSize);
+        subBuffer.setSize(static_cast<int>(sub_spec_.numChannels),
+                          static_cast<int>(sub_spec_.maximumBlockSize));
+        input_buffer_.setSize(static_cast<int>(main_spec_.numChannels),
+                            static_cast<int>(main_spec_.maximumBlockSize) + subBufferSize);
+        output_buffer_.setSize(static_cast<int>(main_spec_.numChannels),
+                             static_cast<int>(main_spec_.maximumBlockSize) + subBufferSize);
         // put latency samples
         if (subBufferSize > 1) {
-            juce::AudioBuffer<FloatType> zeroBuffer(input_buffer.getNumChannels(), subBufferSize);
+            juce::AudioBuffer<FloatType> zeroBuffer(input_buffer_.getNumChannels(), subBufferSize);
             for (int channel = 0; channel < zeroBuffer.getNumChannels(); ++channel) {
                 auto *channelData = zeroBuffer.getWritePointer(channel);
                 for (int index = 0; index < subBufferSize; ++index) {
                     channelData[index] = 0;
                 }
             }
-            input_buffer.push(zeroBuffer, subBufferSize);
+            input_buffer_.push(zeroBuffer, subBufferSize);
         }
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::prepare(juce::dsp::ProcessSpec spec) {
-        main_spec = spec;
+        main_spec_ = spec;
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::pushBuffer(juce::AudioBuffer<FloatType> &buffer) {
-        input_buffer.push(buffer);
+        input_buffer_.push(buffer);
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::pushBlock(juce::dsp::AudioBlock<FloatType> block) {
-        input_buffer.push(block);
+        input_buffer_.push(block);
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::popSubBuffer() {
-        input_buffer.pop(subBuffer);
+        input_buffer_.pop(subBuffer);
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::pushSubBuffer() {
-        output_buffer.push(subBuffer);
+        output_buffer_.push(subBuffer);
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::popBuffer(juce::AudioBuffer<FloatType> &buffer, bool write) {
         if (write) {
-            output_buffer.pop(buffer);
+            output_buffer_.pop(buffer);
         } else {
-            output_buffer.pop(buffer.getNumSamples());
+            output_buffer_.pop(buffer.getNumSamples());
         }
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::popBlock(juce::dsp::AudioBlock<FloatType> block, bool write) {
         if (write) {
-            output_buffer.pop(block);
+            output_buffer_.pop(block);
         } else {
-            output_buffer.pop(static_cast<int>(block.getNumSamples()));
+            output_buffer_.pop(static_cast<int>(block.getNumSamples()));
         }
     }
 

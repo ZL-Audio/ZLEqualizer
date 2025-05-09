@@ -11,42 +11,42 @@
 
 namespace zldsp::eq_match {
     template<typename FloatType>
-    EqMatchAnalyzer<FloatType>::EqMatchAnalyzer(const size_t fftOrder)
-        : Thread("eq_match_analyzer"), fftAnalyzer(fftOrder) {
-        std::fill(mainDBs.begin(), mainDBs.end(), 0.f);
-        std::fill(targetDBs.begin(), targetDBs.end(), 0.f);
-        std::fill(diffs.begin(), diffs.end(), 0.f);
+    EqMatchAnalyzer<FloatType>::EqMatchAnalyzer(const size_t fft_order)
+        : Thread("eq_match_analyzer"), fft_analyzer_(fft_order) {
+        std::fill(main_dbs_.begin(), main_dbs_.end(), 0.f);
+        std::fill(target_dbs_.begin(), target_dbs_.end(), 0.f);
+        std::fill(diffs_.begin(), diffs_.end(), 0.f);
         updateSmooth();
         clearDrawingDiffs();
     }
 
     template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        fftAnalyzer.prepare(spec);
+        fft_analyzer_.prepare(spec);
     }
 
     template<typename FloatType>
-    void EqMatchAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &bBuffer,
-                                             juce::AudioBuffer<FloatType> &tBuffer) {
-        if (isON.load()) {
-            fftAnalyzer.process({bBuffer, tBuffer});
+    void EqMatchAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &b_buffer,
+                                             juce::AudioBuffer<FloatType> &t_buffer) {
+        if (is_on_.load()) {
+            fft_analyzer_.process({b_buffer, t_buffer});
         }
     }
 
     template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::setON(const bool x) {
-        if (x != isON.load()) {
+        if (x != is_on_.load()) {
             if (x) {
-                fftAnalyzer.setON(0, true);
-                fftAnalyzer.setON(1, true);
-                isON.store(true);
+                fft_analyzer_.setON(0, true);
+                fft_analyzer_.setON(1, true);
+                is_on_.store(true);
                 if (!isThreadRunning()) {
                     startThread(Priority::low);
                 }
             } else {
-                isON.store(false);
-                fftAnalyzer.setON(0, false);
-                fftAnalyzer.setON(1, false);
+                is_on_.store(false);
+                fft_analyzer_.setON(0, false);
+                fft_analyzer_.setON(1, false);
                 if (isThreadRunning()) {
                     stopThread(-1);
                 }
@@ -56,14 +56,14 @@ namespace zldsp::eq_match {
 
     template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::reset() {
-        fftAnalyzer.reset();
+        fft_analyzer_.reset();
     }
 
     template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::run() {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
-            fftAnalyzer.run();
+            fft_analyzer_.run();
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
         }
@@ -76,25 +76,25 @@ namespace zldsp::eq_match {
 
     template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::setTargetSlope(const float x) {
-        const float tiltShiftTotal = (fftAnalyzer.maxFreqLog2 - fftAnalyzer.minFreqLog2) * x;
-        const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(pointNum - 1);
+        const float tiltShiftTotal = (fft_analyzer_.kMaxFreqLog2 - fft_analyzer_.kMinFreqLog2) * x;
+        const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(kPointNum - 1);
         float tiltShift = -tiltShiftTotal * .5f;
-        if (toUpdateFromLoadDBs.load() == false) {
-            for (size_t i = 0; i < loadDBs.size(); i++) {
-                loadDBs[i] = tiltShift;
+        if (to_update_from_load_.load() == false) {
+            for (size_t i = 0; i < load_dbs_.size(); i++) {
+                load_dbs_[i] = tiltShift;
                 tiltShift += tiltShiftDelta;
             }
-            toUpdateFromLoadDBs.store(true);
+            to_update_from_load_.store(true);
         }
     }
 
     template<typename FloatType>
-    void EqMatchAnalyzer<FloatType>::setTargetPreset(const std::array<float, pointNum> &dBs) {
-        if (toUpdateFromLoadDBs.load() == false) {
-            for (size_t i = 0; i < dBs.size(); i++) {
-                loadDBs[i] = dBs[i];
+    void EqMatchAnalyzer<FloatType>::setTargetPreset(const std::array<float, kPointNum> &dbs) {
+        if (to_update_from_load_.load() == false) {
+            for (size_t i = 0; i < dbs.size(); i++) {
+                load_dbs_[i] = dbs[i];
             }
-            toUpdateFromLoadDBs.store(true);
+            to_update_from_load_.store(true);
         }
     }
 
@@ -104,83 +104,83 @@ namespace zldsp::eq_match {
                                                  const std::array<float, 3> minDBs) {
         // update mainDBs and targetDBs
         {
-            mainDBs = fftAnalyzer.getInterplotDBs(0);
-            const auto maxDB = *std::max_element(mainDBs.begin(), mainDBs.end());
-            for (auto &dB: mainDBs) {
-                dB -= maxDB;
+            main_dbs_ = fft_analyzer_.getInterplotDBs(0);
+            const auto max_db = *std::max_element(main_dbs_.begin(), main_dbs_.end());
+            for (auto &dB: main_dbs_) {
+                dB -= max_db;
             }
         }
-        if (mMode.load() == MatchMode::matchSide) {
-            targetDBs = fftAnalyzer.getInterplotDBs(1);
-            const auto maxDB = *std::max_element(targetDBs.begin(), targetDBs.end());
-            for (auto &dB: targetDBs) {
-                dB -= maxDB;
+        if (mode_.load() == MatchMode::kMatchSide) {
+            target_dbs_ = fft_analyzer_.getInterplotDBs(1);
+            const auto max_db = *std::max_element(target_dbs_.begin(), target_dbs_.end());
+            for (auto &dB: target_dbs_) {
+                dB -= max_db;
             }
-        } else if (toUpdateFromLoadDBs.load()) {
-            targetDBs = loadDBs;
-            toUpdateFromLoadDBs.store(false);
+        } else if (to_update_from_load_.load()) {
+            target_dbs_ = load_dbs_;
+            to_update_from_load_.store(false);
         }
         // calculate original diffs
-        for (size_t i = 0; i < pointNum; ++i) {
-            originalDiffs[i + smoothKernel.size() / 2] = targetDBs[i] - mainDBs[i];
+        for (size_t i = 0; i < kPointNum; ++i) {
+            original_diffs_[i + smooth_kernel_.size() / 2] = target_dbs_[i] - main_dbs_[i];
         }
         // pad original diffs
-        for (size_t i = 0; i < smoothKernel.size() / 2; ++i) {
-            originalDiffs[i] = originalDiffs[smoothKernel.size() / 2];
+        for (size_t i = 0; i < smooth_kernel_.size() / 2; ++i) {
+            original_diffs_[i] = original_diffs_[smooth_kernel_.size() / 2];
         }
-        for (size_t i = pointNum + smoothKernel.size() / 2; i < originalDiffs.size(); ++i) {
-            originalDiffs[i] = originalDiffs[pointNum + smoothKernel.size() / 2 - 1];
+        for (size_t i = kPointNum + smooth_kernel_.size() / 2; i < original_diffs_.size(); ++i) {
+            original_diffs_[i] = original_diffs_[kPointNum + smooth_kernel_.size() / 2 - 1];
         }
         // update smooth and slope
         updateSmooth();
         // apply smooth
-        std::fill(diffs.begin(), diffs.end(), 0.f);
-        for (size_t i = 0; i < pointNum; ++i) {
-            for (size_t j = 0; j < smoothKernel.size(); ++j) {
-                diffs[i] += originalDiffs[i + j] * smoothKernel[j];
+        std::fill(diffs_.begin(), diffs_.end(), 0.f);
+        for (size_t i = 0; i < kPointNum; ++i) {
+            for (size_t j = 0; j < smooth_kernel_.size(); ++j) {
+                diffs_[i] += original_diffs_[i + j] * smooth_kernel_[j];
             }
         }
         // apply slope
-        const auto slopeTotal = (fftAnalyzer.maxFreqLog2 - fftAnalyzer.minFreqLog2) * slope.load();
-        const float slopeDelta = slopeTotal / static_cast<float>(pointNum - 1);
-        float slopeShift = -slopeTotal * .5f;
-        for (size_t i = 0; i < pointNum; ++i) {
-            diffs[i] += slopeShift;
-            slopeShift += slopeDelta;
+        const auto slope_total = (fft_analyzer_.kMaxFreqLog2 - fft_analyzer_.kMinFreqLog2) * slope.load();
+        const float slope_delta = slope_total / static_cast<float>(kPointNum - 1);
+        float slope_shift = -slope_total * .5f;
+        for (size_t i = 0; i < kPointNum; ++i) {
+            diffs_[i] += slope_shift;
+            slope_shift += slope_delta;
         }
         // scale diffs
-        if (rescale < .99f) {
-            for (auto &diff: diffs) {
-                diff *= rescale;
+        if (rescale_ < .99f) {
+            for (auto &diff: diffs_) {
+                diff *= rescale_;
             }
         }
         // center diffs
-        const auto currentShift = shift.load();
-        const auto diffC = std::reduce(
-            diffs.begin(), diffs.end(), 0.f) / static_cast<float>(diffs.size()) - currentShift;
-        for (size_t i = 0; i < pointNum; ++i) {
-            diffs[i] = drawingFlag[i].load() ? drawingDiffs[i].load() + currentShift : diffs[i] - diffC;
+        const auto current_shift = shift.load();
+        const auto diff_c = std::reduce(
+            diffs_.begin(), diffs_.end(), 0.f) / static_cast<float>(diffs_.size()) - current_shift;
+        for (size_t i = 0; i < kPointNum; ++i) {
+            diffs_[i] = drawing_flag_[i].load() ? drawing_diffs_[i].load() + current_shift : diffs_[i] - diff_c;
         }
         // save to target
-        for (size_t i = 0; i < pointNum; ++i) {
-            atomicTargetDBs[i].store(targetDBs[i]);
-            atomicDiffs[i].store(diffs[i]);
+        for (size_t i = 0; i < kPointNum; ++i) {
+            atomic_target_dbs_[i].store(target_dbs_[i]);
+            atomic_diffs_[i].store(diffs_[i]);
         }
         // create paths
-        const float width = bound.getWidth(), height = bound.getHeight(), boundY = bound.getY();
+        const float width = bound.getWidth(), height = bound.getHeight(), bound_y = bound.getY();
         const std::array<juce::Path *, 3> paths{&mainP, &targetP, &diffP};
         for (const auto &p: paths) {
             p->clear();
         }
-        const std::array<std::array<float, pointNum> *, 3> dBs{&mainDBs, &targetDBs, &diffs};
+        const std::array<std::array<float, kPointNum> *, 3> dbs{&main_dbs_, &target_dbs_, &diffs_};
         for (size_t i = 0; i < 3; ++i) {
-            const auto y = (dBs[i]->at(0) / minDBs[i] + .5f) * height + boundY;
+            const auto y = (dbs[i]->at(0) / minDBs[i] + .5f) * height + bound_y;
             paths[i]->startNewSubPath(0.f, y);
         }
-        for (size_t idx = 1; idx < pointNum; ++idx) {
-            const auto x = static_cast<float>(idx) / static_cast<float>(pointNum - 1) * width;
+        for (size_t idx = 1; idx < kPointNum; ++idx) {
+            const auto x = static_cast<float>(idx) / static_cast<float>(kPointNum - 1) * width;
             for (size_t i = 0; i < 3; ++i) {
-                const auto y = (dBs[i]->at(idx) / minDBs[i] + .5f) * height + boundY;
+                const auto y = (dbs[i]->at(idx) / minDBs[i] + .5f) * height + bound_y;
                 paths[i]->lineTo(x, y);
             }
         }

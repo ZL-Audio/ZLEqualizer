@@ -17,26 +17,26 @@ namespace zlpanel {
                          zlgui::UIBase &base,
                          zlp::Controller<double> &controller,
                          ButtonPanel &buttonPanel)
-        : parametersRef(parameters), parametersNARef(parametersNA),
+        : parameters_ref(parameters), parameters_NA_ref(parametersNA),
           uiBase(base),
           soloF(controller.getSoloFilter()),
-          controllerRef(controller), buttonPanelRef(buttonPanel) {
-        juce::ignoreUnused(parametersRef, parametersNA);
-        parametersNARef.addParameterListener(zlstate::selectedBandIdx::ID, this);
+          controller_ref(controller), buttonPanelRef(buttonPanel) {
+        juce::ignoreUnused(parameters_ref, parametersNA);
+        parameters_NA_ref.addParameterListener(zlstate::selectedBandIdx::ID, this);
         for (size_t i = 0; i < zlp::bandNUM; ++i) {
             soloUpdaters.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
-                parametersRef, zlp::appendSuffix(zlp::solo::ID, i)));
+                parameters_ref, zlp::appendSuffix(zlp::solo::ID, i)));
             sideSoloUpdaters.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
-                parametersRef, zlp::appendSuffix(zlp::sideSolo::ID, i)));
+                parameters_ref, zlp::appendSuffix(zlp::sideSolo::ID, i)));
         }
         selectBandIdx.store(static_cast<size_t>(
-            parametersNARef.getRawParameterValue(zlstate::selectedBandIdx::ID)->load()));
+            parameters_NA_ref.getRawParameterValue(zlstate::selectedBandIdx::ID)->load()));
         handleAsyncUpdate();
     }
 
     SoloPanel::~SoloPanel() {
         turnOffSolo();
-        parametersNARef.removeParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref.removeParameterListener(zlstate::selectedBandIdx::ID, this);
     }
 
     void SoloPanel::paint(juce::Graphics &g) {
@@ -44,7 +44,7 @@ namespace zlpanel {
 
         g.setColour(uiBase.getTextColor().withAlpha(.1f));
         auto bound = getLocalBounds().toFloat();
-        if (controllerRef.getSoloIsSide()) {
+        if (controller_ref.getSoloIsSide()) {
             const auto x =  buttonPanelRef.getSideDragger(
                 selectBandIdx.load()).getButton().getBoundsInParent().toFloat().getCentreX();
             if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
@@ -65,27 +65,27 @@ namespace zlpanel {
                 currentX = x;
                 handleAsyncUpdate();
             }
-            const auto &f = controllerRef.getMainIdealFilter(bandIdx);
+            const auto &f = controller_ref.getMainIdealFilter(bandIdx);
             switch (f.getFilterType()) {
-                case zldsp::filter::highPass:
-                case zldsp::filter::lowShelf: {
+                case zldsp::filter::kHighPass:
+                case zldsp::filter::kLowShelf: {
                     bound.removeFromLeft(currentX);
                     g.fillRect(bound);
                     break;
                 }
-                case zldsp::filter::lowPass:
-                case zldsp::filter::highShelf: {
+                case zldsp::filter::kLowPass:
+                case zldsp::filter::kHighShelf: {
                     bound = bound.removeFromLeft(currentX);
                     g.fillRect(bound);
                     break;
                 }
-                case zldsp::filter::tiltShelf: {
+                case zldsp::filter::kTiltShelf: {
                     break;
                 }
-                case zldsp::filter::peak:
-                case zldsp::filter::bandShelf:
-                case zldsp::filter::bandPass:
-                case zldsp::filter::notch: {
+                case zldsp::filter::kPeak:
+                case zldsp::filter::kBandShelf:
+                case zldsp::filter::kBandPass:
+                case zldsp::filter::kNotch: {
                     const auto boundWidth = bound.getWidth();
                     const auto leftWidth = currentX - currentBW * boundWidth;
                     const auto rightWidth = boundWidth - currentX - currentBW * boundWidth;

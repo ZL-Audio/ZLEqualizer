@@ -18,38 +18,38 @@ namespace zldsp::loudness {
         LUFSMatcher() = default;
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
-            preLoudnessMeter.prepare(spec);
-            postLoudnessMeter.prepare(spec);
-            sampleRate = spec.sampleRate;
+            pre_loudness_meter_.prepare(spec);
+            post_loudness_meter_.prepare(spec);
+            sample_rate_ = spec.sampleRate;
             reset();
         }
 
         void reset() {
-            preLoudnessMeter.reset();
-            postLoudnessMeter.reset();
-            loudnessDiff.store(FloatType(0));
-            currentCount = 0.0;
+            pre_loudness_meter_.reset();
+            post_loudness_meter_.reset();
+            loudness_diff_.store(FloatType(0));
+            current_count_ = 0.0;
         }
 
         void process(juce::AudioBuffer<FloatType> &pre, juce::AudioBuffer<FloatType> &post) {
-            preLoudnessMeter.process(pre);
-            postLoudnessMeter.process(post);
-            currentCount += static_cast<double>(pre.getNumSamples());
-            if (currentCount >= sampleRate) {
-                currentCount -= sampleRate;
-                const auto preLoudness = preLoudnessMeter.getIntegratedLoudness();
-                const auto postLoudness = postLoudnessMeter.getIntegratedLoudness();
-                loudnessDiff.store(postLoudness - preLoudness);
+            pre_loudness_meter_.process(pre);
+            post_loudness_meter_.process(post);
+            current_count_ += static_cast<double>(pre.getNumSamples());
+            if (current_count_ >= sample_rate_) {
+                current_count_ -= sample_rate_;
+                const auto pre_loudness = pre_loudness_meter_.getIntegratedLoudness();
+                const auto post_loudness = post_loudness_meter_.getIntegratedLoudness();
+                loudness_diff_.store(post_loudness - pre_loudness);
             }
         }
 
         FloatType getDiff() const {
-            return loudnessDiff.load();
+            return loudness_diff_.load();
         }
 
     private:
-        LUFSMeter<FloatType, MaxChannels, UseLowPass> preLoudnessMeter, postLoudnessMeter;
-        std::atomic<FloatType> loudnessDiff{FloatType(0)};
-        double sampleRate{48000}, currentCount{0};
+        LUFSMeter<FloatType, MaxChannels, UseLowPass> pre_loudness_meter_, post_loudness_meter_;
+        std::atomic<FloatType> loudness_diff_{FloatType(0)};
+        double sample_rate_{48000}, current_count_{0};
     };
 }

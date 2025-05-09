@@ -29,33 +29,33 @@ namespace zldsp::filter {
         IIR() = default;
 
         void reset() {
-            if (toReset.exchange(false)) {
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    filters[i].reset();
+            if (to_reset_.exchange(false)) {
+                for (size_t i = 0; i < current_filter_num_; ++i) {
+                    filters_[i].reset();
                 }
-                for (size_t i = 0; i < currentFilterNum; ++i) {
-                    svfFilters[i].reset();
+                for (size_t i = 0; i < current_filter_num_; ++i) {
+                    svf_filters_[i].reset();
                 }
             }
         }
 
-        void setToRest() { toReset.store(true); }
+        void setToRest() { to_reset_.store(true); }
 
         void prepare(const juce::dsp::ProcessSpec &spec) {
-            processSpec = spec;
-            numChannels.store(spec.numChannels);
-            for (auto &f: filters) {
+            process_spec_ = spec;
+            num_channels_.store(spec.numChannels);
+            for (auto &f: filters_) {
                 f.prepare(spec);
             }
-            for (auto &f: svfFilters) {
+            for (auto &f: svf_filters_) {
                 f.prepare(spec);
             }
-            setOrder(order.load());
-            parallelBuffer.setSize(static_cast<int>(spec.numChannels),
+            setOrder(order_.load());
+            parallel_buffer_.setSize(static_cast<int>(spec.numChannels),
                                    static_cast<int>(spec.maximumBlockSize));
-            currentFreq.prepare(spec.sampleRate, 0.1);
-            currentGain.prepare(spec.sampleRate, 0.001);
-            currentQ.prepare(spec.sampleRate, 0.001);
+            c_freq_.prepare(spec.sampleRate, 0.1);
+            c_gain_.prepare(spec.sampleRate, 0.001);
+            c_q_.prepare(spec.sampleRate, 0.001);
         }
 
         /**
@@ -64,30 +64,30 @@ namespace zldsp::filter {
          * @param buffer
          */
         void processPre(juce::AudioBuffer<FloatType> &buffer) {
-            if (currentFilterStructure != filterStructure.load() || currentFilterType != filterType.load()) {
-                currentFilterStructure = filterStructure.load();
-                currentFilterType = filterType.load();
-                shouldBeParallel = (currentFilterType == FilterType::peak) || (
-                                       currentFilterType == FilterType::lowShelf) || (
-                                       currentFilterType == FilterType::highShelf) || (
-                                       currentFilterType == FilterType::bandShelf);
-                shouldNotBeParallel = !shouldBeParallel;
-                shouldBeParallel = shouldBeParallel && (currentFilterStructure == FilterStructure::parallel);
-                shouldNotBeParallel = shouldNotBeParallel && (currentFilterStructure == FilterStructure::parallel);
-                toReset.store(true);
+            if (c_filter_structure_ != filter_structure_.load() || current_filter_type_ != filter_type_.load()) {
+                c_filter_structure_ = filter_structure_.load();
+                current_filter_type_ = filter_type_.load();
+                should_be_parallel_ = (current_filter_type_ == FilterType::kPeak) || (
+                                       current_filter_type_ == FilterType::kLowShelf) || (
+                                       current_filter_type_ == FilterType::kHighShelf) || (
+                                       current_filter_type_ == FilterType::kBandShelf);
+                should_not_be_parallel_ = !should_be_parallel_;
+                should_be_parallel_ = should_be_parallel_ && (c_filter_structure_ == FilterStructure::kParallel);
+                should_not_be_parallel_ = should_not_be_parallel_ && (c_filter_structure_ == FilterStructure::kParallel);
+                to_reset_.store(true);
                 updateCoeffs();
             }
-            if (shouldBeParallel) {
-                parallelBuffer.makeCopyOf(buffer);
+            if (should_be_parallel_) {
+                parallel_buffer_.makeCopyOf(buffer);
             }
             reset();
-            if (toUpdatePara.exchange(false)) {
+            if (to_update_para_.exchange(false)) {
                 updateCoeffs();
             }
-            if (toUpdateFGQ.exchange(false)) {
-                currentFreq.setTarget(freq.load());
-                currentGain.setTarget(gain.load());
-                currentQ.setTarget(q.load());
+            if (to_update_fgq_.exchange(false)) {
+                c_freq_.setTarget(freq_.load());
+                c_gain_.setTarget(gain_.load());
+                c_q_.setTarget(q_.load());
             }
         }
 
@@ -96,60 +96,60 @@ namespace zldsp::filter {
          * for parallel filter, call it with the internal parallel buffer
          * @param buffer
          */
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void process(juce::AudioBuffer<FloatType> &buffer) {
-            const auto f1 = currentFreq.isSmoothing();
-            const auto f2 = currentGain.isSmoothing();
-            const auto f3 = currentQ.isSmoothing();
-            switch (currentFilterStructure) {
-                case FilterStructure::iir: {
+            const auto f1 = c_freq_.isSmoothing();
+            const auto f2 = c_gain_.isSmoothing();
+            const auto f3 = c_q_.isSmoothing();
+            switch (c_filter_structure_) {
+                case FilterStructure::kIIR: {
                     if (f1 || f2 || f3) {
-                        processIIR<isBypassed, true>(buffer);
+                        processIIR<IsBypassed, true>(buffer);
                     } else {
-                        processIIR<isBypassed, false>(buffer);
+                        processIIR<IsBypassed, false>(buffer);
                     }
                     break;
                 }
-                case FilterStructure::svf: {
+                case FilterStructure::kSVF: {
                     if (f1 || f2 || f3) {
-                        processSVF<isBypassed, true>(buffer);
+                        processSVF<IsBypassed, true>(buffer);
                     } else {
-                        processSVF<isBypassed, false>(buffer);
+                        processSVF<IsBypassed, false>(buffer);
                     }
                     break;
                 }
-                case FilterStructure::parallel: {
-                    if (shouldBeParallel) {
+                case FilterStructure::kParallel: {
+                    if (should_be_parallel_) {
                         auto block = juce::dsp::AudioBlock<FloatType>(buffer);
                         auto context = juce::dsp::ProcessContextReplacing<FloatType>(block);
-                        context.isBypassed = isBypassed;
+                        context.isBypassed = IsBypassed;
                         if (f2) {
-                            const auto multiplier0 = parallelMultiplier;
+                            const auto multiplier0 = parallel_multiplier_;
                             if (f1 || f3) {
-                                processIIR<isBypassed, true>(buffer);
+                                processIIR<IsBypassed, true>(buffer);
                             } else {
-                                processIIR<isBypassed, false>(buffer);
+                                processIIR<IsBypassed, false>(buffer);
                                 skipSmooth();
                             }
-                            const auto multiplier2 = parallelMultiplier;
+                            const auto multiplier2 = parallel_multiplier_;
                             const auto w = static_cast<FloatType>(buffer.getNumSamples() - 1) / static_cast<FloatType>(
                                                buffer.getNumSamples());
                             const auto multiplier1 = multiplier0 * w + multiplier2 * (FloatType(1) - w);
                             buffer.applyGainRamp(0, buffer.getNumSamples(), multiplier1, multiplier2);
                         } else {
                             if (f1 || f3) {
-                                processIIR<isBypassed, true>(buffer);
+                                processIIR<IsBypassed, true>(buffer);
                             } else {
-                                processIIR<isBypassed, false>(buffer);
+                                processIIR<IsBypassed, false>(buffer);
                             }
-                            buffer.applyGain(parallelMultiplier);
+                            buffer.applyGain(parallel_multiplier_);
                         }
                         break;
                     } else {
                         if (f1 || f2 || f3) {
-                            processIIR<isBypassed, true>(buffer);
+                            processIIR<IsBypassed, true>(buffer);
                         } else {
-                            processIIR<isBypassed, false>(buffer);
+                            processIIR<IsBypassed, false>(buffer);
                         }
                         break;
                     }
@@ -157,34 +157,34 @@ namespace zldsp::filter {
             }
         }
 
-        template<bool isBypassed = false, bool isSmooth = false>
+        template<bool IsBypassed = false, bool IsSmooth = false>
         void processIIR(juce::AudioBuffer<FloatType> &buffer) {
             const auto writerPointer = buffer.getArrayOfWritePointers();
             for (int i = 0; i < buffer.getNumSamples(); ++i) {
-                if (isSmooth) updateCoeffs();
+                if (IsSmooth) updateCoeffs();
                 for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
                     auto sample = *(writerPointer[channel] + i);
-                    for (size_t filterIdx = 0; filterIdx < currentFilterNum; ++filterIdx) {
-                        sample = filters[filterIdx].processSample(static_cast<size_t>(channel), sample);
+                    for (size_t filterIdx = 0; filterIdx < current_filter_num_; ++filterIdx) {
+                        sample = filters_[filterIdx].processSample(static_cast<size_t>(channel), sample);
                     }
-                    if (!isBypassed) {
+                    if (!IsBypassed) {
                         *(writerPointer[channel] + i) = sample;
                     }
                 }
             }
         }
 
-        template<bool isBypassed = false, bool isSmooth = false>
+        template<bool IsBypassed = false, bool IsSmooth = false>
         void processSVF(juce::AudioBuffer<FloatType> &buffer) {
             const auto writerPointer = buffer.getArrayOfWritePointers();
             for (int i = 0; i < buffer.getNumSamples(); ++i) {
-                if (isSmooth) updateCoeffs();
+                if (IsSmooth) updateCoeffs();
                 for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
                     auto sample = *(writerPointer[static_cast<size_t>(channel)] + i);
-                    for (size_t filterIdx = 0; filterIdx < currentFilterNum; ++filterIdx) {
-                        sample = svfFilters[filterIdx].processSample(static_cast<size_t>(channel), sample);
+                    for (size_t filterIdx = 0; filterIdx < current_filter_num_; ++filterIdx) {
+                        sample = svf_filters_[filterIdx].processSample(static_cast<size_t>(channel), sample);
                     }
-                    if (!isBypassed) {
+                    if (!IsBypassed) {
                         *(writerPointer[static_cast<size_t>(channel)] + i) = sample;
                     }
                 }
@@ -195,12 +195,12 @@ namespace zldsp::filter {
          * add the processed parallel buffer to the incoming audio buffer
          * @param buffer
          */
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void processParallelPost(juce::AudioBuffer<FloatType> &buffer) {
-            if (isBypassed) return;
+            if (IsBypassed) return;
             for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
                 auto *dest = buffer.getWritePointer(channel);
-                auto *source = parallelBuffer.getWritePointer(channel);
+                auto *source = parallel_buffer_.getWritePointer(channel);
                 for (size_t idx = 0; idx < static_cast<size_t>(buffer.getNumSamples()); ++idx) {
                     dest[idx] = dest[idx] + source[idx];
                 }
@@ -211,26 +211,26 @@ namespace zldsp::filter {
          * set the frequency of the filter
          * @param x frequency
          */
-        template<bool update = true, bool async = true, bool force = false>
+        template<bool Update = true, bool Async = true, bool Force = false>
         void setFreq(const FloatType x) {
-            if (async) {
-                freq.store(static_cast<double>(x));
-                if (update) { toUpdateFGQ.store(true); }
+            if (Async) {
+                freq_.store(static_cast<double>(x));
+                if (Update) { to_update_fgq_.store(true); }
             } else {
-                if (force) {
-                    currentFreq.setCurrentAndTarget(static_cast<double>(x));
+                if (Force) {
+                    c_freq_.setCurrentAndTarget(static_cast<double>(x));
                 } else {
-                    currentFreq.setTarget(static_cast<double>(x));
+                    c_freq_.setTarget(static_cast<double>(x));
                 }
             }
         }
 
-        template<bool async = true>
+        template<bool Async = true>
         FloatType getFreq() const {
-            if (async) {
-                return static_cast<FloatType>(freq.load());
+            if (Async) {
+                return static_cast<FloatType>(freq_.load());
             } else {
-                return static_cast<FloatType>(currentFreq.getCurrent());
+                return static_cast<FloatType>(c_freq_.getCurrent());
             }
         }
 
@@ -238,26 +238,26 @@ namespace zldsp::filter {
          * set the gain of the filter
          * @param x gain
          */
-        template<bool update = true, bool async = true, bool force = false>
+        template<bool Update = true, bool Async = true, bool Force = false>
         void setGain(const FloatType x) {
-            if (async) {
-                gain.store(static_cast<double>(x));
-                if (update) toUpdateFGQ.store(true);
+            if (Async) {
+                gain_.store(static_cast<double>(x));
+                if (Update) to_update_fgq_.store(true);
             } else {
-                if (force) {
-                    currentGain.setCurrentAndTarget(static_cast<double>(x));
+                if (Force) {
+                    c_gain_.setCurrentAndTarget(static_cast<double>(x));
                 } else {
-                    currentGain.setTarget(static_cast<double>(x));
+                    c_gain_.setTarget(static_cast<double>(x));
                 }
             }
         }
 
-        template<bool async = true>
+        template<bool Async = true>
         FloatType getGain() const {
-            if (async) {
-                return static_cast<FloatType>(gain.load());
+            if (Async) {
+                return static_cast<FloatType>(gain_.load());
             } else {
-                return static_cast<FloatType>(currentGain.getCurrent());
+                return static_cast<FloatType>(c_gain_.getCurrent());
             }
         }
 
@@ -265,33 +265,33 @@ namespace zldsp::filter {
          * set the Q value of the filter
          * @param x Q value
          */
-        template<bool update = true, bool async = true, bool force = false>
+        template<bool Update = true, bool Async = true, bool Force = false>
         void setQ(const FloatType x) {
-            if (async) {
-                q.store(static_cast<double>(x));
-                if (update) toUpdateFGQ.store(true);
+            if (Async) {
+                q_.store(static_cast<double>(x));
+                if (Update) to_update_fgq_.store(true);
             } else {
-                if (force) {
-                    currentQ.setCurrentAndTarget(static_cast<double>(x));
+                if (Force) {
+                    c_q_.setCurrentAndTarget(static_cast<double>(x));
                 } else {
-                    currentQ.setTarget(static_cast<double>(x));
+                    c_q_.setTarget(static_cast<double>(x));
                 }
             }
         }
 
-        template<bool async = true>
+        template<bool Async = true>
         FloatType getQ() const {
-            if (async) {
-                return static_cast<FloatType>(q.load());
+            if (Async) {
+                return static_cast<FloatType>(q_.load());
             } else {
-                return static_cast<FloatType>(currentQ.getCurrent());
+                return static_cast<FloatType>(c_q_.getCurrent());
             }
         }
 
         void skipSmooth() {
-            currentFreq.setCurrentAndTarget(currentFreq.getTarget());
-            currentGain.setCurrentAndTarget(currentGain.getTarget());
-            currentQ.setCurrentAndTarget(currentQ.getTarget());
+            c_freq_.setCurrentAndTarget(c_freq_.getTarget());
+            c_gain_.setCurrentAndTarget(c_gain_.getTarget());
+            c_q_.setCurrentAndTarget(c_q_.getTarget());
             updateCoeffs();
         }
 
@@ -299,72 +299,72 @@ namespace zldsp::filter {
          * set the type of the filter, the filter will always reset
          * @param x filter type
          */
-        template<bool update = true>
+        template<bool Update = true>
         void setFilterType(const FilterType x) {
-            toReset.store(true);
-            filterType.store(x);
-            if (update) { toUpdatePara.store(true); }
+            to_reset_.store(true);
+            filter_type_.store(x);
+            if (Update) { to_update_para_.store(true); }
         }
 
-        inline FilterType getFilterType() const { return filterType.load(); }
+        inline FilterType getFilterType() const { return filter_type_.load(); }
 
         /**
          * set the order of the filter, the filter will always reset
          * @param x filter order
          */
-        template<bool update = true>
+        template<bool Update = true>
         void setOrder(const size_t x) {
-            order.store(x);
-            if (update) {
-                toReset.store(true);
-                toUpdatePara.store(true);
+            order_.store(x);
+            if (Update) {
+                to_reset_.store(true);
+                to_update_para_.store(true);
             }
         }
 
-        inline size_t getOrder() const { return order.load(); }
+        inline size_t getOrder() const { return order_.load(); }
 
         /**
          * update filter coefficients
          * DO NOT call it unless you are sure what you are doing
          */
         void updateCoeffs() {
-            const auto nextFreq = currentFreq.getNext();
-            const auto nextGain = currentGain.getNext();
-            const auto nextQ = currentQ.getNext();
-            if (!shouldBeParallel) {
-                currentFilterNum = updateIIRCoeffs(currentFilterType, order.load(),
-                                                   nextFreq, processSpec.sampleRate,
-                                                   nextGain, nextQ, coeffs);
+            const auto nextFreq = c_freq_.getNext();
+            const auto nextGain = c_gain_.getNext();
+            const auto nextQ = c_q_.getNext();
+            if (!should_be_parallel_) {
+                current_filter_num_ = updateIIRCoeffs(current_filter_type_, order_.load(),
+                                                   nextFreq, process_spec_.sampleRate,
+                                                   nextGain, nextQ, coeffs_);
             } else {
-                if (currentFilterType == FilterType::peak) {
-                    currentFilterNum = updateIIRCoeffs(FilterType::bandPass,
-                                                       std::min(static_cast<size_t>(4), order.load()),
-                                                       nextFreq, processSpec.sampleRate,
-                                                       nextGain, nextQ, coeffs);
-                } else if (currentFilterType == FilterType::lowShelf) {
-                    currentFilterNum = updateIIRCoeffs(FilterType::lowPass,
-                                                       std::min(static_cast<size_t>(2), order.load()),
-                                                       nextFreq, processSpec.sampleRate,
-                                                       nextGain, nextQ, coeffs);
-                } else if (currentFilterType == FilterType::highShelf) {
-                    currentFilterNum = updateIIRCoeffs(FilterType::highPass,
-                                                       std::min(static_cast<size_t>(2), order.load()),
-                                                       nextFreq, processSpec.sampleRate,
-                                                       nextGain, nextQ, coeffs);
+                if (current_filter_type_ == FilterType::kPeak) {
+                    current_filter_num_ = updateIIRCoeffs(FilterType::kBandPass,
+                                                       std::min(static_cast<size_t>(4), order_.load()),
+                                                       nextFreq, process_spec_.sampleRate,
+                                                       nextGain, nextQ, coeffs_);
+                } else if (current_filter_type_ == FilterType::kLowShelf) {
+                    current_filter_num_ = updateIIRCoeffs(FilterType::kLowPass,
+                                                       std::min(static_cast<size_t>(2), order_.load()),
+                                                       nextFreq, process_spec_.sampleRate,
+                                                       nextGain, nextQ, coeffs_);
+                } else if (current_filter_type_ == FilterType::kHighShelf) {
+                    current_filter_num_ = updateIIRCoeffs(FilterType::kHighPass,
+                                                       std::min(static_cast<size_t>(2), order_.load()),
+                                                       nextFreq, process_spec_.sampleRate,
+                                                       nextGain, nextQ, coeffs_);
                 }
                 updateParallelGain(nextGain);
             }
-            switch (currentFilterStructure) {
-                case FilterStructure::iir:
-                case FilterStructure::parallel: {
-                    for (size_t i = 0; i < currentFilterNum; i++) {
-                        filters[i].updateFromBiquad(coeffs[i]);
+            switch (c_filter_structure_) {
+                case FilterStructure::kIIR:
+                case FilterStructure::kParallel: {
+                    for (size_t i = 0; i < current_filter_num_; i++) {
+                        filters_[i].updateFromBiquad(coeffs_[i]);
                     }
                     break;
                 }
-                case FilterStructure::svf: {
-                    for (size_t i = 0; i < currentFilterNum; i++) {
-                        svfFilters[i].updateFromBiquad(coeffs[i]);
+                case FilterStructure::kSVF: {
+                    for (size_t i = 0; i < current_filter_num_; i++) {
+                        svf_filters_[i].updateFromBiquad(coeffs_[i]);
                     }
                 }
             }
@@ -374,53 +374,53 @@ namespace zldsp::filter {
          * get the num of channels
          * @return
          */
-        inline juce::uint32 getNumChannels() const { return numChannels.load(); }
+        inline juce::uint32 getNumChannels() const { return num_channels_.load(); }
 
         /**
          * get the array of 2nd order filters
          * @return
          */
-        std::array<IIRBase<FloatType>, FilterSize> &getFilters() { return filters; }
+        std::array<IIRBase<FloatType>, FilterSize> &getFilters() { return filters_; }
 
         void setFilterStructure(const FilterStructure x) {
-            filterStructure.store(x);
+            filter_structure_.store(x);
         }
 
-        bool getShouldBeParallel() const { return shouldBeParallel; }
+        bool getShouldBeParallel() const { return should_be_parallel_; }
 
-        bool getShouldNotBeParallel() const { return shouldNotBeParallel; }
+        bool getShouldNotBeParallel() const { return should_not_be_parallel_; }
 
-        juce::AudioBuffer<FloatType> &getParallelBuffer() { return parallelBuffer; }
+        juce::AudioBuffer<FloatType> &getParallelBuffer() { return parallel_buffer_; }
 
     private:
-        std::array<IIRBase<FloatType>, FilterSize> filters{};
-        juce::AudioBuffer<FloatType> parallelBuffer;
+        std::array<IIRBase<FloatType>, FilterSize> filters_{};
+        juce::AudioBuffer<FloatType> parallel_buffer_;
 
-        size_t currentFilterNum{1};
-        std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
-        zldsp::chore::SmoothedValue<double, zldsp::chore::Lin> currentGain{0.0};
-        zldsp::chore::SmoothedValue<double, zldsp::chore::Mul> currentQ{0.707};
-        zldsp::chore::SmoothedValue<double, zldsp::chore::FixMul> currentFreq{1000.0};
-        std::atomic<size_t> order{2};
-        std::atomic<FilterType> filterType{FilterType::peak};
-        FilterType currentFilterType{FilterType::peak};
+        size_t current_filter_num_{1};
+        std::atomic<double> freq_{1000.0}, gain_{0.0}, q_{0.707};
+        zldsp::chore::SmoothedValue<double, zldsp::chore::Lin> c_gain_{0.0};
+        zldsp::chore::SmoothedValue<double, zldsp::chore::Mul> c_q_{0.707};
+        zldsp::chore::SmoothedValue<double, zldsp::chore::FixMul> c_freq_{1000.0};
+        std::atomic<size_t> order_{2};
+        std::atomic<FilterType> filter_type_{FilterType::kPeak};
+        FilterType current_filter_type_{FilterType::kPeak};
 
-        juce::dsp::ProcessSpec processSpec{48000, 512, 2};
-        std::atomic<juce::uint32> numChannels{2};
+        juce::dsp::ProcessSpec process_spec_{48000, 512, 2};
+        std::atomic<juce::uint32> num_channels_{2};
 
-        std::atomic<bool> toUpdatePara{true}, toReset{true};
-        std::atomic<bool> toUpdateFGQ{false};
+        std::atomic<bool> to_update_para_{true}, to_reset_{true};
+        std::atomic<bool> to_update_fgq_{false};
 
-        std::array<std::array<double, 6>, FilterSize> coeffs{};
+        std::array<std::array<double, 6>, FilterSize> coeffs_{};
 
-        std::atomic<bool> useSVF{false};
-        bool currentUseSVF{false};
-        std::array<SVFBase<FloatType>, FilterSize> svfFilters{};
+        std::atomic<bool> use_svf_{false};
+        bool c_use_svf_{false};
+        std::array<SVFBase<FloatType>, FilterSize> svf_filters_{};
 
-        std::atomic<FilterStructure> filterStructure{FilterStructure::iir};
-        FilterStructure currentFilterStructure{FilterStructure::iir};
-        bool shouldBeParallel{false}, shouldNotBeParallel{false};
-        FloatType parallelMultiplier;
+        std::atomic<FilterStructure> filter_structure_{FilterStructure::kIIR};
+        FilterStructure c_filter_structure_{FilterStructure::kIIR};
+        bool should_be_parallel_{false}, should_not_be_parallel_{false};
+        FloatType parallel_multiplier_;
 
         static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
@@ -436,7 +436,7 @@ namespace zldsp::filter {
         }
 
         void updateParallelGain(double x) {
-            parallelMultiplier = juce::Decibels::decibelsToGain<FloatType>(static_cast<FloatType>(x)) - FloatType(1);
+            parallel_multiplier_ = juce::Decibels::decibelsToGain<FloatType>(static_cast<FloatType>(x)) - FloatType(1);
         }
     };
 }

@@ -86,7 +86,7 @@ namespace zldsp::filter {
         std::array<double, 3> res{};
         for (size_t i = 0; i < 3; ++i) {
             phi[i] = get_phi(ws[i]);
-            res[i] = AnalogFunc::get2LowPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+            res[i] = AnalogFunc::get2LowPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
         }
         const auto B = linear_solve(phi, res);
         const auto b = get_ab(B);
@@ -99,7 +99,7 @@ namespace zldsp::filter {
         const auto phi0 = get_phi(w0);
 
         std::array<double, 3> b{};
-        b[0] = q * std::sqrt(dot_product(A, phi0)) / 4 / phi0[1];
+        b[0] = q * std::sqrt(dotProduct(A, phi0)) / 4 / phi0[1];
         b[1] = -2 * b[0];
         b[2] = b[0];
         return {a[0], a[1], a[2], b[0], b[1], b[2]};
@@ -112,8 +112,8 @@ namespace zldsp::filter {
 
         if (w0 > pi / 32) {
             const auto phi0 = get_phi(w0);
-            const auto R1 = dot_product(phi0, A);
-            const auto R2 = dot_product({-1, 1, 4 * (phi0[0] - phi0[1])}, A);
+            const auto R1 = dotProduct(phi0, A);
+            const auto R2 = dotProduct({-1, 1, 4 * (phi0[0] - phi0[1])}, A);
 
             std::array<double, 3> B{};
             B[0] = 0.0;
@@ -123,7 +123,7 @@ namespace zldsp::filter {
             const auto b = get_ab(B);
             return {a[0], a[1], a[2], b[0], b[1], b[2]};
         } else {
-            const auto _w = get_bandwidth(w0, q);
+            const auto _w = getBandwidth(w0, q);
             const auto w1 = _w[0], w2 = _w[1];
             std::array<double, 3> ws{0, w0, w0 > piHalf ? w1 : w2};
             const auto _ws = ws;
@@ -135,7 +135,7 @@ namespace zldsp::filter {
                 std::array<double, 3> res{};
                 for (size_t i = 0; i < 3; ++i) {
                     phi[i] = get_phi(ws[i]);
-                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
                 }
                 B = linear_solve(phi, res);
                 ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
@@ -146,7 +146,7 @@ namespace zldsp::filter {
                 std::array<double, 3> res{};
                 for (size_t i = 0; i < 3; ++i) {
                     phi[i] = get_phi(ws[i]);
-                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dot_product(phi[i], A);
+                    res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
                 }
                 B = linear_solve(phi, res);
                 ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
@@ -165,7 +165,7 @@ namespace zldsp::filter {
         }
         const auto B = get_AB(b);
 
-        const auto _w = get_bandwidth(w0, q);
+        const auto _w = getBandwidth(w0, q);
         const auto w1 = _w[0], w2 = _w[1];
         const std::array<double, 3> ws{0, w1, w2 < pi ? w2 : 0.5 * (w0 + w1)};
 
@@ -173,7 +173,7 @@ namespace zldsp::filter {
         std::array<double, 3> res{};
         for (size_t i = 0; i < 3; ++i) {
             phi[i] = get_phi(ws[i]);
-            res[i] = dot_product(phi[i], B) / AnalogFunc::get2NotchMagnitude2(w0, q, ws[i]);
+            res[i] = dotProduct(phi[i], B) / AnalogFunc::get2NotchMagnitude2(w0, q, ws[i]);
         }
 
         const auto A = linear_solve(phi, res);
@@ -186,7 +186,7 @@ namespace zldsp::filter {
         const auto A = get_AB(a);
         const auto phi0 = get_phi(w0);
 
-        const auto R1 = dot_product(A, phi0) * std::pow(g, 2);
+        const auto R1 = dotProduct(A, phi0) * std::pow(g, 2);
         const auto R2 = (-A[0] + A[1] + 4 * (phi0[0] - phi0[1]) * A[2]) * std::pow(g, 2);
 
         std::array<double, 3> B{A[0], 0, 0};
@@ -238,7 +238,7 @@ namespace zldsp::filter {
             std::array<double, 3> res{};
             for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
-                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dot_product(phi[i], A);
+                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dotProduct(phi[i], A);
             }
             B = linear_solve(phi, res);
             ws[2] = 0.5 * (ws[2] + pi);
@@ -249,7 +249,7 @@ namespace zldsp::filter {
             std::array<double, 3> res{};
             for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
-                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dot_product(phi[i], A);
+                res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dotProduct(phi[i], A);
             }
             B = linear_solve(phi, res);
             ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;

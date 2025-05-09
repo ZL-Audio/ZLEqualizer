@@ -13,13 +13,13 @@
 namespace zlpanel {
     OutputValuePanel::OutputValuePanel(PluginProcessor &p,
                                        zlgui::UIBase &base)
-        : processorRef(p),
-          parametersRef(p.parameters),
-          parametersNARef(p.parametersNA),
+        : processor_ref(p),
+          parameters_ref(p.parameters),
+          parameters_NA_ref(p.parameters_NA),
           uiBase(base),
-          scale(*parametersRef.getRawParameterValue(zlp::scale::ID)) {
-        juce::ignoreUnused(parametersRef, parametersNARef);
-        lmPara = parametersRef.getParameter(zlp::loudnessMatcherON::ID);
+          scale(*parameters_ref.getRawParameterValue(zlp::scale::ID)) {
+        juce::ignoreUnused(parameters_ref, parameters_NA_ref);
+        lmPara = parameters_ref.getParameter(zlp::loudnessMatcherON::ID);
         lookAndFeelChanged();
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
@@ -77,7 +77,7 @@ namespace zlpanel {
     }
 
     void OutputValuePanel::updateGainValue() {
-        const auto newGain = static_cast<float>(processorRef.getController().getGainCompensation());
+        const auto newGain = static_cast<float>(processor_ref.getController().getGainCompensation());
         const auto newScale = scale.load();
         const auto newLearning = lmPara->getValue() > .5f;
         if (std::abs(newGain - currentGain) > 0.0 || std::abs(newScale - currentScale) > 0.0 ||

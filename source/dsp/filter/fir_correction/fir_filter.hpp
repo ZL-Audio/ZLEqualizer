@@ -19,84 +19,84 @@ namespace zldsp::filter {
      * @tparam FloatType the float type of input audio buffer
      * @tparam FilterNum the number of filters
      * @tparam FilterSize the size of each filter
-     * @tparam defaultFFTOrder the default FFT order for 44100/48000 Hz input
+     * @tparam DefaultFFTOrder the default FFT order for 44100/48000 Hz input
      */
-    template<typename FloatType, size_t FilterNum, size_t FilterSize, size_t defaultFFTOrder = 13>
-    class FIR final : public FIRBase<FloatType, defaultFFTOrder> {
+    template<typename FloatType, size_t FilterNum, size_t FilterSize, size_t DefaultFFTOrder = 13>
+    class FIR final : public FIRBase<FloatType, DefaultFFTOrder> {
     public:
         FIR(std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
             zldsp::container::FixedMaxSizeArray<size_t, FilterNum> &indices,
             std::array<bool, FilterNum> &mask,
             std::vector<std::complex<FloatType> > &w1)
 
-            : idealFs(ideal),
-              filterIndices(indices), bypassMask(mask),
-              wis1(w1) {
+            : ideal_fs_(ideal),
+              filter_indices_(indices), bypass_mask_(mask),
+              wis1_(w1) {
         }
 
-        void setToUpdate() { toUpdate.store(true); }
+        void setToUpdate() { to_update_.store(true); }
 
-        size_t getCorrectionSize() const { return corrections.size(); }
+        size_t getCorrectionSize() const { return corrections_.size(); }
 
     private:
-        std::array<Ideal<FloatType, FilterSize>, FilterNum> &idealFs;
-        zldsp::container::FixedMaxSizeArray<size_t, FilterNum> &filterIndices;
-        std::array<bool, FilterNum> &bypassMask;
-        std::atomic<bool> toUpdate{true};
+        std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal_fs_;
+        zldsp::container::FixedMaxSizeArray<size_t, FilterNum> &filter_indices_;
+        std::array<bool, FilterNum> &bypass_mask_;
+        std::atomic<bool> to_update_{true};
 
-        std::vector<std::complex<FloatType> > idealTotalResponse;
+        std::vector<std::complex<FloatType> > ideal_total_response_;
 
-        kfr::univector<float> corrections{}, dummyCorrections{};
-        std::vector<std::complex<FloatType> > &wis1;
+        kfr::univector<float> corrections_{}, dummy_corrections_{};
+        std::vector<std::complex<FloatType> > &wis1_;
 
-        void setOrder(const size_t channelNum, const size_t order) override {
-            FIRBase<FloatType, defaultFFTOrder>::setFFTOrder(channelNum, order);
+        void setOrder(const size_t channel_num, const size_t order) override {
+            FIRBase<FloatType, DefaultFFTOrder>::setFFTOrder(channel_num, order);
 
-            corrections.resize(FIRBase<FloatType, defaultFFTOrder>::numBins);
-            dummyCorrections.resize(FIRBase<FloatType, defaultFFTOrder>::numBins << 1);
-            FIRBase<FloatType, defaultFFTOrder>::reset();
+            corrections_.resize(FIRBase<FloatType, DefaultFFTOrder>::num_bins_);
+            dummy_corrections_.resize(FIRBase<FloatType, DefaultFFTOrder>::num_bins_ << 1);
+            FIRBase<FloatType, DefaultFFTOrder>::reset();
         }
 
         void processSpectrum() override {
             update();
-            zldsp::vector::multiply(FIRBase<FloatType, defaultFFTOrder>::fftData.data(), dummyCorrections.data(), dummyCorrections.size());
+            zldsp::vector::multiply(FIRBase<FloatType, DefaultFFTOrder>::fft_data_.data(), dummy_corrections_.data(), dummy_corrections_.size());
         }
 
         void update() {
             // check whether a filter has been updated
-            bool needToUpdate{false};
-            for (size_t idx = 0; idx < filterIndices.size(); ++idx) {
-                const auto i = filterIndices[idx];
-                if (!bypassMask[i]) {
-                    needToUpdate = needToUpdate || idealFs[i].updateZeroPhaseResponse(wis1);
+            bool need_to_update{false};
+            for (size_t idx = 0; idx < filter_indices_.size(); ++idx) {
+                const auto i = filter_indices_[idx];
+                if (!bypass_mask_[i]) {
+                    need_to_update = need_to_update || ideal_fs_[i].updateZeroPhaseResponse(wis1_);
                 }
             }
             // if a filter has been updated or the correction has to be updated
-            if (needToUpdate || toUpdate.exchange(false)) {
-                bool hasBeenUpdated = false;
-                for (size_t idx = 0; idx < filterIndices.size(); ++idx) {
-                    const auto i = filterIndices[idx];
-                    if (!bypassMask[i]) {
-                        const auto &idealResponse = idealFs[i].getResponse();
-                        if (!hasBeenUpdated) {
-                            for (size_t j = 1; j < corrections.size(); ++j) {
-                                corrections[j] = static_cast<float>(idealResponse[j].real());
+            if (need_to_update || to_update_.exchange(false)) {
+                bool has_been_updated = false;
+                for (size_t idx = 0; idx < filter_indices_.size(); ++idx) {
+                    const auto i = filter_indices_[idx];
+                    if (!bypass_mask_[i]) {
+                        const auto &idealResponse = ideal_fs_[i].getResponse();
+                        if (!has_been_updated) {
+                            for (size_t j = 1; j < corrections_.size(); ++j) {
+                                corrections_[j] = static_cast<float>(idealResponse[j].real());
                             }
-                            hasBeenUpdated = true;
+                            has_been_updated = true;
                         } else {
-                            for (size_t j = 1; j < corrections.size(); ++j) {
-                                corrections[j] *= static_cast<float>(idealResponse[j].real());
+                            for (size_t j = 1; j < corrections_.size(); ++j) {
+                                corrections_[j] *= static_cast<float>(idealResponse[j].real());
                             }
                         }
                     }
                 }
-                if (!hasBeenUpdated) {
-                    std::fill(dummyCorrections.begin(), dummyCorrections.end(), 1.f);
+                if (!has_been_updated) {
+                    std::fill(dummy_corrections_.begin(), dummy_corrections_.end(), 1.f);
                 } else {
-                    corrections[0] = corrections[1];
-                    for (size_t j = 0; j < corrections.size(); ++j) {
-                        dummyCorrections[j << 1] = corrections[j];
-                        dummyCorrections[(j << 1) + 1] = corrections[j];
+                    corrections_[0] = corrections_[1];
+                    for (size_t j = 0; j < corrections_.size(); ++j) {
+                        dummy_corrections_[j << 1] = corrections_[j];
+                        dummy_corrections_[(j << 1) + 1] = corrections_[j];
                     }
                 }
             }

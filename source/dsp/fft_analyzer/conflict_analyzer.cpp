@@ -11,12 +11,12 @@
 
 namespace zldsp::analyzer {
     template<typename FloatType>
-    ConflictAnalyzer<FloatType>::ConflictAnalyzer(const size_t fftOrder)
+    ConflictAnalyzer<FloatType>::ConflictAnalyzer(const size_t fft_order)
         : Thread("conflict_analyzer"),
-          syncAnalyzer(fftOrder) {
-        syncAnalyzer.setDecayRate(0, 0.985f);
-        syncAnalyzer.setDecayRate(1, 0.985f);
-        syncAnalyzer.setON({true, true});
+          sync_analyzer_(fft_order) {
+        sync_analyzer_.setDecayRate(0, 0.985f);
+        sync_analyzer_.setDecayRate(1, 0.985f);
+        sync_analyzer_.setON({true, true});
     }
 
     template<typename FloatType>
@@ -28,25 +28,25 @@ namespace zldsp::analyzer {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        syncAnalyzer.prepare(spec);
+        sync_analyzer_.prepare(spec);
     }
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::setON(const bool x) {
-        syncAnalyzer.reset();
-        isON.store(x);
-        toReset.store(true);
+        sync_analyzer_.reset();
+        is_on_.store(x);
+        to_reset_.store(true);
     }
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::prepareBuffer() {
-        currentIsON = isON.load();
+        current_is_on_ = is_on_.load();
     }
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::process(juce::AudioBuffer<FloatType> &pre, juce::AudioBuffer<FloatType> &post) {
-        if (currentIsON) {
-            syncAnalyzer.process({pre, post});
+        if (current_is_on_) {
+            sync_analyzer_.process({pre, post});
         }
     }
 
@@ -54,40 +54,40 @@ namespace zldsp::analyzer {
     void ConflictAnalyzer<FloatType>::run() {
         juce::ScopedNoDenormals noDenormals;
         while (!threadShouldExit()) {
-            syncAnalyzer.run();
-            const auto &mainDB = syncAnalyzer.getInterplotDBs(0);
-            const auto &refDB = syncAnalyzer.getInterplotDBs(1);
+            sync_analyzer_.run();
+            const auto &mainDB = sync_analyzer_.getInterplotDBs(0);
+            const auto &refDB = sync_analyzer_.getInterplotDBs(1);
             const auto mainM = std::reduce(mainDB.begin(), mainDB.end()) / static_cast<float>(mainDB.size());
             const auto refM = std::reduce(refDB.begin(), refDB.end()) / static_cast<float>(refDB.size());
-            const auto threshold = juce::jmin(static_cast<float>(strength.load()) * (mainM + refM), 0.f);
+            const auto threshold = juce::jmin(static_cast<float>(strength_.load()) * (mainM + refM), 0.f);
 
-            if (toReset.exchange(false)) {
-                std::fill(conflicts.begin(), conflicts.end(), 0.f);
+            if (to_reset_.exchange(false)) {
+                std::fill(conflicts_.begin(), conflicts_.end(), 0.f);
             }
-            for (size_t i = 0; i < conflicts.size(); ++i) {
+            for (size_t i = 0; i < conflicts_.size(); ++i) {
                 const auto fftIdx = 4 * i;
                 const auto dB1 = (mainDB[fftIdx] + mainDB[fftIdx + 1] + mainDB[fftIdx + 2] + mainDB[fftIdx + 3]) *
                                  .25f;
                 const auto dB2 = (refDB[fftIdx] + refDB[fftIdx + 1] + refDB[fftIdx + 2] + refDB[fftIdx + 3]) * .25f;
                 const auto dBMin = juce::jmin(dB1, dB2, 0.001f);
-                conflicts[i] = juce::jmax(conflicts[i] * .98f,
+                conflicts_[i] = juce::jmax(conflicts_[i] * .98f,
                                           (dBMin - threshold) / (0.001f - threshold));
             }
-            for (size_t i = 1; i < conflicts.size() - 1; ++i) {
-                conflicts[i] = conflicts[i] * .75f + (conflicts[i - 1] + conflicts[i + 1]) * .125f;
+            for (size_t i = 1; i < conflicts_.size() - 1; ++i) {
+                conflicts_[i] = conflicts_[i] * .75f + (conflicts_[i - 1] + conflicts_[i + 1]) * .125f;
             }
 
             // calculate the conflict portion
-            const auto scale = static_cast<float>(conflictScale.load());
-            for (size_t i = 0; i < conflicts.size(); ++i) {
-                conflictsP[i] = conflicts[i] * scale;
-                if (conflictsP[i].load() >= 0.01) {
-                    conflictsP[i].store(juce::jmin(.75f, conflictsP[i].load()));
+            const auto scale = static_cast<float>(conflict_scale_.load());
+            for (size_t i = 0; i < conflicts_.size(); ++i) {
+                conflicts_p_[i] = conflicts_[i] * scale;
+                if (conflicts_p_[i].load() >= 0.01) {
+                    conflicts_p_[i].store(juce::jmin(.75f, conflicts_p_[i].load()));
                 } else {
-                    conflictsP[i].store(-1.f);
+                    conflicts_p_[i].store(-1.f);
                 }
             }
-            isConflictReady.store(true);
+            is_conflict_ready_.store(true);
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
         }
@@ -95,25 +95,25 @@ namespace zldsp::analyzer {
 
     template<typename FloatType>
     void ConflictAnalyzer<FloatType>::updateGradient(juce::ColourGradient &gradient) {
-        if (isConflictReady.load()) {
+        if (is_conflict_ready_.load()) {
             // calculate gradient
-            gradient.point1 = juce::Point<float>(x1.load(), 0.f);
-            gradient.point2 = juce::Point<float>(x2.load(), 0.f);
+            gradient.point1 = juce::Point<float>(x1_.load(), 0.f);
+            gradient.point2 = juce::Point<float>(x2_.load(), 0.f);
             gradient.isRadial = false;
             gradient.clearColours();
 
             gradient.addColour(0.0,
-                               gColour.withMultipliedAlpha(juce::jmax(conflictsP.front().load(), 0.f)));
+                               gColour.withMultipliedAlpha(juce::jmax(conflicts_p_.front().load(), 0.f)));
             gradient.addColour(1.0,
-                               gColour.withMultipliedAlpha(juce::jmax(conflictsP.back().load(), 0.f)));
-            for (size_t i = 1; i < conflictsP.size() - 1; ++i) {
-                if (conflictsP[i + 1] > 0 || conflictsP[i - 1] > 0) {
-                    const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflictsP.size());
-                    const auto rectColour = gColour.withMultipliedAlpha(juce::jmax(conflictsP[i].load(), 0.f));
+                               gColour.withMultipliedAlpha(juce::jmax(conflicts_p_.back().load(), 0.f)));
+            for (size_t i = 1; i < conflicts_p_.size() - 1; ++i) {
+                if (conflicts_p_[i + 1] > 0 || conflicts_p_[i - 1] > 0) {
+                    const auto p = (static_cast<double>(i) + 0.5) / static_cast<double>(conflicts_p_.size());
+                    const auto rectColour = gColour.withMultipliedAlpha(juce::jmax(conflicts_p_[i].load(), 0.f));
                     gradient.addColour(p, rectColour);
                 }
             }
-            isConflictReady.store(false);
+            is_conflict_ready_.store(false);
         }
         triggerAsyncUpdate();
     }

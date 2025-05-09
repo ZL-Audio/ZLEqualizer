@@ -29,8 +29,8 @@ namespace zldsp::splitter {
         l_vector = FloatType(0.5) * (l_vector + r_vector);
         r_vector = l_vector - r_vector;
 
-        mBuffer.setDataToReferTo(buffer.getArrayOfWritePointers(), 1, 0, buffer.getNumSamples());
-        sBuffer.setDataToReferTo(buffer.getArrayOfWritePointers() + 1, 1, 0, buffer.getNumSamples());
+        m_buffer_.setDataToReferTo(buffer.getArrayOfWritePointers(), 1, 0, buffer.getNumSamples());
+        s_buffer_.setDataToReferTo(buffer.getArrayOfWritePointers() + 1, 1, 0, buffer.getNumSamples());
     }
 
     template<typename FloatType>
