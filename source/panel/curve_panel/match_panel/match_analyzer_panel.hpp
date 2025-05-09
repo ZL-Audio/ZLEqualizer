@@ -14,15 +14,15 @@
 #include "../helpers.hpp"
 #include "match_label.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class MatchAnalyzerPanel final : public juce::Component,
                                      private juce::AudioProcessorValueTreeState::Listener,
                                      private juce::ValueTree::Listener,
-                                     private zlInterface::Dragger::Listener {
+                                     private zlgui::Dragger::Listener {
     public:
-        explicit MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
+        explicit MatchAnalyzerPanel(zldsp::eq_match::EqMatchAnalyzer<double> &analyzer,
                                     juce::AudioProcessorValueTreeState &parametersNA,
-                                    zlInterface::UIBase &base);
+                                    zlgui::UIBase &base);
 
         ~MatchAnalyzerPanel() override;
 
@@ -43,9 +43,9 @@ namespace zlPanel {
         void mouseDoubleClick(const juce::MouseEvent &event) override;
 
     private:
-        zlEqMatch::EqMatchAnalyzer<double> &analyzerRef;
+        zldsp::eq_match::EqMatchAnalyzer<double> &analyzerRef;
         juce::AudioProcessorValueTreeState &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::Path path1{}, path2{}, path3{};
         juce::Path recentPath1{}, recentPath2{}, recentPath3{};
         juce::SpinLock pathLock;
@@ -54,9 +54,9 @@ namespace zlPanel {
         float backgroundAlpha = .5f;
         bool showAverage{true};
         std::atomic<float> dBScale{1.f};
-        float currentMaximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
-        std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
-        zlInterface::Dragger lowDragger, highDragger, shiftDragger;
+        float currentMaximumDB{zlstate::maximumDB::dBs[static_cast<size_t>(zlstate::maximumDB::defaultI)]};
+        std::atomic<float> maximumDB{zlstate::maximumDB::dBs[static_cast<size_t>(zlstate::maximumDB::defaultI)]};
+        zlgui::Dragger lowDragger, highDragger, shiftDragger;
         MatchLabel matchLabel;
         static constexpr auto scale = 1.5f;
         size_t preDrawIdx{0};
@@ -69,15 +69,15 @@ namespace zlPanel {
 
         void lookAndFeelChanged() override;
 
-        void dragStarted(zlInterface::Dragger *dragger) override {
+        void dragStarted(zlgui::Dragger *dragger) override {
             juce::ignoreUnused(dragger);
         }
 
-        void dragEnded(zlInterface::Dragger *dragger) override {
+        void dragEnded(zlgui::Dragger *dragger) override {
             juce::ignoreUnused(dragger);
         }
 
-        void draggerValueChanged(zlInterface::Dragger *dragger) override;
+        void draggerValueChanged(zlgui::Dragger *dragger) override;
 
         void getIdxDBromPoint(const juce::Point<int> &p, size_t &idx, float &dB) const {
             const auto bound = getLocalBounds().toFloat();
@@ -88,4 +88,4 @@ namespace zlPanel {
             dB = -maximumDB.load() * dBScale.load() * yP;
         }
     };
-} // zlPanel
+} // zlpanel

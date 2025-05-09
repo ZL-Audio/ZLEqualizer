@@ -9,8 +9,8 @@
 
 #include "main_panel.hpp"
 
-namespace zlPanel {
-    MainPanel::MainPanel(PluginProcessor &p, zlInterface::UIBase &base)
+namespace zlpanel {
+    MainPanel::MainPanel(PluginProcessor &p, zlgui::UIBase &base)
         : processorRef(p), state(p.state), uiBase(base),
           controlPanel(p, uiBase),
           curvePanel(p, uiBase),
@@ -42,9 +42,9 @@ namespace zlPanel {
 
         updateFFTs();
 
-        state.addParameterListener(zlState::fftExtraTilt::ID, this);
-        state.addParameterListener(zlState::fftExtraSpeed::ID, this);
-        state.addParameterListener(zlState::refreshRate::ID, this);
+        state.addParameterListener(zlstate::fftExtraTilt::ID, this);
+        state.addParameterListener(zlstate::fftExtraSpeed::ID, this);
+        state.addParameterListener(zlstate::refreshRate::ID, this);
 
         uiBase.closeAllBox();
 
@@ -53,9 +53,9 @@ namespace zlPanel {
 
     MainPanel::~MainPanel() {
         processorRef.getController().setEditorOn(false);
-        state.removeParameterListener(zlState::fftExtraTilt::ID, this);
-        state.removeParameterListener(zlState::fftExtraSpeed::ID, this);
-        state.removeParameterListener(zlState::refreshRate::ID, this);
+        state.removeParameterListener(zlstate::fftExtraTilt::ID, this);
+        state.removeParameterListener(zlstate::fftExtraSpeed::ID, this);
+        state.removeParameterListener(zlstate::refreshRate::ID, this);
     }
 
     void MainPanel::paint(juce::Graphics &g) {
@@ -148,10 +148,10 @@ namespace zlPanel {
         for (auto &fft: {&processorRef.getController().getAnalyzer().getMultipleFFT()}) {
             fft->setExtraTilt(uiBase.getFFTExtraTilt());
             fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
-            fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
+            fft->setRefreshRate(zlstate::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
         for (auto &fft: {&processorRef.getController().getConflictAnalyzer().getSyncFFT()}) {
-            fft->setRefreshRate(zlState::refreshRate::rates[uiBase.getRefreshRateID()]);
+            fft->setRefreshRate(zlstate::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
     }
 }

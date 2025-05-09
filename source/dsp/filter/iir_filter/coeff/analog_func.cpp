@@ -9,7 +9,7 @@
 
 #include "analog_func.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     double AnalogFunc::get2Magnitude2(const std::array<double, 6> &coeff, const double w) {
         const auto w_2 = w * w;
         const auto t1 = coeff[2] - coeff[0] * w_2;

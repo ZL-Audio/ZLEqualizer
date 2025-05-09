@@ -13,7 +13,7 @@
 #include <array>
 #include "../../helpers.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     class AnalogFunc {
     public:
         static double get2LowPassMagnitude2(double w0, double q, double w);

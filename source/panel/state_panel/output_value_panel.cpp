@@ -10,16 +10,16 @@
 #include "output_value_panel.hpp"
 #include "../../dsp/dsp.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     OutputValuePanel::OutputValuePanel(PluginProcessor &p,
-                                       zlInterface::UIBase &base)
+                                       zlgui::UIBase &base)
         : processorRef(p),
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           uiBase(base),
-          scale(*parametersRef.getRawParameterValue(zlDSP::scale::ID)) {
+          scale(*parametersRef.getRawParameterValue(zlp::scale::ID)) {
         juce::ignoreUnused(parametersRef, parametersNARef);
-        lmPara = parametersRef.getParameter(zlDSP::loudnessMatcherON::ID);
+        lmPara = parametersRef.getParameter(zlp::loudnessMatcherON::ID);
         lookAndFeelChanged();
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
@@ -35,11 +35,11 @@ namespace zlPanel {
     void OutputValuePanel::paint(juce::Graphics &g) {
         g.setFont(uiBase.getFontSize() * 1.375f);
         if (showGain) {
-            g.setColour(uiBase.getColourByIdx(zlInterface::gainColour));
+            g.setColour(uiBase.getColourByIdx(zlgui::gainColour));
             g.drawText(gainString, gainBound, juce::Justification::centred);
             g.drawText(scaleString, scaleBound, juce::Justification::centred);
         } else {
-            if (static_cast<bool>(uiBase.getBoxProperty(zlInterface::boxIdx::outputBox))) {
+            if (static_cast<bool>(uiBase.getBoxProperty(zlgui::boxIdx::outputBox))) {
                 g.setColour(uiBase.getTextColor());
             } else {
                 g.setColour(uiBase.getTextColor().withMultipliedAlpha(.75f));
@@ -56,7 +56,7 @@ namespace zlPanel {
     }
 
     void OutputValuePanel::lookAndFeelChanged() {
-        if (uiBase.getColourByIdx(zlInterface::gainColour).getAlpha() > juce::uint8(0)) {
+        if (uiBase.getColourByIdx(zlgui::gainColour).getAlpha() > juce::uint8(0)) {
             showGain = true;
             startTimer(0, 1500);
         } else {
@@ -102,8 +102,8 @@ namespace zlPanel {
     void OutputValuePanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                     const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (zlInterface::UIBase::isBoxProperty(zlInterface::boxIdx::outputBox, property)) {
+        if (zlgui::UIBase::isBoxProperty(zlgui::boxIdx::outputBox, property)) {
             repaint();
         }
     }
-} // zlPanel
+} // zlpanel

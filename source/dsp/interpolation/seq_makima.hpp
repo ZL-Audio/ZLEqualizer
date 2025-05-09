@@ -11,7 +11,7 @@
 
 #include <vector>
 
-namespace zlInterpolation {
+namespace zldsp::interpolation {
     /**
      * modified Akima spline interpolation with increasing input/output X
      * @tparam FloatType the float type of input/output

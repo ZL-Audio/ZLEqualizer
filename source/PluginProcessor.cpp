@@ -19,16 +19,16 @@ PluginProcessor::PluginProcessor()
       ), dummyProcessor(),
       parameters(*this, nullptr,
                  juce::Identifier("ZLEqualizerParameters"),
-                 zlDSP::getParameterLayout()),
+                 zlp::getParameterLayout()),
       parametersNA(dummyProcessor, nullptr,
                    juce::Identifier("ZLEqualizerParametersNA"),
-                   zlState::getNAParameterLayout()),
+                   zlstate::getNAParameterLayout()),
       state(dummyProcessor, nullptr,
             juce::Identifier("ZLEqualizerState"),
-            zlState::getStateParameterLayout()),
+            zlstate::getStateParameterLayout()),
       property(state),
-      controller(*this, zlState::ffTOrder::orders[
-                     static_cast<size_t>(state.getRawParameterValue(zlState::ffTOrder::ID)->load())]),
+      controller(*this, zlstate::ffTOrder::orders[
+                     static_cast<size_t>(state.getRawParameterValue(zlstate::ffTOrder::ID)->load())]),
       filtersAttach(*this, parameters, parametersNA, controller),
       soloAttach(*this, parameters, controller),
       choreAttach(*this, parameters, parametersNA, controller) {
@@ -315,28 +315,28 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
 
 void PluginProcessor::doubleBufferCopyFrom(const int destChan,
                                            const juce::AudioBuffer<float> &buffer, const int srcChan) {
-    zlVector::convert(doubleBuffer.getWritePointer(destChan),
+    zldsp::vector::convert(doubleBuffer.getWritePointer(destChan),
                       buffer.getReadPointer(srcChan),
                       static_cast<size_t>(buffer.getNumSamples()));
 }
 
 void PluginProcessor::doubleBufferCopyFrom(const int destChan,
                                            const juce::AudioBuffer<double> &buffer, const int srcChan) {
-    zlVector::copy(doubleBuffer.getWritePointer(destChan),
+    zldsp::vector::copy(doubleBuffer.getWritePointer(destChan),
                    buffer.getReadPointer(srcChan),
                    static_cast<size_t>(buffer.getNumSamples()));
 }
 
 void PluginProcessor::doubleBufferCopyTo(const int srcChan,
                                          juce::AudioBuffer<float> &buffer, int const destChan) const {
-    zlVector::convert(buffer.getWritePointer(destChan),
+    zldsp::vector::convert(buffer.getWritePointer(destChan),
                       doubleBuffer.getReadPointer(srcChan),
                       static_cast<size_t>(buffer.getNumSamples()));
 }
 
 void PluginProcessor::doubleBufferCopyTo(const int srcChan,
                                          juce::AudioBuffer<double> &buffer, int const destChan) const {
-    zlVector::copy(buffer.getWritePointer(destChan),
+    zldsp::vector::copy(buffer.getWritePointer(destChan),
                    doubleBuffer.getReadPointer(srcChan),
                    static_cast<size_t>(buffer.getNumSamples()));
 }

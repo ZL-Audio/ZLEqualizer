@@ -11,7 +11,7 @@
 
 #include "multiple_fft_analyzer.hpp"
 
-namespace zlFFTAnalyzer {
+namespace zldsp::analyzer {
     /**
      * a fft analyzer which process pre, post and side audio buffers
      * @tparam FloatType the float type of input audio buffers
@@ -70,4 +70,4 @@ namespace zlFFTAnalyzer {
 
         void handleAsyncUpdate() override;
     };
-} // zlFFT
+} // zldsp::fft

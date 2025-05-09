@@ -9,16 +9,16 @@
 
 #include "logo_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     LogoPanel::LogoPanel(PluginProcessor &p,
-                         zlInterface::UIBase &base,
+                         zlgui::UIBase &base,
                          UISettingPanel &uiSettingPanel)
         : stateRef(p.state),
           uiBase(base), panelToShow(uiSettingPanel),
           brandDrawable(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
           logoDrawable(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
         juce::ignoreUnused(stateRef);
-        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::pluginLogo));
+        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlgui::multilingual::labels::pluginLogo));
         setBufferedToImage(true);
     }
 
@@ -66,11 +66,11 @@ namespace zlPanel {
         uiBase.closeAllBox();
         if (event.mods.isCommandDown()) {
             getParentComponent()->getParentComponent()->getParentComponent()->setSize(
-                static_cast<int>(zlState::windowW::defaultV),
-                static_cast<int>(zlState::windowH::defaultV));
+                static_cast<int>(zlstate::windowW::defaultV),
+                static_cast<int>(zlstate::windowH::defaultV));
         } else {
             panelToShow.loadSetting();
             panelToShow.setVisible(true);
         }
     }
-} // zlPanel
+} // zlpanel

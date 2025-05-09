@@ -11,22 +11,22 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-namespace zlChore {
+namespace zldsp::chore {
     class ParaUpdater final : private juce::AsyncUpdater {
     public:
         explicit ParaUpdater(const juce::AudioProcessorValueTreeState &parameter,
-                             const std::string &parameterIdx) {
-            para = parameter.getParameter(parameterIdx);
+                             const std::string &parameter_idx) {
+            para = parameter.getParameter(parameter_idx);
         }
 
-        void update(const float paraValue) {
-            value.store(paraValue);
+        void update(const float para_value) {
+            value.store(para_value);
             triggerAsyncUpdate();
         }
 
-        void updateSync(const float paraValue) {
+        void updateSync(const float para_value) {
             para->beginChangeGesture();
-            para->setValueNotifyingHost(paraValue);
+            para->setValueNotifyingHost(para_value);
             para->endChangeGesture();
         }
 

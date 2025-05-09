@@ -12,7 +12,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../../interface_definitions.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class ClickComboboxButtonLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
         explicit ClickComboboxButtonLookAndFeel(UIBase &base, juce::String label)

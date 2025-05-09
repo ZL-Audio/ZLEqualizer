@@ -11,7 +11,7 @@
 
 #include <array>
 
-namespace zlContainer {
+namespace zldsp::container {
     /**
      * an array which has a fixed maximum size (capacity)
      * @tparam T the type of elements

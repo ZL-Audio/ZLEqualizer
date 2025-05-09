@@ -13,7 +13,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include <BinaryData.h>
 
-namespace zlState {
+namespace zlstate {
     inline auto static constexpr versionHint = 1;
 
     inline auto static constexpr bandNUM = 16;

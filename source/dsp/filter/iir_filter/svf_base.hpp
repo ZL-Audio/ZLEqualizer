@@ -9,7 +9,7 @@
 
 #pragma once
 
-namespace zlFilter {
+namespace zldsp::filter {
     template<typename SampleType>
     class SVFBase {
     public:

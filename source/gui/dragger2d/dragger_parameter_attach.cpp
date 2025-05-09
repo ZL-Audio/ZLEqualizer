@@ -9,7 +9,7 @@
 
 #include "dragger_parameter_attach.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     DraggerParameterAttach::DraggerParameterAttach(juce::RangedAudioParameter &parameterX,
                                                    juce::NormalisableRange<float> nRangeX,
                                                    juce::RangedAudioParameter &parameterY,
@@ -56,4 +56,4 @@ namespace zlInterface {
         if (isYAttached.load()) attachmentY.setValueAsPartOfGesture(rangeY.convertFrom0to1(
             std::clamp(dragger.getYPortion(), 0.f, 1.f)));
     }
-} // zlInterface
+} // zlgui

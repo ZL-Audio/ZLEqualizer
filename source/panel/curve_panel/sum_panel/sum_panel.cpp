@@ -9,23 +9,23 @@
 
 #include "sum_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     SumPanel::SumPanel(juce::AudioProcessorValueTreeState &parameters,
-                       zlInterface::UIBase &base,
-                       zlDSP::Controller<double> &controller,
-                       std::array<zlFilter::Ideal<double, 16>, 16> &baseFilters,
-                       std::array<zlFilter::Ideal<double, 16>, 16> &mainFilters)
+                       zlgui::UIBase &base,
+                       zlp::Controller<double> &controller,
+                       std::array<zldsp::filter::Ideal<double, 16>, 16> &baseFilters,
+                       std::array<zldsp::filter::Ideal<double, 16>, 16> &mainFilters)
         : parametersRef(parameters),
           uiBase(base), c(controller),
           mMainFilters(mainFilters) {
         juce::ignoreUnused(baseFilters);
         dBs.resize(ws.size());
         for (auto &path: paths) {
-            path.preallocateSpace(static_cast<int>(zlFilter::frequencies.size() * 3));
+            path.preallocateSpace(static_cast<int>(zldsp::filter::frequencies.size() * 3));
         }
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::bandNUM; ++i) {
             for (const auto &idx: changeIDs) {
-                const auto paraID = zlDSP::appendSuffix(idx, i);
+                const auto paraID = zlp::appendSuffix(idx, i);
                 parameterChanged(paraID, parametersRef.getRawParameterValue(paraID)->load());
                 parametersRef.addParameterListener(paraID, this);
             }
@@ -34,16 +34,16 @@ namespace zlPanel {
     }
 
     SumPanel::~SumPanel() {
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::bandNUM; ++i) {
             for (const auto &idx: changeIDs) {
-                parametersRef.removeParameterListener(zlDSP::appendSuffix(idx, i), this);
+                parametersRef.removeParameterListener(zlp::appendSuffix(idx, i), this);
             }
         }
     }
 
     void SumPanel::paint(juce::Graphics &g) {
         std::array<bool, 5> useLRMS{false, false, false, false, false};
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::bandNUM; ++i) {
             const auto idx = static_cast<size_t>(c.getFilterLRs(i));
             if (!c.getBypass(i)) {
                 useLRMS[idx] = true;
@@ -74,7 +74,7 @@ namespace zlPanel {
     }
 
     bool SumPanel::checkRepaint() {
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
+        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
             if (mMainFilters[i].getMagOutdated()) {
                 return true;
             }
@@ -89,7 +89,7 @@ namespace zlPanel {
         juce::ScopedNoDenormals noDenormals;
         const auto isHardware = uiBase.getIsRenderingHardware();
         std::array<bool, 5> useLRMS{false, false, false, false, false};
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::bandNUM; ++i) {
             const auto idx = static_cast<size_t>(lrTypes[i].load());
             if (!isBypassed[i].load()) {
                 useLRMS[idx] = true;
@@ -103,9 +103,9 @@ namespace zlPanel {
             }
 
             std::fill(dBs.begin(), dBs.end(), 0.0);
-            for (size_t i = 0; i < zlState::bandNUM; i++) {
+            for (size_t i = 0; i < zlstate::bandNUM; i++) {
                 auto &filter{c.getMainIdealFilter(i)};
-                if (lrTypes[i].load() == static_cast<zlDSP::lrType::lrTypes>(j) && !isBypassed[i].load()) {
+                if (lrTypes[i].load() == static_cast<zlp::lrType::lrTypes>(j) && !isBypassed[i].load()) {
                     mMainFilters[i].setGain(filter.getGain());
                     mMainFilters[i].setQ(filter.getQ());
                     mMainFilters[i].updateMagnitude(ws);
@@ -136,10 +136,10 @@ namespace zlPanel {
 
     void SumPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        if (parameterID.startsWith(zlDSP::bypass::ID)) {
+        if (parameterID.startsWith(zlp::bypass::ID)) {
             isBypassed[idx].store(newValue > .5f);
-        } else if (parameterID.startsWith(zlDSP::lrType::ID)) {
-            lrTypes[idx].store(static_cast<zlDSP::lrType::lrTypes>(newValue));
+        } else if (parameterID.startsWith(zlp::lrType::ID)) {
+            lrTypes[idx].store(static_cast<zlp::lrType::lrTypes>(newValue));
         }
         toRepaint.store(true);
     }
@@ -164,4 +164,4 @@ namespace zlPanel {
     void SumPanel::updateCurveThickness() {
         curveThickness.store(uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness());
     }
-} // zlPanel
+} // zlpanel

@@ -11,7 +11,7 @@
 
 #include "origin_gain.hpp"
 
-namespace zlGain {
+namespace zldsp::gain {
     /**
      * a lock free, thread safe auto-gain class
      * it will hard-clip output signal to 0dB
@@ -100,7 +100,7 @@ namespace zlGain {
                 juce::dsp::ProcessContextReplacing<FloatType> context(block);
                 gainDSP.template process<false>(block);
                 for (size_t channel = 0; channel < block.getNumChannels(); ++channel) {
-                    zlVector::clamp(block.getChannelPointer(channel),
+                    zldsp::vector::clamp(block.getChannelPointer(channel),
                                     static_cast<FloatType>(-1.0),
                                     static_cast<FloatType>(1.0),
                                     static_cast<size_t>(block.getNumSamples()));
@@ -114,9 +114,9 @@ namespace zlGain {
             FloatType _ms = 0;
             for (size_t channel = 0; channel < block.getNumChannels(); channel++) {
                 auto data = block.getChannelPointer(channel);
-                _ms += zlVector::sumsqr(data, block.getNumSamples());
+                _ms += zldsp::vector::sumsqr(data, block.getNumSamples());
             }
             return std::sqrt(_ms / static_cast<FloatType>(block.getNumChannels()));
         }
     };
-} // zlGain
+} // zldsp::gain

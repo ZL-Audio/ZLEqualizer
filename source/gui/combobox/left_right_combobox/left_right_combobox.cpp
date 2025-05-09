@@ -9,7 +9,7 @@
 
 #include "left_right_combobox.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     LeftRightCombobox::LeftRightCombobox(const juce::StringArray &choices, UIBase &base,
                                          const multilingual::labels labelIdx)
         : uiBase(base),
@@ -71,4 +71,4 @@ namespace zlInterface {
             box.setSelectedId(box.getSelectedId() + 1);
         }
     }
-} // zlInterface
+} // zlgui

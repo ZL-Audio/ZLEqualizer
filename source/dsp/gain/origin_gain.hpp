@@ -14,7 +14,7 @@
 #include "../chore/smoothed_value.hpp"
 #include "../vector/vector.hpp"
 
-namespace zlGain {
+namespace zldsp::gain {
     template<typename FloatType>
     class Gain {
     public:
@@ -63,7 +63,7 @@ namespace zlGain {
                 if (isBypassed) return;
                 for (size_t chan = 0; chan < block.getNumChannels(); ++chan) {
                     auto *channelData = block.getChannelPointer(chan);
-                    zlVector::multiply(channelData, gain.getCurrent(), block.getNumSamples());
+                    zldsp::vector::multiply(channelData, gain.getCurrent(), block.getNumSamples());
                 }
             } else {
                 for (size_t idx = 0; idx < block.getNumSamples(); ++idx) {
@@ -72,13 +72,13 @@ namespace zlGain {
                 if (isBypassed) return;
                 for (size_t chan = 0; chan < block.getNumChannels(); ++chan) {
                     auto *channelData = block.getChannelPointer(chan);
-                    zlVector::multiply(channelData, gainVs.data(), block.getNumSamples());
+                    zldsp::vector::multiply(channelData, gainVs.data(), block.getNumSamples());
                 }
             }
         }
 
     private:
-        zlChore::SmoothedValue<FloatType, zlChore::SmoothedTypes::FixLin> gain;
+        zldsp::chore::SmoothedValue<FloatType, zldsp::chore::SmoothedTypes::FixLin> gain;
         kfr::univector<FloatType> gainVs;
     };
 }

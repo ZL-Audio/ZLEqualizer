@@ -11,7 +11,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace zlInterface {
+namespace zlgui {
     class TooltipWindow final : public juce::TooltipWindow {
     public:
         explicit TooltipWindow(Component *parentComponent, const int millisecondsBeforeTipAppears = 700)

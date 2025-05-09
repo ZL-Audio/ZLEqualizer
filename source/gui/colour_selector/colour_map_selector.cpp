@@ -9,10 +9,10 @@
 
 #include "colour_map_selector.hpp"
 
-namespace zlInterface {
-    ColourMapSelector::ColourMapSelector(zlInterface::UIBase &base, const float boxWidth)
+namespace zlgui {
+    ColourMapSelector::ColourMapSelector(zlgui::UIBase &base, const float boxWidth)
         : uiBase(base),
-          mapBox("", zlState::colourMapIdx::choices, uiBase),
+          mapBox("", zlstate::colourMapIdx::choices, uiBase),
           mapBoxWidthP(boxWidth) {
         addAndMakeVisible(mapBox);
         mapBox.getBox().addListener(this);
@@ -27,7 +27,7 @@ namespace zlInterface {
         g.fillRect(bound);
         bound = bound.withSizeKeepingCentre(bound.getWidth() - uiBase.getFontSize() * .375f,
                                             bound.getHeight() - uiBase.getFontSize() * .375f);
-        const auto &currentColourMap = zlInterface::colourMaps[static_cast<size_t>(mapBox.getBox().getSelectedId() - 1)];
+        const auto &currentColourMap = zlgui::colourMaps[static_cast<size_t>(mapBox.getBox().getSelectedId() - 1)];
         const auto singleColourMapWidth = bound.getWidth() / static_cast<float>(currentColourMap.size());
         for (const auto &colour : currentColourMap) {
             g.setColour(colour);
@@ -47,4 +47,4 @@ namespace zlInterface {
         juce::ignoreUnused(comboBoxThatHasChanged);
         repaint();
     }
-} // zlInterface
+} // zlgui

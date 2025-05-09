@@ -14,14 +14,14 @@
 #include "../../../state/state.hpp"
 #include "../../panel_definitons.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
 
 class ButtonPopUpBackground: public juce::Component {
 public:
         explicit ButtonPopUpBackground(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
-                             zlInterface::UIBase &base);
+                             zlgui::UIBase &base);
 
         ~ButtonPopUpBackground() override = default;
 
@@ -32,20 +32,20 @@ public:
     private:
         size_t band;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
 
         std::atomic<float> width{7.7916666f}, height{4.16667f};
-        std::atomic<zlFilter::FilterType> fType;
+        std::atomic<zldsp::filter::FilterType> fType;
 
-        zlInterface::CompactButton bypassC, soloC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
+        zlgui::CompactButton bypassC, soloC;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > buttonAttachments;
         const std::unique_ptr<juce::Drawable> bypassDrawable, soloDrawable;
 
-        zlInterface::CompactCombobox fTypeC;
+        zlgui::CompactCombobox fTypeC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
 
         const std::unique_ptr<juce::Drawable> drawable;
-        zlInterface::ClickButton button;
+        zlgui::ClickButton button;
 };
 
-} // zlPanel
+} // zlpanel

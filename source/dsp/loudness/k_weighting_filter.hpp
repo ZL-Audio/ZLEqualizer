@@ -11,7 +11,7 @@
 
 #include "../filter/filter.hpp"
 
-namespace zlLoudness {
+namespace zldsp::loudness {
     template<typename FloatType, bool UseLowPass = false>
     class KWeightingFilter {
     public:
@@ -20,16 +20,16 @@ namespace zlLoudness {
         void prepare(const juce::dsp::ProcessSpec &spec) {
             highPassF.prepare(spec);
             highShelfF.prepare(spec);
-            const auto w1 = zlFilter::ppi * 38.13713296248405 / spec.sampleRate;
-            const auto w2 = zlFilter::ppi * 1500.6868667368922 / spec.sampleRate;
-            highPassF.updateFromBiquad(zlFilter::MartinCoeff::get2HighPass(
+            const auto w1 = zldsp::filter::ppi * 38.13713296248405 / spec.sampleRate;
+            const auto w2 = zldsp::filter::ppi * 1500.6868667368922 / spec.sampleRate;
+            highPassF.updateFromBiquad(zldsp::filter::MartinCoeff::get2HighPass(
                 w1, 0.500242812458813));
-            highShelfF.updateFromBiquad(zlFilter::MartinCoeff::get2HighShelf(
+            highShelfF.updateFromBiquad(zldsp::filter::MartinCoeff::get2HighShelf(
                 w2, 1.5847768458311522, 0.7096433028107384));
             if (UseLowPass) {
                 lowPassF.prepare(spec);
-                const auto w3 = zlFilter::ppi * 22000.0 / spec.sampleRate;
-                lowPassF.updateFromBiquad(zlFilter::MartinCoeff::get2LowPass(
+                const auto w3 = zldsp::filter::ppi * 22000.0 / spec.sampleRate;
+                lowPassF.updateFromBiquad(zldsp::filter::MartinCoeff::get2LowPass(
                     w3, 0.7071067811865476));
             }
         }
@@ -59,7 +59,7 @@ namespace zlLoudness {
         }
 
     private:
-        zlFilter::IIRBase<FloatType> highPassF, highShelfF, lowPassF;
+        zldsp::filter::IIRBase<FloatType> highPassF, highShelfF, lowPassF;
         static constexpr FloatType bias = FloatType(1.0051643348917434);
     };
 }

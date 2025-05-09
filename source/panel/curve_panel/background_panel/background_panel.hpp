@@ -14,12 +14,12 @@
 #include "../../../gui/gui.hpp"
 #include "grid_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class BackgroundPanel final : public juce::Component {
     public:
         explicit BackgroundPanel(juce::AudioProcessorValueTreeState &parameters,
                                  juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base);
+                                 zlgui::UIBase &base);
 
         ~BackgroundPanel() override;
 
@@ -28,7 +28,7 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         GridPanel gridPanel;
     };
 }

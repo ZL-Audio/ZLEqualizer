@@ -11,9 +11,9 @@
 #include "../../state/state.hpp"
 #include "../panel_definitons.hpp"
 
-namespace zlPanel {
-    SettingPanel::SettingPanel(PluginProcessor &p, zlInterface::UIBase &base,
-                               const juce::String &label, zlInterface::boxIdx idx)
+namespace zlpanel {
+    SettingPanel::SettingPanel(PluginProcessor &p, zlgui::UIBase &base,
+                               const juce::String &label, zlgui::boxIdx idx)
         : parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           uiBase(base), name(label), mIdx(idx) {
@@ -88,6 +88,6 @@ namespace zlPanel {
     void SettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                 const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (zlInterface::UIBase::isBoxProperty(mIdx, property)) repaint();
+        if (zlgui::UIBase::isBoxProperty(mIdx, property)) repaint();
     }
-} // zlPanel
+} // zlpanel

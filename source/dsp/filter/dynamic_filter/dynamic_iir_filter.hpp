@@ -15,7 +15,7 @@
 #include "../ideal_filter/ideal_filter.hpp"
 #include "../../compressor/compressor.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     /**
      * a dynamic IIR filter which holds a main filter, a base filter, a target filter and a side filter
      * the output signal is filtered by the main filter, whose gain and Q is set by the mix of base/target filters'
@@ -25,7 +25,7 @@ namespace zlFilter {
     template<typename FloatType, size_t FilterSize>
     class DynamicIIR {
     public:
-        DynamicIIR(zlFilter::Empty<FloatType> &b, zlFilter::Empty<FloatType> &t)
+        DynamicIIR(zldsp::filter::Empty<FloatType> &b, zldsp::filter::Empty<FloatType> &t)
             : bFilter(b), tFilter(t) {
         }
 
@@ -37,7 +37,7 @@ namespace zlFilter {
         void prepare(const juce::dsp::ProcessSpec &spec) {
             mFilter.prepare(spec);
             sFilter.template setOrder<false>(2);
-            sFilter.template setFilterType<false>(zlFilter::FilterType::bandPass);
+            sFilter.template setFilterType<false>(zldsp::filter::FilterType::bandPass);
             sFilter.prepare(spec);
             const auto sr = spec.sampleRate / static_cast<double>(spec.maximumBlockSize);
             follower.prepare(sr);
@@ -90,11 +90,11 @@ namespace zlFilter {
 
         IIR<FloatType, FilterSize> &getSideFilter() { return sFilter; }
 
-        zlCompressor::KneeComputer<FloatType, false, false> &getComputer() { return computer; }
+        zldsp::compressor::KneeComputer<FloatType, false, false> &getComputer() { return computer; }
 
-        zlCompressor::RMSTracker<FloatType, false> &getTracker() { return tracker; }
+        zldsp::compressor::RMSTracker<FloatType, false> &getTracker() { return tracker; }
 
-        zlCompressor::PSFollower<FloatType, true, false> &getFollower() { return follower; }
+        zldsp::compressor::PSFollower<FloatType, true, false> &getFollower() { return follower; }
 
         void setActive(const bool x) {
             if (x) {
@@ -122,11 +122,11 @@ namespace zlFilter {
         FloatType getBaseLine() const { return compBaseline; }
 
     private:
-        zlFilter::IIR<FloatType, FilterSize> mFilter, sFilter;
-        zlFilter::Empty<FloatType> &bFilter, &tFilter;
-        zlCompressor::KneeComputer<FloatType, false, false> computer;
-        zlCompressor::RMSTracker<FloatType, false> tracker;
-        zlCompressor::PSFollower<FloatType, true, false> follower;
+        zldsp::filter::IIR<FloatType, FilterSize> mFilter, sFilter;
+        zldsp::filter::Empty<FloatType> &bFilter, &tFilter;
+        zldsp::compressor::KneeComputer<FloatType, false, false> computer;
+        zldsp::compressor::RMSTracker<FloatType, false> tracker;
+        zldsp::compressor::PSFollower<FloatType, true, false> follower;
         FloatType compBaseline;
         juce::AudioBuffer<FloatType> sBufferCopy;
         std::atomic<bool> active{false}, dynamicON{false}, dynamicBypass{false};

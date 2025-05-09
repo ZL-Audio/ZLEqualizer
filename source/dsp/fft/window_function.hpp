@@ -12,7 +12,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include "../vector/vector.hpp"
 
-namespace zlFFT {
+namespace zldsp::fft {
     template<typename FloatType>
     class WindowFunction {
     public:
@@ -28,7 +28,7 @@ namespace zlFFT {
                 juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(
                     tempWindow.data(), size + 1, method, normalise, beta);
                 window.resize(size);
-                zlVector::copy(window.data(), tempWindow.data(), size);
+                zldsp::vector::copy(window.data(), tempWindow.data(), size);
             } else {
                 window.resize(size);
                 juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(

@@ -16,7 +16,7 @@
 #include "../../helper/helper.hpp"
 #include "button_pop_up_background.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ButtonPopUp final : public juce::Component,
                               public juce::ComponentListener {
     private:
@@ -24,7 +24,7 @@ namespace zlPanel {
                            private juce::Label::Listener,
                            private juce::TextEditor::Listener {
         public:
-            explicit PitchLabel(zlInterface::UIBase &base, juce::RangedAudioParameter *freq);
+            explicit PitchLabel(zlgui::UIBase &base, juce::RangedAudioParameter *freq);
 
             void setFreq(double freq);
 
@@ -33,9 +33,9 @@ namespace zlPanel {
             }
 
         private:
-            zlInterface::UIBase &uiBase;
+            zlgui::UIBase &uiBase;
             juce::RangedAudioParameter *freqPara;
-            zlInterface::NameLookAndFeel laf;
+            zlgui::NameLookAndFeel laf;
             juce::Label label;
             bool hasEditorChanged{false};
 
@@ -58,7 +58,7 @@ namespace zlPanel {
         explicit ButtonPopUp(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
-                             zlInterface::UIBase &base);
+                             zlgui::UIBase &base);
 
         ~ButtonPopUp() override;
 
@@ -77,7 +77,7 @@ namespace zlPanel {
 
         size_t band;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         std::atomic<float> &fType, &freqPara;
         float direction = -1.f;
         juce::Rectangle<int> previousBound{};
@@ -88,4 +88,4 @@ namespace zlPanel {
 
         void updateLabel();
     };
-} // zlPanel
+} // zlpanel

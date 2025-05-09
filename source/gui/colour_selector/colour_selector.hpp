@@ -14,11 +14,11 @@
 #include "../interface_definitions.hpp"
 #include "../calloutbox/call_out_box_laf.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class ColourSelector final : public juce::Component,
                                  private juce::ChangeListener {
     public:
-        explicit ColourSelector(zlInterface::UIBase &base, juce::Component &parent,
+        explicit ColourSelector(zlgui::UIBase &base, juce::Component &parent,
                                 float widthS = 12.f, float heightS = 10.f);
 
         void paint(juce::Graphics &g) override;
@@ -40,8 +40,8 @@ namespace zlInterface {
         }
 
     private:
-        zlInterface::UIBase &uiBase;
-        zlInterface::CallOutBoxLAF laf;
+        zlgui::UIBase &uiBase;
+        zlgui::CallOutBoxLAF laf;
         juce::Component &parentC;
         float selectorWidthS, selectorHeightS;
 
@@ -49,4 +49,4 @@ namespace zlInterface {
 
         juce::Colour colour = juce::Colours::red;
     };
-} // zlInterface
+} // zlgui

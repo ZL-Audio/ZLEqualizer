@@ -11,7 +11,7 @@
 
 #include "../../../dsp/dsp.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ResetAttach final : private juce::AudioProcessorValueTreeState::Listener,
                               private juce::AsyncUpdater {
     public:
@@ -19,13 +19,13 @@ namespace zlPanel {
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA)
             : idx(bandIdx), parametersRef(parameters), parametersNARef(parametersNA) {
-            parametersRef.addParameterListener(zlDSP::appendSuffix(zlDSP::bypass::ID, idx), this);
-            parametersNARef.addParameterListener(zlState::appendSuffix(zlState::active::ID, idx), this);
+            parametersRef.addParameterListener(zlp::appendSuffix(zlp::bypass::ID, idx), this);
+            parametersNARef.addParameterListener(zlstate::appendSuffix(zlstate::active::ID, idx), this);
         }
 
         ~ResetAttach() override {
-            parametersRef.removeParameterListener(zlDSP::appendSuffix(zlDSP::bypass::ID, idx), this);
-            parametersNARef.removeParameterListener(zlState::appendSuffix(zlState::active::ID, idx), this);
+            parametersRef.removeParameterListener(zlp::appendSuffix(zlp::bypass::ID, idx), this);
+            parametersNARef.removeParameterListener(zlstate::appendSuffix(zlstate::active::ID, idx), this);
         }
 
     private:
@@ -35,32 +35,32 @@ namespace zlPanel {
         std::atomic<bool> toActive;
 
         constexpr static std::array resetIDs{
-            zlDSP::solo::ID, zlDSP::sideSolo::ID,
-            zlDSP::dynamicON::ID, zlDSP::dynamicLearn::ID,
-            zlDSP::threshold::ID, zlDSP::kneeW::ID, zlDSP::attack::ID, zlDSP::release::ID,
-            zlDSP::bypass::ID, zlDSP::fType::ID, zlDSP::slope::ID, zlDSP::lrType::ID
+            zlp::solo::ID, zlp::sideSolo::ID,
+            zlp::dynamicON::ID, zlp::dynamicLearn::ID,
+            zlp::threshold::ID, zlp::kneeW::ID, zlp::attack::ID, zlp::release::ID,
+            zlp::bypass::ID, zlp::fType::ID, zlp::slope::ID, zlp::lrType::ID
         };
 
         inline const static std::array resetDefaultVs{
-            zlDSP::solo::convertTo01(zlDSP::solo::defaultV),
-            zlDSP::sideSolo::convertTo01(zlDSP::sideSolo::defaultV),
-            zlDSP::dynamicON::convertTo01(zlDSP::dynamicON::defaultV),
-            zlDSP::dynamicLearn::convertTo01(zlDSP::dynamicLearn::defaultV),
-            zlDSP::threshold::convertTo01(zlDSP::threshold::defaultV),
-            zlDSP::kneeW::convertTo01(zlDSP::kneeW::defaultV),
-            zlDSP::attack::convertTo01(zlDSP::attack::defaultV),
-            zlDSP::release::convertTo01(zlDSP::release::defaultV),
-            zlDSP::bypass::convertTo01(zlDSP::bypass::defaultV),
-            zlDSP::fType::convertTo01(zlDSP::fType::defaultI),
-            zlDSP::slope::convertTo01(zlDSP::slope::defaultI),
-            zlDSP::lrType::convertTo01(zlDSP::lrType::defaultI),
+            zlp::solo::convertTo01(zlp::solo::defaultV),
+            zlp::sideSolo::convertTo01(zlp::sideSolo::defaultV),
+            zlp::dynamicON::convertTo01(zlp::dynamicON::defaultV),
+            zlp::dynamicLearn::convertTo01(zlp::dynamicLearn::defaultV),
+            zlp::threshold::convertTo01(zlp::threshold::defaultV),
+            zlp::kneeW::convertTo01(zlp::kneeW::defaultV),
+            zlp::attack::convertTo01(zlp::attack::defaultV),
+            zlp::release::convertTo01(zlp::release::defaultV),
+            zlp::bypass::convertTo01(zlp::bypass::defaultV),
+            zlp::fType::convertTo01(zlp::fType::defaultI),
+            zlp::slope::convertTo01(zlp::slope::defaultI),
+            zlp::lrType::convertTo01(zlp::lrType::defaultI),
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override {
-            if (parameterID.startsWith(zlDSP::bypass::ID) && newValue < .5f) {
+            if (parameterID.startsWith(zlp::bypass::ID) && newValue < .5f) {
                 toActive.store(true);
                 triggerAsyncUpdate();
-            } else if (parameterID.startsWith(zlState::active::ID) && newValue < .5f) {
+            } else if (parameterID.startsWith(zlstate::active::ID) && newValue < .5f) {
                 toActive.store(false);
                 triggerAsyncUpdate();
             }
@@ -68,12 +68,12 @@ namespace zlPanel {
 
         void handleAsyncUpdate() override {
             if (toActive.load()) {
-                auto *para = parametersNARef.getParameter(zlState::appendSuffix(zlState::active::ID, idx));
+                auto *para = parametersNARef.getParameter(zlstate::appendSuffix(zlstate::active::ID, idx));
                 para->beginChangeGesture();
-                para->setValueNotifyingHost(zlState::active::convertTo01(true));
+                para->setValueNotifyingHost(zlstate::active::convertTo01(true));
                 para->endChangeGesture();
             } else {
-                const auto suffix = zlState::appendSuffix("", idx);
+                const auto suffix = zlstate::appendSuffix("", idx);
                 for (size_t j = 0; j < resetDefaultVs.size(); ++j) {
                     const auto resetID = resetIDs[j] + suffix;
                     auto *para = parametersRef.getParameter(resetID);

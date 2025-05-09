@@ -12,11 +12,11 @@
 #include "colour_selector.hpp"
 #include "../slider/slider.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class ColourOpacitySelector final : public juce::Component,
                                         private juce::Slider::Listener {
     public:
-        explicit ColourOpacitySelector(zlInterface::UIBase &base, juce::Component &parent,
+        explicit ColourOpacitySelector(zlgui::UIBase &base, juce::Component &parent,
                                        bool useOpacity = true,
                                        float widthS = 12.f, float heightS = 10.f,
                                        float w1 = 0.3f, float w2 = 0.3f);
@@ -35,12 +35,12 @@ namespace zlInterface {
         }
 
     private:
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         ColourSelector selector;
-        zlInterface::CompactLinearSlider slider;
+        zlgui::CompactLinearSlider slider;
         bool opacityON;
         std::array<float, 2> weights{};
 
         void sliderValueChanged(juce::Slider *s) override;
     };
-} // zlInterface
+} // zlgui

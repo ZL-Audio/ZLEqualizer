@@ -14,7 +14,7 @@
 #include "../../fft/fft.hpp"
 #include "../../vector/vector.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     template<typename FloatType, size_t defaultFFTOrder = 10>
     class FIRBase {
     public:
@@ -71,8 +71,8 @@ namespace zlFilter {
         int getLatency() const { return latency.load(); }
 
     protected:
-        zlFFT::KFREngine<float> fft;
-        zlFFT::WindowFunction<float> window1, window2;
+        zldsp::fft::KFREngine<float> fft;
+        zldsp::fft::WindowFunction<float> window1, window2;
 
         size_t fftOrder = defaultFFTOrder;
         size_t fftSize = static_cast<size_t>(1) << fftOrder;
@@ -118,9 +118,9 @@ namespace zlFilter {
             for (size_t idx = 0; idx < inputFIFOs.size(); ++idx) {
 
                 // Copy the input FIFO into the FFT working space in two parts.
-                zlVector::copy(fftIn.data(), inputFIFOs[idx].data() + pos, fftSize - pos);
+                zldsp::vector::copy(fftIn.data(), inputFIFOs[idx].data() + pos, fftSize - pos);
                 if (pos > 0) {
-                    zlVector::copy(fftIn.data() + fftSize - pos, inputFIFOs[idx].data(), pos);
+                    zldsp::vector::copy(fftIn.data() + fftSize - pos, inputFIFOs[idx].data(), pos);
                 }
 
                 if (!isBypassed) {

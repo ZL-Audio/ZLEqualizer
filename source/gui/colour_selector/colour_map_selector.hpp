@@ -13,11 +13,11 @@
 #include "../interface_definitions.hpp"
 #include "../combobox/combobox.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class ColourMapSelector final : public juce::Component,
                                     private juce::ComboBox::Listener {
     public:
-        explicit ColourMapSelector(zlInterface::UIBase &base, float boxWidth = .5f);
+        explicit ColourMapSelector(zlgui::UIBase &base, float boxWidth = .5f);
 
         void paint(juce::Graphics &g) override;
 
@@ -26,10 +26,10 @@ namespace zlInterface {
         juce::ComboBox &getBox() { return mapBox.getBox(); }
 
     private:
-        zlInterface::UIBase &uiBase;
-        zlInterface::CompactCombobox mapBox;
+        zlgui::UIBase &uiBase;
+        zlgui::CompactCombobox mapBox;
         float mapBoxWidthP{.5f};
 
         void comboBoxChanged(juce::ComboBox *comboBoxThatHasChanged) override;
     };
-} // zlInterface
+} // zlgui

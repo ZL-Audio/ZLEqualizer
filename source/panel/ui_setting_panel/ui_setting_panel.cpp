@@ -10,8 +10,8 @@
 #include "ui_setting_panel.hpp"
 #include "BinaryData.h"
 
-namespace zlPanel {
-    UISettingPanel::UISettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
+namespace zlpanel {
+    UISettingPanel::UISettingPanel(PluginProcessor &p, zlgui::UIBase &base)
         : pRef(p), uiBase(base),
           colourPanel(p, base),
           controlPanel(p, base),
@@ -27,7 +27,7 @@ namespace zlPanel {
           labelLAF(uiBase) {
         juce::ignoreUnused(pRef);
         setOpaque(true);
-        uiBase.setProperty(zlInterface::settingIdx::uiSettingPanelShow, false);
+        uiBase.setProperty(zlgui::settingIdx::uiSettingPanelShow, false);
         addAndMakeVisible(saveButton);
         addAndMakeVisible(closeButton);
         addAndMakeVisible(resetButton);
@@ -183,10 +183,10 @@ namespace zlPanel {
     }
 
     void UISettingPanel::visibilityChanged() {
-        uiBase.setProperty(zlInterface::settingIdx::uiSettingPanelShow, isVisible());
+        uiBase.setProperty(zlgui::settingIdx::uiSettingPanelShow, isVisible());
     }
 
     void UISettingPanel::setRendererList(const juce::StringArray &rendererList) {
         otherPanel.setRendererList(rendererList);
     }
-} // zlPanel
+} // zlpanel

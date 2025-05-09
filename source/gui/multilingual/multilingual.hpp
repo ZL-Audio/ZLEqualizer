@@ -18,7 +18,7 @@
 #include "de.hpp"
 #include "es.hpp"
 
-namespace zlInterface::multilingual {
+namespace zlgui::multilingual {
     enum languages {
         lang_system,
         lang_en,

@@ -12,12 +12,12 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ColourSettingPanel final : public juce::Component {
     public:
         static constexpr float heightP = 56.f;
 
-        explicit ColourSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit ColourSettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~ColourSettingPanel() override;
 
@@ -33,14 +33,14 @@ namespace zlPanel {
 
     private:
         PluginProcessor &pRef;
-        zlInterface::UIBase &uiBase;
-        zlInterface::NameLookAndFeel nameLAF;
-        zlInterface::ColourOpacitySelector textSelector, backgroundSelector, shadowSelector, glowSelector;
-        zlInterface::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
-        zlInterface::ColourOpacitySelector gainSelector, sideLoudnessSelector;
+        zlgui::UIBase &uiBase;
+        zlgui::NameLookAndFeel nameLAF;
+        zlgui::ColourOpacitySelector textSelector, backgroundSelector, shadowSelector, glowSelector;
+        zlgui::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
+        zlgui::ColourOpacitySelector gainSelector, sideLoudnessSelector;
         static constexpr size_t numSelectors = 11;
         std::array<juce::Label, numSelectors> selectorLabels;
-        std::array<zlInterface::ColourOpacitySelector *, numSelectors> selectors{
+        std::array<zlgui::ColourOpacitySelector *, numSelectors> selectors{
             &textSelector,
             &backgroundSelector,
             &shadowSelector,
@@ -67,18 +67,18 @@ namespace zlPanel {
             "Side Loudness Colour"
         };
 
-        std::array<zlInterface::colourIdx, numSelectors> colourIdx{
-            zlInterface::colourIdx::textColour,
-            zlInterface::colourIdx::backgroundColour,
-            zlInterface::colourIdx::shadowColour,
-            zlInterface::colourIdx::glowColour,
-            zlInterface::colourIdx::preColour,
-            zlInterface::colourIdx::postColour,
-            zlInterface::colourIdx::sideColour,
-            zlInterface::colourIdx::gridColour,
-            zlInterface::colourIdx::tagColour,
-            zlInterface::colourIdx::gainColour,
-            zlInterface::colourIdx::sideLoudnessColour
+        std::array<zlgui::colourIdx, numSelectors> colourIdx{
+            zlgui::colourIdx::textColour,
+            zlgui::colourIdx::backgroundColour,
+            zlgui::colourIdx::shadowColour,
+            zlgui::colourIdx::glowColour,
+            zlgui::colourIdx::preColour,
+            zlgui::colourIdx::postColour,
+            zlgui::colourIdx::sideColour,
+            zlgui::colourIdx::gridColour,
+            zlgui::colourIdx::tagColour,
+            zlgui::colourIdx::gainColour,
+            zlgui::colourIdx::sideLoudnessColour
         };
 
         std::array<std::string, numSelectors> tagNames{
@@ -93,7 +93,7 @@ namespace zlPanel {
         };
 
         juce::Label cMap1Label, cMap2Label;
-        zlInterface::ColourMapSelector cMap1Selector, cMap2Selector;
+        zlgui::ColourMapSelector cMap1Selector, cMap2Selector;
         juce::Label importLabel, exportLabel;
 
         std::unique_ptr<juce::FileChooser> myChooser;
@@ -104,4 +104,4 @@ namespace zlPanel {
                 .getChildFile(JucePlugin_Manufacturer)
                 .getChildFile("Shared Settings");
     };
-} // zlPanel
+} // zlpanel

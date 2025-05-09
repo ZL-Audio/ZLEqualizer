@@ -9,7 +9,7 @@
 
 #pragma once
 
-namespace zlInterface::multilingual {
+namespace zlgui::multilingual {
     enum labels {
         bandBypass,
         bandSolo,

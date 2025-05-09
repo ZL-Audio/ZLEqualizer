@@ -14,7 +14,7 @@
 #include <numeric>
 #include <numbers>
 
-namespace zlFilter {
+namespace zldsp::filter {
     template<typename FloatType>
     void calculateWsForPrototype(std::vector<std::complex<FloatType> > &ws) {
         const auto delta = static_cast<FloatType>(pi) / static_cast<double>(ws.size() - 1);

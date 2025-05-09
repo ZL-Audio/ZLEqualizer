@@ -9,8 +9,8 @@
 
 #include "button_pop_up.hpp"
 
-namespace zlPanel {
-    ButtonPopUp::PitchLabel::PitchLabel(zlInterface::UIBase &base, juce::RangedAudioParameter *freq)
+namespace zlpanel {
+    ButtonPopUp::PitchLabel::PitchLabel(zlgui::UIBase &base, juce::RangedAudioParameter *freq)
                 : uiBase(base), freqPara(freq), laf(uiBase) {
         label.setLookAndFeel(&laf);
         label.setJustificationType(juce::Justification::centredRight);
@@ -67,13 +67,13 @@ namespace zlPanel {
     }
 
     ButtonPopUp::ButtonPopUp(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
+                             juce::AudioProcessorValueTreeState &parametersNA, zlgui::UIBase &base)
         : band{bandIdx}, parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
-          fType(*parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::fType::ID, band))),
-          freqPara(*parametersRef.getRawParameterValue(zlDSP::appendSuffix(zlDSP::freq::ID, band))),
+          fType(*parametersRef.getRawParameterValue(zlp::appendSuffix(zlp::fType::ID, band))),
+          freqPara(*parametersRef.getRawParameterValue(zlp::appendSuffix(zlp::freq::ID, band))),
           background(bandIdx, parameters, parametersNA, base),
-          pitchLabel(base, parameters.getParameter(zlDSP::appendSuffix(zlDSP::freq::ID, bandIdx))) {
+          pitchLabel(base, parameters.getParameter(zlp::appendSuffix(zlp::freq::ID, bandIdx))) {
         juce::ignoreUnused(parametersRef, parametersNARef);
 
         addAndMakeVisible(background);
@@ -106,9 +106,9 @@ namespace zlPanel {
         const auto shiftY = compBound.getCentreY() - compParentBound.getCentreY();
         const auto shiftYPortion = shiftY / (compParentBound.getHeight() - uiBase.getFontSize()) * 2;
 
-        switch (static_cast<zlFilter::FilterType>(fType.load())) {
-            case zlFilter::FilterType::peak:
-            case zlFilter::FilterType::bandShelf: {
+        switch (static_cast<zldsp::filter::FilterType>(fType.load())) {
+            case zldsp::filter::FilterType::peak:
+            case zldsp::filter::FilterType::bandShelf: {
                 if (direction > 0.f) {
                     if (shiftYPortion > .5f || (shiftYPortion < -0.1f && shiftYPortion > -0.4f)) {
                         direction = -1.f;
@@ -120,9 +120,9 @@ namespace zlPanel {
                 }
                 break;
             }
-            case zlFilter::FilterType::lowShelf:
-            case zlFilter::FilterType::highShelf:
-            case zlFilter::FilterType::tiltShelf: {
+            case zldsp::filter::FilterType::lowShelf:
+            case zldsp::filter::FilterType::highShelf:
+            case zldsp::filter::FilterType::tiltShelf: {
                 if (direction > 0.f && shiftYPortion < -0.2f) {
                     direction = -1.f;
                 } else if (direction < 0.f && shiftYPortion > 0.2f) {
@@ -130,10 +130,10 @@ namespace zlPanel {
                 }
                 break;
             }
-            case zlFilter::FilterType::notch:
-            case zlFilter::FilterType::lowPass:
-            case zlFilter::FilterType::highPass:
-            case zlFilter::FilterType::bandPass: {
+            case zldsp::filter::FilterType::notch:
+            case zldsp::filter::FilterType::lowPass:
+            case zldsp::filter::FilterType::highPass:
+            case zldsp::filter::FilterType::bandPass: {
                 direction = -1.f;
                 break;
             }
@@ -163,4 +163,4 @@ namespace zlPanel {
     void ButtonPopUp::updateLabel() {
         pitchLabel.setFreq(freqPara.load());
     }
-} // zlPanel
+} // zlpanel

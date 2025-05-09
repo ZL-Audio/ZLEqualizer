@@ -15,7 +15,7 @@
 #pragma GCC diagnostic pop
 #include "../filter/ideal_filter/ideal_filter.hpp"
 
-namespace zlEqMatch {
+namespace zldsp::eq_match {
     template<size_t FilterNum>
     class EqMatchOptimizer final : public juce::Thread::Listener {
     public:
@@ -33,8 +33,8 @@ namespace zlEqMatch {
         static constexpr std::array algos2{
             nlopt::algorithm::GN_CRS2_LM, nlopt::algorithm::GN_CRS2_LM, nlopt::algorithm::LD_SLSQP
         };
-        static constexpr std::array<zlFilter::FilterType, 3> filterTypes{
-            zlFilter::FilterType::lowShelf, zlFilter::FilterType::peak, zlFilter::FilterType::highShelf
+        static constexpr std::array<zldsp::filter::FilterType, 3> filterTypes{
+            zldsp::filter::FilterType::lowShelf, zldsp::filter::FilterType::peak, zldsp::filter::FilterType::highShelf
         };
         static constexpr size_t maximumOrder = 6;
         static constexpr std::array<double, 3> initSol{6.214608098422191, 0.0, -0.3465735902799726};
@@ -88,7 +88,7 @@ namespace zlEqMatch {
                 if (mseS[i] < eps) {
                     for (size_t j = i + 1; j < filters.size(); j++) {
                         mseS[j] = mseS[i];
-                        filters[j].setFilterType(zlFilter::FilterType::peak);
+                        filters[j].setFilterType(zldsp::filter::FilterType::peak);
                         filters[j].setFreq(500.);
                         filters[j].setGain(0.);
                         filters[j].setQ(0.707);
@@ -114,7 +114,7 @@ namespace zlEqMatch {
             // fit filter one by one
             for (size_t i = 0; i < FilterNum; i++) {
                 std::vector<double> mseByOrders{};
-                std::vector<zlFilter::FilterType> filterTypeByOrders{};
+                std::vector<zldsp::filter::FilterType> filterTypeByOrders{};
                 std::vector<std::vector<double> > solsByOrders{};
                 // for all orders
                 for (const size_t order: orders) {
@@ -156,7 +156,7 @@ namespace zlEqMatch {
                 if (mseS[i] < eps) {
                     for (size_t j = i + 1; j < filters.size(); j++) {
                         mseS[j] = mseS[i];
-                        filters[j].setFilterType(zlFilter::FilterType::peak);
+                        filters[j].setFilterType(zldsp::filter::FilterType::peak);
                         filters[j].setOrder(2);
                         filters[j].setFreq(500.);
                         filters[j].setGain(0.);
@@ -173,16 +173,16 @@ namespace zlEqMatch {
 
         std::array<double, FilterNum> &getMSE() { return mseS; }
 
-        std::array<zlFilter::Empty<double>, FilterNum> &getSol() { return filters; }
+        std::array<zldsp::filter::Empty<double>, FilterNum> &getSol() { return filters; }
 
         void exitSignalSent() override {
             shouldExit.store(true);
         }
 
     private:
-        std::array<zlFilter::Empty<double>, FilterNum> filters;
+        std::array<zldsp::filter::Empty<double>, FilterNum> filters;
         std::array<double, FilterNum> mseS{};
-        zlFilter::Ideal<double, maximumOrder> mFilter;
+        zldsp::filter::Ideal<double, maximumOrder> mFilter;
         std::vector<double> mDiffs;
         std::vector<double> mWs;
         std::atomic<bool> shouldExit{false};
@@ -190,7 +190,7 @@ namespace zlEqMatch {
         struct optFData {
             size_t startIdx;
             size_t endIdx;
-            zlFilter::Ideal<double, maximumOrder> *filter;
+            zldsp::filter::Ideal<double, maximumOrder> *filter;
             std::vector<double> *diffs;
             std::vector<double> *ws;
         };
@@ -220,7 +220,7 @@ namespace zlEqMatch {
         }
 
         static double calculateMSE(const double freqLog, const double gain, const double qLog,
-                                   zlFilter::Ideal<double, maximumOrder> *filter,
+                                   zldsp::filter::Ideal<double, maximumOrder> *filter,
                                    const std::vector<double> *diffs, const std::vector<double> *ws,
                                    const size_t startIdx, const size_t endIdx) {
             filter->setFreq(std::exp(freqLog));
@@ -269,7 +269,7 @@ namespace zlEqMatch {
             return bestMSE;
         }
 
-        void updateDiff(const zlFilter::Empty<double> &eFilter) {
+        void updateDiff(const zldsp::filter::Empty<double> &eFilter) {
             mFilter.setFilterType(eFilter.getFilterType());
             mFilter.setOrder(eFilter.getOrder());
             mFilter.setFreq(eFilter.getFreq());
@@ -282,4 +282,4 @@ namespace zlEqMatch {
             }
         }
     };
-} // zlEqMatch
+} // zldsp::eq_match

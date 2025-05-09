@@ -11,27 +11,27 @@
 
 #include <numbers>
 
-namespace zlCompressor {
+namespace zldsp::compressor {
     /**
      * a punch-smooth follower
      * @tparam FloatType
-     * @tparam useSmooth whether to use smooth
-     * @tparam usePunch whether to use punch
+     * @tparam UseSmooth whether to use smooth
+     * @tparam UsePunch whether to use punch
      */
-    template<typename FloatType, bool useSmooth = false, bool usePunch = false>
+    template<typename FloatType, bool UseSmooth = false, bool UsePunch = false>
     class PSFollower {
     public:
         PSFollower() = default;
 
         /**
          * call before processing starts
-         * @tparam toReset whether to reset the internal state
+         * @tparam ToReset whether to reset the internal state
          * @param sr sampleRate
          */
-        template<bool toReset = true>
+        template<bool ToReset = true>
         void prepare(const double sr) {
             expFactor = -2.0 * std::numbers::pi * 1000.0 / sr;
-            if (toReset) {
+            if (ToReset) {
                 state = FloatType(0);
                 y = FloatType(0);
             }
@@ -54,7 +54,7 @@ namespace zlCompressor {
          */
         FloatType processSample(const FloatType x) {
             FloatType y0;
-            if (useSmooth) {
+            if (UseSmooth) {
                 state = std::max(x, release * state + releaseC * x);
                 const auto y1 = attack * y + attackC * state;
                 const auto y2 = x >= y ? attack * y + attackC * x : release * y + releaseC * x;
@@ -62,7 +62,7 @@ namespace zlCompressor {
             } else {
                 y0 = x >= y ? attack * y + attackC * x : release * y + releaseC * x;
             }
-            if (usePunch) {
+            if (UsePunch) {
                 const auto slope0 = y0 - y;
                 if (punch >= FloatType(0)) {
                     if (slope0 < slope) {
@@ -122,7 +122,7 @@ namespace zlCompressor {
             if (currentAttackTime < 0.001) {
                 attack = FloatType(0);
             } else {
-                if (usePunch) {
+                if (UsePunch) {
                     attack = static_cast<FloatType>(std::exp(
                         expFactor / currentAttackTime / (1. - std::pow(std::abs(currentPunchPortion), 2.) * 0.125)));
                 } else {
@@ -137,12 +137,12 @@ namespace zlCompressor {
                 release = static_cast<FloatType>(std::exp(expFactor / currentReleaseTime));
             }
             releaseC = FloatType(1) - release;
-            if (useSmooth) {
+            if (UseSmooth) {
                 // update smooth
                 smooth = static_cast<FloatType>(currentSmoothPortion);
                 smoothC = FloatType(1) - smooth;
             }
-            if (usePunch) {
+            if (UsePunch) {
                 // update punch
                 if (currentAttackTime < 0.001 || std::abs(currentPunchPortion) < 0.001) {
                     punch = FloatType(0);

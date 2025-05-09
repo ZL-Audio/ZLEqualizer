@@ -12,7 +12,7 @@
 #include "left_right_combobox_look_and_feel.hpp"
 #include "left_right_button_look_and_feel.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class LeftRightCombobox final : public juce::Component,
                                     public juce::SettableTooltipClient {
     public:
@@ -43,4 +43,4 @@ namespace zlInterface {
 
         float lrPad{0.f}, ubPad{0.f};
     };
-} // zlInterface
+} // zlgui

@@ -11,7 +11,7 @@
 
 #include <array>
 
-namespace zlInterface::multilingual::ja {
+namespace zlgui::multilingual::ja {
     static constexpr std::array texts = {
         "押す：選択したバンドをオンにします。\n離す：選択したバンドをバイパスします。",
         "押す：選択した周波数帯域に影響を受けるオーディオをソロにします。",

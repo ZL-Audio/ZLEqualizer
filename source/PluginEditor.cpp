@@ -24,13 +24,13 @@ PluginEditor::PluginEditor(PluginProcessor &p)
     juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(sourceCodePro);
 
     // set size & size listener
-    setResizeLimits(static_cast<int>(zlState::windowW::minV),
-                    static_cast<int>(zlState::windowH::minV),
-                    static_cast<int>(zlState::windowW::maxV),
-                    static_cast<int>(zlState::windowH::maxV));
+    setResizeLimits(static_cast<int>(zlstate::windowW::minV),
+                    static_cast<int>(zlstate::windowH::minV),
+                    static_cast<int>(zlstate::windowW::maxV),
+                    static_cast<int>(zlstate::windowH::maxV));
     setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
-    lastUIWidth.referTo(p.state.getParameterAsValue(zlState::windowW::ID));
-    lastUIHeight.referTo(p.state.getParameterAsValue(zlState::windowH::ID));
+    lastUIWidth.referTo(p.state.getParameterAsValue(zlstate::windowW::ID));
+    lastUIHeight.referTo(p.state.getParameterAsValue(zlstate::windowH::ID));
     setSize(lastUIWidth.getValue(), lastUIHeight.getValue());
 
     // add main panel
@@ -74,7 +74,7 @@ void PluginEditor::minimisationStateChanged(bool) {
 
 void PluginEditor::parameterChanged(const juce::String &parameterID, float newValue) {
     juce::ignoreUnused(parameterID, newValue);
-    isSizeChanged.store(parameterID == zlState::windowH::ID || parameterID == zlState::windowW::ID);
+    isSizeChanged.store(parameterID == zlstate::windowH::ID || parameterID == zlstate::windowW::ID);
     triggerAsyncUpdate();
 }
 

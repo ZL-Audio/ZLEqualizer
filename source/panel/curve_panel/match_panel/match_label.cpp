@@ -9,8 +9,8 @@
 
 #include "match_label.hpp"
 
-namespace zlPanel {
-    MatchLabel::MatchLabel(zlInterface::UIBase &base)
+namespace zlpanel {
+    MatchLabel::MatchLabel(zlgui::UIBase &base)
         : uiBase(base), labelLAF(base) {
         runningLabel.setText("Running", juce::dontSendNotification);
         runningLabel.setJustificationType(juce::Justification::centred);
@@ -21,7 +21,7 @@ namespace zlPanel {
     }
 
     void MatchLabel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(.75f));
+        g.fillAll(uiBase.getColourByIdx(zlgui::backgroundColour).withAlpha(.75f));
     }
 
     void MatchLabel::resized() {
@@ -29,4 +29,4 @@ namespace zlPanel {
         runningLabel.setBounds(bound.withSizeKeepingCentre(
             bound.getWidth() * .5f, uiBase.getFontSize() * 5.f).toNearestInt());
     }
-} // zlPanel
+} // zlpanel

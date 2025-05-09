@@ -14,13 +14,13 @@
 #include "../../PluginProcessor.hpp"
 #include "../panel_definitons.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class OutputValuePanel final : public juce::Component,
                                    private juce::MultiTimer,
                                    private juce::ValueTree::Listener {
     public:
         explicit OutputValuePanel(PluginProcessor &p,
-                                  zlInterface::UIBase &base);
+                                  zlgui::UIBase &base);
 
         ~OutputValuePanel() override;
 
@@ -31,7 +31,7 @@ namespace zlPanel {
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::RangedAudioParameter *lmPara;
         std::atomic<float> &scale;
         float currentGain{0.f}, currentScale{100.f};
@@ -50,4 +50,4 @@ namespace zlPanel {
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
     };
-} // zlPanel
+} // zlpanel

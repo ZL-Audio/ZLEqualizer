@@ -9,22 +9,22 @@
 
 #include "match_control_panel.hpp"
 
-namespace zlPanel {
-    MatchControlPanel::MatchControlPanel(PluginProcessor &p, zlInterface::UIBase &base)
+namespace zlpanel {
+    MatchControlPanel::MatchControlPanel(PluginProcessor &p, zlgui::UIBase &base)
         : uiBase(base), analyzer(p.getController().getMatchAnalyzer()),
           startDrawable(juce::Drawable::createFromImageData(BinaryData::playfill_svg, BinaryData::playfill_svgSize)),
           pauseDrawable(juce::Drawable::createFromImageData(BinaryData::pauseline_svg, BinaryData::pauseline_svgSize)),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
-          sideChooseBox("", {"Side", "Preset", "Flat"}, base, zlInterface::multilingual::labels::matchTarget),
-          fitAlgoBox("", {"LD", "GN", "GN+"}, base, zlInterface::multilingual::labels::matchAlgo),
-          weightSlider("Weight", base, zlInterface::multilingual::labels::matchWeight),
-          smoothSlider("Smooth", base, zlInterface::multilingual::labels::matchSmooth),
-          slopeSlider("Slope", base, zlInterface::multilingual::labels::matchSlope),
-          numBandSlider("Num Band", base, zlInterface::multilingual::labels::matchNumBand),
+          sideChooseBox("", {"Side", "Preset", "Flat"}, base, zlgui::multilingual::labels::matchTarget),
+          fitAlgoBox("", {"LD", "GN", "GN+"}, base, zlgui::multilingual::labels::matchAlgo),
+          weightSlider("Weight", base, zlgui::multilingual::labels::matchWeight),
+          smoothSlider("Smooth", base, zlgui::multilingual::labels::matchSmooth),
+          slopeSlider("Slope", base, zlgui::multilingual::labels::matchSlope),
+          numBandSlider("Num Band", base, zlgui::multilingual::labels::matchNumBand),
           learnButton(base, startDrawable.get(), pauseDrawable.get(),
-                      zlInterface::multilingual::labels::matchStartLearn),
-          saveButton(base, saveDrawable.get(), nullptr, zlInterface::multilingual::labels::matchSave),
-          fitButton(base, startDrawable.get(), nullptr, zlInterface::multilingual::labels::matchStartFit),
+                      zlgui::multilingual::labels::matchStartLearn),
+          saveButton(base, saveDrawable.get(), nullptr, zlgui::multilingual::labels::matchSave),
+          fitButton(base, startDrawable.get(), nullptr, zlgui::multilingual::labels::matchStartFit),
           matchRunner(p, uiBase, analyzer.getDiffs(), numBandSlider) {
         uiBase.getValueTree().addListener(this);
         // create preset directory if not exists
@@ -39,17 +39,17 @@ namespace zlPanel {
             auto item = &iterator.getItem();
             if (item->itemID == 1) {
                 item->setAction([this] {
-                    analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchSide);
+                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::matchSide);
                 });
             } else if (item->itemID == 2) {
                 item->setAction([this] {
                     loadFromPreset();
-                    analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchPreset);
+                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::matchPreset);
                 });
             } else if (item->itemID == 3) {
                 item->setAction([this] {
                     analyzer.setTargetSlope(0.f);
-                    analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::matchSlope);
+                    analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::matchSlope);
                 });
             }
         }
@@ -92,7 +92,7 @@ namespace zlPanel {
         }
         learnButton.getButton().onClick = [this]() {
             analyzer.setON(learnButton.getButton().getToggleState());
-            uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
+            uiBase.setProperty(zlgui::settingIdx::matchPanelFit, false);
         };
         saveButton.getButton().onClick = [this]() {
             learnButton.getButton().setToggleState(false, juce::dontSendNotification);
@@ -103,8 +103,8 @@ namespace zlPanel {
             learnButton.getButton().setToggleState(false, juce::dontSendNotification);
             analyzer.setON(false);
             matchRunner.start();
-            uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, true);
-            uiBase.setProperty(zlInterface::settingIdx::matchFitRunning, true);
+            uiBase.setProperty(zlgui::settingIdx::matchPanelFit, true);
+            uiBase.setProperty(zlgui::settingIdx::matchFitRunning, true);
         };
         resetDefault();
 
@@ -117,7 +117,7 @@ namespace zlPanel {
     }
 
     void MatchControlPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getColourByIdx(zlInterface::colourIdx::backgroundColour));
+        g.fillAll(uiBase.getColourByIdx(zlgui::colourIdx::backgroundColour));
         uiBase.fillRoundedShadowRectangle(g,
                                           internalBound.toFloat(),
                                           0.5f * uiBase.getFontSize(),
@@ -188,14 +188,14 @@ namespace zlPanel {
         matchRunner.setNumBand(static_cast<size_t>(8));
 
         sideChooseBox.getBox().setSelectedId(1, juce::dontSendNotification);
-        analyzer.setMatchMode(zlEqMatch::EqMatchAnalyzer<double>::MatchMode::matchSide);
+        analyzer.setMatchMode(zldsp::eq_match::EqMatchAnalyzer<double>::MatchMode::matchSide);
 
         fitAlgoBox.getBox().setSelectedId(2, juce::dontSendNotification);
         matchRunner.setMode(static_cast<size_t>(1));
     }
 
     void MatchControlPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
-        const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
+        const auto f = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelShow));
         setVisible(f);
         if (!f) {
             resetDefault();
@@ -251,4 +251,4 @@ namespace zlPanel {
             }
         });
     }
-} // zlPanel
+} // zlpanel

@@ -9,7 +9,7 @@
 
 #include "compact_combobox.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     CompactCombobox::CompactCombobox(const juce::String &labelText, const juce::StringArray &choices,
                                      UIBase &base, const multilingual::labels labelIdx,
                                      const std::vector<multilingual::labels> &itemLabelIndices)

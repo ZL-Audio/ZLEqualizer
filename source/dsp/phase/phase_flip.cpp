@@ -11,14 +11,14 @@
 
 #include "../vector/vector.hpp"
 
-namespace zlPhase {
+namespace zldsp::phase {
     template<typename FloatType>
     void PhaseFlip<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
         if (isON.load()) {
             const auto numSamples = static_cast<size_t>(buffer.getNumSamples());
             const auto numChannels = buffer.getNumChannels();
             for (int chan = 0; chan < numChannels; ++chan) {
-                zlVector::multiply(buffer.getWritePointer(chan), FloatType(-1.f), numSamples);
+                zldsp::vector::multiply(buffer.getWritePointer(chan), FloatType(-1.f), numSamples);
             }
         }
     }
@@ -29,7 +29,7 @@ namespace zlPhase {
             const auto numSamples = block.getNumSamples();
             const auto numChannels = block.getNumChannels();
             for (size_t chan = 0; chan < numChannels; ++chan) {
-                zlVector::multiply(block.getChannelPointer(chan), FloatType(-1.f), numSamples);
+                zldsp::vector::multiply(block.getChannelPointer(chan), FloatType(-1.f), numSamples);
             }
         }
     }
@@ -39,4 +39,4 @@ namespace zlPhase {
 
     template
     class PhaseFlip<double>;
-} // zlPhase
+} // zldsp::phase

@@ -13,11 +13,11 @@
 #include "../../../gui/gui.hpp"
 #include "../helpers.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class FFTPanel final : public juce::Component {
     public:
-        explicit FFTPanel(zlFFTAnalyzer::PrePostFFTAnalyzer<double> &analyzer,
-                          zlInterface::UIBase &base);
+        explicit FFTPanel(zldsp::analyzer::PrePostFFTAnalyzer<double> &analyzer,
+                          zlgui::UIBase &base);
 
         ~FFTPanel() override;
 
@@ -34,8 +34,8 @@ namespace zlPanel {
         }
 
     private:
-        zlFFTAnalyzer::PrePostFFTAnalyzer<double> &analyzerRef;
-        zlInterface::UIBase &uiBase;
+        zldsp::analyzer::PrePostFFTAnalyzer<double> &analyzerRef;
+        zlgui::UIBase &uiBase;
         juce::Path prePath{}, postPath{}, postStrokePath{}, sidePath{};
         juce::Path recentPrePath{}, recentPostPath{}, recentPostStrokePath{}, recentSidePath{};
         juce::SpinLock pathLock;
@@ -45,4 +45,4 @@ namespace zlPanel {
         std::atomic<bool> firstPath = true;
         std::atomic<float> minimumFFTDB{-72.f};
     };
-} // zlPanel
+} // zlpanel

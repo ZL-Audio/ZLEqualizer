@@ -12,7 +12,7 @@
 #include "controller.hpp"
 #include "chore/chore.hpp"
 
-namespace zlDSP {
+namespace zlp {
     template<typename FloatType>
     class SoloAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
@@ -29,7 +29,7 @@ namespace zlDSP {
         juce::AudioProcessorValueTreeState &parameterRef;
         Controller<FloatType> &controllerRef;
 
-        std::array<std::unique_ptr<zlChore::ParaUpdater>, zlDSP::bandNUM> mainSoloUpdater, sideSoloUpdater;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlp::bandNUM> mainSoloUpdater, sideSoloUpdater;
 
         constexpr static std::array IDs{
             fType::ID,

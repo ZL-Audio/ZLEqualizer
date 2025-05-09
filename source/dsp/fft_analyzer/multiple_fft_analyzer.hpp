@@ -13,7 +13,7 @@
 #include "../interpolation/interpolation.hpp"
 #include "../fft/fft.hpp"
 
-namespace zlFFTAnalyzer {
+namespace zldsp::analyzer {
     /**
      * a fft analyzer which make sure that multiple FFTs are synchronized in time
      * @tparam FloatType the float type of input audio buffers
@@ -39,7 +39,7 @@ namespace zlFFTAnalyzer {
 
             prepareAkima();
 
-            tiltSlope.store(zlState::ffTTilt::slopes[static_cast<size_t>(zlState::ffTTilt::defaultI)]);
+            tiltSlope.store(zlstate::ffTTilt::slopes[static_cast<size_t>(zlstate::ffTTilt::defaultI)]);
             interplotFreqs[0] = minFreq;
             for (size_t i = 1; i < PointNum; ++i) {
                 const float temp = static_cast<float>(i) / static_cast<float>(PointNum - 1) * (
@@ -89,7 +89,7 @@ namespace zlFFTAnalyzer {
 
             seqInputFreqs.resize(seqInputIndices.size());
             seqInputDBs.resize(seqInputIndices.size());
-            seqAkima = std::make_unique<zlInterpolation::SeqMakima<float> >(
+            seqAkima = std::make_unique<zldsp::interpolation::SeqMakima<float> >(
                 seqInputFreqs.data(), seqInputDBs.data(), seqInputFreqs.size(), 0.f, 0.f);
         }
 
@@ -122,7 +122,7 @@ namespace zlFFTAnalyzer {
             fftSize.store(fft.getSize());
 
             deltaT.store(sampleRate.load() / static_cast<float>(fftSize.load()));
-            decayRate.store(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]);
+            decayRate.store(zlstate::ffTSpeed::speeds[static_cast<size_t>(zlstate::ffTSpeed::defaultI)]);
 
             const auto currentDeltaT = .5f * deltaT.load();
             for (size_t idx = 0; idx < seqInputFreqs.size(); ++idx) {
@@ -357,7 +357,7 @@ namespace zlFFTAnalyzer {
         std::vector<size_t> setInputIndices;
         std::vector<float> seqInputDBs{};
 
-        std::unique_ptr<zlInterpolation::SeqMakima<float> > seqAkima;
+        std::unique_ptr<zldsp::interpolation::SeqMakima<float> > seqAkima;
 
         std::array<float, PointNum> interplotFreqs{};
         std::array<std::array<float, PointNum>, FFTNum> preInterplotDBs{};
@@ -369,8 +369,8 @@ namespace zlFFTAnalyzer {
         std::array<std::atomic<float>, FFTNum> decayRates{}, actualDecayRate{};
         std::atomic<float> extraTilt{0.f}, extraSpeed{1.f};
 
-        zlFFT::KFREngine<float> fft;
-        zlFFT::WindowFunction<float> window;
+        zldsp::fft::KFREngine<float> fft;
+        zldsp::fft::WindowFunction<float> window;
         std::atomic<size_t> fftSize;
 
         std::atomic<float> sampleRate;

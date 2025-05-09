@@ -37,18 +37,18 @@ public:
 
 private:
     PluginProcessor &processorRef;
-    zlState::Property &property;
+    zlstate::Property &property;
     std::atomic<bool> isSizeChanged{false};
 
-    zlInterface::UIBase uiBase;
-    zlPanel::MainPanel mainPanel;
+    zlgui::UIBase uiBase;
+    zlpanel::MainPanel mainPanel;
 
     std::unique_ptr<juce::VBlankAttachment> vblank;
 
     juce::Value lastUIWidth, lastUIHeight;
     constexpr const static std::array IDs{
-        zlState::windowW::ID,
-        zlState::windowH::ID,
+        zlstate::windowW::ID,
+        zlstate::windowH::ID,
         "text_r", "text_g", "text_b",
         "background_r", "background_g", "background_b",
         "shadow_r", "shadow_g", "shadow_b",
@@ -59,14 +59,14 @@ private:
         "grid_r", "grid_g", "grid_b", "grid_o",
         "gain_r", "gain_g", "gain_b", "gain_o",
         "side_loudness_r", "side_loudness_g", "side_loudness_b", "side_loudness_o",
-        zlState::colourMap1Idx::ID, zlState::colourMap2Idx::ID,
-        zlState::wheelSensitivity::ID, zlState::wheelFineSensitivity::ID,
-        zlState::rotaryStyle::ID, zlState::rotaryDragSensitivity::ID,
-        zlState::sliderDoubleClickFunc::ID,
-        zlState::refreshRate::ID,
-        zlState::fftExtraTilt::ID, zlState::fftExtraSpeed::ID,
-        zlState::singleCurveThickness::ID, zlState::sumCurveThickness::ID,
-        zlState::defaultPassFilterSlope::ID
+        zlstate::colourMap1Idx::ID, zlstate::colourMap2Idx::ID,
+        zlstate::wheelSensitivity::ID, zlstate::wheelFineSensitivity::ID,
+        zlstate::rotaryStyle::ID, zlstate::rotaryDragSensitivity::ID,
+        zlstate::sliderDoubleClickFunc::ID,
+        zlstate::refreshRate::ID,
+        zlstate::fftExtraTilt::ID, zlstate::fftExtraSpeed::ID,
+        zlstate::singleCurveThickness::ID, zlstate::sumCurveThickness::ID,
+        zlstate::defaultPassFilterSlope::ID
     };
 
     void timerCallback() override;

@@ -9,7 +9,7 @@
 
 #include "controller.hpp"
 
-namespace zlDSP {
+namespace zlp {
     template<typename FloatType>
     Controller<FloatType>::Controller(juce::AudioProcessor &processor, const size_t fftOrder)
         : processorRef(processor),
@@ -18,7 +18,7 @@ namespace zlDSP {
             histograms[i].setDecayRate(FloatType(0.99999));
             subHistograms[i].setDecayRate(FloatType(0.9995));
         }
-        soloFilter.setFilterStructure(zlFilter::FilterStructure::svf);
+        soloFilter.setFilterStructure(zldsp::filter::FilterStructure::svf);
     }
 
     template<typename FloatType>
@@ -31,9 +31,8 @@ namespace zlDSP {
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        delay.setMaximumDelayInSamples(static_cast<int>(
-                                           zlDSP::dynLookahead::range.end / 1000.f * static_cast<float>(spec.
-                                               sampleRate)) + 1);
+        delay.setMaximumDelayInSamples(
+            static_cast<int>(zlp::dynLookahead::range.end / 1000.f * static_cast<float>(spec.sampleRate)) + 1);
         delay.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
 
         subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
@@ -46,7 +45,7 @@ namespace zlDSP {
         subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * sampleRate.load()));
 
         for (auto &f: filters) {
-            f.getTracker().setMaximumMomentarySeconds(static_cast<FloatType>(zlDSP::dynRMS::range.end / 1000.f));
+            f.getTracker().setMaximumMomentarySeconds(static_cast<FloatType>(zlp::dynRMS::range.end / 1000.f));
         }
 
         juce::dsp::ProcessSpec subSpec{sampleRate.load(), subBuffer.getSubSpec().maximumBlockSize, 2};
@@ -60,8 +59,8 @@ namespace zlDSP {
         }
         prototypeW1.resize(prototypeCorrections[0].getCorrectionSize());
         prototypeW2.resize(prototypeCorrections[0].getCorrectionSize());
-        zlFilter::calculateWsForPrototype<FloatType>(prototypeW1);
-        zlFilter::calculateWsForBiquad<FloatType>(prototypeW2);
+        zldsp::filter::calculateWsForPrototype<FloatType>(prototypeW1);
+        zldsp::filter::calculateWsForBiquad<FloatType>(prototypeW2);
 
         mixedCorrections[0].prepare(subSpec);
         for (size_t i = 1; i < 5; ++i) {
@@ -69,15 +68,15 @@ namespace zlDSP {
         }
         mixedW1.resize(mixedCorrections[0].getCorrectionSize());
         mixedW2.resize(mixedCorrections[0].getCorrectionSize());
-        zlFilter::calculateWsForPrototype<FloatType>(mixedW1);
-        zlFilter::calculateWsForBiquad<FloatType>(mixedW2);
+        zldsp::filter::calculateWsForPrototype<FloatType>(mixedW1);
+        zldsp::filter::calculateWsForBiquad<FloatType>(mixedW2);
 
         linearFilters[0].prepare(subSpec);
         for (size_t i = 1; i < 5; ++i) {
             linearFilters[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
         }
         linearW1.resize(linearFilters[0].getCorrectionSize());
-        zlFilter::calculateWsForPrototype<FloatType>(linearW1);
+        zldsp::filter::calculateWsForPrototype<FloatType>(linearW1);
 
         for (auto &f: mainIIRs) {
             f.prepare(subSpec.sampleRate);
@@ -88,7 +87,7 @@ namespace zlDSP {
             f.prepareResponseSize(linearFilters[0].getCorrectionSize());
         }
 
-        soloFilter.setFilterType(zlFilter::FilterType::bandPass);
+        soloFilter.setFilterType(zldsp::filter::FilterType::bandPass);
         soloFilter.prepare(subSpec);
 
         lrMainSplitter.prepare(subSpec);
@@ -583,10 +582,10 @@ namespace zlDSP {
 
     template<typename FloatType>
     std::tuple<FloatType, FloatType> Controller<FloatType>::getSoloFilterParas(
-        const zlFilter::FilterType fType, const FloatType freq, const FloatType q) {
+        const zldsp::filter::FilterType fType, const FloatType freq, const FloatType q) {
         switch (fType) {
-            case zlFilter::FilterType::highPass:
-            case zlFilter::FilterType::lowShelf: {
+            case zldsp::filter::FilterType::highPass:
+            case zldsp::filter::FilterType::lowShelf: {
                 auto soloFreq = static_cast<FloatType>(std::sqrt(1) * std::sqrt(freq));
                 auto scale = soloFreq;
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
@@ -595,8 +594,8 @@ namespace zlDSP {
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
             }
-            case zlFilter::FilterType::lowPass:
-            case zlFilter::FilterType::highShelf: {
+            case zldsp::filter::FilterType::lowPass:
+            case zldsp::filter::FilterType::highShelf: {
                 auto soloFreq = static_cast<FloatType>(
                     std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(freq));
                 auto scale = soloFreq / freq;
@@ -606,13 +605,13 @@ namespace zlDSP {
                 soloQ = std::min(std::max(soloQ, FloatType(0.025)), FloatType(25));
                 return {soloFreq, soloQ};
             }
-            case zlFilter::FilterType::tiltShelf: {
+            case zldsp::filter::FilterType::tiltShelf: {
                 return {freq, FloatType(0.025)};
             }
-            case zlFilter::FilterType::peak:
-            case zlFilter::FilterType::notch:
-            case zlFilter::FilterType::bandPass:
-            case zlFilter::FilterType::bandShelf:
+            case zldsp::filter::FilterType::peak:
+            case zldsp::filter::FilterType::notch:
+            case zldsp::filter::FilterType::bandPass:
+            case zldsp::filter::FilterType::bandShelf:
             default: {
                 return {freq, q};
             }
@@ -774,25 +773,25 @@ namespace zlDSP {
         switch (currentFilterStructure) {
             case filterStructure::minimum: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zlFilter::FilterStructure::iir);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::iir);
                 }
                 break;
             }
             case filterStructure::svf: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zlFilter::FilterStructure::svf);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::svf);
                 }
                 break;
             }
             case filterStructure::parallel: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zlFilter::FilterStructure::parallel);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::parallel);
                 }
                 break;
             }
             case filterStructure::matched: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zlFilter::FilterStructure::iir);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::iir);
                 }
                 for (auto &f: mainIIRs) {
                     f.setToUpdate();
@@ -807,7 +806,7 @@ namespace zlDSP {
             }
             case filterStructure::mixed: {
                 for (auto &f: filters) {
-                    f.setFilterStructure(zlFilter::FilterStructure::iir);
+                    f.setFilterStructure(zldsp::filter::FilterStructure::iir);
                 }
                 for (auto &f: mainIIRs) {
                     f.setToUpdate();

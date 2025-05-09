@@ -11,18 +11,18 @@
 
 #include "../../../gui/gui.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class MatchLabel : public juce::Component {
     public:
-        explicit MatchLabel(zlInterface::UIBase &base);
+        explicit MatchLabel(zlgui::UIBase &base);
 
         void paint(juce::Graphics &g) override;
 
         void resized() override;
 
     private:
-        zlInterface::UIBase &uiBase;
-        zlInterface::NameLookAndFeel labelLAF;
+        zlgui::UIBase &uiBase;
+        zlgui::NameLookAndFeel labelLAF;
         juce::Label runningLabel;
     };
-} // zlPanel
+} // zlpanel

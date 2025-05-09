@@ -9,23 +9,23 @@
 
 #include "other_ui_setting_panel.hpp"
 
-namespace zlPanel {
-    OtherUISettingPanel::OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
+namespace zlpanel {
+    OtherUISettingPanel::OtherUISettingPanel(PluginProcessor &p, zlgui::UIBase &base)
         : pRef(p),
           uiBase(base), nameLAF(base),
-          renderingEngineBox("", zlState::renderingEngine::choices, base),
-          refreshRateBox("", zlState::refreshRate::choices, base),
+          renderingEngineBox("", zlstate::renderingEngine::choices, base),
+          refreshRateBox("", zlstate::refreshRate::choices, base),
           fftTiltSlider("Tilt", base),
           fftSpeedSlider("Speed", base),
-          fftOrderBox("order", zlState::ffTOrder::choices, base),
+          fftOrderBox("order", zlstate::ffTOrder::choices, base),
           singleCurveSlider("Single", base),
           sumCurveSlider("Sum", base),
-          defaultPassFilterSlopeBox("", zlState::defaultPassFilterSlope::choices, base),
-          dynLinkBox("", zlState::dynLink::choices, base),
-          tooltipONBox("", zlState::tooltipON::choices, base),
-          tooltipLangBox("", zlState::tooltipLang::choices, base) {
+          defaultPassFilterSlopeBox("", zlstate::defaultPassFilterSlope::choices, base),
+          dynLinkBox("", zlstate::dynLink::choices, base),
+          tooltipONBox("", zlstate::tooltipON::choices, base),
+          tooltipLangBox("", zlstate::tooltipLang::choices, base) {
         juce::ignoreUnused(pRef);
-        nameLAF.setFontScale(zlInterface::FontHuge);
+        nameLAF.setFontScale(zlgui::FontHuge);
         renderingEngineLabel.setText("Rendering Engine", juce::dontSendNotification);
         renderingEngineLabel.setJustificationType(juce::Justification::centredRight);
         renderingEngineLabel.setLookAndFeel(&nameLAF);
@@ -40,11 +40,11 @@ namespace zlPanel {
         fftLabel.setJustificationType(juce::Justification::centredRight);
         fftLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(fftLabel);
-        fftTiltSlider.getSlider().setNormalisableRange(zlState::fftExtraTilt::doubleRange);
-        fftTiltSlider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(zlState::fftExtraTilt::defaultV));
-        fftSpeedSlider.getSlider().setNormalisableRange(zlState::fftExtraSpeed::doubleRange);
+        fftTiltSlider.getSlider().setNormalisableRange(zlstate::fftExtraTilt::doubleRange);
+        fftTiltSlider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(zlstate::fftExtraTilt::defaultV));
+        fftSpeedSlider.getSlider().setNormalisableRange(zlstate::fftExtraSpeed::doubleRange);
         fftSpeedSlider.getSlider().setDoubleClickReturnValue(
-            true, static_cast<double>(zlState::fftExtraSpeed::defaultV));
+            true, static_cast<double>(zlstate::fftExtraSpeed::defaultV));
         addAndMakeVisible(fftTiltSlider);
         addAndMakeVisible(fftSpeedSlider);
         addAndMakeVisible(fftOrderBox);
@@ -52,10 +52,10 @@ namespace zlPanel {
         curveThickLabel.setJustificationType(juce::Justification::centredRight);
         curveThickLabel.setLookAndFeel(&nameLAF);
         addAndMakeVisible(curveThickLabel);
-        singleCurveSlider.getSlider().setNormalisableRange(zlState::singleCurveThickness::doubleRange);
-        singleCurveSlider.getSlider().setDoubleClickReturnValue(true, zlState::singleCurveThickness::defaultV);
-        sumCurveSlider.getSlider().setNormalisableRange(zlState::sumCurveThickness::doubleRange);
-        sumCurveSlider.getSlider().setDoubleClickReturnValue(true, zlState::sumCurveThickness::defaultV);
+        singleCurveSlider.getSlider().setNormalisableRange(zlstate::singleCurveThickness::doubleRange);
+        singleCurveSlider.getSlider().setDoubleClickReturnValue(true, zlstate::singleCurveThickness::defaultV);
+        sumCurveSlider.getSlider().setNormalisableRange(zlstate::sumCurveThickness::doubleRange);
+        sumCurveSlider.getSlider().setDoubleClickReturnValue(true, zlstate::sumCurveThickness::defaultV);
         addAndMakeVisible(singleCurveSlider);
         addAndMakeVisible(sumCurveSlider);
         defaultPassFilterSlopeLabel.setText("Default Pass Filter Slope", juce::dontSendNotification);
@@ -179,4 +179,4 @@ namespace zlPanel {
             renderingEngineBox.getBox().setSelectedItemIndex(idx);
         }
     }
-} // zlPanel
+} // zlpanel

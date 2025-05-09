@@ -16,7 +16,7 @@
 #include "../../container/array.hpp"
 #include "fir_base.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     /**
      * an FIR which corrects the responses of IIR filters to prototype filters
      * @tparam FloatType the float type of input audio buffer
@@ -31,7 +31,7 @@ namespace zlFilter {
 
         PrototypeCorrection(std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iir,
                             std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
-                            zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices,
+                            zldsp::container::FixedMaxSizeArray<size_t, FilterNum> &indices,
                             std::array<bool, FilterNum> &mask,
                             std::vector<std::complex<FloatType> > &w1,
                             std::vector<std::complex<FloatType> > &w2)
@@ -48,7 +48,7 @@ namespace zlFilter {
     private:
         std::array<IIRIdle<FloatType, FilterSize>, FilterNum> &iirFs;
         std::array<Ideal<FloatType, FilterSize>, FilterNum> &idealFs;
-        zlContainer::FixedMaxSizeArray<size_t, FilterNum> &filterIndices;
+        zldsp::container::FixedMaxSizeArray<size_t, FilterNum> &filterIndices;
         std::array<bool, FilterNum> &bypassMask;
         std::atomic<bool> toUpdate{true};
 
@@ -71,7 +71,7 @@ namespace zlFilter {
         void processSpectrum() override {
             update();
             auto *cdata = reinterpret_cast<std::complex<float> *>(FIRBase<FloatType, 10>::fftData.data());
-            zlVector::multiply(cdata + startDecayIdx, corrections.data() + startDecayIdx, corrections.size() - startDecayIdx);
+            zldsp::vector::multiply(cdata + startDecayIdx, corrections.data() + startDecayIdx, corrections.size() - startDecayIdx);
         }
 
         void update() {

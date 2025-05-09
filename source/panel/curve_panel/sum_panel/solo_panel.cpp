@@ -11,32 +11,32 @@
 
 #include "../../../state/state_definitions.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     SoloPanel::SoloPanel(juce::AudioProcessorValueTreeState &parameters,
                          juce::AudioProcessorValueTreeState &parametersNA,
-                         zlInterface::UIBase &base,
-                         zlDSP::Controller<double> &controller,
+                         zlgui::UIBase &base,
+                         zlp::Controller<double> &controller,
                          ButtonPanel &buttonPanel)
         : parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
           soloF(controller.getSoloFilter()),
           controllerRef(controller), buttonPanelRef(buttonPanel) {
         juce::ignoreUnused(parametersRef, parametersNA);
-        parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
-            soloUpdaters.emplace_back(std::make_unique<zlChore::ParaUpdater>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::solo::ID, i)));
-            sideSoloUpdaters.emplace_back(std::make_unique<zlChore::ParaUpdater>(
-                parametersRef, zlDSP::appendSuffix(zlDSP::sideSolo::ID, i)));
+        parametersNARef.addParameterListener(zlstate::selectedBandIdx::ID, this);
+        for (size_t i = 0; i < zlp::bandNUM; ++i) {
+            soloUpdaters.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
+                parametersRef, zlp::appendSuffix(zlp::solo::ID, i)));
+            sideSoloUpdaters.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
+                parametersRef, zlp::appendSuffix(zlp::sideSolo::ID, i)));
         }
         selectBandIdx.store(static_cast<size_t>(
-            parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load()));
+            parametersNARef.getRawParameterValue(zlstate::selectedBandIdx::ID)->load()));
         handleAsyncUpdate();
     }
 
     SoloPanel::~SoloPanel() {
         turnOffSolo();
-        parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
+        parametersNARef.removeParameterListener(zlstate::selectedBandIdx::ID, this);
     }
 
     void SoloPanel::paint(juce::Graphics &g) {
@@ -67,25 +67,25 @@ namespace zlPanel {
             }
             const auto &f = controllerRef.getMainIdealFilter(bandIdx);
             switch (f.getFilterType()) {
-                case zlFilter::highPass:
-                case zlFilter::lowShelf: {
+                case zldsp::filter::highPass:
+                case zldsp::filter::lowShelf: {
                     bound.removeFromLeft(currentX);
                     g.fillRect(bound);
                     break;
                 }
-                case zlFilter::lowPass:
-                case zlFilter::highShelf: {
+                case zldsp::filter::lowPass:
+                case zldsp::filter::highShelf: {
                     bound = bound.removeFromLeft(currentX);
                     g.fillRect(bound);
                     break;
                 }
-                case zlFilter::tiltShelf: {
+                case zldsp::filter::tiltShelf: {
                     break;
                 }
-                case zlFilter::peak:
-                case zlFilter::bandShelf:
-                case zlFilter::bandPass:
-                case zlFilter::notch: {
+                case zldsp::filter::peak:
+                case zldsp::filter::bandShelf:
+                case zldsp::filter::bandPass:
+                case zldsp::filter::notch: {
                     const auto boundWidth = bound.getWidth();
                     const auto leftWidth = currentX - currentBW * boundWidth;
                     const auto rightWidth = boundWidth - currentX - currentBW * boundWidth;
@@ -116,9 +116,9 @@ namespace zlPanel {
     }
 
     void SoloPanel::turnOffSolo() const {
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::bandNUM; ++i) {
             soloUpdaters[i]->updateSync(0.f);
             sideSoloUpdaters[i]->updateSync(0.f);
         }
     }
-} // zlPanel
+} // zlpanel

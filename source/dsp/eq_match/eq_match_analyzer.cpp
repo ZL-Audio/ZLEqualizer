@@ -9,7 +9,7 @@
 
 #include "eq_match_analyzer.hpp"
 
-namespace zlEqMatch {
+namespace zldsp::eq_match {
     template<typename FloatType>
     EqMatchAnalyzer<FloatType>::EqMatchAnalyzer(const size_t fftOrder)
         : Thread("eq_match_analyzer"), fftAnalyzer(fftOrder) {
@@ -191,4 +191,4 @@ namespace zlEqMatch {
 
     template
     class EqMatchAnalyzer<double>;
-} // zlEqMatch
+} // zldsp::eq_match

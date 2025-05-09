@@ -11,7 +11,7 @@
 
 #include <array>
 
-namespace zlInterface::multilingual::it {
+namespace zlgui::multilingual::it {
     static constexpr std::array texts = {
         "Premi: attiva la banda selezionata.\nRilascia: bypassa la banda selezionata.",
         "Premi: attiva il solo dell’audio interessato dalla banda di frequenza selezionata.",

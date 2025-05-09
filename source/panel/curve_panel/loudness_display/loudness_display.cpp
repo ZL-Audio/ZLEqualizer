@@ -9,15 +9,15 @@
 
 #include "loudness_display.hpp"
 
-namespace zlPanel {
-    LoudnessDisplay::LoudnessDisplay(PluginProcessor &p, zlInterface::UIBase &base)
+namespace zlpanel {
+    LoudnessDisplay::LoudnessDisplay(PluginProcessor &p, zlgui::UIBase &base)
         : processorRef(p), uiBase(base) {
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            const auto suffix = zlDSP::appendSuffix("", i);
-            isThresholdAutoParas[i] = processorRef.parameters.getParameter(zlDSP::dynamicLearn::ID + suffix);
-            isDynamicOnParas[i] = processorRef.parameters.getParameter(zlDSP::dynamicON::ID + suffix);
+        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+            const auto suffix = zlp::appendSuffix("", i);
+            isThresholdAutoParas[i] = processorRef.parameters.getParameter(zlp::dynamicLearn::ID + suffix);
+            isDynamicOnParas[i] = processorRef.parameters.getParameter(zlp::dynamicON::ID + suffix);
         }
-        bandIdxPara = processorRef.parametersNA.getParameter(zlState::selectedBandIdx::ID);
+        bandIdxPara = processorRef.parametersNA.getParameter(zlstate::selectedBandIdx::ID);
         lookAndFeelChanged();
     }
 
@@ -38,10 +38,10 @@ namespace zlPanel {
     }
 
     void LoudnessDisplay::lookAndFeelChanged() {
-        colour = uiBase.getColourByIdx(zlInterface::sideLoudnessColour);
+        colour = uiBase.getColourByIdx(zlgui::sideLoudnessColour);
     }
 
     void LoudnessDisplay::updateVisible(const bool x) {
         shouldVisible = x;
     }
-} // zlPanel
+} // zlpanel

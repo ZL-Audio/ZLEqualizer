@@ -12,15 +12,15 @@
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class MatchRunner final : private juce::Thread,
                               private juce::AudioProcessorValueTreeState::Listener,
                               private juce::AsyncUpdater,
                               private juce::ValueTree::Listener {
     public:
-        explicit MatchRunner(PluginProcessor &p, zlInterface::UIBase &base,
+        explicit MatchRunner(PluginProcessor &p, zlgui::UIBase &base,
                              std::array<std::atomic<float>, 251> &atomicDiffs,
-                             zlInterface::CompactLinearSlider &numBandSlider);
+                             zlgui::CompactLinearSlider &numBandSlider);
 
         ~MatchRunner() override;
 
@@ -41,16 +41,16 @@ namespace zlPanel {
         void setMaximumDB(const float x) { maximumDB.store(x); }
 
     private:
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlEqMatch::EqMatchOptimizer<16> optimizer;
+        zldsp::eq_match::EqMatchOptimizer<16> optimizer;
         std::array<std::atomic<float>, 251> &atomicDiffsRef;
-        zlInterface::CompactLinearSlider &slider;
+        zlgui::CompactLinearSlider &slider;
         std::array<double, 251> diffs{};
         std::atomic<bool> toCalculateNumBand{false};
         std::atomic<size_t> mode{1}, numBand{8};
         size_t estNumBand{16};
-        std::array<zlFilter::Empty<double>, 16> mFilters;
+        std::array<zldsp::filter::Empty<double>, 16> mFilters;
         juce::CriticalSection criticalSection;
         std::atomic<float> lowCutP{0.f}, highCutP{1.f}, maximumDB{12.f};
 
@@ -74,4 +74,4 @@ namespace zlPanel {
 
         static constexpr double mseRelThreshold = 1.f / 30.f;
     };
-} // zlPanel
+} // zlpanel

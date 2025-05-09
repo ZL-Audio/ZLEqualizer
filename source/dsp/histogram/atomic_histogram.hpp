@@ -13,7 +13,7 @@
 
 #include "simple_histogram.hpp"
 
-namespace zlHistogram {
+namespace zldsp::histogram {
     template<typename FloatType, size_t Size>
     class AtomicHistogram {
     public:

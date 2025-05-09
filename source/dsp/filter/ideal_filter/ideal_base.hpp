@@ -12,7 +12,7 @@
 #include <array>
 #include <complex>
 
-namespace zlFilter {
+namespace zldsp::filter {
     template<typename SampleType>
     class IdealBase {
     public:

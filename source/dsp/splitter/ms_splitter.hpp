@@ -13,7 +13,7 @@
 
 #include "../vector/vector.hpp"
 
-namespace zlSplitter {
+namespace zldsp::splitter {
     /**
      * a splitter that splits the stereo audio signal input mid signal and side signal
      * @tparam FloatType

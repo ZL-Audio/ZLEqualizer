@@ -14,7 +14,7 @@
 #include "iir_base.hpp"
 #include "svf_base.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     /**
      * an idle IIR filter which holds coeffs for calculating responses
      * @tparam FloatType the float type of input audio buffer

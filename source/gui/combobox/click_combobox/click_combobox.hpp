@@ -13,7 +13,7 @@
 #include "../../label/name_look_and_feel.hpp"
 #include "click_combobox_button_look_and_feel.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class ClickCombobox final : public juce::Component {
     public:
         enum LabelPos {
@@ -44,4 +44,4 @@ namespace zlInterface {
 
         void selectRight();
     };
-} // zlInterface
+} // zlgui

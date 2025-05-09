@@ -18,23 +18,23 @@
 
 #include "button_pop_up.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class FilterButtonPanel final : public juce::Component,
                                     private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit FilterButtonPanel(size_t bandIdx,
                                    PluginProcessor &processor,
-                                   zlInterface::UIBase &base);
+                                   zlgui::UIBase &base);
 
         ~FilterButtonPanel() override;
 
         void resized() override;
 
-        zlInterface::Dragger &getDragger() { return dragger; }
+        zlgui::Dragger &getDragger() { return dragger; }
 
-        zlInterface::Dragger &getTargetDragger() { return targetDragger; }
+        zlgui::Dragger &getTargetDragger() { return targetDragger; }
 
-        zlInterface::Dragger &getSideDragger() { return sideDragger; }
+        zlgui::Dragger &getSideDragger() { return sideDragger; }
 
         ButtonPopUp &getPopUp() { return buttonPopUp; }
 
@@ -59,19 +59,19 @@ namespace zlPanel {
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        zlInterface::Dragger dragger, targetDragger, sideDragger;
+        zlgui::UIBase &uiBase;
+        zlgui::Dragger dragger, targetDragger, sideDragger;
         ButtonPopUp buttonPopUp;
-        std::unique_ptr<zlInterface::DraggerParameterAttach> attachment, targetAttach, sideAttach;
-        std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
-        std::atomic<zlFilter::FilterType> fType;
-        std::atomic<zlDSP::lrType::lrTypes> lrType;
+        std::unique_ptr<zlgui::DraggerParameterAttach> attachment, targetAttach, sideAttach;
+        std::atomic<float> maximumDB{zlstate::maximumDB::dBs[static_cast<size_t>(zlstate::maximumDB::defaultI)]};
+        std::atomic<zldsp::filter::FilterType> fType;
+        std::atomic<zlp::lrType::lrTypes> lrType;
         const size_t band;
         std::atomic<float> &currentSelectedBandIdx;
         std::atomic<bool> isDynamicHasTarget{false}, isSelectedTarget{false}, isActiveTarget{false};
 
-        static constexpr std::array IDs{zlDSP::fType::ID, zlDSP::lrType::ID, zlDSP::dynamicON::ID};
-        static constexpr std::array NAIDs{zlState::active::ID};
+        static constexpr std::array IDs{zlp::fType::ID, zlp::lrType::ID, zlp::dynamicON::ID};
+        static constexpr std::array NAIDs{zlstate::active::ID};
         static constexpr auto scale = 1.5f;
 
         std::atomic<bool> toUpdateAttachment{false}, toUpdateBounds{false}, toUpdateTargetAttachment{false},
@@ -107,4 +107,4 @@ namespace zlPanel {
             }
         };
     };
-} // zlPanel
+} // zlpanel

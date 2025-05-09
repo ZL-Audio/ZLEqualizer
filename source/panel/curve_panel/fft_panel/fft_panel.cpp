@@ -9,9 +9,9 @@
 
 #include "fft_panel.hpp"
 
-namespace zlPanel {
-    FFTPanel::FFTPanel(zlFFTAnalyzer::PrePostFFTAnalyzer<double> &analyzer,
-                       zlInterface::UIBase &base)
+namespace zlpanel {
+    FFTPanel::FFTPanel(zldsp::analyzer::PrePostFFTAnalyzer<double> &analyzer,
+                       zlgui::UIBase &base)
         : analyzerRef(analyzer), uiBase(base) {
         setInterceptsMouseClicks(false, false);
     }
@@ -24,7 +24,7 @@ namespace zlPanel {
         juce::GenericScopedTryLock lock{pathLock};
         if (!lock.isLocked()) { return; }
         if (analyzerRef.getPreON() && !recentPrePath.isEmpty()) {
-            g.setColour(uiBase.getColourByIdx(zlInterface::preColour));
+            g.setColour(uiBase.getColourByIdx(zlgui::preColour));
             g.fillPath(recentPrePath);
         }
         if (analyzerRef.getPostON() && !recentPostPath.isEmpty()) {
@@ -39,12 +39,12 @@ namespace zlPanel {
                 g.fillPath(recentPostStrokePath);
             }
 
-            g.setColour(uiBase.getColourByIdx(zlInterface::postColour));
+            g.setColour(uiBase.getColourByIdx(zlgui::postColour));
             g.fillPath(recentPostPath);
         }
 
         if (analyzerRef.getSideON() && !recentSidePath.isEmpty()) {
-            g.setColour(uiBase.getColourByIdx(zlInterface::sideColour));
+            g.setColour(uiBase.getColourByIdx(zlgui::sideColour));
             g.fillPath(recentSidePath);
         }
     }
@@ -90,4 +90,4 @@ namespace zlPanel {
     void FFTPanel::visibilityChanged() {
         analyzerRef.setON(isVisible());
     }
-} // zlPanel
+} // zlpanel

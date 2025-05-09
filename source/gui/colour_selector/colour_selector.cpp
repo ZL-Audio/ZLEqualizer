@@ -9,10 +9,10 @@
 
 #include "colour_selector.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class SelectorBox final : public juce::Component {
     public:
-        explicit SelectorBox(const int selectorFlags, zlInterface::UIBase &base)
+        explicit SelectorBox(const int selectorFlags, zlgui::UIBase &base)
             : selector(selectorFlags,
                        juce::roundToInt(base.getFontSize() * 0.5f),
                        juce::roundToInt(base.getFontSize() * 0.33f)),
@@ -37,10 +37,10 @@ namespace zlInterface {
 
     private:
         juce::ColourSelector selector;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
     };
 
-    ColourSelector::ColourSelector(zlInterface::UIBase &base, juce::Component &parent,
+    ColourSelector::ColourSelector(zlgui::UIBase &base, juce::Component &parent,
                                    const float widthS, const float heightS)
         : uiBase(base), laf(uiBase), parentC(parent),
           selectorWidthS(widthS), selectorHeightS(heightS) {
@@ -79,4 +79,4 @@ namespace zlInterface {
             repaint();
         }
     }
-} // zlInterface
+} // zlgui

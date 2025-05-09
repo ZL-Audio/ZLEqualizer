@@ -11,7 +11,7 @@
 
 #include "../fft_analyzer/fft_analyzer.hpp"
 
-namespace zlEqMatch {
+namespace zldsp::eq_match {
     template<typename FloatType>
     class EqMatchAnalyzer final : private juce::Thread {
     public:
@@ -30,7 +30,7 @@ namespace zlEqMatch {
 
         void process(juce::AudioBuffer<FloatType> &bBuffer, juce::AudioBuffer<FloatType> &tBuffer);
 
-        zlFFTAnalyzer::AverageFFTAnalyzer<FloatType, 2, pointNum> &getAverageFFT() { return fftAnalyzer; }
+        zldsp::analyzer::AverageFFTAnalyzer<FloatType, 2, pointNum> &getAverageFFT() { return fftAnalyzer; }
 
         void setON(bool x);
 
@@ -78,7 +78,7 @@ namespace zlEqMatch {
         }
 
     private:
-        zlFFTAnalyzer::AverageFFTAnalyzer<FloatType, 2, pointNum> fftAnalyzer;
+        zldsp::analyzer::AverageFFTAnalyzer<FloatType, 2, pointNum> fftAnalyzer;
         std::array<float, pointNum> mainDBs{}, targetDBs{}, diffs{};
         std::array<std::atomic<float>, pointNum> atomicTargetDBs{}, atomicDiffs{};
         std::array<std::atomic<bool>, pointNum> drawingFlag;
@@ -117,4 +117,4 @@ namespace zlEqMatch {
             }
         }
     };
-} // zlEqMatch
+} // zldsp::eq_match

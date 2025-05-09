@@ -9,7 +9,7 @@
 
 #include "fifo_audio_buffer.hpp"
 
-namespace zlAudioBuffer {
+namespace zldsp::buffer {
     template<typename FloatType>
     FIFOAudioBuffer<FloatType>::FIFOAudioBuffer(int channels, int bufferSize):
             fifo(bufferSize) {
@@ -23,18 +23,18 @@ namespace zlAudioBuffer {
     }
 
     template<typename FloatType>
-    void FIFOAudioBuffer<FloatType>::setSize(int channels, int bufferSize) {
+    void FIFOAudioBuffer<FloatType>::setSize(int channels, int buffer_size) {
         juce::ignoreUnused(channels);
         clear();
-        fifo.setTotalSize(bufferSize + 1);
-        buffer.setSize(channels, bufferSize + 1);
+        fifo.setTotalSize(buffer_size + 1);
+        buffer.setSize(channels, buffer_size + 1);
     }
 
     template<typename FloatType>
-    void FIFOAudioBuffer<FloatType>::push(const FloatType **samples, int numSamples) {
+    void FIFOAudioBuffer<FloatType>::push(const FloatType **samples, int num_samples) {
         jassert (fifo.getFreeSpace() >= numSamples);
         int start1, size1, start2, size2;
-        fifo.prepareToWrite(numSamples, start1, size1, start2, size2);
+        fifo.prepareToWrite(num_samples, start1, size1, start2, size2);
         if (size1 > 0)
             for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
                 buffer.copyFrom(channel, start1, samples[channel], size1);
@@ -46,8 +46,8 @@ namespace zlAudioBuffer {
 
     template<typename FloatType>
     void FIFOAudioBuffer<FloatType>::push(const juce::AudioBuffer<FloatType> &samples,
-                                          int numSamples) {
-        const int addSamples = numSamples < 0 ? samples.getNumSamples() : numSamples;
+                                          int num_samples) {
+        const int addSamples = num_samples < 0 ? samples.getNumSamples() : num_samples;
         jassert (fifo.getFreeSpace() >= addSamples);
 
         int start1, size1, start2, size2;
@@ -64,8 +64,8 @@ namespace zlAudioBuffer {
     }
 
     template<typename FloatType>
-    void FIFOAudioBuffer<FloatType>::push(juce::dsp::AudioBlock<FloatType> block, int numSamples) {
-        const int addSamples = numSamples < 0 ? static_cast<int>(block.getNumSamples()) : numSamples;
+    void FIFOAudioBuffer<FloatType>::push(juce::dsp::AudioBlock<FloatType> block, int num_samples) {
+        const int addSamples = num_samples < 0 ? static_cast<int>(block.getNumSamples()) : num_samples;
         jassert (fifo.getFreeSpace() >= addSamples);
 
         int start1, size1, start2, size2;
@@ -82,18 +82,18 @@ namespace zlAudioBuffer {
     }
 
     template<typename FloatType>
-    void FIFOAudioBuffer<FloatType>::pop(int numSamples) {
+    void FIFOAudioBuffer<FloatType>::pop(int num_samples) {
         jassert (fifo.getNumReady() >= numSamples);
         int start1, size1, start2, size2;
-        fifo.prepareToRead(numSamples, start1, size1, start2, size2);
+        fifo.prepareToRead(num_samples, start1, size1, start2, size2);
         fifo.finishedRead(size1 + size2);
     }
 
     template<typename FloatType>
-    void FIFOAudioBuffer<FloatType>::pop(FloatType **samples, int numSamples) {
+    void FIFOAudioBuffer<FloatType>::pop(FloatType **samples, int num_samples) {
         jassert (fifo.getNumReady() >= numSamples);
         int start1, size1, start2, size2;
-        fifo.prepareToRead(numSamples, start1, size1, start2, size2);
+        fifo.prepareToRead(num_samples, start1, size1, start2, size2);
         if (size1 > 0)
             for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
                 juce::FloatVectorOperations::copy(samples[channel],
@@ -108,8 +108,8 @@ namespace zlAudioBuffer {
     }
 
     template<typename FloatType>
-    void FIFOAudioBuffer<FloatType>::pop(juce::AudioBuffer<FloatType> &samples, int numSamples) {
-        const int readSamples = numSamples > 0 ? numSamples : samples.getNumSamples();
+    void FIFOAudioBuffer<FloatType>::pop(juce::AudioBuffer<FloatType> &samples, int num_samples) {
+        const int readSamples = num_samples > 0 ? num_samples : samples.getNumSamples();
         jassert (fifo.getNumReady() >= readSamples);
         int start1, size1, start2, size2;
         fifo.prepareToRead(readSamples, start1, size1, start2, size2);
@@ -124,8 +124,8 @@ namespace zlAudioBuffer {
     }
 
     template<typename FloatType>
-    void FIFOAudioBuffer<FloatType>::pop(juce::dsp::AudioBlock<FloatType> block, int numSamples) {
-        const int readSamples = numSamples > 0 ? numSamples : static_cast<int>(block.getNumSamples());
+    void FIFOAudioBuffer<FloatType>::pop(juce::dsp::AudioBlock<FloatType> block, int num_samples) {
+        const int readSamples = num_samples > 0 ? num_samples : static_cast<int>(block.getNumSamples());
         jassert (fifo.getNumReady() >= readSamples);
         int start1, size1, start2, size2;
         fifo.prepareToRead(readSamples, start1, size1, start2, size2);

@@ -13,7 +13,7 @@
 
 #include "../../interface_definitions.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class CompactLinearSliderLookAndFeel : public juce::LookAndFeel_V4 {
     public:
         explicit CompactLinearSliderLookAndFeel(UIBase &base): uiBase(base) {

@@ -12,7 +12,7 @@
 #include "../filter_design/filter_design.hpp"
 #include <atomic>
 
-namespace zlFilter {
+namespace zldsp::filter {
     /**
      * an empty filter which holds filter parameters
      * @tparam FloatType the float type of input audio buffer

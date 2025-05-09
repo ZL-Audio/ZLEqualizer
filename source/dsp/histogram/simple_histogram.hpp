@@ -11,7 +11,7 @@
 
 #include "../vector/vector.hpp"
 
-namespace zlHistogram {
+namespace zldsp::histogram {
     template<typename FloatType, size_t Size>
     class Histogram {
     public:

@@ -11,7 +11,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-namespace zlDSP {
+namespace zlp {
     inline auto static constexpr versionHint = 1;
 
     inline auto static constexpr bandNUM = 16;

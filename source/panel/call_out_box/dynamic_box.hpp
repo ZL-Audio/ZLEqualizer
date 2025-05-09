@@ -12,16 +12,16 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class DynamicBox final : public juce::Component, private juce::ValueTree::Listener {
     public:
-        explicit DynamicBox(juce::AudioProcessorValueTreeState &parameters, zlInterface::UIBase &base)
+        explicit DynamicBox(juce::AudioProcessorValueTreeState &parameters, zlgui::UIBase &base)
             : parametersRef(parameters),
               uiBase(base),
-              lookaheadS("Lookahead", uiBase, zlInterface::multilingual::labels::lookahead),
-              rmsS("RMS", uiBase, zlInterface::multilingual::labels::rms),
-              smoothS("Smooth", uiBase, zlInterface::multilingual::labels::smooth),
-              dynHQC("HQ:", zlDSP::dynHQ::choices, uiBase, zlInterface::multilingual::labels::highQuality) {
+              lookaheadS("Lookahead", uiBase, zlgui::multilingual::labels::lookahead),
+              rmsS("RMS", uiBase, zlgui::multilingual::labels::rms),
+              smoothS("Smooth", uiBase, zlgui::multilingual::labels::smooth),
+              dynHQC("HQ:", zlp::dynHQ::choices, uiBase, zlgui::multilingual::labels::highQuality) {
             for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
                 addAndMakeVisible(c);
             }
@@ -29,20 +29,20 @@ namespace zlPanel {
                        &lookaheadS.getSlider(), &rmsS.getSlider(), &smoothS.getSlider()
                    },
                    {
-                       zlDSP::dynLookahead::ID, zlDSP::dynRMS::ID, zlDSP::dynSmooth::ID
+                       zlp::dynLookahead::ID, zlp::dynRMS::ID, zlp::dynSmooth::ID
                    },
                    parametersRef, sliderAttachments);
             for (auto &c: {&dynHQC}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.5f);
-                c->setLabelPos(zlInterface::ClickCombobox::left);
+                c->setLabelPos(zlgui::ClickCombobox::left);
                 addAndMakeVisible(c);
             }
             attach({
                        &dynHQC.getCompactBox().getBox(),
                    },
                    {
-                       zlDSP::dynHQ::ID
+                       zlp::dynHQ::ID
                    },
                    parametersRef, boxAttachments);
             setBufferedToImage(true);
@@ -93,18 +93,18 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
 
-        zlInterface::CompactLinearSlider lookaheadS, rmsS, smoothS;
-        zlInterface::ClickCombobox dynHQC;
+        zlgui::CompactLinearSlider lookaheadS, rmsS, smoothS;
+        zlgui::ClickCombobox dynHQC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override {
             juce::ignoreUnused(treeWhosePropertyHasChanged);
-            if (uiBase.isBoxProperty(zlInterface::boxIdx::dynamicBox, property)) {
-                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlInterface::boxIdx::dynamicBox));
+            if (uiBase.isBoxProperty(zlgui::boxIdx::dynamicBox, property)) {
+                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlgui::boxIdx::dynamicBox));
                 setVisible(f);
             }
         }

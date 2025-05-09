@@ -9,7 +9,7 @@
 
 #include "conflict_analyzer.hpp"
 
-namespace zlFFTAnalyzer {
+namespace zldsp::analyzer {
     template<typename FloatType>
     ConflictAnalyzer<FloatType>::ConflictAnalyzer(const size_t fftOrder)
         : Thread("conflict_analyzer"),
@@ -128,4 +128,4 @@ namespace zlFFTAnalyzer {
 
     template
     class ConflictAnalyzer<double>;
-} // zlFFT
+} // zldsp::fft

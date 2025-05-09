@@ -16,7 +16,7 @@
 #include "side_panel.hpp"
 #include "reset_attach.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class SinglePanel final : public juce::Component,
                               private juce::AudioProcessorValueTreeState::Listener,
                               private juce::AsyncUpdater {
@@ -24,11 +24,11 @@ namespace zlPanel {
         explicit SinglePanel(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parametersNA,
-                             zlInterface::UIBase &base,
-                             zlDSP::Controller<double> &controller,
-                             zlFilter::Ideal<double, 16> &baseFilter,
-                             zlFilter::Ideal<double, 16> &targetFilter,
-                             zlFilter::Ideal<double, 16> &mainFilter);
+                             zlgui::UIBase &base,
+                             zlp::Controller<double> &controller,
+                             zldsp::filter::Ideal<double, 16> &baseFilter,
+                             zldsp::filter::Ideal<double, 16> &targetFilter,
+                             zldsp::filter::Ideal<double, 16> &mainFilter);
 
         ~SinglePanel() override;
 
@@ -54,9 +54,9 @@ namespace zlPanel {
 
         void setScale(const double x) {
             scale.store(x);
-            baseF.setGain(static_cast<double>(zlDSP::gain::range.snapToLegalValue(
+            baseF.setGain(static_cast<double>(zlp::gain::range.snapToLegalValue(
                 static_cast<float>(currentBaseGain.load() * x))));
-            targetF.setGain(static_cast<double>(zlDSP::targetGain::range.snapToLegalValue(
+            targetF.setGain(static_cast<double>(zlp::targetGain::range.snapToLegalValue(
                 static_cast<float>(currentTargetGain.load() * x))));
         }
 
@@ -75,10 +75,10 @@ namespace zlPanel {
 
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        zlDSP::Controller<double> &controllerRef;
-        zlPanel::ResetAttach resetAttach;
-        zlFilter::Ideal<double, 16> &baseF, &targetF, &mainF;
+        zlgui::UIBase &uiBase;
+        zlp::Controller<double> &controllerRef;
+        zlpanel::ResetAttach resetAttach;
+        zldsp::filter::Ideal<double, 16> &baseF, &targetF, &mainF;
 
         std::atomic<bool> dynON, selected, active;
         std::atomic<float> maximumDB;
@@ -93,14 +93,14 @@ namespace zlPanel {
         std::atomic<double> scale{1.0};
 
         static constexpr std::array changeIDs{
-            zlDSP::bypass::ID, zlDSP::lrType::ID,
-            zlDSP::dynamicON::ID
+            zlp::bypass::ID, zlp::lrType::ID,
+            zlp::dynamicON::ID
         };
 
         static constexpr std::array paraIDs{
-            zlDSP::fType::ID, zlDSP::slope::ID,
-            zlDSP::freq::ID, zlDSP::gain::ID, zlDSP::Q::ID,
-            zlDSP::targetGain::ID, zlDSP::targetQ::ID
+            zlp::fType::ID, zlp::slope::ID,
+            zlp::freq::ID, zlp::gain::ID, zlp::Q::ID,
+            zlp::targetGain::ID, zlp::targetQ::ID
         };
 
         juce::Colour colour;
@@ -109,4 +109,4 @@ namespace zlPanel {
 
         void handleAsyncUpdate() override;
     };
-} // zlPanel
+} // zlpanel

@@ -9,7 +9,7 @@
 
 #include "lr_splitter.hpp"
 
-namespace zlSplitter {
+namespace zldsp::splitter {
     template<typename FloatType>
     void LRSplitter<FloatType>::reset() {
     }

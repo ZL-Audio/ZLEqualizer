@@ -12,7 +12,7 @@
 #include "controller.hpp"
 #include "../state/state_definitions.hpp"
 
-namespace zlDSP {
+namespace zlp {
     template<typename FloatType>
     class ChoreAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
@@ -58,26 +58,26 @@ namespace zlDSP {
         };
 
         constexpr static std::array NAIDs{
-            zlState::fftPreON::ID, zlState::fftPostON::ID, zlState::fftSideON::ID,
-            zlState::ffTSpeed::ID, zlState::ffTTilt::ID,
-            zlState::conflictON::ID,
-            zlState::conflictStrength::ID,
-            zlState::conflictScale::ID
+            zlstate::fftPreON::ID, zlstate::fftPostON::ID, zlstate::fftSideON::ID,
+            zlstate::ffTSpeed::ID, zlstate::ffTTilt::ID,
+            zlstate::conflictON::ID,
+            zlstate::conflictStrength::ID,
+            zlstate::conflictScale::ID
         };
 
         constexpr static std::array defaultNAVs{
-            static_cast<float>(zlState::fftPreON::defaultI),
-            static_cast<float>(zlState::fftPostON::defaultI),
-            static_cast<float>(zlState::fftSideON::defaultI),
-            static_cast<float>(zlState::ffTSpeed::defaultI),
-            static_cast<float>(zlState::ffTTilt::defaultI),
-            static_cast<float>(zlState::conflictON::defaultI),
-            static_cast<float>(zlState::conflictStrength::defaultV),
-            static_cast<float>(zlState::conflictScale::defaultV)
+            static_cast<float>(zlstate::fftPreON::defaultI),
+            static_cast<float>(zlstate::fftPostON::defaultI),
+            static_cast<float>(zlstate::fftSideON::defaultI),
+            static_cast<float>(zlstate::ffTSpeed::defaultI),
+            static_cast<float>(zlstate::ffTTilt::defaultI),
+            static_cast<float>(zlstate::conflictON::defaultI),
+            static_cast<float>(zlstate::conflictStrength::defaultV),
+            static_cast<float>(zlstate::conflictScale::defaultV)
         };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
         void initDefaultValues();
     };
-} // zlDSP
+} // zldsp

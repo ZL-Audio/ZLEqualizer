@@ -14,7 +14,7 @@
 
 #include "dragger_component.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class DraggerParameterAttach final : private Dragger::Listener {
     public:
         DraggerParameterAttach(juce::RangedAudioParameter &parameterX,
@@ -48,4 +48,4 @@ namespace zlInterface {
         juce::NormalisableRange<float> rangeX, rangeY;
         std::atomic<bool> isXAttached{true}, isYAttached{true};
     };
-} // zlInterface
+} // zlgui

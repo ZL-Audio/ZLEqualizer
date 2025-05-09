@@ -13,7 +13,7 @@
 #include "../interpolation/interpolation.hpp"
 #include "../fft/fft.hpp"
 
-namespace zlFFTAnalyzer {
+namespace zldsp::analyzer {
     /**
          * a fft analyzer which make sure that multiple FFTs are synchronized in time
          * @tparam FloatType the float type of input audio buffers
@@ -29,7 +29,7 @@ namespace zlFFTAnalyzer {
         static constexpr float minFreq = 10.f, maxFreq = 22000.f, minDB = -72.f;
         static constexpr float minFreqLog2 = 3.321928094887362f;
         static constexpr float maxFreqLog2 = 14.425215903299383f;
-        static constexpr float tiltSlope = zlState::ffTTilt::slopes[static_cast<size_t>(zlState::ffTTilt::defaultI)];
+        static constexpr float tiltSlope = zlstate::ffTTilt::slopes[static_cast<size_t>(zlstate::ffTTilt::defaultI)];
         static constexpr float tiltShiftTotal = (maxFreqLog2 - minFreqLog2) * tiltSlope;
 
     public:
@@ -89,7 +89,7 @@ namespace zlFFTAnalyzer {
 
             seqInputFreqs.resize(seqInputIndices.size());
             seqInputDBs.resize(seqInputIndices.size());
-            seqAkima = std::make_unique<zlInterpolation::SeqMakima<float> >(
+            seqAkima = std::make_unique<zldsp::interpolation::SeqMakima<float> >(
                 seqInputFreqs.data(), seqInputDBs.data(), seqInputFreqs.size(), 0.f, 0.f);
         }
 
@@ -351,7 +351,7 @@ namespace zlFFTAnalyzer {
         std::vector<size_t> setInputIndices;
         std::vector<float> seqInputDBs{};
 
-        std::unique_ptr<zlInterpolation::SeqMakima<float> > seqAkima;
+        std::unique_ptr<zldsp::interpolation::SeqMakima<float> > seqAkima;
 
         std::array<float, PointNum> interplotFreqs{};
         std::array<std::array<float, PointNum>, FFTNum> preInterplotDBs{};
@@ -360,8 +360,8 @@ namespace zlFFTAnalyzer {
         std::array<std::atomic<bool>, FFTNum> readyFlags;
         std::atomic<int> readyNum{std::numeric_limits<int>::max()};
 
-        zlFFT::KFREngine<float> fft;
-        zlFFT::WindowFunction<float> window;
+        zldsp::fft::KFREngine<float> fft;
+        zldsp::fft::WindowFunction<float> window;
         std::atomic<size_t> fftSize;
 
         std::atomic<float> sampleRate;

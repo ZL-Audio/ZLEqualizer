@@ -15,15 +15,15 @@
 #include "../../../gui/gui.hpp"
 #include "../helpers.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class SumPanel final : public juce::Component,
                            private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SumPanel(juce::AudioProcessorValueTreeState &parameters,
-                          zlInterface::UIBase &base,
-                          zlDSP::Controller<double> &controller,
-                          std::array<zlFilter::Ideal<double, 16>, 16> &baseFilters,
-                          std::array<zlFilter::Ideal<double, 16>, 16> &mainFilters);
+                          zlgui::UIBase &base,
+                          zlp::Controller<double> &controller,
+                          std::array<zldsp::filter::Ideal<double, 16>, 16> &baseFilters,
+                          std::array<zldsp::filter::Ideal<double, 16>, 16> &mainFilters);
 
         ~SumPanel() override;
 
@@ -47,20 +47,20 @@ namespace zlPanel {
         std::array<juce::SpinLock, 5> pathLocks;
         std::array<juce::Colour, 5> colours;
         juce::AudioProcessorValueTreeState &parametersRef;
-        zlInterface::UIBase &uiBase;
-        zlDSP::Controller<double> &c;
-        std::array<zlFilter::Ideal<double, 16>, zlState::bandNUM> &mMainFilters;
+        zlgui::UIBase &uiBase;
+        zlp::Controller<double> &c;
+        std::array<zldsp::filter::Ideal<double, 16>, zlstate::bandNUM> &mMainFilters;
         std::atomic<float> maximumDB;
         std::vector<double> dBs{};
         AtomicBound<float> atomicBound;
         std::atomic<float> curveThickness{0.f};
 
         static constexpr std::array changeIDs{
-            zlDSP::bypass::ID, zlDSP::lrType::ID
+            zlp::bypass::ID, zlp::lrType::ID
         };
 
-        std::array<std::atomic<bool>, zlState::bandNUM> isBypassed{};
-        std::array<std::atomic<zlDSP::lrType::lrTypes>, zlState::bandNUM> lrTypes;
+        std::array<std::atomic<bool>, zlstate::bandNUM> isBypassed{};
+        std::array<std::atomic<zlp::lrType::lrTypes>, zlstate::bandNUM> lrTypes;
 
         std::atomic<bool> toRepaint{false};
 
@@ -68,4 +68,4 @@ namespace zlPanel {
 
         void updateCurveThickness();
     };
-} // zlPanel
+} // zlpanel

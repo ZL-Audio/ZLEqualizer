@@ -13,7 +13,7 @@
 #include "../../container/array.hpp"
 #include "fir_base.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     /**
      * an FIR which has the magnitude responses of prototype filters and zero phase responses
      * @tparam FloatType the float type of input audio buffer
@@ -25,7 +25,7 @@ namespace zlFilter {
     class FIR final : public FIRBase<FloatType, defaultFFTOrder> {
     public:
         FIR(std::array<Ideal<FloatType, FilterSize>, FilterNum> &ideal,
-            zlContainer::FixedMaxSizeArray<size_t, FilterNum> &indices,
+            zldsp::container::FixedMaxSizeArray<size_t, FilterNum> &indices,
             std::array<bool, FilterNum> &mask,
             std::vector<std::complex<FloatType> > &w1)
 
@@ -40,7 +40,7 @@ namespace zlFilter {
 
     private:
         std::array<Ideal<FloatType, FilterSize>, FilterNum> &idealFs;
-        zlContainer::FixedMaxSizeArray<size_t, FilterNum> &filterIndices;
+        zldsp::container::FixedMaxSizeArray<size_t, FilterNum> &filterIndices;
         std::array<bool, FilterNum> &bypassMask;
         std::atomic<bool> toUpdate{true};
 
@@ -59,7 +59,7 @@ namespace zlFilter {
 
         void processSpectrum() override {
             update();
-            zlVector::multiply(FIRBase<FloatType, defaultFFTOrder>::fftData.data(), dummyCorrections.data(), dummyCorrections.size());
+            zldsp::vector::multiply(FIRBase<FloatType, defaultFFTOrder>::fftData.data(), dummyCorrections.data(), dummyCorrections.size());
         }
 
         void update() {

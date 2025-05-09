@@ -10,23 +10,23 @@
 #include "right_control_panel.hpp"
 #include "BinaryData.h"
 
-namespace zlPanel {
+namespace zlpanel {
     RightControlPanel::RightControlPanel(PluginProcessor &p,
-                                         zlInterface::UIBase &base)
+                                         zlgui::UIBase &base)
         : uiBase(base),
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           background(uiBase),
-          dynBypassC("B", base, zlInterface::multilingual::labels::bandDynamicBypass),
-          dynSoloC("S", base, zlInterface::multilingual::labels::bandDynamicSolo),
-          dynRelativeC("R", base, zlInterface::multilingual::labels::bandDynamicRelative),
-          swapC("S", base, zlInterface::multilingual::labels::bandSideSwap),
-          sideFreqC("FREQ", base, zlInterface::multilingual::labels::bandDynamicSideFreq),
-          sideQC("Q", base, zlInterface::multilingual::labels::bandDynamicSideQ),
-          thresC("Threshold", base, zlInterface::multilingual::labels::bandDynamicThreshold),
-          kneeC("Knee", base, zlInterface::multilingual::labels::bandDynamicKnee),
-          attackC("Attack", base, zlInterface::multilingual::labels::bandDynamicAttack),
-          releaseC("Release", base, zlInterface::multilingual::labels::bandDynamicRelease),
+          dynBypassC("B", base, zlgui::multilingual::labels::bandDynamicBypass),
+          dynSoloC("S", base, zlgui::multilingual::labels::bandDynamicSolo),
+          dynRelativeC("R", base, zlgui::multilingual::labels::bandDynamicRelative),
+          swapC("S", base, zlgui::multilingual::labels::bandSideSwap),
+          sideFreqC("FREQ", base, zlgui::multilingual::labels::bandDynamicSideFreq),
+          sideQC("Q", base, zlgui::multilingual::labels::bandDynamicSideQ),
+          thresC("Threshold", base, zlgui::multilingual::labels::bandDynamicThreshold),
+          kneeC("Knee", base, zlgui::multilingual::labels::bandDynamicKnee),
+          attackC("Attack", base, zlgui::multilingual::labels::bandDynamicAttack),
+          releaseC("Release", base, zlgui::multilingual::labels::bandDynamicRelease),
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
@@ -41,9 +41,9 @@ namespace zlPanel {
             const auto isByPassed = static_cast<float>(dynBypassC.getButton().getToggleState());
             const auto currentBand = bandIdx.load();
             const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            for (size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlDSP::dynamicBypass::ID, idx);
+                    const auto activeID = zlstate::appendSuffix(zlp::dynamicBypass::ID, idx);
                     const auto para = parametersRef.getParameter(activeID);
                     para->beginChangeGesture();
                     para->setValueNotifyingHost(isByPassed);
@@ -131,18 +131,18 @@ namespace zlPanel {
 
         attach({&dynBypassC.getButton(), &dynSoloC.getButton(), &dynRelativeC.getButton(), &swapC.getButton()},
                {
-                   zlDSP::dynamicBypass::ID + suffix, zlDSP::sideSolo::ID + suffix,
-                   zlDSP::dynamicRelative::ID + suffix, zlDSP::sideSwap::ID + suffix
+                   zlp::dynamicBypass::ID + suffix, zlp::sideSolo::ID + suffix,
+                   zlp::dynamicRelative::ID + suffix, zlp::sideSwap::ID + suffix
                },
                parametersRef, buttonAttachments);
         attach({&thresC.getSlider(), &attackC.getSlider(), &kneeC.getSlider(), &releaseC.getSlider()},
                {
-                   zlDSP::threshold::ID + suffix, zlDSP::attack::ID + suffix,
-                   zlDSP::kneeW::ID + suffix, zlDSP::release::ID + suffix
+                   zlp::threshold::ID + suffix, zlp::attack::ID + suffix,
+                   zlp::kneeW::ID + suffix, zlp::release::ID + suffix
                },
                parametersRef, sliderAttachments);
         attach({&sideFreqC.getSlider1(), &sideQC.getSlider1()},
-               {zlDSP::sideFreq::ID + suffix, zlDSP::sideQ::ID + suffix},
+               {zlp::sideFreq::ID + suffix, zlp::sideQ::ID + suffix},
                parametersRef, sliderAttachments);
     }
 

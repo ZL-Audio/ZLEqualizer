@@ -15,7 +15,7 @@
 #include "../state/state_definitions.hpp"
 #include "multilingual/multilingual.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     enum colourIdx {
         textColour,
         backgroundColour,
@@ -291,7 +291,7 @@ namespace zlInterface {
         }
 
         juce::Slider::SliderStyle getRotaryStyle() const {
-            return zlState::rotaryStyle::styles[rotaryStyleId];
+            return zlstate::rotaryStyle::styles[rotaryStyleId];
         }
 
         void setRotaryStyleID(const size_t x) {
@@ -307,7 +307,7 @@ namespace zlInterface {
         }
 
         int getRefreshRateMS() const {
-            return zlState::refreshRate::ms[refreshRateId.load()];
+            return zlstate::refreshRate::ms[refreshRateId.load()];
         }
 
         size_t getRefreshRateID() const {
@@ -438,7 +438,7 @@ namespace zlInterface {
             }
         }
 
-        std::string getToolTipText(const zlInterface::multilingual::labels label) const {
+        std::string getToolTipText(const zlgui::multilingual::labels label) const {
             switch (actualLangIdx) {
                 case multilingual::languages::lang_en: {
                     return multilingual::en::texts[static_cast<size_t>(label)];
@@ -490,7 +490,7 @@ namespace zlInterface {
         float rotaryDragSensitivity{1.f};
         std::atomic<float> fftExtraTilt{0.f}, fftExtraSpeed{1.f};
         std::atomic<float> singleCurveThickness{1.f}, sumCurveThickness{1.f};
-        std::array<std::atomic<bool>, zlState::bandNUM> isBandSelected{};
+        std::array<std::atomic<bool>, zlstate::bandNUM> isBandSelected{};
         std::atomic<bool> isMouseWheelShiftReverse{false};
         std::atomic<bool> isSliderDoubleClickOpenEditor{false};
         std::atomic<int> defaultPassFilterSlope{1};
@@ -510,8 +510,8 @@ namespace zlInterface {
             para->endChangeGesture();
         }
 
-        size_t cMap1Idx{zlState::colourMapIdx::defaultDark};
-        size_t cMap2Idx{zlState::colourMapIdx::seabornBrightDark};
+        size_t cMap1Idx{zlstate::colourMapIdx::defaultDark};
+        size_t cMap2Idx{zlstate::colourMapIdx::seabornBrightDark};
 
         int fftOrderIdx{1};
 

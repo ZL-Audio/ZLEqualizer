@@ -13,7 +13,7 @@
 #include "chore/chore.hpp"
 #include "../state/state_definitions.hpp"
 
-namespace zlDSP {
+namespace zlp {
     template<typename FloatType>
     class FiltersAttach : private juce::AudioProcessorValueTreeState::Listener {
     public:
@@ -40,10 +40,10 @@ namespace zlDSP {
         juce::AudioProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parameterRef, &parameterNARef;
         Controller<FloatType> &controllerRef;
-        std::array<zlFilter::DynamicIIR<FloatType, Controller<FloatType>::FilterSize>, bandNUM> &filtersRef;
+        std::array<zldsp::filter::DynamicIIR<FloatType, Controller<FloatType>::FilterSize>, bandNUM> &filtersRef;
         std::array<std::string, bandNUM * 2> sideParaNames;
-        std::array<std::unique_ptr<zlChore::ParaUpdater>, bandNUM> sideFreqUpdater, sideQUpdater;
-        std::array<std::unique_ptr<zlChore::ParaUpdater>, bandNUM> thresholdUpdater, kneeUpdater;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, bandNUM> sideFreqUpdater, sideQUpdater;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, bandNUM> thresholdUpdater, kneeUpdater;
 
         constexpr static std::array IDs{
             bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,
@@ -78,7 +78,7 @@ namespace zlDSP {
 
         void initDefaultValues();
 
-        std::atomic<float> maximumDB{zlState::maximumDB::dBs[static_cast<size_t>(zlState::maximumDB::defaultI)]};
+        std::atomic<float> maximumDB{zlstate::maximumDB::dBs[static_cast<size_t>(zlstate::maximumDB::defaultI)]};
 
         std::atomic<bool> gDynLink{false};
         std::array<std::atomic<bool>, bandNUM> sDynLink{};

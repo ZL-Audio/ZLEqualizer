@@ -25,7 +25,7 @@
 #include "eq_match/eq_match.hpp"
 #include "loudness/loudness.hpp"
 
-namespace zlDSP {
+namespace zlp {
     template<typename FloatType>
     class Controller final : public juce::AsyncUpdater {
     public:
@@ -39,13 +39,13 @@ namespace zlDSP {
 
         void process(juce::AudioBuffer<FloatType> &buffer);
 
-        zlFilter::DynamicIIR<FloatType, FilterSize> &getFilter(const size_t idx) { return filters[idx]; }
+        zldsp::filter::DynamicIIR<FloatType, FilterSize> &getFilter(const size_t idx) { return filters[idx]; }
 
-        zlFilter::Ideal<FloatType, FilterSize> &getMainIdealFilter(const size_t idx) { return mainIdeals[idx]; }
+        zldsp::filter::Ideal<FloatType, FilterSize> &getMainIdealFilter(const size_t idx) { return mainIdeals[idx]; }
 
-        zlFilter::IIRIdle<FloatType, FilterSize> &getMainIIRFilter(const size_t idx) { return mainIIRs[idx]; }
+        zldsp::filter::IIRIdle<FloatType, FilterSize> &getMainIIRFilter(const size_t idx) { return mainIIRs[idx]; }
 
-        std::array<zlFilter::DynamicIIR<FloatType, FilterSize>, bandNUM> &getFilters() { return filters; }
+        std::array<zldsp::filter::DynamicIIR<FloatType, FilterSize>, bandNUM> &getFilters() { return filters; }
 
         void setFilterLRs(lrType::lrTypes x, size_t idx);
 
@@ -63,9 +63,9 @@ namespace zlDSP {
 
         void clearSolo(size_t idx, bool isSide);
 
-        inline zlFilter::IIR<FloatType, FilterSize> &getSoloFilter() { return soloFilter; }
+        inline zldsp::filter::IIR<FloatType, FilterSize> &getSoloFilter() { return soloFilter; }
 
-        std::tuple<FloatType, FloatType> getSoloFilterParas(zlFilter::FilterType fType, FloatType freq, FloatType q);
+        std::tuple<FloatType, FloatType> getSoloFilterParas(zldsp::filter::FilterType fType, FloatType freq, FloatType q);
 
         inline void setSideChain(const bool x) { sideChain.store(x); }
 
@@ -77,7 +77,7 @@ namespace zlDSP {
 
         bool getLearningHistON(const size_t idx) const { return isHistON[idx].load(); }
 
-        zlHistogram::AtomicHistogram<FloatType, 80> &getLearningHist(const size_t idx) { return atomicHistograms[idx]; }
+        zldsp::histogram::AtomicHistogram<FloatType, 80> &getLearningHist(const size_t idx) { return atomicHistograms[idx]; }
 
         void setLookAhead(FloatType x);
 
@@ -85,15 +85,15 @@ namespace zlDSP {
 
         void setEffectON(const bool x) { isEffectON.store(x); }
 
-        zlFFTAnalyzer::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzer; }
+        zldsp::analyzer::PrePostFFTAnalyzer<FloatType> &getAnalyzer() { return fftAnalyzer; }
 
-        zlFFTAnalyzer::ConflictAnalyzer<FloatType> &getConflictAnalyzer() { return conflictAnalyzer; }
+        zldsp::analyzer::ConflictAnalyzer<FloatType> &getConflictAnalyzer() { return conflictAnalyzer; }
 
-        zlEqMatch::EqMatchAnalyzer<FloatType> &getMatchAnalyzer() { return matchAnalyzer; }
+        zldsp::eq_match::EqMatchAnalyzer<FloatType> &getMatchAnalyzer() { return matchAnalyzer; }
 
-        zlGain::SimpleGain<FloatType> &getGainDSP() { return outputGain; }
+        zldsp::gain::SimpleGain<FloatType> &getGainDSP() { return outputGain; }
 
-        zlGain::AutoGain<FloatType> &getAutoGain() { return autoGain; }
+        zldsp::gain::AutoGain<FloatType> &getAutoGain() { return autoGain; }
 
         void setZeroLatency(const bool x) {
             isZeroLatency.store(x);
@@ -122,7 +122,7 @@ namespace zlDSP {
             return sideLoudness[idx].load();
         }
 
-        zlPhase::PhaseFlip<FloatType> &getPhaseFlipper() { return phaseFlipper; }
+        zldsp::phase::PhaseFlip<FloatType> &getPhaseFlipper() { return phaseFlipper; }
 
         void setFilterStructure(const filterStructure::FilterStructure x) {
             mFilterStructure.store(x);
@@ -152,11 +152,11 @@ namespace zlDSP {
             return isBypass[idx].load();
         }
 
-        zlFilter::Empty<FloatType> &getBaseFilter(const size_t idx) {
+        zldsp::filter::Empty<FloatType> &getBaseFilter(const size_t idx) {
             return bFilters[idx];
         }
 
-        zlFilter::Empty<FloatType> &getTargetFilter(const size_t idx) {
+        zldsp::filter::Empty<FloatType> &getTargetFilter(const size_t idx) {
             return tFilters[idx];
         }
 
@@ -176,30 +176,30 @@ namespace zlDSP {
         std::atomic<bool> isEditorOn{false};
         bool currentIsEditorOn{false};
 
-        std::array<zlFilter::Empty<FloatType>, bandNUM> bFilters, tFilters;
+        std::array<zldsp::filter::Empty<FloatType>, bandNUM> bFilters, tFilters;
 
-        std::array<zlFilter::DynamicIIR<FloatType, FilterSize>, bandNUM> filters =
+        std::array<zldsp::filter::DynamicIIR<FloatType, FilterSize>, bandNUM> filters =
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
                     return std::array{
-                        zlFilter::DynamicIIR<FloatType, FilterSize>{std::get<Is>(bFilters), std::get<Is>(tFilters)}...
+                        zldsp::filter::DynamicIIR<FloatType, FilterSize>{std::get<Is>(bFilters), std::get<Is>(tFilters)}...
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(bFilters)> >());
 
         std::array<std::atomic<lrType::lrTypes>, bandNUM> filterLRs;
         std::array<lrType::lrTypes, bandNUM> currentFilterLRs{};
-        std::array<zlContainer::FixedMaxSizeArray<size_t, bandNUM>, 5> filterLRIndices;
+        std::array<zldsp::container::FixedMaxSizeArray<size_t, bandNUM>, 5> filterLRIndices;
         std::atomic<bool> toUpdateLRs{true};
         bool useLR{false}, useMS{false};
 
-        zlContainer::FixedMaxSizeArray<size_t, bandNUM> dynamicONIndices;
+        zldsp::container::FixedMaxSizeArray<size_t, bandNUM> dynamicONIndices;
         std::atomic<bool> toUpdateDynamicON{true};
 
-        std::array<zlFilter::StaticGainCompensation<FloatType>, bandNUM> compensations =
+        std::array<zldsp::filter::StaticGainCompensation<FloatType>, bandNUM> compensations =
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
-                    return std::array{zlFilter::StaticGainCompensation<FloatType>{std::get<Is>(bFilters)}...};
+                    return std::array{zldsp::filter::StaticGainCompensation<FloatType>{std::get<Is>(bFilters)}...};
                 }(std::make_index_sequence<std::tuple_size_v<decltype(bFilters)> >());
 
-        std::array<zlGain::SimpleGain<FloatType>, 5> compensationGains;
+        std::array<zldsp::gain::SimpleGain<FloatType>, 5> compensationGains;
         std::atomic<bool> isSgcON{false}, toUpdateSgc{false};
         bool currentIsSgcON{false};
 
@@ -208,14 +208,14 @@ namespace zlDSP {
         std::array<bool, bandNUM> currentIsBypass{};
         std::atomic<bool> toUpdateBypass;
 
-        std::array<zlFilter::IIRIdle<FloatType, FilterSize>, bandNUM> mainIIRs;
-        std::array<zlFilter::Ideal<FloatType, FilterSize>, bandNUM> mainIdeals;
+        std::array<zldsp::filter::IIRIdle<FloatType, FilterSize>, bandNUM> mainIIRs;
+        std::array<zldsp::filter::Ideal<FloatType, FilterSize>, bandNUM> mainIdeals;
 
         std::vector<std::complex<FloatType> > prototypeW1, prototypeW2;
-        std::array<zlFilter::PrototypeCorrection<FloatType, bandNUM, FilterSize>, 5> prototypeCorrections =
+        std::array<zldsp::filter::PrototypeCorrection<FloatType, bandNUM, FilterSize>, 5> prototypeCorrections =
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
                     return std::array{
-                        zlFilter::PrototypeCorrection<FloatType, bandNUM, FilterSize>{
+                        zldsp::filter::PrototypeCorrection<FloatType, bandNUM, FilterSize>{
                             mainIIRs, mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, prototypeW1,
                             prototypeW2
                         }...
@@ -223,20 +223,20 @@ namespace zlDSP {
                 }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
 
         std::vector<std::complex<FloatType> > mixedW1, mixedW2;
-        std::array<zlFilter::MixedCorrection<FloatType, bandNUM, FilterSize>, 5> mixedCorrections =
+        std::array<zldsp::filter::MixedCorrection<FloatType, bandNUM, FilterSize>, 5> mixedCorrections =
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
                     return std::array{
-                        zlFilter::MixedCorrection<FloatType, bandNUM, FilterSize>{
+                        zldsp::filter::MixedCorrection<FloatType, bandNUM, FilterSize>{
                             mainIIRs, mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, mixedW1, mixedW2
                         }...
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(filterLRIndices)> >());
 
         std::vector<std::complex<FloatType> > linearW1;
-        std::array<zlFilter::FIR<FloatType, bandNUM, FilterSize>, 5> linearFilters =
+        std::array<zldsp::filter::FIR<FloatType, bandNUM, FilterSize>, 5> linearFilters =
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
                     return std::array{
-                        zlFilter::FIR<FloatType, bandNUM, FilterSize>{
+                        zldsp::filter::FIR<FloatType, bandNUM, FilterSize>{
                             mainIdeals, std::get<Is>(filterLRIndices), currentIsBypass, linearW1
                         }...
                     };
@@ -245,62 +245,62 @@ namespace zlDSP {
 
         std::atomic<int> latency{0};
 
-        zlSplitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
-        zlSplitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
+        zldsp::splitter::LRSplitter<FloatType> lrMainSplitter, lrSideSplitter;
+        zldsp::splitter::MSSplitter<FloatType> msMainSplitter, msSideSplitter;
 
         std::array<std::atomic<bool>, bandNUM> dynRelatives, sideSwaps;
         std::atomic<bool> toUpdateDynRelSide{true};
         std::array<bool, bandNUM> currentDynRelatives{}, currentSideSwaps{};
-        std::array<zlCompressor::RMSTracker<FloatType>, 5> trackers;
+        std::array<zldsp::compressor::RMSTracker<FloatType>, 5> trackers;
         std::array<bool, 5> useTrackers{};
         std::array<FloatType, 5> trackerBaselines{};
         std::array<std::atomic<FloatType>, bandNUM> sideLoudness{};
 
         std::atomic<bool> sideChain;
 
-        zlFilter::IIR<FloatType, FilterSize> soloFilter;
+        zldsp::filter::IIR<FloatType, FilterSize> soloFilter;
         std::atomic<size_t> soloIdx;
         std::atomic<bool> toUpdateSolo{false};
         std::atomic<bool> useSolo{false}, soloSide{false};
         bool currentUseSolo{false}, currentSoloSide{false};
         size_t currentSoloIdx{0};
 
-        std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> histograms;
-        std::array<zlHistogram::Histogram<FloatType, 80>, bandNUM> subHistograms;
-        std::array<zlHistogram::AtomicHistogram<FloatType, 80>, bandNUM> atomicHistograms;
+        std::array<zldsp::histogram::Histogram<FloatType, 80>, bandNUM> histograms;
+        std::array<zldsp::histogram::Histogram<FloatType, 80>, bandNUM> subHistograms;
+        std::array<zldsp::histogram::AtomicHistogram<FloatType, 80>, bandNUM> atomicHistograms;
         std::array<std::atomic<bool>, bandNUM> isHistON{};
         std::array<bool, bandNUM> currentIsHistON{};
         std::atomic<bool> toUpdateHist{true};
         std::array<std::atomic<FloatType>, bandNUM> currentThreshold{};
 
         static inline double subBufferLength = 0.001;
-        zlAudioBuffer::FixedAudioBuffer<FloatType> subBuffer;
+        zldsp::buffer::FixedAudioBuffer<FloatType> subBuffer;
 
-        zlDelay::SampleDelay<FloatType> delay;
+        zldsp::delay::SampleDelay<FloatType> delay;
 
-        zlGain::SimpleGain<FloatType> outputGain;
+        zldsp::gain::SimpleGain<FloatType> outputGain;
 
-        zlGain::AutoGain<FloatType> autoGain;
+        zldsp::gain::AutoGain<FloatType> autoGain;
 
         std::atomic<bool> isEffectON{true};
         bool currentIsEffectON{true};
 
-        zlFFTAnalyzer::PrePostFFTAnalyzer<FloatType> fftAnalyzer;
-        zlFFTAnalyzer::ConflictAnalyzer<FloatType> conflictAnalyzer;
-        zlEqMatch::EqMatchAnalyzer<FloatType> matchAnalyzer;
+        zldsp::analyzer::PrePostFFTAnalyzer<FloatType> fftAnalyzer;
+        zldsp::analyzer::ConflictAnalyzer<FloatType> conflictAnalyzer;
+        zldsp::eq_match::EqMatchAnalyzer<FloatType> matchAnalyzer;
         juce::AudioBuffer<FloatType> dummyMainBuffer, dummySideBuffer;
-        zlDelay::SampleDelay<FloatType> dummyMainDelay, dummySideDelay;
+        zldsp::delay::SampleDelay<FloatType> dummyMainDelay, dummySideDelay;
 
         std::atomic<double> sampleRate{48000};
 
         std::atomic<bool> isZeroLatency{false};
 
-        zlPhase::PhaseFlip<FloatType> phaseFlipper;
+        zldsp::phase::PhaseFlip<FloatType> phaseFlipper;
 
         std::atomic<filterStructure::FilterStructure> mFilterStructure{filterStructure::minimum};
         filterStructure::FilterStructure currentFilterStructure{filterStructure::minimum};
 
-        zlLoudness::LUFSMatcher<FloatType, 2, true> loudnessMatcher;
+        zldsp::loudness::LUFSMatcher<FloatType, 2, true> loudnessMatcher;
         bool currentIsLoudnessMatcherON{false};
         std::atomic<bool> isLoudnessMatcherON{false};
 

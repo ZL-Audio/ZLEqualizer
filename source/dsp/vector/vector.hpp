@@ -16,7 +16,7 @@
 #include <kfr/dsp.hpp>
 #pragma clang diagnostic pop
 
-namespace zlVector {
+namespace zldsp::vector {
     template<typename FloatType>
     inline void copy(FloatType *out, const FloatType* in, const size_t size) {
         auto v1 = kfr::make_univector(out, size);

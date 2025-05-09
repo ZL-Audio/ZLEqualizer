@@ -11,7 +11,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace zlInterface {
+namespace zlgui {
     class SnappingSlider final : public juce::Slider {
     public:
         explicit SnappingSlider(UIBase &base, const juce::String &name = "") : juce::Slider(name), uiBase(base) {

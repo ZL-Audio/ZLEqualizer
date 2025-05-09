@@ -15,13 +15,13 @@
 #include "../../gui/gui.hpp"
 #include "../../state/state.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ScalePanel final : public juce::Component,
                              public juce::SettableTooltipClient,
                              private juce::AsyncUpdater {
     public:
         ScalePanel(PluginProcessor &processor,
-                   zlInterface::UIBase &base);
+                   zlgui::UIBase &base);
 
         ~ScalePanel() override;
 
@@ -41,9 +41,9 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
 
-        zlInterface::CompactCombobox scaleBox, minFFTBox;
+        zlgui::CompactCombobox scaleBox, minFFTBox;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
         std::atomic<float> maximumDB{12.f}, minimumFFTDB{-72.f};
 
@@ -53,4 +53,4 @@ namespace zlPanel {
 
         void handleAsyncUpdate() override;
     };
-} // zlPanel
+} // zlpanel

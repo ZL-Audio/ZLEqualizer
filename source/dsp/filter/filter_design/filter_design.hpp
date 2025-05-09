@@ -11,7 +11,7 @@
 
 #include "../helpers.hpp"
 
-namespace zlFilter::FilterDesign {
+namespace zldsp::filter::FilterDesign {
     template<size_t ArraySize,
         std::array<double, 4>(*firstOrderFunc)(double w),
         std::array<double, 6>(*func)(double w, double q)>

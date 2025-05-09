@@ -12,7 +12,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
-namespace zlState {
+namespace zlstate {
     class Property {
     public:
         Property();
@@ -37,5 +37,3 @@ namespace zlState {
                 path.getChildFile("ui.xml");
     };
 }
-
-

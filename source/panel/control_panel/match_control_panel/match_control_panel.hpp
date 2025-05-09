@@ -16,11 +16,11 @@
 #include "../../panel_definitons.hpp"
 #include "match_runner.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class MatchControlPanel final : public juce::Component,
                                     private juce::ValueTree::Listener {
     public:
-        explicit MatchControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit MatchControlPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~MatchControlPanel() override;
 
@@ -29,15 +29,15 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        zlInterface::UIBase &uiBase;
-        zlEqMatch::EqMatchAnalyzer<double> &analyzer;
+        zlgui::UIBase &uiBase;
+        zldsp::eq_match::EqMatchAnalyzer<double> &analyzer;
 
         const std::unique_ptr<juce::Drawable> startDrawable, pauseDrawable, saveDrawable;
 
-        zlInterface::CompactCombobox sideChooseBox, fitAlgoBox;
-        zlInterface::CompactLinearSlider weightSlider, smoothSlider, slopeSlider;
-        zlInterface::CompactLinearSlider numBandSlider;
-        zlInterface::ClickButton learnButton, saveButton, fitButton;
+        zlgui::CompactCombobox sideChooseBox, fitAlgoBox;
+        zlgui::CompactLinearSlider weightSlider, smoothSlider, slopeSlider;
+        zlgui::CompactLinearSlider numBandSlider;
+        zlgui::ClickButton learnButton, saveButton, fitButton;
 
         juce::Rectangle<int> internalBound;
 
@@ -61,4 +61,4 @@ namespace zlPanel {
 
         void saveToPreset();
     };
-} // zlPanel
+} // zlpanel

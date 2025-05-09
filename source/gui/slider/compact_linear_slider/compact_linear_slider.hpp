@@ -13,7 +13,7 @@
 #include "compact_linear_slider_look_and_feel.hpp"
 #include "../extra_slider/snapping_slider.h"
 
-namespace zlInterface {
+namespace zlgui {
     class CompactLinearSlider : public juce::Component,
                                 private juce::Label::Listener,
                                 private juce::Slider::Listener,

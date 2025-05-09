@@ -15,7 +15,7 @@
 #include "../../label/name_look_and_feel.hpp"
 #include "../extra_slider/snapping_slider.h"
 
-namespace zlInterface {
+namespace zlgui {
     template<bool Opaque = true, bool UseSecondSlider = true>
     class TwoValueRotarySlider final : public juce::Component,
                                        private juce::Label::Listener,

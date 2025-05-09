@@ -14,7 +14,7 @@
 #include <numeric>
 #include <numbers>
 
-namespace zlFilter {
+namespace zldsp::filter {
     constexpr static double pi = std::numbers::pi;
     constexpr static double ppi = 2 * std::numbers::pi;
 

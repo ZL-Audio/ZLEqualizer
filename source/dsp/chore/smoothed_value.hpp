@@ -9,12 +9,12 @@
 
 #pragma once
 
-namespace zlChore {
+namespace zldsp::chore {
     enum SmoothedTypes {
         Lin, Mul, FixLin, FixMul
     };
 
-    template<typename FloatType, SmoothedTypes smoothedType = SmoothedTypes::Lin>
+    template<typename FloatType, SmoothedTypes SmoothedType = SmoothedTypes::Lin>
     class SmoothedValue {
     public:
         SmoothedValue() {
@@ -26,22 +26,22 @@ namespace zlChore {
         }
 
         void prepare(const double sampleRate, const double rampLengthInSeconds) {
-            switch (smoothedType) {
+            switch (SmoothedType) {
                 case Lin:
                 case Mul: {
-                    maxCount = static_cast<int>(sampleRate * rampLengthInSeconds);
+                    max_count = static_cast<int>(sampleRate * rampLengthInSeconds);
                     break;
                 }
                 case FixLin: {
                     inc = static_cast<FloatType>(1.0 / (sampleRate * rampLengthInSeconds));
-                    increaseInc = inc;
-                    decreaseInc = -inc;
+                    increase_inc = inc;
+                    decrease_inc = -inc;
                     break;
                 }
                 case FixMul: {
                     inc = static_cast<FloatType>(std::pow(2.0, 1.0 / (sampleRate * rampLengthInSeconds)));
-                    increaseInc = inc;
-                    decreaseInc = FloatType(1.0) / inc;
+                    increase_inc = inc;
+                    decrease_inc = FloatType(1.0) / inc;
                     break;
                 }
             }
@@ -53,21 +53,21 @@ namespace zlChore {
                 count = 0;
                 return;
             }
-            switch (smoothedType) {
+            switch (SmoothedType) {
                 case Lin: {
-                    inc = (target - current) / static_cast<FloatType>(maxCount);
-                    count = maxCount;
+                    inc = (target - current) / static_cast<FloatType>(max_count);
+                    count = max_count;
                     break;
                 }
                 case Mul: {
-                    inc = std::exp(std::log(target / current) / static_cast<FloatType>(maxCount));
-                    count = maxCount;
+                    inc = std::exp(std::log(target / current) / static_cast<FloatType>(max_count));
+                    count = max_count;
                     break;
                 }
                 case FixLin:
                 case FixMul: {
                     count = 1;
-                    isIncreasing = target > current;
+                    is_increasing = target > current;
                     break;
                 }
             }
@@ -87,7 +87,7 @@ namespace zlChore {
 
         FloatType getNext() {
             if (count == 0) { return current; }
-            switch (smoothedType) {
+            switch (SmoothedType) {
                 case Lin: {
                     current += inc;
                     count -= 1;
@@ -99,14 +99,14 @@ namespace zlChore {
                     return current;
                 }
                 case FixLin: {
-                    if (isIncreasing) {
-                        current += increaseInc;
+                    if (is_increasing) {
+                        current += increase_inc;
                         if (current > target) {
                             current = target;
                             count = 0;
                         }
                     } else {
-                        current += decreaseInc;
+                        current += decrease_inc;
                         if (current < target) {
                             current = target;
                             count = 0;
@@ -115,14 +115,14 @@ namespace zlChore {
                     return current;
                 }
                 case FixMul: {
-                    if (isIncreasing) {
-                        current *= increaseInc;
+                    if (is_increasing) {
+                        current *= increase_inc;
                         if (current > target) {
                             current = target;
                             count = 0;
                         }
                     } else {
-                        current *= decreaseInc;
+                        current *= decrease_inc;
                         if (current < target) {
                             current = target;
                             count = 0;
@@ -136,8 +136,8 @@ namespace zlChore {
 
     private:
         FloatType current{}, target{}, inc{};
-        FloatType increaseInc{}, decreaseInc{};
-        int maxCount{}, count{};
-        bool isIncreasing{};
+        FloatType increase_inc{}, decrease_inc{};
+        int max_count{}, count{};
+        bool is_increasing{};
     };
 }

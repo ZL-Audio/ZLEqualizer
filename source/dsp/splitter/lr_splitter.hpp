@@ -12,7 +12,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
-namespace zlSplitter {
+namespace zldsp::splitter {
     /**
      * a splitter that splits the stereo audio signal input left signal and right signal
      * @tparam FloatType

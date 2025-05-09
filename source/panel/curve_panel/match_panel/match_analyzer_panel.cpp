@@ -9,26 +9,26 @@
 
 #include "match_analyzer_panel.hpp"
 
-namespace zlPanel {
-    MatchAnalyzerPanel::MatchAnalyzerPanel(zlEqMatch::EqMatchAnalyzer<double> &analyzer,
+namespace zlpanel {
+    MatchAnalyzerPanel::MatchAnalyzerPanel(zldsp::eq_match::EqMatchAnalyzer<double> &analyzer,
                                            juce::AudioProcessorValueTreeState &parametersNA,
-                                           zlInterface::UIBase &base)
+                                           zlgui::UIBase &base)
         : analyzerRef(analyzer), parametersNARef(parametersNA), uiBase(base),
           lowDragger(base), highDragger(base), shiftDragger(base),
           matchLabel(base) {
-        parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
-        parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
+        parametersNARef.addParameterListener(zlstate::maximumDB::ID, this);
+        parameterChanged(zlstate::maximumDB::ID, parametersNARef.getRawParameterValue(zlstate::maximumDB::ID)->load());
         setInterceptsMouseClicks(true, true);
         uiBase.getValueTree().addListener(this); {
-            lowDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::rightArrow);
+            lowDragger.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::rightArrow);
             lowDragger.setYPortion(.5f);
             lowDragger.setXYEnabled(true, false);
         } {
-            highDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::leftArrow);
+            highDragger.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::leftArrow);
             highDragger.setYPortion(.5f);
             highDragger.setXYEnabled(true, false);
         } {
-            shiftDragger.getLAF().setDraggerShape(zlInterface::DraggerLookAndFeel::DraggerShape::upDownArrow);
+            shiftDragger.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::upDownArrow);
             shiftDragger.setXPortion(0.508304953195832f);
             shiftDragger.setXYEnabled(false, true);
         }
@@ -47,25 +47,25 @@ namespace zlPanel {
 
     MatchAnalyzerPanel::~MatchAnalyzerPanel() {
         uiBase.getValueTree().removeListener(this);
-        parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
+        parametersNARef.removeParameterListener(zlstate::maximumDB::ID, this);
     }
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
         if (std::abs(currentMaximumDB - maximumDB.load()) >= 1e-3f) {
             currentMaximumDB = maximumDB.load();
-            const auto actualShift = static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchShift)) * .5f;
+            const auto actualShift = static_cast<float>(uiBase.getProperty(zlgui::settingIdx::matchShift)) * .5f;
             shiftDragger.setYPortion(actualShift / currentMaximumDB + .5f);
         }
-        g.fillAll(uiBase.getColourByIdx(zlInterface::backgroundColour).withAlpha(backgroundAlpha));
+        g.fillAll(uiBase.getColourByIdx(zlgui::backgroundColour).withAlpha(backgroundAlpha));
         const auto thickness = uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness();
         juce::GenericScopedTryLock lock{pathLock};
         if (!lock.isLocked()) { return; }
         if (showAverage) {
-            g.setColour(uiBase.getColourByIdx(zlInterface::sideColour).withAlpha(.5f));
+            g.setColour(uiBase.getColourByIdx(zlgui::sideColour).withAlpha(.5f));
             g.strokePath(recentPath2,
                          juce::PathStrokeType(thickness,
                                               juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-            g.setColour(uiBase.getColourByIdx(zlInterface::preColour).withAlpha(.5f));
+            g.setColour(uiBase.getColourByIdx(zlgui::preColour).withAlpha(.5f));
             g.strokePath(recentPath1,
                          juce::PathStrokeType(thickness,
                                               juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
@@ -131,18 +131,18 @@ namespace zlPanel {
     }
 
     void MatchAnalyzerPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &property) {
-        if (zlInterface::UIBase::isProperty(zlInterface::settingIdx::matchPanelFit, property)) {
-            const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelFit));
+        if (zlgui::UIBase::isProperty(zlgui::settingIdx::matchPanelFit, property)) {
+            const auto f = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelFit));
             backgroundAlpha = f ? .2f : .5f;
             showAverage = !f;
-        } else if (zlInterface::UIBase::isProperty(zlInterface::settingIdx::matchFitRunning, property)) {
-            matchLabel.setVisible(static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchFitRunning)));
+        } else if (zlgui::UIBase::isProperty(zlgui::settingIdx::matchFitRunning, property)) {
+            matchLabel.setVisible(static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchFitRunning)));
         }
     }
 
     void MatchAnalyzerPanel::parameterChanged(const juce::String &parameterID, const float newValue) {
         juce::ignoreUnused(parameterID);
-        maximumDB.store(zlState::maximumDB::dBs[static_cast<size_t>(newValue)]);
+        maximumDB.store(zlstate::maximumDB::dBs[static_cast<size_t>(newValue)]);
     }
 
     void MatchAnalyzerPanel::lookAndFeelChanged() {
@@ -151,14 +151,14 @@ namespace zlPanel {
         }
     }
 
-    void MatchAnalyzerPanel::draggerValueChanged(zlInterface::Dragger *dragger) {
+    void MatchAnalyzerPanel::draggerValueChanged(zlgui::Dragger *dragger) {
         if (dragger == &lowDragger) {
-            uiBase.setProperty(zlInterface::settingIdx::matchLowCut, lowDragger.getXPortion());
+            uiBase.setProperty(zlgui::settingIdx::matchLowCut, lowDragger.getXPortion());
         } else if (dragger == &highDragger) {
-            uiBase.setProperty(zlInterface::settingIdx::matchHighCut, highDragger.getXPortion());
+            uiBase.setProperty(zlgui::settingIdx::matchHighCut, highDragger.getXPortion());
         } else if (dragger == &shiftDragger) {
             const auto actualShift = (shiftDragger.getYPortion() - .5f) * maximumDB.load() * 2.f;
-            uiBase.setProperty(zlInterface::settingIdx::matchShift, actualShift);
+            uiBase.setProperty(zlgui::settingIdx::matchShift, actualShift);
             analyzerRef.setShift(actualShift);
         }
     }
@@ -231,4 +231,4 @@ namespace zlPanel {
             analyzerRef.clearDrawingDiffs();
         }
     }
-} // zlPanel
+} // zlpanel

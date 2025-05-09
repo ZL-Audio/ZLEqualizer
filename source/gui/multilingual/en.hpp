@@ -11,7 +11,7 @@
 
 #include <array>
 
-namespace zlInterface::multilingual::en {
+namespace zlgui::multilingual::en {
     static constexpr std::array texts = {
         "Press: turn on the selected band.\nRelease: bypass the selected band.",
         "Press: solo the audio affected by the selected frequency band.",

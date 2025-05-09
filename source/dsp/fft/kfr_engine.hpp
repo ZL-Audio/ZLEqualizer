@@ -10,7 +10,7 @@
 #pragma once
 #include "kfr_import.hpp"
 
-namespace zlFFT {
+namespace zldsp::fft {
     template<typename FloatType>
     class KFREngine {
     public:

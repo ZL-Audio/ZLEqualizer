@@ -11,7 +11,7 @@
 
 #include "origin_gain.hpp"
 
-namespace zlGain {
+namespace zldsp::gain {
     /**
      * a lock free, thread safe gain class
      * it will not process the signal if the gain is equal to 1
@@ -56,4 +56,4 @@ namespace zlGain {
         std::atomic<FloatType> gain{FloatType(1)};
         Gain<FloatType> gainDSP;
     };
-} // zlGain
+} // zldsp::gain

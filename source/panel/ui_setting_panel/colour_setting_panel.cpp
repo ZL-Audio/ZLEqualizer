@@ -9,7 +9,7 @@
 
 #include "colour_setting_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     static juce::Colour getIntColour(const int r, const int g, const int b, float alpha) {
         return {
             static_cast<juce::uint8>(r),
@@ -19,7 +19,7 @@ namespace zlPanel {
         };
     }
 
-    ColourSettingPanel::ColourSettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
+    ColourSettingPanel::ColourSettingPanel(PluginProcessor &p, zlgui::UIBase &base)
         : pRef(p), uiBase(base), nameLAF(base),
           textSelector(base, *this, false),
           backgroundSelector(base, *this, false),
@@ -37,7 +37,7 @@ namespace zlPanel {
         if (!settingDirectory.isDirectory()) {
             settingDirectory.createDirectory();
         }
-        nameLAF.setFontScale(zlInterface::FontHuge);
+        nameLAF.setFontScale(zlgui::FontHuge);
         for (size_t i = 0; i < numSelectors; ++i) {
             selectorLabels[i].setText(selectorNames[i], juce::dontSendNotification);
             selectorLabels[i].setJustificationType(juce::Justification::centredRight);
@@ -99,8 +99,8 @@ namespace zlPanel {
         postSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
         sideSelector.setColour(getIntColour(252, 18, 197, .1f));
         gridSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .25f));
-        cMap1Selector.getBox().setSelectedId(zlState::colourMap1Idx::defaultI + 1);
-        cMap2Selector.getBox().setSelectedId(zlState::colourMap2Idx::defaultI + 1);
+        cMap1Selector.getBox().setSelectedId(zlstate::colourMap1Idx::defaultI + 1);
+        cMap2Selector.getBox().setSelectedId(zlstate::colourMap2Idx::defaultI + 1);
         saveSetting();
     }
 
@@ -184,4 +184,4 @@ namespace zlPanel {
             });
         }
     }
-} // zlPanel
+} // zlpanel

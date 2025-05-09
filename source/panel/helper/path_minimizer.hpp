@@ -11,7 +11,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace zlPanel {
+namespace zlpanel {
     class PathMinimizer {
     public:
         static constexpr float tol = 0.01f;

@@ -15,16 +15,16 @@
 
 #include "../../../state/state_definitions.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class SidePanel final : public juce::Component,
                             private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit SidePanel(size_t bandIdx,
                            juce::AudioProcessorValueTreeState &parameters,
                            juce::AudioProcessorValueTreeState &parametersNA,
-                           zlInterface::UIBase &base,
-                           zlDSP::Controller<double> &controller,
-                           zlInterface::Dragger &sideDragger);
+                           zlgui::UIBase &base,
+                           zlp::Controller<double> &controller,
+                           zlgui::Dragger &sideDragger);
 
         ~SidePanel() override;
 
@@ -37,13 +37,13 @@ namespace zlPanel {
     private:
         size_t idx;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        zlFilter::IIR<double, zlDSP::Controller<double>::FilterSize> &sideF;
-        zlInterface::Dragger &sideDraggerRef;
+        zlgui::UIBase &uiBase;
+        zldsp::filter::IIR<double, zlp::Controller<double>::FilterSize> &sideF;
+        zlgui::Dragger &sideDraggerRef;
         std::atomic<bool> dynON, selected, actived;
 
         static constexpr std::array changeIDs{
-            zlDSP::dynamicON::ID, zlDSP::sideQ::ID
+            zlp::dynamicON::ID, zlp::sideQ::ID
         };
 
         juce::Colour colour;
@@ -54,4 +54,4 @@ namespace zlPanel {
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
-} // zlPanel
+} // zlpanel

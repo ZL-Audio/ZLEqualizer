@@ -14,7 +14,7 @@
 
 #include "../helper/helper.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     const static std::vector<double> ws = {
         1.30899694e-03, 1.32166652e-03, 1.33445873e-03, 1.34737475e-03,
         1.36041578e-03, 1.37358303e-03, 1.38687773e-03, 1.40030111e-03,
@@ -224,12 +224,12 @@ namespace zlPanel {
 
     inline static float indexToX(const size_t i, const juce::Rectangle<float> bound) {
         return static_cast<float>(i) /
-               static_cast<float>(zlFilter::frequencies.size() - 1) * bound.getWidth() + bound.getX();
+               static_cast<float>(zldsp::filter::frequencies.size() - 1) * bound.getWidth() + bound.getX();
     }
 
     inline static float freqToX(const double freq, const juce::Rectangle<float> bound) {
-        const auto portion = std::log(freq / zlFilter::frequencies.front()) / std::log(
-                                 zlFilter::frequencies.back() / zlFilter::frequencies.front());
+        const auto portion = std::log(freq / zldsp::filter::frequencies.front()) / std::log(
+                                 zldsp::filter::frequencies.back() / zldsp::filter::frequencies.front());
         return static_cast<float>(portion) * bound.getWidth() + bound.getX();
     }
 
@@ -244,10 +244,10 @@ namespace zlPanel {
                                  const bool reverse = false,
                                  const bool startPath = true) {
         const auto threshold = 2 * maxDB / static_cast<float>(bound.getHeight());
-        zlPanel::PathMinimizer minimizer{path};
+        zlpanel::PathMinimizer minimizer{path};
         if (reverse) {
             {
-                constexpr auto i = zlFilter::frequencies.size() - 1;
+                constexpr auto i = zldsp::filter::frequencies.size() - 1;
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
                 if (startPath) {
@@ -257,7 +257,7 @@ namespace zlPanel {
                 }
             }
             auto dB0 = dBs[0];
-            for (size_t j = zlFilter::frequencies.size() - 2; j > 0; --j) {
+            for (size_t j = zldsp::filter::frequencies.size() - 2; j > 0; --j) {
                 if (std::abs(dB0 - dBs[j]) >= threshold
                     || (dBs[j] >= dBs[j - 1] && dBs[j] >= dBs[j + 1])
                     || (dBs[j] <= dBs[j - 1] && dBs[j] <= dBs[j + 1])) {
@@ -284,7 +284,7 @@ namespace zlPanel {
                 }
             }
             auto dB0 = dBs[0];
-            for (size_t j = 1; j < zlFilter::frequencies.size() - 1; ++j) {
+            for (size_t j = 1; j < zldsp::filter::frequencies.size() - 1; ++j) {
                 if (std::abs(dB0 - dBs[j]) >= threshold
                     || (dBs[j] >= dBs[j - 1] && dBs[j] >= dBs[j + 1])
                     || (dBs[j] <= dBs[j - 1] && dBs[j] <= dBs[j + 1])) {
@@ -294,7 +294,7 @@ namespace zlPanel {
                     dB0 = dBs[j];
                 }
             } {
-                constexpr auto i = zlFilter::frequencies.size() - 1;
+                constexpr auto i = zldsp::filter::frequencies.size() - 1;
                 const auto x = indexToX(i, bound);
                 const auto y = dbToY(static_cast<float>(dBs[i]), maxDB, bound);
                 minimizer.lineTo(x, y);

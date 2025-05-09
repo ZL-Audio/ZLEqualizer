@@ -9,10 +9,10 @@
 
 #include "background_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     BackgroundPanel::BackgroundPanel(juce::AudioProcessorValueTreeState &parameters,
                                  juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base)
+                                 zlgui::UIBase &base)
         : uiBase(base),
           gridPanel(base) {
         juce::ignoreUnused(parameters, parametersNA);

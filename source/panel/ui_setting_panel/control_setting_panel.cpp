@@ -9,24 +9,24 @@
 
 #include "control_setting_panel.hpp"
 
-namespace zlPanel {
-    ControlSettingPanel::ControlSettingPanel(PluginProcessor &p, zlInterface::UIBase &base)
+namespace zlpanel {
+    ControlSettingPanel::ControlSettingPanel(PluginProcessor &p, zlgui::UIBase &base)
         : pRef(p),
           uiBase(base), nameLAF(base),
           sensitivitySliders{
               {
-                  zlInterface::CompactLinearSlider("Rough", base),
-                  zlInterface::CompactLinearSlider("Fine", base),
-                  zlInterface::CompactLinearSlider("Rough", base),
-                  zlInterface::CompactLinearSlider("Fine", base)
+                  zlgui::CompactLinearSlider("Rough", base),
+                  zlgui::CompactLinearSlider("Fine", base),
+                  zlgui::CompactLinearSlider("Rough", base),
+                  zlgui::CompactLinearSlider("Fine", base)
               }
           },
-          wheelReverseBox("", zlState::wheelShiftReverse::choices, base),
-          rotaryStyleBox("", zlState::rotaryStyle::choices, base),
+          wheelReverseBox("", zlstate::wheelShiftReverse::choices, base),
+          rotaryStyleBox("", zlstate::rotaryStyle::choices, base),
           rotaryDragSensitivitySlider("Distance", base),
-          sliderDoubleClickBox("", zlState::sliderDoubleClickFunc::choices, base) {
+          sliderDoubleClickBox("", zlstate::sliderDoubleClickFunc::choices, base) {
         juce::ignoreUnused(pRef);
-        nameLAF.setFontScale(zlInterface::FontHuge);
+        nameLAF.setFontScale(zlgui::FontHuge);
 
         wheelLabel.setText("Mouse-Wheel Sensitivity", juce::dontSendNotification);
         wheelLabel.setJustificationType(juce::Justification::centredRight);
@@ -76,7 +76,7 @@ namespace zlPanel {
     void ControlSettingPanel::loadSetting() {
         for (size_t i = 0; i < sensitivitySliders.size(); ++i) {
             sensitivitySliders[i].getSlider().setValue(static_cast<double>(uiBase.getSensitivity(
-                static_cast<zlInterface::sensitivityIdx>(i))));
+                static_cast<zlgui::sensitivityIdx>(i))));
         }
         wheelReverseBox.getBox().setSelectedId(static_cast<int>(uiBase.getIsMouseWheelShiftReverse()) + 1);
         rotaryStyleBox.getBox().setSelectedId(static_cast<int>(uiBase.getRotaryStyleID()) + 1);
@@ -87,7 +87,7 @@ namespace zlPanel {
     void ControlSettingPanel::saveSetting() {
         for (size_t i = 0; i < sensitivitySliders.size(); ++i) {
             uiBase.setSensitivity(static_cast<float>(sensitivitySliders[i].getSlider().getValue()),
-                                  static_cast<zlInterface::sensitivityIdx>(i));
+                                  static_cast<zlgui::sensitivityIdx>(i));
         }
         uiBase.setIsMouseWheelShiftReverse(static_cast<bool>(wheelReverseBox.getBox().getSelectedId() - 1));
         uiBase.setRotaryStyleID(static_cast<size_t>(rotaryStyleBox.getBox().getSelectedId() - 1));
@@ -166,19 +166,19 @@ namespace zlPanel {
             if (const auto xmlInput = juce::XmlDocument::parse(settingFile)) {
                 if (const auto *xmlElement = xmlInput->getChildByName("drag_fine_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setSensitivity(static_cast<float>(x), zlInterface::sensitivityIdx::mouseDragFine);
+                    uiBase.setSensitivity(static_cast<float>(x), zlgui::sensitivityIdx::mouseDragFine);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("drag_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setSensitivity(static_cast<float>(x), zlInterface::sensitivityIdx::mouseDrag);
+                    uiBase.setSensitivity(static_cast<float>(x), zlgui::sensitivityIdx::mouseDrag);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("wheel_fine_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setSensitivity(static_cast<float>(x), zlInterface::sensitivityIdx::mouseWheelFine);
+                    uiBase.setSensitivity(static_cast<float>(x), zlgui::sensitivityIdx::mouseWheelFine);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("wheel_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setSensitivity(static_cast<float>(x), zlInterface::sensitivityIdx::mouseWheel);
+                    uiBase.setSensitivity(static_cast<float>(x), zlgui::sensitivityIdx::mouseWheel);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("rotary_drag_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
@@ -216,19 +216,19 @@ namespace zlPanel {
                 juce::XmlElement xmlOutput{"colour_setting"};
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("drag_fine_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlInterface::mouseDragFine));
+                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlgui::mouseDragFine));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("drag_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlInterface::mouseDrag));
+                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlgui::mouseDrag));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("wheel_fine_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlInterface::mouseWheelFine));
+                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlgui::mouseWheelFine));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("wheel_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlInterface::mouseWheel));
+                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlgui::mouseWheel));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("rotary_drag_sensitivity");
@@ -251,4 +251,4 @@ namespace zlPanel {
             }
         });
     }
-} // zlPanel
+} // zlpanel

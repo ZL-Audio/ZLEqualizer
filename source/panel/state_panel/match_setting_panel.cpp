@@ -9,14 +9,14 @@
 
 #include "match_setting_panel.hpp"
 
-namespace zlPanel {
-    MatchSettingPanel::MatchSettingPanel(zlInterface::UIBase &base)
+namespace zlpanel {
+    MatchSettingPanel::MatchSettingPanel(zlgui::UIBase &base)
         : uiBase(base) {
 
-        uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, false);
-        uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
+        uiBase.setProperty(zlgui::settingIdx::matchPanelShow, false);
+        uiBase.setProperty(zlgui::settingIdx::matchPanelFit, false);
 
-        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::eqMatch));
+        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlgui::multilingual::labels::eqMatch));
         setBufferedToImage(true);
 
         uiBase.getValueTree().addListener(this);
@@ -27,7 +27,7 @@ namespace zlPanel {
     }
 
     void MatchSettingPanel::paint(juce::Graphics &g) {
-        const auto isMatchShow = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
+        const auto isMatchShow = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelShow));
         if (isMatchShow) {
             g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
         } else {
@@ -51,10 +51,10 @@ namespace zlPanel {
 
     void MatchSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        const auto f = static_cast<bool>(uiBase.getProperty(zlInterface::settingIdx::matchPanelShow));
-        uiBase.setProperty(zlInterface::settingIdx::matchPanelShow, !f);
+        const auto f = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelShow));
+        uiBase.setProperty(zlgui::settingIdx::matchPanelShow, !f);
         if (!f) {
-            uiBase.setProperty(zlInterface::settingIdx::matchPanelFit, false);
+            uiBase.setProperty(zlgui::settingIdx::matchPanelFit, false);
         }
     }
 
@@ -66,8 +66,8 @@ namespace zlPanel {
     void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                      const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (zlInterface::UIBase::isProperty(zlInterface::settingIdx::matchPanelShow, property)) {
+        if (zlgui::UIBase::isProperty(zlgui::settingIdx::matchPanelShow, property)) {
             repaint();
         }
     }
-} // zlPanel
+} // zlpanel

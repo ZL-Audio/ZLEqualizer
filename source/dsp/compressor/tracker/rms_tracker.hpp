@@ -14,7 +14,7 @@
 #include "../../container/container.hpp"
 #include "../../vector/vector.hpp"
 
-namespace zlCompressor {
+namespace zldsp::compressor {
     /**
      * a tracker that tracks the momentary RMS loudness of the audio signal
      * @tparam FloatType
@@ -78,7 +78,7 @@ namespace zlCompressor {
             FloatType _ms = 0;
             for (auto channel = 0; channel < buffer.getNumChannels(); channel++) {
                 auto data = buffer.getReadPointer(channel);
-                _ms += zlVector::sumsqr(data, static_cast<size_t>(buffer.getNumSamples()));
+                _ms += zldsp::vector::sumsqr(data, static_cast<size_t>(buffer.getNumSamples()));
             }
             _ms = _ms / static_cast<FloatType>(buffer.getNumSamples());
 
@@ -125,7 +125,7 @@ namespace zlCompressor {
 
     private:
         FloatType mLoudness{0};
-        zlContainer::CircularBuffer<FloatType> loudnessBuffer{1};
+        zldsp::container::CircularBuffer<FloatType> loudnessBuffer{1};
 
         std::atomic<double> sampleRate{48000.0};
         std::atomic<FloatType> timeLength{0};

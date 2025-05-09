@@ -11,7 +11,7 @@
 
 #include <array>
 
-namespace zlInterface::multilingual::zh_Hant {
+namespace zlgui::multilingual::zh_Hant {
     static constexpr std::array texts = {
         "按下：開啟所選頻段。\n釋放：旁通所選頻段。",
         "按下：獨奏當前頻段所作用的音訊。",

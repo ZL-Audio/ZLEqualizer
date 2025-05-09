@@ -12,12 +12,12 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class SettingPanel final : public juce::Component,
                                private juce::MultiTimer, private juce::ValueTree::Listener {
     public:
-        explicit SettingPanel(PluginProcessor &p, zlInterface::UIBase &base,
-                              const juce::String &label, zlInterface::boxIdx idx);
+        explicit SettingPanel(PluginProcessor &p, zlgui::UIBase &base,
+                              const juce::String &label, zlgui::boxIdx idx);
 
         ~SettingPanel() override;
 
@@ -31,13 +31,13 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::String name;
-        zlInterface::boxIdx mIdx;
+        zlgui::boxIdx mIdx;
 
         void timerCallback(int timerID) override;
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
     };
-} // zlPanel
+} // zlpanel

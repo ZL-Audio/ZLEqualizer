@@ -14,10 +14,10 @@
 #include "control_setting_panel.hpp"
 #include "other_ui_setting_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class UISettingPanel final : public juce::Component {
     public:
-        explicit UISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit UISettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~UISettingPanel() override;
 
@@ -35,19 +35,19 @@ namespace zlPanel {
 
     private:
         PluginProcessor &pRef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::Viewport viewPort;
         ColourSettingPanel colourPanel;
         ControlSettingPanel controlPanel;
         OtherUISettingPanel otherPanel;
         const std::unique_ptr<juce::Drawable> saveDrawable, closeDrawable, resetDrawable;
-        zlInterface::ClickButton saveButton, closeButton, resetButton;
+        zlgui::ClickButton saveButton, closeButton, resetButton;
 
-        zlInterface::NameLookAndFeel panelNameLAF;
+        zlgui::NameLookAndFeel panelNameLAF;
         std::array<juce::Label, 3> panelLabels;
 
         juce::Label versionLabel;
-        zlInterface::NameLookAndFeel labelLAF;
+        zlgui::NameLookAndFeel labelLAF;
 
         enum panelIdx {
             colourP,
@@ -59,4 +59,4 @@ namespace zlPanel {
 
         void changeDisplayPanel();
     };
-} // zlPanel
+} // zlpanel

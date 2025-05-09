@@ -11,22 +11,22 @@
 
 #include "../../../state/state_definitions.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     ResetComponent::ResetComponent(juce::AudioProcessorValueTreeState &parameters,
                                    juce::AudioProcessorValueTreeState &parametersNA,
-                                   zlInterface::UIBase &base)
+                                   zlgui::UIBase &base)
         : parametersRef(parameters),
           parametersNARef(parametersNA),
           uiBase(base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          button(base, drawable.get(), nullptr, zlInterface::multilingual::labels::bandOff) {
+          button(base, drawable.get(), nullptr, zlgui::multilingual::labels::bandOff) {
         juce::ignoreUnused(parametersRef, parametersNARef);
         button.getButton().onClick = [this]() {
             const auto currentBand = bandIdx.load();
             const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlState::active::ID, idx);
+                    const auto activeID = zlstate::appendSuffix(zlstate::active::ID, idx);
                     parametersNARef.getParameter(activeID)->beginChangeGesture();
                     parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
                     parametersNARef.getParameter(activeID)->endChangeGesture();
@@ -46,4 +46,4 @@ namespace zlPanel {
     void ResetComponent::attachGroup(const size_t idx) {
         bandIdx.store(idx);
     }
-} // zlPanel
+} // zlpanel

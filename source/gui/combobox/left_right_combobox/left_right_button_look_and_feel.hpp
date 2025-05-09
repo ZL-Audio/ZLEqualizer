@@ -9,7 +9,7 @@
 
 #pragma once
 
-namespace zlInterface {
+namespace zlgui {
     class LeftRightButtonLookAndFeel : public juce::LookAndFeel_V4 {
     public:
         explicit LeftRightButtonLookAndFeel(UIBase &base) : uiBase(base) {

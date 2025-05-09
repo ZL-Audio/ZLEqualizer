@@ -10,7 +10,7 @@
 #include "interface_definitions.hpp"
 #include "../state/state_definitions.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     juce::Rectangle<float> UIBase::getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds, float cornerSize,
                                                                  const fillRoundedShadowRectangleArgs &margs) {
         const auto radius = juce::jmax(juce::roundToInt(cornerSize * margs.blurRadius * 1.5f), 1);
@@ -258,27 +258,27 @@ namespace zlInterface {
             const auto o = static_cast<float>(state.getRawParameterValue(colourNames[i] + "_o")->load());
             customColours[i] = juce::Colour(r, g, b, o);
         }
-        wheelSensitivity[0] = state.getRawParameterValue(zlState::wheelSensitivity::ID)->load();
-        wheelSensitivity[1] = state.getRawParameterValue(zlState::wheelFineSensitivity::ID)->load();
-        wheelSensitivity[2] = state.getRawParameterValue(zlState::dragSensitivity::ID)->load();
-        wheelSensitivity[3] = state.getRawParameterValue(zlState::dragFineSensitivity::ID)->load();
-        isMouseWheelShiftReverse.store(state.getRawParameterValue(zlState::wheelShiftReverse::ID)->load() > .5f);
-        rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlState::rotaryStyle::ID)->load());
-        rotaryDragSensitivity = state.getRawParameterValue(zlState::rotaryDragSensitivity::ID)->load();
-        isSliderDoubleClickOpenEditor.store(loadPara(zlState::sliderDoubleClickFunc::ID) > .5f);
-        refreshRateId.store(static_cast<size_t>(state.getRawParameterValue(zlState::refreshRate::ID)->load()));
-        fftExtraTilt.store(loadPara(zlState::fftExtraTilt::ID));
-        fftExtraSpeed.store(loadPara(zlState::fftExtraSpeed::ID));
-        singleCurveThickness.store(loadPara(zlState::singleCurveThickness::ID));
-        sumCurveThickness.store(loadPara(zlState::sumCurveThickness::ID));
-        defaultPassFilterSlope.store(static_cast<int>(loadPara(zlState::defaultPassFilterSlope::ID)));
-        cMap1Idx = static_cast<size_t>(loadPara(zlState::colourMap1Idx::ID));
-        cMap2Idx = static_cast<size_t>(loadPara(zlState::colourMap2Idx::ID));
-        fftOrderIdx = static_cast<int>(loadPara(zlState::ffTOrder::ID));
-        dynLink.store(static_cast<bool>(loadPara(zlState::dynLink::ID)));
-        renderingEngine.store(static_cast<int>(loadPara(zlState::renderingEngine::ID)));
-        tooltipON = static_cast<bool>(loadPara(zlState::tooltipON::ID));
-        langIdx = static_cast<multilingual::languages>(loadPara(zlState::tooltipLang::ID));
+        wheelSensitivity[0] = state.getRawParameterValue(zlstate::wheelSensitivity::ID)->load();
+        wheelSensitivity[1] = state.getRawParameterValue(zlstate::wheelFineSensitivity::ID)->load();
+        wheelSensitivity[2] = state.getRawParameterValue(zlstate::dragSensitivity::ID)->load();
+        wheelSensitivity[3] = state.getRawParameterValue(zlstate::dragFineSensitivity::ID)->load();
+        isMouseWheelShiftReverse.store(state.getRawParameterValue(zlstate::wheelShiftReverse::ID)->load() > .5f);
+        rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlstate::rotaryStyle::ID)->load());
+        rotaryDragSensitivity = state.getRawParameterValue(zlstate::rotaryDragSensitivity::ID)->load();
+        isSliderDoubleClickOpenEditor.store(loadPara(zlstate::sliderDoubleClickFunc::ID) > .5f);
+        refreshRateId.store(static_cast<size_t>(state.getRawParameterValue(zlstate::refreshRate::ID)->load()));
+        fftExtraTilt.store(loadPara(zlstate::fftExtraTilt::ID));
+        fftExtraSpeed.store(loadPara(zlstate::fftExtraSpeed::ID));
+        singleCurveThickness.store(loadPara(zlstate::singleCurveThickness::ID));
+        sumCurveThickness.store(loadPara(zlstate::sumCurveThickness::ID));
+        defaultPassFilterSlope.store(static_cast<int>(loadPara(zlstate::defaultPassFilterSlope::ID)));
+        cMap1Idx = static_cast<size_t>(loadPara(zlstate::colourMap1Idx::ID));
+        cMap2Idx = static_cast<size_t>(loadPara(zlstate::colourMap2Idx::ID));
+        fftOrderIdx = static_cast<int>(loadPara(zlstate::ffTOrder::ID));
+        dynLink.store(static_cast<bool>(loadPara(zlstate::dynLink::ID)));
+        renderingEngine.store(static_cast<int>(loadPara(zlstate::renderingEngine::ID)));
+        tooltipON = static_cast<bool>(loadPara(zlstate::tooltipON::ID));
+        langIdx = static_cast<multilingual::languages>(loadPara(zlstate::tooltipLang::ID));
     }
 
     void UIBase::saveToAPVTS() const {
@@ -299,37 +299,37 @@ namespace zlInterface {
                 savePara(ID[j], rgbo[j]);
             }
         }
-        savePara(zlState::wheelSensitivity::ID,
-                 zlState::wheelSensitivity::convertTo01(wheelSensitivity[0]));
-        savePara(zlState::wheelFineSensitivity::ID,
-                 zlState::wheelFineSensitivity::convertTo01(wheelSensitivity[1]));
-        savePara(zlState::dragSensitivity::ID,
-                 zlState::dragSensitivity::convertTo01(wheelSensitivity[2]));
-        savePara(zlState::dragFineSensitivity::ID,
-                 zlState::dragFineSensitivity::convertTo01(wheelSensitivity[3]));
-        savePara(zlState::wheelShiftReverse::ID,
-                 zlState::wheelShiftReverse::convertTo01(static_cast<int>(isMouseWheelShiftReverse.load())));
-        savePara(zlState::rotaryStyle::ID,
-                 zlState::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
-        savePara(zlState::rotaryDragSensitivity::ID,
-                 zlState::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
-        savePara(zlState::sliderDoubleClickFunc::ID, static_cast<float>(isSliderDoubleClickOpenEditor.load()));
-        savePara(zlState::refreshRate::ID, zlState::refreshRate::convertTo01(static_cast<int>(refreshRateId.load())));
-        savePara(zlState::fftExtraTilt::ID, zlState::fftExtraTilt::convertTo01(fftExtraTilt.load()));
-        savePara(zlState::fftExtraSpeed::ID, zlState::fftExtraSpeed::convertTo01(fftExtraSpeed.load()));
-        savePara(zlState::singleCurveThickness::ID,
-                 zlState::singleCurveThickness::convertTo01(singleCurveThickness.load()));
-        savePara(zlState::sumCurveThickness::ID,
-                 zlState::sumCurveThickness::convertTo01(sumCurveThickness.load()));
-        savePara(zlState::defaultPassFilterSlope::ID,
-                 zlState::defaultPassFilterSlope::convertTo01(defaultPassFilterSlope.load()));
-        savePara(zlState::colourMap1Idx::ID, zlState::colourMapIdx::convertTo01(static_cast<int>(cMap1Idx)));
-        savePara(zlState::colourMap2Idx::ID, zlState::colourMapIdx::convertTo01(static_cast<int>(cMap2Idx)));
-        savePara(zlState::ffTOrder::ID, zlState::ffTOrder::convertTo01(fftOrderIdx));
-        savePara(zlState::dynLink::ID, zlState::dynLink::convertTo01(dynLink.load()));
-        savePara(zlState::renderingEngine::ID, zlState::renderingEngine::convertTo01(renderingEngine.load()));
-        savePara(zlState::tooltipON::ID, zlState::tooltipON::convertTo01(static_cast<int>(tooltipON)));
-        savePara(zlState::tooltipLang::ID, zlState::tooltipLang::convertTo01(langIdx));
+        savePara(zlstate::wheelSensitivity::ID,
+                 zlstate::wheelSensitivity::convertTo01(wheelSensitivity[0]));
+        savePara(zlstate::wheelFineSensitivity::ID,
+                 zlstate::wheelFineSensitivity::convertTo01(wheelSensitivity[1]));
+        savePara(zlstate::dragSensitivity::ID,
+                 zlstate::dragSensitivity::convertTo01(wheelSensitivity[2]));
+        savePara(zlstate::dragFineSensitivity::ID,
+                 zlstate::dragFineSensitivity::convertTo01(wheelSensitivity[3]));
+        savePara(zlstate::wheelShiftReverse::ID,
+                 zlstate::wheelShiftReverse::convertTo01(static_cast<int>(isMouseWheelShiftReverse.load())));
+        savePara(zlstate::rotaryStyle::ID,
+                 zlstate::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
+        savePara(zlstate::rotaryDragSensitivity::ID,
+                 zlstate::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
+        savePara(zlstate::sliderDoubleClickFunc::ID, static_cast<float>(isSliderDoubleClickOpenEditor.load()));
+        savePara(zlstate::refreshRate::ID, zlstate::refreshRate::convertTo01(static_cast<int>(refreshRateId.load())));
+        savePara(zlstate::fftExtraTilt::ID, zlstate::fftExtraTilt::convertTo01(fftExtraTilt.load()));
+        savePara(zlstate::fftExtraSpeed::ID, zlstate::fftExtraSpeed::convertTo01(fftExtraSpeed.load()));
+        savePara(zlstate::singleCurveThickness::ID,
+                 zlstate::singleCurveThickness::convertTo01(singleCurveThickness.load()));
+        savePara(zlstate::sumCurveThickness::ID,
+                 zlstate::sumCurveThickness::convertTo01(sumCurveThickness.load()));
+        savePara(zlstate::defaultPassFilterSlope::ID,
+                 zlstate::defaultPassFilterSlope::convertTo01(defaultPassFilterSlope.load()));
+        savePara(zlstate::colourMap1Idx::ID, zlstate::colourMapIdx::convertTo01(static_cast<int>(cMap1Idx)));
+        savePara(zlstate::colourMap2Idx::ID, zlstate::colourMapIdx::convertTo01(static_cast<int>(cMap2Idx)));
+        savePara(zlstate::ffTOrder::ID, zlstate::ffTOrder::convertTo01(fftOrderIdx));
+        savePara(zlstate::dynLink::ID, zlstate::dynLink::convertTo01(dynLink.load()));
+        savePara(zlstate::renderingEngine::ID, zlstate::renderingEngine::convertTo01(renderingEngine.load()));
+        savePara(zlstate::tooltipON::ID, zlstate::tooltipON::convertTo01(static_cast<int>(tooltipON)));
+        savePara(zlstate::tooltipLang::ID, zlstate::tooltipLang::convertTo01(langIdx));
     }
 
     void UIBase::updateActualLangIdx() {

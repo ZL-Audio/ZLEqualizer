@@ -11,12 +11,12 @@
 
 #include "../../gui/gui.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class MatchSettingPanel final : public juce::Component,
                                     public juce::SettableTooltipClient,
                                     private juce::ValueTree::Listener {
     public:
-        explicit MatchSettingPanel(zlInterface::UIBase &base);
+        explicit MatchSettingPanel(zlgui::UIBase &base);
 
         ~MatchSettingPanel() override;
 
@@ -27,10 +27,10 @@ namespace zlPanel {
         void mouseEnter(const juce::MouseEvent &event) override;
 
     private:
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::Identifier identifier{"match_panel"};
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override;
     };
-} // zlPanel
+} // zlpanel

@@ -12,31 +12,31 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class CollisionBox final : public juce::Component, private juce::ValueTree::Listener {
     public:
         explicit CollisionBox(juce::AudioProcessorValueTreeState &parametersNA,
-                              zlInterface::UIBase &base)
+                              zlgui::UIBase &base)
             : parametersNARef(parametersNA),
               uiBase(base),
-              collisionC("DET:", zlState::conflictON::choices, uiBase, zlInterface::multilingual::labels::collisionDET),
-              strengthS("Strength", uiBase, zlInterface::multilingual::labels::collisionStrength),
-              scaleS("Scale", uiBase, zlInterface::multilingual::labels::collisionScale) {
+              collisionC("DET:", zlstate::conflictON::choices, uiBase, zlgui::multilingual::labels::collisionDET),
+              strengthS("Strength", uiBase, zlgui::multilingual::labels::collisionStrength),
+              scaleS("Scale", uiBase, zlgui::multilingual::labels::collisionScale) {
             collisionC.getLabelLAF().setFontScale(1.5f);
             collisionC.setLabelScale(.5f);
-            collisionC.setLabelPos(zlInterface::ClickCombobox::left);
+            collisionC.setLabelPos(zlgui::ClickCombobox::left);
             addAndMakeVisible(collisionC);
             for (auto &c: {&strengthS, &scaleS}) {
                 c->setPadding(uiBase.getFontSize() * .5f, 0.f);
                 addAndMakeVisible(c);
             }
             attach({&collisionC.getCompactBox().getBox()},
-                   {zlState::conflictON::ID},
+                   {zlstate::conflictON::ID},
                    parametersNARef, boxAttachments);
             attach({&strengthS.getSlider(), &scaleS.getSlider()},
                    {
-                       zlState::conflictStrength::ID,
-                       zlState::conflictScale::ID
+                       zlstate::conflictStrength::ID,
+                       zlstate::conflictScale::ID
                    },
                    parametersNARef, sliderAttachments);
             setBufferedToImage(true);
@@ -87,19 +87,19 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersNARef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
 
-        zlInterface::ClickCombobox collisionC;
+        zlgui::ClickCombobox collisionC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
 
-        zlInterface::CompactLinearSlider strengthS, scaleS;
+        zlgui::CompactLinearSlider strengthS, scaleS;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override {
             juce::ignoreUnused(treeWhosePropertyHasChanged);
-            if (uiBase.isBoxProperty(zlInterface::boxIdx::collisionBox, property)) {
-                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlInterface::boxIdx::collisionBox));
+            if (uiBase.isBoxProperty(zlgui::boxIdx::collisionBox, property)) {
+                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlgui::boxIdx::collisionBox));
                 setVisible(f);
             }
         }

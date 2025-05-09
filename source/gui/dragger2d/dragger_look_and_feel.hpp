@@ -13,7 +13,7 @@
 
 #include "../interface_definitions.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class DraggerLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
         enum DraggerShape {

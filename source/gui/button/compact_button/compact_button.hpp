@@ -14,7 +14,7 @@
 #include "../../interface_definitions.hpp"
 #include "compact_button_look_and_feel.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class CompactButton final : public juce::Component {
     public:
         explicit CompactButton(const juce::String &labelText, UIBase &base,

@@ -12,12 +12,12 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class ControlSettingPanel final : public juce::Component {
     public:
         static constexpr float heightP = 20.f;
 
-        explicit ControlSettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit ControlSettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~ControlSettingPanel() override;
 
@@ -33,18 +33,18 @@ namespace zlPanel {
 
     private:
         PluginProcessor &pRef;
-        zlInterface::UIBase &uiBase;
-        zlInterface::NameLookAndFeel nameLAF;
+        zlgui::UIBase &uiBase;
+        zlgui::NameLookAndFeel nameLAF;
 
         juce::Label wheelLabel;
         juce::Label dragLabel;
-        std::array<zlInterface::CompactLinearSlider, 4> sensitivitySliders;
-        zlInterface::CompactCombobox wheelReverseBox;
+        std::array<zlgui::CompactLinearSlider, 4> sensitivitySliders;
+        zlgui::CompactCombobox wheelReverseBox;
         juce::Label rotaryStyleLabel;
-        zlInterface::CompactCombobox rotaryStyleBox;
-        zlInterface::CompactLinearSlider rotaryDragSensitivitySlider;
+        zlgui::CompactCombobox rotaryStyleBox;
+        zlgui::CompactLinearSlider rotaryDragSensitivitySlider;
         juce::Label sliderDoubleClickLabel;
-        zlInterface::CompactCombobox sliderDoubleClickBox;
+        zlgui::CompactCombobox sliderDoubleClickBox;
 
         juce::Label importLabel, exportLabel;
         std::unique_ptr<juce::FileChooser> myChooser;
@@ -59,4 +59,4 @@ namespace zlPanel {
 
         void exportControls();
     };
-} // zlPanel
+} // zlpanel

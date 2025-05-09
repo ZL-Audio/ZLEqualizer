@@ -22,14 +22,14 @@
 #include "match_panel/match_panel.hpp"
 #include "loudness_display/loudness_display.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class CurvePanel final : public juce::Component,
                              private juce::AudioProcessorValueTreeState::Listener,
                              private juce::ValueTree::Listener,
                              private juce::Thread {
     public:
         explicit CurvePanel(PluginProcessor &processor,
-                            zlInterface::UIBase &base);
+                            zlgui::UIBase &base);
 
         ~CurvePanel() override;
 
@@ -44,9 +44,9 @@ namespace zlPanel {
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        zlDSP::Controller<double> &controllerRef;
-        std::array<zlFilter::Ideal<double, 16>, 16> baseFilters, targetFilters, mainFilters;
+        zlgui::UIBase &uiBase;
+        zlp::Controller<double> &controllerRef;
+        std::array<zldsp::filter::Ideal<double, 16>, 16> baseFilters, targetFilters, mainFilters;
         BackgroundPanel backgroundPanel;
         FFTPanel fftPanel;
         ConflictPanel conflictPanel;
@@ -54,11 +54,11 @@ namespace zlPanel {
         LoudnessDisplay loudnessDisplay;
         ButtonPanel buttonPanel;
         SoloPanel soloPanel;
-        std::array<std::unique_ptr<SinglePanel>, zlState::bandNUM> singlePanels;
-        std::array<std::unique_ptr<SidePanel>, zlState::bandNUM> sidePanels;
+        std::array<std::unique_ptr<SinglePanel>, zlstate::bandNUM> singlePanels;
+        std::array<std::unique_ptr<SidePanel>, zlstate::bandNUM> sidePanels;
         juce::Component dummyComponent{};
         std::atomic<size_t> currentBandIdx;
-        size_t previousBandIdx{zlState::bandNUM + 1};
+        size_t previousBandIdx{zlstate::bandNUM + 1};
         MatchPanel matchPanel;
         double currentT{0.0};
         bool toNotify{false};

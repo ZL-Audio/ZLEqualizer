@@ -20,11 +20,11 @@
 
 class PluginProcessor : public juce::AudioProcessor {
 public:
-    zlState::DummyProcessor dummyProcessor;
+    zlstate::DummyProcessor dummyProcessor;
     juce::AudioProcessorValueTreeState parameters;
     juce::AudioProcessorValueTreeState parametersNA;
     juce::AudioProcessorValueTreeState state;
-    zlState::Property property;
+    zlstate::Property property;
 
     PluginProcessor();
 
@@ -74,15 +74,15 @@ public:
 
     bool supportsDoublePrecisionProcessing() const override { return true; }
 
-    inline zlDSP::Controller<double> &getController() { return controller; }
+    inline zlp::Controller<double> &getController() { return controller; }
 
-    inline zlDSP::FiltersAttach<double> &getFiltersAttach() { return filtersAttach; }
+    inline zlp::FiltersAttach<double> &getFiltersAttach() { return filtersAttach; }
 
 private:
-    zlDSP::Controller<double> controller;
-    zlDSP::FiltersAttach<double> filtersAttach;
-    zlDSP::SoloAttach<double> soloAttach;
-    zlDSP::ChoreAttach<double> choreAttach;
+    zlp::Controller<double> controller;
+    zlp::FiltersAttach<double> filtersAttach;
+    zlp::SoloAttach<double> soloAttach;
+    zlp::ChoreAttach<double> choreAttach;
     juce::AudioBuffer<double> doubleBuffer;
 
     enum ChannelLayout {

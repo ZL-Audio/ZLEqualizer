@@ -11,7 +11,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-namespace zlState {
+namespace zlstate {
     class DummyProcessor : public juce::AudioProcessor {
     public:
         DummyProcessor() = default;

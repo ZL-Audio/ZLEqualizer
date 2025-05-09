@@ -9,7 +9,7 @@
 
 #include "sample_delay.hpp"
 
-namespace zlDelay {
+namespace zldsp::delay {
     template<typename FloatType>
     void SampleDelay<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
         delayDSP.prepare(spec);
@@ -46,4 +46,4 @@ namespace zlDelay {
 
     template
     class SampleDelay<double>;
-} // zlDelay
+} // zldsp::delay

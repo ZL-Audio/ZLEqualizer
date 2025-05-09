@@ -13,7 +13,7 @@
 
 #include "../interface_definitions.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class NameLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
         explicit NameLookAndFeel(UIBase &base) : uiBase(base) {

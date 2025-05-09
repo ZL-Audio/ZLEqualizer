@@ -14,7 +14,7 @@
 #include "martin_coeff.hpp"
 #include "../../helpers.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     std::array<double, 4> MartinCoeff::get1LowPass(const double w0) {
         const auto fc = w0 / pi;
         const auto fm = 0.5 * std::sqrt(fc * fc + 1);

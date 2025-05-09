@@ -9,8 +9,8 @@
 
 #include "button_pop_up_background.hpp"
 
-namespace zlPanel {
-    ButtonPopUpBackground::ButtonPopUpBackground(size_t bandIdx, juce::AudioProcessorValueTreeState &parameters, juce::AudioProcessorValueTreeState &parametersNA, zlInterface::UIBase &base)
+namespace zlpanel {
+    ButtonPopUpBackground::ButtonPopUpBackground(size_t bandIdx, juce::AudioProcessorValueTreeState &parameters, juce::AudioProcessorValueTreeState &parametersNA, zlgui::UIBase &base)
         : band{bandIdx}, parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
           bypassC("B", base),
@@ -18,7 +18,7 @@ namespace zlPanel {
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           soloDrawable(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),
-          fTypeC("", zlDSP::fType::choices, base),
+          fTypeC("", zlp::fType::choices, base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           button(base, drawable.get()) {
         juce::ignoreUnused(parametersNARef);
@@ -32,8 +32,8 @@ namespace zlPanel {
         }
         attach({&bypassC.getButton(), &soloC.getButton()},
                {
-                   zlDSP::appendSuffix(zlDSP::bypass::ID, bandIdx),
-                   zlDSP::appendSuffix(zlDSP::solo::ID, bandIdx)
+                   zlp::appendSuffix(zlp::bypass::ID, bandIdx),
+                   zlp::appendSuffix(zlp::solo::ID, bandIdx)
                },
                parametersRef, buttonAttachments);
 
@@ -41,9 +41,9 @@ namespace zlPanel {
             const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
             const auto currentBand = band;
             const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlDSP::bypass::ID, idx);
+                    const auto activeID = zlstate::appendSuffix(zlp::bypass::ID, idx);
                     parametersRef.getParameter(activeID)->beginChangeGesture();
                     parametersRef.getParameter(activeID)->setValueNotifyingHost(isByPassed);
                     parametersRef.getParameter(activeID)->endChangeGesture();
@@ -56,15 +56,15 @@ namespace zlPanel {
             addAndMakeVisible(c);
         }
         attach({&fTypeC.getBox()},
-               {zlDSP::appendSuffix(zlDSP::fType::ID, bandIdx)},
+               {zlp::appendSuffix(zlp::fType::ID, bandIdx)},
                parametersRef, boxAttachments);
 
         button.getButton().onClick = [this]() {
             const auto currentBand = band;
             const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto activeID = zlState::appendSuffix(zlState::active::ID, idx);
+                    const auto activeID = zlstate::appendSuffix(zlstate::active::ID, idx);
                     parametersNARef.getParameter(activeID)->beginChangeGesture();
                     parametersNARef.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
                     parametersNARef.getParameter(activeID)->endChangeGesture();
@@ -103,4 +103,4 @@ namespace zlPanel {
         const auto bound = getLocalBounds().toFloat();
         grid.performLayout(bound.toNearestInt());
     }
-} // zlPanel
+} // zlpanel

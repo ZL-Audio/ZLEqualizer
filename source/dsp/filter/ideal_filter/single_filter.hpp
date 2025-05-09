@@ -13,7 +13,7 @@
 #include "coeff/ideal_coeff.hpp"
 #include "../filter_design/filter_design.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     /**
      * an ideal prototype filter which holds coeffs for calculating responses
      * @tparam FloatType the float type of input audio buffer

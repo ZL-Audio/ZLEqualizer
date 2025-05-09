@@ -17,14 +17,14 @@
 #include "../../helper/helper.hpp"
 #include "reset_component.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class LeftControlPanel final : public juce::Component,
                                    private juce::AudioProcessorValueTreeState::Listener,
                                    private juce::AsyncUpdater {
     private:
         class Background final : public juce::Component {
         public:
-            explicit Background(zlInterface::UIBase &base) : uiBase(base) {
+            explicit Background(zlgui::UIBase &base) : uiBase(base) {
                 setBufferedToImage(true);
                 setOpaque(true);
             }
@@ -36,11 +36,11 @@ namespace zlPanel {
             }
 
         private:
-            zlInterface::UIBase &uiBase;
+            zlgui::UIBase &uiBase;
         };
 
     public:
-        explicit LeftControlPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit LeftControlPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~LeftControlPanel() override;
 
@@ -50,24 +50,24 @@ namespace zlPanel {
 
         void attachGroup(size_t idx);
 
-        zlInterface::CompactButton &getDynamicAutoButton() { return dynLC; }
+        zlgui::CompactButton &getDynamicAutoButton() { return dynLC; }
 
     private:
         PluginProcessor &processorRef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
 
         Background background;
 
-        zlInterface::CompactButton bypassC, soloC, dynONC, dynLC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
+        zlgui::CompactButton bypassC, soloC, dynONC, dynLC;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > buttonAttachments;
 
-        zlInterface::CompactCombobox fTypeC, slopeC, stereoC;
-        zlInterface::LeftRightCombobox lrBox;
+        zlgui::CompactCombobox fTypeC, slopeC, stereoC;
+        zlgui::LeftRightCombobox lrBox;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
 
-        zlInterface::TwoValueRotarySlider<true, false> freqC;
-        zlInterface::TwoValueRotarySlider<true, true> gainC, qC;
+        zlgui::TwoValueRotarySlider<true, false> freqC;
+        zlgui::TwoValueRotarySlider<true, true> gainC, qC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments;
 
         ResetComponent resetComponent;

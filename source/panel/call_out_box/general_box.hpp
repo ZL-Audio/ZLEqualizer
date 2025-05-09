@@ -12,39 +12,39 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class GeneralBox final : public juce::Component, private juce::ValueTree::Listener {
     public:
         explicit GeneralBox(juce::AudioProcessorValueTreeState &parameters,
-                            zlInterface::UIBase &base)
+                            zlgui::UIBase &base)
             : parametersRef(parameters),
               uiBase(base),
-              filterStructure("", zlDSP::filterStructure::choices, uiBase,
-                              zlInterface::multilingual::labels::filterStructure,
+              filterStructure("", zlp::filterStructure::choices, uiBase,
+                              zlgui::multilingual::labels::filterStructure,
                               {
-                                  zlInterface::multilingual::labels::minimumPhase,
-                                  zlInterface::multilingual::labels::stateVariable,
-                                  zlInterface::multilingual::labels::parallelPhase,
-                                  zlInterface::multilingual::labels::matchedPhase,
-                                  zlInterface::multilingual::labels::mixedPhase,
-                                  zlInterface::multilingual::labels::linearPhase
+                                  zlgui::multilingual::labels::minimumPhase,
+                                  zlgui::multilingual::labels::stateVariable,
+                                  zlgui::multilingual::labels::parallelPhase,
+                                  zlgui::multilingual::labels::matchedPhase,
+                                  zlgui::multilingual::labels::mixedPhase,
+                                  zlgui::multilingual::labels::linearPhase
                               }),
-              zeroLATC("Zero LAT:", zlDSP::zeroLatency::choices, uiBase,
-                       zlInterface::multilingual::labels::zeroLatency) {
+              zeroLATC("Zero LAT:", zlp::zeroLatency::choices, uiBase,
+                       zlgui::multilingual::labels::zeroLatency) {
             for (auto &c: {&filterStructure}) {
                 addAndMakeVisible(c);
             }
             for (auto &c: {&zeroLATC}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.625f);
-                c->setLabelPos(zlInterface::ClickCombobox::left);
+                c->setLabelPos(zlgui::ClickCombobox::left);
                 addAndMakeVisible(c);
             }
             attach({
                        &filterStructure.getBox(), &zeroLATC.getCompactBox().getBox()
                    },
                    {
-                       zlDSP::filterStructure::ID, zlDSP::zeroLatency::ID
+                       zlp::filterStructure::ID, zlp::zeroLatency::ID
                    },
                    parametersRef, boxAttachments);
             setBufferedToImage(true);
@@ -86,17 +86,17 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
 
-        zlInterface::CompactCombobox filterStructure;
-        zlInterface::ClickCombobox zeroLATC;
+        zlgui::CompactCombobox filterStructure;
+        zlgui::ClickCombobox zeroLATC;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override {
             juce::ignoreUnused(treeWhosePropertyHasChanged);
-            if (uiBase.isBoxProperty(zlInterface::boxIdx::generalBox, property)) {
-                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlInterface::boxIdx::generalBox));
+            if (uiBase.isBoxProperty(zlgui::boxIdx::generalBox, property)) {
+                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlgui::boxIdx::generalBox));
                 setVisible(f);
             }
         }

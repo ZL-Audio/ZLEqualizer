@@ -16,7 +16,7 @@
 #include "iir_base.hpp"
 #include "svf_base.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     /**
      * an IIR filter which processes audio on the real-time thread
      * the maximum modulation rate of parameters is once per block
@@ -398,9 +398,9 @@ namespace zlFilter {
 
         size_t currentFilterNum{1};
         std::atomic<double> freq{1000.0}, gain{0.0}, q{0.707};
-        zlChore::SmoothedValue<double, zlChore::Lin> currentGain{0.0};
-        zlChore::SmoothedValue<double, zlChore::Mul> currentQ{0.707};
-        zlChore::SmoothedValue<double, zlChore::FixMul> currentFreq{1000.0};
+        zldsp::chore::SmoothedValue<double, zldsp::chore::Lin> currentGain{0.0};
+        zldsp::chore::SmoothedValue<double, zldsp::chore::Mul> currentQ{0.707};
+        zldsp::chore::SmoothedValue<double, zldsp::chore::FixMul> currentFreq{1000.0};
         std::atomic<size_t> order{2};
         std::atomic<FilterType> filterType{FilterType::peak};
         FilterType currentFilterType{FilterType::peak};

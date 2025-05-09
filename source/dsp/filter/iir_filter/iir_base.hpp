@@ -11,7 +11,7 @@
 
 #include <numbers>
 
-namespace zlFilter {
+namespace zldsp::filter {
     template<typename SampleType>
     class IIRBase {
     public:

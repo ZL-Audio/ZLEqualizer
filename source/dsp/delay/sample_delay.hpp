@@ -11,7 +11,7 @@
 
 #include <juce_dsp/juce_dsp.h>
 
-namespace zlDelay {
+namespace zldsp::delay {
     /**
      * a lock free, thread safe integer delay class
      * the delay in samples is set to be an integer
@@ -53,4 +53,4 @@ namespace zlDelay {
         std::atomic<bool> toUpdateDelay{false};
         juce::dsp::DelayLine<FloatType, juce::dsp::DelayLineInterpolationTypes::None> delayDSP;
     };
-} // zlDelay
+} // zldsp::delay

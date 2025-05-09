@@ -13,7 +13,7 @@
 
 #include "../../../gui/gui.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class GridPanel final : public juce::Component {
     public:
         /** stl does not support constexpr log/pow,
@@ -31,7 +31,7 @@ namespace zlPanel {
             0.f, 1.f / 6.f, 2.f / 6.f, 0.5, 4.f / 6.f, 5.f / 6.f
         };
 
-        explicit GridPanel(zlInterface::UIBase &base);
+        explicit GridPanel(zlgui::UIBase &base);
 
         ~GridPanel() override;
 
@@ -40,7 +40,7 @@ namespace zlPanel {
         void resized() override;
 
     private:
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::RectangleList<float> rectList;
         std::array<juce::Rectangle<float>, 10> textBounds;
     };

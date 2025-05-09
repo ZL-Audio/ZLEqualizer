@@ -9,23 +9,23 @@
 
 #include "state_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     StatePanel::StatePanel(PluginProcessor &p,
-                           zlInterface::UIBase &base,
+                           zlgui::UIBase &base,
                            UISettingPanel &uiSettingPanel)
         : uiBase(base), parametersNARef(p.parametersNA),
           outputValuePanel(p, base),
-          outputSettingPanel(p, base, "", zlInterface::boxIdx::outputBox),
-          analyzerSettingPanel(p, base, "Analyzer", zlInterface::boxIdx::analyzerBox),
-          dynamicSettingPanel(p, base, "Dynamic", zlInterface::boxIdx::dynamicBox),
+          outputSettingPanel(p, base, "", zlgui::boxIdx::outputBox),
+          analyzerSettingPanel(p, base, "Analyzer", zlgui::boxIdx::analyzerBox),
+          dynamicSettingPanel(p, base, "Dynamic", zlgui::boxIdx::dynamicBox),
 
-          collisionSettingPanel(p, base, "Collision", zlInterface::boxIdx::collisionBox),
-          generalSettingPanel(p, base, "General", zlInterface::boxIdx::generalBox),
+          collisionSettingPanel(p, base, "Collision", zlgui::boxIdx::collisionBox),
+          generalSettingPanel(p, base, "General", zlgui::boxIdx::generalBox),
           matchSettingPanel(base),
           logoPanel(p, base, uiSettingPanel),
-          effectC("", uiBase, zlInterface::multilingual::labels::bypass),
-          sideC("", uiBase, zlInterface::multilingual::labels::externalSideChain),
-          sgcC("", uiBase, zlInterface::multilingual::labels::staticGC),
+          effectC("", uiBase, zlgui::multilingual::labels::bypass),
+          sideC("", uiBase, zlgui::multilingual::labels::externalSideChain),
+          sgcC("", uiBase, zlgui::multilingual::labels::staticGC),
           effectDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg,
                                                   BinaryData::fadpowerswitch_svgSize)),
@@ -60,14 +60,14 @@ namespace zlPanel {
                    &sideC.getButton(),
                    &sgcC.getButton(),
                },
-               {zlDSP::effectON::ID, zlDSP::sideChain::ID, zlDSP::staticAutoGain::ID},
+               {zlp::effectON::ID, zlp::sideChain::ID, zlp::staticAutoGain::ID},
                p.parameters, buttonAttachments);
 
         sideC.getButton().onClick = [this]() {
             const auto isSideOn = static_cast<int>(sideC.getButton().getToggleState());
-            const auto para = parametersNARef.getParameter(zlState::fftSideON::ID);
+            const auto para = parametersNARef.getParameter(zlstate::fftSideON::ID);
             para->beginChangeGesture();
-            para->setValueNotifyingHost(zlState::fftSideON::convertTo01(isSideOn));
+            para->setValueNotifyingHost(zlstate::fftSideON::convertTo01(isSideOn));
             para->endChangeGesture();
         };
     }
@@ -110,4 +110,4 @@ namespace zlPanel {
         bound.removeFromRight(gapWidth);
         matchSettingPanel.setBounds(bound.removeFromRight(labelWidth));
     }
-} // zlPanel
+} // zlpanel

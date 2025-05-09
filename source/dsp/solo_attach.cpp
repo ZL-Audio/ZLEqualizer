@@ -9,7 +9,7 @@
 
 #include "solo_attach.hpp"
 
-namespace zlDSP {
+namespace zlp {
     template<typename FloatType>
     SoloAttach<FloatType>::SoloAttach(juce::AudioProcessor &processor,
                                       juce::AudioProcessorValueTreeState &parameters,
@@ -17,9 +17,9 @@ namespace zlDSP {
                                                                            parameterRef(parameters),
                                                                            controllerRef(controller) {
         for (size_t i = 0; i < bandNUM; ++i) {
-            const auto suffix = zlDSP::appendSuffix("", i);
-            mainSoloUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters, solo::ID + suffix);
-            sideSoloUpdater[i] = std::make_unique<zlChore::ParaUpdater>(parameters, sideSolo::ID + suffix);
+            const auto suffix = zlp::appendSuffix("", i);
+            mainSoloUpdater[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, solo::ID + suffix);
+            sideSoloUpdater[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, sideSolo::ID + suffix);
         }
         addListeners();
         initDefaultValues();
@@ -28,7 +28,7 @@ namespace zlDSP {
     template<typename FloatType>
     SoloAttach<FloatType>::~SoloAttach() {
         for (size_t i = 0; i < bandNUM; ++i) {
-            const auto suffix = zlDSP::appendSuffix("", i);
+            const auto suffix = zlp::appendSuffix("", i);
             for (auto &ID: IDs) {
                 parameterRef.removeParameterListener(ID + suffix, this);
             }
@@ -38,7 +38,7 @@ namespace zlDSP {
     template<typename FloatType>
     void SoloAttach<FloatType>::addListeners() {
         for (size_t i = 0; i < bandNUM; ++i) {
-            const auto suffix = zlDSP::appendSuffix("", i);
+            const auto suffix = zlp::appendSuffix("", i);
             for (auto &ID: IDs) {
                 parameterRef.addParameterListener(ID + suffix, this);
             }

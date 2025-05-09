@@ -12,7 +12,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include "empty_filter.hpp"
 
-namespace zlFilter {
+namespace zldsp::filter {
     template<typename FloatType>
     class StaticGainCompensation {
     public:

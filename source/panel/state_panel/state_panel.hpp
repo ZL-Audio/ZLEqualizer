@@ -16,18 +16,18 @@
 #include "setting_panel.hpp"
 #include "match_setting_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class StatePanel final : public juce::Component {
     public:
         explicit StatePanel(PluginProcessor &p,
-                            zlInterface::UIBase &base,
+                            zlgui::UIBase &base,
                             UISettingPanel &uiSettingPanel);
 
         void resized() override;
 
     private:
         constexpr static float labelSize = 2.75f;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::AudioProcessorValueTreeState &parametersNARef;
 
         OutputValuePanel outputValuePanel;
@@ -39,10 +39,10 @@ namespace zlPanel {
         MatchSettingPanel matchSettingPanel;
         LogoPanel logoPanel;
 
-        zlInterface::CompactButton effectC, sideC, sgcC;
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > buttonAttachments{};
+        zlgui::CompactButton effectC, sideC, sgcC;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<true> > buttonAttachments{};
         const std::unique_ptr<juce::Drawable> effectDrawable;
         const std::unique_ptr<juce::Drawable> sideDrawable;
         const std::unique_ptr<juce::Drawable> sgcDrawable;
     };
-} // zlPanel
+} // zlpanel

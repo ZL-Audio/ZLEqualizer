@@ -11,7 +11,7 @@
 
 #include "compact_combobox_look_and_feel.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class CompactCombobox final : public juce::Component,
                                   public juce::SettableTooltipClient {
     public:
@@ -45,7 +45,7 @@ namespace zlInterface {
         inline CompactComboboxLookAndFeel &getLAF() { return boxLookAndFeel; }
 
     private:
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         CompactComboboxLookAndFeel boxLookAndFeel;
         juce::ComboBox comboBox;
     };

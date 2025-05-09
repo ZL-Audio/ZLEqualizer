@@ -9,12 +9,12 @@
 
 #include "link_button_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     LinkButtonPanel::LinkButtonPanel(const size_t idx,
                                      juce::AudioProcessorValueTreeState &parameters,
                                      juce::AudioProcessorValueTreeState &parametersNA,
-                                     zlInterface::UIBase &base,
-                                     zlInterface::Dragger &sideDragger)
+                                     zlgui::UIBase &base,
+                                     zlgui::Dragger &sideDragger)
         : parametersRef(parameters), parametersNARef(parametersNA),
           uiBase(base),
           sideDraggerRef(sideDragger),
@@ -23,13 +23,13 @@ namespace zlPanel {
           bandIdx(idx) {
         dynLinkC.getLAF().enableShadow(false);
         dynLinkC.setDrawable(linkDrawable.get());
-        attach({&dynLinkC.getButton()}, {zlDSP::appendSuffix(zlDSP::singleDynLink::ID, bandIdx)},
+        attach({&dynLinkC.getButton()}, {zlp::appendSuffix(zlp::singleDynLink::ID, bandIdx)},
                parameters, buttonAttachments);
         addAndMakeVisible(dynLinkC);
         sideDraggerRef.addMouseListener(this, true);
 
         for (auto &ID: IDs) {
-            const auto suffixID = zlDSP::appendSuffix(ID, idx);
+            const auto suffixID = zlp::appendSuffix(ID, idx);
             parametersRef.addParameterListener(suffixID, this);
             parameterChanged(suffixID, parametersRef.getRawParameterValue(suffixID)->load());
         }
@@ -43,7 +43,7 @@ namespace zlPanel {
     LinkButtonPanel::~LinkButtonPanel() {
         const auto idx = bandIdx.load();
         for (auto &ID: IDs) {
-            parametersRef.removeParameterListener(zlDSP::appendSuffix(ID, idx), this);
+            parametersRef.removeParameterListener(zlp::appendSuffix(ID, idx), this);
         }
         for (auto &ID: NAIDs) {
             parametersNARef.removeParameterListener(ID, this);
@@ -51,9 +51,9 @@ namespace zlPanel {
     }
 
     void LinkButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
+        if (parameterID.startsWith(zlp::dynamicON::ID)) {
             isDynamicON.store(newValue > .5f);
-        } else if (parameterID.startsWith(zlState::selectedBandIdx::ID)) {
+        } else if (parameterID.startsWith(zlstate::selectedBandIdx::ID)) {
             isSelected.store(static_cast<size_t>(newValue) == bandIdx.load());
         }
     }
@@ -74,7 +74,7 @@ namespace zlPanel {
         if (event.mods.isCommandDown() && event.mods.isRightButtonDown()) {
             const auto currentBand = bandIdx.load();
             auto *para = parametersRef.getParameter(
-                zlDSP::appendSuffix(zlDSP::sideSolo::ID, currentBand));
+                zlp::appendSuffix(zlp::sideSolo::ID, currentBand));
             para->beginChangeGesture();
             if (para->getValue() < 0.5f) {
                 para->setValueNotifyingHost(1.f);
@@ -91,4 +91,4 @@ namespace zlPanel {
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 8 * uiBase.getFontSize());
         buttonBottom = bound.getBottom();
     }
-} // zlPanel
+} // zlpanel

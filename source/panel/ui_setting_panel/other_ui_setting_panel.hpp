@@ -12,12 +12,12 @@
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class OtherUISettingPanel final : public juce::Component {
     public:
         static constexpr float heightP = 4.f * 7.f;
 
-        explicit OtherUISettingPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit OtherUISettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         void loadSetting();
 
@@ -31,23 +31,23 @@ namespace zlPanel {
 
     private:
         PluginProcessor &pRef;
-        zlInterface::UIBase &uiBase;
-        zlInterface::NameLookAndFeel nameLAF;
+        zlgui::UIBase &uiBase;
+        zlgui::NameLookAndFeel nameLAF;
 
         juce::Label renderingEngineLabel;
-        zlInterface::CompactCombobox renderingEngineBox;
+        zlgui::CompactCombobox renderingEngineBox;
         juce::Label refreshRateLabel;
-        zlInterface::CompactCombobox refreshRateBox;
+        zlgui::CompactCombobox refreshRateBox;
         juce::Label fftLabel;
-        zlInterface::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
-        zlInterface::CompactCombobox fftOrderBox;
+        zlgui::CompactLinearSlider fftTiltSlider, fftSpeedSlider;
+        zlgui::CompactCombobox fftOrderBox;
         juce::Label curveThickLabel;
-        zlInterface::CompactLinearSlider singleCurveSlider, sumCurveSlider;
+        zlgui::CompactLinearSlider singleCurveSlider, sumCurveSlider;
         juce::Label defaultPassFilterSlopeLabel;
-        zlInterface::CompactCombobox defaultPassFilterSlopeBox;
+        zlgui::CompactCombobox defaultPassFilterSlopeBox;
         juce::Label dynLinkLabel;
-        zlInterface::CompactCombobox dynLinkBox;
+        zlgui::CompactCombobox dynLinkBox;
         juce::Label tooltipLabel;
-        zlInterface::CompactCombobox tooltipONBox, tooltipLangBox;
+        zlgui::CompactCombobox tooltipONBox, tooltipLangBox;
     };
-} // zlPanel
+} // zlpanel

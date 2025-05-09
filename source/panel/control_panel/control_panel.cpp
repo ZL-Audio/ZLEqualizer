@@ -11,9 +11,9 @@
 
 #include "../../state/state_definitions.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     ControlPanel::ControlPanel(PluginProcessor &p,
-                               zlInterface::UIBase &base)
+                               zlgui::UIBase &base)
         : parametersRef(p.parameters), parametersNARef(p.parametersNA), uiBase(base),
           leftControlPanel(p, base),
           rightControlPanel(p, base),
@@ -21,22 +21,22 @@ namespace zlPanel {
         addAndMakeVisible(leftControlPanel);
         addChildComponent(rightControlPanel);
         addChildComponent(matchControlPanel);
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            const auto idx = zlDSP::appendSuffix(zlDSP::dynamicON::ID, i);
+        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+            const auto idx = zlp::appendSuffix(zlp::dynamicON::ID, i);
             dynamicON[i].store(parametersRef.getRawParameterValue(idx)->load() > .5f);
             parametersRef.addParameterListener(idx, this);
         }
-        parameterChanged(zlState::selectedBandIdx::ID,
-                         parametersNARef.getRawParameterValue(zlState::selectedBandIdx::ID)->load());
-        parametersNARef.addParameterListener(zlState::selectedBandIdx::ID, this);
+        parameterChanged(zlstate::selectedBandIdx::ID,
+                         parametersNARef.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
+        parametersNARef.addParameterListener(zlstate::selectedBandIdx::ID, this);
 
         setOpaque(true);
     }
 
     ControlPanel::~ControlPanel() {
-        parametersNARef.removeParameterListener(zlState::selectedBandIdx::ID, this);
-        for (size_t i = 0; i < zlState::bandNUM; ++i) {
-            const auto idx = zlDSP::appendSuffix(zlDSP::dynamicON::ID, i);
+        parametersNARef.removeParameterListener(zlstate::selectedBandIdx::ID, this);
+        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+            const auto idx = zlp::appendSuffix(zlp::dynamicON::ID, i);
             parametersRef.removeParameterListener(idx, this);
         }
     }
@@ -59,7 +59,7 @@ namespace zlPanel {
     }
 
     void ControlPanel::parameterChanged(const juce::String &parameterID, const float newValue) {
-        if (parameterID == zlState::selectedBandIdx::ID) {
+        if (parameterID == zlstate::selectedBandIdx::ID) {
             bandIdx.store(static_cast<size_t>(newValue));
             triggerAsyncUpdate();
         } else {
@@ -79,4 +79,4 @@ namespace zlPanel {
         leftControlPanel.getDynamicAutoButton().setVisible(f);
         rightControlPanel.setVisible(f);
     }
-} // zlPanel
+} // zlpanel

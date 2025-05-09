@@ -11,7 +11,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace zlPanel {
+namespace zlpanel {
     template <typename FloatType>
     class AtomicBound {
     public:

@@ -9,7 +9,7 @@
 
 #include "chore_attach.hpp"
 
-namespace zlDSP {
+namespace zlp {
     template<typename FloatType>
     ChoreAttach<FloatType>::ChoreAttach(juce::AudioProcessor &processor,
                                         juce::AudioProcessorValueTreeState &parameters,
@@ -18,7 +18,7 @@ namespace zlDSP {
         : processorRef(processor),
           parameterRef(parameters), parameterNARef(parametersNA),
           controllerRef(controller),
-          decaySpeed(zlState::ffTSpeed::speeds[static_cast<size_t>(zlState::ffTSpeed::defaultI)]) {
+          decaySpeed(zlstate::ffTSpeed::speeds[static_cast<size_t>(zlstate::ffTSpeed::defaultI)]) {
         juce::ignoreUnused(parameterRef);
         addListeners();
         initDefaultValues();
@@ -68,8 +68,8 @@ namespace zlDSP {
             for (size_t i = 0; i < bandNUM; ++i) {
                 auto baseGain = parameterRef.getRawParameterValue(appendSuffix(gain::ID, i))->load();
                 auto targetGain = parameterRef.getRawParameterValue(appendSuffix(targetGain::ID, i))->load();
-                baseGain = zlDSP::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue));
-                targetGain = zlDSP::targetGain::range.snapToLegalValue(targetGain * scale::formatV(newValue));
+                baseGain = zlp::gain::range.snapToLegalValue(baseGain * scale::formatV(newValue));
+                targetGain = zlp::targetGain::range.snapToLegalValue(targetGain * scale::formatV(newValue));
                 controllerRef.getBaseFilter(i).setGain(baseGain);
                 controllerRef.getFilter(i).getMainFilter().setGain(baseGain);
                 controllerRef.getMainIIRFilter(i).setGain(baseGain);
@@ -86,7 +86,7 @@ namespace zlDSP {
             }
         } else if (parameterID == zeroLatency::ID) {
             controllerRef.setZeroLatency(newValue > .5f);
-        } else if (parameterID == zlState::fftPreON::ID) {
+        } else if (parameterID == zlstate::fftPreON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
                     controllerRef.getAnalyzer().setPreON(false);
@@ -107,7 +107,7 @@ namespace zlDSP {
                 }
             }
             isFFTON[0].store(static_cast<int>(newValue));
-        } else if (parameterID == zlState::fftPostON::ID) {
+        } else if (parameterID == zlstate::fftPostON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
                     controllerRef.getAnalyzer().setPostON(false);
@@ -128,7 +128,7 @@ namespace zlDSP {
                 }
             }
             isFFTON[1].store(static_cast<int>(newValue));
-        } else if (parameterID == zlState::fftSideON::ID) {
+        } else if (parameterID == zlstate::fftSideON::ID) {
             switch (static_cast<size_t>(newValue)) {
                 case 0:
                     controllerRef.getAnalyzer().setSideON(false);
@@ -149,23 +149,23 @@ namespace zlDSP {
                 }
             }
             isFFTON[2].store(static_cast<int>(newValue));
-        } else if (parameterID == zlState::ffTSpeed::ID) {
+        } else if (parameterID == zlstate::ffTSpeed::ID) {
             const auto idx = static_cast<size_t>(newValue);
-            const auto speed = zlState::ffTSpeed::speeds[idx];
+            const auto speed = zlstate::ffTSpeed::speeds[idx];
             decaySpeed.store(speed);
             if (isFFTON[0].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(0, speed);
             if (isFFTON[1].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(1, speed);
             if (isFFTON[2].load() != 2) controllerRef.getAnalyzer().getMultipleFFT().setDecayRate(2, speed);
-        } else if (parameterID == zlState::ffTTilt::ID) {
+        } else if (parameterID == zlstate::ffTTilt::ID) {
             const auto idx = static_cast<size_t>(newValue);
-            controllerRef.getAnalyzer().getMultipleFFT().setTiltSlope(zlState::ffTTilt::slopes[idx]);
-        } else if (parameterID == zlState::conflictON::ID) {
+            controllerRef.getAnalyzer().getMultipleFFT().setTiltSlope(zlstate::ffTTilt::slopes[idx]);
+        } else if (parameterID == zlstate::conflictON::ID) {
             const auto f = newValue > .5f;
             controllerRef.getConflictAnalyzer().setON(f);
-        } else if (parameterID == zlState::conflictStrength::ID) {
+        } else if (parameterID == zlstate::conflictStrength::ID) {
             controllerRef.getConflictAnalyzer().setStrength(
-                zlState::conflictStrength::formatV(static_cast<FloatType>(newValue)));
-        } else if (parameterID == zlState::conflictScale::ID) {
+                zlstate::conflictStrength::formatV(static_cast<FloatType>(newValue)));
+        } else if (parameterID == zlstate::conflictScale::ID) {
             controllerRef.getConflictAnalyzer().setConflictScale(static_cast<FloatType>(newValue));
         } else if (parameterID == loudnessMatcherON::ID) {
             if (newValue > .5f) {
@@ -191,4 +191,4 @@ namespace zlDSP {
 
     template
     class ChoreAttach<double>;
-} // zlDSP
+} // zldsp

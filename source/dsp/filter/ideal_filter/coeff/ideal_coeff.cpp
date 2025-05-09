@@ -10,7 +10,7 @@
 #include "ideal_coeff.hpp"
 #include <cmath>
 
-namespace zlFilter {
+namespace zldsp::filter {
     std::array<double, 4> IdealCoeff::get1LowPass(const double w0) {
         return {1.0, w0, 0.0, w0};
     }
@@ -78,4 +78,4 @@ namespace zlFilter {
         const auto w02 = w0 * w0;
         return {1, Awq, A * w02, A * A, A * Awq, A * w02};
     }
-} // zlFilter
+} // zldsp::filter

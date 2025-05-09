@@ -11,7 +11,7 @@
 
 #include <juce_dsp/juce_dsp.h>
 
-namespace zlPhase {
+namespace zldsp::phase {
     /**
      * phase-flip the input audio buffer
      * @tparam FloatType the float type of input audio buffer
@@ -28,4 +28,4 @@ namespace zlPhase {
     private:
         std::atomic<bool> isON;
     };
-} // zlPhase
+} // zldsp::phase

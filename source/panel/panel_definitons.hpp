@@ -11,7 +11,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace zlPanel {
+namespace zlpanel {
     static constexpr float buttonWidthP = 3.22f, buttonHeightP = 3.17f;
     static constexpr float boxHeightP = 2.14f;
     static constexpr float rSliderWidthP = 6.44f;
@@ -30,10 +30,10 @@ namespace zlPanel {
     inline void attach(const std::vector<juce::Button *> &buttons,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,
-                       juce::OwnedArray<zlInterface::ButtonCusAttachment<true> > &attachments) {
+                       juce::OwnedArray<zlgui::ButtonCusAttachment<true> > &attachments) {
         for (size_t i = 0; i < buttons.size(); ++i) {
             attachments.add(
-                std::make_unique<zlInterface::ButtonCusAttachment<true> >(
+                std::make_unique<zlgui::ButtonCusAttachment<true> >(
                     parameters, ids[i], *buttons[i]));
         }
     }
@@ -41,10 +41,10 @@ namespace zlPanel {
     inline void attach(const std::vector<juce::Button *> &buttons,
                        const std::vector<std::string> &ids,
                        juce::AudioProcessorValueTreeState &parameters,
-                       juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > &attachments) {
+                       juce::OwnedArray<zlgui::ButtonCusAttachment<false> > &attachments) {
         for (size_t i = 0; i < buttons.size(); ++i) {
             attachments.add(
-                std::make_unique<zlInterface::ButtonCusAttachment<false> >(
+                std::make_unique<zlgui::ButtonCusAttachment<false> >(
                     parameters, ids[i], *buttons[i]));
         }
     }

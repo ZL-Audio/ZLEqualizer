@@ -10,30 +10,30 @@
 #include "scale_panel.hpp"
 #include "../panel_definitons.hpp"
 
-namespace zlPanel {
-    ScalePanel::ScalePanel(PluginProcessor &processor, zlInterface::UIBase &base)
+namespace zlpanel {
+    ScalePanel::ScalePanel(PluginProcessor &processor, zlgui::UIBase &base)
         : parametersNARef(processor.parametersNA), uiBase(base),
-          scaleBox("", zlState::maximumDB::choices, base),
-          minFFTBox("", zlState::minimumFFTDB::choices, base) {
+          scaleBox("", zlstate::maximumDB::choices, base),
+          minFFTBox("", zlstate::minimumFFTDB::choices, base) {
         juce::ignoreUnused(uiBase);
-        scaleBox.getLAF().setFontScale(zlInterface::FontLarge);
+        scaleBox.getLAF().setFontScale(zlgui::FontLarge);
         scaleBox.getBox().setJustificationType(juce::Justification::centredRight);
         scaleBox.getBox().onChange = [this]() {
             handleAsyncUpdate();
         };
-        minFFTBox.getLAF().setFontScale(zlInterface::FontLarge);
+        minFFTBox.getLAF().setFontScale(zlgui::FontLarge);
         minFFTBox.getBox().setJustificationType(juce::Justification::centredRight);
         minFFTBox.getBox().onChange = [this]() {
             handleAsyncUpdate();
         };
         attach({&scaleBox.getBox(), &minFFTBox.getBox()},
-               {zlState::maximumDB::ID, zlState::minimumFFTDB::ID},
+               {zlstate::maximumDB::ID, zlstate::minimumFFTDB::ID},
                parametersNARef, boxAttachments);
         addAndMakeVisible(scaleBox);
         addAndMakeVisible(minFFTBox);
         handleAsyncUpdate();
 
-        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlInterface::multilingual::labels::dbScale));
+        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlgui::multilingual::labels::dbScale));
 
         setBufferedToImage(true);
     }
@@ -46,7 +46,7 @@ namespace zlPanel {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
 
-        g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
+        g.setFont(uiBase.getFontSize() * zlgui::FontLarge);
         for (auto &d: scaleDBs) {
             const auto y = d * bound.getHeight() + bound.getY() - uiBase.getFontSize() * .75f;
             const auto lTextBound = juce::Rectangle<float>(bound.getX(), y, bound.getWidth() * .4f,
@@ -84,10 +84,10 @@ namespace zlPanel {
     }
 
     void ScalePanel::handleAsyncUpdate() {
-        maximumDB.store(zlState::maximumDB::dBs[
-            static_cast<size_t>(parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load())]);
-        minimumFFTDB.store(zlState::minimumFFTDB::dBs[
-            static_cast<size_t>(parametersNARef.getRawParameterValue(zlState::minimumFFTDB::ID)->load())]);
+        maximumDB.store(zlstate::maximumDB::dBs[
+            static_cast<size_t>(parametersNARef.getRawParameterValue(zlstate::maximumDB::ID)->load())]);
+        minimumFFTDB.store(zlstate::minimumFFTDB::dBs[
+            static_cast<size_t>(parametersNARef.getRawParameterValue(zlstate::minimumFFTDB::ID)->load())]);
         repaint();
     }
-} // zlPanel
+} // zlpanel

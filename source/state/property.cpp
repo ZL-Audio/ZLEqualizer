@@ -9,7 +9,7 @@
 
 #include "property.hpp"
 
-namespace zlState {
+namespace zlstate {
     Property::Property() {
         if (!path.isDirectory()) {
             path.createDirectory();

@@ -14,19 +14,19 @@
 #include "../../../state/state.hpp"
 #include "../../panel_definitons.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class LinkButtonPanel final : public juce::Component,
                                   private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit LinkButtonPanel(size_t idx,
                                  juce::AudioProcessorValueTreeState &parameters,
                                  juce::AudioProcessorValueTreeState &parametersNA,
-                                 zlInterface::UIBase &base,
-                                 zlInterface::Dragger &sideDragger);
+                                 zlgui::UIBase &base,
+                                 zlgui::Dragger &sideDragger);
 
         ~LinkButtonPanel() override;
 
-        zlInterface::CompactButton &getButton() { return dynLinkC; }
+        zlgui::CompactButton &getButton() { return dynLinkC; }
 
         void updateBound();
 
@@ -36,20 +36,20 @@ namespace zlPanel {
 
     private:
         juce::AudioProcessorValueTreeState &parametersRef, &parametersNARef;
-        zlInterface::UIBase &uiBase;
-        zlInterface::Dragger &sideDraggerRef;
-        zlInterface::CompactButton dynLinkC;
+        zlgui::UIBase &uiBase;
+        zlgui::Dragger &sideDraggerRef;
+        zlgui::CompactButton dynLinkC;
         float buttonSize{}, buttonBottom{};
         std::atomic<bool> buttonChanged{false};
-        juce::OwnedArray<zlInterface::ButtonCusAttachment<false> > buttonAttachments;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > buttonAttachments;
         const std::unique_ptr<juce::Drawable> linkDrawable;
 
         std::atomic<size_t> bandIdx;
         std::atomic<bool> isDynamicON{false}, isSelected{false};
 
-        constexpr static std::array IDs{zlDSP::dynamicON::ID};
-        constexpr static std::array NAIDs{zlState::selectedBandIdx::ID};
+        constexpr static std::array IDs{zlp::dynamicON::ID};
+        constexpr static std::array NAIDs{zlstate::selectedBandIdx::ID};
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
     };
-} // zlPanel
+} // zlpanel

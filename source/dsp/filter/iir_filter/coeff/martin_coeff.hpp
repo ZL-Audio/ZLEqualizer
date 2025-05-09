@@ -12,7 +12,7 @@
 #include "analog_func.hpp"
 #include <numbers>
 
-namespace zlFilter {
+namespace zldsp::filter {
     class MartinCoeff {
     public:
         static std::array<double, 4> get1LowPass(double w0);

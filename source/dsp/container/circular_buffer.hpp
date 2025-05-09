@@ -11,7 +11,7 @@
 
 #include <vector>
 
-namespace zlContainer {
+namespace zldsp::container {
     /**
      * a circular buffer
      * @tparam T the type of elements

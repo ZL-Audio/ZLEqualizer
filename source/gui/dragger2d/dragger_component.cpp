@@ -9,7 +9,7 @@
 
 #include "dragger_component.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     Dragger::Dragger(UIBase &base)
         : uiBase(base), draggerLAF(base) {
         button.addMouseListener(this, false);
@@ -135,4 +135,4 @@ namespace zlInterface {
     void Dragger::visibilityChanged() {
         updateButton({-100000.f, -100000.f});
     }
-} // zlInterface
+} // zlgui

@@ -14,7 +14,7 @@
 
 #include "multiple_fft_analyzer.hpp"
 
-namespace zlFFTAnalyzer {
+namespace zldsp::analyzer {
     /**
      * a conflict fft analyzer
      * @tparam FloatType
@@ -77,4 +77,4 @@ namespace zlFFTAnalyzer {
 
         void handleAsyncUpdate() override;
     };
-} // zlFFT
+} // zldsp::fft

@@ -9,16 +9,16 @@
 
 #include "match_runner.hpp"
 
-namespace zlPanel {
-    MatchRunner::MatchRunner(PluginProcessor &p, zlInterface::UIBase &base,
+namespace zlpanel {
+    MatchRunner::MatchRunner(PluginProcessor &p, zlgui::UIBase &base,
                              std::array<std::atomic<float>, 251> &atomicDiffs,
-                             zlInterface::CompactLinearSlider &numBandSlider)
+                             zlgui::CompactLinearSlider &numBandSlider)
         : Thread("match_runner"), uiBase(base),
           parametersRef(p.parameters), parametersNARef(p.parametersNA),
           atomicDiffsRef(atomicDiffs),
           slider(numBandSlider) {
-        parametersNARef.addParameterListener(zlState::maximumDB::ID, this);
-        parameterChanged(zlState::maximumDB::ID, parametersNARef.getRawParameterValue(zlState::maximumDB::ID)->load());
+        parametersNARef.addParameterListener(zlstate::maximumDB::ID, this);
+        parameterChanged(zlstate::maximumDB::ID, parametersNARef.getRawParameterValue(zlstate::maximumDB::ID)->load());
         std::fill(diffs.begin(), diffs.end(), 0.);
         uiBase.getValueTree().addListener(this);
         addListener(&optimizer);
@@ -28,7 +28,7 @@ namespace zlPanel {
         stopThread(-1);
         removeListener(&optimizer);
         uiBase.getValueTree().removeListener(this);
-        parametersNARef.removeParameterListener(zlState::maximumDB::ID, this);
+        parametersNARef.removeParameterListener(zlstate::maximumDB::ID, this);
     }
 
     void MatchRunner::start() {
@@ -95,25 +95,25 @@ namespace zlPanel {
             slider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(currentNumBand));
             slider.updateDisplayValue();
             numBand.store(currentNumBand);
-            uiBase.setProperty(zlInterface::settingIdx::matchFitRunning, false);
+            uiBase.setProperty(zlgui::settingIdx::matchFitRunning, false);
         }
         for (size_t i = 0; i < currentNumBand; i++) {
             const auto &filter = mFilters[i];
-            savePara(zlDSP::appendSuffix(zlDSP::bypass::ID, i), 0.f);
-            savePara(zlDSP::appendSuffix(zlDSP::dynamicON::ID, i), 0.f);
-            savePara(zlDSP::appendSuffix(zlDSP::fType::ID, i),
-                     zlDSP::fType::convertTo01(filter.getFilterType()));
-            savePara(zlDSP::appendSuffix(zlDSP::slope::ID, i),
-                     zlDSP::slope::convertTo01(zlDSP::slope::convertToIdx(filter.getOrder())));
-            savePara(zlDSP::appendSuffix(zlDSP::freq::ID, i),
-                     zlDSP::freq::convertTo01(static_cast<float>(filter.getFreq())));
-            savePara(zlDSP::appendSuffix(zlDSP::gain::ID, i),
-                     zlDSP::gain::convertTo01(static_cast<float>(filter.getGain())));
-            savePara(zlDSP::appendSuffix(zlDSP::Q::ID, i),
-                     zlDSP::Q::convertTo01(static_cast<float>(filter.getQ())));
+            savePara(zlp::appendSuffix(zlp::bypass::ID, i), 0.f);
+            savePara(zlp::appendSuffix(zlp::dynamicON::ID, i), 0.f);
+            savePara(zlp::appendSuffix(zlp::fType::ID, i),
+                     zlp::fType::convertTo01(filter.getFilterType()));
+            savePara(zlp::appendSuffix(zlp::slope::ID, i),
+                     zlp::slope::convertTo01(zlp::slope::convertToIdx(filter.getOrder())));
+            savePara(zlp::appendSuffix(zlp::freq::ID, i),
+                     zlp::freq::convertTo01(static_cast<float>(filter.getFreq())));
+            savePara(zlp::appendSuffix(zlp::gain::ID, i),
+                     zlp::gain::convertTo01(static_cast<float>(filter.getGain())));
+            savePara(zlp::appendSuffix(zlp::Q::ID, i),
+                     zlp::Q::convertTo01(static_cast<float>(filter.getQ())));
         }
         for (size_t i = currentNumBand; i < mFilters.size(); i++) {
-            const auto para = parametersNARef.getParameter(zlState::appendSuffix(zlState::active::ID, i));
+            const auto para = parametersNARef.getParameter(zlstate::appendSuffix(zlstate::active::ID, i));
             para->beginChangeGesture();
             para->setValueNotifyingHost(0.f);
             para->endChangeGesture();
@@ -123,12 +123,12 @@ namespace zlPanel {
     void MatchRunner::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchLowCut)]) {
+        if (property == zlgui::identifiers[static_cast<size_t>(zlgui::settingIdx::matchLowCut)]) {
             lowCutP.store(std::clamp(
-                static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchLowCut)), 0.f, 1.f));
-        } else if (property == zlInterface::identifiers[static_cast<size_t>(zlInterface::settingIdx::matchHighCut)]) {
+                static_cast<float>(uiBase.getProperty(zlgui::settingIdx::matchLowCut)), 0.f, 1.f));
+        } else if (property == zlgui::identifiers[static_cast<size_t>(zlgui::settingIdx::matchHighCut)]) {
             highCutP.store(std::clamp(
-                static_cast<float>(uiBase.getProperty(zlInterface::settingIdx::matchHighCut)), 0.f, 1.f));
+                static_cast<float>(uiBase.getProperty(zlgui::settingIdx::matchHighCut)), 0.f, 1.f));
         }
     }
 
@@ -140,6 +140,6 @@ namespace zlPanel {
 
     void MatchRunner::parameterChanged(const juce::String &parameterID, const float newValue) {
         juce::ignoreUnused(parameterID);
-        maximumDB.store(zlState::maximumDB::dBs[static_cast<size_t>(newValue)]);
+        maximumDB.store(zlstate::maximumDB::dBs[static_cast<size_t>(newValue)]);
     }
-} // zlPanel
+} // zlpanel

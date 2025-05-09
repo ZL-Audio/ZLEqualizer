@@ -11,7 +11,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace zlInterface {
+namespace zlgui {
     class ClickButton final : public juce::Component {
     public:
         explicit ClickButton(UIBase &base,
@@ -79,11 +79,11 @@ namespace zlInterface {
         }
 
     private:
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         juce::DrawableButton button{"", juce::DrawableButton::ImageFitted};
         juce::Drawable *normal = nullptr, *normalOn = nullptr;
 
         float lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, dPadding{0.f};
         std::unique_ptr<juce::Drawable> normalImg, normalOnImg, overImg, overOnImg;
     };
-} // zlInterface
+} // zlgui

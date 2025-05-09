@@ -17,12 +17,12 @@
 #include "ui_setting_panel/ui_setting_panel.hpp"
 #include "call_out_box/call_out_box.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     class MainPanel final : public juce::Component,
                             private juce::AudioProcessorValueTreeState::Listener,
                             private juce::AsyncUpdater {
     public:
-        explicit MainPanel(PluginProcessor &p, zlInterface::UIBase &base);
+        explicit MainPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~MainPanel() override;
 
@@ -41,7 +41,7 @@ namespace zlPanel {
     private:
         PluginProcessor &processorRef;
         juce::AudioProcessorValueTreeState &state;
-        zlInterface::UIBase &uiBase;
+        zlgui::UIBase &uiBase;
         ControlPanel controlPanel;
         CurvePanel curvePanel;
         ScalePanel scalePanel;
@@ -54,8 +54,8 @@ namespace zlPanel {
         CollisionBox collisionBox;
         GeneralBox generalBox;
 
-        zlInterface::TooltipLookAndFeel tooltipLAF;
-        zlInterface::TooltipWindow tooltipWindow;
+        zlgui::TooltipLookAndFeel tooltipLAF;
+        zlgui::TooltipWindow tooltipWindow;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

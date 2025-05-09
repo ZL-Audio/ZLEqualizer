@@ -9,23 +9,23 @@
 
 #include "grid_panel.hpp"
 
-namespace zlPanel {
-    GridPanel::GridPanel(zlInterface::UIBase &base) : uiBase(base) {
+namespace zlpanel {
+    GridPanel::GridPanel(zlgui::UIBase &base) : uiBase(base) {
         setInterceptsMouseClicks(false, false);
     }
 
     GridPanel::~GridPanel() = default;
 
     void GridPanel::paint(juce::Graphics &g) {
-        g.setFont(uiBase.getFontSize() * zlInterface::FontLarge);
-        if (uiBase.getColourByIdx(zlInterface::gridColour).getFloatAlpha() <= 0.01f) {
+        g.setFont(uiBase.getFontSize() * zlgui::FontLarge);
+        if (uiBase.getColourByIdx(zlgui::gridColour).getFloatAlpha() <= 0.01f) {
             return;
         }
         g.setColour(uiBase.getTextInactiveColor());
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
             g.drawText(backgroundFreqsNames[i], textBounds[i], juce::Justification::bottomRight);
         }
-        g.setColour(uiBase.getColourByIdx(zlInterface::gridColour));
+        g.setColour(uiBase.getColourByIdx(zlgui::gridColour));
         g.fillRectList(rectList);
     }
 

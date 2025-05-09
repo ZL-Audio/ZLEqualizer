@@ -9,24 +9,24 @@
 
 #include "left_control_panel.hpp"
 
-namespace zlPanel {
+namespace zlpanel {
     LeftControlPanel::LeftControlPanel(PluginProcessor &p,
-                                       zlInterface::UIBase &base)
+                                       zlgui::UIBase &base)
         : processorRef(p), uiBase(base),
           parametersRef(p.parameters),
           parametersNARef(p.parametersNA),
           background(uiBase),
-          bypassC("B", base, zlInterface::multilingual::labels::bandBypass),
-          soloC("S", base, zlInterface::multilingual::labels::bandSolo),
-          dynONC("D", base, zlInterface::multilingual::labels::bandDynamic),
-          dynLC("L", base, zlInterface::multilingual::labels::bandDynamicAuto),
-          fTypeC("", zlDSP::fType::choices, base, zlInterface::multilingual::labels::bandType),
-          slopeC("", zlDSP::slope::choices, base, zlInterface::multilingual::labels::bandSlope),
-          stereoC("", zlDSP::lrType::choices, base, zlInterface::multilingual::labels::bandStereoMode),
-          lrBox(zlState::selectedBandIdx::choices, base, zlInterface::multilingual::labels::bandSelector),
-          freqC("FREQ", base, zlInterface::multilingual::labels::bandFreq),
-          gainC("GAIN", base, zlInterface::multilingual::labels::bandGain),
-          qC("Q", base, zlInterface::multilingual::labels::bandQ),
+          bypassC("B", base, zlgui::multilingual::labels::bandBypass),
+          soloC("S", base, zlgui::multilingual::labels::bandSolo),
+          dynONC("D", base, zlgui::multilingual::labels::bandDynamic),
+          dynLC("L", base, zlgui::multilingual::labels::bandDynamicAuto),
+          fTypeC("", zlp::fType::choices, base, zlgui::multilingual::labels::bandType),
+          slopeC("", zlp::slope::choices, base, zlgui::multilingual::labels::bandSlope),
+          stereoC("", zlp::lrType::choices, base, zlgui::multilingual::labels::bandStereoMode),
+          lrBox(zlstate::selectedBandIdx::choices, base, zlgui::multilingual::labels::bandSelector),
+          freqC("FREQ", base, zlgui::multilingual::labels::bandFreq),
+          gainC("GAIN", base, zlgui::multilingual::labels::bandGain),
+          qC("Q", base, zlgui::multilingual::labels::bandQ),
           resetComponent(p.parameters, p.parametersNA, base),
           bypassDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
@@ -43,9 +43,9 @@ namespace zlPanel {
             const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
             const auto currentBand = bandIdx.load();
             const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
-            for (size_t idx = 0; idx < zlState::bandNUM; ++idx) {
+            for (size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
-                    const auto paraBypass = parametersRef.getParameter(zlState::appendSuffix(zlDSP::bypass::ID, idx));
+                    const auto paraBypass = parametersRef.getParameter(zlstate::appendSuffix(zlp::bypass::ID, idx));
                     paraBypass->beginChangeGesture();
                     paraBypass->setValueNotifyingHost(isByPassed);
                     paraBypass->endChangeGesture();
@@ -62,7 +62,7 @@ namespace zlPanel {
                 processorRef.getFiltersAttach().turnOnDynamic(currentBand);
                 dynLinkValue = static_cast<float>(uiBase.getDynLink()); {
                     auto *para = parametersRef.getParameter(
-                        zlDSP::appendSuffix(zlDSP::bypass::ID, currentBand));
+                        zlp::appendSuffix(zlp::bypass::ID, currentBand));
                     para->beginChangeGesture();
                     para->setValueNotifyingHost(0.f);
                     para->endChangeGesture();
@@ -71,7 +71,7 @@ namespace zlPanel {
                 processorRef.getFiltersAttach().turnOffDynamic(currentBand);
             } {
                 auto *para = parametersRef.getParameter(
-                    zlDSP::appendSuffix(zlDSP::singleDynLink::ID, currentBand));
+                    zlp::appendSuffix(zlp::singleDynLink::ID, currentBand));
                 para->beginChangeGesture();
                 para->setValueNotifyingHost(dynLinkValue);
                 para->endChangeGesture();
@@ -118,10 +118,10 @@ namespace zlPanel {
     }
 
     LeftControlPanel::~LeftControlPanel() {
-        for (size_t i = 0; i < zlDSP::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::bandNUM; ++i) {
             const std::string suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
-            parametersRef.removeParameterListener(zlDSP::fType::ID + suffix, this);
-            parametersRef.removeParameterListener(zlDSP::dynamicON::ID + suffix, this);
+            parametersRef.removeParameterListener(zlp::fType::ID + suffix, this);
+            parametersRef.removeParameterListener(zlp::dynamicON::ID + suffix, this);
         }
     }
 
@@ -183,14 +183,14 @@ namespace zlPanel {
         const std::string oldSuffix = bandIdx.load() < 10
                                           ? "0" + std::to_string(bandIdx.load())
                                           : std::to_string(bandIdx.load());
-        parametersRef.removeParameterListener(zlDSP::fType::ID + oldSuffix, this);
-        parametersRef.removeParameterListener(zlDSP::dynamicON::ID + oldSuffix, this);
+        parametersRef.removeParameterListener(zlp::fType::ID + oldSuffix, this);
+        parametersRef.removeParameterListener(zlp::dynamicON::ID + oldSuffix, this);
 
         bandIdx.store(idx);
         resetComponent.attachGroup(idx);
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
-        parametersRef.addParameterListener(zlDSP::fType::ID + suffix, this);
-        parametersRef.addParameterListener(zlDSP::dynamicON::ID + suffix, this);
+        parametersRef.addParameterListener(zlp::fType::ID + suffix, this);
+        parametersRef.addParameterListener(zlp::dynamicON::ID + suffix, this);
 
         buttonAttachments.clear(true);
         boxAttachments.clear(true);
@@ -198,64 +198,64 @@ namespace zlPanel {
 
         attach({&bypassC.getButton(), &soloC.getButton(), &dynONC.getButton(), &dynLC.getButton()},
                {
-                   zlDSP::bypass::ID + suffix, zlDSP::solo::ID + suffix,
-                   zlDSP::dynamicON::ID + suffix, zlDSP::dynamicLearn::ID + suffix
+                   zlp::bypass::ID + suffix, zlp::solo::ID + suffix,
+                   zlp::dynamicON::ID + suffix, zlp::dynamicLearn::ID + suffix
                },
                parametersRef, buttonAttachments);
         attach({&fTypeC.getBox(), &slopeC.getBox(), &stereoC.getBox()},
-               {zlDSP::fType::ID + suffix, zlDSP::slope::ID + suffix, zlDSP::lrType::ID + suffix},
+               {zlp::fType::ID + suffix, zlp::slope::ID + suffix, zlp::lrType::ID + suffix},
                parametersRef, boxAttachments);
         attach({&lrBox.getBox()},
-               {zlState::selectedBandIdx::ID},
+               {zlstate::selectedBandIdx::ID},
                parametersNARef, boxAttachments);
         attach({&freqC.getSlider1(), &gainC.getSlider1(), &gainC.getSlider2(), &qC.getSlider1(), &qC.getSlider2()},
                {
-                   zlDSP::freq::ID + suffix, zlDSP::gain::ID + suffix, zlDSP::targetGain::ID + suffix,
-                   zlDSP::Q::ID + suffix, zlDSP::targetQ::ID + suffix
+                   zlp::freq::ID + suffix, zlp::gain::ID + suffix, zlp::targetGain::ID + suffix,
+                   zlp::Q::ID + suffix, zlp::targetQ::ID + suffix
                },
                parametersRef, sliderAttachments);
         freqC.updateDisplay();
         gainC.updateDisplay();
         qC.updateDisplay();
-        parameterChanged(zlDSP::fType::ID + suffix,
-                         parametersRef.getRawParameterValue(zlDSP::fType::ID + suffix)->load());
-        parameterChanged(zlDSP::dynamicON::ID + suffix,
-                         parametersRef.getRawParameterValue(zlDSP::dynamicON::ID + suffix)->load());
+        parameterChanged(zlp::fType::ID + suffix,
+                         parametersRef.getRawParameterValue(zlp::fType::ID + suffix)->load());
+        parameterChanged(zlp::dynamicON::ID + suffix,
+                         parametersRef.getRawParameterValue(zlp::dynamicON::ID + suffix)->load());
     }
 
     void LeftControlPanel::parameterChanged(const juce::String &parameterID, float newValue) {
         const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        if (parameterID.startsWith(zlDSP::fType::ID)) {
-            switch (static_cast<zlFilter::FilterType>(newValue)) {
-                case zlFilter::FilterType::peak:
-                case zlFilter::FilterType::lowShelf:
-                case zlFilter::FilterType::highShelf:
-                case zlFilter::FilterType::bandShelf:
-                case zlFilter::FilterType::tiltShelf: {
+        if (parameterID.startsWith(zlp::fType::ID)) {
+            switch (static_cast<zldsp::filter::FilterType>(newValue)) {
+                case zldsp::filter::FilterType::peak:
+                case zldsp::filter::FilterType::lowShelf:
+                case zldsp::filter::FilterType::highShelf:
+                case zldsp::filter::FilterType::bandShelf:
+                case zldsp::filter::FilterType::tiltShelf: {
                     gainCEditable.store(true);
                     break;
                 }
-                case zlFilter::FilterType::lowPass:
-                case zlFilter::FilterType::highPass:
-                case zlFilter::FilterType::bandPass:
-                case zlFilter::FilterType::notch: {
+                case zldsp::filter::FilterType::lowPass:
+                case zldsp::filter::FilterType::highPass:
+                case zldsp::filter::FilterType::bandPass:
+                case zldsp::filter::FilterType::notch: {
                     gainCEditable.store(false);
                     break;
                 }
             }
-            switch (static_cast<zlFilter::FilterType>(newValue)) {
-                case zlFilter::FilterType::lowPass:
-                case zlFilter::FilterType::highPass:
-                case zlFilter::FilterType::lowShelf:
-                case zlFilter::FilterType::highShelf:
-                case zlFilter::FilterType::bandShelf:
-                case zlFilter::FilterType::tiltShelf: {
+            switch (static_cast<zldsp::filter::FilterType>(newValue)) {
+                case zldsp::filter::FilterType::lowPass:
+                case zldsp::filter::FilterType::highPass:
+                case zldsp::filter::FilterType::lowShelf:
+                case zldsp::filter::FilterType::highShelf:
+                case zldsp::filter::FilterType::bandShelf:
+                case zldsp::filter::FilterType::tiltShelf: {
                     slopCEnable.store(true);
                     break;
                 }
-                case zlFilter::FilterType::peak:
-                case zlFilter::FilterType::bandPass:
-                case zlFilter::FilterType::notch: {
+                case zldsp::filter::FilterType::peak:
+                case zldsp::filter::FilterType::bandPass:
+                case zldsp::filter::FilterType::notch: {
                     slopCEnable.store(false);
                     break;
                 }
@@ -263,7 +263,7 @@ namespace zlPanel {
             if (idx == bandIdx.load()) {
                 triggerAsyncUpdate();
             }
-        } else if (parameterID.startsWith(zlDSP::dynamicON::ID)) {
+        } else if (parameterID.startsWith(zlp::dynamicON::ID)) {
             const auto f = newValue > .5f; {
                 gainS2Editable.store(gainCEditable.load() && f);
                 qS2Editable.store(f);

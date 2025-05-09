@@ -9,7 +9,7 @@
 
 #include "click_combobox.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     ClickCombobox::ClickCombobox(const juce::String &labelText, const juce::StringArray &choices,
                                  UIBase &base,
                                  const multilingual::labels labelIdx)
@@ -64,4 +64,4 @@ namespace zlInterface {
         }
         compactBox.setBounds(bound.toNearestInt());
     }
-} // zlInterface
+} // zlgui

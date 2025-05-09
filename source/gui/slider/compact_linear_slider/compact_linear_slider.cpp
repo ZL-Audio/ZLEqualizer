@@ -9,7 +9,7 @@
 
 #include "compact_linear_slider.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     CompactLinearSlider::CompactLinearSlider(const juce::String &labelText, UIBase &base,
                                              const multilingual::labels labelIdx)
         : uiBase(base),

@@ -12,7 +12,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../interface_definitions.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class TooltipLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
         explicit TooltipLookAndFeel(UIBase &base) : uiBase(base) {

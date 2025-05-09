@@ -9,8 +9,8 @@
 
 #include "colour_opacity_selector.hpp"
 
-namespace zlInterface {
-    ColourOpacitySelector::ColourOpacitySelector(zlInterface::UIBase &base, juce::Component &parent,
+namespace zlgui {
+    ColourOpacitySelector::ColourOpacitySelector(zlgui::UIBase &base, juce::Component &parent,
                                                  const bool useOpacity,
                                                  const float widthS, const float heightS,
                                                  const float w1, const float w2)
@@ -49,4 +49,4 @@ namespace zlInterface {
     void ColourOpacitySelector::sliderValueChanged(juce::Slider *s) {
         selector.setOpacity(static_cast<float>(s->getValue()));
     }
-} // zlInterface
+} // zlgui

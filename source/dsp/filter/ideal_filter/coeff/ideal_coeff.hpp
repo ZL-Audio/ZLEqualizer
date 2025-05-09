@@ -11,7 +11,7 @@
 
 #include <array>
 
-namespace zlFilter {
+namespace zldsp::filter {
     class IdealCoeff {
     public:
         static std::array<double, 4> get1LowPass(double w0);
@@ -40,4 +40,4 @@ namespace zlFilter {
 
         static std::array<double, 6> get2HighShelf(double w0, double g, double q);
     };
-} // zlFilter
+} // zldsp::filter

@@ -14,7 +14,7 @@
 #include "../interface_definitions.hpp"
 #include "dragger_look_and_feel.hpp"
 
-namespace zlInterface {
+namespace zlgui {
     class Dragger final : public juce::Component {
     public:
         std::function<juce::Point<float>(juce::Point<float> currentC, juce::Point<float> nextC)> checkCenter;
@@ -99,4 +99,4 @@ namespace zlInterface {
 
         juce::ListenerList<Listener> listeners;
     };
-} // zlInterface
+} // zlgui

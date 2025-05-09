@@ -9,8 +9,8 @@
 
 #include "conflict_panel.hpp"
 
-namespace zlPanel {
-    ConflictPanel::ConflictPanel(zlFFTAnalyzer::ConflictAnalyzer<double> &conflictAnalyzer, zlInterface::UIBase &base)
+namespace zlpanel {
+    ConflictPanel::ConflictPanel(zldsp::analyzer::ConflictAnalyzer<double> &conflictAnalyzer, zlgui::UIBase &base)
         : analyzer(conflictAnalyzer), uiBase(base) {
         analyzer.start();
         setInterceptsMouseClicks(false, false);
@@ -29,4 +29,4 @@ namespace zlPanel {
     void ConflictPanel::resized() {
         analyzer.setLeftRight(0.f, static_cast<float>(getRight()));
     }
-} // zlPanel
+} // zlpanel
