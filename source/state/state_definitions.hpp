@@ -14,9 +14,9 @@
 #include <BinaryData.h>
 
 namespace zlstate {
-    inline auto static constexpr versionHint = 1;
+    inline auto static constexpr kVersionHint = 1;
 
-    inline auto static constexpr bandNUM = 16;
+    inline auto static constexpr kBandNUM = 16;
 
     // float
     template<class T>
@@ -24,7 +24,7 @@ namespace zlstate {
     public:
         static std::unique_ptr<juce::AudioParameterFloat> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                                T::name + suffix, T::range, T::defaultV, attributes);
         }
 
@@ -39,7 +39,7 @@ namespace zlstate {
     public:
         static std::unique_ptr<juce::AudioParameterBool> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                               T::name + suffix, T::defaultV, attributes);
         }
 
@@ -54,7 +54,7 @@ namespace zlstate {
     public:
         static std::unique_ptr<juce::AudioParameterChoice> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                                 T::name + suffix, T::choices, T::defaultI, attributes);
         }
 
@@ -225,7 +225,7 @@ namespace zlstate {
                    conflictON::get(), conflictStrength::get(), conflictScale::get(),
                    matchPanelShow::get(),
                    matchAnalyzerON::get(), matchAnalyzerLWeight::get());
-        for (int i = 0; i < bandNUM; ++i) {
+        for (int i = 0; i < kBandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
         }
@@ -443,14 +443,14 @@ namespace zlstate {
             "Seaborn Bright Light", "Seaborn Bright Dark"
         };
 
-        enum colourMapName {
-            defaultLight,
-            defaultDark,
-            seabornNormalLight,
-            seabornNormalDark,
-            seabornBrightLight,
-            seabornBrightDark,
-            colourMapNum
+        enum ColourMapName {
+            kDefaultLight,
+            kDefaultDark,
+            kSeabornNormalLight,
+            kSeabornNormalDark,
+            kSeabornBrightLight,
+            kSeabornBrightDark,
+            kColourMapNum
         };
 
         int static constexpr defaultI = 0;
@@ -500,19 +500,19 @@ namespace zlstate {
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
                              const std::string &suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
-                             const bool addOpacity = false, const float opacity = 1.f) {
+                             const bool add_opacity = false, const float opacity = 1.f) {
         layout.add(std::make_unique<juce::AudioParameterInt>(
-                       juce::ParameterID(suffix + "_r", versionHint), "",
+                       juce::ParameterID(suffix + "_r", kVersionHint), "",
                        0, 255, red),
                    std::make_unique<juce::AudioParameterInt>(
-                       juce::ParameterID(suffix + "_g", versionHint), "",
+                       juce::ParameterID(suffix + "_g", kVersionHint), "",
                        0, 255, green),
                    std::make_unique<juce::AudioParameterInt>(
-                       juce::ParameterID(suffix + "_b", versionHint), "",
+                       juce::ParameterID(suffix + "_b", kVersionHint), "",
                        0, 255, blue));
-        if (addOpacity) {
+        if (add_opacity) {
             layout.add(std::make_unique<juce::AudioParameterFloat>(
-                juce::ParameterID(suffix + "_o", versionHint), "",
+                juce::ParameterID(suffix + "_o", kVersionHint), "",
                 juce::NormalisableRange<float>(0.f, 1.f, .01f), opacity));
         }
     }

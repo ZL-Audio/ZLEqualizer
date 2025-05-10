@@ -34,7 +34,7 @@ namespace zlpanel {
         juce::AudioProcessorValueTreeState &parameters_NA_ref_;
         zlgui::UIBase &ui_base_;
         std::atomic<size_t> bandIdx{0};
-        std::array<std::atomic<bool>, zlstate::bandNUM> dynamicON{};
+        std::array<std::atomic<bool>, zlstate::kBandNUM> dynamicON{};
         LeftControlPanel leftControlPanel;
         RightControlPanel rightControlPanel;
         MatchControlPanel matchControlPanel;

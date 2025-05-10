@@ -24,16 +24,16 @@ namespace zlstate {
         void saveAPVTS(juce::AudioProcessorValueTreeState &apvts);
 
     private:
-        std::unique_ptr<juce::PropertiesFile> uiFile;
-        juce::ReadWriteLock readWriteLock;
+        std::unique_ptr<juce::PropertiesFile> ui_file_;
+        juce::ReadWriteLock read_write_lock_;
 
-        inline auto static const path =
+        inline auto static const kPath =
                 juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
                 .getChildFile("Audio")
                 .getChildFile("Presets")
                 .getChildFile(JucePlugin_Manufacturer)
                 .getChildFile(JucePlugin_Name);
-        inline auto static const uiPath =
-                path.getChildFile("ui.xml");
+        inline auto static const kUIPath =
+                kPath.getChildFile("ui.xml");
     };
 }

@@ -489,7 +489,7 @@ namespace zlgui {
         float rotary_drag_sensitivity_{1.f};
         std::atomic<float> fft_extra_tilt_{0.f}, fft_extra_speed_{1.f};
         std::atomic<float> single_curve_thickness_{1.f}, sum_curve_thickness_{1.f};
-        std::array<std::atomic<bool>, zlstate::bandNUM> is_band_selected_{};
+        std::array<std::atomic<bool>, zlstate::kBandNUM> is_band_selected_{};
         std::atomic<bool> is_mouse_wheel_shift_reverse_{false};
         std::atomic<bool> is_slider_double_click_open_editor_{false};
         std::atomic<int> default_pass_filter_slope_{1};
@@ -509,8 +509,8 @@ namespace zlgui {
             para->endChangeGesture();
         }
 
-        size_t colour_map1_idx_{zlstate::colourMapIdx::defaultDark};
-        size_t colour_map2_idx_{zlstate::colourMapIdx::seabornBrightDark};
+        size_t colour_map1_idx_{zlstate::colourMapIdx::kDefaultDark};
+        size_t colour_map2_idx_{zlstate::colourMapIdx::kSeabornBrightDark};
 
         int fft_order_idx_{1};
 

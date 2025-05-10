@@ -83,8 +83,8 @@ namespace zlpanel {
         void mouseDoubleClick(const juce::MouseEvent &event) override;
 
     private:
-        std::array<std::unique_ptr<FilterButtonPanel>, zlstate::bandNUM> panels;
-        std::array<std::unique_ptr<LinkButtonPanel>, zlstate::bandNUM> linkButtons;
+        std::array<std::unique_ptr<FilterButtonPanel>, zlstate::kBandNUM> panels;
+        std::array<std::unique_ptr<LinkButtonPanel>, zlstate::kBandNUM> linkButtons;
 
         PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
@@ -103,8 +103,8 @@ namespace zlpanel {
 
         static constexpr std::array NAIDs{zlstate::maximumDB::ID, zlstate::selectedBandIdx::ID};
 
-        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlstate::bandNUM> freqUpdaters, gainUpdaters, QUpdaters;
-        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlstate::bandNUM> targetGainUpdaters, targetQUpdaters;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlstate::kBandNUM> freqUpdaters, gainUpdaters, QUpdaters;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlstate::kBandNUM> targetGainUpdaters, targetQUpdaters;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 
@@ -126,8 +126,8 @@ namespace zlpanel {
         juce::SelectedItemSet<size_t> itemsSet;
         int previousLassoNum{0};
         std::atomic<bool> isLeftClick{true};
-        std::array<std::atomic<float>, zlstate::bandNUM> previousFreqs{}, previousGains{}, previousQs{};
-        std::array<std::atomic<float>, zlstate::bandNUM> previousTargetGains{}, previousTargetQs{};
+        std::array<std::atomic<float>, zlstate::kBandNUM> previousFreqs{}, previousGains{}, previousQs{};
+        std::array<std::atomic<float>, zlstate::kBandNUM> previousTargetGains{}, previousTargetQs{};
 
         std::atomic<bool> toAttachGroup{false};
 

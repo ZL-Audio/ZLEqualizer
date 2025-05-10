@@ -49,7 +49,7 @@ namespace zlpanel {
         juce::AudioProcessorValueTreeState &parameters_ref_;
         zlgui::UIBase &ui_base_;
         zlp::Controller<double> &c;
-        std::array<zldsp::filter::Ideal<double, 16>, zlstate::bandNUM> &mMainFilters;
+        std::array<zldsp::filter::Ideal<double, 16>, zlstate::kBandNUM> &mMainFilters;
         std::atomic<float> maximumDB;
         std::vector<double> dBs{};
         AtomicBound<float> atomicBound;
@@ -59,8 +59,8 @@ namespace zlpanel {
             zlp::bypass::ID, zlp::lrType::ID
         };
 
-        std::array<std::atomic<bool>, zlstate::bandNUM> isBypassed{};
-        std::array<std::atomic<zlp::lrType::lrTypes>, zlstate::bandNUM> lrTypes;
+        std::array<std::atomic<bool>, zlstate::kBandNUM> isBypassed{};
+        std::array<std::atomic<zlp::lrType::lrTypes>, zlstate::kBandNUM> lrTypes;
 
         std::atomic<bool> toRepaint{false};
 

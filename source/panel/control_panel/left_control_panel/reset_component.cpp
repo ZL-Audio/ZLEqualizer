@@ -24,7 +24,7 @@ namespace zlpanel {
         button.getButton().onClick = [this]() {
             const auto currentBand = bandIdx.load();
             const auto isCurrentBandSelected = ui_base_.getIsBandSelected(currentBand);
-            for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
+            for(size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && ui_base_.getIsBandSelected(idx))) {
                     const auto activeID = zlstate::appendSuffix(zlstate::active::ID, idx);
                     parameters_NA_ref_.getParameter(activeID)->beginChangeGesture();

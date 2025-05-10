@@ -32,8 +32,8 @@ namespace zlpanel {
         juce::Time previousTime{};
 
         size_t bandIdx{0};
-        std::array<juce::RangedAudioParameter *, zlstate::bandNUM> isDynamicOnParas{};
-        std::array<juce::RangedAudioParameter *, zlstate::bandNUM> isThresholdAutoParas{};
+        std::array<juce::RangedAudioParameter *, zlstate::kBandNUM> isDynamicOnParas{};
+        std::array<juce::RangedAudioParameter *, zlstate::kBandNUM> isThresholdAutoParas{};
         juce::RangedAudioParameter *bandIdxPara;
         juce::Colour colour;
         bool shouldVisible{false};

@@ -38,14 +38,14 @@ namespace zlpanel {
                          parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
         addAndMakeVisible(dummyComponent, 4);
         dummyComponent.setInterceptsMouseClicks(false, false);
-        for (size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
+        for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
             const auto i = idx;
             singlePanels[idx] =
                     std::make_unique<SinglePanel>(i, parameters_ref_, parameters_NA_ref_, base, controller_ref_,
                                                   baseFilters[i], targetFilters[i], mainFilters[i]);
             dummyComponent.addAndMakeVisible(*singlePanels[idx]);
         }
-        for (size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
+        for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
             const auto i = idx;
             sidePanels[idx] = std::make_unique<SidePanel>(i, parameters_ref_, parameters_NA_ref_, base, controller_ref_,
                                                           buttonPanel.getSideDragger(i));
@@ -100,11 +100,11 @@ namespace zlpanel {
         fftPanel.setBounds(bound);
         conflictPanel.setBounds(bound);
         dummyComponent.setBounds(bound);
-        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
             singlePanels[i]->setBounds(bound);
         }
         const auto sideBound = bound.toFloat().withTop(bound.toFloat().getBottom() - 2.f * ui_base_.getFontSize());
-        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
             sidePanels[i]->setBounds(sideBound.toNearestInt());
         }
         sumPanel.setBounds(bound);
@@ -126,12 +126,12 @@ namespace zlpanel {
             const auto idx = static_cast<size_t>(newValue);
             const auto maxDB = zlstate::maximumDB::dBs[idx];
             sumPanel.setMaximumDB(maxDB);
-            for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+            for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
                 singlePanels[i]->setMaximumDB(maxDB);
             }
         } else if (parameterID == zlp::scale::ID) {
             const auto scale = static_cast<double>(zlp::scale::formatV(newValue));
-            for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+            for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
                 singlePanels[i]->setScale(scale);
             }
         } else if (parameterID == zlstate::minimumFFTDB::ID) {
@@ -162,12 +162,12 @@ namespace zlpanel {
         if ((nowT - currentT) * 1000.0 > static_cast<double>(ui_base_.getRefreshRateMS()) * refreshRateMul) {
             buttonPanel.updateAttach();
             auto isCurrentDraggerMoved = false;
-            for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+            for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
                 const auto f = buttonPanel.updateDragger(i, singlePanels[i]->getButtonPos());
                 if (i == previousBandIdx) isCurrentDraggerMoved = f;
             }
             if (previousBandIdx != currentBandIdx.load()) {
-                if (previousBandIdx < zlstate::bandNUM) {
+                if (previousBandIdx < zlstate::kBandNUM) {
                     buttonPanel.updateLinkButton(previousBandIdx);
                 }
                 previousBandIdx = currentBandIdx.load();
@@ -211,7 +211,7 @@ namespace zlpanel {
             if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
                 fftPanel.updatePaths(factor);
             }
-            for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+            for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
                 if (singlePanels[i]->checkRepaint()) {
                     singlePanels[i]->run(factor);
                 }

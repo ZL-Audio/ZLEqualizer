@@ -54,11 +54,11 @@ namespace zlpanel {
         LoudnessDisplay loudnessDisplay;
         ButtonPanel buttonPanel;
         SoloPanel soloPanel;
-        std::array<std::unique_ptr<SinglePanel>, zlstate::bandNUM> singlePanels;
-        std::array<std::unique_ptr<SidePanel>, zlstate::bandNUM> sidePanels;
+        std::array<std::unique_ptr<SinglePanel>, zlstate::kBandNUM> singlePanels;
+        std::array<std::unique_ptr<SidePanel>, zlstate::kBandNUM> sidePanels;
         juce::Component dummyComponent{};
         std::atomic<size_t> currentBandIdx;
-        size_t previousBandIdx{zlstate::bandNUM + 1};
+        size_t previousBandIdx{zlstate::kBandNUM + 1};
         MatchPanel matchPanel;
         double currentT{0.0};
         bool toNotify{false};

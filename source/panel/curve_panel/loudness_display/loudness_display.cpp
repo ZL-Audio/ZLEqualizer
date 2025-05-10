@@ -12,7 +12,7 @@
 namespace zlpanel {
     LoudnessDisplay::LoudnessDisplay(PluginProcessor &p, zlgui::UIBase &base)
         : processor_ref_(p), ui_base_(base) {
-        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
             const auto suffix = zlp::appendSuffix("", i);
             isThresholdAutoParas[i] = processor_ref_.parameters.getParameter(zlp::dynamicLearn::ID + suffix);
             isDynamicOnParas[i] = processor_ref_.parameters.getParameter(zlp::dynamicON::ID + suffix);

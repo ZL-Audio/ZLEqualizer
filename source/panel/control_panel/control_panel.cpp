@@ -21,7 +21,7 @@ namespace zlpanel {
         addAndMakeVisible(leftControlPanel);
         addChildComponent(rightControlPanel);
         addChildComponent(matchControlPanel);
-        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
             const auto idx = zlp::appendSuffix(zlp::dynamicON::ID, i);
             dynamicON[i].store(parameters_ref_.getRawParameterValue(idx)->load() > .5f);
             parameters_ref_.addParameterListener(idx, this);
@@ -35,7 +35,7 @@ namespace zlpanel {
 
     ControlPanel::~ControlPanel() {
         parameters_NA_ref_.removeParameterListener(zlstate::selectedBandIdx::ID, this);
-        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
             const auto idx = zlp::appendSuffix(zlp::dynamicON::ID, i);
             parameters_ref_.removeParameterListener(idx, this);
         }

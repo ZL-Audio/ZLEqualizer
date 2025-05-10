@@ -43,7 +43,7 @@ namespace zlpanel {
             const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
             const auto currentBand = bandIdx.load();
             const auto isCurrentBandSelected = ui_base_.getIsBandSelected(currentBand);
-            for (size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
+            for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && ui_base_.getIsBandSelected(idx))) {
                     const auto paraBypass = parameters_ref_.getParameter(zlstate::appendSuffix(zlp::bypass::ID, idx));
                     paraBypass->beginChangeGesture();

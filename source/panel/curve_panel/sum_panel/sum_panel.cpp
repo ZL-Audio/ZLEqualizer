@@ -74,7 +74,7 @@ namespace zlpanel {
     }
 
     bool SumPanel::checkRepaint() {
-        for (size_t i = 0; i < zlstate::bandNUM; ++i) {
+        for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
             if (mMainFilters[i].getMagOutdated()) {
                 return true;
             }
@@ -103,7 +103,7 @@ namespace zlpanel {
             }
 
             std::fill(dBs.begin(), dBs.end(), 0.0);
-            for (size_t i = 0; i < zlstate::bandNUM; i++) {
+            for (size_t i = 0; i < zlstate::kBandNUM; i++) {
                 auto &filter{c.getMainIdealFilter(i)};
                 if (lrTypes[i].load() == static_cast<zlp::lrType::lrTypes>(j) && !isBypassed[i].load()) {
                     mMainFilters[i].setGain(filter.getGain());
