@@ -88,7 +88,7 @@ namespace zlpanel {
 
         PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zlp::Controller<double> &controller_ref_;
 
         std::array<zlgui::SnappingSlider, 3> wheelSlider;

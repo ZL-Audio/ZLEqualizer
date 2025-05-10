@@ -11,42 +11,42 @@
 
 namespace zlgui {
     ColourOpacitySelector::ColourOpacitySelector(zlgui::UIBase &base, juce::Component &parent,
-                                                 const bool useOpacity,
-                                                 const float widthS, const float heightS,
+                                                 const bool use_opacity,
+                                                 const float width_s, const float height_s,
                                                  const float w1, const float w2)
-        : uiBase(base),
-          selector(base, parent, widthS, heightS),
-          slider("Opacity", base),
-          opacityON(useOpacity) {
-        weights = {w1, w2};
-        if (opacityON) {
-            slider.getSlider().setRange(0.0, 1.0, 0.01);
-            slider.getSlider().addListener(this);
-            addAndMakeVisible(slider);
+        : ui_base_(base),
+          selector_(base, parent, width_s, height_s),
+          slider_("Opacity", base),
+          opacity_on_(use_opacity) {
+        weights_ = {w1, w2};
+        if (opacity_on_) {
+            slider_.getSlider().setRange(0.0, 1.0, 0.01);
+            slider_.getSlider().addListener(this);
+            addAndMakeVisible(slider_);
         }
-        addAndMakeVisible(selector);
+        addAndMakeVisible(selector_);
     }
 
     ColourOpacitySelector::~ColourOpacitySelector() {
-        if (opacityON) {
-            slider.getSlider().removeListener(this);
+        if (opacity_on_) {
+            slider_.getSlider().removeListener(this);
         }
     }
 
     void ColourOpacitySelector::resized() {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(),
-                                            uiBase.getFontSize() * FontLarge * 1.75f);
-        const auto padding = uiBase.getFontSize() * 2.f;
+                                            ui_base_.getFontSize() * kFontLarge * 1.75f);
+        const auto padding = ui_base_.getFontSize() * 2.f;
         const auto width = bound.getWidth() - padding;
-        selector.setBounds(bound.removeFromLeft(width * weights[0]).toNearestInt());
-        if (opacityON) {
+        selector_.setBounds(bound.removeFromLeft(width * weights_[0]).toNearestInt());
+        if (opacity_on_) {
             bound.removeFromLeft(padding);
-            slider.setBounds(bound.removeFromLeft(width * weights[1]).toNearestInt());
+            slider_.setBounds(bound.removeFromLeft(width * weights_[1]).toNearestInt());
         }
     }
 
     void ColourOpacitySelector::sliderValueChanged(juce::Slider *s) {
-        selector.setOpacity(static_cast<float>(s->getValue()));
+        selector_.setOpacity(static_cast<float>(s->getValue()));
     }
 } // zlgui

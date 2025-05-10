@@ -24,17 +24,17 @@ namespace zlgui {
             leftArrow
         };
 
-        explicit DraggerLookAndFeel(UIBase &base) : uiBase(base) {
+        explicit DraggerLookAndFeel(UIBase &base) : ui_base_(base) {
         }
 
         void drawToggleButton(juce::Graphics &g, juce::ToggleButton &button,
                               bool shouldDrawButtonAsHighlighted,
                               bool shouldDrawButtonAsDown) override {
             if (shouldDrawButtonAsDown || button.getToggleState()) {
-                g.setColour(uiBase.getTextColor());
+                g.setColour(ui_base_.getTextColor());
                 g.fillPath(outlinePath);
             } else if (shouldDrawButtonAsHighlighted || isSelected) {
-                g.setColour(uiBase.getTextColor().withMultipliedAlpha(0.5f));
+                g.setColour(ui_base_.getTextColor().withMultipliedAlpha(0.5f));
                 g.fillPath(outlinePath);
             }
 
@@ -47,7 +47,7 @@ namespace zlgui {
                 } else {
                     g.setColour(juce::Colours::black);
                 }
-                g.setFont(uiBase.getFontSize() * labelScale);
+                g.setFont(ui_base_.getFontSize() * labelScale);
                 auto bound = button.getLocalBounds().toFloat();
                 const auto radius = std::min(bound.getHeight(), bound.getWidth());
                 bound = bound.withSizeKeepingCentre(radius, radius);
@@ -155,6 +155,6 @@ namespace zlgui {
         DraggerShape draggerShape{DraggerShape::round};
         juce::String label;
         float labelScale = 1.f;
-        UIBase &uiBase;
+        UIBase &ui_base_;
     };
 }

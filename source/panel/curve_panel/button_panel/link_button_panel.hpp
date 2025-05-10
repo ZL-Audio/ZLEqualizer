@@ -36,7 +36,7 @@ namespace zlpanel {
 
     private:
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zlgui::Dragger &sideDraggerRef;
         zlgui::CompactButton dynLinkC;
         float buttonSize{}, buttonBottom{};

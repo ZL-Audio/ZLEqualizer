@@ -20,7 +20,7 @@ namespace zlpanel {
     }
 
     ColourSettingPanel::ColourSettingPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : pRef(p), uiBase(base), nameLAF(base),
+        : pRef(p), ui_base_(base), nameLAF(base),
           textSelector(base, *this, false),
           backgroundSelector(base, *this, false),
           shadowSelector(base, *this, false),
@@ -37,7 +37,7 @@ namespace zlpanel {
         if (!settingDirectory.isDirectory()) {
             settingDirectory.createDirectory();
         }
-        nameLAF.setFontScale(zlgui::FontHuge);
+        nameLAF.setFontScale(zlgui::kFontHuge);
         for (size_t i = 0; i < numSelectors; ++i) {
             selectorLabels[i].setText(selectorNames[i], juce::dontSendNotification);
             selectorLabels[i].setJustificationType(juce::Justification::centredRight);
@@ -75,19 +75,19 @@ namespace zlpanel {
 
     void ColourSettingPanel::loadSetting() {
         for (size_t i = 0; i < numSelectors; ++i) {
-            selectors[i]->setColour(uiBase.getColourByIdx(colourIdx[i]));
+            selectors[i]->setColour(ui_base_.getColourByIdx(colourIdx[i]));
         }
-        cMap1Selector.getBox().setSelectedId(static_cast<int>(uiBase.getCMap1Idx()) + 1);
-        cMap2Selector.getBox().setSelectedId(static_cast<int>(uiBase.getCMap2Idx()) + 1);
+        cMap1Selector.getBox().setSelectedId(static_cast<int>(ui_base_.getCMap1Idx()) + 1);
+        cMap2Selector.getBox().setSelectedId(static_cast<int>(ui_base_.getCMap2Idx()) + 1);
     }
 
     void ColourSettingPanel::saveSetting() {
         for (size_t i = 0; i < numSelectors; ++i) {
-            uiBase.setColourByIdx(colourIdx[i], selectors[i]->getColour());
+            ui_base_.setColourByIdx(colourIdx[i], selectors[i]->getColour());
         }
-        uiBase.setCMap1Idx(static_cast<size_t>(cMap1Selector.getBox().getSelectedId() - 1));
-        uiBase.setCMap2Idx(static_cast<size_t>(cMap2Selector.getBox().getSelectedId() - 1));
-        uiBase.saveToAPVTS();
+        ui_base_.setCMap1Idx(static_cast<size_t>(cMap1Selector.getBox().getSelectedId() - 1));
+        ui_base_.setCMap2Idx(static_cast<size_t>(cMap2Selector.getBox().getSelectedId() - 1));
+        ui_base_.saveToAPVTS();
     }
 
     void ColourSettingPanel::resetSetting() {
@@ -107,26 +107,26 @@ namespace zlpanel {
     void ColourSettingPanel::resized() {
         auto bound = getLocalBounds().toFloat();
         for (size_t i = 0; i < numSelectors; ++i) {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             selectorLabels[i].setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
             selectors[i]->setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             cMap1Label.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
             cMap1Selector.setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             cMap2Label.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
             cMap2Selector.setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             importLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .45f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .10f);
             exportLabel.setBounds(localBound.toNearestInt());
@@ -151,10 +151,10 @@ namespace zlpanel {
                                 xmlColour->getIntAttribute("g"),
                                 xmlColour->getIntAttribute("b"),
                                 static_cast<float>(xmlColour->getDoubleAttribute("o")));
-                            uiBase.setColourByIdx(colourIdx[i], colour);
+                            ui_base_.setColourByIdx(colourIdx[i], colour);
                         }
                     }
-                    uiBase.saveToAPVTS();
+                    ui_base_.saveToAPVTS();
                     loadSetting();
                 }
             });

@@ -19,12 +19,12 @@ namespace zlgui {
         }
 
         juce::String getTipFor(Component &c) override {
-            return isON ? juce::TooltipWindow::getTipFor(c) : juce::String();
+            return is_on_ ? juce::TooltipWindow::getTipFor(c) : juce::String();
         }
 
-        void setON(const bool x) { isON = x; }
+        void setON(const bool x) { is_on_ = x; }
 
     private:
-        bool isON{true};
+        bool is_on_{true};
     };
 }

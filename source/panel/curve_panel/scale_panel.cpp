@@ -12,16 +12,16 @@
 
 namespace zlpanel {
     ScalePanel::ScalePanel(PluginProcessor &processor, zlgui::UIBase &base)
-        : parameters_NA_ref_(processor.parameters_NA), uiBase(base),
+        : parameters_NA_ref_(processor.parameters_NA), ui_base_(base),
           scaleBox("", zlstate::maximumDB::choices, base),
           minFFTBox("", zlstate::minimumFFTDB::choices, base) {
-        juce::ignoreUnused(uiBase);
-        scaleBox.getLAF().setFontScale(zlgui::FontLarge);
+        juce::ignoreUnused(ui_base_);
+        scaleBox.getLAF().setFontScale(zlgui::kFontLarge);
         scaleBox.getBox().setJustificationType(juce::Justification::centredRight);
         scaleBox.getBox().onChange = [this]() {
             handleAsyncUpdate();
         };
-        minFFTBox.getLAF().setFontScale(zlgui::FontLarge);
+        minFFTBox.getLAF().setFontScale(zlgui::kFontLarge);
         minFFTBox.getBox().setJustificationType(juce::Justification::centredRight);
         minFFTBox.getBox().onChange = [this]() {
             handleAsyncUpdate();
@@ -33,7 +33,7 @@ namespace zlpanel {
         addAndMakeVisible(minFFTBox);
         handleAsyncUpdate();
 
-        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlgui::multilingual::labels::dbScale));
+        SettableTooltipClient::setTooltip(ui_base_.getToolTipText(zlgui::multilingual::Labels::kDBScale));
 
         setBufferedToImage(true);
     }
@@ -41,24 +41,24 @@ namespace zlpanel {
     ScalePanel::~ScalePanel() = default;
 
     void ScalePanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getBackgroundColor());
+        g.fillAll(ui_base_.getBackgroundColor());
 
         auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize());
 
-        g.setFont(uiBase.getFontSize() * zlgui::FontLarge);
+        g.setFont(ui_base_.getFontSize() * zlgui::kFontLarge);
         for (auto &d: scaleDBs) {
-            const auto y = d * bound.getHeight() + bound.getY() - uiBase.getFontSize() * .75f;
+            const auto y = d * bound.getHeight() + bound.getY() - ui_base_.getFontSize() * .75f;
             const auto lTextBound = juce::Rectangle<float>(bound.getX(), y, bound.getWidth() * .4f,
-                                                           uiBase.getFontSize() * 1.5f);
+                                                           ui_base_.getFontSize() * 1.5f);
             const auto leftDB = static_cast<int>(std::round(-2 * d * maximumDB.load() + maximumDB.load()));
-            g.setColour(uiBase.getTextColor());
+            g.setColour(ui_base_.getTextColor());
             g.drawText(juce::String(leftDB), lTextBound, juce::Justification::centredRight);
             const auto rTextBound = juce::Rectangle<float>(bound.getCentreX(), y, bound.getWidth() * .4f,
-                                                           uiBase.getFontSize() * 1.5f);
+                                                           ui_base_.getFontSize() * 1.5f);
             const auto fftDB = static_cast<int>(std::round(minimumFFTDB.load() * d));
             if (fftDB > -100) {
-                g.setColour(uiBase.getTextInactiveColor());
+                g.setColour(ui_base_.getTextInactiveColor());
                 g.drawText(juce::String(fftDB), rTextBound, juce::Justification::centredRight);
             }
         }
@@ -66,19 +66,19 @@ namespace zlpanel {
 
     void ScalePanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize());
         {
-            auto boxBound = juce::Rectangle<float>(uiBase.getFontSize() * 4.f, uiBase.getFontSize() * 1.5f);
+            auto boxBound = juce::Rectangle<float>(ui_base_.getFontSize() * 4.f, ui_base_.getFontSize() * 1.5f);
             boxBound = boxBound.withCentre({bound.getCentreX(), bound.getY()});
-            boxBound.removeFromRight(uiBase.getFontSize() * .95f);
-            boxBound.removeFromLeft(uiBase.getFontSize() * .05f);
+            boxBound.removeFromRight(ui_base_.getFontSize() * .95f);
+            boxBound.removeFromLeft(ui_base_.getFontSize() * .05f);
             scaleBox.setBounds(boxBound.toNearestInt());
         }
         {
-            auto boxBound = juce::Rectangle<float>(bound.getWidth(), uiBase.getFontSize() * 1.5f);
+            auto boxBound = juce::Rectangle<float>(bound.getWidth(), ui_base_.getFontSize() * 1.5f);
             boxBound = boxBound.withCentre({bound.getCentreX(), bound.getBottom()});
-            boxBound.removeFromRight(uiBase.getFontSize() * .5f);
-            boxBound.removeFromLeft(uiBase.getFontSize() * .5f);
+            boxBound.removeFromRight(ui_base_.getFontSize() * .5f);
+            boxBound.removeFromLeft(ui_base_.getFontSize() * .5f);
             minFFTBox.setBounds(boxBound.toNearestInt());
         }
     }

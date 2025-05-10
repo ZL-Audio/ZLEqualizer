@@ -29,7 +29,7 @@ namespace zlpanel {
 
     private:
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         const std::unique_ptr<juce::Drawable> drawable;
         zlgui::ClickButton button;
         std::atomic<size_t> bandIdx;

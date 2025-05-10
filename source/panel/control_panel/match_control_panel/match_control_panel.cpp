@@ -11,22 +11,22 @@
 
 namespace zlpanel {
     MatchControlPanel::MatchControlPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : uiBase(base), analyzer(p.getController().getMatchAnalyzer()),
+        : ui_base_(base), analyzer(p.getController().getMatchAnalyzer()),
           startDrawable(juce::Drawable::createFromImageData(BinaryData::playfill_svg, BinaryData::playfill_svgSize)),
           pauseDrawable(juce::Drawable::createFromImageData(BinaryData::pauseline_svg, BinaryData::pauseline_svgSize)),
           saveDrawable(juce::Drawable::createFromImageData(BinaryData::saveline_svg, BinaryData::saveline_svgSize)),
-          sideChooseBox("", {"Side", "Preset", "Flat"}, base, zlgui::multilingual::labels::matchTarget),
-          fitAlgoBox("", {"LD", "GN", "GN+"}, base, zlgui::multilingual::labels::matchAlgo),
-          weightSlider("Weight", base, zlgui::multilingual::labels::matchWeight),
-          smoothSlider("Smooth", base, zlgui::multilingual::labels::matchSmooth),
-          slopeSlider("Slope", base, zlgui::multilingual::labels::matchSlope),
-          numBandSlider("Num Band", base, zlgui::multilingual::labels::matchNumBand),
+          sideChooseBox("", {"Side", "Preset", "Flat"}, base, zlgui::multilingual::Labels::kMatchTarget),
+          fitAlgoBox("", {"LD", "GN", "GN+"}, base, zlgui::multilingual::Labels::kMatchAlgo),
+          weightSlider("Weight", base, zlgui::multilingual::Labels::kMatchWeight),
+          smoothSlider("Smooth", base, zlgui::multilingual::Labels::kMatchSmooth),
+          slopeSlider("Slope", base, zlgui::multilingual::Labels::kMatchSlope),
+          numBandSlider("Num Band", base, zlgui::multilingual::Labels::kMatchNumBand),
           learnButton(base, startDrawable.get(), pauseDrawable.get(),
-                      zlgui::multilingual::labels::matchStartLearn),
-          saveButton(base, saveDrawable.get(), nullptr, zlgui::multilingual::labels::matchSave),
-          fitButton(base, startDrawable.get(), nullptr, zlgui::multilingual::labels::matchStartFit),
-          matchRunner(p, uiBase, analyzer.getDiffs(), numBandSlider) {
-        uiBase.getValueTree().addListener(this);
+                      zlgui::multilingual::Labels::kMatchStartLearn),
+          saveButton(base, saveDrawable.get(), nullptr, zlgui::multilingual::Labels::kMatchSave),
+          fitButton(base, startDrawable.get(), nullptr, zlgui::multilingual::Labels::kMatchStartFit),
+          matchRunner(p, ui_base_, analyzer.getDiffs(), numBandSlider) {
+        ui_base_.getValueTree().addListener(this);
         // create preset directory if not exists
         if (!presetDirectory.isDirectory()) {
             const auto f = presetDirectory.createDirectory();
@@ -92,7 +92,7 @@ namespace zlpanel {
         }
         learnButton.getButton().onClick = [this]() {
             analyzer.setON(learnButton.getButton().getToggleState());
-            uiBase.setProperty(zlgui::settingIdx::matchPanelFit, false);
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelFit, false);
         };
         saveButton.getButton().onClick = [this]() {
             learnButton.getButton().setToggleState(false, juce::dontSendNotification);
@@ -103,8 +103,8 @@ namespace zlpanel {
             learnButton.getButton().setToggleState(false, juce::dontSendNotification);
             analyzer.setON(false);
             matchRunner.start();
-            uiBase.setProperty(zlgui::settingIdx::matchPanelFit, true);
-            uiBase.setProperty(zlgui::settingIdx::matchFitRunning, true);
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelFit, true);
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchFitRunning, true);
         };
         resetDefault();
 
@@ -112,16 +112,16 @@ namespace zlpanel {
     }
 
     MatchControlPanel::~MatchControlPanel() {
-        uiBase.getValueTree().removeListener(this);
+        ui_base_.getValueTree().removeListener(this);
         analyzer.setON(false);
     }
 
     void MatchControlPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getColourByIdx(zlgui::colourIdx::backgroundColour));
-        uiBase.fillRoundedShadowRectangle(g,
+        g.fillAll(ui_base_.getColourByIdx(zlgui::ColourIdx::kBackgroundColour));
+        ui_base_.fillRoundedShadowRectangle(g,
                                           internalBound.toFloat(),
-                                          0.5f * uiBase.getFontSize(),
-                                          {.blurRadius = 0.25f});
+                                          0.5f * ui_base_.getFontSize(),
+                                          {.blur_radius = 0.25f});
     }
 
     void MatchControlPanel::resized() {
@@ -130,20 +130,20 @@ namespace zlpanel {
             for (const auto &c: {
                      &weightSlider, &smoothSlider, &slopeSlider, &numBandSlider
                  }) {
-                c->setPadding(std::round(uiBase.getFontSize() * 0.5f),
-                              std::round(uiBase.getFontSize() * 0.6f));
+                c->setPadding(std::round(ui_base_.getFontSize() * 0.5f),
+                              std::round(ui_base_.getFontSize() * 0.6f));
             }
         }
         // update bounds
         auto bound = getLocalBounds();
-        const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * buttonWidthP);
-        const auto sliderWidth = static_cast<int>(std::round(uiBase.getFontSize() * rSliderWidthP * 1.1f)); {
-            const auto pad = static_cast<int>(uiBase.getFontSize() * .5f);
+        const auto buttonWidth = static_cast<int>(ui_base_.getFontSize() * buttonWidthP);
+        const auto sliderWidth = static_cast<int>(std::round(ui_base_.getFontSize() * rSliderWidthP * 1.1f)); {
+            const auto pad = static_cast<int>(ui_base_.getFontSize() * .5f);
             internalBound = bound.withSizeKeepingCentre(buttonWidth + sliderWidth * 3 + 2 * pad, bound.getHeight());
             bound = internalBound;
             bound = bound.withSizeKeepingCentre(bound.getWidth() - 2 * pad, bound.getHeight() - 2 * pad);
         }
-        const auto buttonHeight = std::min(static_cast<int>(uiBase.getFontSize() * buttonHeightP),
+        const auto buttonHeight = std::min(static_cast<int>(ui_base_.getFontSize() * buttonHeightP),
                                            bound.getHeight() / 2); {
             auto mBound = bound.removeFromLeft(sliderWidth);
             sideChooseBox.setBounds(mBound.removeFromTop(buttonHeight));
@@ -195,7 +195,7 @@ namespace zlpanel {
     }
 
     void MatchControlPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &) {
-        const auto f = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelShow));
+        const auto f = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
         setVisible(f);
         if (!f) {
             resetDefault();

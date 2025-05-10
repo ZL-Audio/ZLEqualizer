@@ -16,93 +16,89 @@
 namespace zlgui {
     class CompactButtonLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
-        explicit CompactButtonLookAndFeel(UIBase &base) : uiBase(base) {
+        explicit CompactButtonLookAndFeel(UIBase &base) : ui_base_(base) {
         }
 
-        void drawToggleButton(juce::Graphics &g,
-                              juce::ToggleButton &button,
-                              bool shouldDrawButtonAsHighlighted,
-                              bool shouldDrawButtonAsDown) override {
-            juce::ignoreUnused(shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
-            const auto isPressed = button.getToggleState() ^ reverse;
+        void drawToggleButton(juce::Graphics &g, juce::ToggleButton &button, bool, bool) override {
+            const auto isPressed = button.getToggleState() ^ reverse_;
 
             auto bounds = button.getLocalBounds().toFloat();
-            if (withShadow) {
-                bounds = uiBase.drawShadowEllipse(g, bounds, uiBase.getFontSize() * 0.4f * shrinkScale, {});
-                bounds = uiBase.drawInnerShadowEllipse(g, bounds, uiBase.getFontSize() * 0.15f * shrinkScale,
-                                                       {.flip = true});
+            if (with_shadow_) {
+                bounds = ui_base_.drawShadowEllipse(g, bounds, ui_base_.getFontSize() * 0.4f * shrink_scale_, {});
+                bounds = ui_base_.drawInnerShadowEllipse(g, bounds, ui_base_.getFontSize() * 0.15f * shrink_scale_,
+                                                         {.flip = true});
             } else {
-                bounds = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.3f * shrinkScale, {});
-                g.setColour(uiBase.getBackgroundColor());
+                bounds = ui_base_.getShadowEllipseArea(bounds, ui_base_.getFontSize() * 0.3f * shrink_scale_, {});
+                g.setColour(ui_base_.getBackgroundColor());
                 g.fillEllipse(bounds);
             }
             if (isPressed) {
-                if (withShadow) {
-                    const auto innerBound = uiBase.getShadowEllipseArea(bounds, uiBase.getFontSize() * 0.1f, {});
-                    uiBase.drawInnerShadowEllipse(g, innerBound, uiBase.getFontSize() * 0.375f, {
-                                                      .darkShadowColor = uiBase.getDarkShadowColor().
-                                                      withMultipliedAlpha(buttonDepth),
-                                                      .brightShadowColor = uiBase.getBrightShadowColor().
-                                                      withMultipliedAlpha(buttonDepth),
-                                                      .changeDark = true,
-                                                      .changeBright = true
-                                                  });
+                if (with_shadow_) {
+                    const auto innerBound = ui_base_.getShadowEllipseArea(bounds, ui_base_.getFontSize() * 0.1f, {});
+                    ui_base_.drawInnerShadowEllipse(g, innerBound, ui_base_.getFontSize() * 0.375f, {
+                                                        .dark_shadow_color = ui_base_.getDarkShadowColor().
+                                                        withMultipliedAlpha(button_depth_),
+                                                        .bright_shadow_color = ui_base_.getBrightShadowColor().
+                                                        withMultipliedAlpha(button_depth_),
+                                                        .change_dark = true,
+                                                        .change_bright = true
+                                                    });
                 }
             }
-            if (editable) {
-                if (drawable == nullptr) {
+            if (editable_) {
+                if (drawable_ == nullptr) {
                     const auto textBound = button.getLocalBounds().toFloat();
                     if (isPressed) {
-                        g.setColour(uiBase.getTextColor().withAlpha(1.f));
+                        g.setColour(ui_base_.getTextColor().withAlpha(1.f));
                     } else {
-                        g.setColour(uiBase.getTextColor().withAlpha(0.5f));
+                        g.setColour(ui_base_.getTextColor().withAlpha(0.5f));
                     }
-                    g.setFont(uiBase.getFontSize() * scale);
+                    g.setFont(ui_base_.getFontSize() * scale_);
                     g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
                 } else {
-                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f * scale;
-                    const auto drawBound = bounds.withSizeKeepingCentre(radius, radius);
+                    const auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * .5f * scale_;
+                    const auto draw_bound = bounds.withSizeKeepingCentre(radius, radius);
                     if (isPressed) {
-                        internalImg->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, 1.f);
+                        internal_img_->drawWithin(g, draw_bound, juce::RectanglePlacement::Flags::centred, 1.f);
                     } else {
-                        internalImg->drawWithin(g, drawBound, juce::RectanglePlacement::Flags::centred, .5f);
+                        internal_img_->drawWithin(g, draw_bound, juce::RectanglePlacement::Flags::centred, .5f);
                     }
                 }
             }
         }
 
-        inline void setEditable(const bool f) { editable = f; }
+        inline void setEditable(const bool f) { editable_ = f; }
 
-        [[nodiscard]] inline float getDepth() const { return buttonDepth; }
+        [[nodiscard]] inline float getDepth() const { return button_depth_; }
 
-        inline void setDepth(const float x) { buttonDepth = x; }
+        inline void setDepth(const float x) { button_depth_ = x; }
 
         inline void setDrawable(juce::Drawable *x) {
-            drawable = x;
+            drawable_ = x;
             updateImages();
         }
 
-        void enableShadow(const bool f) { withShadow = f; }
+        void enableShadow(const bool f) { with_shadow_ = f; }
 
-        void setScale(const float x) { scale = x; }
+        void setScale(const float x) { scale_ = x; }
 
-        void setReverse(const bool f) { reverse = f; }
+        void setReverse(const bool f) { reverse_ = f; }
 
-        void setShrinkScale(const float x) { shrinkScale = x; }
+        void setShrinkScale(const float x) { shrink_scale_ = x; }
 
         void updateImages() {
-            if (drawable != nullptr) {
-                internalImg = drawable->createCopy();
-                internalImg->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
+            if (drawable_ != nullptr) {
+                internal_img_ = drawable_->createCopy();
+                internal_img_->replaceColour(juce::Colour(0, 0, 0), ui_base_.getTextColor());
             }
         }
 
     private:
-        bool editable{true}, reverse{false}, withShadow{true};
-        float buttonDepth{0.f}, shrinkScale{1.f}, scale{1.f};
-        juce::Drawable *drawable = nullptr;
-        std::unique_ptr<juce::Drawable> internalImg;
+        bool editable_{true}, reverse_{false}, with_shadow_{true};
+        float button_depth_{0.f}, shrink_scale_{1.f}, scale_{1.f};
+        juce::Drawable *drawable_ = nullptr;
+        std::unique_ptr<juce::Drawable> internal_img_;
 
-        UIBase &uiBase;
+        UIBase &ui_base_;
     };
 }

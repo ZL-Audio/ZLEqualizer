@@ -18,7 +18,7 @@ namespace zlgui {
     class CompactButton final : public juce::Component {
     public:
         explicit CompactButton(const juce::String &labelText, UIBase &base,
-                               multilingual::labels labelIdx = multilingual::labels::labelNum);
+                               multilingual::Labels labelIdx = multilingual::Labels::kLabelNum);
 
         ~CompactButton() override;
 
@@ -26,32 +26,30 @@ namespace zlgui {
 
         void buttonDownAnimation();
 
-        inline juce::ToggleButton &getButton() { return button; }
+        inline juce::ToggleButton &getButton() { return button_; }
 
         inline void setEditable(const bool x) {
-            lookAndFeel.setEditable(x);
-            button.setInterceptsMouseClicks(x, false);
+            laf_.setEditable(x);
+            button_.setInterceptsMouseClicks(x, false);
             repaint();
         }
 
-        inline void setDrawable(juce::Drawable *x) { lookAndFeel.setDrawable(x); }
+        inline void setDrawable(juce::Drawable *x) { laf_.setDrawable(x); }
 
-        CompactButtonLookAndFeel &getLAF() { return lookAndFeel; }
+        CompactButtonLookAndFeel &getLAF() { return laf_; }
 
         void lookAndFeelChanged() override {
-            lookAndFeel.updateImages();
+            laf_.updateImages();
         }
 
         void visibilityChanged() override {
-            lookAndFeel.updateImages();
+            laf_.updateImages();
         }
 
     private:
-        UIBase &uiBase;
+        UIBase &ui_base_;
 
-        juce::ToggleButton button;
-        CompactButtonLookAndFeel lookAndFeel;
-
-        std::atomic<bool> fit = false;
+        juce::ToggleButton button_;
+        CompactButtonLookAndFeel laf_;
     };
 }

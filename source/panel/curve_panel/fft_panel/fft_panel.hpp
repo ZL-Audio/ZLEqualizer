@@ -35,7 +35,7 @@ namespace zlpanel {
 
     private:
         zldsp::analyzer::PrePostFFTAnalyzer<double> &analyzerRef;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::Path prePath{}, postPath{}, postStrokePath{}, sidePath{};
         juce::Path recentPrePath{}, recentPostPath{}, recentPostStrokePath{}, recentSidePath{};
         juce::SpinLock pathLock;

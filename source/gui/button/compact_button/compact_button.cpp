@@ -10,42 +10,38 @@
 #include "compact_button.hpp"
 
 namespace zlgui {
-    CompactButton::CompactButton(const juce::String &labelText, UIBase &base, const multilingual::labels labelIdx)
-        : uiBase(base), lookAndFeel(uiBase) {
-        button.setClickingTogglesState(true);
-        button.setButtonText(labelText);
-        button.setLookAndFeel(&lookAndFeel);
-        button.onClick = [this]() { this->buttonDownAnimation(); };
-        addAndMakeVisible(button);
+    CompactButton::CompactButton(const juce::String &labelText, UIBase &base, const multilingual::Labels labelIdx)
+        : ui_base_(base), laf_(ui_base_) {
+        button_.setClickingTogglesState(true);
+        button_.setButtonText(labelText);
+        button_.setLookAndFeel(&laf_);
+        button_.onClick = [this]() { this->buttonDownAnimation(); };
+        addAndMakeVisible(button_);
 
         setEditable(true);
-        if (labelIdx != multilingual::labels::labelNum) {
-            button.setTooltip(uiBase.getToolTipText(labelIdx));
+        if (labelIdx != multilingual::Labels::kLabelNum) {
+            button_.setTooltip(ui_base_.getToolTipText(labelIdx));
         }
     }
 
     CompactButton::~CompactButton() {
-        button.setLookAndFeel(nullptr);
+        button_.setLookAndFeel(nullptr);
     }
 
     void CompactButton::resized() {
-        if (fit.load()) {
-            button.setBounds(getLocalBounds());
-        } else {
-            auto bound = getLocalBounds().toFloat();
-            const auto radius = juce::jmin(bound.getHeight(), bound.getWidth());
-            bound = bound.withSizeKeepingCentre(radius, radius);
-            button.setBounds(bound.toNearestInt());
-        }
+        auto bound = getLocalBounds().toFloat();
+        const auto radius = juce::jmin(bound.getHeight(), bound.getWidth());
+        bound = bound.withSizeKeepingCentre(radius, radius);
+        button_.setBounds(bound.toNearestInt());
     }
 
     void CompactButton::buttonDownAnimation() {
-        if (button.getToggleState() && lookAndFeel.getDepth() < 0.1f) {
-            lookAndFeel.setDepth(1.f);
-            button.repaint();
-        } else if (!button.getToggleState()) {
-            lookAndFeel.setDepth(0.f);
-            button.repaint();
+        if (button_.getToggleState() && laf_.getDepth() < 0.1f) {
+            laf_.setDepth(1.f);
+            button_.repaint();
+        } else if (!button_.getToggleState()) {
+            laf_.setDepth(0.f);
+            button_.repaint();
         }
     }
 }

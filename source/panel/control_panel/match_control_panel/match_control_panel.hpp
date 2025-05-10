@@ -29,7 +29,7 @@ namespace zlpanel {
         void resized() override;
 
     private:
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zldsp::eq_match::EqMatchAnalyzer<double> &analyzer;
 
         const std::unique_ptr<juce::Drawable> startDrawable, pauseDrawable, saveDrawable;

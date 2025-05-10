@@ -41,7 +41,7 @@ namespace zlpanel {
 
     private:
         juce::AudioProcessorValueTreeState &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
 
         zlgui::CompactCombobox scaleBox, minFFTBox;
         juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;

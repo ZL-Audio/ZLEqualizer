@@ -17,15 +17,15 @@ namespace zlpanel {
                                    zlgui::UIBase &base)
         : parameters_ref_(parameters),
           parameters_NA_ref_(parameters_NA),
-          uiBase(base),
+          ui_base_(base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          button(base, drawable.get(), nullptr, zlgui::multilingual::labels::bandOff) {
+          button(base, drawable.get(), nullptr, zlgui::multilingual::Labels::kBandOff) {
         juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
         button.getButton().onClick = [this]() {
             const auto currentBand = bandIdx.load();
-            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
+            const auto isCurrentBandSelected = ui_base_.getIsBandSelected(currentBand);
             for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
-                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
+                if (idx == currentBand || (isCurrentBandSelected && ui_base_.getIsBandSelected(idx))) {
                     const auto activeID = zlstate::appendSuffix(zlstate::active::ID, idx);
                     parameters_NA_ref_.getParameter(activeID)->beginChangeGesture();
                     parameters_NA_ref_.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));

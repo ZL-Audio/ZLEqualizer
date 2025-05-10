@@ -18,7 +18,7 @@ namespace zlpanel {
                          zlp::Controller<double> &controller,
                          ButtonPanel &buttonPanel)
         : parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
-          uiBase(base),
+          ui_base_(base),
           soloF(controller.getSoloFilter()),
           controller_ref_(controller), buttonPanelRef(buttonPanel) {
         juce::ignoreUnused(parameters_ref_, parameters_NA);
@@ -42,7 +42,7 @@ namespace zlpanel {
     void SoloPanel::paint(juce::Graphics &g) {
         const size_t bandIdx = selectBandIdx.load();
 
-        g.setColour(uiBase.getTextColor().withAlpha(.1f));
+        g.setColour(ui_base_.getTextColor().withAlpha(.1f));
         auto bound = getLocalBounds().toFloat();
         if (controller_ref_.getSoloIsSide()) {
             const auto x =  buttonPanelRef.getSideDragger(

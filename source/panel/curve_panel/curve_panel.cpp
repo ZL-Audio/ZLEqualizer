@@ -14,7 +14,7 @@ namespace zlpanel {
                            zlgui::UIBase &base)
         : Thread("curve panel"),
           processor_ref_(processor),
-          parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA), uiBase(base),
+          parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA), ui_base_(base),
           controller_ref_(processor.getController()),
           backgroundPanel(parameters_ref_, parameters_NA_ref_, base),
           fftPanel(controller_ref_.getAnalyzer(), base),
@@ -65,11 +65,11 @@ namespace zlpanel {
         parameters_NA_ref_.addParameterListener(zlstate::minimumFFTDB::ID, this);
         startThread(juce::Thread::Priority::low);
 
-        uiBase.getValueTree().addListener(this);
+        ui_base_.getValueTree().addListener(this);
     }
 
     CurvePanel::~CurvePanel() {
-        uiBase.getValueTree().removeListener(this);
+        ui_base_.getValueTree().removeListener(this);
         if (isThreadRunning()) {
             stopThread(-1);
         }
@@ -81,7 +81,7 @@ namespace zlpanel {
 
     void CurvePanel::paint(juce::Graphics &g) {
         juce::ignoreUnused(g);
-        if (!uiBase.getIsRenderingHardware()) {
+        if (!ui_base_.getIsRenderingHardware()) {
             physicalPixelScaleFactor.store(g.getInternalContext().getPhysicalPixelScaleFactor());
         }
     }
@@ -103,7 +103,7 @@ namespace zlpanel {
         for (size_t i = 0; i < zlstate::bandNUM; ++i) {
             singlePanels[i]->setBounds(bound);
         }
-        const auto sideBound = bound.toFloat().withTop(bound.toFloat().getBottom() - 2.f * uiBase.getFontSize());
+        const auto sideBound = bound.toFloat().withTop(bound.toFloat().getBottom() - 2.f * ui_base_.getFontSize());
         for (size_t i = 0; i < zlstate::bandNUM; ++i) {
             sidePanels[i]->setBounds(sideBound.toNearestInt());
         }
@@ -114,8 +114,8 @@ namespace zlpanel {
 
         auto lBound = getLocalBounds().toFloat();
         lBound = juce::Rectangle<float>(lBound.getX() + lBound.getWidth() * 0.666f,
-                                        lBound.getBottom() - uiBase.getFontSize() * .5f,
-                                        lBound.getWidth() * .09f, uiBase.getFontSize() * .5f);
+                                        lBound.getBottom() - ui_base_.getFontSize() * .5f,
+                                        lBound.getWidth() * .09f, ui_base_.getFontSize() * .5f);
         loudnessDisplay.setBounds(lBound.toNearestInt());
     }
 
@@ -142,16 +142,16 @@ namespace zlpanel {
     }
 
     void CurvePanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &property) {
-        if (property == zlgui::identifiers[static_cast<size_t>(zlgui::settingIdx::matchPanelShow)]) {
-            const auto f = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelShow));
+        if (property == zlgui::kMatchIdentifiers[static_cast<size_t>(zlgui::SettingIdx::kMatchPanelShow)]) {
+            const auto f = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
             showMatchPanel.store(f);
             matchPanel.setVisible(f);
             buttonPanel.setVisible(!f);
             loudnessDisplay.updateVisible(!f);
             if (f) { soloPanel.turnOffSolo(); }
-        } else if (property == zlgui::identifiers[static_cast<size_t>(
-                       zlgui::settingIdx::uiSettingPanelShow)]) {
-            const auto f = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::uiSettingPanelShow));
+        } else if (property == zlgui::kMatchIdentifiers[static_cast<size_t>(
+                       zlgui::SettingIdx::kUISettingPanelShow)]) {
+            const auto f = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kUISettingPanelShow));
             showUISettingsPanel = f;
         }
     }
@@ -159,7 +159,7 @@ namespace zlpanel {
     void CurvePanel::repaintCallBack(const double nowT) {
         if (showUISettingsPanel) { return; }
         const auto refreshRateMul = showMatchPanel.load() ? 2.0 : 1.0;
-        if ((nowT - currentT) * 1000.0 > static_cast<double>(uiBase.getRefreshRateMS()) * refreshRateMul) {
+        if ((nowT - currentT) * 1000.0 > static_cast<double>(ui_base_.getRefreshRateMS()) * refreshRateMul) {
             buttonPanel.updateAttach();
             auto isCurrentDraggerMoved = false;
             for (size_t i = 0; i < zlstate::bandNUM; ++i) {

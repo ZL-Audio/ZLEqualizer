@@ -12,7 +12,7 @@
 namespace zlpanel {
     ButtonPopUpBackground::ButtonPopUpBackground(size_t bandIdx, juce::AudioProcessorValueTreeState &parameters, juce::AudioProcessorValueTreeState &parameters_NA, zlgui::UIBase &base)
         : band{bandIdx}, parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
-          uiBase(base),
+          ui_base_(base),
           bypassC("B", base),
           soloC("S", base),
           bypassDrawable(
@@ -40,9 +40,9 @@ namespace zlpanel {
         bypassC.getButton().onClick = [this]() {
             const auto isByPassed = static_cast<float>(bypassC.getButton().getToggleState());
             const auto currentBand = band;
-            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
+            const auto isCurrentBandSelected = ui_base_.getIsBandSelected(currentBand);
             for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
-                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
+                if (idx == currentBand || (isCurrentBandSelected && ui_base_.getIsBandSelected(idx))) {
                     const auto activeID = zlstate::appendSuffix(zlp::bypass::ID, idx);
                     parameters_ref_.getParameter(activeID)->beginChangeGesture();
                     parameters_ref_.getParameter(activeID)->setValueNotifyingHost(isByPassed);
@@ -61,9 +61,9 @@ namespace zlpanel {
 
         button.getButton().onClick = [this]() {
             const auto currentBand = band;
-            const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
+            const auto isCurrentBandSelected = ui_base_.getIsBandSelected(currentBand);
             for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
-                if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
+                if (idx == currentBand || (isCurrentBandSelected && ui_base_.getIsBandSelected(idx))) {
                     const auto activeID = zlstate::appendSuffix(zlstate::active::ID, idx);
                     parameters_NA_ref_.getParameter(activeID)->beginChangeGesture();
                     parameters_NA_ref_.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
@@ -78,10 +78,10 @@ namespace zlpanel {
     }
 
     void ButtonPopUpBackground::paint(juce::Graphics &g) {
-        g.setColour(uiBase.getBackgroundColor().withMultipliedAlpha(.25f));
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
-        g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
-        g.fillRoundedRectangle(getLocalBounds().toFloat(), uiBase.getFontSize() * .5f);
+        g.setColour(ui_base_.getBackgroundColor().withMultipliedAlpha(.25f));
+        g.fillRoundedRectangle(getLocalBounds().toFloat(), ui_base_.getFontSize() * .5f);
+        g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.25f));
+        g.fillRoundedRectangle(getLocalBounds().toFloat(), ui_base_.getFontSize() * .5f);
     }
 
     void ButtonPopUpBackground::resized() {

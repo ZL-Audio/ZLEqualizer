@@ -12,7 +12,7 @@
 #include <array>
 
 namespace zlgui::multilingual::zh_Hans {
-    static constexpr std::array texts = {
+    static constexpr std::array kTexts = {
         "按下：打开所选频段。\n释放：旁通所选频段。",
         "按下：监听当前频段所作用的音频。",
         "选择所选频段的类型。Peak（峰值）、Low Shelf（低频增益）、Low Pass（低通）、High Shelf（高频增益）、High Pass（高通）、Notch（陷波）、Band Pass（带通）、Tilt Shelf（倾斜增益）。",

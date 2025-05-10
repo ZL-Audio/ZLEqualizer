@@ -59,7 +59,7 @@ namespace zlpanel {
     private:
         PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zlgui::Dragger dragger, targetDragger, sideDragger;
         ButtonPopUp buttonPopUp;
         std::unique_ptr<zlgui::DraggerParameterAttach> attachment, targetAttach, sideAttach;

@@ -35,7 +35,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor &pRef;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::Viewport viewPort;
         ColourSettingPanel colourPanel;
         ControlSettingPanel controlPanel;

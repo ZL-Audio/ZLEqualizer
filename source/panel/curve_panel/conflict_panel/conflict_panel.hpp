@@ -37,7 +37,7 @@ namespace zlpanel {
 
     private:
         zldsp::analyzer::ConflictAnalyzer<double> &analyzer;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::Path path;
         juce::ColourGradient gradient;
     };

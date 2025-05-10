@@ -16,7 +16,7 @@ namespace zlpanel {
                                      zlgui::UIBase &base,
                                      zlgui::Dragger &sideDragger)
         : parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
-          uiBase(base),
+          ui_base_(base),
           sideDraggerRef(sideDragger),
           dynLinkC("L", base),
           linkDrawable(juce::Drawable::createFromImageData(BinaryData::linksfill_svg, BinaryData::linksfill_svgSize)),
@@ -86,9 +86,9 @@ namespace zlpanel {
     }
 
     void LinkButtonPanel::resized() {
-        buttonSize = 2.5f * uiBase.getFontSize();
+        buttonSize = 2.5f * ui_base_.getFontSize();
         auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 8 * uiBase.getFontSize());
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 8 * ui_base_.getFontSize());
         buttonBottom = bound.getBottom();
     }
 } // zlpanel

@@ -75,7 +75,7 @@ namespace zlpanel {
 
         size_t idx;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zlp::Controller<double> &controller_ref_;
         zlpanel::ResetAttach resetAttach;
         zldsp::filter::Ideal<double, 16> &baseF, &targetF, &mainF;

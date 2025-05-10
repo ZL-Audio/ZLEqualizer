@@ -24,19 +24,19 @@ namespace zlpanel {
     private:
         class Background final : public juce::Component {
         public:
-            explicit Background(zlgui::UIBase &base) : uiBase(base) {
+            explicit Background(zlgui::UIBase &base) : ui_base_(base) {
                 setBufferedToImage(true);
                 setOpaque(true);
             }
 
             void paint(juce::Graphics &g) override {
-                g.fillAll(uiBase.getBackgroundColor());
+                g.fillAll(ui_base_.getBackgroundColor());
                 const auto bound = getLocalBounds().toFloat();
-                uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.25f});
+                ui_base_.fillRoundedShadowRectangle(g, bound, 0.5f * ui_base_.getFontSize(), {.blur_radius = 0.25f});
             }
 
         private:
-            zlgui::UIBase &uiBase;
+            zlgui::UIBase &ui_base_;
         };
 
     public:
@@ -54,7 +54,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor &processor_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
 
         Background background;

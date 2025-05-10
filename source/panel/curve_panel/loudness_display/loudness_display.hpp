@@ -28,7 +28,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor &processor_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::Time previousTime{};
 
         size_t bandIdx{0};

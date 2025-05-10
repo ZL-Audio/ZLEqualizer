@@ -10,38 +10,38 @@
 #include "grid_panel.hpp"
 
 namespace zlpanel {
-    GridPanel::GridPanel(zlgui::UIBase &base) : uiBase(base) {
+    GridPanel::GridPanel(zlgui::UIBase &base) : ui_base_(base) {
         setInterceptsMouseClicks(false, false);
     }
 
     GridPanel::~GridPanel() = default;
 
     void GridPanel::paint(juce::Graphics &g) {
-        g.setFont(uiBase.getFontSize() * zlgui::FontLarge);
-        if (uiBase.getColourByIdx(zlgui::gridColour).getFloatAlpha() <= 0.01f) {
+        g.setFont(ui_base_.getFontSize() * zlgui::kFontLarge);
+        if (ui_base_.getColourByIdx(zlgui::kGridColour).getFloatAlpha() <= 0.01f) {
             return;
         }
-        g.setColour(uiBase.getTextInactiveColor());
+        g.setColour(ui_base_.getTextInactiveColor());
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
             g.drawText(backgroundFreqsNames[i], textBounds[i], juce::Justification::bottomRight);
         }
-        g.setColour(uiBase.getColourByIdx(zlgui::gridColour));
+        g.setColour(ui_base_.getColourByIdx(zlgui::kGridColour));
         g.fillRectList(rectList);
     }
 
     void GridPanel::resized() {
         rectList.clear();
         auto bound = getLocalBounds().toFloat();
-        const auto thickness = uiBase.getFontSize() * 0.1f;
+        const auto thickness = ui_base_.getFontSize() * 0.1f;
         for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
             const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
             rectList.add({x - thickness * .5f, bound.getY(), thickness, bound.getHeight()});
-            textBounds[i] = juce::Rectangle<float>(x - uiBase.getFontSize() * 3 - uiBase.getFontSize() * 0.125f,
-                                                   bound.getBottom() - uiBase.getFontSize() * 2,
-                                                   uiBase.getFontSize() * 3, uiBase.getFontSize() * 2);
+            textBounds[i] = juce::Rectangle<float>(x - ui_base_.getFontSize() * 3 - ui_base_.getFontSize() * 0.125f,
+                                                   bound.getBottom() - ui_base_.getFontSize() * 2,
+                                                   ui_base_.getFontSize() * 3, ui_base_.getFontSize() * 2);
         }
 
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize());
 
         for (auto &d: backgroundDBs) {
             const auto y = d * bound.getHeight() + bound.getY();

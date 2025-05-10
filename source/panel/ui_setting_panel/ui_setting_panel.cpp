@@ -12,7 +12,7 @@
 
 namespace zlpanel {
     UISettingPanel::UISettingPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : pRef(p), uiBase(base),
+        : pRef(p), ui_base_(base),
           colourPanel(p, base),
           controlPanel(p, base),
           otherPanel(p, base),
@@ -20,14 +20,14 @@ namespace zlpanel {
           closeDrawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           resetDrawable(
               juce::Drawable::createFromImageData(BinaryData::loopleftline_svg, BinaryData::loopleftline_svgSize)),
-          saveButton(uiBase, saveDrawable.get()),
-          closeButton(uiBase, closeDrawable.get()),
-          resetButton(uiBase, resetDrawable.get()),
-          panelNameLAF(uiBase),
-          labelLAF(uiBase) {
+          saveButton(ui_base_, saveDrawable.get()),
+          closeButton(ui_base_, closeDrawable.get()),
+          resetButton(ui_base_, resetDrawable.get()),
+          panelNameLAF(ui_base_),
+          labelLAF(ui_base_) {
         juce::ignoreUnused(pRef);
         setOpaque(true);
-        uiBase.setProperty(zlgui::settingIdx::uiSettingPanelShow, false);
+        ui_base_.setProperty(zlgui::SettingIdx::kUISettingPanelShow, false);
         addAndMakeVisible(saveButton);
         addAndMakeVisible(closeButton);
         addAndMakeVisible(resetButton);
@@ -101,17 +101,17 @@ namespace zlpanel {
     }
 
     void UISettingPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getBackgroundColor());
+        g.fillAll(ui_base_.getBackgroundColor());
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight() * 1.25f);
-        uiBase.fillRoundedShadowRectangle(g, bound, 0.5f * uiBase.getFontSize(), {.blurRadius = 0.5f});
+        ui_base_.fillRoundedShadowRectangle(g, bound, 0.5f * ui_base_.getFontSize(), {.blur_radius = 0.5f});
     }
 
     void UISettingPanel::resized() {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight());
         {
-            auto labelBound = bound.removeFromTop(uiBase.getFontSize() * 3.f);
+            auto labelBound = bound.removeFromTop(ui_base_.getFontSize() * 3.f);
             const auto labelWidth = labelBound.getWidth() / static_cast<float>(panelLabels.size());
             for (auto & panelLabel : panelLabels) {
                 panelLabel.setBounds(labelBound.removeFromLeft(labelWidth).toNearestInt());
@@ -120,32 +120,32 @@ namespace zlpanel {
 
         colourPanel.setBounds(0, 0,
                               juce::roundToInt(bound.getWidth()),
-                              juce::roundToInt(uiBase.getFontSize() * (ColourSettingPanel::heightP + 1.f)));
+                              juce::roundToInt(ui_base_.getFontSize() * (ColourSettingPanel::heightP + 1.f)));
         controlPanel.setBounds(0, 0,
                                juce::roundToInt(bound.getWidth()),
-                               juce::roundToInt(uiBase.getFontSize() * (ControlSettingPanel::heightP + 1.f)));
+                               juce::roundToInt(ui_base_.getFontSize() * (ControlSettingPanel::heightP + 1.f)));
         otherPanel.setBounds(0, 0,
                              juce::roundToInt(bound.getWidth()),
-                             juce::roundToInt(uiBase.getFontSize() * (OtherUISettingPanel::heightP + 1.f)));
+                             juce::roundToInt(ui_base_.getFontSize() * (OtherUISettingPanel::heightP + 1.f)));
 
         viewPort.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
         const auto leftBound = bound.removeFromLeft(
             bound.getWidth() * .3333333f).withSizeKeepingCentre(
-            uiBase.getFontSize() * 2.f, uiBase.getFontSize() * 2.f);
+            ui_base_.getFontSize() * 2.f, ui_base_.getFontSize() * 2.f);
         const auto centerBound = bound.removeFromLeft(
             bound.getWidth() * .5f).withSizeKeepingCentre(
-            uiBase.getFontSize() * 2.f, uiBase.getFontSize() * 2.f);
+            ui_base_.getFontSize() * 2.f, ui_base_.getFontSize() * 2.f);
         const auto rightBound = bound.withSizeKeepingCentre(
-            uiBase.getFontSize() * 2.f, uiBase.getFontSize() * 2.f);
+            ui_base_.getFontSize() * 2.f, ui_base_.getFontSize() * 2.f);
         saveButton.setBounds(leftBound.toNearestInt());
         resetButton.setBounds(centerBound.toNearestInt());
         closeButton.setBounds(rightBound.toNearestInt());
 
         bound = getLocalBounds().toFloat();
-        bound = bound.removeFromBottom(2.f * uiBase.getFontSize());
+        bound = bound.removeFromBottom(2.f * ui_base_.getFontSize());
         bound = bound.removeFromLeft(bound.getWidth() * .125f);
-        bound.removeFromLeft(uiBase.getFontSize() * .25f);
-        bound.removeFromBottom(uiBase.getFontSize() * .0625f);
+        bound.removeFromLeft(ui_base_.getFontSize() * .25f);
+        bound.removeFromBottom(ui_base_.getFontSize() * .0625f);
         versionLabel.setBounds(bound.toNearestInt());
     }
 
@@ -183,7 +183,7 @@ namespace zlpanel {
     }
 
     void UISettingPanel::visibilityChanged() {
-        uiBase.setProperty(zlgui::settingIdx::uiSettingPanelShow, isVisible());
+        ui_base_.setProperty(zlgui::SettingIdx::kUISettingPanelShow, isVisible());
     }
 
     void UISettingPanel::setRendererList(const juce::StringArray &rendererList) {

@@ -14,7 +14,7 @@
 namespace zlpanel {
     ControlPanel::ControlPanel(PluginProcessor &p,
                                zlgui::UIBase &base)
-        : parameters_ref_(p.parameters), parameters_NA_ref_(p.parameters_NA), uiBase(base),
+        : parameters_ref_(p.parameters), parameters_NA_ref_(p.parameters_NA), ui_base_(base),
           leftControlPanel(p, base),
           rightControlPanel(p, base),
           matchControlPanel(p, base) {
@@ -42,12 +42,12 @@ namespace zlpanel {
     }
 
     void ControlPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getBackgroundColor());
+        g.fillAll(ui_base_.getBackgroundColor());
     }
 
     void ControlPanel::resized() {
         const auto bound = getLocalBounds().toFloat();
-        const auto actualBound = uiBase.getRoundedShadowRectangleArea(bound, uiBase.getFontSize(), {});
+        const auto actualBound = ui_base_.getRoundedShadowRectangleArea(bound, ui_base_.getFontSize(), {});
 
         const auto leftWidth = actualBound.getWidth() * (33.f / 63.f) + (bound.getWidth() - actualBound.getWidth()) *
                                .5f;

@@ -18,12 +18,12 @@ namespace zlgui {
     public:
         // rounded menu box
         explicit LeftRightComboboxLookAndFeel(UIBase &base) {
-            uiBase = &base;
+            ui_base_ = &base;
         }
 
-        void drawComboBox(juce::Graphics &g, int width, int height, bool isButtonDown, int, int, int, int,
+        void drawComboBox(juce::Graphics &g, int width, int height, bool, int, int, int, int,
                           juce::ComboBox &box) override {
-            juce::ignoreUnused(g, width, height, isButtonDown, box);
+            juce::ignoreUnused(g, width, height, box);
         }
 
         void positionComboBoxText(juce::ComboBox &box, juce::Label &label) override {
@@ -31,12 +31,12 @@ namespace zlgui {
         }
 
         void drawLabel(juce::Graphics &g, juce::Label &label) override {
-            if (editable) {
-                g.setColour(uiBase->getTextColor());
+            if (editable_) {
+                g.setColour(ui_base_->getTextColor());
             } else {
-                g.setColour(uiBase->getTextInactiveColor());
+                g.setColour(ui_base_->getTextInactiveColor());
             }
-            g.setFont(uiBase->getFontSize() * fontScale);
+            g.setFont(ui_base_->getFontSize() * kFontScale);
             g.drawText(label.getText(), label.getLocalBounds(), juce::Justification::centred);
         }
 
@@ -44,12 +44,12 @@ namespace zlgui {
             return 1;
         }
 
-        inline void setEditable(bool f) { editable = f; }
+        inline void setEditable(bool f) { editable_ = f; }
 
     private:
-        bool editable{true};
-        static constexpr float fontScale = 1.5f;
+        bool editable_{true};
+        static constexpr float kFontScale = 1.5f;
 
-        UIBase *uiBase;
+        UIBase *ui_base_;
     };
 }

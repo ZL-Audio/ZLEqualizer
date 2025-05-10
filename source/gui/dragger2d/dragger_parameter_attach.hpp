@@ -17,20 +17,20 @@
 namespace zlgui {
     class DraggerParameterAttach final : private Dragger::Listener {
     public:
-        DraggerParameterAttach(juce::RangedAudioParameter &parameterX,
-                               juce::NormalisableRange<float> nRangeX,
-                               juce::RangedAudioParameter &parameterY,
-                               juce::NormalisableRange<float> nRangeY,
-                               Dragger &draggerC,
-                               juce::UndoManager *undoManager = nullptr);
+        DraggerParameterAttach(juce::RangedAudioParameter &parameter_x,
+                               juce::NormalisableRange<float> n_range_x,
+                               juce::RangedAudioParameter &parameter_y,
+                               juce::NormalisableRange<float> n_range_y,
+                               Dragger &dragger_c,
+                               juce::UndoManager *undo_manager = nullptr);
 
         ~DraggerParameterAttach() override;
 
         void sendInitialUpdate();
 
-        void enableX(const bool f) { isXAttached.store(f); }
+        void enableX(const bool f) { is_x_attached_.store(f); }
 
-        void enableY(const bool f) { isYAttached.store(f); }
+        void enableY(const bool f) { is_y_attached_.store(f); }
 
         void setX(float newValue) const;
 
@@ -43,9 +43,9 @@ namespace zlgui {
 
         void dragEnded(Dragger *dragger) override;
 
-        Dragger &dragger;
-        juce::ParameterAttachment attachmentX, attachmentY;
-        juce::NormalisableRange<float> rangeX, rangeY;
-        std::atomic<bool> isXAttached{true}, isYAttached{true};
+        Dragger &dragger_;
+        juce::ParameterAttachment attachment_x_, attachment_y_;
+        juce::NormalisableRange<float> range_x_, range_y_;
+        std::atomic<bool> is_x_attached_{true}, is_y_attached_{true};
     };
 } // zlgui

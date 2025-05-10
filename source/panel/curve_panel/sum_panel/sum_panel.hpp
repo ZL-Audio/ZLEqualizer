@@ -47,7 +47,7 @@ namespace zlpanel {
         std::array<juce::SpinLock, 5> pathLocks;
         std::array<juce::Colour, 5> colours;
         juce::AudioProcessorValueTreeState &parameters_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zlp::Controller<double> &c;
         std::array<zldsp::filter::Ideal<double, 16>, zlstate::bandNUM> &mMainFilters;
         std::atomic<float> maximumDB;

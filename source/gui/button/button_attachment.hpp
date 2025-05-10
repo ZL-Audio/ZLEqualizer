@@ -15,51 +15,51 @@
 namespace zlgui {
     /**
      * customized button attachment
-     * @tparam sendClickNotification whether send click notification to button when para changes
+     * @tparam SendClickNotification whether send click notification to button when para changes
      */
-    template<bool sendClickNotification>
+    template<bool SendClickNotification>
     class ButtonCusAttachment final : private juce::Button::Listener {
     public:
-        ButtonCusAttachment(const juce::AudioProcessorValueTreeState &stateToUse,
-                            const juce::String &parameterID,
+        ButtonCusAttachment(const juce::AudioProcessorValueTreeState &state_to_use,
+                            const juce::String &parameter_id,
                             juce::Button &b)
-            : button(b),
-              storedParameter(*(stateToUse.getParameter(parameterID))),
-              attachment(*(stateToUse.getParameter(parameterID)),
+            : button_(b),
+              stored_parameter_(*(state_to_use.getParameter(parameter_id))),
+              attachment_(*(state_to_use.getParameter(parameter_id)),
                          [this](const float f) { setValue(f); },
-                         stateToUse.undoManager) {
+                         state_to_use.undoManager) {
             sendInitialUpdate();
-            button.addListener(this);
+            button_.addListener(this);
         }
 
         ~ButtonCusAttachment() override {
-            button.removeListener(this);
+            button_.removeListener(this);
         }
 
         void sendInitialUpdate() {
-            attachment.sendInitialUpdate();
+            attachment_.sendInitialUpdate();
         }
 
     private:
         void setValue(const float newValue) {
-            const juce::ScopedValueSetter<bool> svs(ignoreCallbacks, true);
-            if (sendClickNotification) {
-                button.setToggleState(newValue >= 0.5f, juce::sendNotificationSync);
+            const juce::ScopedValueSetter<bool> svs(ignore_callbacks_, true);
+            if (SendClickNotification) {
+                button_.setToggleState(newValue >= 0.5f, juce::sendNotificationSync);
             } else {
-                button.setToggleState(newValue >= 0.5f, juce::dontSendNotification);
+                button_.setToggleState(newValue >= 0.5f, juce::dontSendNotification);
             }
         }
 
         void buttonClicked(juce::Button *) override {
-            if (ignoreCallbacks)
+            if (ignore_callbacks_)
                 return;
 
-            attachment.setValueAsCompleteGesture(button.getToggleState() ? 1.0f : 0.0f);
+            attachment_.setValueAsCompleteGesture(button_.getToggleState() ? 1.0f : 0.0f);
         }
 
-        juce::Button &button;
-        juce::RangedAudioParameter &storedParameter;
-        juce::ParameterAttachment attachment;
-        bool ignoreCallbacks = false;
+        juce::Button &button_;
+        juce::RangedAudioParameter &stored_parameter_;
+        juce::ParameterAttachment attachment_;
+        bool ignore_callbacks_ = false;
     };
 }

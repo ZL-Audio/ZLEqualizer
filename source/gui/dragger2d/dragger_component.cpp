@@ -11,55 +11,55 @@
 
 namespace zlgui {
     Dragger::Dragger(UIBase &base)
-        : uiBase(base), draggerLAF(base) {
-        button.addMouseListener(this, false);
-        draggerLAF.setColour(uiBase.getColorMap1(1));
-        button.setClickingTogglesState(false);
+        : ui_base_(base), dragger_laf_(base) {
+        button_.addMouseListener(this, false);
+        dragger_laf_.setColour(ui_base_.getColorMap1(1));
+        button_.setClickingTogglesState(false);
         setInterceptsMouseClicks(false, true);
-        button.setLookAndFeel(&draggerLAF);
-        addAndMakeVisible(button);
+        button_.setLookAndFeel(&dragger_laf_);
+        addAndMakeVisible(button_);
     }
 
     Dragger::~Dragger() {
-        button.removeMouseListener(this);
+        button_.removeMouseListener(this);
     }
 
     bool Dragger::updateButton(const juce::Point<float> &center) {
-        if (std::abs(buttonPos.x - center.x) > 0.1f || std::abs(buttonPos.y - center.y) > 0.1f) {
-            buttonPos = center;
-            button.setTransform(juce::AffineTransform::translation(buttonPos.x, buttonPos.y));
+        if (std::abs(button_pos_.x - center.x) > 0.1f || std::abs(button_pos_.y - center.y) > 0.1f) {
+            button_pos_ = center;
+            button_.setTransform(juce::AffineTransform::translation(button_pos_.x, button_pos_.y));
             return true;
         }
         return false;
     }
 
     bool Dragger::updateButton() {
-        return updateButton(currentPos);
+        return updateButton(current_pos_);
     }
 
     void Dragger::mouseDown(const juce::MouseEvent &e) {
-        currentPos = buttonPos;
-        globalPos = e.position + buttonPos;
-        button.setToggleState(true, juce::NotificationType::sendNotificationSync);
+        current_pos_ = button_pos_;
+        global_pos_ = e.position + button_pos_;
+        button_.setToggleState(true, juce::NotificationType::sendNotificationSync);
         const BailOutChecker checker(this);
-        listeners.callChecked(checker, [&](Dragger::Listener &l) { l.dragStarted(this); });
+        listeners_.callChecked(checker, [&](Dragger::Listener &l) { l.dragStarted(this); });
     }
 
     void Dragger::mouseUp(const juce::MouseEvent &e) {
         juce::ignoreUnused(e);
         const BailOutChecker checker(this);
-        listeners.callChecked(checker, [&](Dragger::Listener &l) { l.dragEnded(this); });
+        listeners_.callChecked(checker, [&](Dragger::Listener &l) { l.dragEnded(this); });
     }
 
     void Dragger::mouseDrag(const juce::MouseEvent &e) {
         // calculate shift and update global position
-        const auto newGlobalPos = e.position + buttonPos;
-        auto shift = newGlobalPos - globalPos;
-        const auto oldShift = shift;
+        const auto new_global_pos = e.position + button_pos_;
+        auto shift = new_global_pos - global_pos_;
+        const auto old_shift = shift;
         // apply sensitivity
         if (e.mods.isShiftDown()) {
-            shift.setX(shift.getX() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
-            shift.setY(shift.getY() * uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
+            shift.setX(shift.getX() * ui_base_.getSensitivity(SensitivityIdx::kMouseDragFine));
+            shift.setY(shift.getY() * ui_base_.getSensitivity(SensitivityIdx::kMouseDragFine));
         }
         if (e.mods.isCommandDown()) {
             if (e.mods.isLeftButtonDown()) {
@@ -69,67 +69,67 @@ namespace zlgui {
             }
         }
         // update current position
-        const auto oldCurrentPos = currentPos;
-        if (checkCenter) {
-            currentPos = checkCenter(currentPos, currentPos + shift);
+        const auto old_current_pos = current_pos_;
+        if (check_center_) {
+            current_pos_ = check_center_(current_pos_, current_pos_ + shift);
         } else {
-            currentPos = currentPos + shift;
+            current_pos_ = current_pos_ + shift;
         }
-        currentPos = buttonArea.getConstrainedPoint(currentPos);
+        current_pos_ = button_area_.getConstrainedPoint(current_pos_);
         // shift global position accordingly
-        const auto actualShift = currentPos - oldCurrentPos;
+        const auto actual_shift = current_pos_ - old_current_pos;
         if (std::abs(shift.x) > 1e-10f) {
-            globalPos.x += actualShift.x / shift.x * oldShift.x;
+            global_pos_.x += actual_shift.x / shift.x * old_shift.x;
         }
         if (std::abs(shift.y) > 1e-10f) {
-            globalPos.y += actualShift.y / shift.y * oldShift.y;
+            global_pos_.y += actual_shift.y / shift.y * old_shift.y;
         }
         // update x/y portion
-        xPortion = (currentPos.getX() - buttonArea.getX()) / buttonArea.getWidth();
-        yPortion = 1.f - (currentPos.getY() - buttonArea.getY()) / buttonArea.getHeight();
+        x_portion_ = (current_pos_.getX() - button_area_.getX()) / button_area_.getWidth();
+        y_portion_ = 1.f - (current_pos_.getY() - button_area_.getY()) / button_area_.getHeight();
         // call listeners
         const BailOutChecker checker(this);
-        listeners.callChecked(checker, [&](Listener &l) { l.draggerValueChanged(this); });
+        listeners_.callChecked(checker, [&](Listener &l) { l.draggerValueChanged(this); });
     }
 
     void Dragger::setButtonArea(const juce::Rectangle<float> bound) {
-        buttonArea = bound;
+        button_area_ = bound;
 
-        const auto radius = static_cast<int>(std::round(uiBase.getFontSize() * scale * .5f));
-        button.setBounds(juce::Rectangle<int>(-radius, -radius, radius * 2, radius * 2));
+        const auto radius = static_cast<int>(std::round(ui_base_.getFontSize() * scale_ * .5f));
+        button_.setBounds(juce::Rectangle<int>(-radius, -radius, radius * 2, radius * 2));
         updateButton({-99999.f, -99999.f});
 
-        auto lafBound = button.getBounds().toFloat().withPosition(0.f, 0.f);
-        draggerLAF.updatePaths(lafBound);
+        auto laf_bound = button_.getBounds().toFloat().withPosition(0.f, 0.f);
+        dragger_laf_.updatePaths(laf_bound);
 
-        setXPortion(xPortion);
-        setYPortion(yPortion);
+        setXPortion(x_portion_);
+        setYPortion(y_portion_);
     }
 
     void Dragger::addListener(Listener *listener) {
-        listeners.add(listener);
+        listeners_.add(listener);
     }
 
     void Dragger::removeListener(Listener *listener) {
-        listeners.remove(listener);
+        listeners_.remove(listener);
     }
 
     void Dragger::setXPortion(const float x) {
-        xPortion = x;
-        currentPos.x = buttonArea.getX() + x * buttonArea.getWidth();
+        x_portion_ = x;
+        current_pos_.x = button_area_.getX() + x * button_area_.getWidth();
     }
 
     void Dragger::setYPortion(const float y) {
-        yPortion = y;
-        currentPos.y = buttonArea.getY() + (1.f - y) * buttonArea.getHeight();
+        y_portion_ = y;
+        current_pos_.y = button_area_.getY() + (1.f - y) * button_area_.getHeight();
     }
 
     float Dragger::getXPortion() const {
-        return xPortion;
+        return x_portion_;
     }
 
     float Dragger::getYPortion() const {
-        return yPortion;
+        return y_portion_;
     }
 
     void Dragger::visibilityChanged() {

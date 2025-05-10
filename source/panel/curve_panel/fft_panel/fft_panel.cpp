@@ -12,7 +12,7 @@
 namespace zlpanel {
     FFTPanel::FFTPanel(zldsp::analyzer::PrePostFFTAnalyzer<double> &analyzer,
                        zlgui::UIBase &base)
-        : analyzerRef(analyzer), uiBase(base) {
+        : analyzerRef(analyzer), ui_base_(base) {
         setInterceptsMouseClicks(false, false);
     }
 
@@ -24,12 +24,12 @@ namespace zlpanel {
         juce::GenericScopedTryLock lock{pathLock};
         if (!lock.isLocked()) { return; }
         if (analyzerRef.getPreON() && !recentPrePath.isEmpty()) {
-            g.setColour(uiBase.getColourByIdx(zlgui::preColour));
+            g.setColour(ui_base_.getColourByIdx(zlgui::kPreColour));
             g.fillPath(recentPrePath);
         }
         if (analyzerRef.getPostON() && !recentPostPath.isEmpty()) {
-            g.setColour(uiBase.getTextColor().withAlpha(0.5f));
-            if (uiBase.getIsRenderingHardware()) {
+            g.setColour(ui_base_.getTextColor().withAlpha(0.5f));
+            if (ui_base_.getIsRenderingHardware()) {
                 g.strokePath(recentPostPath, juce::PathStrokeType{
                                  curveThickness.load(),
                                  juce::PathStrokeType::curved,
@@ -39,12 +39,12 @@ namespace zlpanel {
                 g.fillPath(recentPostStrokePath);
             }
 
-            g.setColour(uiBase.getColourByIdx(zlgui::postColour));
+            g.setColour(ui_base_.getColourByIdx(zlgui::kPostColour));
             g.fillPath(recentPostPath);
         }
 
         if (analyzerRef.getSideON() && !recentSidePath.isEmpty()) {
-            g.setColour(uiBase.getColourByIdx(zlgui::sideColour));
+            g.setColour(ui_base_.getColourByIdx(zlgui::kSideColour));
             g.fillPath(recentSidePath);
         }
     }
@@ -54,7 +54,7 @@ namespace zlpanel {
         leftCorner.store({bound.getX() * 0.9f, bound.getBottom() * 1.1f});
         rightCorner.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
         atomicBound.store(bound);
-        curveThickness.store(uiBase.getFontSize() * 0.1f);
+        curveThickness.store(ui_base_.getFontSize() * 0.1f);
     }
 
     void FFTPanel::updatePaths(const float physicalPixelScaleFactor) {
@@ -66,7 +66,7 @@ namespace zlpanel {
                 path->closeSubPath();
             }
         } {
-            if (uiBase.getIsRenderingHardware()) {
+            if (ui_base_.getIsRenderingHardware()) {
                 juce::GenericScopedLock lock{pathLock};
                 recentPrePath = prePath;
                 recentPostPath = postPath;

@@ -13,13 +13,13 @@ namespace zlpanel {
     MatchAnalyzerPanel::MatchAnalyzerPanel(zldsp::eq_match::EqMatchAnalyzer<double> &analyzer,
                                            juce::AudioProcessorValueTreeState &parameters_NA,
                                            zlgui::UIBase &base)
-        : analyzerRef(analyzer), parameters_NA_ref_(parameters_NA), uiBase(base),
+        : analyzerRef(analyzer), parameters_NA_ref_(parameters_NA), ui_base_(base),
           lowDragger(base), highDragger(base), shiftDragger(base),
           matchLabel(base) {
         parameters_NA_ref_.addParameterListener(zlstate::maximumDB::ID, this);
         parameterChanged(zlstate::maximumDB::ID, parameters_NA_ref_.getRawParameterValue(zlstate::maximumDB::ID)->load());
         setInterceptsMouseClicks(true, true);
-        uiBase.getValueTree().addListener(this); {
+        ui_base_.getValueTree().addListener(this); {
             lowDragger.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::rightArrow);
             lowDragger.setYPortion(.5f);
             lowDragger.setXYEnabled(true, false);
@@ -46,44 +46,44 @@ namespace zlpanel {
     }
 
     MatchAnalyzerPanel::~MatchAnalyzerPanel() {
-        uiBase.getValueTree().removeListener(this);
+        ui_base_.getValueTree().removeListener(this);
         parameters_NA_ref_.removeParameterListener(zlstate::maximumDB::ID, this);
     }
 
     void MatchAnalyzerPanel::paint(juce::Graphics &g) {
         if (std::abs(currentMaximumDB - maximumDB.load()) >= 1e-3f) {
             currentMaximumDB = maximumDB.load();
-            const auto actualShift = static_cast<float>(uiBase.getProperty(zlgui::settingIdx::matchShift)) * .5f;
+            const auto actualShift = static_cast<float>(ui_base_.getProperty(zlgui::SettingIdx::kMatchShift)) * .5f;
             shiftDragger.setYPortion(actualShift / currentMaximumDB + .5f);
         }
-        g.fillAll(uiBase.getColourByIdx(zlgui::backgroundColour).withAlpha(backgroundAlpha));
-        const auto thickness = uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness();
+        g.fillAll(ui_base_.getColourByIdx(zlgui::kBackgroundColour).withAlpha(backgroundAlpha));
+        const auto thickness = ui_base_.getFontSize() * 0.2f * ui_base_.getSumCurveThickness();
         juce::GenericScopedTryLock lock{pathLock};
         if (!lock.isLocked()) { return; }
         if (showAverage) {
-            g.setColour(uiBase.getColourByIdx(zlgui::sideColour).withAlpha(.5f));
+            g.setColour(ui_base_.getColourByIdx(zlgui::kSideColour).withAlpha(.5f));
             g.strokePath(recentPath2,
                          juce::PathStrokeType(thickness,
                                               juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-            g.setColour(uiBase.getColourByIdx(zlgui::preColour).withAlpha(.5f));
+            g.setColour(ui_base_.getColourByIdx(zlgui::kPreColour).withAlpha(.5f));
             g.strokePath(recentPath1,
                          juce::PathStrokeType(thickness,
                                               juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
-        g.setColour(uiBase.getColorMap2(2));
+        g.setColour(ui_base_.getColorMap2(2));
         g.strokePath(recentPath3,
                      juce::PathStrokeType(thickness * 1.5f,
                                           juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         if (const auto xP = lowDragger.getXPortion(); xP > 0.001f) {
             auto bound = getLocalBounds().toFloat();
             bound = bound.removeFromLeft(bound.getWidth() * xP);
-            g.setColour(uiBase.getBackgroundColor().withAlpha(.75f));
+            g.setColour(ui_base_.getBackgroundColor().withAlpha(.75f));
             g.fillRect(bound);
         }
         if (const auto yP = highDragger.getXPortion(); yP < .999f) {
             auto bound = getLocalBounds().toFloat();
             bound = bound.removeFromRight(bound.getWidth() * (1.f - yP));
-            g.setColour(uiBase.getBackgroundColor().withAlpha(.75f));
+            g.setColour(ui_base_.getBackgroundColor().withAlpha(.75f));
             g.fillRect(bound);
         }
     }
@@ -93,15 +93,15 @@ namespace zlpanel {
         leftCorner.store({bound.getX() * 0.9f, bound.getBottom() * 1.1f});
         rightCorner.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
         atomicBound.store(bound);
-        dBScale.store((1.f + uiBase.getFontSize() * 2.f / bound.getHeight()) * 2.f);
+        dBScale.store((1.f + ui_base_.getFontSize() * 2.f / bound.getHeight()) * 2.f);
         matchLabel.setBounds(getLocalBounds());
         lowDragger.setBounds(getLocalBounds());
         lowDragger.setButtonArea(bound);
         highDragger.setBounds(getLocalBounds());
         highDragger.setButtonArea(bound);
         shiftDragger.setBounds(getLocalBounds());
-        bound.removeFromTop(uiBase.getFontSize());
-        bound.removeFromBottom(uiBase.getFontSize());
+        bound.removeFromTop(ui_base_.getFontSize());
+        bound.removeFromBottom(ui_base_.getFontSize());
         shiftDragger.setButtonArea(bound);
     }
 
@@ -131,12 +131,12 @@ namespace zlpanel {
     }
 
     void MatchAnalyzerPanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &property) {
-        if (zlgui::UIBase::isProperty(zlgui::settingIdx::matchPanelFit, property)) {
-            const auto f = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelFit));
+        if (zlgui::UIBase::isProperty(zlgui::SettingIdx::kMatchPanelFit, property)) {
+            const auto f = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelFit));
             backgroundAlpha = f ? .2f : .5f;
             showAverage = !f;
-        } else if (zlgui::UIBase::isProperty(zlgui::settingIdx::matchFitRunning, property)) {
-            matchLabel.setVisible(static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchFitRunning)));
+        } else if (zlgui::UIBase::isProperty(zlgui::SettingIdx::kMatchFitRunning, property)) {
+            matchLabel.setVisible(static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchFitRunning)));
         }
     }
 
@@ -147,18 +147,18 @@ namespace zlpanel {
 
     void MatchAnalyzerPanel::lookAndFeelChanged() {
         for (auto &d: {&lowDragger, &highDragger, &shiftDragger}) {
-            d->getLAF().setColour(uiBase.getTextColor());
+            d->getLAF().setColour(ui_base_.getTextColor());
         }
     }
 
     void MatchAnalyzerPanel::draggerValueChanged(zlgui::Dragger *dragger) {
         if (dragger == &lowDragger) {
-            uiBase.setProperty(zlgui::settingIdx::matchLowCut, lowDragger.getXPortion());
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchLowCut, lowDragger.getXPortion());
         } else if (dragger == &highDragger) {
-            uiBase.setProperty(zlgui::settingIdx::matchHighCut, highDragger.getXPortion());
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchHighCut, highDragger.getXPortion());
         } else if (dragger == &shiftDragger) {
             const auto actualShift = (shiftDragger.getYPortion() - .5f) * maximumDB.load() * 2.f;
-            uiBase.setProperty(zlgui::settingIdx::matchShift, actualShift);
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchShift, actualShift);
             analyzerRef.setShift(actualShift);
         }
     }

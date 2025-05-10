@@ -13,12 +13,12 @@ namespace zlgui {
     class SelectorBox final : public juce::Component {
     public:
         explicit SelectorBox(const int selectorFlags, zlgui::UIBase &base)
-            : selector(selectorFlags,
+            : selector_(selectorFlags,
                        juce::roundToInt(base.getFontSize() * 0.5f),
                        juce::roundToInt(base.getFontSize() * 0.33f)),
-              uiBase(base) {
-            selector.setColour(juce::ColourSelector::ColourIds::backgroundColourId, uiBase.getBackgroundColor());
-            addAndMakeVisible(selector);
+              ui_base_(base) {
+            selector_.setColour(juce::ColourSelector::ColourIds::backgroundColourId, ui_base_.getBackgroundColor());
+            addAndMakeVisible(selector_);
         }
 
         ~SelectorBox() override {
@@ -28,54 +28,54 @@ namespace zlgui {
         void resized() override {
             auto bound = getLocalBounds().toFloat();
             bound = bound.withSizeKeepingCentre(
-                bound.getWidth() - uiBase.getFontSize() * .5f,
-                bound.getHeight() - uiBase.getFontSize() * .5f);
-            selector.setBounds(bound.toNearestInt());
+                bound.getWidth() - ui_base_.getFontSize() * .5f,
+                bound.getHeight() - ui_base_.getFontSize() * .5f);
+            selector_.setBounds(bound.toNearestInt());
         }
 
-        juce::ColourSelector &getSelector() { return selector; }
+        juce::ColourSelector &getSelector() { return selector_; }
 
     private:
-        juce::ColourSelector selector;
-        zlgui::UIBase &uiBase;
+        juce::ColourSelector selector_;
+        zlgui::UIBase &ui_base_;
     };
 
     ColourSelector::ColourSelector(zlgui::UIBase &base, juce::Component &parent,
-                                   const float widthS, const float heightS)
-        : uiBase(base), laf(uiBase), parentC(parent),
-          selectorWidthS(widthS), selectorHeightS(heightS) {
+                                   const float width_s, const float height_s)
+        : ui_base_(base), laf_(ui_base_), parent_ref_(parent),
+          selector_width_s_(width_s), selector_height_s_(height_s) {
     }
 
     void ColourSelector::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getTextColor().withAlpha(.875f));
+        g.fillAll(ui_base_.getTextColor().withAlpha(.875f));
         auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth() - uiBase.getFontSize() * .375f,
-                                            bound.getHeight() - uiBase.getFontSize() * .375f);
-        g.setColour(uiBase.getBackgroundColor());
+        bound = bound.withSizeKeepingCentre(bound.getWidth() - ui_base_.getFontSize() * .375f,
+                                            bound.getHeight() - ui_base_.getFontSize() * .375f);
+        g.setColour(ui_base_.getBackgroundColor());
         g.fillRect(bound);
-        g.setColour(colour);
+        g.setColour(colour_);
         g.fillRect(bound);
     }
 
     void ColourSelector::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        auto colourSelector = std::make_unique<SelectorBox>(
-            juce::ColourSelector::ColourSelectorOptions::showColourspace, uiBase);
-        colourSelector->getSelector().setCurrentColour(colour);
-        colourSelector->getSelector().addChangeListener(this);
-        colourSelector->setSize(juce::roundToInt(selectorWidthS * uiBase.getFontSize()),
-                                juce::roundToInt(selectorHeightS * uiBase.getFontSize()));
-        auto &box = juce::CallOutBox::launchAsynchronously(std::move(colourSelector),
-                                                           parentC.getLocalArea(this, getLocalBounds()),
-                                                           &parentC);
-        box.setLookAndFeel(&laf);
+        auto colour_selector = std::make_unique<SelectorBox>(
+            juce::ColourSelector::ColourSelectorOptions::showColourspace, ui_base_);
+        colour_selector->getSelector().setCurrentColour(colour_);
+        colour_selector->getSelector().addChangeListener(this);
+        colour_selector->setSize(juce::roundToInt(selector_width_s_ * ui_base_.getFontSize()),
+                                juce::roundToInt(selector_height_s_ * ui_base_.getFontSize()));
+        auto &box = juce::CallOutBox::launchAsynchronously(std::move(colour_selector),
+                                                           parent_ref_.getLocalArea(this, getLocalBounds()),
+                                                           &parent_ref_);
+        box.setLookAndFeel(&laf_);
         box.setArrowSize(0);
         box.sendLookAndFeelChange();
     }
 
     void ColourSelector::changeListenerCallback(juce::ChangeBroadcaster *source) {
         if (const auto *cs = dynamic_cast<juce::ColourSelector *>(source)) {
-            colour = cs->getCurrentColour().withAlpha(colour.getAlpha());
+            colour_ = cs->getCurrentColour().withAlpha(colour_.getAlpha());
             repaint();
         }
     }

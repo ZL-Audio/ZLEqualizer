@@ -31,7 +31,7 @@ namespace zlpanel {
     private:
         PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::RangedAudioParameter *lmPara;
         std::atomic<float> &scale;
         float currentGain{0.f}, currentScale{100.f};

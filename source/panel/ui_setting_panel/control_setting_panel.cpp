@@ -12,7 +12,7 @@
 namespace zlpanel {
     ControlSettingPanel::ControlSettingPanel(PluginProcessor &p, zlgui::UIBase &base)
         : pRef(p),
-          uiBase(base), nameLAF(base),
+          ui_base_(base), nameLAF(base),
           sensitivitySliders{
               {
                   zlgui::CompactLinearSlider("Rough", base),
@@ -26,7 +26,7 @@ namespace zlpanel {
           rotaryDragSensitivitySlider("Distance", base),
           sliderDoubleClickBox("", zlstate::sliderDoubleClickFunc::choices, base) {
         juce::ignoreUnused(pRef);
-        nameLAF.setFontScale(zlgui::FontHuge);
+        nameLAF.setFontScale(zlgui::kFontHuge);
 
         wheelLabel.setText("Mouse-Wheel Sensitivity", juce::dontSendNotification);
         wheelLabel.setJustificationType(juce::Justification::centredRight);
@@ -75,25 +75,25 @@ namespace zlpanel {
 
     void ControlSettingPanel::loadSetting() {
         for (size_t i = 0; i < sensitivitySliders.size(); ++i) {
-            sensitivitySliders[i].getSlider().setValue(static_cast<double>(uiBase.getSensitivity(
-                static_cast<zlgui::sensitivityIdx>(i))));
+            sensitivitySliders[i].getSlider().setValue(static_cast<double>(ui_base_.getSensitivity(
+                static_cast<zlgui::SensitivityIdx>(i))));
         }
-        wheelReverseBox.getBox().setSelectedId(static_cast<int>(uiBase.getIsMouseWheelShiftReverse()) + 1);
-        rotaryStyleBox.getBox().setSelectedId(static_cast<int>(uiBase.getRotaryStyleID()) + 1);
-        rotaryDragSensitivitySlider.getSlider().setValue(static_cast<double>(uiBase.getRotaryDragSensitivity()));
-        sliderDoubleClickBox.getBox().setSelectedId(static_cast<int>(uiBase.getIsSliderDoubleClickOpenEditor()) + 1);
+        wheelReverseBox.getBox().setSelectedId(static_cast<int>(ui_base_.getIsMouseWheelShiftReverse()) + 1);
+        rotaryStyleBox.getBox().setSelectedId(static_cast<int>(ui_base_.getRotaryStyleID()) + 1);
+        rotaryDragSensitivitySlider.getSlider().setValue(static_cast<double>(ui_base_.getRotaryDragSensitivity()));
+        sliderDoubleClickBox.getBox().setSelectedId(static_cast<int>(ui_base_.getIsSliderDoubleClickOpenEditor()) + 1);
     }
 
     void ControlSettingPanel::saveSetting() {
         for (size_t i = 0; i < sensitivitySliders.size(); ++i) {
-            uiBase.setSensitivity(static_cast<float>(sensitivitySliders[i].getSlider().getValue()),
-                                  static_cast<zlgui::sensitivityIdx>(i));
+            ui_base_.setSensitivity(static_cast<float>(sensitivitySliders[i].getSlider().getValue()),
+                                  static_cast<zlgui::SensitivityIdx>(i));
         }
-        uiBase.setIsMouseWheelShiftReverse(static_cast<bool>(wheelReverseBox.getBox().getSelectedId() - 1));
-        uiBase.setRotaryStyleID(static_cast<size_t>(rotaryStyleBox.getBox().getSelectedId() - 1));
-        uiBase.setRotaryDragSensitivity(static_cast<float>(rotaryDragSensitivitySlider.getSlider().getValue()));
-        uiBase.setIsSliderDoubleClickOpenEditor(static_cast<bool>(sliderDoubleClickBox.getBox().getSelectedId() - 1));
-        uiBase.saveToAPVTS();
+        ui_base_.setIsMouseWheelShiftReverse(static_cast<bool>(wheelReverseBox.getBox().getSelectedId() - 1));
+        ui_base_.setRotaryStyleID(static_cast<size_t>(rotaryStyleBox.getBox().getSelectedId() - 1));
+        ui_base_.setRotaryDragSensitivity(static_cast<float>(rotaryDragSensitivitySlider.getSlider().getValue()));
+        ui_base_.setIsSliderDoubleClickOpenEditor(static_cast<bool>(sliderDoubleClickBox.getBox().getSelectedId() - 1));
+        ui_base_.saveToAPVTS();
     }
 
     void ControlSettingPanel::resetSetting() {
@@ -101,45 +101,45 @@ namespace zlpanel {
 
     void ControlSettingPanel::resized() {
         auto bound = getLocalBounds().toFloat(); {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             wheelLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             sensitivitySliders[0].setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            localBound.removeFromLeft(ui_base_.getFontSize() * 2.f);
             sensitivitySliders[1].setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            localBound.removeFromLeft(ui_base_.getFontSize() * 2.f);
             wheelReverseBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             dragLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             sensitivitySliders[2].setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            localBound.removeFromLeft(ui_base_.getFontSize() * 2.f);
             sensitivitySliders[3].setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             rotaryStyleLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             rotaryStyleBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            localBound.removeFromLeft(ui_base_.getFontSize() * 2.f);
             rotaryDragSensitivitySlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
         {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             sliderDoubleClickLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.425f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.425f;
             sliderDoubleClickBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             importLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .45f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .10f);
             exportLabel.setBounds(localBound.toNearestInt());
@@ -166,37 +166,37 @@ namespace zlpanel {
             if (const auto xmlInput = juce::XmlDocument::parse(settingFile)) {
                 if (const auto *xmlElement = xmlInput->getChildByName("drag_fine_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setSensitivity(static_cast<float>(x), zlgui::sensitivityIdx::mouseDragFine);
+                    ui_base_.setSensitivity(static_cast<float>(x), zlgui::SensitivityIdx::kMouseDragFine);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("drag_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setSensitivity(static_cast<float>(x), zlgui::sensitivityIdx::mouseDrag);
+                    ui_base_.setSensitivity(static_cast<float>(x), zlgui::SensitivityIdx::kMouseDrag);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("wheel_fine_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setSensitivity(static_cast<float>(x), zlgui::sensitivityIdx::mouseWheelFine);
+                    ui_base_.setSensitivity(static_cast<float>(x), zlgui::SensitivityIdx::kMouseWheelFine);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("wheel_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setSensitivity(static_cast<float>(x), zlgui::sensitivityIdx::mouseWheel);
+                    ui_base_.setSensitivity(static_cast<float>(x), zlgui::SensitivityIdx::kMouseWheel);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("rotary_drag_sensitivity")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setRotaryDragSensitivity(static_cast<float>(x));
+                    ui_base_.setRotaryDragSensitivity(static_cast<float>(x));
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("rotary_style")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setRotaryStyleID(static_cast<size_t>(x));
+                    ui_base_.setRotaryStyleID(static_cast<size_t>(x));
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("slider_double_click_func")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setIsSliderDoubleClickOpenEditor(x > 0.5);
+                    ui_base_.setIsSliderDoubleClickOpenEditor(x > 0.5);
                 }
                 if (const auto *xmlElement = xmlInput->getChildByName("wheel_shift_reverse")) {
                     const auto x = xmlElement->getDoubleAttribute("value");
-                    uiBase.setIsMouseWheelShiftReverse(x > 0.5);
+                    ui_base_.setIsMouseWheelShiftReverse(x > 0.5);
                 }
-                uiBase.saveToAPVTS();
+                ui_base_.saveToAPVTS();
                 loadSetting();
             }
         });
@@ -216,35 +216,35 @@ namespace zlpanel {
                 juce::XmlElement xmlOutput{"colour_setting"};
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("drag_fine_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlgui::mouseDragFine));
+                    xmlElement->setAttribute("value", ui_base_.getSensitivity(zlgui::kMouseDragFine));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("drag_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlgui::mouseDrag));
+                    xmlElement->setAttribute("value", ui_base_.getSensitivity(zlgui::kMouseDrag));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("wheel_fine_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlgui::mouseWheelFine));
+                    xmlElement->setAttribute("value", ui_base_.getSensitivity(zlgui::kMouseWheelFine));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("wheel_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getSensitivity(zlgui::mouseWheel));
+                    xmlElement->setAttribute("value", ui_base_.getSensitivity(zlgui::kMouseWheel));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("rotary_drag_sensitivity");
-                    xmlElement->setAttribute("value", uiBase.getRotaryDragSensitivity());
+                    xmlElement->setAttribute("value", ui_base_.getRotaryDragSensitivity());
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("rotary_style");
-                    xmlElement->setAttribute("value", static_cast<double>(uiBase.getRotaryStyleID()));
+                    xmlElement->setAttribute("value", static_cast<double>(ui_base_.getRotaryStyleID()));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("slider_double_click_func");
-                    xmlElement->setAttribute("value", static_cast<double>(uiBase.getIsSliderDoubleClickOpenEditor()));
+                    xmlElement->setAttribute("value", static_cast<double>(ui_base_.getIsSliderDoubleClickOpenEditor()));
                 }
                 {
                     auto *xmlElement = xmlOutput.createNewChildElement("wheel_shift_reverse");
-                    xmlElement->setAttribute("value", static_cast<double>(uiBase.getIsMouseWheelShiftReverse()));
+                    xmlElement->setAttribute("value", static_cast<double>(ui_base_.getIsMouseWheelShiftReverse()));
                 }
                 const auto result = xmlOutput.writeTo(settingFile);
                 juce::ignoreUnused(result);

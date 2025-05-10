@@ -10,30 +10,30 @@
 #include "click_combobox.hpp"
 
 namespace zlgui {
-    ClickCombobox::ClickCombobox(const juce::String &labelText, const juce::StringArray &choices,
+    ClickCombobox::ClickCombobox(const juce::String &label_text, const juce::StringArray &choices,
                                  UIBase &base,
-                                 const multilingual::labels labelIdx)
-        : compactBox("", choices, base),
-          label("", juce::DrawableButton::ButtonStyle::ImageFitted),
-          labelLAF(base, labelText) {
-        addAndMakeVisible(compactBox);
-        labelLAF.setJustification(juce::Justification::centredRight);
-        label.setLookAndFeel(&labelLAF);
-        label.onClick = [this]() { selectRight(); };
-        addAndMakeVisible(label);
+                                 const multilingual::Labels label_idx)
+        : compact_box_("", choices, base),
+          label_("", juce::DrawableButton::ButtonStyle::ImageFitted),
+          label_laf_(base, label_text) {
+        addAndMakeVisible(compact_box_);
+        label_laf_.setJustification(juce::Justification::centredRight);
+        label_.setLookAndFeel(&label_laf_);
+        label_.onClick = [this]() { selectRight(); };
+        addAndMakeVisible(label_);
 
-        if (labelIdx != multilingual::labels::labelNum) {
-            compactBox.setTooltip(base.getToolTipText(labelIdx));
-            label.setTooltip(base.getToolTipText(labelIdx));
+        if (label_idx != multilingual::Labels::kLabelNum) {
+            compact_box_.setTooltip(base.getToolTipText(label_idx));
+            label_.setTooltip(base.getToolTipText(label_idx));
         }
     }
 
     ClickCombobox::~ClickCombobox() {
-        label.setLookAndFeel(nullptr);
+        label_.setLookAndFeel(nullptr);
     }
 
     void ClickCombobox::selectRight() {
-        auto &box = compactBox.getBox();
+        auto &box = compact_box_.getBox();
         if (box.getSelectedId() == box.getNumItems()) {
             box.setSelectedId(1);
         } else {
@@ -43,25 +43,25 @@ namespace zlgui {
 
     void ClickCombobox::resized() {
         auto bound = getLocalBounds().toFloat();
-        const auto scale = lScale.load();
-        switch (lPos.load()) {
-            case left: {
-                label.setBounds(bound.removeFromLeft(scale * bound.getWidth()).toNearestInt());
+        const auto scale = l_scale_.load();
+        switch (l_pos_.load()) {
+            case kLeft: {
+                label_.setBounds(bound.removeFromLeft(scale * bound.getWidth()).toNearestInt());
                 break;
             }
-            case right: {
-                label.setBounds(bound.removeFromRight(scale * bound.getWidth()).toNearestInt());
+            case kRight: {
+                label_.setBounds(bound.removeFromRight(scale * bound.getWidth()).toNearestInt());
                 break;
             }
-            case top: {
-                label.setBounds(bound.removeFromTop(scale * bound.getHeight()).toNearestInt());
+            case kTop: {
+                label_.setBounds(bound.removeFromTop(scale * bound.getHeight()).toNearestInt());
                 break;
             }
-            case bottom: {
-                label.setBounds(bound.removeFromBottom(scale * bound.getHeight()).toNearestInt());
+            case kBottom: {
+                label_.setBounds(bound.removeFromBottom(scale * bound.getHeight()).toNearestInt());
                 break;
             }
         }
-        compactBox.setBounds(bound.toNearestInt());
+        compact_box_.setBounds(bound.toNearestInt());
     }
 } // zlgui

@@ -40,7 +40,7 @@ private:
     zlstate::Property &property;
     std::atomic<bool> isSizeChanged{false};
 
-    zlgui::UIBase uiBase;
+    zlgui::UIBase ui_base_;
     zlpanel::MainPanel mainPanel;
 
     std::unique_ptr<juce::VBlankAttachment> vblank;

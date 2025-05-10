@@ -31,7 +31,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor &pRef;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zlgui::NameLookAndFeel nameLAF;
 
         juce::Label renderingEngineLabel;

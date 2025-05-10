@@ -19,15 +19,15 @@
 #include "es.hpp"
 
 namespace zlgui::multilingual {
-    enum languages {
-        lang_system,
-        lang_en,
-        lang_zh_Hans,
-        lang_zh_Hant,
-        lang_it,
-        lang_ja,
-        lang_de,
-        lang_es,
-        langNum
+    enum Languages {
+        kLang_system,
+        kLang_en,
+        kLang_zh_Hans,
+        kLang_zh_Hant,
+        kLang_it,
+        kLang_ja,
+        kLang_de,
+        kLang_es,
+        kLangNum
     };
 }

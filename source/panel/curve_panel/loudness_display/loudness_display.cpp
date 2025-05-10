@@ -11,7 +11,7 @@
 
 namespace zlpanel {
     LoudnessDisplay::LoudnessDisplay(PluginProcessor &p, zlgui::UIBase &base)
-        : processor_ref_(p), uiBase(base) {
+        : processor_ref_(p), ui_base_(base) {
         for (size_t i = 0; i < zlstate::bandNUM; ++i) {
             const auto suffix = zlp::appendSuffix("", i);
             isThresholdAutoParas[i] = processor_ref_.parameters.getParameter(zlp::dynamicLearn::ID + suffix);
@@ -38,7 +38,7 @@ namespace zlpanel {
     }
 
     void LoudnessDisplay::lookAndFeelChanged() {
-        colour = uiBase.getColourByIdx(zlgui::sideLoudnessColour);
+        colour = ui_base_.getColourByIdx(zlgui::kSideLoudnessColour);
     }
 
     void LoudnessDisplay::updateVisible(const bool x) {

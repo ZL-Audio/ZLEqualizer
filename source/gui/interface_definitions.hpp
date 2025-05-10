@@ -16,73 +16,73 @@
 #include "multilingual/multilingual.hpp"
 
 namespace zlgui {
-    enum colourIdx {
-        textColour,
-        backgroundColour,
-        shadowColour,
-        glowColour,
-        preColour,
-        postColour,
-        sideColour,
-        gridColour,
-        tagColour,
-        gainColour,
-        sideLoudnessColour,
-        colourNum
+    enum ColourIdx {
+        kTextColour,
+        kBackgroundColour,
+        kShadowColour,
+        kGlowColour,
+        kPreColour,
+        kPostColour,
+        kSideColour,
+        kGridColour,
+        kTagColour,
+        kGainColour,
+        kSideLoudnessColour,
+        kColourNum
     };
 
-    enum sensitivityIdx {
-        mouseWheel,
-        mouseWheelFine,
-        mouseDrag,
-        mouseDragFine,
-        sensitivityNum
+    enum SensitivityIdx {
+        kMouseWheel,
+        kMouseWheelFine,
+        kMouseDrag,
+        kMouseDragFine,
+        kSensitivityNum
     };
 
-    enum settingIdx {
-        uiSettingPanelShow,
-        matchPanelShow,
-        matchPanelFit,
-        matchLowCut,
-        matchHighCut,
-        matchShift,
-        matchFitRunning,
-        settingNum
+    enum SettingIdx {
+        kUISettingPanelShow,
+        kMatchPanelShow,
+        kMatchPanelFit,
+        kMatchLowCut,
+        kMatchHighCut,
+        kMatchShift,
+        kMatchFitRunning,
+        kSettingNum
     };
 
-    inline std::array identifiers{
+    inline std::array kMatchIdentifiers{
         juce::Identifier("ui_setting_panel_show"),
         juce::Identifier("match_panel_show"), juce::Identifier("match_panel_fit"),
         juce::Identifier("match_low_cut"), juce::Identifier("match_high_cut"),
         juce::Identifier("match_shift"), juce::Identifier("match_fit_running")
     };
 
-    enum boxIdx {
-        outputBox,
-        analyzerBox,
-        dynamicBox,
-        collisionBox,
-        generalBox,
-        boxNum
+    enum BoxIdx {
+        kOutputBox,
+        kAnalyzerBox,
+        kDynamicBox,
+        kCollisionBox,
+        kGeneralBox,
+        kBoxNum
     };
 
-    inline std::array boxIdentifiers{
+    inline std::array kBoxIdentifiers{
         juce::Identifier("output_box"),
         juce::Identifier("analyzer_box"), juce::Identifier("dynamic_box"),
         juce::Identifier("collision_box"), juce::Identifier("general_box")
     };
 
-    inline std::array<std::string, colourNum> colourNames{
+    static constexpr std::array<std::string, kColourNum> kColourNames{
         "text", "background",
         "shadow", "glow",
         "pre", "post", "side",
         "grid", "tag", "gain", "side_loudness"
     };
 
-    static constexpr size_t ColorMap1Size = 10;
-    static constexpr size_t ColorMap2Size = 6;
+    static constexpr size_t kColorMap1Size = 10;
+    static constexpr size_t kColorMap2Size = 6;
 
-    inline std::array colourMaps = {
+    inline std::array kColourMaps = {
         std::vector<juce::Colour>{
             juce::Colour(31, 119, 180),
             juce::Colour(255, 127, 14),
@@ -141,45 +141,44 @@ namespace zlgui {
         }
     };
 
-    auto inline constexpr FontTiny = 0.5f;
-    auto inline constexpr FontSmall = 0.75f;
-    auto inline constexpr FontNormal = 1.0f;
-    auto inline constexpr FontLarge = 1.25f;
-    auto inline constexpr FontHuge = 1.5f;
-    auto inline constexpr FontHuge2 = 3.0f;
-    auto inline constexpr FontHuge3 = 4.5f;
+    static constexpr float kFontTiny = 0.5f;
+    static constexpr float kFontSmall = 0.75f;
+    static constexpr float kFontNormal = 1.0f;
+    static constexpr float kFontLarge = 1.25f;
+    static constexpr float kFontHuge = 1.5f;
+    static constexpr float kFontHuge2 = 3.0f;
+    static constexpr float kFontHuge3 = 4.5f;
 
-    auto inline constexpr RefreshFreqHz = 60;
+    static constexpr int kRefreshFreqHz = 60;
 
-    struct fillRoundedShadowRectangleArgs {
-        float blurRadius = 0.5f;
-        bool curveTopLeft = true, curveTopRight = true, curveBottomLeft = true, curveBottomRight = true;
+    struct FillRoundedShadowRectangleArgs {
+        float blur_radius = 0.5f;
+        bool curve_top_left = true, curve_top_right = true, curve_bottom_left = true, curve_bottom_right = true;
         bool fit = true, flip = false;
-        bool drawBright = true, drawDark = true, drawMain = true;
-        juce::Colour mainColour = juce::Colours::white.withAlpha(0.f);
-        juce::Colour darkShadowColor = juce::Colours::white.withAlpha(0.f);
-        juce::Colour brightShadowColor = juce::Colours::white.withAlpha(0.f);
-        bool changeMain = false, changeDark = false, changeBright = false;
+        bool draw_bright = true, draw_dark = true, draw_main = true;
+        juce::Colour main_colour = juce::Colours::white.withAlpha(0.f);
+        juce::Colour dark_shadow_color = juce::Colours::white.withAlpha(0.f);
+        juce::Colour bright_shadow_color = juce::Colours::white.withAlpha(0.f);
+        bool change_main = false, change_dark = false, change_bright = false;
     };
 
-    struct fillShadowEllipseArgs {
-        float blurRadius = 0.5f;
+    struct FillShadowEllipseArgs {
+        float blur_radius = 0.5f;
         bool fit = true, flip = false;
-        bool drawBright = true, drawDark = true;
-        juce::Colour mainColour = juce::Colours::white.withAlpha(0.f);
-        juce::Colour darkShadowColor = juce::Colours::white.withAlpha(0.f);
-        juce::Colour brightShadowColor = juce::Colours::white.withAlpha(0.f);
-        bool changeMain = false, changeDark = false, changeBright = false;
+        bool draw_bright = true, draw_dark = true;
+        juce::Colour main_colour = juce::Colours::white.withAlpha(0.f);
+        juce::Colour dark_shadow_color = juce::Colours::white.withAlpha(0.f);
+        juce::Colour bright_shadow_color = juce::Colours::white.withAlpha(0.f);
+        bool change_main = false, change_dark = false, change_bright = false;
     };
 
-    inline std::string formatFloat(float x, int precision) {
+    inline std::string formatFloat(const float x, const int precision) {
         std::stringstream stream;
-        precision = std::max(0, precision);
-        stream << std::fixed << std::setprecision(precision) << x;
+        stream << std::fixed << std::setprecision(std::max(0, precision)) << x;
         return stream.str();
     }
 
-    inline std::string fixFormatFloat(float x, int length) {
+    inline std::string fixFormatFloat(const float x, const int length) {
         auto y = std::abs(x);
         if (y < 10) {
             return formatFloat(x, length - 1);
@@ -197,17 +196,17 @@ namespace zlgui {
     class UIBase {
     public:
         explicit UIBase(juce::AudioProcessorValueTreeState &apvts)
-            : state(apvts), fontSize{0.f} {
+            : state(apvts), font_size_{0.f} {
             loadFromAPVTS();
             updateActualLangIdx();
         }
 
-        void setFontSize(const float fSize) { fontSize = fSize; }
+        void setFontSize(const float fSize) { font_size_ = fSize; }
 
-        inline float getFontSize() const { return fontSize; }
+        inline float getFontSize() const { return font_size_; }
 
         inline juce::Colour getTextColor() const {
-            return customColours[static_cast<size_t>(textColour)];
+            return custom_colours_[static_cast<size_t>(kTextColour)];
         }
 
         inline juce::Colour getTextInactiveColor() const { return getTextColor().withAlpha(0.5f); }
@@ -215,7 +214,7 @@ namespace zlgui {
         inline juce::Colour getTextHideColor() const { return getTextColor().withAlpha(0.25f); }
 
         inline juce::Colour getBackgroundColor() const {
-            return customColours[static_cast<size_t>(backgroundColour)];
+            return custom_colours_[static_cast<size_t>(kBackgroundColour)];
         }
 
         inline juce::Colour getBackgroundInactiveColor() const { return getBackgroundColor().withAlpha(0.8f); }
@@ -223,281 +222,281 @@ namespace zlgui {
         inline juce::Colour getBackgroundHideColor() const { return getBackgroundColor().withAlpha(0.5f); }
 
         inline juce::Colour getDarkShadowColor() const {
-            return customColours[static_cast<size_t>(shadowColour)];
+            return custom_colours_[static_cast<size_t>(kShadowColour)];
         }
 
         inline juce::Colour getBrightShadowColor() const {
-            return customColours[static_cast<size_t>(glowColour)];
+            return custom_colours_[static_cast<size_t>(kGlowColour)];
         }
 
         inline juce::Colour getColorMap1(const size_t idx) const {
-            return colourMaps[cMap1Idx][idx % colourMaps[cMap1Idx].size()];
+            return kColourMaps[colour_map1_idx_][idx % kColourMaps[colour_map1_idx_].size()];
         }
 
         inline juce::Colour getColorMap2(const size_t idx) const {
-            return colourMaps[cMap2Idx][idx % colourMaps[cMap2Idx].size()];
+            return kColourMaps[colour_map2_idx_][idx % kColourMaps[colour_map2_idx_].size()];
         }
 
-        static juce::Rectangle<float> getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds,
-                                                                    float cornerSize,
-                                                                    const fillRoundedShadowRectangleArgs &margs);
+        static juce::Rectangle<float> getRoundedShadowRectangleArea(juce::Rectangle<float> box_bounds,
+                                                                    float corner_size,
+                                                                    const FillRoundedShadowRectangleArgs &margs);
 
         juce::Rectangle<float> fillRoundedShadowRectangle(juce::Graphics &g,
-                                                          juce::Rectangle<float> boxBounds,
-                                                          float cornerSize,
-                                                          const fillRoundedShadowRectangleArgs &margs) const;
+                                                          juce::Rectangle<float> box_bounds,
+                                                          float corner_size,
+                                                          const FillRoundedShadowRectangleArgs &margs) const;
 
         juce::Rectangle<float> fillRoundedInnerShadowRectangle(juce::Graphics &g,
-                                                               juce::Rectangle<float> boxBounds,
-                                                               float cornerSize,
-                                                               const fillRoundedShadowRectangleArgs &margs) const;
+                                                               juce::Rectangle<float> box_bounds,
+                                                               float corner_size,
+                                                               const FillRoundedShadowRectangleArgs &margs) const;
 
-        static juce::Rectangle<float> getShadowEllipseArea(juce::Rectangle<float> boxBounds,
-                                                           float cornerSize,
-                                                           const fillShadowEllipseArgs &margs);
+        static juce::Rectangle<float> getShadowEllipseArea(juce::Rectangle<float> box_bounds,
+                                                           float corner_size,
+                                                           const FillShadowEllipseArgs &margs);
 
         juce::Rectangle<float> drawShadowEllipse(juce::Graphics &g,
-                                                 juce::Rectangle<float> boxBounds,
-                                                 float cornerSize,
-                                                 const fillShadowEllipseArgs &margs) const;
+                                                 juce::Rectangle<float> box_bounds,
+                                                 float corner_size,
+                                                 const FillShadowEllipseArgs &margs) const;
 
-        static juce::Rectangle<float> getInnerShadowEllipseArea(juce::Rectangle<float> boxBounds,
-                                                                float cornerSize,
-                                                                const fillShadowEllipseArgs &margs);
+        static juce::Rectangle<float> getInnerShadowEllipseArea(juce::Rectangle<float> box_bounds,
+                                                                float corner_size,
+                                                                const FillShadowEllipseArgs &margs);
 
         juce::Rectangle<float> drawInnerShadowEllipse(juce::Graphics &g,
-                                                      juce::Rectangle<float> boxBounds,
-                                                      float cornerSize,
-                                                      const fillShadowEllipseArgs &margs) const;
+                                                      juce::Rectangle<float> box_bounds,
+                                                      float corner_size,
+                                                      const FillShadowEllipseArgs &margs) const;
 
-        juce::Colour getColourByIdx(colourIdx idx) const {
-            return customColours[static_cast<size_t>(idx)];
+        juce::Colour getColourByIdx(ColourIdx idx) const {
+            return custom_colours_[static_cast<size_t>(idx)];
         }
 
-        void setColourByIdx(const colourIdx idx, const juce::Colour colour) {
-            customColours[static_cast<size_t>(idx)] = colour;
+        void setColourByIdx(const ColourIdx idx, const juce::Colour colour) {
+            custom_colours_[static_cast<size_t>(idx)] = colour;
         }
 
-        inline float getSensitivity(const sensitivityIdx idx) const {
-            return wheelSensitivity[static_cast<size_t>(idx)];
+        inline float getSensitivity(const SensitivityIdx idx) const {
+            return wheel_sensitivity_[static_cast<size_t>(idx)];
         }
 
-        void setSensitivity(const float v, const sensitivityIdx idx) {
-            wheelSensitivity[static_cast<size_t>(idx)] = v;
+        void setSensitivity(const float v, const SensitivityIdx idx) {
+            wheel_sensitivity_[static_cast<size_t>(idx)] = v;
         }
 
         size_t getRotaryStyleID() const {
-            return rotaryStyleId;
+            return rotary_style_id_;
         }
 
         juce::Slider::SliderStyle getRotaryStyle() const {
-            return zlstate::rotaryStyle::styles[rotaryStyleId];
+            return zlstate::rotaryStyle::styles[rotary_style_id_];
         }
 
         void setRotaryStyleID(const size_t x) {
-            rotaryStyleId = x;
+            rotary_style_id_ = x;
         }
 
         float getRotaryDragSensitivity() const {
-            return rotaryDragSensitivity;
+            return rotary_drag_sensitivity_;
         }
 
         void setRotaryDragSensitivity(const float x) {
-            rotaryDragSensitivity = x;
+            rotary_drag_sensitivity_ = x;
         }
 
         int getRefreshRateMS() const {
-            return zlstate::refreshRate::ms[refreshRateId.load()];
+            return zlstate::refreshRate::ms[refresh_rate_id_.load()];
         }
 
         size_t getRefreshRateID() const {
-            return refreshRateId.load();
+            return refresh_rate_id_.load();
         }
 
         void setRefreshRateID(const size_t x) {
-            refreshRateId.store(x);
+            refresh_rate_id_.store(x);
         }
 
         float getFFTExtraTilt() const {
-            return fftExtraTilt.load();
+            return fft_extra_tilt_.load();
         }
 
         void setFFTExtraTilt(const float x) {
-            fftExtraTilt.store(x);
+            fft_extra_tilt_.store(x);
         }
 
         float getFFTExtraSpeed() const {
-            return fftExtraSpeed.load();
+            return fft_extra_speed_.load();
         }
 
         void setFFTExtraSpeed(const float x) {
-            fftExtraSpeed.store(x);
+            fft_extra_speed_.store(x);
         }
 
         float getSingleCurveThickness() const {
-            return singleCurveThickness.load();
+            return single_curve_thickness_.load();
         }
 
         void setSingleCurveThickness(const float x) {
-            singleCurveThickness.store(x);
+            single_curve_thickness_.store(x);
         }
 
         float getSumCurveThickness() const {
-            return sumCurveThickness.load();
+            return sum_curve_thickness_.load();
         }
 
         void setSumCurveThickness(const float x) {
-            sumCurveThickness.store(x);
+            sum_curve_thickness_.store(x);
         }
 
         void loadFromAPVTS();
 
         void saveToAPVTS() const;
 
-        bool getIsBandSelected(const size_t x) const { return isBandSelected[x].load(); }
+        bool getIsBandSelected(const size_t x) const { return is_band_selected_[x].load(); }
 
-        void setIsBandSelected(const size_t x, const bool f) { isBandSelected[x].store(f); }
+        void setIsBandSelected(const size_t x, const bool f) { is_band_selected_[x].store(f); }
 
-        bool getIsMouseWheelShiftReverse() const { return isMouseWheelShiftReverse.load(); }
+        bool getIsMouseWheelShiftReverse() const { return is_mouse_wheel_shift_reverse_.load(); }
 
-        void setIsMouseWheelShiftReverse(const bool x) { isMouseWheelShiftReverse.store(x); }
+        void setIsMouseWheelShiftReverse(const bool x) { is_mouse_wheel_shift_reverse_.store(x); }
 
-        bool getIsSliderDoubleClickOpenEditor() const { return isSliderDoubleClickOpenEditor.load(); }
+        bool getIsSliderDoubleClickOpenEditor() const { return is_slider_double_click_open_editor_.load(); }
 
-        void setIsSliderDoubleClickOpenEditor(const bool x) { isSliderDoubleClickOpenEditor.store(x); }
+        void setIsSliderDoubleClickOpenEditor(const bool x) { is_slider_double_click_open_editor_.store(x); }
 
-        int getDefaultPassFilterSlope() const { return defaultPassFilterSlope.load(); }
+        int getDefaultPassFilterSlope() const { return default_pass_filter_slope_.load(); }
 
-        void setDefaultPassFilterSlope(const int x) { defaultPassFilterSlope.store(x); }
+        void setDefaultPassFilterSlope(const int x) { default_pass_filter_slope_.store(x); }
 
-        size_t getCMap1Idx() const { return cMap1Idx; }
+        size_t getCMap1Idx() const { return colour_map1_idx_; }
 
-        void setCMap1Idx(const size_t x) { cMap1Idx = x; }
+        void setCMap1Idx(const size_t x) { colour_map1_idx_ = x; }
 
-        size_t getCMap2Idx() const { return cMap2Idx; }
+        size_t getCMap2Idx() const { return colour_map2_idx_; }
 
-        void setCMap2Idx(const size_t x) { cMap2Idx = x; }
+        void setCMap2Idx(const size_t x) { colour_map2_idx_ = x; }
 
-        int getFFTOrderIdx() const { return fftOrderIdx; }
+        int getFFTOrderIdx() const { return fft_order_idx_; }
 
-        void setFFTOrderIdx(const int x) { fftOrderIdx = x; }
+        void setFFTOrderIdx(const int x) { fft_order_idx_ = x; }
 
-        bool getDynLink() const { return dynLink.load(); }
+        bool getDynLink() const { return dyn_link_.load(); }
 
-        void setDynLink(const bool x) { dynLink.store(x); }
+        void setDynLink(const bool x) { dyn_link_.store(x); }
 
-        int getRenderingEngine() const { return renderingEngine.load(); }
+        int getRenderingEngine() const { return rendering_engine_.load(); }
 
-        void setRenderingEngine(const int x) { renderingEngine.store(x); }
+        void setRenderingEngine(const int x) { rendering_engine_.store(x); }
 
-        bool getTooltipON() const { return tooltipON; }
+        bool getTooltipON() const { return tooltip_on_; }
 
-        void setTooltipON(const bool x) { tooltipON = x; }
+        void setTooltipON(const bool x) { tooltip_on_ = x; }
 
-        int getLangIdx() const { return static_cast<int>(langIdx); }
+        int getLangIdx() const { return static_cast<int>(lang_idx_); }
 
-        void setLangIdx(const int x) { langIdx = static_cast<multilingual::languages>(x); }
+        void setLangIdx(const int x) { lang_idx_ = static_cast<multilingual::Languages>(x); }
 
-        juce::ValueTree &getValueTree() { return valueTree; }
+        juce::ValueTree &getValueTree() { return value_tree_; }
 
-        juce::var getProperty(const settingIdx idx) const {
-            return valueTree.getProperty(identifiers[static_cast<size_t>(idx)]);
+        juce::var getProperty(const SettingIdx idx) const {
+            return value_tree_.getProperty(kMatchIdentifiers[static_cast<size_t>(idx)]);
         }
 
-        void setProperty(const settingIdx idx, const juce::var &v) {
-            valueTree.setProperty(identifiers[idx], v, nullptr);
+        void setProperty(const SettingIdx idx, const juce::var &v) {
+            value_tree_.setProperty(kMatchIdentifiers[idx], v, nullptr);
         }
 
-        static bool isProperty(const settingIdx idx, const juce::Identifier &property) {
-            return property == identifiers[static_cast<size_t>(idx)];
+        static bool isProperty(const SettingIdx idx, const juce::Identifier &property) {
+            return property == kMatchIdentifiers[static_cast<size_t>(idx)];
         }
 
-        juce::ValueTree &getBoxTree() { return boxTree; }
+        juce::ValueTree &getBoxTree() { return box_tree_; }
 
-        juce::var getBoxProperty(const boxIdx idx) const {
-            return boxTree.getProperty(boxIdentifiers[static_cast<size_t>(idx)]);
+        juce::var getBoxProperty(const BoxIdx idx) const {
+            return box_tree_.getProperty(kBoxIdentifiers[static_cast<size_t>(idx)]);
         }
 
-        void setBoxProperty(const boxIdx idx, const juce::var &v) {
-            boxTree.setProperty(boxIdentifiers[idx], v, nullptr);
+        void setBoxProperty(const BoxIdx idx, const juce::var &v) {
+            box_tree_.setProperty(kBoxIdentifiers[idx], v, nullptr);
         }
 
-        static bool isBoxProperty(const boxIdx idx, const juce::Identifier &property) {
-            return property == boxIdentifiers[static_cast<size_t>(idx)];
+        static bool isBoxProperty(const BoxIdx idx, const juce::Identifier &property) {
+            return property == kBoxIdentifiers[static_cast<size_t>(idx)];
         }
 
-        void openOneBox(const boxIdx idx) {
-            for (const auto &midx: {generalBox, collisionBox, dynamicBox, analyzerBox, outputBox}) {
+        void openOneBox(const BoxIdx idx) {
+            for (const auto &midx: {kGeneralBox, kCollisionBox, kDynamicBox, kAnalyzerBox, kOutputBox}) {
                 setBoxProperty(midx, midx == idx);
             }
         }
 
         void closeAllBox() {
-            for (const auto &idx: {generalBox, collisionBox, dynamicBox, analyzerBox, outputBox}) {
-                boxTree.setProperty(boxIdentifiers[idx], false, nullptr);
+            for (const auto &idx: {kGeneralBox, kCollisionBox, kDynamicBox, kAnalyzerBox, kOutputBox}) {
+                box_tree_.setProperty(kBoxIdentifiers[idx], false, nullptr);
             }
         }
 
-        std::string getToolTipText(const zlgui::multilingual::labels label) const {
-            switch (actualLangIdx) {
-                case multilingual::languages::lang_en: {
-                    return multilingual::en::texts[static_cast<size_t>(label)];
+        std::string getToolTipText(const zlgui::multilingual::Labels label) const {
+            switch (actual_lang_idx_) {
+                case multilingual::Languages::kLang_en: {
+                    return multilingual::en::kTexts[static_cast<size_t>(label)];
                 }
-                case multilingual::languages::lang_zh_Hans: {
-                    return multilingual::zh_Hans::texts[static_cast<size_t>(label)];
+                case multilingual::Languages::kLang_zh_Hans: {
+                    return multilingual::zh_Hans::kTexts[static_cast<size_t>(label)];
                 }
-                case multilingual::languages::lang_zh_Hant: {
-                    return multilingual::zh_Hant::texts[static_cast<size_t>(label)];
+                case multilingual::Languages::kLang_zh_Hant: {
+                    return multilingual::zh_Hant::kTexts[static_cast<size_t>(label)];
                 }
-                case multilingual::languages::lang_it: {
-                    return multilingual::it::texts[static_cast<size_t>(label)];
+                case multilingual::Languages::kLang_it: {
+                    return multilingual::it::kTexts[static_cast<size_t>(label)];
                 }
-                case multilingual::languages::lang_ja: {
-                    return multilingual::ja::texts[static_cast<size_t>(label)];
+                case multilingual::Languages::kLang_ja: {
+                    return multilingual::ja::kTexts[static_cast<size_t>(label)];
                 }
-                case multilingual::languages::lang_de: {
-                    return multilingual::de::texts[static_cast<size_t>(label)];
+                case multilingual::Languages::kLang_de: {
+                    return multilingual::de::kTexts[static_cast<size_t>(label)];
                 }
-                case multilingual::languages::lang_es: {
-                    return multilingual::es::texts[static_cast<size_t>(label)];
+                case multilingual::Languages::kLang_es: {
+                    return multilingual::es::kTexts[static_cast<size_t>(label)];
                 }
-                case multilingual::languages::lang_system:
-                case multilingual::languages::langNum:
+                case multilingual::Languages::kLang_system:
+                case multilingual::Languages::kLangNum:
                 default: {
-                    return multilingual::en::texts[static_cast<size_t>(label)];
+                    return multilingual::en::kTexts[static_cast<size_t>(label)];
                 }
             }
         }
 
-        void setIsRenderingHardware(const bool x) { isRenderingHardware.store(x); }
+        void setIsRenderingHardware(const bool x) { is_rendering_hardware_.store(x); }
 
-        bool getIsRenderingHardware() const { return isRenderingHardware.load(); }
+        bool getIsRenderingHardware() const { return is_rendering_hardware_.load(); }
 
-        void setIsEditorShowing(const bool x) { isEditorShowing = x; }
+        void setIsEditorShowing(const bool x) { is_editor_showing_ = x; }
 
-        bool getIsEditorShowing() const { return isEditorShowing; }
+        bool getIsEditorShowing() const { return is_editor_showing_; }
 
     private:
         juce::AudioProcessorValueTreeState &state;
-        juce::ValueTree valueTree{"ui_setting"};
-        juce::ValueTree boxTree{"box_setting"};
+        juce::ValueTree value_tree_{"ui_setting"};
+        juce::ValueTree box_tree_{"box_setting"};
 
-        float fontSize{0.f};
-        std::array<juce::Colour, colourNum> customColours;
-        std::array<float, sensitivityNum> wheelSensitivity{1.f, 0.12f, 1.f, .25f};
-        size_t rotaryStyleId{0};
-        std::atomic<size_t> refreshRateId{2};
-        float rotaryDragSensitivity{1.f};
-        std::atomic<float> fftExtraTilt{0.f}, fftExtraSpeed{1.f};
-        std::atomic<float> singleCurveThickness{1.f}, sumCurveThickness{1.f};
-        std::array<std::atomic<bool>, zlstate::bandNUM> isBandSelected{};
-        std::atomic<bool> isMouseWheelShiftReverse{false};
-        std::atomic<bool> isSliderDoubleClickOpenEditor{false};
-        std::atomic<int> defaultPassFilterSlope{1};
-        std::atomic<bool> dynLink{true};
-        std::atomic<int> renderingEngine{1};
-        std::atomic<bool> isRenderingHardware{true};
-        bool isEditorShowing{false};
+        float font_size_{0.f};
+        std::array<juce::Colour, kColourNum> custom_colours_;
+        std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, 0.12f, 1.f, .25f};
+        size_t rotary_style_id_{0};
+        std::atomic<size_t> refresh_rate_id_{2};
+        float rotary_drag_sensitivity_{1.f};
+        std::atomic<float> fft_extra_tilt_{0.f}, fft_extra_speed_{1.f};
+        std::atomic<float> single_curve_thickness_{1.f}, sum_curve_thickness_{1.f};
+        std::array<std::atomic<bool>, zlstate::bandNUM> is_band_selected_{};
+        std::atomic<bool> is_mouse_wheel_shift_reverse_{false};
+        std::atomic<bool> is_slider_double_click_open_editor_{false};
+        std::atomic<int> default_pass_filter_slope_{1};
+        std::atomic<bool> dyn_link_{true};
+        std::atomic<int> rendering_engine_{1};
+        std::atomic<bool> is_rendering_hardware_{true};
+        bool is_editor_showing_{false};
 
         float loadPara(const std::string &id) const {
             return state.getRawParameterValue(id)->load();
@@ -510,14 +509,14 @@ namespace zlgui {
             para->endChangeGesture();
         }
 
-        size_t cMap1Idx{zlstate::colourMapIdx::defaultDark};
-        size_t cMap2Idx{zlstate::colourMapIdx::seabornBrightDark};
+        size_t colour_map1_idx_{zlstate::colourMapIdx::defaultDark};
+        size_t colour_map2_idx_{zlstate::colourMapIdx::seabornBrightDark};
 
-        int fftOrderIdx{1};
+        int fft_order_idx_{1};
 
-        bool tooltipON{true};
-        multilingual::languages langIdx{multilingual::languages::lang_en};
-        multilingual::languages actualLangIdx{multilingual::languages::lang_en};
+        bool tooltip_on_{true};
+        multilingual::Languages lang_idx_{multilingual::Languages::kLang_en};
+        multilingual::Languages actual_lang_idx_{multilingual::Languages::kLang_en};
 
         void updateActualLangIdx();
     };

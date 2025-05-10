@@ -17,17 +17,17 @@ namespace zlgui {
                                     public juce::SettableTooltipClient {
     public:
         explicit LeftRightCombobox(const juce::StringArray &choices, UIBase &base,
-                                   multilingual::labels labelIdx = multilingual::labels::labelNum);
+                                   multilingual::Labels label_idx = multilingual::Labels::kLabelNum);
 
         ~LeftRightCombobox() override;
 
         void resized() override;
 
-        inline juce::ComboBox &getBox() { return box; }
+        inline juce::ComboBox &getBox() { return box_; }
 
         inline void setPadding(const float lr, const float ub) {
-            lrPad = lr;
-            ubPad = ub;
+            lr_pad_ = lr;
+            ub_pad_ = ub;
         }
 
         void selectLeft();
@@ -35,12 +35,12 @@ namespace zlgui {
         void selectRight();
 
     private:
-        UIBase &uiBase;
-        juce::DrawableButton leftButton, rightButton;
-        LeftRightButtonLookAndFeel lLAF, rLAF;
-        juce::ComboBox box;
-        LeftRightComboboxLookAndFeel lookAndFeel;
+        UIBase &ui_base_;
+        juce::DrawableButton left_button_, right_button_;
+        LeftRightButtonLookAndFeel l_button_laf_, r_button_laf_;
+        juce::ComboBox box_;
+        LeftRightComboboxLookAndFeel laf_;
 
-        float lrPad{0.f}, ubPad{0.f};
+        float lr_pad_{0.f}, ub_pad_{0.f};
     };
 } // zlgui

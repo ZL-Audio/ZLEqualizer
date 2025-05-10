@@ -12,7 +12,7 @@
 #include <array>
 
 namespace zlgui::multilingual::de {
-    static constexpr std::array texts = {
+    static constexpr std::array kTexts = {
         "Drücken: Schalte das ausgewählte Band ein.\nLoslassen: Bypasse das ausgewählte Band.",
         "Drücken: Aktiviere Solo für das vom ausgewählten Frequenzband betroffene Audio.",
         "Wählen Sie den Typ des ausgewählten Frequenzbands. Peak、Low Shelf、Low Pass（Tiefpass）、High Shelf、High Pass（Hochpass）、Notch、Band Pass（Bandpass）、Tilt Shelf.",

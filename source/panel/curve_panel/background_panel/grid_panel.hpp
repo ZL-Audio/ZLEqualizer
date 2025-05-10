@@ -40,7 +40,7 @@ namespace zlpanel {
         void resized() override;
 
     private:
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::RectangleList<float> rectList;
         std::array<juce::Rectangle<float>, 10> textBounds;
     };

@@ -12,7 +12,7 @@
 namespace zlpanel {
     OtherUISettingPanel::OtherUISettingPanel(PluginProcessor &p, zlgui::UIBase &base)
         : pRef(p),
-          uiBase(base), nameLAF(base),
+          ui_base_(base), nameLAF(base),
           renderingEngineBox("", zlstate::renderingEngine::choices, base),
           refreshRateBox("", zlstate::refreshRate::choices, base),
           fftTiltSlider("Tilt", base),
@@ -25,7 +25,7 @@ namespace zlpanel {
           tooltipONBox("", zlstate::tooltipON::choices, base),
           tooltipLangBox("", zlstate::tooltipLang::choices, base) {
         juce::ignoreUnused(pRef);
-        nameLAF.setFontScale(zlgui::FontHuge);
+        nameLAF.setFontScale(zlgui::kFontHuge);
         renderingEngineLabel.setText("Rendering Engine", juce::dontSendNotification);
         renderingEngineLabel.setJustificationType(juce::Justification::centredRight);
         renderingEngineLabel.setLookAndFeel(&nameLAF);
@@ -77,33 +77,33 @@ namespace zlpanel {
     }
 
     void OtherUISettingPanel::loadSetting() {
-        renderingEngineBox.getBox().setSelectedId(static_cast<int>(uiBase.getRenderingEngine()) + 1);
-        DBG(uiBase.getRenderingEngine() + 1);
-        refreshRateBox.getBox().setSelectedId(static_cast<int>(uiBase.getRefreshRateID()) + 1);
-        fftTiltSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraTilt()));
-        fftSpeedSlider.getSlider().setValue(static_cast<double>(uiBase.getFFTExtraSpeed()));
-        fftOrderBox.getBox().setSelectedId(uiBase.getFFTOrderIdx() + 1);
-        singleCurveSlider.getSlider().setValue(uiBase.getSingleCurveThickness());
-        sumCurveSlider.getSlider().setValue(uiBase.getSumCurveThickness());
-        defaultPassFilterSlopeBox.getBox().setSelectedId(uiBase.getDefaultPassFilterSlope() + 1);
-        dynLinkBox.getBox().setSelectedId(static_cast<int>(uiBase.getDynLink()) + 1);
-        tooltipONBox.getBox().setSelectedId(static_cast<int>(uiBase.getTooltipON()) + 1);
-        tooltipLangBox.getBox().setSelectedId(uiBase.getLangIdx() + 1);
+        renderingEngineBox.getBox().setSelectedId(static_cast<int>(ui_base_.getRenderingEngine()) + 1);
+        DBG(ui_base_.getRenderingEngine() + 1);
+        refreshRateBox.getBox().setSelectedId(static_cast<int>(ui_base_.getRefreshRateID()) + 1);
+        fftTiltSlider.getSlider().setValue(static_cast<double>(ui_base_.getFFTExtraTilt()));
+        fftSpeedSlider.getSlider().setValue(static_cast<double>(ui_base_.getFFTExtraSpeed()));
+        fftOrderBox.getBox().setSelectedId(ui_base_.getFFTOrderIdx() + 1);
+        singleCurveSlider.getSlider().setValue(ui_base_.getSingleCurveThickness());
+        sumCurveSlider.getSlider().setValue(ui_base_.getSumCurveThickness());
+        defaultPassFilterSlopeBox.getBox().setSelectedId(ui_base_.getDefaultPassFilterSlope() + 1);
+        dynLinkBox.getBox().setSelectedId(static_cast<int>(ui_base_.getDynLink()) + 1);
+        tooltipONBox.getBox().setSelectedId(static_cast<int>(ui_base_.getTooltipON()) + 1);
+        tooltipLangBox.getBox().setSelectedId(ui_base_.getLangIdx() + 1);
     }
 
     void OtherUISettingPanel::saveSetting() {
-        uiBase.setRenderingEngine(static_cast<int>(renderingEngineBox.getBox().getSelectedId() - 1));
-        uiBase.setRefreshRateID(static_cast<size_t>(refreshRateBox.getBox().getSelectedId() - 1));
-        uiBase.setFFTExtraTilt(static_cast<float>(fftTiltSlider.getSlider().getValue()));
-        uiBase.setFFTExtraSpeed(static_cast<float>(fftSpeedSlider.getSlider().getValue()));
-        uiBase.setFFTOrderIdx(fftOrderBox.getBox().getSelectedId() - 1);
-        uiBase.setSingleCurveThickness(static_cast<float>(singleCurveSlider.getSlider().getValue()));
-        uiBase.setSumCurveThickness(static_cast<float>(sumCurveSlider.getSlider().getValue()));
-        uiBase.setDefaultPassFilterSlope(defaultPassFilterSlopeBox.getBox().getSelectedId() - 1);
-        uiBase.setDynLink(dynLinkBox.getBox().getSelectedId() == 2);
-        uiBase.setTooltipON(tooltipONBox.getBox().getSelectedId() == 2);
-        uiBase.setLangIdx(tooltipLangBox.getBox().getSelectedId() - 1);
-        uiBase.saveToAPVTS();
+        ui_base_.setRenderingEngine(static_cast<int>(renderingEngineBox.getBox().getSelectedId() - 1));
+        ui_base_.setRefreshRateID(static_cast<size_t>(refreshRateBox.getBox().getSelectedId() - 1));
+        ui_base_.setFFTExtraTilt(static_cast<float>(fftTiltSlider.getSlider().getValue()));
+        ui_base_.setFFTExtraSpeed(static_cast<float>(fftSpeedSlider.getSlider().getValue()));
+        ui_base_.setFFTOrderIdx(fftOrderBox.getBox().getSelectedId() - 1);
+        ui_base_.setSingleCurveThickness(static_cast<float>(singleCurveSlider.getSlider().getValue()));
+        ui_base_.setSumCurveThickness(static_cast<float>(sumCurveSlider.getSlider().getValue()));
+        ui_base_.setDefaultPassFilterSlope(defaultPassFilterSlopeBox.getBox().getSelectedId() - 1);
+        ui_base_.setDynLink(dynLinkBox.getBox().getSelectedId() == 2);
+        ui_base_.setTooltipON(tooltipONBox.getBox().getSelectedId() == 2);
+        ui_base_.setLangIdx(tooltipLangBox.getBox().getSelectedId() - 1);
+        ui_base_.saveToAPVTS();
     }
 
     void OtherUISettingPanel::resetSetting() {
@@ -111,61 +111,61 @@ namespace zlpanel {
 
     void OtherUISettingPanel::resized() {
         auto bound = getLocalBounds().toFloat(); {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             renderingEngineLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.6f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.6f;
             renderingEngineBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             refreshRateLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             refreshRateBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             fftLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             fftTiltSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            localBound.removeFromLeft(ui_base_.getFontSize() * 2.f);
             fftSpeedSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            localBound.removeFromLeft(ui_base_.getFontSize() * 2.f);
             fftOrderBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             curveThickLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             singleCurveSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 2.f);
+            localBound.removeFromLeft(ui_base_.getFontSize() * 2.f);
             sumCurveSlider.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             defaultPassFilterSlopeLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             defaultPassFilterSlopeBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             dynLinkLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             dynLinkBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         } {
-            bound.removeFromTop(uiBase.getFontSize());
-            auto localBound = bound.removeFromTop(uiBase.getFontSize() * 3);
+            bound.removeFromTop(ui_base_.getFontSize());
+            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
             tooltipLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
             localBound.removeFromLeft(bound.getWidth() * .05f);
-            const auto sWidth = (bound.getWidth() * .5f - uiBase.getFontSize() * 2.f) * 0.3f;
+            const auto sWidth = (bound.getWidth() * .5f - ui_base_.getFontSize() * 2.f) * 0.3f;
             tooltipONBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
-            localBound.removeFromLeft(uiBase.getFontSize() * 3.f);
+            localBound.removeFromLeft(ui_base_.getFontSize() * 3.f);
             tooltipLangBox.setBounds(localBound.removeFromLeft(sWidth).toNearestInt());
         }
     }

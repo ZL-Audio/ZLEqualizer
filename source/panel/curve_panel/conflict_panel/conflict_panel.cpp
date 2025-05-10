@@ -11,10 +11,10 @@
 
 namespace zlpanel {
     ConflictPanel::ConflictPanel(zldsp::analyzer::ConflictAnalyzer<double> &conflictAnalyzer, zlgui::UIBase &base)
-        : analyzer(conflictAnalyzer), uiBase(base) {
+        : analyzer(conflictAnalyzer), ui_base_(base) {
         analyzer.start();
         setInterceptsMouseClicks(false, false);
-        juce::ignoreUnused(uiBase);
+        juce::ignoreUnused(ui_base_);
     }
 
     ConflictPanel::~ConflictPanel() {

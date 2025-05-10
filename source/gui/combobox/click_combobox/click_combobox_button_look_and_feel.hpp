@@ -16,50 +16,50 @@ namespace zlgui {
     class ClickComboboxButtonLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
         explicit ClickComboboxButtonLookAndFeel(UIBase &base, juce::String label)
-            : uiBase(base), labelString(std::move(label)) {
+            : ui_base_(base), label_string_(std::move(label)) {
         }
 
         void drawDrawableButton(juce::Graphics &g, juce::DrawableButton &button,
                                 bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override {
             juce::ignoreUnused(button, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
 
-            if (editable) {
-                g.setColour(uiBase.getTextColor().withMultipliedAlpha(alpha.load()));
+            if (editable_) {
+                g.setColour(ui_base_.getTextColor().withMultipliedAlpha(alpha_.load()));
             } else {
-                g.setColour(uiBase.getTextInactiveColor().withMultipliedAlpha(alpha.load()));
+                g.setColour(ui_base_.getTextInactiveColor().withMultipliedAlpha(alpha_.load()));
             }
-            g.setFont(uiBase.getFontSize() * fontScale.load());
+            g.setFont(ui_base_.getFontSize() * font_scale_.load());
             auto bound = button.getLocalBounds().toFloat();
-            bound.removeFromTop(uPadding.load());
-            bound.removeFromBottom(dPadding.load());
-            bound.removeFromLeft(lPadding.load());
-            bound.removeFromRight(rPadding.load());
-            g.drawText(labelString, bound, justification.load());
+            bound.removeFromTop(u_pad_.load());
+            bound.removeFromBottom(d_pad_.load());
+            bound.removeFromLeft(l_pad_.load());
+            bound.removeFromRight(r_pad_.load());
+            g.drawText(label_string_, bound, justification_.load());
         }
 
-        inline void setEditable(const bool f) { editable.store(f); }
+        inline void setEditable(const bool f) { editable_.store(f); }
 
-        inline void setAlpha(const float x) { alpha.store(x); }
+        inline void setAlpha(const float x) { alpha_.store(x); }
 
-        inline void setFontScale(const float x) { fontScale.store(x); }
+        inline void setFontScale(const float x) { font_scale_.store(x); }
 
-        inline void setJustification(const juce::Justification j) { justification.store(j); }
+        inline void setJustification(const juce::Justification j) { justification_.store(j); }
 
         inline void setPadding(const float l, const float r, const float u, const float d) {
-            lPadding.store(l);
-            rPadding.store(r);
-            uPadding.store(u);
-            dPadding.store(d);
+            l_pad_.store(l);
+            r_pad_.store(r);
+            u_pad_.store(u);
+            d_pad_.store(d);
         }
 
     private:
-        std::atomic<bool> editable{true};
-        std::atomic<float> alpha{1.f};
-        std::atomic<float> fontScale{FontNormal};
-        std::atomic<juce::Justification> justification{juce::Justification::centred};
-        std::atomic<float> lPadding{0.f}, rPadding{0.f}, uPadding{0.f}, dPadding{0.f};
+        std::atomic<bool> editable_{true};
+        std::atomic<float> alpha_{1.f};
+        std::atomic<float> font_scale_{kFontNormal};
+        std::atomic<juce::Justification> justification_{juce::Justification::centred};
+        std::atomic<float> l_pad_{0.f}, r_pad_{0.f}, u_pad_{0.f}, d_pad_{0.f};
 
-        UIBase &uiBase;
-        juce::String labelString;
+        UIBase &ui_base_;
+        juce::String label_string_;
     };
 }

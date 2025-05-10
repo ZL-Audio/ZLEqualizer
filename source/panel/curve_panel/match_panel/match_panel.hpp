@@ -35,7 +35,7 @@ namespace zlpanel {
         }
 
     private:
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         MatchAnalyzerPanel matchAnalyzerPanel;
     };
 } // zlpanel

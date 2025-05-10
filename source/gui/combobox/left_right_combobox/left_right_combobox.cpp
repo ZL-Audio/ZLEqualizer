@@ -11,64 +11,64 @@
 
 namespace zlgui {
     LeftRightCombobox::LeftRightCombobox(const juce::StringArray &choices, UIBase &base,
-                                         const multilingual::labels labelIdx)
-        : uiBase(base),
-          leftButton("", juce::DrawableButton::ButtonStyle::ImageFitted),
-          rightButton("", juce::DrawableButton::ButtonStyle::ImageFitted),
-          lLAF(base), rLAF(base), lookAndFeel(base) {
-        box.addItemList(choices, 1);
-        box.setScrollWheelEnabled(false);
-        box.setLookAndFeel(&lookAndFeel);
-        box.setInterceptsMouseClicks(false, false);
+                                         const multilingual::Labels label_idx)
+        : ui_base_(base),
+          left_button_("", juce::DrawableButton::ButtonStyle::ImageFitted),
+          right_button_("", juce::DrawableButton::ButtonStyle::ImageFitted),
+          l_button_laf_(base), r_button_laf_(base), laf_(base) {
+        box_.addItemList(choices, 1);
+        box_.setScrollWheelEnabled(false);
+        box_.setLookAndFeel(&laf_);
+        box_.setInterceptsMouseClicks(false, false);
 
-        lLAF.setDirection(0.5f);
-        leftButton.setLookAndFeel(&lLAF);
-        rLAF.setDirection(0.0f);
-        rightButton.setLookAndFeel(&rLAF);
-        leftButton.onClick = [this]() { selectLeft(); };
-        rightButton.onClick = [this]() { selectRight(); };
+        l_button_laf_.setDirection(0.5f);
+        left_button_.setLookAndFeel(&l_button_laf_);
+        r_button_laf_.setDirection(0.0f);
+        right_button_.setLookAndFeel(&r_button_laf_);
+        left_button_.onClick = [this]() { selectLeft(); };
+        right_button_.onClick = [this]() { selectRight(); };
 
-        addAndMakeVisible(box);
-        addAndMakeVisible(leftButton);
-        addAndMakeVisible(rightButton);
+        addAndMakeVisible(box_);
+        addAndMakeVisible(left_button_);
+        addAndMakeVisible(right_button_);
 
-        if (labelIdx != multilingual::labels::labelNum) {
-            SettableTooltipClient::setTooltip(uiBase.getToolTipText(labelIdx));
+        if (label_idx != multilingual::Labels::kLabelNum) {
+            SettableTooltipClient::setTooltip(ui_base_.getToolTipText(label_idx));
         }
     }
 
     LeftRightCombobox::~LeftRightCombobox() {
-        box.setLookAndFeel(nullptr);
-        leftButton.setLookAndFeel(nullptr);
-        rightButton.setLookAndFeel(nullptr);
+        box_.setLookAndFeel(nullptr);
+        left_button_.setLookAndFeel(nullptr);
+        right_button_.setLookAndFeel(nullptr);
     }
 
     void LeftRightCombobox::resized() {
-        auto tempBound = getLocalBounds().toFloat();
-        tempBound = tempBound.withSizeKeepingCentre(tempBound.getWidth() - lrPad,
-                                            uiBase.getFontSize() - ubPad);
-        auto bound = tempBound.toNearestInt().constrainedWithin(getLocalBounds());
-        const auto buttonSize = static_cast<int>(uiBase.getFontSize());
-        const auto leftBound = bound.removeFromLeft(buttonSize);
-        const auto rightBound = bound.removeFromRight(buttonSize);
-        leftButton.setBounds(leftBound);
-        rightButton.setBounds(rightBound);
-        box.setBounds(bound);
+        auto temp_bound = getLocalBounds().toFloat();
+        temp_bound = temp_bound.withSizeKeepingCentre(temp_bound.getWidth() - lr_pad_,
+                                            ui_base_.getFontSize() - ub_pad_);
+        auto bound = temp_bound.toNearestInt().constrainedWithin(getLocalBounds());
+        const auto button_size = static_cast<int>(ui_base_.getFontSize());
+        const auto left_bound = bound.removeFromLeft(button_size);
+        const auto right_bound = bound.removeFromRight(button_size);
+        left_button_.setBounds(left_bound);
+        right_button_.setBounds(right_bound);
+        box_.setBounds(bound);
     }
 
     void LeftRightCombobox::selectLeft() {
-        if (box.getSelectedId() <= 1) {
-            box.setSelectedId(box.getNumItems());
+        if (box_.getSelectedId() <= 1) {
+            box_.setSelectedId(box_.getNumItems());
         } else {
-            box.setSelectedId(box.getSelectedId() - 1);
+            box_.setSelectedId(box_.getSelectedId() - 1);
         }
     }
 
     void LeftRightCombobox::selectRight() {
-        if (box.getSelectedId() == box.getNumItems()) {
-            box.setSelectedId(1);
+        if (box_.getSelectedId() == box_.getNumItems()) {
+            box_.setSelectedId(1);
         } else {
-            box.setSelectedId(box.getSelectedId() + 1);
+            box_.setSelectedId(box_.getSelectedId() + 1);
         }
     }
 } // zlgui

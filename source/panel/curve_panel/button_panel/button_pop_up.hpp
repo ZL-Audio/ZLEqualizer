@@ -33,7 +33,7 @@ namespace zlpanel {
             }
 
         private:
-            zlgui::UIBase &uiBase;
+            zlgui::UIBase &ui_base_;
             juce::RangedAudioParameter *freqPara;
             zlgui::NameLookAndFeel laf;
             juce::Label label;
@@ -77,7 +77,7 @@ namespace zlpanel {
 
         size_t band;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         std::atomic<float> &fType, &freqPara;
         float direction = -1.f;
         juce::Rectangle<int> previousBound{};

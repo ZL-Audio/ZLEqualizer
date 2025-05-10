@@ -12,8 +12,8 @@
 namespace zlpanel {
     MatchPanel::MatchPanel(zldsp::eq_match::EqMatchAnalyzer<double> &analyzer,
                            juce::AudioProcessorValueTreeState &parameters_NA, zlgui::UIBase &base)
-        : uiBase(base), matchAnalyzerPanel(analyzer, parameters_NA, base) {
-        juce::ignoreUnused(analyzer, uiBase);
+        : ui_base_(base), matchAnalyzerPanel(analyzer, parameters_NA, base) {
+        juce::ignoreUnused(analyzer, ui_base_);
         setInterceptsMouseClicks(true, false);
         addChildComponent(matchAnalyzerPanel);
     }

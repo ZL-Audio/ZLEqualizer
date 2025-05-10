@@ -16,24 +16,24 @@
 namespace zlgui {
     class CompactLinearSliderLookAndFeel : public juce::LookAndFeel_V4 {
     public:
-        explicit CompactLinearSliderLookAndFeel(UIBase &base): uiBase(base) {
+        explicit CompactLinearSliderLookAndFeel(UIBase &base): ui_base_(base) {
         }
 
         void drawLinearSlider(juce::Graphics &g, int x, int y, int width, int height,
-                              float sliderPos, float minSliderPos, float maxSliderPos,
+                              float slider_pos, float min_slider_pos, float max_slider_pos,
                               const juce::Slider::SliderStyle, juce::Slider &slider) override {
-            juce::ignoreUnused(slider, minSliderPos, maxSliderPos);
+            juce::ignoreUnused(slider, min_slider_pos, max_slider_pos);
             auto bound = juce::Rectangle<int>(x, y, width, height).toFloat();
-            uiBase.fillRoundedInnerShadowRectangle(g, bound, uiBase.getFontSize() * 0.5f, {.blurRadius = 0.66f});
+            ui_base_.fillRoundedInnerShadowRectangle(g, bound, ui_base_.getFontSize() * 0.5f, {.blur_radius = 0.66f});
 
             juce::Path mask;
-            mask.addRoundedRectangle(bound, uiBase.getFontSize() * 0.5f);
+            mask.addRoundedRectangle(bound, ui_base_.getFontSize() * 0.5f);
             g.saveState();
             g.reduceClipRegion(mask);
-            auto proportion = sliderPos / static_cast<float>(width);
-            auto shadowBound = bound.withWidth(proportion * bound.getWidth());
-            g.setColour(uiBase.getTextHideColor());
-            g.fillRect(shadowBound);
+            auto proportion = slider_pos / static_cast<float>(width);
+            auto shadow_bound = bound.withWidth(proportion * bound.getWidth());
+            g.setColour(ui_base_.getTextHideColor());
+            g.fillRect(shadow_bound);
             g.restoreState();
         }
 
@@ -51,6 +51,6 @@ namespace zlgui {
         std::atomic<bool> editable = true;
         std::atomic<float> textAlpha;
 
-        UIBase &uiBase;
+        UIBase &ui_base_;
     };
 }

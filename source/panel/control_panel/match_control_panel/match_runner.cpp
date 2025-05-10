@@ -13,21 +13,21 @@ namespace zlpanel {
     MatchRunner::MatchRunner(PluginProcessor &p, zlgui::UIBase &base,
                              std::array<std::atomic<float>, 251> &atomicDiffs,
                              zlgui::CompactLinearSlider &numBandSlider)
-        : Thread("match_runner"), uiBase(base),
+        : Thread("match_runner"), ui_base_(base),
           parameters_ref_(p.parameters), parameters_NA_ref_(p.parameters_NA),
           atomicDiffsRef(atomicDiffs),
           slider(numBandSlider) {
         parameters_NA_ref_.addParameterListener(zlstate::maximumDB::ID, this);
         parameterChanged(zlstate::maximumDB::ID, parameters_NA_ref_.getRawParameterValue(zlstate::maximumDB::ID)->load());
         std::fill(diffs.begin(), diffs.end(), 0.);
-        uiBase.getValueTree().addListener(this);
+        ui_base_.getValueTree().addListener(this);
         addListener(&optimizer);
     }
 
     MatchRunner::~MatchRunner() {
         stopThread(-1);
         removeListener(&optimizer);
-        uiBase.getValueTree().removeListener(this);
+        ui_base_.getValueTree().removeListener(this);
         parameters_NA_ref_.removeParameterListener(zlstate::maximumDB::ID, this);
     }
 
@@ -95,7 +95,7 @@ namespace zlpanel {
             slider.getSlider().setDoubleClickReturnValue(true, static_cast<double>(currentNumBand));
             slider.updateDisplayValue();
             numBand.store(currentNumBand);
-            uiBase.setProperty(zlgui::settingIdx::matchFitRunning, false);
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchFitRunning, false);
         }
         for (size_t i = 0; i < currentNumBand; i++) {
             const auto &filter = mFilters[i];
@@ -123,12 +123,12 @@ namespace zlpanel {
     void MatchRunner::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (property == zlgui::identifiers[static_cast<size_t>(zlgui::settingIdx::matchLowCut)]) {
+        if (property == zlgui::kMatchIdentifiers[static_cast<size_t>(zlgui::SettingIdx::kMatchLowCut)]) {
             lowCutP.store(std::clamp(
-                static_cast<float>(uiBase.getProperty(zlgui::settingIdx::matchLowCut)), 0.f, 1.f));
-        } else if (property == zlgui::identifiers[static_cast<size_t>(zlgui::settingIdx::matchHighCut)]) {
+                static_cast<float>(ui_base_.getProperty(zlgui::SettingIdx::kMatchLowCut)), 0.f, 1.f));
+        } else if (property == zlgui::kMatchIdentifiers[static_cast<size_t>(zlgui::SettingIdx::kMatchHighCut)]) {
             highCutP.store(std::clamp(
-                static_cast<float>(uiBase.getProperty(zlgui::settingIdx::matchHighCut)), 0.f, 1.f));
+                static_cast<float>(ui_base_.getProperty(zlgui::SettingIdx::kMatchHighCut)), 0.f, 1.f));
         }
     }
 

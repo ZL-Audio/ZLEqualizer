@@ -27,7 +27,7 @@ namespace zlpanel {
         void mouseEnter(const juce::MouseEvent &event) override;
 
     private:
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::Identifier identifier{"match_panel"};
 
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,

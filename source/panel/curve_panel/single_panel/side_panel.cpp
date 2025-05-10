@@ -18,7 +18,7 @@ namespace zlpanel {
                          zlgui::Dragger &sideDragger)
         : idx(bandIdx),
           parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
-          uiBase(base),
+          ui_base_(base),
           sideF(controller.getFilter(bandIdx).getSideFilter()),
           sideDraggerRef(sideDragger) {
         setInterceptsMouseClicks(false, false);
@@ -56,7 +56,7 @@ namespace zlpanel {
         const auto bound = getLocalBounds().toFloat();
 
         const auto x = sideDraggerRef.getButton().getBoundsInParent().toFloat().getCentreX();
-        const auto thickness = uiBase.getFontSize() * 0.15f;
+        const auto thickness = ui_base_.getFontSize() * 0.15f;
         g.setColour(colour);
         g.drawLine(x - currentBW, bound.getY(), x + currentBW, bound.getY(), thickness);
     }
@@ -90,6 +90,6 @@ namespace zlpanel {
     }
 
     void SidePanel::lookAndFeelChanged() {
-        colour = uiBase.getColorMap1(idx);
+        colour = ui_base_.getColorMap1(idx);
     }
 } // zlpanel

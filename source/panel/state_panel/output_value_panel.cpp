@@ -16,7 +16,7 @@ namespace zlpanel {
         : processor_ref_(p),
           parameters_ref_(p.parameters),
           parameters_NA_ref_(p.parameters_NA),
-          uiBase(base),
+          ui_base_(base),
           scale(*parameters_ref_.getRawParameterValue(zlp::scale::ID)) {
         juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
         lmPara = parameters_ref_.getParameter(zlp::loudnessMatcherON::ID);
@@ -24,39 +24,39 @@ namespace zlpanel {
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
 
-        uiBase.getBoxTree().addListener(this);
+        ui_base_.getBoxTree().addListener(this);
     }
 
     OutputValuePanel::~OutputValuePanel() {
-        uiBase.getBoxTree().removeListener(this);
+        ui_base_.getBoxTree().removeListener(this);
         stopTimer(0);
     }
 
     void OutputValuePanel::paint(juce::Graphics &g) {
-        g.setFont(uiBase.getFontSize() * 1.375f);
+        g.setFont(ui_base_.getFontSize() * 1.375f);
         if (showGain) {
-            g.setColour(uiBase.getColourByIdx(zlgui::gainColour));
+            g.setColour(ui_base_.getColourByIdx(zlgui::kGainColour));
             g.drawText(gainString, gainBound, juce::Justification::centred);
             g.drawText(scaleString, scaleBound, juce::Justification::centred);
         } else {
-            if (static_cast<bool>(uiBase.getBoxProperty(zlgui::boxIdx::outputBox))) {
-                g.setColour(uiBase.getTextColor());
+            if (static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kOutputBox))) {
+                g.setColour(ui_base_.getTextColor());
             } else {
-                g.setColour(uiBase.getTextColor().withMultipliedAlpha(.75f));
+                g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.75f));
             }
             g.drawText("Output", getLocalBounds().toFloat(), juce::Justification::centred);
         }
     }
 
     void OutputValuePanel::timerCallback(const int timerID) {
-        if (!uiBase.getIsEditorShowing()) return;
+        if (!ui_base_.getIsEditorShowing()) return;
         if (timerID == 0) {
             updateGainValue();
         }
     }
 
     void OutputValuePanel::lookAndFeelChanged() {
-        if (uiBase.getColourByIdx(zlgui::gainColour).getAlpha() > juce::uint8(0)) {
+        if (ui_base_.getColourByIdx(zlgui::kGainColour).getAlpha() > juce::uint8(0)) {
             showGain = true;
             startTimer(0, 1500);
         } else {
@@ -72,7 +72,7 @@ namespace zlpanel {
         const auto bound = getLocalBounds().toFloat();
         backgroundPath.clear();
         backgroundPath.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                           uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
+                                           ui_base_.getFontSize() * .5f, ui_base_.getFontSize() * .5f,
                                            false, false, true, true);
     }
 
@@ -102,7 +102,7 @@ namespace zlpanel {
     void OutputValuePanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                     const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (zlgui::UIBase::isBoxProperty(zlgui::boxIdx::outputBox, property)) {
+        if (zlgui::UIBase::isBoxProperty(zlgui::BoxIdx::kOutputBox, property)) {
             repaint();
         }
     }

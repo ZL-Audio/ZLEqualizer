@@ -14,28 +14,28 @@ namespace zlpanel {
                          zlgui::UIBase &base,
                          UISettingPanel &uiSettingPanel)
         : stateRef(p.state),
-          uiBase(base), panelToShow(uiSettingPanel),
+          ui_base_(base), panelToShow(uiSettingPanel),
           brandDrawable(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
           logoDrawable(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
         juce::ignoreUnused(stateRef);
-        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlgui::multilingual::labels::pluginLogo));
+        SettableTooltipClient::setTooltip(ui_base_.getToolTipText(zlgui::multilingual::Labels::kPluginLogo));
         setBufferedToImage(true);
     }
 
     void LogoPanel::paint(juce::Graphics &g) {
         const auto tempBrand = brandDrawable->createCopy();
         const auto tempLogo = logoDrawable->createCopy();
-        tempBrand->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
-        tempLogo->replaceColour(juce::Colour(0, 0, 0), uiBase.getTextColor());
+        tempBrand->replaceColour(juce::Colour(0, 0, 0), ui_base_.getTextColor());
+        tempLogo->replaceColour(juce::Colour(0, 0, 0), ui_base_.getTextColor());
         tempLogo->replaceColour(
             juce::Colour(static_cast<juce::uint8>(0), static_cast<juce::uint8>(0), static_cast<juce::uint8>(0), .5f),
-            uiBase.getTextColor().withMultipliedAlpha(.5f));
+            ui_base_.getTextColor().withMultipliedAlpha(.5f));
 
         auto bound = getLocalBounds().toFloat();
-        const auto padding = juce::jmin(uiBase.getFontSize() * 0.5f, uiBase.getFontSize() * 0.5f);
+        const auto padding = juce::jmin(ui_base_.getFontSize() * 0.5f, ui_base_.getFontSize() * 0.5f);
         bound = bound.withSizeKeepingCentre(bound.getWidth() - padding, bound.getHeight() - padding);
 
-        auto boundToUse = juce::Rectangle<float>(bound.getWidth(), uiBase.getFontSize() * 2.f);
+        auto boundToUse = juce::Rectangle<float>(bound.getWidth(), ui_base_.getFontSize() * 2.f);
         bound = justification.appliedToRectangle(boundToUse, bound);
 
         const auto logoWOH = static_cast<float>(logoDrawable->getWidth()) /
@@ -63,7 +63,7 @@ namespace zlpanel {
     }
 
     void LogoPanel::mouseDoubleClick(const juce::MouseEvent &event) {
-        uiBase.closeAllBox();
+        ui_base_.closeAllBox();
         if (event.mods.isCommandDown()) {
             getParentComponent()->getParentComponent()->getParentComponent()->setSize(
                 static_cast<int>(zlstate::windowW::defaultV),

@@ -17,7 +17,7 @@
 namespace zlgui {
     class Dragger final : public juce::Component {
     public:
-        std::function<juce::Point<float>(juce::Point<float> currentC, juce::Point<float> nextC)> checkCenter;
+        std::function<juce::Point<float>(juce::Point<float> currentC, juce::Point<float> nextC)> check_center_;
 
         explicit Dragger(UIBase &base);
 
@@ -35,11 +35,11 @@ namespace zlgui {
 
         void setButtonArea(juce::Rectangle<float> bound);
 
-        juce::Rectangle<float> getButtonArea() const { return buttonArea; }
+        juce::Rectangle<float> getButtonArea() const { return button_area_; }
 
-        juce::ToggleButton &getButton() { return button; }
+        juce::ToggleButton &getButton() { return button_; }
 
-        juce::Point<float> getButtonPos() const { return buttonPos; }
+        juce::Point<float> getButtonPos() const { return button_pos_; }
 
         void setXPortion(float x);
 
@@ -49,7 +49,7 @@ namespace zlgui {
 
         float getYPortion() const;
 
-        void setScale(const float x) { scale = x; }
+        void setScale(const float x) { scale_ = x; }
 
         void visibilityChanged() override;
 
@@ -70,16 +70,16 @@ namespace zlgui {
         /** Removes a previously-registered listener. */
         void removeListener(Listener *listener);
 
-        DraggerLookAndFeel &getLAF() { return draggerLAF; }
+        DraggerLookAndFeel &getLAF() { return dragger_laf_; }
 
         void setXYEnabled(const bool x, const bool y) {
             if (x && !y) {
-                checkCenter = [](const juce::Point<float> currentC,
+                check_center_ = [](const juce::Point<float> currentC,
                                  const juce::Point<float> nextC) {
                     return juce::Point<float>(nextC.x, currentC.y);
                 };
             } else if (!x && y) {
-                checkCenter = [](const juce::Point<float> currentC,
+                check_center_ = [](const juce::Point<float> currentC,
                                  const juce::Point<float> nextC) {
                     return juce::Point<float>(currentC.x, nextC.y);
                 };
@@ -87,16 +87,16 @@ namespace zlgui {
         }
 
     private:
-        UIBase &uiBase;
-        DraggerLookAndFeel draggerLAF;
-        juce::ToggleButton button;
-        float xPortion{0.f}, yPortion{0.f};
-        float scale{1.f};
+        UIBase &ui_base_;
+        DraggerLookAndFeel dragger_laf_;
+        juce::ToggleButton button_;
+        float x_portion_{0.f}, y_portion_{0.f};
+        float scale_{1.f};
 
-        juce::Point<float> globalPos{}, currentPos{};
-        juce::Rectangle<float> buttonArea{};
-        juce::Point<float> buttonPos{-100000.f, -100000.f};
+        juce::Point<float> global_pos_{}, current_pos_{};
+        juce::Rectangle<float> button_area_{};
+        juce::Point<float> button_pos_{-100000.f, -100000.f};
 
-        juce::ListenerList<Listener> listeners;
+        juce::ListenerList<Listener> listeners_;
     };
 } // zlgui

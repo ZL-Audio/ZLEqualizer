@@ -21,7 +21,7 @@ namespace zlpanel {
         void resized() override;
 
     private:
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zlgui::NameLookAndFeel labelLAF;
         juce::Label runningLabel;
     };

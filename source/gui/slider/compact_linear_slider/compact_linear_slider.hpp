@@ -19,8 +19,8 @@ namespace zlgui {
                                 private juce::Slider::Listener,
                                 public juce::SettableTooltipClient {
     public:
-        explicit CompactLinearSlider(const juce::String &labelText, UIBase &base,
-                                     multilingual::labels labelIdx = multilingual::labels::labelNum);
+        explicit CompactLinearSlider(const juce::String &label_text, UIBase &base,
+                                     multilingual::Labels label_idx = multilingual::Labels::kLabelNum);
 
         ~CompactLinearSlider() override;
 
@@ -42,38 +42,38 @@ namespace zlgui {
 
         void mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override;
 
-        inline juce::Slider &getSlider() { return slider; }
+        inline juce::Slider &getSlider() { return slider_; }
 
         inline void setEditable(const bool x) {
-            nameLookAndFeel.setEditable(x);
-            textLookAndFeel.setEditable(x);
+            name_look_and_feel_.setEditable(x);
+            text_look_and_feel_.setEditable(x);
             setInterceptsMouseClicks(x, false);
             repaint();
         }
 
         inline void setPadding(const float lr, const float ub) {
-            lrPad = lr;
-            ubPad = ub;
+            lr_pad_ = lr;
+            ub_pad_ = ub;
         }
 
         void updateDisplayValue() {
-            text.setText(getDisplayValue(slider), juce::dontSendNotification);
-            text.repaint();
+            text_.setText(getDisplayValue(slider_), juce::dontSendNotification);
+            text_.repaint();
         }
 
     private:
-        UIBase &uiBase;
+        UIBase &ui_base_;
 
-        CompactLinearSliderLookAndFeel sliderLookAndFeel;
-        NameLookAndFeel nameLookAndFeel, textLookAndFeel;
-        SnappingSlider slider;
-        juce::Label label, text;
+        CompactLinearSliderLookAndFeel slider_look_and_feel_;
+        NameLookAndFeel name_look_and_feel_, text_look_and_feel_;
+        SnappingSlider slider_;
+        juce::Label label_, text_;
 
-        float lrPad = 0, ubPad = 0;
+        float lr_pad_ = 0, ub_pad_ = 0;
 
         juce::String getDisplayValue(juce::Slider &s);
 
-        void labelTextChanged(juce::Label *labelThatHasChanged) override;
+        void labelTextChanged(juce::Label *label_that_has_changed) override;
 
         void editorShown(juce::Label *l, juce::TextEditor &editor) override;
 

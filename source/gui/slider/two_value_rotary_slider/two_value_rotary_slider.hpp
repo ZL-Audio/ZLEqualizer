@@ -63,7 +63,7 @@ namespace zlgui {
                 g.reduceClipRegion(mask);
 
                 base_.drawShadowEllipse(g, arrow1, base_.getFontSize() * 0.5f,
-                                      {.fit = false, .drawBright = false, .drawDark = true});
+                                      {.fit = false, .draw_bright = false, .draw_dark = true});
                 g.setColour(base_.getTextHideColor());
                 g.fillPath(filling1);
                 // fill the pie segment between two values
@@ -145,82 +145,82 @@ namespace zlgui {
         };
 
     public:
-        explicit TwoValueRotarySlider(const juce::String &labelText, UIBase &base,
-                                      multilingual::labels labelIdx = multilingual::labels::labelNum)
-            : uiBase(base), background(uiBase),
-              slider1(base, labelText), slider2(base, labelText), display(base),
-              labelLookAndFeel(base), labelLookAndFeel1(base), labelLookAndFeel2(base), textBoxLAF(base) {
-            addAndMakeVisible(background);
-            for (auto const s: {&slider1, &slider2}) {
-                s->setSliderStyle(uiBase.getRotaryStyle());
+        explicit TwoValueRotarySlider(const juce::String &label_text, UIBase &base,
+                                      multilingual::Labels label_idx = multilingual::Labels::kLabelNum)
+            : ui_base_(base), background_(ui_base_),
+              slider1_(base, label_text), slider2_(base, label_text), display_(base),
+              label_look_and_feel_(base), label_look_and_feel1_(base), label_look_and_feel2_(base), text_box_laf_(base) {
+            addAndMakeVisible(background_);
+            for (auto const s: {&slider1_, &slider2_}) {
+                s->setSliderStyle(ui_base_.getRotaryStyle());
                 s->setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
                 s->setDoubleClickReturnValue(true, 0.0);
                 s->setScrollWheelEnabled(true);
                 s->setInterceptsMouseClicks(false, false);
             }
 
-            slider1.addListener(this);
+            slider1_.addListener(this);
             if (UseSecondSlider) {
-                slider2.addListener(this);
+                slider2_.addListener(this);
             }
-            addAndMakeVisible(display);
+            addAndMakeVisible(display_);
 
-            label.setText(labelText, juce::dontSendNotification);
-            label.setJustificationType(juce::Justification::centred);
-            label.setBufferedToImage(true);
-            label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
+            label_.setText(label_text, juce::dontSendNotification);
+            label_.setJustificationType(juce::Justification::centred);
+            label_.setBufferedToImage(true);
+            label1_.setText(getDisplayValue(slider1_), juce::dontSendNotification);
 
-            labelLookAndFeel.setFontScale(1.75f);
-            labelLookAndFeel1.setFontScale(FontHuge);
-            label1.setJustificationType(juce::Justification::centredBottom);
+            label_look_and_feel_.setFontScale(1.75f);
+            label_look_and_feel1_.setFontScale(kFontHuge);
+            label1_.setJustificationType(juce::Justification::centredBottom);
 
-            label.setLookAndFeel(&labelLookAndFeel);
-            label1.setLookAndFeel(&labelLookAndFeel1);
+            label_.setLookAndFeel(&label_look_and_feel_);
+            label1_.setLookAndFeel(&label_look_and_feel1_);
 
             if (UseSecondSlider) {
-                label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
-                labelLookAndFeel2.setFontScale(FontHuge);
-                label2.setJustificationType(juce::Justification::centredTop);
-                label2.setLookAndFeel(&labelLookAndFeel2);
+                label2_.setText(getDisplayValue(slider2_), juce::dontSendNotification);
+                label_look_and_feel2_.setFontScale(kFontHuge);
+                label2_.setJustificationType(juce::Justification::centredTop);
+                label2_.setLookAndFeel(&label_look_and_feel2_);
             }
 
-            for (auto &l: {&label, &label1, &label2}) {
+            for (auto &l: {&label_, &label1_, &label2_}) {
                 l->setInterceptsMouseClicks(false, false);
             }
 
-            addAndMakeVisible(label);
-            addChildComponent(label1);
+            addAndMakeVisible(label_);
+            addChildComponent(label1_);
 
             setEditable(true);
-            label1.setEditable(false, true);
+            label1_.setEditable(false, true);
 
-            label1.addListener(this);
+            label1_.addListener(this);
 
             if (UseSecondSlider) {
-                addChildComponent(label2);
-                label2.setEditable(false, true);
-                label2.addListener(this);
+                addChildComponent(label2_);
+                label2_.setEditable(false, true);
+                label2_.addListener(this);
             }
 
-            if (labelIdx != multilingual::labels::labelNum) {
-                SettableTooltipClient::setTooltip(uiBase.getToolTipText(labelIdx));
+            if (label_idx != multilingual::Labels::kLabelNum) {
+                SettableTooltipClient::setTooltip(ui_base_.getToolTipText(label_idx));
             }
 
             setOpaque(Opaque);
         }
 
         ~TwoValueRotarySlider() override {
-            slider1.removeListener(this);
-            label1.removeListener(this);
+            slider1_.removeListener(this);
+            label1_.removeListener(this);
             if (UseSecondSlider) {
-                slider2.removeListener(this);
-                label2.removeListener(this);
+                slider2_.removeListener(this);
+                label2_.removeListener(this);
             }
         }
 
         void paint(juce::Graphics &g) override {
             if (Opaque) {
-                g.fillAll(uiBase.getBackgroundColor());
+                g.fillAll(ui_base_.getBackgroundColor());
             }
         }
 
@@ -228,10 +228,10 @@ namespace zlgui {
             if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
                 return;
             }
-            if (!showSlider2 || event.mods.isLeftButtonDown()) {
-                slider1.mouseUp(event);
+            if (!show_slider2_ || event.mods.isLeftButtonDown()) {
+                slider1_.mouseUp(event);
             } else {
-                slider2.mouseUp(event);
+                slider2_.mouseUp(event);
             }
         }
 
@@ -239,50 +239,50 @@ namespace zlgui {
             if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
                 return;
             }
-            if (!showSlider2 || event.mods.isLeftButtonDown()) {
-                slider1.mouseDown(event);
+            if (!show_slider2_ || event.mods.isLeftButtonDown()) {
+                slider1_.mouseDown(event);
             } else {
-                slider2.mouseDown(event);
+                slider2_.mouseDown(event);
             }
             const auto currentShiftPressed = event.mods.isShiftDown();
-            if (currentShiftPressed != isShiftPressed) {
-                isShiftPressed = currentShiftPressed;
+            if (currentShiftPressed != is_shift_pressed_) {
+                is_shift_pressed_ = currentShiftPressed;
                 updateDragDistance();
             }
         }
 
         void mouseDrag(const juce::MouseEvent &event) override {
-            if (!showSlider2 || event.mods.isLeftButtonDown()) {
-                slider1.mouseDrag(event);
+            if (!show_slider2_ || event.mods.isLeftButtonDown()) {
+                slider1_.mouseDrag(event);
             } else {
-                slider2.mouseDrag(event);
+                slider2_.mouseDrag(event);
             }
         }
 
         void mouseEnter(const juce::MouseEvent &event) override {
-            slider1.mouseEnter(event);
-            slider2.mouseEnter(event);
-            label.setVisible(false);
-            label1.setVisible(true);
-            label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
-            if (showSlider2) {
-                label2.setVisible(true);
-                label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
+            slider1_.mouseEnter(event);
+            slider2_.mouseEnter(event);
+            label_.setVisible(false);
+            label1_.setVisible(true);
+            label1_.setText(getDisplayValue(slider1_), juce::dontSendNotification);
+            if (show_slider2_) {
+                label2_.setVisible(true);
+                label2_.setText(getDisplayValue(slider2_), juce::dontSendNotification);
             }
         }
 
         void mouseExit(const juce::MouseEvent &event) override {
-            slider1.mouseExit(event);
-            slider2.mouseExit(event);
+            slider1_.mouseExit(event);
+            slider2_.mouseExit(event);
 
-            if (label1.getCurrentTextEditor() != nullptr || label2.getCurrentTextEditor() != nullptr) {
+            if (label1_.getCurrentTextEditor() != nullptr || label2_.getCurrentTextEditor() != nullptr) {
                 return;
             }
 
-            label.setVisible(true);
-            label1.setVisible(false);
-            if (showSlider2) {
-                label2.setVisible(false);
+            label_.setVisible(true);
+            label1_.setVisible(false);
+            if (show_slider2_) {
+                label2_.setVisible(false);
             }
         }
 
@@ -291,217 +291,217 @@ namespace zlgui {
         }
 
         void mouseDoubleClick(const juce::MouseEvent &event) override {
-            if (uiBase.getIsSliderDoubleClickOpenEditor() != event.mods.isCommandDown()) {
+            if (ui_base_.getIsSliderDoubleClickOpenEditor() != event.mods.isCommandDown()) {
                 const auto portion = static_cast<float>(event.getPosition().getY()
                                      ) / static_cast<float>(getLocalBounds().getHeight());
-                if (portion < .5f || !showSlider2) {
-                    label1.showEditor();
+                if (portion < .5f || !show_slider2_) {
+                    label1_.showEditor();
                     return;
                 } else {
-                    label2.showEditor();
+                    label2_.showEditor();
                     return;
                 }
             }
-            if (!showSlider2 || event.mods.isLeftButtonDown()) {
-                slider1.mouseDoubleClick(event);
+            if (!show_slider2_ || event.mods.isLeftButtonDown()) {
+                slider1_.mouseDoubleClick(event);
             } else {
-                slider2.mouseDoubleClick(event);
+                slider2_.mouseDoubleClick(event);
             }
         }
 
         void mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override {
-            if (!showSlider2) {
-                slider1.mouseWheelMove(event, wheel);
+            if (!show_slider2_) {
+                slider1_.mouseWheelMove(event, wheel);
             } else {
-                slider1.mouseWheelMove(event, wheel);
-                slider2.mouseWheelMove(event, wheel);
+                slider1_.mouseWheelMove(event, wheel);
+                slider2_.mouseWheelMove(event, wheel);
             }
         }
 
         void resized() override {
             auto bound = getLocalBounds().toFloat();
-            bound = bound.withSizeKeepingCentre(bound.getWidth() - lrPad,
-                                                bound.getHeight() - ubPad);
-            background.setBounds(bound.toNearestInt());
-            slider1.setBounds(bound.toNearestInt());
-            slider2.setBounds(bound.toNearestInt());
-            display.setBounds(bound.toNearestInt());
+            bound = bound.withSizeKeepingCentre(bound.getWidth() - lr_pad_,
+                                                bound.getHeight() - ub_pad_);
+            background_.setBounds(bound.toNearestInt());
+            slider1_.setBounds(bound.toNearestInt());
+            slider2_.setBounds(bound.toNearestInt());
+            display_.setBounds(bound.toNearestInt());
 
             auto labelBound = bound.withSizeKeepingCentre(bound.getWidth() * 0.7f,
                                                           bound.getHeight() * 0.6f);
-            label.setBounds(labelBound.toNearestInt());
+            label_.setBounds(labelBound.toNearestInt());
 
-            setShowSlider2(showSlider2);
+            setShowSlider2(show_slider2_);
         }
 
-        inline juce::Slider &getSlider1() { return slider1; }
+        inline juce::Slider &getSlider1() { return slider1_; }
 
-        inline juce::Slider &getSlider2() { return slider2; }
+        inline juce::Slider &getSlider2() { return slider2_; }
 
         void setShowSlider2(const bool x) {
-            showSlider2 = x && UseSecondSlider;
+            show_slider2_ = x && UseSecondSlider;
 
             auto bound = getLocalBounds().toFloat();
-            bound = bound.withSizeKeepingCentre(bound.getWidth() - lrPad,
-                                                bound.getHeight() - ubPad);
+            bound = bound.withSizeKeepingCentre(bound.getWidth() - lr_pad_,
+                                                bound.getHeight() - ub_pad_);
 
             auto labelBound = bound.withSizeKeepingCentre(bound.getWidth() * 0.6f,
                                                           bound.getHeight() * 0.5f);
-            if (showSlider2) {
+            if (show_slider2_) {
                 const auto valueBound1 = labelBound.removeFromTop(labelBound.getHeight() * 0.5f);
                 const auto valueBound2 = labelBound;
-                label1.setBounds(valueBound1.toNearestInt());
-                label2.setBounds(valueBound2.toNearestInt());
-                label1.setJustificationType(juce::Justification::centredBottom);
-                label2.setJustificationType(juce::Justification::centredTop);
+                label1_.setBounds(valueBound1.toNearestInt());
+                label2_.setBounds(valueBound2.toNearestInt());
+                label1_.setJustificationType(juce::Justification::centredBottom);
+                label2_.setJustificationType(juce::Justification::centredTop);
             } else {
                 labelBound = labelBound.withSizeKeepingCentre(labelBound.getWidth(), labelBound.getHeight() * .5f);
-                label1.setBounds(labelBound.toNearestInt());
-                label2.setVisible(false);
-                label1.setJustificationType(juce::Justification::centred);
+                label1_.setBounds(labelBound.toNearestInt());
+                label2_.setVisible(false);
+                label1_.setJustificationType(juce::Justification::centred);
             }
-            display.setShowSlider2(showSlider2);
+            display_.setShowSlider2(show_slider2_);
         }
 
         inline void setPadding(const float lr, const float ub) {
-            lrPad = lr;
-            ubPad = ub;
+            lr_pad_ = lr;
+            ub_pad_ = ub;
         }
 
         inline void setEditable(const bool x) {
-            editable = x;
-            labelLookAndFeel.setEditable(x);
-            labelLookAndFeel1.setEditable(x);
-            labelLookAndFeel2.setEditable(x);
+            editable_ = x;
+            label_look_and_feel_.setEditable(x);
+            label_look_and_feel1_.setEditable(x);
+            label_look_and_feel2_.setEditable(x);
             setInterceptsMouseClicks(x, false);
-            label.repaint();
+            label_.repaint();
         }
 
-        inline bool getEditable() const { return editable; }
+        inline bool getEditable() const { return editable_; }
 
         void setMouseDragSensitivity(const int x) {
-            dragDistance = x;
+            drag_distance_ = x;
             updateDragDistance();
         }
 
         void updateDisplay() {
-            display.setSlider1Value(
-                    static_cast<float>(slider1.getNormalisableRange().convertTo0to1(slider1.getValue())));
-            display.setSlider2Value(
-                    static_cast<float>(slider2.getNormalisableRange().convertTo0to1(slider2.getValue())));
+            display_.setSlider1Value(
+                    static_cast<float>(slider1_.getNormalisableRange().convertTo0to1(slider1_.getValue())));
+            display_.setSlider2Value(
+                    static_cast<float>(slider2_.getNormalisableRange().convertTo0to1(slider2_.getValue())));
         }
 
     private:
-        UIBase &uiBase;
-        Background background;
+        UIBase &ui_base_;
+        Background background_;
 
-        SnappingSlider slider1, slider2;
+        SnappingSlider slider1_, slider2_;
 
-        Display display;
+        Display display_;
 
-        NameLookAndFeel labelLookAndFeel, labelLookAndFeel1, labelLookAndFeel2;
-        NameLookAndFeel textBoxLAF;
+        NameLookAndFeel label_look_and_feel_, label_look_and_feel1_, label_look_and_feel2_;
+        NameLookAndFeel text_box_laf_;
 
-        juce::Label label, label1, label2;
+        juce::Label label_, label1_, label2_;
 
-        bool showSlider2{false}, editable{true};
-        float lrPad{0.f}, ubPad{0.f};
+        bool show_slider2_{false}, editable_{true};
+        float lr_pad_{0.f}, ub_pad_{0.f};
 
-        int dragDistance{10};
-        bool isShiftPressed{false};
+        int drag_distance_{10};
+        bool is_shift_pressed_{false};
 
         static juce::String getDisplayValue(juce::Slider &s) {
             auto value = s.getNormalisableRange().snapToLegalValue(s.getValue());
-            juce::String labelToDisplay = juce::String(value).substring(0, 4);
-            if (value < 10000 && labelToDisplay.contains(".")) {
-                labelToDisplay = juce::String(value).substring(0, 5);
+            juce::String label_to_display = juce::String(value).substring(0, 4);
+            if (value < 10000 && label_to_display.contains(".")) {
+                label_to_display = juce::String(value).substring(0, 5);
             }
             if (value >= 10000) {
                 value = value / 1000;
-                labelToDisplay = juce::String(value).substring(0, 4) + "K";
+                label_to_display = juce::String(value).substring(0, 4) + "K";
             }
             // remove trailing zeros
-            while (labelToDisplay.contains(".")) {
-                const auto lastS = labelToDisplay.getLastCharacter();
+            while (label_to_display.contains(".")) {
+                const auto lastS = label_to_display.getLastCharacter();
                 if (lastS == '.' || lastS == '0') {
-                    labelToDisplay = labelToDisplay.dropLastCharacters(1);
+                    label_to_display = label_to_display.dropLastCharacters(1);
                 } else {
                     break;
                 }
             }
-            return labelToDisplay;
+            return label_to_display;
         }
 
-        void labelTextChanged(juce::Label *labelThatHasChanged) override {
-            juce::ignoreUnused(labelThatHasChanged);
+        void labelTextChanged(juce::Label *label_that_has_changed) override {
+            juce::ignoreUnused(label_that_has_changed);
         }
 
         void editorShown(juce::Label *l, juce::TextEditor &editor) override {
             juce::ignoreUnused(l);
             editor.setInputRestrictions(0, allowedChars);
 
-            label.setVisible(false);
-            label1.setVisible(true);
-            if (showSlider2) {
-                label2.setVisible(true);
+            label_.setVisible(false);
+            label1_.setVisible(true);
+            if (show_slider2_) {
+                label2_.setVisible(true);
             }
 
             editor.setJustification(juce::Justification::centred);
-            editor.setColour(juce::TextEditor::outlineColourId, uiBase.getTextColor());
-            editor.setColour(juce::TextEditor::highlightedTextColourId, uiBase.getTextColor());
-            editor.applyFontToAllText(juce::FontOptions{uiBase.getFontSize() * FontHuge});
-            editor.applyColourToAllText(uiBase.getTextColor(), true);
+            editor.setColour(juce::TextEditor::outlineColourId, ui_base_.getTextColor());
+            editor.setColour(juce::TextEditor::highlightedTextColourId, ui_base_.getTextColor());
+            editor.applyFontToAllText(juce::FontOptions{ui_base_.getFontSize() * kFontHuge});
+            editor.applyColourToAllText(ui_base_.getTextColor(), true);
         }
 
         void editorHidden(juce::Label *l, juce::TextEditor &editor) override {
-            double actualValue;
+            double actual_value;
             if (parseString) {
-                actualValue = parseString(editor.getText());
+                actual_value = parseString(editor.getText());
             } else {
                 const auto text = editor.getText();
                 const auto k = (text.contains("k") || text.contains("K")) ? 1000.0 : 1.0;
-                actualValue = text.getDoubleValue() * k;
+                actual_value = text.getDoubleValue() * k;
             }
 
-            if (l == &label1) {
-                slider1.setValue(actualValue, juce::sendNotificationAsync);
+            if (l == &label1_) {
+                slider1_.setValue(actual_value, juce::sendNotificationAsync);
             }
-            if (l == &label2) {
-                slider2.setValue(actualValue, juce::sendNotificationAsync);
+            if (l == &label2_) {
+                slider2_.setValue(actual_value, juce::sendNotificationAsync);
             }
 
-            label.setVisible(true);
-            label1.setVisible(false);
-            if (showSlider2) {
-                label2.setVisible(false);
+            label_.setVisible(true);
+            label1_.setVisible(false);
+            if (show_slider2_) {
+                label2_.setVisible(false);
             }
         }
 
         void sliderValueChanged(juce::Slider *slider) override {
-            if (slider == &slider1) {
-                label1.setText(getDisplayValue(slider1), juce::dontSendNotification);
-                display.setSlider1Value(
-                    static_cast<float>(slider1.getNormalisableRange().convertTo0to1(slider1.getValue())));
+            if (slider == &slider1_) {
+                label1_.setText(getDisplayValue(slider1_), juce::dontSendNotification);
+                display_.setSlider1Value(
+                    static_cast<float>(slider1_.getNormalisableRange().convertTo0to1(slider1_.getValue())));
             }
-            if (slider == &slider2) {
-                label2.setText(getDisplayValue(slider2), juce::dontSendNotification);
-                display.setSlider2Value(
-                    static_cast<float>(slider2.getNormalisableRange().convertTo0to1(slider2.getValue())));
+            if (slider == &slider2_) {
+                label2_.setText(getDisplayValue(slider2_), juce::dontSendNotification);
+                display_.setSlider2Value(
+                    static_cast<float>(slider2_.getNormalisableRange().convertTo0to1(slider2_.getValue())));
             }
         }
 
         void updateDragDistance() {
-            int actualDragDistance;
-            if (isShiftPressed) {
-                actualDragDistance = juce::roundToInt(
-                    static_cast<float>(dragDistance) / uiBase.getSensitivity(sensitivityIdx::mouseDragFine));
+            int actual_drag_distance;
+            if (is_shift_pressed_) {
+                actual_drag_distance = juce::roundToInt(
+                    static_cast<float>(drag_distance_) / ui_base_.getSensitivity(SensitivityIdx::kMouseDragFine));
             } else {
-                actualDragDistance = juce::roundToInt(
-                    static_cast<float>(dragDistance) / uiBase.getSensitivity(sensitivityIdx::mouseDrag));
+                actual_drag_distance = juce::roundToInt(
+                    static_cast<float>(drag_distance_) / ui_base_.getSensitivity(SensitivityIdx::kMouseDrag));
             }
-            actualDragDistance = std::max(actualDragDistance, 1);
-            slider1.setMouseDragSensitivity(actualDragDistance);
-            slider2.setMouseDragSensitivity(actualDragDistance);
+            actual_drag_distance = std::max(actual_drag_distance, 1);
+            slider1_.setMouseDragSensitivity(actual_drag_distance);
+            slider2_.setMouseDragSensitivity(actual_drag_distance);
         }
     };
 }

@@ -18,12 +18,12 @@ namespace zlpanel {
         explicit OutputBox(PluginProcessor &p,
                                   zlgui::UIBase &base)
             : processor_ref_(p), parameters_ref_(p.parameters),
-              uiBase(base),
-              phaseC("phase", uiBase, zlgui::multilingual::labels::phaseFlip),
-              agcC("A", uiBase, zlgui::multilingual::labels::autoGC),
-              lmC("L", uiBase, zlgui::multilingual::labels::loudnessMatch),
-              scaleS("Scale", uiBase, zlgui::multilingual::labels::scale),
-              outGainS("Out Gain", uiBase, zlgui::multilingual::labels::outputGain),
+              ui_base_(base),
+              phaseC("phase", ui_base_, zlgui::multilingual::Labels::kPhaseFlip),
+              agcC("A", ui_base_, zlgui::multilingual::Labels::kAutoGC),
+              lmC("L", ui_base_, zlgui::multilingual::Labels::kLoudnessMatch),
+              scaleS("Scale", ui_base_, zlgui::multilingual::Labels::kScale),
+              outGainS("Out Gain", ui_base_, zlgui::multilingual::Labels::kOutputGain),
               phaseDrawable(
                   juce::Drawable::createFromImageData(BinaryData::fadphase_svg,
                                                       BinaryData::fadphase_svgSize)),
@@ -61,38 +61,38 @@ namespace zlpanel {
                 }
             };
 
-            uiBase.getBoxTree().addListener(this);
+            ui_base_.getBoxTree().addListener(this);
         }
 
         ~OutputBox() override {
-            uiBase.getBoxTree().removeListener(this);
+            ui_base_.getBoxTree().removeListener(this);
         }
 
         void paint(juce::Graphics &g) override {
             juce::Path path;
             const auto bound = getLocalBounds().toFloat();
             path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                     std::round(uiBase.getFontSize() * .25f),
-                                     std::round(uiBase.getFontSize() * .25f),
+                                     std::round(ui_base_.getFontSize() * .25f),
+                                     std::round(ui_base_.getFontSize() * .25f),
                                      false, false, true, true);
-            g.setColour(uiBase.getBackgroundColor());
+            g.setColour(ui_base_.getBackgroundColor());
             g.fillPath(path);
         }
 
         juce::Rectangle<int> getIdealBound() const {
-            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
-            const auto buttonHeight = static_cast<int>(buttonHeightP * uiBase.getFontSize());
-            const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * 2.5);
+            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto buttonHeight = static_cast<int>(buttonHeightP * ui_base_.getFontSize());
+            const auto buttonWidth = static_cast<int>(ui_base_.getFontSize() * 2.5);
             return {buttonWidth * 3 + padSize * 2, buttonHeight * 3 + padSize};
         }
 
         void resized() override {
             for (auto &c: {&scaleS, &outGainS}) {
-                c->setPadding(std::round(uiBase.getFontSize() * 0.5f),
-                              std::round(uiBase.getFontSize() * 0.6f));
+                c->setPadding(std::round(ui_base_.getFontSize() * 0.5f),
+                              std::round(ui_base_.getFontSize() * 0.6f));
             }
 
-            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.5f);
+            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.5f);
             auto bound = getLocalBounds();
             bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
                                          bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
@@ -118,7 +118,7 @@ namespace zlpanel {
     private:
         PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &parameters_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
 
         zlgui::CompactButton phaseC, agcC, lmC;
         juce::OwnedArray<zlgui::ButtonCusAttachment<false> > buttonAttachments{};
@@ -135,8 +135,8 @@ namespace zlpanel {
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override {
             juce::ignoreUnused(treeWhosePropertyHasChanged, property);
-            if (uiBase.isBoxProperty(zlgui::boxIdx::outputBox, property)) {
-                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlgui::boxIdx::outputBox));
+            if (ui_base_.isBoxProperty(zlgui::BoxIdx::kOutputBox, property)) {
+                const auto f = static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kOutputBox));
                 setVisible(f);
             }
         }

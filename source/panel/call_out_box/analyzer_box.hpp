@@ -18,16 +18,16 @@ namespace zlpanel {
         explicit AnalyzerBox(juce::AudioProcessorValueTreeState &parameters_NA,
                                zlgui::UIBase &base)
             : parameters_NA_ref_(parameters_NA),
-              uiBase(base),
-              fftPreON("Pre:", zlstate::fftPreON::choices, uiBase, zlgui::multilingual::labels::fftPre),
-              fftPostON("Post:", zlstate::fftPostON::choices, uiBase, zlgui::multilingual::labels::fftPost),
-              fftSideON("Side:", zlstate::fftSideON::choices, uiBase, zlgui::multilingual::labels::fftSide),
-              ffTSpeed("", zlstate::ffTSpeed::choices, uiBase, zlgui::multilingual::labels::fftDecay),
-              fftTilt("", zlstate::ffTTilt::choices, uiBase, zlgui::multilingual::labels::fftSlope) {
+              ui_base_(base),
+              fftPreON("Pre:", zlstate::fftPreON::choices, ui_base_, zlgui::multilingual::Labels::kFFTPre),
+              fftPostON("Post:", zlstate::fftPostON::choices, ui_base_, zlgui::multilingual::Labels::kFFTPost),
+              fftSideON("Side:", zlstate::fftSideON::choices, ui_base_, zlgui::multilingual::Labels::kFFTSide),
+              ffTSpeed("", zlstate::ffTSpeed::choices, ui_base_, zlgui::multilingual::Labels::kFFTDecay),
+              fftTilt("", zlstate::ffTTilt::choices, ui_base_, zlgui::multilingual::Labels::kFFTSlope) {
             for (auto &c: {&fftPreON, &fftPostON, &fftSideON}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.5f);
-                c->setLabelPos(zlgui::ClickCombobox::left);
+                c->setLabelPos(zlgui::ClickCombobox::kLeft);
                 addAndMakeVisible(c);
             }
             for (auto &c: {&ffTSpeed, &fftTilt}) {
@@ -46,33 +46,33 @@ namespace zlpanel {
                    parameters_NA_ref_, boxAttachments);
             setBufferedToImage(true);
 
-            uiBase.getBoxTree().addListener(this);
+            ui_base_.getBoxTree().addListener(this);
         }
 
         ~AnalyzerBox() override {
-            uiBase.getBoxTree().removeListener(this);
+            ui_base_.getBoxTree().removeListener(this);
         }
 
         void paint(juce::Graphics &g) override {
             juce::Path path;
             const auto bound = getLocalBounds().toFloat();
             path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                     std::round(uiBase.getFontSize() * .25f),
-                                     std::round(uiBase.getFontSize() * .25f),
+                                     std::round(ui_base_.getFontSize() * .25f),
+                                     std::round(ui_base_.getFontSize() * .25f),
                                      false, false, true, true);
-            g.setColour(uiBase.getBackgroundColor());
+            g.setColour(ui_base_.getBackgroundColor());
             g.fillPath(path);
         }
 
         juce::Rectangle<int> getIdealBound() const {
-            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
-            const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * 2.5);
-            const auto boxHeight = juce::roundToInt(boxHeightP * uiBase.getFontSize());
+            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto buttonWidth = static_cast<int>(ui_base_.getFontSize() * 2.5);
+            const auto boxHeight = juce::roundToInt(boxHeightP * ui_base_.getFontSize());
             return {buttonWidth * 3 + padSize * 2, boxHeight * 5 + padSize};
         }
 
         void resized() override {
-            const auto padSize = juce::roundToInt(uiBase.getFontSize() * 0.25f);
+            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
             auto bound = getLocalBounds();
             bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
                                          bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
@@ -96,7 +96,7 @@ namespace zlpanel {
 
     private:
         juce::AudioProcessorValueTreeState &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
 
         zlgui::ClickCombobox fftPreON, fftPostON, fftSideON;
         zlgui::CompactCombobox ffTSpeed, fftTilt;
@@ -105,8 +105,8 @@ namespace zlpanel {
         void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                       const juce::Identifier &property) override {
             juce::ignoreUnused(treeWhosePropertyHasChanged);
-            if (uiBase.isBoxProperty(zlgui::boxIdx::analyzerBox, property)) {
-                const auto f = static_cast<bool>(uiBase.getBoxProperty(zlgui::boxIdx::analyzerBox));
+            if (ui_base_.isBoxProperty(zlgui::BoxIdx::kAnalyzerBox, property)) {
+                const auto f = static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kAnalyzerBox));
                 setVisible(f);
             }
         }

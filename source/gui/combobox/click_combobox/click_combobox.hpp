@@ -17,30 +17,30 @@ namespace zlgui {
     class ClickCombobox final : public juce::Component {
     public:
         enum LabelPos {
-            left, right, top, bottom
+            kLeft, kRight, kTop, kBottom
         };
 
-        ClickCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base,
-                      multilingual::labels labelIdx = multilingual::labels::labelNum);
+        ClickCombobox(const juce::String &label_text, const juce::StringArray &choices, UIBase &base,
+                      multilingual::Labels label_idx = multilingual::Labels::kLabelNum);
 
         ~ClickCombobox() override;
 
         void resized() override;
 
-        void setLabelScale(const float x) { lScale.store(x); }
+        void setLabelScale(const float x) { l_scale_.store(x); }
 
-        void setLabelPos(const LabelPos x) { lPos.store(x); }
+        void setLabelPos(const LabelPos x) { l_pos_.store(x); }
 
-        ClickComboboxButtonLookAndFeel &getLabelLAF() { return labelLAF; }
+        ClickComboboxButtonLookAndFeel &getLabelLAF() { return label_laf_; }
 
-        CompactCombobox &getCompactBox() { return compactBox; }
+        CompactCombobox &getCompactBox() { return compact_box_; }
 
     private:
-        CompactCombobox compactBox;
-        juce::DrawableButton label;
-        ClickComboboxButtonLookAndFeel labelLAF;
-        std::atomic<float> lScale{0.f};
-        std::atomic<LabelPos> lPos{left};
+        CompactCombobox compact_box_;
+        juce::DrawableButton label_;
+        ClickComboboxButtonLookAndFeel label_laf_;
+        std::atomic<float> l_scale_{0.f};
+        std::atomic<LabelPos> l_pos_{kLeft};
 
         void selectRight();
     };

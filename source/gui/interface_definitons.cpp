@@ -11,355 +11,355 @@
 #include "../state/state_definitions.hpp"
 
 namespace zlgui {
-    juce::Rectangle<float> UIBase::getRoundedShadowRectangleArea(juce::Rectangle<float> boxBounds, float cornerSize,
-                                                                 const fillRoundedShadowRectangleArgs &margs) {
-        const auto radius = juce::jmax(juce::roundToInt(cornerSize * margs.blurRadius * 1.5f), 1);
-        return boxBounds.withSizeKeepingCentre(
-            boxBounds.getWidth() - static_cast<float>(radius) - 1.42f * cornerSize,
-            boxBounds.getHeight() - static_cast<float>(radius) - 1.42f * cornerSize);
+    juce::Rectangle<float> UIBase::getRoundedShadowRectangleArea(juce::Rectangle<float> box_bounds, float corner_size,
+                                                                 const FillRoundedShadowRectangleArgs &margs) {
+        const auto radius = juce::jmax(juce::roundToInt(corner_size * margs.blur_radius * 1.5f), 1);
+        return box_bounds.withSizeKeepingCentre(
+            box_bounds.getWidth() - static_cast<float>(radius) - 1.42f * corner_size,
+            box_bounds.getHeight() - static_cast<float>(radius) - 1.42f * corner_size);
     }
 
     juce::Rectangle<float> UIBase::fillRoundedShadowRectangle(juce::Graphics &g,
-                                                              juce::Rectangle<float> boxBounds,
-                                                              float cornerSize,
-                                                              const fillRoundedShadowRectangleArgs &margs) const {
+                                                              juce::Rectangle<float> box_bounds,
+                                                              float corner_size,
+                                                              const FillRoundedShadowRectangleArgs &margs) const {
         auto args = margs;
-        if (!args.changeMain)
-            args.mainColour = getBackgroundColor().withAlpha(args.mainColour.getAlpha());
-        if (!args.changeDark)
-            args.darkShadowColor = getDarkShadowColor();
-        if (!args.changeBright)
-            args.brightShadowColor = getBrightShadowColor();
+        if (!args.change_main)
+            args.main_colour = getBackgroundColor().withAlpha(args.main_colour.getAlpha());
+        if (!args.change_dark)
+            args.dark_shadow_color = getDarkShadowColor();
+        if (!args.change_bright)
+            args.bright_shadow_color = getBrightShadowColor();
 
         juce::Path path;
-        const auto radius = juce::jmax(juce::roundToInt(cornerSize * args.blurRadius * 1.5f), 1);
+        const auto radius = juce::jmax(juce::roundToInt(corner_size * args.blur_radius * 1.5f), 1);
         if (args.fit) {
-            boxBounds = boxBounds.withSizeKeepingCentre(
-                boxBounds.getWidth() - static_cast<float>(radius) - 1.42f * cornerSize,
-                boxBounds.getHeight() - static_cast<float>(radius) - 1.42f * cornerSize);
+            box_bounds = box_bounds.withSizeKeepingCentre(
+                box_bounds.getWidth() - static_cast<float>(radius) - 1.42f * corner_size,
+                box_bounds.getHeight() - static_cast<float>(radius) - 1.42f * corner_size);
         }
-        path.addRoundedRectangle(boxBounds.getX(), boxBounds.getY(),
-                                 boxBounds.getWidth(), boxBounds.getHeight(),
-                                 cornerSize, cornerSize,
-                                 args.curveTopLeft, args.curveTopRight,
-                                 args.curveBottomLeft, args.curveBottomRight);
-        auto offset = static_cast<int>(cornerSize * args.blurRadius);
+        path.addRoundedRectangle(box_bounds.getX(), box_bounds.getY(),
+                                 box_bounds.getWidth(), box_bounds.getHeight(),
+                                 corner_size, corner_size,
+                                 args.curve_top_left, args.curve_top_right,
+                                 args.curve_bottom_left, args.curve_bottom_right);
+        auto offset = static_cast<int>(corner_size * args.blur_radius);
         juce::Path mask(path);
         mask.setUsingNonZeroWinding(false);
-        mask.addRectangle(boxBounds.withSizeKeepingCentre(boxBounds.getWidth() + cornerSize * 3,
-                                                          boxBounds.getHeight() + cornerSize * 3));
+        mask.addRectangle(box_bounds.withSizeKeepingCentre(box_bounds.getWidth() + corner_size * 3,
+                                                          box_bounds.getHeight() + corner_size * 3));
         g.saveState();
         g.reduceClipRegion(mask);
-        if (args.drawBright) {
-            juce::DropShadow brightShadow(args.brightShadowColor, radius,
+        if (args.draw_bright) {
+            juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
                                           {-offset, -offset});
-            brightShadow.drawForPath(g, path);
+            bright_shadow.drawForPath(g, path);
         }
-        if (args.drawDark) {
-            juce::DropShadow darkShadow(args.darkShadowColor, radius,
+        if (args.draw_dark) {
+            juce::DropShadow dark_shadow(args.dark_shadow_color, radius,
                                         {offset, offset});
-            darkShadow.drawForPath(g, path);
+            dark_shadow.drawForPath(g, path);
         }
         g.restoreState();
-        if (args.drawMain) {
-            g.setColour(args.mainColour);
+        if (args.draw_main) {
+            g.setColour(args.main_colour);
             g.fillPath(path);
         }
-        return boxBounds;
+        return box_bounds;
     }
 
     juce::Rectangle<float> UIBase::fillRoundedInnerShadowRectangle(juce::Graphics &g,
-                                                                   juce::Rectangle<float> boxBounds,
-                                                                   float cornerSize,
-                                                                   const fillRoundedShadowRectangleArgs &margs) const {
+                                                                   juce::Rectangle<float> box_bounds,
+                                                                   float corner_size,
+                                                                   const FillRoundedShadowRectangleArgs &margs) const {
         auto args = margs;
-        if (!args.changeMain)
-            args.mainColour = getBackgroundColor();
-        if (!args.changeDark)
-            args.darkShadowColor = getDarkShadowColor();
-        if (!args.changeBright)
-            args.brightShadowColor = getBrightShadowColor();
+        if (!args.change_main)
+            args.main_colour = getBackgroundColor();
+        if (!args.change_dark)
+            args.dark_shadow_color = getDarkShadowColor();
+        if (!args.change_bright)
+            args.bright_shadow_color = getBrightShadowColor();
 
         juce::Path mask;
-        mask.addRoundedRectangle(boxBounds.getX(), boxBounds.getY(),
-                                 boxBounds.getWidth(), boxBounds.getHeight(),
-                                 cornerSize, cornerSize,
-                                 args.curveTopLeft, args.curveTopRight,
-                                 args.curveBottomLeft, args.curveBottomRight);
+        mask.addRoundedRectangle(box_bounds.getX(), box_bounds.getY(),
+                                 box_bounds.getWidth(), box_bounds.getHeight(),
+                                 corner_size, corner_size,
+                                 args.curve_top_left, args.curve_top_right,
+                                 args.curve_bottom_left, args.curve_bottom_right);
         g.saveState();
         g.reduceClipRegion(mask);
-        if (args.drawMain) {
-            g.fillAll(args.mainColour);
+        if (args.draw_main) {
+            g.fillAll(args.main_colour);
         }
-        auto offset = static_cast<int>(cornerSize * args.blurRadius);
-        auto radius = juce::jmax(juce::roundToInt(cornerSize * args.blurRadius * 1.5f), 1);
+        auto offset = static_cast<int>(corner_size * args.blur_radius);
+        auto radius = juce::jmax(juce::roundToInt(corner_size * args.blur_radius * 1.5f), 1);
         if (!args.flip) {
-            juce::DropShadow darkShadow(args.darkShadowColor.withMultipliedAlpha(0.75f), radius,
+            juce::DropShadow dark_shadow(args.dark_shadow_color.withMultipliedAlpha(0.75f), radius,
                                         {-offset, -offset});
-            darkShadow.drawForPath(g, mask);
-            juce::DropShadow brightShadow(args.brightShadowColor, radius,
+            dark_shadow.drawForPath(g, mask);
+            juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
                                           {offset, offset});
-            brightShadow.drawForPath(g, mask);
+            bright_shadow.drawForPath(g, mask);
         } else {
-            juce::DropShadow brightShadow(args.darkShadowColor, radius,
+            juce::DropShadow bright_shadow(args.dark_shadow_color, radius,
                                           {offset, offset});
-            brightShadow.drawForPath(g, mask);
-            juce::DropShadow darkShadow(args.brightShadowColor.withMultipliedAlpha(0.75f), radius,
+            bright_shadow.drawForPath(g, mask);
+            juce::DropShadow dark_shadow(args.bright_shadow_color.withMultipliedAlpha(0.75f), radius,
                                         {-offset, -offset});
-            darkShadow.drawForPath(g, mask);
+            dark_shadow.drawForPath(g, mask);
         }
-        boxBounds = boxBounds.withSizeKeepingCentre(
-            boxBounds.getWidth() - 0.75f * static_cast<float>(radius),
-            boxBounds.getHeight() - 0.75f * static_cast<float>(radius));
+        box_bounds = box_bounds.withSizeKeepingCentre(
+            box_bounds.getWidth() - 0.75f * static_cast<float>(radius),
+            box_bounds.getHeight() - 0.75f * static_cast<float>(radius));
         juce::Path path;
-        path.addRoundedRectangle(boxBounds.getX(), boxBounds.getY(),
-                                 boxBounds.getWidth(), boxBounds.getHeight(),
-                                 cornerSize, cornerSize,
-                                 args.curveTopLeft, args.curveTopRight,
-                                 args.curveBottomLeft, args.curveBottomRight);
+        path.addRoundedRectangle(box_bounds.getX(), box_bounds.getY(),
+                                 box_bounds.getWidth(), box_bounds.getHeight(),
+                                 corner_size, corner_size,
+                                 args.curve_top_left, args.curve_top_right,
+                                 args.curve_bottom_left, args.curve_bottom_right);
 
-        juce::DropShadow backShadow(args.mainColour, radius,
+        juce::DropShadow back_shadow(args.main_colour, radius,
                                     {0, 0});
-        backShadow.drawForPath(g, path);
+        back_shadow.drawForPath(g, path);
         g.restoreState();
-        return boxBounds;
+        return box_bounds;
     }
 
-    juce::Rectangle<float> UIBase::getShadowEllipseArea(juce::Rectangle<float> boxBounds, float cornerSize,
-                                                        const fillShadowEllipseArgs &margs) {
-        auto radius = juce::jmax(juce::roundToInt(cornerSize * 0.75f), 1);
+    juce::Rectangle<float> UIBase::getShadowEllipseArea(juce::Rectangle<float> box_bounds, float corner_size,
+                                                        const FillShadowEllipseArgs &margs) {
+        auto radius = juce::jmax(juce::roundToInt(corner_size * 0.75f), 1);
         if (margs.fit) {
-            boxBounds = boxBounds.withSizeKeepingCentre(
-                boxBounds.getWidth() - static_cast<float>(radius) - 1.5f * cornerSize,
-                boxBounds.getHeight() - static_cast<float>(radius) - 1.5f * cornerSize);
+            box_bounds = box_bounds.withSizeKeepingCentre(
+                box_bounds.getWidth() - static_cast<float>(radius) - 1.5f * corner_size,
+                box_bounds.getHeight() - static_cast<float>(radius) - 1.5f * corner_size);
         }
-        return boxBounds;
+        return box_bounds;
     }
 
 
     juce::Rectangle<float> UIBase::drawShadowEllipse(juce::Graphics &g,
-                                                     juce::Rectangle<float> boxBounds,
-                                                     float cornerSize,
-                                                     const fillShadowEllipseArgs &margs) const {
+                                                     juce::Rectangle<float> box_bounds,
+                                                     float corner_size,
+                                                     const FillShadowEllipseArgs &margs) const {
         auto args = margs;
-        if (!args.changeMain)
-            args.mainColour = getBackgroundColor();
-        if (!args.changeDark)
-            args.darkShadowColor = getDarkShadowColor();
-        if (!args.changeBright)
-            args.brightShadowColor = getBrightShadowColor();
+        if (!args.change_main)
+            args.main_colour = getBackgroundColor();
+        if (!args.change_dark)
+            args.dark_shadow_color = getDarkShadowColor();
+        if (!args.change_bright)
+            args.bright_shadow_color = getBrightShadowColor();
 
         juce::Path path;
-        auto radius = juce::jmax(juce::roundToInt(cornerSize * 0.75f), 1);
+        auto radius = juce::jmax(juce::roundToInt(corner_size * 0.75f), 1);
         if (args.fit) {
-            boxBounds = boxBounds.withSizeKeepingCentre(
-                boxBounds.getWidth() - static_cast<float>(radius) - 1.5f * cornerSize,
-                boxBounds.getHeight() - static_cast<float>(radius) - 1.5f * cornerSize);
+            box_bounds = box_bounds.withSizeKeepingCentre(
+                box_bounds.getWidth() - static_cast<float>(radius) - 1.5f * corner_size,
+                box_bounds.getHeight() - static_cast<float>(radius) - 1.5f * corner_size);
         }
-        path.addEllipse(boxBounds);
-        auto offset = static_cast<int>(cornerSize * args.blurRadius);
+        path.addEllipse(box_bounds);
+        auto offset = static_cast<int>(corner_size * args.blur_radius);
         juce::Path mask;
-        mask.addEllipse(boxBounds.withSizeKeepingCentre(boxBounds.getWidth() * 3, boxBounds.getHeight() * 3));
+        mask.addEllipse(box_bounds.withSizeKeepingCentre(box_bounds.getWidth() * 3, box_bounds.getHeight() * 3));
         mask.setUsingNonZeroWinding(false);
-        mask.addEllipse(boxBounds);
+        mask.addEllipse(box_bounds);
         g.saveState();
         g.reduceClipRegion(mask);
         if (!args.flip) {
-            if (args.drawDark) {
-                juce::DropShadow darkShadow(args.darkShadowColor, radius,
+            if (args.draw_dark) {
+                juce::DropShadow dark_shadow(args.dark_shadow_color, radius,
                                             {offset, offset});
-                darkShadow.drawForPath(g, path);
+                dark_shadow.drawForPath(g, path);
             }
-            if (args.drawBright) {
-                juce::DropShadow brightShadow(args.brightShadowColor, radius,
+            if (args.draw_bright) {
+                juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
                                               {-offset, -offset});
-                brightShadow.drawForPath(g, path);
+                bright_shadow.drawForPath(g, path);
             }
         } else {
-            if (args.drawDark) {
-                juce::DropShadow darkShadow(args.darkShadowColor, radius,
+            if (args.draw_dark) {
+                juce::DropShadow dark_shadow(args.dark_shadow_color, radius,
                                             {-offset, -offset});
-                darkShadow.drawForPath(g, path);
+                dark_shadow.drawForPath(g, path);
             }
-            if (args.drawBright) {
-                juce::DropShadow brightShadow(args.brightShadowColor, radius,
+            if (args.draw_bright) {
+                juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
                                               {offset, offset});
-                brightShadow.drawForPath(g, path);
+                bright_shadow.drawForPath(g, path);
             }
         }
         g.restoreState();
-        g.setColour(args.mainColour);
+        g.setColour(args.main_colour);
         g.fillPath(path);
-        return boxBounds;
+        return box_bounds;
     }
 
-    juce::Rectangle<float> UIBase::getInnerShadowEllipseArea(juce::Rectangle<float> boxBounds,
-                                                             float cornerSize,
-                                                             const fillShadowEllipseArgs &margs) {
+    juce::Rectangle<float> UIBase::getInnerShadowEllipseArea(juce::Rectangle<float> box_bounds,
+                                                             float corner_size,
+                                                             const FillShadowEllipseArgs &margs) {
         juce::ignoreUnused(margs);
-        auto radius = juce::jmax(juce::roundToInt(cornerSize * 1.5f), 1);
-        boxBounds = boxBounds.withSizeKeepingCentre(
-            boxBounds.getWidth() - 0.75f * static_cast<float>(radius),
-            boxBounds.getHeight() - 0.75f * static_cast<float>(radius));
-        return boxBounds;
+        const auto radius = juce::jmax(juce::roundToInt(corner_size * 1.5f), 1);
+        box_bounds = box_bounds.withSizeKeepingCentre(
+            box_bounds.getWidth() - 0.75f * static_cast<float>(radius),
+            box_bounds.getHeight() - 0.75f * static_cast<float>(radius));
+        return box_bounds;
     }
 
     juce::Rectangle<float> UIBase::drawInnerShadowEllipse(juce::Graphics &g,
-                                                          juce::Rectangle<float> boxBounds,
-                                                          float cornerSize,
-                                                          const fillShadowEllipseArgs &margs) const {
+                                                          juce::Rectangle<float> box_bounds,
+                                                          float corner_size,
+                                                          const FillShadowEllipseArgs &margs) const {
         auto args = margs;
-        if (!args.changeMain)
-            args.mainColour = getBackgroundColor();
-        if (!args.changeDark)
-            args.darkShadowColor = getDarkShadowColor();
-        if (!args.changeBright)
-            args.brightShadowColor = getBrightShadowColor();
+        if (!args.change_main)
+            args.main_colour = getBackgroundColor();
+        if (!args.change_dark)
+            args.dark_shadow_color = getDarkShadowColor();
+        if (!args.change_bright)
+            args.bright_shadow_color = getBrightShadowColor();
 
         juce::Path mask;
-        mask.addEllipse(boxBounds);
+        mask.addEllipse(box_bounds);
         g.saveState();
         g.reduceClipRegion(mask);
-        g.fillAll(args.mainColour);
-        auto radius = juce::jmax(juce::roundToInt(cornerSize * 1.5f), 1);
-        auto offset = static_cast<int>(cornerSize * args.blurRadius) * 2;
+        g.fillAll(args.main_colour);
+        auto radius = juce::jmax(juce::roundToInt(corner_size * 1.5f), 1);
+        auto offset = static_cast<int>(corner_size * args.blur_radius) * 2;
         if (!args.flip) {
-            juce::DropShadow darkShadow(args.darkShadowColor.withMultipliedAlpha(0.75f), radius,
+            juce::DropShadow dark_shadow(args.dark_shadow_color.withMultipliedAlpha(0.75f), radius,
                                         {-offset, -offset});
-            darkShadow.drawForPath(g, mask);
-            juce::DropShadow brightShadow(args.brightShadowColor, radius,
+            dark_shadow.drawForPath(g, mask);
+            juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
                                           {offset, offset});
-            brightShadow.drawForPath(g, mask);
+            bright_shadow.drawForPath(g, mask);
         } else {
-            juce::DropShadow brightShadow(args.darkShadowColor, radius,
+            juce::DropShadow bright_shadow(args.dark_shadow_color, radius,
                                           {offset, offset});
-            brightShadow.drawForPath(g, mask);
-            juce::DropShadow darkShadow(args.brightShadowColor.withMultipliedAlpha(0.75f), radius,
+            bright_shadow.drawForPath(g, mask);
+            juce::DropShadow dark_shadow(args.bright_shadow_color.withMultipliedAlpha(0.75f), radius,
                                         {-offset, -offset});
-            darkShadow.drawForPath(g, mask);
+            dark_shadow.drawForPath(g, mask);
         }
-        boxBounds = boxBounds.withSizeKeepingCentre(
-            boxBounds.getWidth() - 0.75f * static_cast<float>(radius),
-            boxBounds.getHeight() - 0.75f * static_cast<float>(radius));
+        box_bounds = box_bounds.withSizeKeepingCentre(
+            box_bounds.getWidth() - 0.75f * static_cast<float>(radius),
+            box_bounds.getHeight() - 0.75f * static_cast<float>(radius));
         juce::Path path;
-        path.addEllipse(boxBounds);
+        path.addEllipse(box_bounds);
 
-        juce::DropShadow backShadow(args.mainColour, radius, {0, 0});
-        backShadow.drawForPath(g, path);
+        juce::DropShadow back_shadow(args.main_colour, radius, {0, 0});
+        back_shadow.drawForPath(g, path);
         g.restoreState();
-        return boxBounds;
+        return box_bounds;
     }
 
     void UIBase::loadFromAPVTS() {
-        for (size_t i = 0; i < colourNum; ++i) {
-            const auto r = static_cast<juce::uint8>(state.getRawParameterValue(colourNames[i] + "_r")->load());
-            const auto g = static_cast<juce::uint8>(state.getRawParameterValue(colourNames[i] + "_g")->load());
-            const auto b = static_cast<juce::uint8>(state.getRawParameterValue(colourNames[i] + "_b")->load());
-            const auto o = static_cast<float>(state.getRawParameterValue(colourNames[i] + "_o")->load());
-            customColours[i] = juce::Colour(r, g, b, o);
+        for (size_t i = 0; i < kColourNum; ++i) {
+            const auto r = static_cast<juce::uint8>(state.getRawParameterValue(kColourNames[i] + "_r")->load());
+            const auto g = static_cast<juce::uint8>(state.getRawParameterValue(kColourNames[i] + "_g")->load());
+            const auto b = static_cast<juce::uint8>(state.getRawParameterValue(kColourNames[i] + "_b")->load());
+            const auto o = static_cast<float>(state.getRawParameterValue(kColourNames[i] + "_o")->load());
+            custom_colours_[i] = juce::Colour(r, g, b, o);
         }
-        wheelSensitivity[0] = state.getRawParameterValue(zlstate::wheelSensitivity::ID)->load();
-        wheelSensitivity[1] = state.getRawParameterValue(zlstate::wheelFineSensitivity::ID)->load();
-        wheelSensitivity[2] = state.getRawParameterValue(zlstate::dragSensitivity::ID)->load();
-        wheelSensitivity[3] = state.getRawParameterValue(zlstate::dragFineSensitivity::ID)->load();
-        isMouseWheelShiftReverse.store(state.getRawParameterValue(zlstate::wheelShiftReverse::ID)->load() > .5f);
-        rotaryStyleId = static_cast<size_t>(state.getRawParameterValue(zlstate::rotaryStyle::ID)->load());
-        rotaryDragSensitivity = state.getRawParameterValue(zlstate::rotaryDragSensitivity::ID)->load();
-        isSliderDoubleClickOpenEditor.store(loadPara(zlstate::sliderDoubleClickFunc::ID) > .5f);
-        refreshRateId.store(static_cast<size_t>(state.getRawParameterValue(zlstate::refreshRate::ID)->load()));
-        fftExtraTilt.store(loadPara(zlstate::fftExtraTilt::ID));
-        fftExtraSpeed.store(loadPara(zlstate::fftExtraSpeed::ID));
-        singleCurveThickness.store(loadPara(zlstate::singleCurveThickness::ID));
-        sumCurveThickness.store(loadPara(zlstate::sumCurveThickness::ID));
-        defaultPassFilterSlope.store(static_cast<int>(loadPara(zlstate::defaultPassFilterSlope::ID)));
-        cMap1Idx = static_cast<size_t>(loadPara(zlstate::colourMap1Idx::ID));
-        cMap2Idx = static_cast<size_t>(loadPara(zlstate::colourMap2Idx::ID));
-        fftOrderIdx = static_cast<int>(loadPara(zlstate::ffTOrder::ID));
-        dynLink.store(static_cast<bool>(loadPara(zlstate::dynLink::ID)));
-        renderingEngine.store(static_cast<int>(loadPara(zlstate::renderingEngine::ID)));
-        tooltipON = static_cast<bool>(loadPara(zlstate::tooltipON::ID));
-        langIdx = static_cast<multilingual::languages>(loadPara(zlstate::tooltipLang::ID));
+        wheel_sensitivity_[0] = state.getRawParameterValue(zlstate::wheelSensitivity::ID)->load();
+        wheel_sensitivity_[1] = state.getRawParameterValue(zlstate::wheelFineSensitivity::ID)->load();
+        wheel_sensitivity_[2] = state.getRawParameterValue(zlstate::dragSensitivity::ID)->load();
+        wheel_sensitivity_[3] = state.getRawParameterValue(zlstate::dragFineSensitivity::ID)->load();
+        is_mouse_wheel_shift_reverse_.store(state.getRawParameterValue(zlstate::wheelShiftReverse::ID)->load() > .5f);
+        rotary_style_id_ = static_cast<size_t>(state.getRawParameterValue(zlstate::rotaryStyle::ID)->load());
+        rotary_drag_sensitivity_ = state.getRawParameterValue(zlstate::rotaryDragSensitivity::ID)->load();
+        is_slider_double_click_open_editor_.store(loadPara(zlstate::sliderDoubleClickFunc::ID) > .5f);
+        refresh_rate_id_.store(static_cast<size_t>(state.getRawParameterValue(zlstate::refreshRate::ID)->load()));
+        fft_extra_tilt_.store(loadPara(zlstate::fftExtraTilt::ID));
+        fft_extra_speed_.store(loadPara(zlstate::fftExtraSpeed::ID));
+        single_curve_thickness_.store(loadPara(zlstate::singleCurveThickness::ID));
+        sum_curve_thickness_.store(loadPara(zlstate::sumCurveThickness::ID));
+        default_pass_filter_slope_.store(static_cast<int>(loadPara(zlstate::defaultPassFilterSlope::ID)));
+        colour_map1_idx_ = static_cast<size_t>(loadPara(zlstate::colourMap1Idx::ID));
+        colour_map2_idx_ = static_cast<size_t>(loadPara(zlstate::colourMap2Idx::ID));
+        fft_order_idx_ = static_cast<int>(loadPara(zlstate::ffTOrder::ID));
+        dyn_link_.store(static_cast<bool>(loadPara(zlstate::dynLink::ID)));
+        rendering_engine_.store(static_cast<int>(loadPara(zlstate::renderingEngine::ID)));
+        tooltip_on_ = static_cast<bool>(loadPara(zlstate::tooltipON::ID));
+        lang_idx_ = static_cast<multilingual::Languages>(loadPara(zlstate::tooltipLang::ID));
     }
 
     void UIBase::saveToAPVTS() const {
-        for (size_t i = 0; i < colourNum; ++i) {
+        for (size_t i = 0; i < kColourNum; ++i) {
             const std::array<float, 4> rgbo = {
-                customColours[i].getFloatRed(),
-                customColours[i].getFloatGreen(),
-                customColours[i].getFloatBlue(),
-                customColours[i].getFloatAlpha()
+                custom_colours_[i].getFloatRed(),
+                custom_colours_[i].getFloatGreen(),
+                custom_colours_[i].getFloatBlue(),
+                custom_colours_[i].getFloatAlpha()
             };
             const std::array<std::string, 4> ID{
-                colourNames[i] + "_r",
-                colourNames[i] + "_g",
-                colourNames[i] + "_b",
-                colourNames[i] + "_o"
+                kColourNames[i] + "_r",
+                kColourNames[i] + "_g",
+                kColourNames[i] + "_b",
+                kColourNames[i] + "_o"
             };
             for (size_t j = 0; j < 4; ++j) {
                 savePara(ID[j], rgbo[j]);
             }
         }
         savePara(zlstate::wheelSensitivity::ID,
-                 zlstate::wheelSensitivity::convertTo01(wheelSensitivity[0]));
+                 zlstate::wheelSensitivity::convertTo01(wheel_sensitivity_[0]));
         savePara(zlstate::wheelFineSensitivity::ID,
-                 zlstate::wheelFineSensitivity::convertTo01(wheelSensitivity[1]));
+                 zlstate::wheelFineSensitivity::convertTo01(wheel_sensitivity_[1]));
         savePara(zlstate::dragSensitivity::ID,
-                 zlstate::dragSensitivity::convertTo01(wheelSensitivity[2]));
+                 zlstate::dragSensitivity::convertTo01(wheel_sensitivity_[2]));
         savePara(zlstate::dragFineSensitivity::ID,
-                 zlstate::dragFineSensitivity::convertTo01(wheelSensitivity[3]));
+                 zlstate::dragFineSensitivity::convertTo01(wheel_sensitivity_[3]));
         savePara(zlstate::wheelShiftReverse::ID,
-                 zlstate::wheelShiftReverse::convertTo01(static_cast<int>(isMouseWheelShiftReverse.load())));
+                 zlstate::wheelShiftReverse::convertTo01(static_cast<int>(is_mouse_wheel_shift_reverse_.load())));
         savePara(zlstate::rotaryStyle::ID,
-                 zlstate::rotaryStyle::convertTo01(static_cast<int>(rotaryStyleId)));
+                 zlstate::rotaryStyle::convertTo01(static_cast<int>(rotary_style_id_)));
         savePara(zlstate::rotaryDragSensitivity::ID,
-                 zlstate::rotaryDragSensitivity::convertTo01(rotaryDragSensitivity));
-        savePara(zlstate::sliderDoubleClickFunc::ID, static_cast<float>(isSliderDoubleClickOpenEditor.load()));
-        savePara(zlstate::refreshRate::ID, zlstate::refreshRate::convertTo01(static_cast<int>(refreshRateId.load())));
-        savePara(zlstate::fftExtraTilt::ID, zlstate::fftExtraTilt::convertTo01(fftExtraTilt.load()));
-        savePara(zlstate::fftExtraSpeed::ID, zlstate::fftExtraSpeed::convertTo01(fftExtraSpeed.load()));
+                 zlstate::rotaryDragSensitivity::convertTo01(rotary_drag_sensitivity_));
+        savePara(zlstate::sliderDoubleClickFunc::ID, static_cast<float>(is_slider_double_click_open_editor_.load()));
+        savePara(zlstate::refreshRate::ID, zlstate::refreshRate::convertTo01(static_cast<int>(refresh_rate_id_.load())));
+        savePara(zlstate::fftExtraTilt::ID, zlstate::fftExtraTilt::convertTo01(fft_extra_tilt_.load()));
+        savePara(zlstate::fftExtraSpeed::ID, zlstate::fftExtraSpeed::convertTo01(fft_extra_speed_.load()));
         savePara(zlstate::singleCurveThickness::ID,
-                 zlstate::singleCurveThickness::convertTo01(singleCurveThickness.load()));
+                 zlstate::singleCurveThickness::convertTo01(single_curve_thickness_.load()));
         savePara(zlstate::sumCurveThickness::ID,
-                 zlstate::sumCurveThickness::convertTo01(sumCurveThickness.load()));
+                 zlstate::sumCurveThickness::convertTo01(sum_curve_thickness_.load()));
         savePara(zlstate::defaultPassFilterSlope::ID,
-                 zlstate::defaultPassFilterSlope::convertTo01(defaultPassFilterSlope.load()));
-        savePara(zlstate::colourMap1Idx::ID, zlstate::colourMapIdx::convertTo01(static_cast<int>(cMap1Idx)));
-        savePara(zlstate::colourMap2Idx::ID, zlstate::colourMapIdx::convertTo01(static_cast<int>(cMap2Idx)));
-        savePara(zlstate::ffTOrder::ID, zlstate::ffTOrder::convertTo01(fftOrderIdx));
-        savePara(zlstate::dynLink::ID, zlstate::dynLink::convertTo01(dynLink.load()));
-        savePara(zlstate::renderingEngine::ID, zlstate::renderingEngine::convertTo01(renderingEngine.load()));
-        savePara(zlstate::tooltipON::ID, zlstate::tooltipON::convertTo01(static_cast<int>(tooltipON)));
-        savePara(zlstate::tooltipLang::ID, zlstate::tooltipLang::convertTo01(langIdx));
+                 zlstate::defaultPassFilterSlope::convertTo01(default_pass_filter_slope_.load()));
+        savePara(zlstate::colourMap1Idx::ID, zlstate::colourMapIdx::convertTo01(static_cast<int>(colour_map1_idx_)));
+        savePara(zlstate::colourMap2Idx::ID, zlstate::colourMapIdx::convertTo01(static_cast<int>(colour_map2_idx_)));
+        savePara(zlstate::ffTOrder::ID, zlstate::ffTOrder::convertTo01(fft_order_idx_));
+        savePara(zlstate::dynLink::ID, zlstate::dynLink::convertTo01(dyn_link_.load()));
+        savePara(zlstate::renderingEngine::ID, zlstate::renderingEngine::convertTo01(rendering_engine_.load()));
+        savePara(zlstate::tooltipON::ID, zlstate::tooltipON::convertTo01(static_cast<int>(tooltip_on_)));
+        savePara(zlstate::tooltipLang::ID, zlstate::tooltipLang::convertTo01(lang_idx_));
     }
 
     void UIBase::updateActualLangIdx() {
-        if (langIdx == multilingual::languages::lang_system) {
-            const auto displayedLang = juce::SystemStats::getDisplayLanguage();
-            if (displayedLang == "zh" || displayedLang == "chi" || displayedLang == "zho"
-                || displayedLang.startsWith("zh-")) {
-                if (displayedLang.startsWith("zh-Hant") || displayedLang.startsWith("zh-hant")) {
-                    actualLangIdx = multilingual::languages::lang_zh_Hant;
+        if (lang_idx_ == multilingual::Languages::kLang_system) {
+            const auto displayed_lang = juce::SystemStats::getDisplayLanguage();
+            if (displayed_lang == "zh" || displayed_lang == "chi" || displayed_lang == "zho"
+                || displayed_lang.startsWith("zh-")) {
+                if (displayed_lang.startsWith("zh-Hant") || displayed_lang.startsWith("zh-hant")) {
+                    actual_lang_idx_ = multilingual::Languages::kLang_zh_Hant;
                 } else {
-                    actualLangIdx = multilingual::languages::lang_zh_Hans;
+                    actual_lang_idx_ = multilingual::Languages::kLang_zh_Hans;
                 }
-            } else if (displayedLang == "it" || displayedLang == "ita" ||
-                       displayedLang.startsWith("it-") || displayedLang.startsWith("ita-")) {
-                actualLangIdx = multilingual::languages::lang_it;
-            } else if (displayedLang == "ja" || displayedLang == "jpn" ||
-                       displayedLang.startsWith("ja-") || displayedLang.startsWith("jpn-")) {
-                actualLangIdx = multilingual::languages::lang_ja;
-            } else if (displayedLang == "de" || displayedLang == "deu" || displayedLang == "ger" ||
-                       displayedLang.startsWith("de-") || displayedLang.startsWith("deu-") ||
-                       displayedLang.startsWith("ger-")) {
-                actualLangIdx = multilingual::languages::lang_de;
-            } else if (displayedLang == "es" || displayedLang == "spa" ||
-                       displayedLang.startsWith("es-") || displayedLang.startsWith("spa-")) {
-                actualLangIdx = multilingual::languages::lang_es;
+            } else if (displayed_lang == "it" || displayed_lang == "ita" ||
+                       displayed_lang.startsWith("it-") || displayed_lang.startsWith("ita-")) {
+                actual_lang_idx_ = multilingual::Languages::kLang_it;
+            } else if (displayed_lang == "ja" || displayed_lang == "jpn" ||
+                       displayed_lang.startsWith("ja-") || displayed_lang.startsWith("jpn-")) {
+                actual_lang_idx_ = multilingual::Languages::kLang_ja;
+            } else if (displayed_lang == "de" || displayed_lang == "deu" || displayed_lang == "ger" ||
+                       displayed_lang.startsWith("de-") || displayed_lang.startsWith("deu-") ||
+                       displayed_lang.startsWith("ger-")) {
+                actual_lang_idx_ = multilingual::Languages::kLang_de;
+            } else if (displayed_lang == "es" || displayed_lang == "spa" ||
+                       displayed_lang.startsWith("es-") || displayed_lang.startsWith("spa-")) {
+                actual_lang_idx_ = multilingual::Languages::kLang_es;
             } else {
-                actualLangIdx = multilingual::languages::lang_en;
+                actual_lang_idx_ = multilingual::Languages::kLang_en;
             }
         } else {
-            actualLangIdx = langIdx;
+            actual_lang_idx_ = lang_idx_;
         }
     }
 }

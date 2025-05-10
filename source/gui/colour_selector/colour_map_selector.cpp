@@ -10,41 +10,41 @@
 #include "colour_map_selector.hpp"
 
 namespace zlgui {
-    ColourMapSelector::ColourMapSelector(zlgui::UIBase &base, const float boxWidth)
-        : uiBase(base),
-          mapBox("", zlstate::colourMapIdx::choices, uiBase),
-          mapBoxWidthP(boxWidth) {
-        addAndMakeVisible(mapBox);
-        mapBox.getBox().addListener(this);
+    ColourMapSelector::ColourMapSelector(zlgui::UIBase &base, const float box_width)
+        : ui_base_(base),
+          map_box_("", zlstate::colourMapIdx::choices, ui_base_),
+          map_box_width_p_(box_width) {
+        addAndMakeVisible(map_box_);
+        map_box_.getBox().addListener(this);
     }
 
     void ColourMapSelector::paint(juce::Graphics &g) {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(),
-                                            uiBase.getFontSize() * FontLarge * 1.75f);
-        bound.removeFromLeft(bound.getWidth() * mapBoxWidthP + uiBase.getFontSize());
-        g.setColour(uiBase.getTextColor().withAlpha(.875f));
+                                            ui_base_.getFontSize() * kFontLarge * 1.75f);
+        bound.removeFromLeft(bound.getWidth() * map_box_width_p_ + ui_base_.getFontSize());
+        g.setColour(ui_base_.getTextColor().withAlpha(.875f));
         g.fillRect(bound);
-        bound = bound.withSizeKeepingCentre(bound.getWidth() - uiBase.getFontSize() * .375f,
-                                            bound.getHeight() - uiBase.getFontSize() * .375f);
-        const auto &currentColourMap = zlgui::colourMaps[static_cast<size_t>(mapBox.getBox().getSelectedId() - 1)];
-        const auto singleColourMapWidth = bound.getWidth() / static_cast<float>(currentColourMap.size());
-        for (const auto &colour : currentColourMap) {
+        bound = bound.withSizeKeepingCentre(bound.getWidth() - ui_base_.getFontSize() * .375f,
+                                            bound.getHeight() - ui_base_.getFontSize() * .375f);
+        const auto &current_colour_map = zlgui::kColourMaps[static_cast<size_t>(map_box_.getBox().getSelectedId() - 1)];
+        const auto single_colour_map_width = bound.getWidth() / static_cast<float>(current_colour_map.size());
+        for (const auto &colour : current_colour_map) {
             g.setColour(colour);
-            g.fillRect(bound.removeFromLeft(singleColourMapWidth));
+            g.fillRect(bound.removeFromLeft(single_colour_map_width));
         }
     }
 
     void ColourMapSelector::resized() {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(),
-                                            uiBase.getFontSize() * FontLarge * 1.75f);
-        const auto boxBound = bound.removeFromLeft(bound.getWidth() * mapBoxWidthP);
-        mapBox.setBounds(boxBound.toNearestInt());
+                                            ui_base_.getFontSize() * kFontLarge * 1.75f);
+        const auto box_bound = bound.removeFromLeft(bound.getWidth() * map_box_width_p_);
+        map_box_.setBounds(box_bound.toNearestInt());
     }
 
-    void ColourMapSelector::comboBoxChanged(juce::ComboBox *comboBoxThatHasChanged) {
-        juce::ignoreUnused(comboBoxThatHasChanged);
+    void ColourMapSelector::comboBoxChanged(juce::ComboBox *combo_box_that_has_changed) {
+        juce::ignoreUnused(combo_box_that_has_changed);
         repaint();
     }
 } // zlgui

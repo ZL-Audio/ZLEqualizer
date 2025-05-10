@@ -11,7 +11,7 @@
 
 namespace zlpanel {
     MatchLabel::MatchLabel(zlgui::UIBase &base)
-        : uiBase(base), labelLAF(base) {
+        : ui_base_(base), labelLAF(base) {
         runningLabel.setText("Running", juce::dontSendNotification);
         runningLabel.setJustificationType(juce::Justification::centred);
         labelLAF.setFontScale(5.f);
@@ -21,12 +21,12 @@ namespace zlpanel {
     }
 
     void MatchLabel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getColourByIdx(zlgui::backgroundColour).withAlpha(.75f));
+        g.fillAll(ui_base_.getColourByIdx(zlgui::kBackgroundColour).withAlpha(.75f));
     }
 
     void MatchLabel::resized() {
         const auto bound = getLocalBounds().toFloat();
         runningLabel.setBounds(bound.withSizeKeepingCentre(
-            bound.getWidth() * .5f, uiBase.getFontSize() * 5.f).toNearestInt());
+            bound.getWidth() * .5f, ui_base_.getFontSize() * 5.f).toNearestInt());
     }
 } // zlpanel

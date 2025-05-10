@@ -15,9 +15,9 @@ namespace zlgui {
     class CompactCombobox final : public juce::Component,
                                   public juce::SettableTooltipClient {
     public:
-        CompactCombobox(const juce::String &labelText, const juce::StringArray &choices, UIBase &base,
-                        multilingual::labels labelIdx = multilingual::labels::labelNum,
-                        const std::vector<multilingual::labels> &itemLabelIndices = {});
+        CompactCombobox(const juce::String &label_text, const juce::StringArray &choices, UIBase &base,
+                        multilingual::Labels label_idx = multilingual::Labels::kLabelNum,
+                        const std::vector<multilingual::Labels> &item_label_indices = {});
 
         ~CompactCombobox() override;
 
@@ -36,17 +36,17 @@ namespace zlgui {
         void mouseMove(const juce::MouseEvent &event) override;
 
         inline void setEditable(const bool x) {
-            boxLookAndFeel.setEditable(x);
+            box_laf_.setEditable(x);
             setInterceptsMouseClicks(x, false);
         }
 
-        inline juce::ComboBox &getBox() { return comboBox; }
+        inline juce::ComboBox &getBox() { return combo_box_; }
 
-        inline CompactComboboxLookAndFeel &getLAF() { return boxLookAndFeel; }
+        inline CompactComboboxLookAndFeel &getLAF() { return box_laf_; }
 
     private:
-        zlgui::UIBase &uiBase;
-        CompactComboboxLookAndFeel boxLookAndFeel;
-        juce::ComboBox comboBox;
+        zlgui::UIBase &ui_base_;
+        CompactComboboxLookAndFeel box_laf_;
+        juce::ComboBox combo_box_;
     };
 }

@@ -12,7 +12,7 @@
 #include <array>
 
 namespace zlgui::multilingual::it {
-    static constexpr std::array texts = {
+    static constexpr std::array kTexts = {
         "Premi: attiva la banda selezionata.\nRilascia: bypassa la banda selezionata.",
         "Premi: attiva il solo dell’audio interessato dalla banda di frequenza selezionata.",
         "Scegli il tipo di filtro: Peak（picco）、Low Shelf、Low Pass（passa basso）、High Shelf、High Pass（passa alto）、Notch、Band Pass（passa banda）、Tilt Shelf.",

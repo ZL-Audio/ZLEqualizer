@@ -45,7 +45,7 @@ namespace zlpanel {
     private:
         zldsp::eq_match::EqMatchAnalyzer<double> &analyzerRef;
         juce::AudioProcessorValueTreeState &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::Path path1{}, path2{}, path3{};
         juce::Path recentPath1{}, recentPath2{}, recentPath3{};
         juce::SpinLock pathLock;

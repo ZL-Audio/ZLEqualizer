@@ -12,7 +12,7 @@
 #include <array>
 
 namespace zlgui::multilingual::en {
-    static constexpr std::array texts = {
+    static constexpr std::array kTexts = {
         "Press: turn on the selected band.\nRelease: bypass the selected band.",
         "Press: solo the audio affected by the selected frequency band.",
         "Choose the type of the selected frequency band.",

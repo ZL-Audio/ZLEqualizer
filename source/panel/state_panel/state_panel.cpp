@@ -13,19 +13,19 @@ namespace zlpanel {
     StatePanel::StatePanel(PluginProcessor &p,
                            zlgui::UIBase &base,
                            UISettingPanel &uiSettingPanel)
-        : uiBase(base), parameters_NA_ref_(p.parameters_NA),
+        : ui_base_(base), parameters_NA_ref_(p.parameters_NA),
           outputValuePanel(p, base),
-          outputSettingPanel(p, base, "", zlgui::boxIdx::outputBox),
-          analyzerSettingPanel(p, base, "Analyzer", zlgui::boxIdx::analyzerBox),
-          dynamicSettingPanel(p, base, "Dynamic", zlgui::boxIdx::dynamicBox),
+          outputSettingPanel(p, base, "", zlgui::BoxIdx::kOutputBox),
+          analyzerSettingPanel(p, base, "Analyzer", zlgui::BoxIdx::kAnalyzerBox),
+          dynamicSettingPanel(p, base, "Dynamic", zlgui::BoxIdx::kDynamicBox),
 
-          collisionSettingPanel(p, base, "Collision", zlgui::boxIdx::collisionBox),
-          generalSettingPanel(p, base, "General", zlgui::boxIdx::generalBox),
+          collisionSettingPanel(p, base, "Collision", zlgui::BoxIdx::kCollisionBox),
+          generalSettingPanel(p, base, "General", zlgui::BoxIdx::kGeneralBox),
           matchSettingPanel(base),
           logoPanel(p, base, uiSettingPanel),
-          effectC("", uiBase, zlgui::multilingual::labels::bypass),
-          sideC("", uiBase, zlgui::multilingual::labels::externalSideChain),
-          sgcC("", uiBase, zlgui::multilingual::labels::staticGC),
+          effectC("", ui_base_, zlgui::multilingual::Labels::kBypass),
+          sideC("", ui_base_, zlgui::multilingual::Labels::kExternalSideChain),
+          sgcC("", ui_base_, zlgui::multilingual::Labels::kStaticGC),
           effectDrawable(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg,
                                                   BinaryData::fadpowerswitch_svgSize)),
@@ -80,7 +80,7 @@ namespace zlpanel {
 
         const auto height = static_cast<float>(bound.getHeight());
 
-        const auto buttonWidth = static_cast<int>(uiBase.getFontSize() * 2.5);
+        const auto buttonWidth = static_cast<int>(ui_base_.getFontSize() * 2.5);
         const auto effectBound = bound.removeFromRight(buttonWidth);
         effectC.setBounds(effectBound);
 
@@ -92,7 +92,7 @@ namespace zlpanel {
 
         bound.removeFromRight(buttonWidth / 4);
 
-        bound.removeFromBottom(juce::roundToInt(uiBase.getFontSize() * .5f));
+        bound.removeFromBottom(juce::roundToInt(ui_base_.getFontSize() * .5f));
 
         const auto labelWidth = juce::roundToInt(height * labelSize);
         const auto gapWidth = juce::roundToInt(height * .5f);

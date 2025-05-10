@@ -13,7 +13,7 @@ namespace zlpanel {
     BackgroundPanel::BackgroundPanel(juce::AudioProcessorValueTreeState &parameters,
                                  juce::AudioProcessorValueTreeState &parameters_NA,
                                  zlgui::UIBase &base)
-        : uiBase(base),
+        : ui_base_(base),
           gridPanel(base) {
         juce::ignoreUnused(parameters, parameters_NA);
         setInterceptsMouseClicks(false, true);
@@ -25,7 +25,7 @@ namespace zlpanel {
     BackgroundPanel::~BackgroundPanel() = default;
 
     void BackgroundPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getBackgroundColor());
+        g.fillAll(ui_base_.getBackgroundColor());
     }
 
     void BackgroundPanel::resized() {

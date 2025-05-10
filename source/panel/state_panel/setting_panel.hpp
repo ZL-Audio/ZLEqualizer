@@ -17,7 +17,7 @@ namespace zlpanel {
                                private juce::MultiTimer, private juce::ValueTree::Listener {
     public:
         explicit SettingPanel(PluginProcessor &p, zlgui::UIBase &base,
-                              const juce::String &label, zlgui::boxIdx idx);
+                              const juce::String &label, zlgui::BoxIdx idx);
 
         ~SettingPanel() override;
 
@@ -31,9 +31,9 @@ namespace zlpanel {
 
     private:
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::String name;
-        zlgui::boxIdx mIdx;
+        zlgui::BoxIdx mIdx;
 
         void timerCallback(int timerID) override;
 

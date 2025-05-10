@@ -12,7 +12,7 @@
 #include <array>
 
 namespace zlgui::multilingual::zh_Hant {
-    static constexpr std::array texts = {
+    static constexpr std::array kTexts = {
         "按下：開啟所選頻段。\n釋放：旁通所選頻段。",
         "按下：獨奏當前頻段所作用的音訊。",
         "選擇所選頻段的類型。Peak（鐘型）、Low Shelf（低頻增益）、Low Pass（低通）、High Shelf（高頻增益）、High Pass（高通）、Notch（帶阻）、Band Pass（帶通）、Tilt Shelf（傾斜增益）。",

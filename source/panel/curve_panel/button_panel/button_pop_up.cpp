@@ -11,7 +11,7 @@
 
 namespace zlpanel {
     ButtonPopUp::PitchLabel::PitchLabel(zlgui::UIBase &base, juce::RangedAudioParameter *freq)
-                : uiBase(base), freqPara(freq), laf(uiBase) {
+                : ui_base_(base), freqPara(freq), laf(ui_base_) {
         label.setLookAndFeel(&laf);
         label.setJustificationType(juce::Justification::centredRight);
         laf.setFontScale(1.2f);
@@ -36,10 +36,10 @@ namespace zlpanel {
         editor.setInputRestrictions(0, "0123456789.kKABCDEFGabcdefg#");
 
         editor.setJustification(juce::Justification::centredRight);
-        editor.setColour(juce::TextEditor::outlineColourId, uiBase.getTextColor());
-        editor.setColour(juce::TextEditor::highlightedTextColourId, uiBase.getTextColor());
-        editor.applyFontToAllText(juce::FontOptions{uiBase.getFontSize() * 1.2f});
-        editor.applyColourToAllText(uiBase.getTextColor(), true);
+        editor.setColour(juce::TextEditor::outlineColourId, ui_base_.getTextColor());
+        editor.setColour(juce::TextEditor::highlightedTextColourId, ui_base_.getTextColor());
+        editor.applyFontToAllText(juce::FontOptions{ui_base_.getFontSize() * 1.2f});
+        editor.applyColourToAllText(ui_base_.getTextColor(), true);
 
         editor.addListener(this);
         hasEditorChanged = false;
@@ -69,7 +69,7 @@ namespace zlpanel {
     ButtonPopUp::ButtonPopUp(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parameters_NA, zlgui::UIBase &base)
         : band{bandIdx}, parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
-          uiBase(base),
+          ui_base_(base),
           fType(*parameters_ref_.getRawParameterValue(zlp::appendSuffix(zlp::fType::ID, band))),
           freqPara(*parameters_ref_.getRawParameterValue(zlp::appendSuffix(zlp::freq::ID, band))),
           background(bandIdx, parameters, parameters_NA, base),
@@ -91,7 +91,7 @@ namespace zlpanel {
         auto bound = currentBound.toFloat();
         bound.removeFromBottom(bound.getHeight() * .4f);
         bound.removeFromLeft(bound.getWidth() * .705882f);
-        bound.removeFromRight(uiBase.getFontSize() * .25f);
+        bound.removeFromRight(ui_base_.getFontSize() * .25f);
 
         pitchLabel.setBounds(bound.toNearestInt());
     }
@@ -104,7 +104,7 @@ namespace zlpanel {
         const auto compParentBound = component.getParentComponent()->getLocalBounds().toFloat();
         const auto shiftX = compBound.getCentreX() - compParentBound.getCentreX();
         const auto shiftY = compBound.getCentreY() - compParentBound.getCentreY();
-        const auto shiftYPortion = shiftY / (compParentBound.getHeight() - uiBase.getFontSize()) * 2;
+        const auto shiftYPortion = shiftY / (compParentBound.getHeight() - ui_base_.getFontSize()) * 2;
 
         switch (static_cast<zldsp::filter::FilterType>(fType.load())) {
             case zldsp::filter::FilterType::kPeak:
@@ -139,8 +139,8 @@ namespace zlpanel {
             }
         }
 
-        const auto width = widthP * uiBase.getFontSize();
-        const auto height = heightP * uiBase.getFontSize();
+        const auto width = widthP * ui_base_.getFontSize();
+        const auto height = heightP * ui_base_.getFontSize();
         const auto bound = getParentComponent()->getLocalBounds().toFloat();
         const auto finalY = bound.getCentreY() + direction * height + shiftY;
         const auto finalX = juce::jlimit(bound.getX() + width * .5f,

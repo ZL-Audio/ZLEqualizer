@@ -13,7 +13,7 @@ namespace zlpanel {
     FilterButtonPanel::FilterButtonPanel(const size_t bandIdx, PluginProcessor &processor, zlgui::UIBase &base)
         : processor_ref_(processor),
           parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA),
-          uiBase(base),
+          ui_base_(base),
           dragger(base), targetDragger(base), sideDragger(base),
           buttonPopUp(bandIdx, parameters_ref_, parameters_NA_ref_, base),
           band{bandIdx},
@@ -199,11 +199,11 @@ namespace zlpanel {
                 dragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() - 2 * uiBase.getFontSize()));
+                        bound.getHeight() - 2 * ui_base_.getFontSize()));
                 targetDragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() - 2 * uiBase.getFontSize()));
+                        bound.getHeight() - 2 * ui_base_.getFontSize()));
                 break;
             }
             case zldsp::filter::FilterType::kLowShelf:
@@ -212,11 +212,11 @@ namespace zlpanel {
                 dragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() * .5f - 1 * uiBase.getFontSize()));
+                        bound.getHeight() * .5f - 1 * ui_base_.getFontSize()));
                 targetDragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        bound.getHeight() * .5f - 1 * uiBase.getFontSize()));
+                        bound.getHeight() * .5f - 1 * ui_base_.getFontSize()));
                 break;
             }
             case zldsp::filter::FilterType::kNotch:
@@ -226,13 +226,13 @@ namespace zlpanel {
                 dragger.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        scale * uiBase.getFontSize()));
+                        scale * ui_base_.getFontSize()));
                 break;
             }
         }
         juce::Rectangle<float> sideBound{
-            bound.getX(), bound.getBottom() - 2 * uiBase.getFontSize() - .5f * scale * uiBase.getFontSize(),
-            bound.getWidth(), scale * uiBase.getFontSize()
+            bound.getX(), bound.getBottom() - 2 * ui_base_.getFontSize() - .5f * scale * ui_base_.getFontSize(),
+            bound.getWidth(), scale * ui_base_.getFontSize()
         };
         sideBound = sideBound.withSizeKeepingCentre(sideBound.getWidth(), 1.f);
         sideDragger.setButtonArea(sideBound);
@@ -341,7 +341,7 @@ namespace zlpanel {
                 float dynLinkValue = 0.0;
                 if (newValue > 0.5f) {
                     processor_ref_.getFiltersAttach().turnOnDynamic(currentBand);
-                    dynLinkValue = static_cast<float>(uiBase.getDynLink());
+                    dynLinkValue = static_cast<float>(ui_base_.getDynLink());
                 } else {
                     processor_ref_.getFiltersAttach().turnOffDynamic(currentBand);
                 } {
@@ -367,7 +367,7 @@ namespace zlpanel {
 
     void FilterButtonPanel::lookAndFeelChanged() {
         for (auto &d: {&sideDragger, &targetDragger, &dragger}) {
-            d->getLAF().setColour(uiBase.getColorMap1(band));
+            d->getLAF().setColour(ui_base_.getColorMap1(band));
         }
     }
 

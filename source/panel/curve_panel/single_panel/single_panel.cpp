@@ -19,7 +19,7 @@ namespace zlpanel {
                              zldsp::filter::Ideal<double, 16> &targetFilter,
                              zldsp::filter::Ideal<double, 16> &mainFilter)
         : idx(bandIdx), parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
-          uiBase(base), controller_ref_(controller),
+          ui_base_(base), controller_ref_(controller),
           resetAttach(bandIdx, parameters, parameters_NA),
           baseF(baseFilter), targetF(targetFilter), mainF(mainFilter) {
         curvePath.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 3 + 12));
@@ -70,7 +70,7 @@ namespace zlpanel {
             g.setColour(colour);
             const juce::GenericScopedTryLock lock(curveLock);
             if (lock.isLocked()) {
-                if (uiBase.getIsRenderingHardware()) {
+                if (ui_base_.getIsRenderingHardware()) {
                     g.strokePath(recentCurvePath, juce::PathStrokeType(curveThickness.load(),
                                                                        juce::PathStrokeType::curved,
                                                                        juce::PathStrokeType::rounded));
@@ -101,7 +101,7 @@ namespace zlpanel {
         }
         // draw the line between the curve and the button
         {
-            const auto linkThickness = uiBase.getFontSize() * 0.075f * uiBase.getSingleCurveThickness();
+            const auto linkThickness = ui_base_.getFontSize() * 0.075f * ui_base_.getSingleCurveThickness();
             const auto pos1 = buttonPos.load(), pos2 = buttonCurvePos.load();
             g.setColour(colour);
             g.drawLine(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), linkThickness);
@@ -112,7 +112,7 @@ namespace zlpanel {
         auto bound = getLocalBounds().toFloat();
         atomicBottomLeft.store(bound.getBottomLeft());
         atomicBottomRight.store(bound.getBottomRight());
-        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize());
+        bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize());
         atomicBound.store(bound);
         toRepaint.store(true);
         handleAsyncUpdate();
@@ -187,7 +187,7 @@ namespace zlpanel {
                 drawCurve(curvePath, baseF.getDBs(), maxDB, bound);
                 centeredDB = static_cast<float>(baseF.getDB(0.0001308996938995747 * baseFreq));
             }
-            if (uiBase.getIsRenderingHardware()) {
+            if (ui_base_.getIsRenderingHardware()) {
                 juce::GenericScopedLock lock(curveLock);
                 recentCurvePath = curvePath;
             } else {
@@ -293,13 +293,13 @@ namespace zlpanel {
     }
 
     void SinglePanel::lookAndFeelChanged() {
-        colour = uiBase.getColorMap1(idx);
+        colour = ui_base_.getColorMap1(idx);
         handleAsyncUpdate();
     }
 
     void SinglePanel::handleAsyncUpdate() {
-        auto thickness = selected.load() ? uiBase.getFontSize() * 0.15f : uiBase.getFontSize() * 0.075f;
-        thickness *= uiBase.getSingleCurveThickness();
+        auto thickness = selected.load() ? ui_base_.getFontSize() * 0.15f : ui_base_.getFontSize() * 0.075f;
+        thickness *= ui_base_.getSingleCurveThickness();
         curveThickness.store(thickness);
     }
 } // zlpanel

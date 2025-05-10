@@ -41,7 +41,7 @@ namespace zlpanel {
     private:
         PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &state;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         ControlPanel controlPanel;
         CurvePanel curvePanel;
         ScalePanel scalePanel;

@@ -16,7 +16,7 @@ namespace zlpanel {
                        std::array<zldsp::filter::Ideal<double, 16>, 16> &baseFilters,
                        std::array<zldsp::filter::Ideal<double, 16>, 16> &mainFilters)
         : parameters_ref_(parameters),
-          uiBase(base), c(controller),
+          ui_base_(base), c(controller),
           mMainFilters(mainFilters) {
         juce::ignoreUnused(baseFilters);
         dBs.resize(ws.size());
@@ -49,7 +49,7 @@ namespace zlpanel {
                 useLRMS[idx] = true;
             }
         }
-        if (uiBase.getIsRenderingHardware()) {
+        if (ui_base_.getIsRenderingHardware()) {
             const auto currentThickness = curveThickness.load();
             for (size_t j = 0; j < useLRMS.size(); ++j) {
                 if (!useLRMS[j]) { continue; }
@@ -87,7 +87,7 @@ namespace zlpanel {
 
     void SumPanel::run(const float physicalPixelScaleFactor) {
         juce::ScopedNoDenormals noDenormals;
-        const auto isHardware = uiBase.getIsRenderingHardware();
+        const auto isHardware = ui_base_.getIsRenderingHardware();
         std::array<bool, 5> useLRMS{false, false, false, false, false};
         for (size_t i = 0; i < zlp::kBandNUM; ++i) {
             const auto idx = static_cast<size_t>(lrTypes[i].load());
@@ -147,8 +147,8 @@ namespace zlpanel {
     void SumPanel::resized() {
         const auto bound = getLocalBounds().toFloat();
         atomicBound.store({
-            bound.getX(), bound.getY() + uiBase.getFontSize(),
-            bound.getWidth(), bound.getHeight() - 2 * uiBase.getFontSize()
+            bound.getX(), bound.getY() + ui_base_.getFontSize(),
+            bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize()
         });
         toRepaint.store(true);
         updateCurveThickness();
@@ -156,12 +156,12 @@ namespace zlpanel {
 
     void SumPanel::lookAndFeelChanged() {
         for (size_t j = 0; j < colours.size(); ++j) {
-            colours[j] = uiBase.getColorMap2(j);
+            colours[j] = ui_base_.getColorMap2(j);
         }
         updateCurveThickness();
     }
 
     void SumPanel::updateCurveThickness() {
-        curveThickness.store(uiBase.getFontSize() * 0.2f * uiBase.getSumCurveThickness());
+        curveThickness.store(ui_base_.getFontSize() * 0.2f * ui_base_.getSumCurveThickness());
     }
 } // zlpanel

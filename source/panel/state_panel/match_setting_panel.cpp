@@ -11,62 +11,62 @@
 
 namespace zlpanel {
     MatchSettingPanel::MatchSettingPanel(zlgui::UIBase &base)
-        : uiBase(base) {
+        : ui_base_(base) {
 
-        uiBase.setProperty(zlgui::settingIdx::matchPanelShow, false);
-        uiBase.setProperty(zlgui::settingIdx::matchPanelFit, false);
+        ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelShow, false);
+        ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelFit, false);
 
-        SettableTooltipClient::setTooltip(uiBase.getToolTipText(zlgui::multilingual::labels::eqMatch));
+        SettableTooltipClient::setTooltip(ui_base_.getToolTipText(zlgui::multilingual::Labels::kEQMatch));
         setBufferedToImage(true);
 
-        uiBase.getValueTree().addListener(this);
+        ui_base_.getValueTree().addListener(this);
     }
 
     MatchSettingPanel::~MatchSettingPanel() {
-        uiBase.getValueTree().removeListener(this);
+        ui_base_.getValueTree().removeListener(this);
     }
 
     void MatchSettingPanel::paint(juce::Graphics &g) {
-        const auto isMatchShow = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelShow));
+        const auto isMatchShow = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
         if (isMatchShow) {
-            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
+            g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.25f));
         } else {
-            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.125f));
+            g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.125f));
         }
 
         juce::Path path;
         const auto bound = getLocalBounds().toFloat();
         path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                 uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
+                                 ui_base_.getFontSize() * .5f, ui_base_.getFontSize() * .5f,
                                  false, false, true, true);
         g.fillPath(path);
-        g.setFont(uiBase.getFontSize() * 1.375f);
+        g.setFont(ui_base_.getFontSize() * 1.375f);
         if (isMatchShow) {
-            g.setColour(uiBase.getTextColor());
+            g.setColour(ui_base_.getTextColor());
         } else {
-            g.setColour(uiBase.getTextColor().withAlpha(.75f));
+            g.setColour(ui_base_.getTextColor().withAlpha(.75f));
         }
         g.drawText("Match", bound, juce::Justification::centred);
     }
 
     void MatchSettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        const auto f = static_cast<bool>(uiBase.getProperty(zlgui::settingIdx::matchPanelShow));
-        uiBase.setProperty(zlgui::settingIdx::matchPanelShow, !f);
+        const auto f = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
+        ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelShow, !f);
         if (!f) {
-            uiBase.setProperty(zlgui::settingIdx::matchPanelFit, false);
+            ui_base_.setProperty(zlgui::SettingIdx::kMatchPanelFit, false);
         }
     }
 
     void MatchSettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        uiBase.closeAllBox();
+        ui_base_.closeAllBox();
     }
 
     void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                                      const juce::Identifier &property) {
         juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (zlgui::UIBase::isProperty(zlgui::settingIdx::matchPanelShow, property)) {
+        if (zlgui::UIBase::isProperty(zlgui::SettingIdx::kMatchPanelShow, property)) {
             repaint();
         }
     }

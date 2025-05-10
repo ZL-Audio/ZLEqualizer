@@ -33,7 +33,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor &pRef;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         zlgui::NameLookAndFeel nameLAF;
         zlgui::ColourOpacitySelector textSelector, backgroundSelector, shadowSelector, glowSelector;
         zlgui::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
@@ -67,18 +67,18 @@ namespace zlpanel {
             "Side Loudness Colour"
         };
 
-        std::array<zlgui::colourIdx, numSelectors> colourIdx{
-            zlgui::colourIdx::textColour,
-            zlgui::colourIdx::backgroundColour,
-            zlgui::colourIdx::shadowColour,
-            zlgui::colourIdx::glowColour,
-            zlgui::colourIdx::preColour,
-            zlgui::colourIdx::postColour,
-            zlgui::colourIdx::sideColour,
-            zlgui::colourIdx::gridColour,
-            zlgui::colourIdx::tagColour,
-            zlgui::colourIdx::gainColour,
-            zlgui::colourIdx::sideLoudnessColour
+        std::array<zlgui::ColourIdx, numSelectors> colourIdx{
+            zlgui::ColourIdx::kTextColour,
+            zlgui::ColourIdx::kBackgroundColour,
+            zlgui::ColourIdx::kShadowColour,
+            zlgui::ColourIdx::kGlowColour,
+            zlgui::ColourIdx::kPreColour,
+            zlgui::ColourIdx::kPostColour,
+            zlgui::ColourIdx::kSideColour,
+            zlgui::ColourIdx::kGridColour,
+            zlgui::ColourIdx::kTagColour,
+            zlgui::ColourIdx::kGainColour,
+            zlgui::ColourIdx::kSideLoudnessColour
         };
 
         std::array<std::string, numSelectors> tagNames{

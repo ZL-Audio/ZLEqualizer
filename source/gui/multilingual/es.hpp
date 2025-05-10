@@ -12,7 +12,7 @@
 #include <array>
 
 namespace zlgui::multilingual::es {
-    static constexpr std::array texts = {
+    static constexpr std::array kTexts = {
         "Presiona: activa la banda seleccionada.\nSuelta: omite la banda seleccionada.",
         "Presiona: activa el solo del audio afectado por la banda de frecuencia seleccionada.",
         "Elige el tipo de la banda de frecuencia seleccionada. Peak, Low Shelf, Low Pass (pasa bajos), High Shelf, High Pass (pasa altos), Notch, Band Pass (pasa banda), Tilt Shelf.",

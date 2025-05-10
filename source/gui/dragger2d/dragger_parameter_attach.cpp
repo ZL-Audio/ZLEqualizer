@@ -10,50 +10,50 @@
 #include "dragger_parameter_attach.hpp"
 
 namespace zlgui {
-    DraggerParameterAttach::DraggerParameterAttach(juce::RangedAudioParameter &parameterX,
-                                                   juce::NormalisableRange<float> nRangeX,
-                                                   juce::RangedAudioParameter &parameterY,
-                                                   juce::NormalisableRange<float> nRangeY,
-                                                   Dragger &draggerC,
-                                                   juce::UndoManager *undoManager)
-        : dragger(draggerC),
-          attachmentX(parameterX, [this](const float f) { setX(f); }, undoManager),
-          attachmentY(parameterY, [this](const float f) { setY(f); }, undoManager),
-          rangeX(std::move(nRangeX)), rangeY(std::move(nRangeY)) {
-        dragger.addListener(this);
+    DraggerParameterAttach::DraggerParameterAttach(juce::RangedAudioParameter &parameter_x,
+                                                   juce::NormalisableRange<float> n_range_x,
+                                                   juce::RangedAudioParameter &parameter_y,
+                                                   juce::NormalisableRange<float> n_range_y,
+                                                   Dragger &dragger_c,
+                                                   juce::UndoManager *undo_manager)
+        : dragger_(dragger_c),
+          attachment_x_(parameter_x, [this](const float f) { setX(f); }, undo_manager),
+          attachment_y_(parameter_y, [this](const float f) { setY(f); }, undo_manager),
+          range_x_(std::move(n_range_x)), range_y_(std::move(n_range_y)) {
+        dragger_.addListener(this);
     }
 
     DraggerParameterAttach::~DraggerParameterAttach() {
-        dragger.removeListener(this);
+        dragger_.removeListener(this);
     }
 
     void DraggerParameterAttach::sendInitialUpdate() {
-        attachmentX.sendInitialUpdate();
-        attachmentY.sendInitialUpdate();
+        attachment_x_.sendInitialUpdate();
+        attachment_y_.sendInitialUpdate();
     }
 
     void DraggerParameterAttach::setX(const float newValue) const {
-        dragger.setXPortion(rangeX.convertTo0to1(rangeX.snapToLegalValue(newValue)));
+        dragger_.setXPortion(range_x_.convertTo0to1(range_x_.snapToLegalValue(newValue)));
     }
 
     void DraggerParameterAttach::setY(const float newValue) const {
-        dragger.setYPortion(rangeY.convertTo0to1(rangeY.snapToLegalValue(newValue)));
+        dragger_.setYPortion(range_y_.convertTo0to1(range_y_.snapToLegalValue(newValue)));
     }
 
     void DraggerParameterAttach::dragStarted(Dragger *) {
-        attachmentX.beginGesture();
-        attachmentY.beginGesture();
+        attachment_x_.beginGesture();
+        attachment_y_.beginGesture();
     }
 
     void DraggerParameterAttach::dragEnded(Dragger *) {
-        attachmentX.endGesture();
-        attachmentY.endGesture();
+        attachment_x_.endGesture();
+        attachment_y_.endGesture();
     }
 
     void DraggerParameterAttach::draggerValueChanged(Dragger *) {
-        if (isXAttached.load()) attachmentX.setValueAsPartOfGesture(rangeX.convertFrom0to1(
-            std::clamp(dragger.getXPortion(), 0.f, 1.f)));
-        if (isYAttached.load()) attachmentY.setValueAsPartOfGesture(rangeY.convertFrom0to1(
-            std::clamp(dragger.getYPortion(), 0.f, 1.f)));
+        if (is_x_attached_.load()) attachment_x_.setValueAsPartOfGesture(range_x_.convertFrom0to1(
+            std::clamp(dragger_.getXPortion(), 0.f, 1.f)));
+        if (is_y_attached_.load()) attachment_y_.setValueAsPartOfGesture(range_y_.convertFrom0to1(
+            std::clamp(dragger_.getYPortion(), 0.f, 1.f)));
     }
 } // zlgui

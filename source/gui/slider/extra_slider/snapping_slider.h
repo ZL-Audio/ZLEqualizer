@@ -14,24 +14,23 @@
 namespace zlgui {
     class SnappingSlider final : public juce::Slider {
     public:
-        explicit SnappingSlider(UIBase &base, const juce::String &name = "") : juce::Slider(name), uiBase(base) {
+        explicit SnappingSlider(UIBase &base, const juce::String &name = "") : juce::Slider(name), ui_base_(base) {
         }
 
         void mouseWheelMove(const juce::MouseEvent &e, const juce::MouseWheelDetails &wheel) override {
-            w = wheel;
-            w.deltaX *= uiBase.getSensitivity(mouseWheel);
-            w.deltaY *= uiBase.getSensitivity(mouseWheel);
+            juce::MouseWheelDetails w = wheel;
+            w.deltaX *= ui_base_.getSensitivity(kMouseWheel);
+            w.deltaY *= ui_base_.getSensitivity(kMouseWheel);
             if (e.mods.isShiftDown()) {
-                const auto dir = uiBase.getIsMouseWheelShiftReverse() ? -1.f : 1.f;
-                w.deltaX *= uiBase.getSensitivity(mouseWheelFine) * dir;
-                w.deltaY *= uiBase.getSensitivity(mouseWheelFine) * dir;
+                const auto dir = ui_base_.getIsMouseWheelShiftReverse() ? -1.f : 1.f;
+                w.deltaX *= ui_base_.getSensitivity(kMouseWheelFine) * dir;
+                w.deltaY *= ui_base_.getSensitivity(kMouseWheelFine) * dir;
             }
             Slider::mouseWheelMove(e, w);
         }
 
     private:
-        UIBase &uiBase;
-        juce::MouseWheelDetails w{0.f, 0.f, true, true, true};
+        UIBase &ui_base_;
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SnappingSlider)
     };

@@ -16,33 +16,33 @@
 namespace zlgui {
     class NameLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
-        explicit NameLookAndFeel(UIBase &base) : uiBase(base) {
+        explicit NameLookAndFeel(UIBase &base) : ui_base_(base) {
         }
 
         void drawLabel(juce::Graphics &g, juce::Label &label) override {
             if (label.isBeingEdited()) {
                 return;
             }
-            if (editable) {
-                g.setColour(uiBase.getTextColor().withMultipliedAlpha(alpha));
+            if (editable_) {
+                g.setColour(ui_base_.getTextColor().withMultipliedAlpha(alpha_));
             } else {
-                g.setColour(uiBase.getTextInactiveColor().withMultipliedAlpha(alpha));
+                g.setColour(ui_base_.getTextInactiveColor().withMultipliedAlpha(alpha_));
             }
-            g.setFont(uiBase.getFontSize() * fontScale);
+            g.setFont(ui_base_.getFontSize() * font_scale_);
             g.drawText(label.getText(), label.getLocalBounds().toFloat(), label.getJustificationType());
         }
 
-        inline void setEditable(const bool f) { editable = f; }
+        inline void setEditable(const bool f) { editable_ = f; }
 
-        inline void setAlpha(const float x) { alpha = x; }
+        inline void setAlpha(const float x) { alpha_ = x; }
 
-        inline void setFontScale(const float x) { fontScale = x; }
+        inline void setFontScale(const float x) { font_scale_ = x; }
 
     private:
-        bool editable{true};
-        float alpha{1.f};
-        float fontScale{FontNormal};
+        bool editable_{true};
+        float alpha_{1.f};
+        float font_scale_{kFontNormal};
 
-        UIBase &uiBase;
+        UIBase &ui_base_;
     };
 }

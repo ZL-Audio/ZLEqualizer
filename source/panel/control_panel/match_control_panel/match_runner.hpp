@@ -41,7 +41,7 @@ namespace zlpanel {
         void setMaximumDB(const float x) { maximumDB.store(x); }
 
     private:
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zldsp::eq_match::EqMatchOptimizer<16> optimizer;
         std::array<std::atomic<float>, 251> &atomicDiffsRef;

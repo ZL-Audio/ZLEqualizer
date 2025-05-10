@@ -11,18 +11,18 @@
 
 namespace zlpanel {
     MainPanel::MainPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : processor_ref_(p), state(p.state), uiBase(base),
-          controlPanel(p, uiBase),
-          curvePanel(p, uiBase),
-          scalePanel(p, uiBase),
-          statePanel(p, uiBase, uiSettingPanel),
-          uiSettingPanel(p, uiBase),
-          outputBox(p, uiBase),
-          analyzerBox(p.parameters_NA, uiBase),
-          dynamicBox(p.parameters, uiBase),
-          collisionBox(p.parameters_NA, uiBase),
-          generalBox(p.parameters, uiBase),
-          tooltipLAF(uiBase), tooltipWindow(&curvePanel) {
+        : processor_ref_(p), state(p.state), ui_base_(base),
+          controlPanel(p, ui_base_),
+          curvePanel(p, ui_base_),
+          scalePanel(p, ui_base_),
+          statePanel(p, ui_base_, uiSettingPanel),
+          uiSettingPanel(p, ui_base_),
+          outputBox(p, ui_base_),
+          analyzerBox(p.parameters_NA, ui_base_),
+          dynamicBox(p.parameters, ui_base_),
+          collisionBox(p.parameters_NA, ui_base_),
+          generalBox(p.parameters, ui_base_),
+          tooltipLAF(ui_base_), tooltipWindow(&curvePanel) {
         processor_ref_.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(scalePanel);
@@ -46,7 +46,7 @@ namespace zlpanel {
         state.addParameterListener(zlstate::fftExtraSpeed::ID, this);
         state.addParameterListener(zlstate::refreshRate::ID, this);
 
-        uiBase.closeAllBox();
+        ui_base_.closeAllBox();
 
         lookAndFeelChanged();
     }
@@ -59,7 +59,7 @@ namespace zlpanel {
     }
 
     void MainPanel::paint(juce::Graphics &g) {
-        g.fillAll(uiBase.getBackgroundColor());
+        g.fillAll(ui_base_.getBackgroundColor());
     }
 
     void MainPanel::resized() {
@@ -69,15 +69,15 @@ namespace zlpanel {
         }
 
         const auto fontSize = static_cast<float>(bound.getWidth()) * 0.014287762237762238f;
-        uiBase.setFontSize(fontSize);
+        ui_base_.setFontSize(fontSize);
 
         const auto stateBound = bound.removeFromTop(juce::roundToInt(fontSize * 2.625381664859529f));
         statePanel.setBounds(stateBound); {
             auto x = stateBound.getRight();
-            const auto y = stateBound.getBottom() + 1 - juce::roundToInt(uiBase.getFontSize() * .4f);
+            const auto y = stateBound.getBottom() + 1 - juce::roundToInt(ui_base_.getFontSize() * .4f);
             const auto height = static_cast<float>(stateBound.getHeight()); {
-                x -= static_cast<int>(uiBase.getFontSize() * 2.5) * 3;
-                x -= static_cast<int>(uiBase.getFontSize() * 2.5) / 4;
+                x -= static_cast<int>(ui_base_.getFontSize() * 2.5) * 3;
+                x -= static_cast<int>(ui_base_.getFontSize() * 2.5) / 4;
             }
             const auto labelWidth = juce::roundToInt(height * 2.75f);
             const auto gapWidth = juce::roundToInt(height * .5f);
@@ -109,7 +109,7 @@ namespace zlpanel {
         const auto controlBound = bound.removeFromBottom(juce::roundToInt(fontSize * 7.348942487176095f));
         controlPanel.setBounds(controlBound);
 
-        const auto scaleBound = bound.removeFromRight(juce::roundToInt(uiBase.getFontSize() * 4.2f));
+        const auto scaleBound = bound.removeFromRight(juce::roundToInt(ui_base_.getFontSize() * 4.2f));
         curvePanel.setBounds(bound.toNearestInt());
         scalePanel.setBounds(scaleBound.toNearestInt());
     }
@@ -120,23 +120,23 @@ namespace zlpanel {
     }
 
     void MainPanel::lookAndFeelChanged() {
-        tooltipWindow.setON(uiBase.getTooltipON());
+        tooltipWindow.setON(ui_base_.getTooltipON());
     }
 
     void MainPanel::parentHierarchyChanged() {
         if (const auto peer = getPeer()) {
-            auto renderEngineIdx = uiBase.getRenderingEngine();
+            auto renderEngineIdx = ui_base_.getRenderingEngine();
             auto rendererList = peer->getAvailableRenderingEngines();
             rendererList.insert(0, "Auto");
             uiSettingPanel.setRendererList(rendererList);
             if (renderEngineIdx <= 0) return;
             if (renderEngineIdx >= rendererList.size()) {
                 renderEngineIdx = rendererList.size();
-                uiBase.setRenderingEngine(renderEngineIdx);
-                uiBase.saveToAPVTS();
+                ui_base_.setRenderingEngine(renderEngineIdx);
+                ui_base_.saveToAPVTS();
             }
             peer->setCurrentRenderingEngine(renderEngineIdx - 1);
-            uiBase.setIsRenderingHardware(!rendererList[renderEngineIdx - 1].contains("Software"));
+            ui_base_.setIsRenderingHardware(!rendererList[renderEngineIdx - 1].contains("Software"));
         }
     }
 
@@ -146,12 +146,12 @@ namespace zlpanel {
 
     void MainPanel::updateFFTs() {
         for (auto &fft: {&processor_ref_.getController().getAnalyzer().getMultipleFFT()}) {
-            fft->setExtraTilt(uiBase.getFFTExtraTilt());
-            fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
-            fft->setRefreshRate(zlstate::refreshRate::rates[uiBase.getRefreshRateID()]);
+            fft->setExtraTilt(ui_base_.getFFTExtraTilt());
+            fft->setExtraSpeed(ui_base_.getFFTExtraSpeed());
+            fft->setRefreshRate(zlstate::refreshRate::rates[ui_base_.getRefreshRateID()]);
         }
         for (auto &fft: {&processor_ref_.getController().getConflictAnalyzer().getSyncFFT()}) {
-            fft->setRefreshRate(zlstate::refreshRate::rates[uiBase.getRefreshRateID()]);
+            fft->setRefreshRate(zlstate::refreshRate::rates[ui_base_.getRefreshRateID()]);
         }
     }
 }

@@ -12,21 +12,21 @@
 namespace zlgui {
     class LeftRightButtonLookAndFeel : public juce::LookAndFeel_V4 {
     public:
-        explicit LeftRightButtonLookAndFeel(UIBase &base) : uiBase(base) {
+        explicit LeftRightButtonLookAndFeel(UIBase &base) : ui_base_(base) {
         }
 
         void drawDrawableButton(juce::Graphics &g, juce::DrawableButton &button,
-                                bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override {
-            juce::ignoreUnused(button, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
+                                bool should_draw_button_as_highlighted, bool should_draw_button_as_down) override {
+            juce::ignoreUnused(button, should_draw_button_as_highlighted, should_draw_button_as_down);
 
-            if (shouldDrawButtonAsDown && editable) {
-                g.setColour(uiBase.getTextColor());
+            if (should_draw_button_as_down && editable_) {
+                g.setColour(ui_base_.getTextColor());
             } else {
-                g.setColour(uiBase.getTextInactiveColor());
+                g.setColour(ui_base_.getTextInactiveColor());
             }
 
             juce::Path path;
-            const auto d = direction;
+            const auto d = direction_;
             const auto bound = button.getLocalBounds().toFloat();
             if (d < 0.1f) {
                 path.startNewSubPath(bound.getTopLeft());
@@ -43,18 +43,18 @@ namespace zlgui {
             g.fillPath(path);
         }
 
-        inline void setEditable(const bool f) { editable = f; }
+        inline void setEditable(const bool f) { editable_ = f; }
 
-        inline float getDepth() const { return buttonDepth; }
+        inline float getDepth() const { return button_depth_; }
 
-        inline void setDepth(const float x) { buttonDepth = x; }
+        inline void setDepth(const float x) { button_depth_ = x; }
 
-        inline void setDirection(const float x) { direction = x; }
+        inline void setDirection(const float x) { direction_ = x; }
 
     private:
-        bool editable{true};
-        float buttonDepth{0.f}, direction{0.f};
+        bool editable_{true};
+        float button_depth_{0.f}, direction_{0.f};
 
-        UIBase &uiBase;
+        UIBase &ui_base_;
     };
 }

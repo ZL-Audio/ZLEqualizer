@@ -28,7 +28,7 @@ namespace zlpanel {
 
     private:
         juce::AudioProcessorValueTreeState &stateRef;
-        zlgui::UIBase &uiBase;
+        zlgui::UIBase &ui_base_;
         UISettingPanel &panelToShow;
         const std::unique_ptr<juce::Drawable> brandDrawable, logoDrawable;
         juce::Justification justification{juce::Justification::topLeft};

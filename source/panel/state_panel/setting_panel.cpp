@@ -13,40 +13,40 @@
 
 namespace zlpanel {
     SettingPanel::SettingPanel(PluginProcessor &p, zlgui::UIBase &base,
-                               const juce::String &label, zlgui::boxIdx idx)
+                               const juce::String &label, zlgui::BoxIdx idx)
         : parameters_ref_(p.parameters),
           parameters_NA_ref_(p.parameters_NA),
-          uiBase(base), name(label), mIdx(idx) {
+          ui_base_(base), name(label), mIdx(idx) {
         juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
         setBufferedToImage(true);
 
-        uiBase.getBoxTree().addListener(this);
+        ui_base_.getBoxTree().addListener(this);
     }
 
     SettingPanel::~SettingPanel() {
-        uiBase.getBoxTree().removeListener(this);
+        ui_base_.getBoxTree().removeListener(this);
         stopTimer(0);
         stopTimer(1);
     }
 
     void SettingPanel::paint(juce::Graphics &g) {
-        const bool isBoxOpen = static_cast<bool>(uiBase.getBoxProperty(mIdx));
+        const bool isBoxOpen = static_cast<bool>(ui_base_.getBoxProperty(mIdx));
         if (isBoxOpen) {
-            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.25f));
+            g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.25f));
         } else {
-            g.setColour(uiBase.getTextColor().withMultipliedAlpha(.125f));
+            g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.125f));
         }
         juce::Path path;
         const auto bound = getLocalBounds().toFloat();
         path.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
-                                 uiBase.getFontSize() * .5f, uiBase.getFontSize() * .5f,
+                                 ui_base_.getFontSize() * .5f, ui_base_.getFontSize() * .5f,
                                  false, false, true, true);
         g.fillPath(path);
-        g.setFont(uiBase.getFontSize() * 1.375f);
+        g.setFont(ui_base_.getFontSize() * 1.375f);
         if (isBoxOpen) {
-            g.setColour(uiBase.getTextColor());
+            g.setColour(ui_base_.getTextColor());
         } else {
-            g.setColour(uiBase.getTextColor().withAlpha(.75f));
+            g.setColour(ui_base_.getTextColor().withAlpha(.75f));
         }
         g.drawText(name, bound, juce::Justification::centred);
     }
@@ -55,16 +55,16 @@ namespace zlpanel {
         juce::ignoreUnused(event);
         stopTimer(0);
         if (isTimerRunning(1)) return;
-        if (uiBase.getBoxProperty(mIdx)) {
-            uiBase.setBoxProperty(mIdx, false);
+        if (ui_base_.getBoxProperty(mIdx)) {
+            ui_base_.setBoxProperty(mIdx, false);
         } else {
-            uiBase.openOneBox(mIdx);
+            ui_base_.openOneBox(mIdx);
         }
     }
 
     void SettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        if (!uiBase.getBoxProperty(mIdx)) {
+        if (!ui_base_.getBoxProperty(mIdx)) {
             startTimer(0, 100);
             startTimer(1, 500);
         }
@@ -78,7 +78,7 @@ namespace zlpanel {
 
     void SettingPanel::timerCallback(const int timerID) {
         if (timerID == 0) {
-            uiBase.openOneBox(mIdx);
+            ui_base_.openOneBox(mIdx);
             stopTimer(0);
         } else if (timerID == 1) {
             stopTimer(1);
