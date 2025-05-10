@@ -32,9 +32,9 @@ namespace zldsp::histogram {
         void sync(Histogram<FloatType, Size> &simpleHist, const int syncMax = 1000) {
             sync_count_ += 1;
             if (sync_count_ > syncMax) {
-                const auto simpleHists = simpleHist.getHits();
+                const auto simple_hists = simpleHist.getHits();
                 for (size_t i = 0; i < hits_.size(); ++i) {
-                    hits_[i].store(simpleHists[i]);
+                    hits_[i].store(simple_hists[i]);
                 }
                 sync_count_ = 0;
             }

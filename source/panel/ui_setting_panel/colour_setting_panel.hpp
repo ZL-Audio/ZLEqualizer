@@ -53,7 +53,7 @@ namespace zlpanel {
             &gain_selector_,
             &side_loudness_selector_
         };
-        static constexpr std::array<std::string, kNumSelectors> kSelectorNames{
+        static constexpr std::array kSelectorNames{
             "Text Colour",
             "Background Colour",
             "Shadow Colour",
@@ -81,7 +81,7 @@ namespace zlpanel {
             zlgui::ColourIdx::kSideLoudnessColour
         };
 
-        static constexpr std::array<std::string, kNumSelectors> kTagNames{
+        static constexpr std::array kTagNames{
             "text_colour",
             "background_colour",
             "shadow_colour",

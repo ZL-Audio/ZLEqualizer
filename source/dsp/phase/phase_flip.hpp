@@ -23,20 +23,20 @@ namespace zldsp::phase {
     public:
         void process(juce::AudioBuffer<FloatType> &buffer) {
             if (is_on_.load()) {
-                const auto numSamples = static_cast<size_t>(buffer.getNumSamples());
-                const auto numChannels = buffer.getNumChannels();
-                for (int chan = 0; chan < numChannels; ++chan) {
-                    zldsp::vector::multiply(buffer.getWritePointer(chan), FloatType(-1.f), numSamples);
+                const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
+                const auto num_channels = buffer.getNumChannels();
+                for (int chan = 0; chan < num_channels; ++chan) {
+                    zldsp::vector::multiply(buffer.getWritePointer(chan), FloatType(-1.f), num_samples);
                 }
             }
         }
 
         void process(juce::dsp::AudioBlock<FloatType> block) {
             if (is_on_.load()) {
-                const auto numSamples = block.getNumSamples();
-                const auto numChannels = block.getNumChannels();
-                for (size_t chan = 0; chan < numChannels; ++chan) {
-                    zldsp::vector::multiply(block.getChannelPointer(chan), FloatType(-1.f), numSamples);
+                const auto num_samples = block.getNumSamples();
+                const auto num_channels = block.getNumChannels();
+                for (size_t chan = 0; chan < num_channels; ++chan) {
+                    zldsp::vector::multiply(block.getChannelPointer(chan), FloatType(-1.f), num_samples);
                 }
             }
         }

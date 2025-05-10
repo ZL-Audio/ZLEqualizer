@@ -68,28 +68,28 @@ namespace zldsp::filter {
 #endif
         }
 
-        SampleType processSample(const size_t channel, SampleType inputValue) {
-            const auto yHP = h_ * (inputValue - s1_[channel] * (g_ + R2_) - s2_[channel]);
+        SampleType processSample(const size_t channel, SampleType input_value) {
+            const auto y_hp = h_ * (input_value - s1_[channel] * (g_ + R2_) - s2_[channel]);
 
-            const auto yBP = yHP * g_ + s1_[channel];
-            s1_[channel] = yHP * g_ + yBP;
+            const auto y_bp = y_hp * g_ + s1_[channel];
+            s1_[channel] = y_hp * g_ + y_bp;
 
-            const auto yLP = yBP * g_ + s2_[channel];
-            s2_[channel] = yBP * g_ + yLP;
+            const auto y_lp = y_bp * g_ + s2_[channel];
+            s2_[channel] = y_bp * g_ + y_lp;
 
-            return chp_ * yHP + cbp_ * yBP + clp_ * yLP;
+            return chp_ * y_hp + cbp_ * y_bp + clp_ * y_lp;
         }
 
-        SampleType processSampleBypass(const size_t channel, SampleType inputValue) {
-            const auto yHP = h_ * (inputValue - s1_[channel] * (g_ + R2_) - s2_[channel]);
+        SampleType processSampleBypass(const size_t channel, SampleType input_value) {
+            const auto y_hp = h_ * (input_value - s1_[channel] * (g_ + R2_) - s2_[channel]);
 
-            const auto yBP = yHP * g_ + s1_[channel];
-            s1_[channel] = yHP * g_ + yBP;
+            const auto y_bp = y_hp * g_ + s1_[channel];
+            s1_[channel] = y_hp * g_ + y_bp;
 
-            const auto yLP = yBP * g_ + s2_[channel];
-            s2_[channel] = yBP * g_ + yLP;
+            const auto y_lp = y_bp * g_ + s2_[channel];
+            s2_[channel] = y_bp * g_ + y_lp;
 
-            return yHP - R2_ * yBP + yLP;
+            return y_hp - R2_ * y_bp + y_lp;
         }
 
         void updateFromBiquad(const std::array<double, 6> &coeffs) {

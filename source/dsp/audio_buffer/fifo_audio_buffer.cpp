@@ -11,9 +11,9 @@
 
 namespace zldsp::buffer {
     template<typename FloatType>
-    FIFOAudioBuffer<FloatType>::FIFOAudioBuffer(int channels, int bufferSize):
-            fifo_(bufferSize) {
-        buffer.setSize(channels, bufferSize);
+    FIFOAudioBuffer<FloatType>::FIFOAudioBuffer(int channels, int buffer_size):
+            fifo_(buffer_size) {
+        buffer.setSize(channels, buffer_size);
     }
 
     template<typename FloatType>

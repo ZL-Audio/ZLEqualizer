@@ -16,9 +16,9 @@
 
 namespace zldsp::filter {
     std::array<double, 4> MartinCoeff::get1LowPass(const double w0) {
-        const auto fc = w0 / pi;
+        const auto fc = w0 / kPi;
         const auto fm = 0.5 * std::sqrt(fc * fc + 1);
-        const auto phim = 1 - std::cos(pi * fm);
+        const auto phim = 1 - std::cos(kPi * fm);
 
         const double a1 = -std::exp(-w0);
 
@@ -46,11 +46,11 @@ namespace zldsp::filter {
     }
 
     std::array<double, 4> MartinCoeff::get1TiltShelf(const double w0, const double g) {
-        const auto fc = w0 / pi;
+        const auto fc = w0 / kPi;
         const auto fm = fc * 0.75;
-        const auto phim = 1 - std::cos(pi * fm);
-        const auto alpha = 2 / pi2 * (1 / std::pow(fm, 2) + 1 / g / std::pow(fc, 2)) - 1 / phim;
-        const auto beta = 2 / pi2 * (1 / std::pow(fm, 2) + g / std::pow(fc, 2)) - 1 / phim;
+        const auto phim = 1 - std::cos(kPi * fm);
+        const auto alpha = 2 / kPi2 * (1 / std::pow(fm, 2) + 1 / g / std::pow(fc, 2)) - 1 / phim;
+        const auto beta = 2 / kPi2 * (1 / std::pow(fm, 2) + g / std::pow(fc, 2)) - 1 / phim;
 
         const auto a1 = -alpha / (1 + alpha + std::sqrt(1 + 2 * alpha));
 
@@ -77,10 +77,10 @@ namespace zldsp::filter {
         const auto a = solve_a(w0, 0.5 / q, 1);
         const auto A = get_AB(a);
         std::array<double, 3> ws{};
-        if (w0 > pi / 32) {
+        if (w0 > kPi / 32) {
             ws = {0, 0.5 * w0, w0};
         } else {
-            ws = {pi, w0, 0.5 * (pi + w0)};
+            ws = {kPi, w0, 0.5 * (kPi + w0)};
         }
         std::array<std::array<double, 3>, 3> phi{};
         std::array<double, 3> res{};
@@ -110,7 +110,7 @@ namespace zldsp::filter {
         const auto a = solve_a(w0, 0.5 / q);
         const auto A = get_AB(a);
 
-        if (w0 > pi / 32) {
+        if (w0 > kPi / 32) {
             const auto phi0 = get_phi(w0);
             const auto R1 = dotProduct(phi0, A);
             const auto R2 = dotProduct({-1, 1, 4 * (phi0[0] - phi0[1])}, A);
@@ -125,7 +125,7 @@ namespace zldsp::filter {
         } else {
             const auto _w = getBandwidth(w0, q);
             const auto w1 = _w[0], w2 = _w[1];
-            std::array<double, 3> ws{0, w0, w0 > piHalf ? w1 : w2};
+            std::array<double, 3> ws{0, w0, w0 > kPiHalf ? w1 : w2};
             const auto _ws = ws;
             std::array<double, 3> B{-1, -1, -1};
             size_t trial = 0;
@@ -138,7 +138,7 @@ namespace zldsp::filter {
                     res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
                 }
                 B = linear_solve(phi, res);
-                ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
+                ws[2] = w0 > kPiHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * kPi;
             }
             if (trial == 20) {
                 ws = _ws;
@@ -149,7 +149,7 @@ namespace zldsp::filter {
                     res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
                 }
                 B = linear_solve(phi, res);
-                ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
+                ws[2] = w0 > kPiHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * kPi;
             }
             const auto b = get_ab(B);
             return {a[0], a[1], a[2], b[0], b[1], b[2]};
@@ -158,7 +158,7 @@ namespace zldsp::filter {
 
     std::array<double, 6> MartinCoeff::get2Notch(const double w0, const double q) {
         std::array<double, 3> b{};
-        if (w0 < pi) {
+        if (w0 < kPi) {
             b = {1, -2 * std::cos(w0), 1};
         } else {
             b = {1, -2 * std::sinh(w0), 1};
@@ -167,7 +167,7 @@ namespace zldsp::filter {
 
         const auto _w = getBandwidth(w0, q);
         const auto w1 = _w[0], w2 = _w[1];
-        const std::array<double, 3> ws{0, w1, w2 < pi ? w2 : 0.5 * (w0 + w1)};
+        const std::array<double, 3> ws{0, w1, w2 < kPi ? w2 : 0.5 * (w0 + w1)};
 
         std::array<std::array<double, 3>, 3> phi{};
         std::array<double, 3> res{};
@@ -222,10 +222,10 @@ namespace zldsp::filter {
             } else {
                 const auto w1 = std::sqrt((-c1 + delta) / 2 / c2);
                 const auto w2 = std::sqrt((-c1 - delta) / 2 / c2);
-                if (w1 < pi || w2 < pi) {
-                    ws = {0, std::min(w1, w2), std::min(std::max(w1, w2), pi)};
+                if (w1 < kPi || w2 < kPi) {
+                    ws = {0, std::min(w1, w2), std::min(std::max(w1, w2), kPi)};
                 } else {
-                    ws = {0, piHalf, pi};
+                    ws = {0, kPiHalf, kPi};
                 }
             }
         }
@@ -241,7 +241,7 @@ namespace zldsp::filter {
                 res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dotProduct(phi[i], A);
             }
             B = linear_solve(phi, res);
-            ws[2] = 0.5 * (ws[2] + pi);
+            ws[2] = 0.5 * (ws[2] + kPi);
         }
         if (trial == 20) {
             ws = _ws;
@@ -252,7 +252,7 @@ namespace zldsp::filter {
                 res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dotProduct(phi[i], A);
             }
             B = linear_solve(phi, res);
-            ws[2] = w0 > piHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * pi;
+            ws[2] = w0 > kPiHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * kPi;
         }
         const auto b = get_ab(B);
         if (reverse_ab) {

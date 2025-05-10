@@ -164,8 +164,8 @@ namespace zldsp::filter {
                 if (IsSmooth) updateCoeffs();
                 for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
                     auto sample = *(writerPointer[channel] + i);
-                    for (size_t filterIdx = 0; filterIdx < current_filter_num_; ++filterIdx) {
-                        sample = filters_[filterIdx].processSample(static_cast<size_t>(channel), sample);
+                    for (size_t filter_idx = 0; filter_idx < current_filter_num_; ++filter_idx) {
+                        sample = filters_[filter_idx].processSample(static_cast<size_t>(channel), sample);
                     }
                     if (!IsBypassed) {
                         *(writerPointer[channel] + i) = sample;
@@ -181,8 +181,8 @@ namespace zldsp::filter {
                 if (IsSmooth) updateCoeffs();
                 for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
                     auto sample = *(writerPointer[static_cast<size_t>(channel)] + i);
-                    for (size_t filterIdx = 0; filterIdx < current_filter_num_; ++filterIdx) {
-                        sample = svf_filters_[filterIdx].processSample(static_cast<size_t>(channel), sample);
+                    for (size_t filter_idx = 0; filter_idx < current_filter_num_; ++filter_idx) {
+                        sample = svf_filters_[filter_idx].processSample(static_cast<size_t>(channel), sample);
                     }
                     if (!IsBypassed) {
                         *(writerPointer[static_cast<size_t>(channel)] + i) = sample;
@@ -328,31 +328,31 @@ namespace zldsp::filter {
          * DO NOT call it unless you are sure what you are doing
          */
         void updateCoeffs() {
-            const auto nextFreq = c_freq_.getNext();
-            const auto nextGain = c_gain_.getNext();
-            const auto nextQ = c_q_.getNext();
+            const auto next_freq = c_freq_.getNext();
+            const auto next_gain = c_gain_.getNext();
+            const auto next_q = c_q_.getNext();
             if (!should_be_parallel_) {
                 current_filter_num_ = updateIIRCoeffs(current_filter_type_, order_.load(),
-                                                   nextFreq, process_spec_.sampleRate,
-                                                   nextGain, nextQ, coeffs_);
+                                                   next_freq, process_spec_.sampleRate,
+                                                   next_gain, next_q, coeffs_);
             } else {
                 if (current_filter_type_ == FilterType::kPeak) {
                     current_filter_num_ = updateIIRCoeffs(FilterType::kBandPass,
                                                        std::min(static_cast<size_t>(4), order_.load()),
-                                                       nextFreq, process_spec_.sampleRate,
-                                                       nextGain, nextQ, coeffs_);
+                                                       next_freq, process_spec_.sampleRate,
+                                                       next_gain, next_q, coeffs_);
                 } else if (current_filter_type_ == FilterType::kLowShelf) {
                     current_filter_num_ = updateIIRCoeffs(FilterType::kLowPass,
                                                        std::min(static_cast<size_t>(2), order_.load()),
-                                                       nextFreq, process_spec_.sampleRate,
-                                                       nextGain, nextQ, coeffs_);
+                                                       next_freq, process_spec_.sampleRate,
+                                                       next_gain, next_q, coeffs_);
                 } else if (current_filter_type_ == FilterType::kHighShelf) {
                     current_filter_num_ = updateIIRCoeffs(FilterType::kHighPass,
                                                        std::min(static_cast<size_t>(2), order_.load()),
-                                                       nextFreq, process_spec_.sampleRate,
-                                                       nextGain, nextQ, coeffs_);
+                                                       next_freq, process_spec_.sampleRate,
+                                                       next_gain, next_q, coeffs_);
                 }
-                updateParallelGain(nextGain);
+                updateParallelGain(next_gain);
             }
             switch (c_filter_structure_) {
                 case FilterStructure::kIIR:

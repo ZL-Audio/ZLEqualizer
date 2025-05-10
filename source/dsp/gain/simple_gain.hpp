@@ -26,9 +26,9 @@ namespace zldsp::gain {
             gain_dsp_.prepare(spec, 1.0);
         }
 
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void process(juce::AudioBuffer<FloatType> &buffer) {
-            if (isBypassed) { return; }
+            if (IsBypassed) { return; }
             if (std::abs(gain_.load() - 1) <= FloatType(1e-6)) { return; }
             gain_dsp_.setGainLinear(gain_.load());
             gain_dsp_.template process<false>(buffer);

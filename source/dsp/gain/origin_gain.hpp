@@ -51,28 +51,28 @@ namespace zldsp::gain {
             gain_vs_.resize(static_cast<size_t>(spec.maximumBlockSize));
         }
 
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void process(juce::AudioBuffer<FloatType> &buffer) {
             auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-            process<isBypassed>(block);
+            process<IsBypassed>(block);
         }
 
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void process(juce::dsp::AudioBlock<FloatType> block) {
             if (!gain_.isSmoothing()) {
-                if (isBypassed) return;
+                if (IsBypassed) return;
                 for (size_t chan = 0; chan < block.getNumChannels(); ++chan) {
-                    auto *channelData = block.getChannelPointer(chan);
-                    zldsp::vector::multiply(channelData, gain_.getCurrent(), block.getNumSamples());
+                    auto *channel_data = block.getChannelPointer(chan);
+                    zldsp::vector::multiply(channel_data, gain_.getCurrent(), block.getNumSamples());
                 }
             } else {
                 for (size_t idx = 0; idx < block.getNumSamples(); ++idx) {
                     gain_vs_[idx] = gain_.getNext();
                 }
-                if (isBypassed) return;
+                if (IsBypassed) return;
                 for (size_t chan = 0; chan < block.getNumChannels(); ++chan) {
-                    auto *channelData = block.getChannelPointer(chan);
-                    zldsp::vector::multiply(channelData, gain_vs_.data(), block.getNumSamples());
+                    auto *channel_data = block.getChannelPointer(chan);
+                    zldsp::vector::multiply(channel_data, gain_vs_.data(), block.getNumSamples());
                 }
             }
         }

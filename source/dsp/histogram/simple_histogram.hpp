@@ -46,11 +46,11 @@ namespace zldsp::histogram {
             for (size_t i = 1; i < Size; ++i) {
                 cum_hits_[i] = cum_hits_[i - 1] + hits_[i];
             }
-            const auto targetHits = x * cum_hits_.back();
-            auto it = std::lower_bound(cum_hits_.begin(), cum_hits_.end(), targetHits);
+            const auto target_hits = x * cum_hits_.back();
+            auto it = std::lower_bound(cum_hits_.begin(), cum_hits_.end(), target_hits);
             if(it != cum_hits_.end()) {
                 const auto i = static_cast<size_t>(std::distance(cum_hits_.begin(), it));
-                return static_cast<FloatType>(i) + (cum_hits_[i] - targetHits) / std::max(hits_[i], FloatType(1));
+                return static_cast<FloatType>(i) + (cum_hits_[i] - target_hits) / std::max(hits_[i], FloatType(1));
             } else {
                 return FloatType(1);
             }

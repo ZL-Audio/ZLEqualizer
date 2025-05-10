@@ -42,19 +42,19 @@ namespace zldsp::interpolation {
             for (size_t i = 0; i < deltas_.size(); ++i) {
                 deltas_[i] = (ys_[i + 1] - ys_[i]) / (xs_[i + 1] - xs_[i]);
             }
-            auto leftDelta = FloatType(2) * deltas_[0] - deltas_[1];
-            auto rightDelta = FloatType(2) * deltas_.end()[-1] - deltas_.end()[-2];
+            auto left_delta = FloatType(2) * deltas_[0] - deltas_[1];
+            auto right_delta = FloatType(2) * deltas_.end()[-1] - deltas_.end()[-2];
 
             derivatives_.front() = left_derivative_;
             derivatives_.back() = right_derivative_;
 
-            derivatives_[1] = calculateD(leftDelta, deltas_[0], deltas_[1], deltas_[2]);
+            derivatives_[1] = calculateD(left_delta, deltas_[0], deltas_[1], deltas_[2]);
 
             for (size_t i = 2; i < derivatives_.size() - 2; ++i) {
                 derivatives_[i] = calculateD(deltas_[i - 2], deltas_[i - 1], deltas_[i], deltas_[i + 1]);
             }
 
-            derivatives_.end()[-2] = calculateD(deltas_.end()[-3], deltas_.end()[-2], deltas_.end()[-1], rightDelta);
+            derivatives_.end()[-2] = calculateD(deltas_.end()[-3], deltas_.end()[-2], deltas_.end()[-1], right_delta);
         }
 
         /**
@@ -64,25 +64,25 @@ namespace zldsp::interpolation {
          * @param point_num number of output points
          */
         void eval(FloatType *x, FloatType *y, const size_t point_num) {
-            size_t currentPos = 0;
-            size_t startIdx = 0, endIdx = point_num - 1;
-            while (startIdx <= endIdx && x[startIdx] <= xs_[0]) {
-                y[startIdx] = ys_[0];
-                startIdx += 1;
+            size_t current_pos = 0;
+            size_t start_idx = 0, end_idx = point_num - 1;
+            while (start_idx <= end_idx && x[start_idx] <= xs_[0]) {
+                y[start_idx] = ys_[0];
+                start_idx += 1;
             }
-            while (endIdx > startIdx && x[endIdx] >= xs_[input_size_ - 1]) {
-                y[endIdx] = ys_[input_size_ - 1];
-                endIdx -= 1;
+            while (end_idx > start_idx && x[end_idx] >= xs_[input_size_ - 1]) {
+                y[end_idx] = ys_[input_size_ - 1];
+                end_idx -= 1;
             }
-            for (size_t i = startIdx; i <= endIdx; ++i) {
-                while (currentPos + 2 < input_size_ && x[i] >= xs_[currentPos + 1]) {
-                    currentPos += 1;
+            for (size_t i = start_idx; i <= end_idx; ++i) {
+                while (current_pos + 2 < input_size_ && x[i] >= xs_[current_pos + 1]) {
+                    current_pos += 1;
                 }
-                const auto t = (x[i] - xs_[currentPos]) / (xs_[currentPos + 1] - xs_[currentPos]);
-                y[i] = h00(t) * ys_[currentPos] +
-                       h10(t) * (xs_[currentPos + 1] - xs_[currentPos]) * derivatives_[currentPos] +
-                       h01(t) * ys_[currentPos + 1] +
-                       h11(t) * (xs_[currentPos + 1] - xs_[currentPos]) * derivatives_[currentPos + 1];
+                const auto t = (x[i] - xs_[current_pos]) / (xs_[current_pos + 1] - xs_[current_pos]);
+                y[i] = h00(t) * ys_[current_pos] +
+                       h10(t) * (xs_[current_pos + 1] - xs_[current_pos]) * derivatives_[current_pos] +
+                       h01(t) * ys_[current_pos + 1] +
+                       h11(t) * (xs_[current_pos + 1] - xs_[current_pos]) * derivatives_[current_pos + 1];
             }
         }
 

@@ -16,7 +16,7 @@ namespace zldsp::buffer {
     template<typename FloatType>
     class FIFOAudioBuffer {
     public:
-        explicit FIFOAudioBuffer(int channels = 2, int bufferSize = 441);
+        explicit FIFOAudioBuffer(int channels = 2, int buffer_size = 441);
 
         void clear();
 

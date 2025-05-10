@@ -42,9 +42,9 @@ namespace zldsp::filter {
         static std::array<double, 6> get2HighShelf(double w0, double g, double q);
 
     private:
-        constexpr static double piHalf = std::numbers::pi * 0.5;
-        constexpr static double pi = std::numbers::pi;
-        constexpr static double pi2 = std::numbers::pi * std::numbers::pi;
+        constexpr static double kPiHalf = std::numbers::pi * 0.5;
+        constexpr static double kPi = std::numbers::pi;
+        constexpr static double kPi2 = std::numbers::pi * std::numbers::pi;
 
         static std::array<double, 3> solve_a(double w0, double b, double c = 1);
 

@@ -41,7 +41,7 @@ namespace zlpanel {
             zlp::bypass::ID, zlp::fType::ID, zlp::slope::ID, zlp::lrType::ID
         };
 
-        static constexpr std::array kResetDefaultVs{
+        inline const static std::array kResetDefaultVs{
             zlp::solo::convertTo01(zlp::solo::defaultV),
             zlp::sideSolo::convertTo01(zlp::sideSolo::defaultV),
             zlp::dynamicON::convertTo01(zlp::dynamicON::defaultV),

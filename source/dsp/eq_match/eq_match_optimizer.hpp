@@ -34,7 +34,8 @@ namespace zldsp::eq_match {
             nlopt::algorithm::GN_CRS2_LM, nlopt::algorithm::GN_CRS2_LM, nlopt::algorithm::LD_SLSQP
         };
         static constexpr std::array<zldsp::filter::FilterType, 3> kFilterTypes{
-            zldsp::filter::FilterType::kLowShelf, zldsp::filter::FilterType::kPeak, zldsp::filter::FilterType::kHighShelf
+            zldsp::filter::FilterType::kLowShelf, zldsp::filter::FilterType::kPeak,
+            zldsp::filter::FilterType::kHighShelf
         };
         static constexpr size_t kMaximumOrder = 6;
         static constexpr std::array<double, 3> kInitSol{6.214608098422191, 0.0, -0.3465735902799726};
@@ -141,8 +142,8 @@ namespace zldsp::eq_match {
                 const auto idx = static_cast<size_t>(
                     std::min_element(mse_by_orders.begin(), mse_by_orders.end()) - mse_by_orders.begin());
                 const size_t actual_idx = mse_by_orders[idx] <= mse_by_orders[0] - kHighOrderEps
-                                             ? idx
-                                             : static_cast<size_t>(0);
+                                              ? idx
+                                              : static_cast<size_t>(0);
                 // store optimal mse and filter parameters
                 mse_[i] = mse_by_orders[actual_idx];
                 filters_[i].setFilterType(filter_type_by_orders[actual_idx]);

@@ -170,7 +170,6 @@ namespace zlpanel {
                 if (setting_file.create()) {
                     juce::XmlElement xml_output{"colour_setting"};
                     for (size_t i = 0; i < kTagNames.size(); ++i) {
-                        const auto tag_name = kSelectorNames[i];
                         auto *xml_colour = xml_output.createNewChildElement(kTagNames[i]);
                         juce::Colour colour = selectors_[i]->getColour();
                         xml_colour->setAttribute("r", colour.getRed());

@@ -50,11 +50,11 @@ namespace zldsp::gain {
             }
         }
 
-        template<bool isBypassed = false>
+        template<bool IsBypassed = false>
         void processPost(juce::AudioBuffer<FloatType> &buffer) {
             if (c_is_on_) {
                 auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-                processPostBlockInternal<isBypassed>(block);
+                processPostBlockInternal<IsBypassed>(block);
             }
         }
 

@@ -104,10 +104,10 @@ namespace zldsp::loudness {
             // calculate the sum square of the small block
             FloatType sum_square = 0;
             for (int channel = 0; channel < small_buffer_.getNumChannels(); ++channel) {
-                const auto readerPointer = small_buffer_.getReadPointer(channel);
+                const auto reader_pointer = small_buffer_.getReadPointer(channel);
                 FloatType channel_sum_square = 0;
                 for (int i = 0; i < small_buffer_.getNumSamples(); ++i) {
-                    const auto sample = *(readerPointer + i);
+                    const auto sample = *(reader_pointer + i);
                     channel_sum_square += sample * sample;
                 }
                 sum_square += channel_sum_square * weights_[static_cast<size_t>(channel)];
