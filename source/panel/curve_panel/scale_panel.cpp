@@ -12,7 +12,7 @@
 
 namespace zlpanel {
     ScalePanel::ScalePanel(PluginProcessor &processor, zlgui::UIBase &base)
-        : parameters_NA_ref(processor.parameters_NA), uiBase(base),
+        : parameters_NA_ref_(processor.parameters_NA), uiBase(base),
           scaleBox("", zlstate::maximumDB::choices, base),
           minFFTBox("", zlstate::minimumFFTDB::choices, base) {
         juce::ignoreUnused(uiBase);
@@ -28,7 +28,7 @@ namespace zlpanel {
         };
         attach({&scaleBox.getBox(), &minFFTBox.getBox()},
                {zlstate::maximumDB::ID, zlstate::minimumFFTDB::ID},
-               parameters_NA_ref, boxAttachments);
+               parameters_NA_ref_, boxAttachments);
         addAndMakeVisible(scaleBox);
         addAndMakeVisible(minFFTBox);
         handleAsyncUpdate();
@@ -85,9 +85,9 @@ namespace zlpanel {
 
     void ScalePanel::handleAsyncUpdate() {
         maximumDB.store(zlstate::maximumDB::dBs[
-            static_cast<size_t>(parameters_NA_ref.getRawParameterValue(zlstate::maximumDB::ID)->load())]);
+            static_cast<size_t>(parameters_NA_ref_.getRawParameterValue(zlstate::maximumDB::ID)->load())]);
         minimumFFTDB.store(zlstate::minimumFFTDB::dBs[
-            static_cast<size_t>(parameters_NA_ref.getRawParameterValue(zlstate::minimumFFTDB::ID)->load())]);
+            static_cast<size_t>(parameters_NA_ref_.getRawParameterValue(zlstate::minimumFFTDB::ID)->load())]);
         repaint();
     }
 } // zlpanel

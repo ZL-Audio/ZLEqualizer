@@ -11,11 +11,11 @@
 
 namespace zlpanel {
     BackgroundPanel::BackgroundPanel(juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
+                                 juce::AudioProcessorValueTreeState &parameters_NA,
                                  zlgui::UIBase &base)
         : uiBase(base),
           gridPanel(base) {
-        juce::ignoreUnused(parameters, parametersNA);
+        juce::ignoreUnused(parameters, parameters_NA);
         setInterceptsMouseClicks(false, true);
         setOpaque(true);
         addAndMakeVisible(gridPanel);

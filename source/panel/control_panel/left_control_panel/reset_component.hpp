@@ -18,7 +18,7 @@ namespace zlpanel {
     class ResetComponent final : public juce::Component {
     public:
         explicit ResetComponent(juce::AudioProcessorValueTreeState &parameters,
-                                juce::AudioProcessorValueTreeState &parametersNA,
+                                juce::AudioProcessorValueTreeState &parameters_NA,
                                 zlgui::UIBase &base);
 
         ~ResetComponent() override;
@@ -28,7 +28,7 @@ namespace zlpanel {
         void attachGroup(size_t idx);
 
     private:
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
         const std::unique_ptr<juce::Drawable> drawable;
         zlgui::ClickButton button;

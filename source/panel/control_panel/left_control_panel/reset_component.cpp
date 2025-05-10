@@ -13,23 +13,23 @@
 
 namespace zlpanel {
     ResetComponent::ResetComponent(juce::AudioProcessorValueTreeState &parameters,
-                                   juce::AudioProcessorValueTreeState &parametersNA,
+                                   juce::AudioProcessorValueTreeState &parameters_NA,
                                    zlgui::UIBase &base)
-        : parameters_ref(parameters),
-          parameters_NA_ref(parametersNA),
+        : parameters_ref_(parameters),
+          parameters_NA_ref_(parameters_NA),
           uiBase(base),
           drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
           button(base, drawable.get(), nullptr, zlgui::multilingual::labels::bandOff) {
-        juce::ignoreUnused(parameters_ref, parameters_NA_ref);
+        juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
         button.getButton().onClick = [this]() {
             const auto currentBand = bandIdx.load();
             const auto isCurrentBandSelected = uiBase.getIsBandSelected(currentBand);
             for(size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && uiBase.getIsBandSelected(idx))) {
                     const auto activeID = zlstate::appendSuffix(zlstate::active::ID, idx);
-                    parameters_NA_ref.getParameter(activeID)->beginChangeGesture();
-                    parameters_NA_ref.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
-                    parameters_NA_ref.getParameter(activeID)->endChangeGesture();
+                    parameters_NA_ref_.getParameter(activeID)->beginChangeGesture();
+                    parameters_NA_ref_.getParameter(activeID)->setValueNotifyingHost(static_cast<float>(false));
+                    parameters_NA_ref_.getParameter(activeID)->endChangeGesture();
                 }
             }
         };

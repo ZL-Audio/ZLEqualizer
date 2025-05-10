@@ -17,7 +17,7 @@ namespace zlpanel {
     public:
         explicit OutputBox(PluginProcessor &p,
                                   zlgui::UIBase &base)
-            : processor_ref(p), parameters_ref(p.parameters),
+            : processor_ref_(p), parameters_ref_(p.parameters),
               uiBase(base),
               phaseC("phase", uiBase, zlgui::multilingual::labels::phaseFlip),
               agcC("A", uiBase, zlgui::multilingual::labels::autoGC),
@@ -48,14 +48,14 @@ namespace zlpanel {
             }
             attach({&phaseC.getButton(), &agcC.getButton(), &lmC.getButton()},
                    {zlp::phaseFlip::ID, zlp::autoGain::ID, zlp::loudnessMatcherON::ID},
-                   parameters_ref, buttonAttachments);
+                   parameters_ref_, buttonAttachments);
             attach({&scaleS.getSlider(), &outGainS.getSlider()},
                    {zlp::scale::ID, zlp::outputGain::ID},
-                   parameters_ref, sliderAttachments);
+                   parameters_ref_, sliderAttachments);
 
             lmC.getButton().onClick = [this]() {
                 if (!lmC.getButton().getToggleState()) {
-                    const auto newGain = -processor_ref.getController().getLoudnessMatcherDiff();
+                    const auto newGain = -processor_ref_.getController().getLoudnessMatcherDiff();
                     agcUpdater.updateSync(0.f);
                     gainUpdater.updateSync(zlp::outputGain::convertTo01(static_cast<float>(newGain)));
                 }
@@ -116,8 +116,8 @@ namespace zlpanel {
         }
 
     private:
-        PluginProcessor &processor_ref;
-        juce::AudioProcessorValueTreeState &parameters_ref;
+        PluginProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
         zlgui::UIBase &uiBase;
 
         zlgui::CompactButton phaseC, agcC, lmC;

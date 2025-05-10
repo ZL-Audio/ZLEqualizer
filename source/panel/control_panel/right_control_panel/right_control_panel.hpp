@@ -46,7 +46,7 @@ namespace zlpanel {
 
     private:
         zlgui::UIBase &uiBase;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         std::atomic<bool> dynEditable{false};
 
         Background background;

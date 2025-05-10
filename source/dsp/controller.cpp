@@ -11,573 +11,573 @@
 
 namespace zlp {
     template<typename FloatType>
-    Controller<FloatType>::Controller(juce::AudioProcessor &processor, const size_t fftOrder)
-        : processor_ref(processor),
-          fftAnalyzer(fftOrder), conflictAnalyzer(fftOrder), matchAnalyzer(13) {
-        for (size_t i = 0; i < bandNUM; ++i) {
-            histograms[i].setDecayRate(FloatType(0.99999));
-            subHistograms[i].setDecayRate(FloatType(0.9995));
+    Controller<FloatType>::Controller(juce::AudioProcessor &processor, const size_t fft_order)
+        : processor_ref_(processor),
+          fft_analyzer_(fft_order), conflict_analyzer_(fft_order), match_analyzer_(13) {
+        for (size_t i = 0; i < kBandNUM; ++i) {
+            histograms_[i].setDecayRate(FloatType(0.99999));
+            sub_histograms_[i].setDecayRate(FloatType(0.9995));
         }
-        soloFilter.setFilterStructure(zldsp::filter::FilterStructure::kSVF);
+        solo_filter_.setFilterStructure(zldsp::filter::FilterStructure::kSVF);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::reset() {
-        for (auto &f: filters) {
+        for (auto &f: filters_) {
             f.reset();
         }
-        soloFilter.reset();
+        solo_filter_.reset();
     }
 
     template<typename FloatType>
     void Controller<FloatType>::prepare(const juce::dsp::ProcessSpec &spec) {
-        delay.setMaximumDelayInSamples(
+        delay_.setMaximumDelayInSamples(
             static_cast<int>(zlp::dynLookahead::range.end / 1000.f * static_cast<float>(spec.sampleRate)) + 1);
-        delay.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
+        delay_.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
 
-        subBuffer.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
-        sampleRate.store(spec.sampleRate);
+        sub_buffer_.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
+        sample_rate_.store(spec.sampleRate);
         updateSubBuffer();
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateSubBuffer() {
-        subBuffer.setSubBufferSize(static_cast<int>(subBufferLength * sampleRate.load()));
+        sub_buffer_.setSubBufferSize(static_cast<int>(kSubBufferLength * sample_rate_.load()));
 
-        for (auto &f: filters) {
+        for (auto &f: filters_) {
             f.getTracker().setMaximumMomentarySeconds(static_cast<FloatType>(zlp::dynRMS::range.end / 1000.f));
         }
 
-        juce::dsp::ProcessSpec subSpec{sampleRate.load(), subBuffer.getSubSpec().maximumBlockSize, 2};
-        for (auto &f: filters) {
+        juce::dsp::ProcessSpec subSpec{sample_rate_.load(), sub_buffer_.getSubSpec().maximumBlockSize, 2};
+        for (auto &f: filters_) {
             f.prepare(subSpec);
         }
 
-        prototypeCorrections[0].prepare(subSpec);
+        prototype_corrections_[0].prepare(subSpec);
         for (size_t i = 1; i < 5; ++i) {
-            prototypeCorrections[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
+            prototype_corrections_[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
         }
-        prototypeW1.resize(prototypeCorrections[0].getCorrectionSize());
-        prototypeW2.resize(prototypeCorrections[0].getCorrectionSize());
-        zldsp::filter::calculateWsForPrototype<FloatType>(prototypeW1);
-        zldsp::filter::calculateWsForBiquad<FloatType>(prototypeW2);
+        prototype_w1_.resize(prototype_corrections_[0].getCorrectionSize());
+        prototype_w2_.resize(prototype_corrections_[0].getCorrectionSize());
+        zldsp::filter::calculateWsForPrototype<FloatType>(prototype_w1_);
+        zldsp::filter::calculateWsForBiquad<FloatType>(prototype_w2_);
 
-        mixedCorrections[0].prepare(subSpec);
+        mixed_corrections_[0].prepare(subSpec);
         for (size_t i = 1; i < 5; ++i) {
-            mixedCorrections[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
+            mixed_corrections_[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
         }
-        mixedW1.resize(mixedCorrections[0].getCorrectionSize());
-        mixedW2.resize(mixedCorrections[0].getCorrectionSize());
-        zldsp::filter::calculateWsForPrototype<FloatType>(mixedW1);
-        zldsp::filter::calculateWsForBiquad<FloatType>(mixedW2);
+        mixed_w1_.resize(mixed_corrections_[0].getCorrectionSize());
+        mixed_w2_.resize(mixed_corrections_[0].getCorrectionSize());
+        zldsp::filter::calculateWsForPrototype<FloatType>(mixed_w1_);
+        zldsp::filter::calculateWsForBiquad<FloatType>(mixed_w2_);
 
-        linearFilters[0].prepare(subSpec);
+        linear_filters_[0].prepare(subSpec);
         for (size_t i = 1; i < 5; ++i) {
-            linearFilters[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
+            linear_filters_[i].prepare(juce::dsp::ProcessSpec{subSpec.sampleRate, subSpec.maximumBlockSize, 1});
         }
-        linearW1.resize(linearFilters[0].getCorrectionSize());
-        zldsp::filter::calculateWsForPrototype<FloatType>(linearW1);
+        linear_w1_.resize(linear_filters_[0].getCorrectionSize());
+        zldsp::filter::calculateWsForPrototype<FloatType>(linear_w1_);
 
-        for (auto &f: mainIIRs) {
+        for (auto &f: main_IIRs_) {
             f.prepare(subSpec.sampleRate);
-            f.prepareResponseSize(mixedCorrections[0].getCorrectionSize());
+            f.prepareResponseSize(mixed_corrections_[0].getCorrectionSize());
         }
-        for (auto &f: mainIdeals) {
+        for (auto &f: main_ideals_) {
             f.prepare(subSpec.sampleRate);
-            f.prepareResponseSize(linearFilters[0].getCorrectionSize());
+            f.prepareResponseSize(linear_filters_[0].getCorrectionSize());
         }
 
-        soloFilter.setFilterType(zldsp::filter::FilterType::kBandPass);
-        soloFilter.prepare(subSpec);
+        solo_filter_.setFilterType(zldsp::filter::FilterType::kBandPass);
+        solo_filter_.prepare(subSpec);
 
-        lrMainSplitter.prepare(subSpec);
-        lrSideSplitter.prepare(subSpec);
-        msMainSplitter.prepare(subSpec);
-        msSideSplitter.prepare(subSpec);
-        outputGain.prepare(subSpec);
-        autoGain.prepare(subSpec);
-        for (auto &g: compensationGains) {
+        lr_main_splitter_.prepare(subSpec);
+        lr_side_splitter_.prepare(subSpec);
+        ms_main_splitter_.prepare(subSpec);
+        ms_side_splitter_.prepare(subSpec);
+        output_gain_.prepare(subSpec);
+        auto_gain_.prepare(subSpec);
+        for (auto &g: compensation_gains_) {
             g.prepare(subSpec);
         }
-        fftAnalyzer.prepare(subSpec);
-        conflictAnalyzer.prepare(subSpec);
-        matchAnalyzer.prepare(subSpec);
-        dummyMainBuffer.setSize(static_cast<int>(subSpec.numChannels), static_cast<int>(subSpec.maximumBlockSize));
-        dummyMainDelay.setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
-        dummyMainDelay.prepare(subSpec);
-        dummySideBuffer.setSize(static_cast<int>(subSpec.numChannels), static_cast<int>(subSpec.maximumBlockSize));
-        dummySideDelay.setMaximumDelayInSamples(linearFilters[0].getLatency() * 3 + 10);
-        dummySideDelay.prepare(subSpec);
+        fft_analyzer_.prepare(subSpec);
+        conflict_analyzer_.prepare(subSpec);
+        match_analyzer_.prepare(subSpec);
+        dummy_main_buffer_.setSize(static_cast<int>(subSpec.numChannels), static_cast<int>(subSpec.maximumBlockSize));
+        dummy_main_delay_.setMaximumDelayInSamples(linear_filters_[0].getLatency() * 3 + 10);
+        dummy_main_delay_.prepare(subSpec);
+        dummy_side_buffer_.setSize(static_cast<int>(subSpec.numChannels), static_cast<int>(subSpec.maximumBlockSize));
+        dummy_side_delay_.setMaximumDelayInSamples(linear_filters_[0].getLatency() * 3 + 10);
+        dummy_side_delay_.prepare(subSpec);
 
-        loudnessMatcher.prepare(subSpec);
+        loudness_matcher_.prepare(subSpec);
 
-        for (auto &t: trackers) {
+        for (auto &t: trackers_) {
             t.prepare(subSpec.sampleRate);
         }
 
-        toUpdateLRs.store(true);
+        to_update_lrs_.store(true);
         triggerAsyncUpdate();
     }
 
     template<typename FloatType>
     void Controller<FloatType>::process(juce::AudioBuffer<FloatType> &buffer) {
-        currentIsEditorOn = isEditorOn.load();
-        if (mFilterStructure.load() != currentFilterStructure) {
-            currentFilterStructure = mFilterStructure.load();
+        c_is_editor_on_ = is_editor_on_.load();
+        if (filter_structure_.load() != c_filter_structure_) {
+            c_filter_structure_ = filter_structure_.load();
             updateFilterStructure();
-            toUpdateLRs.store(true);
+            to_update_lrs_.store(true);
         }
-        if (toUpdateDynamicON.exchange(false)) {
+        if (to_update_dynamic_on_.exchange(false)) {
             updateDynamicONs();
         }
-        if (toUpdateLRs.exchange(false)) {
+        if (to_update_lrs_.exchange(false)) {
             updateLRs();
             updateTrackersON();
             updateCorrections();
-            toUpdateSgc.store(true);
+            to_update_sgc_.store(true);
         }
-        if (toUpdateBypass.exchange(false)) {
-            for (size_t i = 0; i < bandNUM; ++i) {
-                currentIsBypass[i] = isBypass[i].load();
+        if (to_update_bypass_.exchange(false)) {
+            for (size_t i = 0; i < kBandNUM; ++i) {
+                c_is_bypass_[i] = is_bypass_[i].load();
             }
             updateCorrections();
-            toUpdateSgc.store(true);
+            to_update_sgc_.store(true);
         }
-        if (currentIsSgcON != isSgcON.load()) {
-            currentIsSgcON = isSgcON.load();
-            if (!currentIsSgcON) {
-                for (auto &cG: compensationGains) {
+        if (c_is_sgc_on_ != is_sgc_on_.load()) {
+            c_is_sgc_on_ = is_sgc_on_.load();
+            if (!c_is_sgc_on_) {
+                for (auto &cG: compensation_gains_) {
                     cG.setGainLinear(FloatType(1));
                 }
             } else {
-                toUpdateSgc.store(true);
+                to_update_sgc_.store(true);
             }
         }
-        if (currentIsSgcON) {
-            if (toUpdateSgc.exchange(false)) {
+        if (c_is_sgc_on_) {
+            if (to_update_sgc_.exchange(false)) {
                 updateSgcValues();
             }
         }
-        if (toUpdateSolo.exchange(false)) {
-            currentUseSolo = useSolo.load();
+        if (to_update_solo_.exchange(false)) {
+            c_use_solo_ = use_solo_.load();
             updateSolo();
         }
-        if (toUpdateDynRelSide.exchange(false)) {
+        if (to_update_dyn_rel_side_.exchange(false)) {
             updateDynRelSide();
             updateTrackersON();
         }
-        if (toUpdateHist.exchange(false)) {
+        if (to_update_hist_.exchange(false)) {
             updateHistograms();
         }
-        if (currentIsLoudnessMatcherON != isLoudnessMatcherON.load()) {
-            currentIsLoudnessMatcherON = isLoudnessMatcherON.load();
-            if (currentIsLoudnessMatcherON) {
-                loudnessMatcher.reset();
+        if (c_is_loudness_matcher_on_ != is_loudness_matcher_on_.load()) {
+            c_is_loudness_matcher_on_ = is_loudness_matcher_on_.load();
+            if (c_is_loudness_matcher_on_) {
+                loudness_matcher_.reset();
             }
         }
 
-        currentIsEffectON = isEffectON.load();
+        c_is_effect_on_ = is_effect_on_.load();
 
-        juce::AudioBuffer<FloatType> mainBuffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
-        juce::AudioBuffer<FloatType> sideBuffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
+        juce::AudioBuffer<FloatType> main_buffer{buffer.getArrayOfWritePointers() + 0, 2, buffer.getNumSamples()};
+        juce::AudioBuffer<FloatType> side_buffer{buffer.getArrayOfWritePointers() + 2, 2, buffer.getNumSamples()};
         // if no side chain, copy the main buffer into the side buffer
-        if (!sideChain.load()) {
-            sideBuffer.makeCopyOf(mainBuffer, true);
+        if (!side_chain_.load()) {
+            side_buffer.makeCopyOf(main_buffer, true);
         }
         // process lookahead
-        delay.process(mainBuffer);
-        if (isZeroLatency.load()) {
-            int startSample = 0;
-            const int samplePerBuffer = static_cast<int>(subBuffer.getSubSpec().maximumBlockSize);
-            while (startSample < buffer.getNumSamples()) {
-                const int actualNumSample = std::min(samplePerBuffer, buffer.getNumSamples() - startSample);
-                auto subMainBuffer = juce::AudioBuffer<FloatType>(mainBuffer.getArrayOfWritePointers(),
-                                                                  2, startSample, actualNumSample);
-                auto subSideBuffer = juce::AudioBuffer<FloatType>(sideBuffer.getArrayOfWritePointers(),
-                                                                  2, startSample, actualNumSample);
-                processSubBuffer(subMainBuffer, subSideBuffer);
-                startSample += samplePerBuffer;
+        delay_.process(main_buffer);
+        if (is_zero_latency_.load()) {
+            int start_sample = 0;
+            const int sample_per_buffer = static_cast<int>(sub_buffer_.getSubSpec().maximumBlockSize);
+            while (start_sample < buffer.getNumSamples()) {
+                const int actual_num_sample = std::min(sample_per_buffer, buffer.getNumSamples() - start_sample);
+                auto sub_main_buffer = juce::AudioBuffer<FloatType>(main_buffer.getArrayOfWritePointers(),
+                                                                  2, start_sample, actual_num_sample);
+                auto sub_side_buffer = juce::AudioBuffer<FloatType>(side_buffer.getArrayOfWritePointers(),
+                                                                  2, start_sample, actual_num_sample);
+                processSubBuffer(sub_main_buffer, sub_side_buffer);
+                start_sample += sample_per_buffer;
             }
         } else {
             auto block = juce::dsp::AudioBlock<FloatType>(buffer);
             // ---------------- start sub buffer
-            subBuffer.pushBlock(block);
-            while (subBuffer.isSubReady()) {
-                subBuffer.popSubBuffer();
+            sub_buffer_.pushBlock(block);
+            while (sub_buffer_.isSubReady()) {
+                sub_buffer_.popSubBuffer();
                 // create main sub buffer and side sub buffer
-                auto subMainBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 0,
-                                                                  2, subBuffer.subBuffer.getNumSamples());
-                auto subSideBuffer = juce::AudioBuffer<FloatType>(subBuffer.subBuffer.getArrayOfWritePointers() + 2,
-                                                                  2, subBuffer.subBuffer.getNumSamples());
-                processSubBuffer(subMainBuffer, subSideBuffer);
-                subBuffer.pushSubBuffer();
+                auto sub_main_buffer = juce::AudioBuffer<FloatType>(sub_buffer_.sub_buffer_.getArrayOfWritePointers() + 0,
+                                                                  2, sub_buffer_.sub_buffer_.getNumSamples());
+                auto sub_side_buffer = juce::AudioBuffer<FloatType>(sub_buffer_.sub_buffer_.getArrayOfWritePointers() + 2,
+                                                                  2, sub_buffer_.sub_buffer_.getNumSamples());
+                processSubBuffer(sub_main_buffer, sub_side_buffer);
+                sub_buffer_.pushSubBuffer();
             }
-            subBuffer.popBlock(block);
+            sub_buffer_.popBlock(block);
             // ---------------- end sub buffer
         }
-        phaseFlipper.process(mainBuffer);
+        phase_flipper_.process(main_buffer);
     }
 
     template<typename FloatType>
-    void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &subMainBuffer,
-                                                 juce::AudioBuffer<FloatType> &subSideBuffer) {
-        if (currentIsEffectON) {
-            if (currentUseSolo) {
-                processSubBufferOnOff<true>(subMainBuffer, subSideBuffer);
-                processSolo(subMainBuffer, subSideBuffer);
+    void Controller<FloatType>::processSubBuffer(juce::AudioBuffer<FloatType> &sub_main_buffer,
+                                                 juce::AudioBuffer<FloatType> &sub_side_buffer) {
+        if (c_is_effect_on_) {
+            if (c_use_solo_) {
+                processSubBufferOnOff<true>(sub_main_buffer, sub_side_buffer);
+                processSolo(sub_main_buffer, sub_side_buffer);
             } else {
-                processSubBufferOnOff<false>(subMainBuffer, subSideBuffer);
+                processSubBufferOnOff<false>(sub_main_buffer, sub_side_buffer);
             }
         } else {
-            processSubBufferOnOff<true>(subMainBuffer, subSideBuffer);
+            processSubBufferOnOff<true>(sub_main_buffer, sub_side_buffer);
         }
     }
 
     template<typename FloatType>
-    template<bool isBypassed>
-    void Controller<FloatType>::processSubBufferOnOff(juce::AudioBuffer<FloatType> &subMainBuffer,
-                                                      juce::AudioBuffer<FloatType> &subSideBuffer) {
-        dummyMainBuffer.makeCopyOf(subMainBuffer, true);
-        dummyMainDelay.process(dummyMainBuffer);
-        if (currentIsEditorOn) {
-            dummySideBuffer.makeCopyOf(subSideBuffer, true);
-            dummySideDelay.process(dummySideBuffer);
-            matchAnalyzer.process(subMainBuffer, subSideBuffer);
+    template<bool IsBypassed>
+    void Controller<FloatType>::processSubBufferOnOff(juce::AudioBuffer<FloatType> &sub_main_buffer,
+                                                      juce::AudioBuffer<FloatType> &sub_side_buffer) {
+        dummy_main_buffer_.makeCopyOf(sub_main_buffer, true);
+        dummy_main_delay_.process(dummy_main_buffer_);
+        if (c_is_editor_on_) {
+            dummy_side_buffer_.makeCopyOf(sub_side_buffer, true);
+            dummy_side_delay_.process(dummy_side_buffer_);
+            match_analyzer_.process(sub_main_buffer, sub_side_buffer);
         }
-        if (currentFilterStructure == filterStructure::linear) {
-            processLinear<isBypassed>(subMainBuffer);
+        if (c_filter_structure_ == filterStructure::kLinear) {
+            processLinear<IsBypassed>(sub_main_buffer);
         } else {
-            processDynamic<isBypassed>(subMainBuffer, subSideBuffer);
-            if (currentFilterStructure == filterStructure::parallel) {
-                processParallelPost<isBypassed>(subMainBuffer, subSideBuffer);
+            processDynamic<IsBypassed>(sub_main_buffer, sub_side_buffer);
+            if (c_filter_structure_ == filterStructure::kParallel) {
+                processParallelPost<IsBypassed>(sub_main_buffer, sub_side_buffer);
             }
-            if (currentFilterStructure == filterStructure::matched) {
-                processPrototypeCorrection<isBypassed>(subMainBuffer);
-            } else if (currentFilterStructure == filterStructure::mixed) {
-                processMixedCorrection<isBypassed>(subMainBuffer);
+            if (c_filter_structure_ == filterStructure::kMatched) {
+                processPrototypeCorrection<IsBypassed>(sub_main_buffer);
+            } else if (c_filter_structure_ == filterStructure::kMixed) {
+                processMixedCorrection<IsBypassed>(sub_main_buffer);
             }
         }
-        if (currentIsLoudnessMatcherON) {
-            loudnessMatcher.process(dummyMainBuffer, subMainBuffer);
+        if (c_is_loudness_matcher_on_) {
+            loudness_matcher_.process(dummy_main_buffer_, sub_main_buffer);
         }
-        autoGain.processPre(dummyMainBuffer);
-        autoGain.template processPost<isBypassed>(subMainBuffer);
-        outputGain.template process<isBypassed>(subMainBuffer);
-        if (currentIsEditorOn) {
-            fftAnalyzer.prepareBuffer();
-            fftAnalyzer.process(dummyMainBuffer, subMainBuffer, dummySideBuffer);
-            conflictAnalyzer.prepareBuffer();
-            conflictAnalyzer.process(subMainBuffer, dummySideBuffer);
-        }
-    }
-
-    template<typename FloatType>
-    void Controller<FloatType>::processSolo(juce::AudioBuffer<FloatType> &subMainBuffer,
-                                            juce::AudioBuffer<FloatType> &subSideBuffer) {
-        if (currentSoloSide) {
-            subMainBuffer.makeCopyOf(subSideBuffer, true);
-        }
-        soloFilter.processPre(subMainBuffer);
-        switch (currentFilterLRs[currentSoloIdx]) {
-            case lrType::stereo: {
-                soloFilter.process(subMainBuffer);
-                break;
-            }
-            case lrType::left: {
-                lrMainSplitter.split(subMainBuffer);
-                soloFilter.process(lrMainSplitter.getLBuffer());
-                lrMainSplitter.getRBuffer().applyGain(0);
-                lrMainSplitter.combine(subMainBuffer);
-                break;
-            }
-            case lrType::right: {
-                lrMainSplitter.split(subMainBuffer);
-                soloFilter.process(lrMainSplitter.getRBuffer());
-                lrMainSplitter.getLBuffer().applyGain(0);
-                lrMainSplitter.combine(subMainBuffer);
-                break;
-            }
-            case lrType::mid: {
-                msMainSplitter.split(subMainBuffer);
-                soloFilter.process(msMainSplitter.getMBuffer());
-                msMainSplitter.getSBuffer().applyGain(0);
-                msMainSplitter.combine(subMainBuffer);
-                break;
-            }
-            case lrType::side: {
-                msMainSplitter.split(subMainBuffer);
-                soloFilter.process(msMainSplitter.getSBuffer());
-                msMainSplitter.getMBuffer().applyGain(0);
-                msMainSplitter.combine(subMainBuffer);
-                break;
-            }
+        auto_gain_.processPre(dummy_main_buffer_);
+        auto_gain_.template processPost<IsBypassed>(sub_main_buffer);
+        output_gain_.template process<IsBypassed>(sub_main_buffer);
+        if (c_is_editor_on_) {
+            fft_analyzer_.prepareBuffer();
+            fft_analyzer_.process(dummy_main_buffer_, sub_main_buffer, dummy_side_buffer_);
+            conflict_analyzer_.prepareBuffer();
+            conflict_analyzer_.process(sub_main_buffer, dummy_side_buffer_);
         }
     }
 
     template<typename FloatType>
-    template<bool isBypassed>
-    void Controller<FloatType>::processDynamic(juce::AudioBuffer<FloatType> &subMainBuffer,
-                                               juce::AudioBuffer<FloatType> &subSideBuffer) {
-        // set auto threshold
-        if (!isBypassed) {
-            for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
-                const auto i = dynamicONIndices[idx];
-                if (currentIsHistON[i]) {
+    void Controller<FloatType>::processSolo(juce::AudioBuffer<FloatType> &sub_main_buffer,
+                                            juce::AudioBuffer<FloatType> &sub_side_buffer) {
+        if (c_solo_side_) {
+            sub_main_buffer.makeCopyOf(sub_side_buffer, true);
+        }
+        solo_filter_.processPre(sub_main_buffer);
+        switch (current_filter_lrs_[c_solo_idx_]) {
+            case lrType::kStereo: {
+                solo_filter_.process(sub_main_buffer);
+                break;
+            }
+            case lrType::kLeft: {
+                lr_main_splitter_.split(sub_main_buffer);
+                solo_filter_.process(lr_main_splitter_.getLBuffer());
+                lr_main_splitter_.getRBuffer().applyGain(0);
+                lr_main_splitter_.combine(sub_main_buffer);
+                break;
+            }
+            case lrType::kRight: {
+                lr_main_splitter_.split(sub_main_buffer);
+                solo_filter_.process(lr_main_splitter_.getRBuffer());
+                lr_main_splitter_.getLBuffer().applyGain(0);
+                lr_main_splitter_.combine(sub_main_buffer);
+                break;
+            }
+            case lrType::kMid: {
+                ms_main_splitter_.split(sub_main_buffer);
+                solo_filter_.process(ms_main_splitter_.getMBuffer());
+                ms_main_splitter_.getSBuffer().applyGain(0);
+                ms_main_splitter_.combine(sub_main_buffer);
+                break;
+            }
+            case lrType::kSide: {
+                ms_main_splitter_.split(sub_main_buffer);
+                solo_filter_.process(ms_main_splitter_.getSBuffer());
+                ms_main_splitter_.getMBuffer().applyGain(0);
+                ms_main_splitter_.combine(sub_main_buffer);
+                break;
+            }
+        }
+    }
+
+    template<typename FloatType>
+    template<bool IsBypassed>
+    void Controller<FloatType>::processDynamic(juce::AudioBuffer<FloatType> &sub_main_buffer,
+                                               juce::AudioBuffer<FloatType> &sub_side_buffer) {
+        // set the auto threshold
+        if (!IsBypassed) {
+            for (size_t idx = 0; idx < dynamic_on_indices_.size(); ++idx) {
+                const auto i = dynamic_on_indices_[idx];
+                if (c_is_hist_on_[i]) {
                     const auto depThres =
-                            currentThreshold[i].load() + FloatType(40) +
+                            thresholds_[i].load() + FloatType(40) +
                             static_cast<FloatType>(threshold::range.snapToLegalValue(
-                                static_cast<float>(-subHistograms[i].getPercentile(FloatType(0.5)))));
-                    filters[i].getComputer().setThreshold(depThres);
+                                static_cast<float>(-sub_histograms_[i].getPercentile(FloatType(0.5)))));
+                    filters_[i].getComputer().setThreshold(depThres);
                 } else {
-                    filters[i].getComputer().setThreshold(currentThreshold[i].load());
+                    filters_[i].getComputer().setThreshold(thresholds_[i].load());
                 }
             }
         }
         // stereo filters process
-        processDynamicLRMSTrackers<0>(subSideBuffer);
-        processDynamicLRMS<isBypassed, 0, 0>(subMainBuffer, subSideBuffer, subSideBuffer);
+        processDynamicLRMSTrackers<0>(sub_side_buffer);
+        processDynamicLRMS<IsBypassed, 0, 0>(sub_main_buffer, sub_side_buffer, sub_side_buffer);
         // LR filters process
-        if (useLR) {
-            lrMainSplitter.split(subMainBuffer);
-            lrSideSplitter.split(subSideBuffer);
-            processDynamicLRMSTrackers<1>(lrSideSplitter.getLBuffer());
-            processDynamicLRMSTrackers<2>(lrSideSplitter.getRBuffer());
-            processDynamicLRMS<isBypassed, 1, 2>(lrMainSplitter.getLBuffer(),
-                                                 lrSideSplitter.getLBuffer(), lrSideSplitter.getRBuffer());
-            processDynamicLRMS<isBypassed, 2, 1>(lrMainSplitter.getRBuffer(),
-                                                 lrSideSplitter.getRBuffer(), lrSideSplitter.getLBuffer());
-            lrMainSplitter.combine(subMainBuffer);
+        if (use_lr_) {
+            lr_main_splitter_.split(sub_main_buffer);
+            lr_side_splitter_.split(sub_side_buffer);
+            processDynamicLRMSTrackers<1>(lr_side_splitter_.getLBuffer());
+            processDynamicLRMSTrackers<2>(lr_side_splitter_.getRBuffer());
+            processDynamicLRMS<IsBypassed, 1, 2>(lr_main_splitter_.getLBuffer(),
+                                                 lr_side_splitter_.getLBuffer(), lr_side_splitter_.getRBuffer());
+            processDynamicLRMS<IsBypassed, 2, 1>(lr_main_splitter_.getRBuffer(),
+                                                 lr_side_splitter_.getRBuffer(), lr_side_splitter_.getLBuffer());
+            lr_main_splitter_.combine(sub_main_buffer);
         }
         // MS filters process
-        if (useMS) {
-            msMainSplitter.split(subMainBuffer);
-            msSideSplitter.split(subSideBuffer);
-            processDynamicLRMSTrackers<3>(msSideSplitter.getMBuffer());
-            processDynamicLRMSTrackers<4>(msSideSplitter.getSBuffer());
-            processDynamicLRMS<isBypassed, 3, 4>(msMainSplitter.getMBuffer(),
-                                                 msSideSplitter.getMBuffer(), msSideSplitter.getSBuffer());
-            processDynamicLRMS<isBypassed, 4, 3>(msMainSplitter.getSBuffer(),
-                                                 msSideSplitter.getSBuffer(), msSideSplitter.getMBuffer());
-            msMainSplitter.combine(subMainBuffer);
+        if (use_ms_) {
+            ms_main_splitter_.split(sub_main_buffer);
+            ms_side_splitter_.split(sub_side_buffer);
+            processDynamicLRMSTrackers<3>(ms_side_splitter_.getMBuffer());
+            processDynamicLRMSTrackers<4>(ms_side_splitter_.getSBuffer());
+            processDynamicLRMS<IsBypassed, 3, 4>(ms_main_splitter_.getMBuffer(),
+                                                 ms_side_splitter_.getMBuffer(), ms_side_splitter_.getSBuffer());
+            processDynamicLRMS<IsBypassed, 4, 3>(ms_main_splitter_.getSBuffer(),
+                                                 ms_side_splitter_.getSBuffer(), ms_side_splitter_.getMBuffer());
+            ms_main_splitter_.combine(sub_main_buffer);
         }
         // set main filter gain & Q and update histograms
-        if (!isBypassed) {
-            for (size_t idx = 0; idx < dynamicONIndices.size(); ++idx) {
-                const auto i = dynamicONIndices[idx];
-                mainIdeals[i].setGain(filters[i].getMainFilter().template getGain<false>());
-                mainIdeals[i].setQ(filters[i].getMainFilter().template getQ<false>());
-                mainIIRs[i].setGain(filters[i].getMainFilter().template getGain<false>());
-                mainIIRs[i].setQ(filters[i].getMainFilter().template getQ<false>());
-                if (currentIsHistON[i]) {
-                    const auto diff = filters[i].getBaseLine() - filters[i].getTracker().getMomentaryLoudness();
+        if (!IsBypassed) {
+            for (size_t idx = 0; idx < dynamic_on_indices_.size(); ++idx) {
+                const auto i = dynamic_on_indices_[idx];
+                main_ideals_[i].setGain(filters_[i].getMainFilter().template getGain<false>());
+                main_ideals_[i].setQ(filters_[i].getMainFilter().template getQ<false>());
+                main_IIRs_[i].setGain(filters_[i].getMainFilter().template getGain<false>());
+                main_IIRs_[i].setQ(filters_[i].getMainFilter().template getQ<false>());
+                if (c_is_hist_on_[i]) {
+                    const auto diff = filters_[i].getBaseLine() - filters_[i].getTracker().getMomentaryLoudness();
                     if (diff <= 100) {
                         const auto histIdx = juce::jlimit(0, 79, juce::roundToInt(diff));
-                        histograms[i].push(static_cast<size_t>(histIdx));
-                        subHistograms[i].push(static_cast<size_t>(histIdx));
-                        atomicHistograms[i].sync(histograms[i]);
+                        histograms_[i].push(static_cast<size_t>(histIdx));
+                        sub_histograms_[i].push(static_cast<size_t>(histIdx));
+                        atomic_histograms_[i].sync(histograms_[i]);
                     }
-                } else if (currentIsEditorOn) {
-                    sideLoudness[i].store(filters[i].getTracker().getMomentaryLoudness() - filters[i].getBaseLine());
+                } else if (c_is_editor_on_) {
+                    side_loudness_[i].store(filters_[i].getTracker().getMomentaryLoudness() - filters_[i].getBaseLine());
                 }
             }
         }
     }
 
     template<typename FloatType>
-    template<size_t lrIdx>
-    void Controller<FloatType>::processDynamicLRMSTrackers(juce::AudioBuffer<FloatType> &subSideBuffer) {
-        auto &tracker{trackers[lrIdx]};
-        if (useTrackers[lrIdx]) {
-            tracker.processBufferRMS(subSideBuffer);
-            trackerBaselines[lrIdx] = tracker.getMomentaryLoudness();
-            if (trackerBaselines[lrIdx] <= tracker.minusInfinityDB + FloatType(1)) {
-                trackerBaselines[lrIdx] = tracker.minusInfinityDB * FloatType(0.5);
+    template<size_t LRIdx>
+    void Controller<FloatType>::processDynamicLRMSTrackers(juce::AudioBuffer<FloatType> &sub_side_buffer) {
+        auto &tracker{trackers_[LRIdx]};
+        if (use_trackers_[LRIdx]) {
+            tracker.processBufferRMS(sub_side_buffer);
+            tracker_baselines_[LRIdx] = tracker.getMomentaryLoudness();
+            if (tracker_baselines_[LRIdx] <= tracker.minusInfinityDB + FloatType(1)) {
+                tracker_baselines_[LRIdx] = tracker.minusInfinityDB * FloatType(0.5);
             }
         }
     }
 
     template<typename FloatType>
-    template<bool isBypassed, size_t lrIdx1, size_t lrIdx2>
-    void Controller<FloatType>::processDynamicLRMS(juce::AudioBuffer<FloatType> &subMainBuffer,
-                                                   juce::AudioBuffer<FloatType> &subSideBuffer1,
-                                                   juce::AudioBuffer<FloatType> &subSideBuffer2) {
-        const auto &indices{filterLRIndices[lrIdx1]};
+    template<bool IsBypassed, size_t LRIdx1, size_t LRIdx2>
+    void Controller<FloatType>::processDynamicLRMS(juce::AudioBuffer<FloatType> &sub_main_buffer,
+                                                   juce::AudioBuffer<FloatType> &sub_side_buffer1,
+                                                   juce::AudioBuffer<FloatType> &sub_side_buffer2) {
+        const auto &indices{filter_lr_indices_[LRIdx1]};
         for (size_t idx = 0; idx < indices.size(); ++idx) {
             const auto i = indices[idx];
-            const auto baseLine = sideSwaps[i] ? trackerBaselines[lrIdx2] : trackerBaselines[lrIdx1];
-            if (currentDynRelatives[i]) {
-                filters[i].setBaseLine(baseLine);
+            const auto baseLine = side_swaps_[i] ? tracker_baselines_[LRIdx2] : tracker_baselines_[LRIdx1];
+            if (c_dyn_relatives_[i]) {
+                filters_[i].setBaseLine(baseLine);
             } else {
-                filters[i].setBaseLine(0);
+                filters_[i].setBaseLine(0);
             }
-            juce::AudioBuffer<FloatType> &subSideBuffer = sideSwaps[i] ? subSideBuffer2 : subSideBuffer1;
-            if (currentIsBypass[i] || isBypassed) {
-                filters[i].template process<true>(subMainBuffer, subSideBuffer);
+            juce::AudioBuffer<FloatType> &subSideBuffer = side_swaps_[i] ? sub_side_buffer2 : sub_side_buffer1;
+            if (c_is_bypass_[i] || IsBypassed) {
+                filters_[i].template process<true>(sub_main_buffer, subSideBuffer);
             } else {
-                filters[i].template process<false>(subMainBuffer, subSideBuffer);
+                filters_[i].template process<false>(sub_main_buffer, subSideBuffer);
             }
         }
-        if (currentIsSgcON && currentFilterStructure != filterStructure::parallel) {
-            compensationGains[lrIdx1].template process<isBypassed>(subMainBuffer);
+        if (c_is_sgc_on_ && c_filter_structure_ != filterStructure::kParallel) {
+            compensation_gains_[LRIdx1].template process<IsBypassed>(sub_main_buffer);
         }
     }
 
     template<typename FloatType>
-    template<bool isBypassed>
-    void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &subMainBuffer,
-                                                    juce::AudioBuffer<FloatType> &subSideBuffer) {
+    template<bool IsBypassed>
+    void Controller<FloatType>::processParallelPost(juce::AudioBuffer<FloatType> &sub_main_buffer,
+                                                    juce::AudioBuffer<FloatType> &sub_side_buffer) {
         // add parallel filters first
-        processParallelPostLRMS<isBypassed>(0, true, subMainBuffer, subSideBuffer);
-        if (useLR) {
-            processParallelPostLRMS<isBypassed>(1, true, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
-            processParallelPostLRMS<isBypassed>(2, true, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
-            lrMainSplitter.combine(subMainBuffer);
+        processParallelPostLRMS<IsBypassed>(0, true, sub_main_buffer, sub_side_buffer);
+        if (use_lr_) {
+            processParallelPostLRMS<IsBypassed>(1, true, lr_main_splitter_.getLBuffer(), lr_side_splitter_.getLBuffer());
+            processParallelPostLRMS<IsBypassed>(2, true, lr_main_splitter_.getRBuffer(), lr_side_splitter_.getRBuffer());
+            lr_main_splitter_.combine(sub_main_buffer);
         }
-        if (useMS) {
-            processParallelPostLRMS<isBypassed>(3, true, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
-            processParallelPostLRMS<isBypassed>(4, true, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
-            msMainSplitter.combine(subMainBuffer);
+        if (use_ms_) {
+            processParallelPostLRMS<IsBypassed>(3, true, ms_main_splitter_.getMBuffer(), ms_side_splitter_.getMBuffer());
+            processParallelPostLRMS<IsBypassed>(4, true, ms_main_splitter_.getSBuffer(), ms_side_splitter_.getSBuffer());
+            ms_main_splitter_.combine(sub_main_buffer);
         }
-        processParallelPostLRMS<isBypassed>(0, false, subMainBuffer, subSideBuffer);
-        if (currentIsSgcON) {
-            compensationGains[0].template process<isBypassed>(subMainBuffer);
+        processParallelPostLRMS<IsBypassed>(0, false, sub_main_buffer, sub_side_buffer);
+        if (c_is_sgc_on_) {
+            compensation_gains_[0].template process<IsBypassed>(sub_main_buffer);
         }
-        if (useLR) {
-            lrMainSplitter.split(subMainBuffer);
-            processParallelPostLRMS<isBypassed>(1, false, lrMainSplitter.getLBuffer(), lrSideSplitter.getLBuffer());
-            processParallelPostLRMS<isBypassed>(2, false, lrMainSplitter.getRBuffer(), lrSideSplitter.getRBuffer());
-            if (currentIsSgcON) {
-                compensationGains[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
-                compensationGains[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
+        if (use_lr_) {
+            lr_main_splitter_.split(sub_main_buffer);
+            processParallelPostLRMS<IsBypassed>(1, false, lr_main_splitter_.getLBuffer(), lr_side_splitter_.getLBuffer());
+            processParallelPostLRMS<IsBypassed>(2, false, lr_main_splitter_.getRBuffer(), lr_side_splitter_.getRBuffer());
+            if (c_is_sgc_on_) {
+                compensation_gains_[1].template process<IsBypassed>(lr_main_splitter_.getLBuffer());
+                compensation_gains_[2].template process<IsBypassed>(lr_main_splitter_.getRBuffer());
             }
-            lrMainSplitter.combine(subMainBuffer);
+            lr_main_splitter_.combine(sub_main_buffer);
         }
-        if (useMS) {
-            msMainSplitter.split(subMainBuffer);
-            processParallelPostLRMS<isBypassed>(3, false, msMainSplitter.getMBuffer(), msSideSplitter.getMBuffer());
-            processParallelPostLRMS<isBypassed>(4, false, msMainSplitter.getSBuffer(), msSideSplitter.getSBuffer());
-            if (currentIsSgcON) {
-                compensationGains[3].template process<isBypassed>(msMainSplitter.getMBuffer());
-                compensationGains[4].template process<isBypassed>(msMainSplitter.getSBuffer());
+        if (use_ms_) {
+            ms_main_splitter_.split(sub_main_buffer);
+            processParallelPostLRMS<IsBypassed>(3, false, ms_main_splitter_.getMBuffer(), ms_side_splitter_.getMBuffer());
+            processParallelPostLRMS<IsBypassed>(4, false, ms_main_splitter_.getSBuffer(), ms_side_splitter_.getSBuffer());
+            if (c_is_sgc_on_) {
+                compensation_gains_[3].template process<IsBypassed>(ms_main_splitter_.getMBuffer());
+                compensation_gains_[4].template process<IsBypassed>(ms_main_splitter_.getSBuffer());
             }
-            msMainSplitter.combine(subMainBuffer);
+            ms_main_splitter_.combine(sub_main_buffer);
         }
     }
 
     template<typename FloatType>
-    template<bool isBypassed>
-    void Controller<FloatType>::processParallelPostLRMS(const size_t lrIdx, const bool shouldParallel,
-                                                        juce::AudioBuffer<FloatType> &subMainBuffer,
-                                                        juce::AudioBuffer<FloatType> &subSideBuffer) {
-        const auto &indices{filterLRIndices[lrIdx]};
+    template<bool IsBypassed>
+    void Controller<FloatType>::processParallelPostLRMS(const size_t lr_idx, const bool should_parallel,
+                                                        juce::AudioBuffer<FloatType> &sub_main_buffer,
+                                                        juce::AudioBuffer<FloatType> &sub_side_buffer) {
+        const auto &indices{filter_lr_indices_[lr_idx]};
         for (size_t idx = 0; idx < indices.size(); ++idx) {
             const auto i = indices[idx];
-            if (filters[i].getMainFilter().getShouldBeParallel() == shouldParallel) {
-                if (currentIsBypass[i] || isBypassed) {
-                    filters[i].template processParallelPost<true>(subMainBuffer, subSideBuffer);
+            if (filters_[i].getMainFilter().getShouldBeParallel() == should_parallel) {
+                if (c_is_bypass_[i] || IsBypassed) {
+                    filters_[i].template processParallelPost<true>(sub_main_buffer, sub_side_buffer);
                 } else {
-                    filters[i].template processParallelPost<false>(subMainBuffer, subSideBuffer);
+                    filters_[i].template processParallelPost<false>(sub_main_buffer, sub_side_buffer);
                 }
             }
         }
     }
 
     template<typename FloatType>
-    template<bool isBypassed>
-    void Controller<FloatType>::processPrototypeCorrection(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        prototypeCorrections[0].template process<isBypassed>(subMainBuffer);
-        if (useLR) {
-            lrMainSplitter.split(subMainBuffer);
-            prototypeCorrections[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
-            prototypeCorrections[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
-            lrMainSplitter.combine(subMainBuffer);
+    template<bool IsBypassed>
+    void Controller<FloatType>::processPrototypeCorrection(juce::AudioBuffer<FloatType> &sub_main_buffer) {
+        prototype_corrections_[0].template process<IsBypassed>(sub_main_buffer);
+        if (use_lr_) {
+            lr_main_splitter_.split(sub_main_buffer);
+            prototype_corrections_[1].template process<IsBypassed>(lr_main_splitter_.getLBuffer());
+            prototype_corrections_[2].template process<IsBypassed>(lr_main_splitter_.getRBuffer());
+            lr_main_splitter_.combine(sub_main_buffer);
         }
-        if (useMS) {
-            msMainSplitter.split(subMainBuffer);
-            prototypeCorrections[3].template process<isBypassed>(msMainSplitter.getMBuffer());
-            prototypeCorrections[4].template process<isBypassed>(msMainSplitter.getSBuffer());
-            msMainSplitter.combine(subMainBuffer);
-        }
-    }
-
-    template<typename FloatType>
-    template<bool isBypassed>
-    void Controller<FloatType>::processMixedCorrection(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        mixedCorrections[0].template process<isBypassed>(subMainBuffer);
-        if (useLR) {
-            lrMainSplitter.split(subMainBuffer);
-            mixedCorrections[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
-            mixedCorrections[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
-            lrMainSplitter.combine(subMainBuffer);
-        }
-        if (useMS) {
-            msMainSplitter.split(subMainBuffer);
-            mixedCorrections[3].template process<isBypassed>(msMainSplitter.getMBuffer());
-            mixedCorrections[4].template process<isBypassed>(msMainSplitter.getSBuffer());
-            msMainSplitter.combine(subMainBuffer);
+        if (use_ms_) {
+            ms_main_splitter_.split(sub_main_buffer);
+            prototype_corrections_[3].template process<IsBypassed>(ms_main_splitter_.getMBuffer());
+            prototype_corrections_[4].template process<IsBypassed>(ms_main_splitter_.getSBuffer());
+            ms_main_splitter_.combine(sub_main_buffer);
         }
     }
 
     template<typename FloatType>
-    template<bool isBypassed>
-    void Controller<FloatType>::processLinear(juce::AudioBuffer<FloatType> &subMainBuffer) {
-        linearFilters[0].template process<isBypassed>(subMainBuffer);
-        if (currentIsSgcON) {
-            compensationGains[0].template process<isBypassed>(subMainBuffer);
+    template<bool IsBypassed>
+    void Controller<FloatType>::processMixedCorrection(juce::AudioBuffer<FloatType> &sub_main_buffer) {
+        mixed_corrections_[0].template process<IsBypassed>(sub_main_buffer);
+        if (use_lr_) {
+            lr_main_splitter_.split(sub_main_buffer);
+            mixed_corrections_[1].template process<IsBypassed>(lr_main_splitter_.getLBuffer());
+            mixed_corrections_[2].template process<IsBypassed>(lr_main_splitter_.getRBuffer());
+            lr_main_splitter_.combine(sub_main_buffer);
         }
-        if (useLR) {
-            lrMainSplitter.split(subMainBuffer);
-            linearFilters[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
-            linearFilters[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
-            if (currentIsSgcON) {
-                compensationGains[1].template process<isBypassed>(lrMainSplitter.getLBuffer());
-                compensationGains[2].template process<isBypassed>(lrMainSplitter.getRBuffer());
-            }
-            lrMainSplitter.combine(subMainBuffer);
+        if (use_ms_) {
+            ms_main_splitter_.split(sub_main_buffer);
+            mixed_corrections_[3].template process<IsBypassed>(ms_main_splitter_.getMBuffer());
+            mixed_corrections_[4].template process<IsBypassed>(ms_main_splitter_.getSBuffer());
+            ms_main_splitter_.combine(sub_main_buffer);
         }
-        if (useMS) {
-            msMainSplitter.split(subMainBuffer);
-            linearFilters[3].template process<isBypassed>(msMainSplitter.getMBuffer());
-            linearFilters[4].template process<isBypassed>(msMainSplitter.getSBuffer());
-            if (currentIsSgcON) {
-                compensationGains[3].template process<isBypassed>(msMainSplitter.getMBuffer());
-                compensationGains[4].template process<isBypassed>(msMainSplitter.getSBuffer());
+    }
+
+    template<typename FloatType>
+    template<bool IsBypassed>
+    void Controller<FloatType>::processLinear(juce::AudioBuffer<FloatType> &sub_main_buffer) {
+        linear_filters_[0].template process<IsBypassed>(sub_main_buffer);
+        if (c_is_sgc_on_) {
+            compensation_gains_[0].template process<IsBypassed>(sub_main_buffer);
+        }
+        if (use_lr_) {
+            lr_main_splitter_.split(sub_main_buffer);
+            linear_filters_[1].template process<IsBypassed>(lr_main_splitter_.getLBuffer());
+            linear_filters_[2].template process<IsBypassed>(lr_main_splitter_.getRBuffer());
+            if (c_is_sgc_on_) {
+                compensation_gains_[1].template process<IsBypassed>(lr_main_splitter_.getLBuffer());
+                compensation_gains_[2].template process<IsBypassed>(lr_main_splitter_.getRBuffer());
             }
-            msMainSplitter.combine(subMainBuffer);
+            lr_main_splitter_.combine(sub_main_buffer);
+        }
+        if (use_ms_) {
+            ms_main_splitter_.split(sub_main_buffer);
+            linear_filters_[3].template process<IsBypassed>(ms_main_splitter_.getMBuffer());
+            linear_filters_[4].template process<IsBypassed>(ms_main_splitter_.getSBuffer());
+            if (c_is_sgc_on_) {
+                compensation_gains_[3].template process<IsBypassed>(ms_main_splitter_.getMBuffer());
+                compensation_gains_[4].template process<IsBypassed>(ms_main_splitter_.getSBuffer());
+            }
+            ms_main_splitter_.combine(sub_main_buffer);
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setFilterLRs(const lrType::lrTypes x, const size_t idx) {
-        filterLRs[idx].store(x);
-        toUpdateLRs.store(true);
+        filers_lrs_[idx].store(x);
+        to_update_lrs_.store(true);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setDynamicON(const bool x, size_t idx) {
-        const auto bGain = bFilters[idx].getGain();
-        const auto bQ = bFilters[idx].getQ();
+        const auto b_gain = b_filters_[idx].getGain();
+        const auto b_q = b_filters_[idx].getQ();
 
-        filters[idx].setDynamicON(x);
-        filters[idx].getMainFilter().setGain(bFilters[idx].getGain());
-        filters[idx].getMainFilter().setQ(bFilters[idx].getQ());
+        filters_[idx].setDynamicON(x);
+        filters_[idx].getMainFilter().setGain(b_filters_[idx].getGain());
+        filters_[idx].getMainFilter().setQ(b_filters_[idx].getQ());
 
-        mainIIRs[idx].setGain(bGain);
-        mainIIRs[idx].setQ(bQ);
-        mainIdeals[idx].setGain(bGain);
-        mainIdeals[idx].setQ(bQ);
+        main_IIRs_[idx].setGain(b_gain);
+        main_IIRs_[idx].setQ(b_q);
+        main_ideals_[idx].setGain(b_gain);
+        main_ideals_[idx].setQ(b_q);
 
-        toUpdateDynamicON.store(true);
+        to_update_dynamic_on_.store(true);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::handleAsyncUpdate() {
-        int currentLatency = static_cast<int>(delay.getDelaySamples());
-        if (!isZeroLatency.load()) {
-            currentLatency += static_cast<int>(subBuffer.getLatencySamples());
+        int currentLatency = static_cast<int>(delay_.getDelaySamples());
+        if (!is_zero_latency_.load()) {
+            currentLatency += static_cast<int>(sub_buffer_.getLatencySamples());
         }
-        currentLatency += latency.load();
-        processor_ref.setLatencySamples(currentLatency);
+        currentLatency += latency_.load();
+        processor_ref_.setLatencySamples(currentLatency);
     }
 
     template<typename FloatType>
@@ -597,7 +597,7 @@ namespace zlp {
             case zldsp::filter::FilterType::kLowPass:
             case zldsp::filter::FilterType::kHighShelf: {
                 auto soloFreq = static_cast<FloatType>(
-                    std::sqrt(subBuffer.getMainSpec().sampleRate / 2) * std::sqrt(freq));
+                    std::sqrt(sub_buffer_.getMainSpec().sampleRate / 2) * std::sqrt(freq));
                 auto scale = soloFreq / freq;
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
                 auto bw = std::max(std::log2(scale) * 2, FloatType(0.01));
@@ -620,128 +620,128 @@ namespace zlp {
 
     template<typename FloatType>
     void Controller<FloatType>::setSolo(const size_t idx, const bool isSide) {
-        soloIdx.store(idx);
-        soloSide.store(isSide);
+        solo_idx_.store(idx);
+        solo_side_.store(isSide);
 
-        useSolo.store(true);
-        toUpdateSolo.store(true);
+        use_solo_.store(true);
+        to_update_solo_.store(true);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::clearSolo(const size_t idx, const bool isSide) {
-        if (idx == soloIdx.load() && isSide == soloSide.load()) {
-            useSolo.store(false);
-            toUpdateSolo.store(true);
+        if (idx == solo_idx_.load() && isSide == solo_side_.load()) {
+            use_solo_.store(false);
+            to_update_solo_.store(true);
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setRelative(const size_t idx, const bool isRelative) {
-        dynRelatives[idx].store(isRelative);
-        toUpdateDynRelSide.store(true);
+        dyn_relatives_[idx].store(isRelative);
+        to_update_dyn_rel_side_.store(true);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setSideSwap(const size_t idx, const bool isSwap) {
-        sideSwaps[idx].store(isSwap);
-        toUpdateDynRelSide.store(true);
+        side_swaps_[idx].store(isSwap);
+        to_update_dyn_rel_side_.store(true);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateDynamicONs() {
-        dynamicONIndices.clear();
-        for (size_t i = 0; i < bandNUM; ++i) {
-            if (filters[i].getDynamicON()) {
-                dynamicONIndices.push(i);
+        dynamic_on_indices_.clear();
+        for (size_t i = 0; i < kBandNUM; ++i) {
+            if (filters_[i].getDynamicON()) {
+                dynamic_on_indices_.push(i);
             }
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateLRs() {
-        useLR = false;
-        useMS = false;
-        for (auto &x: filterLRIndices) {
+        use_lr_ = false;
+        use_ms_ = false;
+        for (auto &x: filter_lr_indices_) {
             x.clear();
         }
-        for (size_t i = 0; i < bandNUM; ++i) {
-            if (isActive[i].load()) {
-                currentFilterLRs[i] = filterLRs[i].load();
-                switch (currentFilterLRs[i]) {
-                    case lrType::stereo: {
-                        filterLRIndices[0].push(i);
+        for (size_t i = 0; i < kBandNUM; ++i) {
+            if (is_active_[i].load()) {
+                current_filter_lrs_[i] = filers_lrs_[i].load();
+                switch (current_filter_lrs_[i]) {
+                    case lrType::kStereo: {
+                        filter_lr_indices_[0].push(i);
                         break;
                     }
-                    case lrType::left: {
-                        filterLRIndices[1].push(i);
-                        useLR = true;
+                    case lrType::kLeft: {
+                        filter_lr_indices_[1].push(i);
+                        use_lr_ = true;
                         break;
                     }
-                    case lrType::right: {
-                        filterLRIndices[2].push(i);
-                        useLR = true;
+                    case lrType::kRight: {
+                        filter_lr_indices_[2].push(i);
+                        use_lr_ = true;
                         break;
                     }
-                    case lrType::mid: {
-                        filterLRIndices[3].push(i);
-                        useMS = true;
+                    case lrType::kMid: {
+                        filter_lr_indices_[3].push(i);
+                        use_ms_ = true;
                         break;
                     }
-                    case lrType::side: {
-                        filterLRIndices[4].push(i);
-                        useMS = true;
+                    case lrType::kSide: {
+                        filter_lr_indices_[4].push(i);
+                        use_ms_ = true;
                         break;
                     }
                 }
             }
         }
-        int newLatency = 0;
-        switch (currentFilterStructure) {
-            case filterStructure::minimum:
-            case filterStructure::svf:
-            case filterStructure::parallel: {
-                newLatency = 0;
+        int new_latency = 0;
+        switch (c_filter_structure_) {
+            case filterStructure::kMinimum:
+            case filterStructure::kSVF:
+            case filterStructure::kParallel: {
+                new_latency = 0;
                 break;
             }
-            case filterStructure::matched: {
-                const auto singleLatency = prototypeCorrections[0].getLatency();
-                newLatency = singleLatency
-                             + static_cast<int>(useLR) * singleLatency
-                             + static_cast<int>(useMS) * singleLatency;
+            case filterStructure::kMatched: {
+                const auto singleLatency = prototype_corrections_[0].getLatency();
+                new_latency = singleLatency
+                             + static_cast<int>(use_lr_) * singleLatency
+                             + static_cast<int>(use_ms_) * singleLatency;
                 break;
             }
-            case filterStructure::mixed: {
-                const auto singleLatency = mixedCorrections[0].getLatency();
-                newLatency = singleLatency
-                             + static_cast<int>(useLR) * singleLatency
-                             + static_cast<int>(useMS) * singleLatency;
+            case filterStructure::kMixed: {
+                const auto single_latency = mixed_corrections_[0].getLatency();
+                new_latency = single_latency
+                             + static_cast<int>(use_lr_) * single_latency
+                             + static_cast<int>(use_ms_) * single_latency;
                 break;
             }
-            case filterStructure::linear: {
-                const auto singleLatency = linearFilters[0].getLatency();
-                newLatency = singleLatency
-                             + static_cast<int>(useLR) * singleLatency
-                             + static_cast<int>(useMS) * singleLatency;
+            case filterStructure::kLinear: {
+                const auto single_latency = linear_filters_[0].getLatency();
+                new_latency = single_latency
+                             + static_cast<int>(use_lr_) * single_latency
+                             + static_cast<int>(use_ms_) * single_latency;
                 break;
             }
         }
-        if (newLatency != latency.load()) {
-            const auto delayInSeconds = static_cast<FloatType>(newLatency) / static_cast<FloatType>(sampleRate.load());
-            dummyMainDelay.setDelaySeconds(delayInSeconds);
-            dummySideDelay.setDelaySeconds(delayInSeconds);
-            latency.store(newLatency);
+        if (new_latency != latency_.load()) {
+            const auto delay_in_seconds = static_cast<FloatType>(new_latency) / static_cast<FloatType>(sample_rate_.load());
+            dummy_main_delay_.setDelaySeconds(delay_in_seconds);
+            dummy_side_delay_.setDelaySeconds(delay_in_seconds);
+            latency_.store(new_latency);
             triggerAsyncUpdate();
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateTrackersON() {
-        std::fill(useTrackers.begin(), useTrackers.end(), false);
+        std::fill(use_trackers_.begin(), use_trackers_.end(), false);
         for (size_t idx = 0; idx < 5; ++idx) {
-            const auto &indices{filterLRIndices[idx]};
+            const auto &indices{filter_lr_indices_[idx]};
             for (size_t i = 0; i < indices.size(); ++i) {
-                if (currentDynRelatives[i]) {
-                    useTrackers[idx] = true;
+                if (c_dyn_relatives_[i]) {
+                    use_trackers_[idx] = true;
                     break;
                 }
             }
@@ -750,128 +750,128 @@ namespace zlp {
 
     template<typename FloatType>
     void Controller<FloatType>::setLearningHistON(const size_t idx, const bool isLearning) {
-        isHistON[idx].store(isLearning);
-        toUpdateHist.store(true);
+        is_hist_on_[idx].store(isLearning);
+        to_update_hist_.store(true);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setLookAhead(const FloatType x) {
-        delay.setDelaySeconds(x / static_cast<FloatType>(1000));
+        delay_.setDelaySeconds(x / static_cast<FloatType>(1000));
         triggerAsyncUpdate();
     }
 
     template<typename FloatType>
     void Controller<FloatType>::setRMS(const FloatType x) {
-        const auto rmsMs = x / static_cast<FloatType>(1000);
-        for (auto &f: filters) {
-            f.getTracker().setMomentarySeconds(rmsMs);
+        const auto rms_second = x / static_cast<FloatType>(1000);
+        for (auto &f: filters_) {
+            f.getTracker().setMomentarySeconds(rms_second);
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateFilterStructure() {
-        switch (currentFilterStructure) {
-            case filterStructure::minimum: {
-                for (auto &f: filters) {
+        switch (c_filter_structure_) {
+            case filterStructure::kMinimum: {
+                for (auto &f: filters_) {
                     f.setFilterStructure(zldsp::filter::FilterStructure::kIIR);
                 }
                 break;
             }
-            case filterStructure::svf: {
-                for (auto &f: filters) {
+            case filterStructure::kSVF: {
+                for (auto &f: filters_) {
                     f.setFilterStructure(zldsp::filter::FilterStructure::kSVF);
                 }
                 break;
             }
-            case filterStructure::parallel: {
-                for (auto &f: filters) {
+            case filterStructure::kParallel: {
+                for (auto &f: filters_) {
                     f.setFilterStructure(zldsp::filter::FilterStructure::kParallel);
                 }
                 break;
             }
-            case filterStructure::matched: {
-                for (auto &f: filters) {
+            case filterStructure::kMatched: {
+                for (auto &f: filters_) {
                     f.setFilterStructure(zldsp::filter::FilterStructure::kIIR);
                 }
-                for (auto &f: mainIIRs) {
+                for (auto &f: main_IIRs_) {
                     f.setToUpdate();
                 }
-                for (auto &f: mainIdeals) {
+                for (auto &f: main_ideals_) {
                     f.setToUpdate();
                 }
-                for (auto &c: prototypeCorrections) {
+                for (auto &c: prototype_corrections_) {
                     c.reset();
                 }
                 break;
             }
-            case filterStructure::mixed: {
-                for (auto &f: filters) {
+            case filterStructure::kMixed: {
+                for (auto &f: filters_) {
                     f.setFilterStructure(zldsp::filter::FilterStructure::kIIR);
                 }
-                for (auto &f: mainIIRs) {
+                for (auto &f: main_IIRs_) {
                     f.setToUpdate();
                 }
-                for (auto &f: mainIdeals) {
+                for (auto &f: main_ideals_) {
                     f.setToUpdate();
                 }
-                for (auto &c: mixedCorrections) {
+                for (auto &c: mixed_corrections_) {
                     c.reset();
                 }
                 break;
             }
-            case filterStructure::linear: {
-                for (auto &f: mainIdeals) {
+            case filterStructure::kLinear: {
+                for (auto &f: main_ideals_) {
                     f.setToUpdate();
                 }
-                for (auto &c: linearFilters) {
+                for (auto &c: linear_filters_) {
                     c.reset();
                 }
-                for (size_t idx = 0; idx < bandNUM; ++idx) {
-                    const auto bGain = bFilters[idx].getGain();
-                    const auto bQ = bFilters[idx].getQ();
-                    mainIIRs[idx].setGain(bGain);
-                    mainIIRs[idx].setQ(bQ);
-                    mainIdeals[idx].setGain(bGain);
-                    mainIdeals[idx].setQ(bQ);
+                for (size_t idx = 0; idx < kBandNUM; ++idx) {
+                    const auto b_gain = b_filters_[idx].getGain();
+                    const auto b_q = b_filters_[idx].getQ();
+                    main_IIRs_[idx].setGain(b_gain);
+                    main_IIRs_[idx].setQ(b_q);
+                    main_ideals_[idx].setGain(b_gain);
+                    main_ideals_[idx].setQ(b_q);
                 }
                 break;
             }
         }
-        for (size_t idx = 0; idx < bandNUM; ++idx) {
-            const auto bGain = bFilters[idx].getGain();
-            const auto bQ = bFilters[idx].getQ();
-            filters[idx].getMainFilter().setGain(bGain);
-            filters[idx].getMainFilter().setQ(bQ);
+        for (size_t idx = 0; idx < kBandNUM; ++idx) {
+            const auto b_gain = b_filters_[idx].getGain();
+            const auto b_q = b_filters_[idx].getQ();
+            filters_[idx].getMainFilter().setGain(b_gain);
+            filters_[idx].getMainFilter().setQ(b_q);
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateSgcValues() {
         for (size_t lr = 0; lr < 5; ++lr) {
-            auto &indices{filterLRIndices[lr]};
-            FloatType currentSgc{FloatType(1)};
+            auto &indices{filter_lr_indices_[lr]};
+            FloatType current_sgc{FloatType(1)};
             for (size_t idx = 0; idx < indices.size(); ++idx) {
                 const auto i = indices[idx];
-                if (!currentIsBypass[i]) {
-                    currentSgc *= compensations[i].getGain();
+                if (!c_is_bypass_[i]) {
+                    current_sgc *= compensations_[i].getGain();
                 }
             }
-            compensationGains[lr].setGainLinear(currentSgc);
+            compensation_gains_[lr].setGainLinear(current_sgc);
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateCorrections() {
-        if (currentFilterStructure == filterStructure::matched) {
-            for (auto &c: prototypeCorrections) {
+        if (c_filter_structure_ == filterStructure::kMatched) {
+            for (auto &c: prototype_corrections_) {
                 c.setToUpdate();
             }
-        } else if (currentFilterStructure == filterStructure::mixed) {
-            for (auto &c: mixedCorrections) {
+        } else if (c_filter_structure_ == filterStructure::kMixed) {
+            for (auto &c: mixed_corrections_) {
                 c.setToUpdate();
             }
-        } else if (currentFilterStructure == filterStructure::linear) {
-            for (auto &c: linearFilters) {
+        } else if (c_filter_structure_ == filterStructure::kLinear) {
+            for (auto &c: linear_filters_) {
                 c.setToUpdate();
             }
         }
@@ -879,47 +879,47 @@ namespace zlp {
 
     template<typename FloatType>
     void Controller<FloatType>::updateSolo() {
-        if (currentUseSolo) {
-            currentSoloIdx = soloIdx.load();
-            currentSoloSide = soloSide.load();
+        if (c_use_solo_) {
+            c_solo_idx_ = solo_idx_.load();
+            c_solo_side_ = solo_side_.load();
         } else {
-            soloFilter.setToRest();
+            solo_filter_.setToRest();
             return;
         }
 
         FloatType freq, q;
-        if (!currentSoloSide) {
-            const auto &f{bFilters[currentSoloIdx]};
+        if (!c_solo_side_) {
+            const auto &f{b_filters_[c_solo_idx_]};
             std::tie(freq, q) = getSoloFilterParas(
                 f.getFilterType(), f.getFreq(), f.getQ());
         } else {
-            const auto &f{filters[currentSoloIdx].getSideFilter()};
+            const auto &f{filters_[c_solo_idx_].getSideFilter()};
             std::tie(freq, q) = getSoloFilterParas(
                 f.getFilterType(), f.getFreq(), f.getQ());
         }
-        soloFilter.setFreq(freq);
-        soloFilter.setQ(q);
+        solo_filter_.setFreq(freq);
+        solo_filter_.setQ(q);
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateDynRelSide() {
-        for (size_t i = 0; i < bandNUM; ++i) {
-            if (currentDynRelatives[i] != dynRelatives[i].load() || currentSideSwaps[i] != sideSwaps[i].load()) {
-                currentDynRelatives[i] = dynRelatives[i].load();
-                currentSideSwaps[i] = sideSwaps[i].load();
-                histograms[i].reset(FloatType(12.5));
-                subHistograms[i].reset(FloatType(12.5));
+        for (size_t i = 0; i < kBandNUM; ++i) {
+            if (c_dyn_relatives_[i] != dyn_relatives_[i].load() || c_side_swaps_[i] != side_swaps_[i].load()) {
+                c_dyn_relatives_[i] = dyn_relatives_[i].load();
+                c_side_swaps_[i] = side_swaps_[i].load();
+                histograms_[i].reset(FloatType(12.5));
+                sub_histograms_[i].reset(FloatType(12.5));
             }
         }
     }
 
     template<typename FloatType>
     void Controller<FloatType>::updateHistograms() {
-        for (size_t i = 0; i < bandNUM; ++i) {
-            if (currentIsHistON[i] != isHistON[i].load()) {
-                currentIsHistON[i] = isHistON[i].load();
-                histograms[i].reset(FloatType(12.5));
-                subHistograms[i].reset(FloatType(12.5));
+        for (size_t i = 0; i < kBandNUM; ++i) {
+            if (c_is_hist_on_[i] != is_hist_on_[i].load()) {
+                c_is_hist_on_[i] = is_hist_on_[i].load();
+                histograms_[i].reset(FloatType(12.5));
+                sub_histograms_[i].reset(FloatType(12.5));
             }
         }
     }

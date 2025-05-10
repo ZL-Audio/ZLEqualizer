@@ -20,7 +20,7 @@ namespace zlpanel {
     public:
         explicit LinkButtonPanel(size_t idx,
                                  juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
+                                 juce::AudioProcessorValueTreeState &parameters_NA,
                                  zlgui::UIBase &base,
                                  zlgui::Dragger &sideDragger);
 
@@ -35,7 +35,7 @@ namespace zlpanel {
         void resized() override;
 
     private:
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
         zlgui::Dragger &sideDraggerRef;
         zlgui::CompactButton dynLinkC;

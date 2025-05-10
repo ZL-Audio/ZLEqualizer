@@ -18,7 +18,7 @@ namespace zlp {
     public:
         explicit ChoreAttach(juce::AudioProcessor &processor,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
+                             juce::AudioProcessorValueTreeState &parameters_NA,
                              Controller<FloatType> &controller);
 
         ~ChoreAttach() override;
@@ -26,13 +26,13 @@ namespace zlp {
         void addListeners();
 
     private:
-        juce::AudioProcessor &processor_ref;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
-        Controller<FloatType> &controller_ref;
-        std::atomic<float> decaySpeed;
-        std::array<std::atomic<int>, 3> isFFTON{1, 1, 0};
+        juce::AudioProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        Controller<FloatType> &controller_ref_;
+        std::atomic<float> decay_speed_;
+        std::array<std::atomic<int>, 3> is_fft_on_{1, 1, 0};
 
-        constexpr static std::array IDs{
+        constexpr static std::array kIDs{
             sideChain::ID, dynLookahead::ID,
             dynRMS::ID, dynSmooth::ID,
             effectON::ID, phaseFlip::ID, staticAutoGain::ID, autoGain::ID,
@@ -40,7 +40,7 @@ namespace zlp {
             filterStructure::ID, dynHQ::ID, zeroLatency::ID,
             loudnessMatcherON::ID
         };
-        constexpr static std::array defaultVs{
+        constexpr static std::array kDefaultVs{
             static_cast<float>(sideChain::defaultV),
             static_cast<float>(dynLookahead::defaultV),
             static_cast<float>(dynRMS::defaultV),
@@ -57,7 +57,7 @@ namespace zlp {
             static_cast<float>(loudnessMatcherON::defaultV)
         };
 
-        constexpr static std::array NAIDs{
+        constexpr static std::array kNAIDs{
             zlstate::fftPreON::ID, zlstate::fftPostON::ID, zlstate::fftSideON::ID,
             zlstate::ffTSpeed::ID, zlstate::ffTTilt::ID,
             zlstate::conflictON::ID,
@@ -65,7 +65,7 @@ namespace zlp {
             zlstate::conflictScale::ID
         };
 
-        constexpr static std::array defaultNAVs{
+        constexpr static std::array kDefaultNAVs{
             static_cast<float>(zlstate::fftPreON::defaultI),
             static_cast<float>(zlstate::fftPostON::defaultI),
             static_cast<float>(zlstate::fftSideON::defaultI),
@@ -76,7 +76,7 @@ namespace zlp {
             static_cast<float>(zlstate::conflictScale::defaultV)
         };
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void initDefaultValues();
     };

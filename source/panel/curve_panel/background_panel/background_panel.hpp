@@ -18,7 +18,7 @@ namespace zlpanel {
     class BackgroundPanel final : public juce::Component {
     public:
         explicit BackgroundPanel(juce::AudioProcessorValueTreeState &parameters,
-                                 juce::AudioProcessorValueTreeState &parametersNA,
+                                 juce::AudioProcessorValueTreeState &parameters_NA,
                                  zlgui::UIBase &base);
 
         ~BackgroundPanel() override;

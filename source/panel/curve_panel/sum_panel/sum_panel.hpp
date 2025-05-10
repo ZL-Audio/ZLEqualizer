@@ -46,7 +46,7 @@ namespace zlpanel {
         std::array<juce::Path, 5> paths, recentPaths, strokePaths;
         std::array<juce::SpinLock, 5> pathLocks;
         std::array<juce::Colour, 5> colours;
-        juce::AudioProcessorValueTreeState &parameters_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
         zlgui::UIBase &uiBase;
         zlp::Controller<double> &c;
         std::array<zldsp::filter::Ideal<double, 16>, zlstate::bandNUM> &mMainFilters;

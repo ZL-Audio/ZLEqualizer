@@ -20,7 +20,7 @@ class ButtonPopUpBackground: public juce::Component {
 public:
         explicit ButtonPopUpBackground(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
+                             juce::AudioProcessorValueTreeState &parameters_NA,
                              zlgui::UIBase &base);
 
         ~ButtonPopUpBackground() override = default;
@@ -31,7 +31,7 @@ public:
 
     private:
         size_t band;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
 
         std::atomic<float> width{7.7916666f}, height{4.16667f};

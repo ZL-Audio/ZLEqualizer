@@ -17,21 +17,21 @@ namespace zlpanel {
     public:
         explicit ResetAttach(const size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA)
-            : idx(bandIdx), parameters_ref(parameters), parameters_NA_ref(parametersNA) {
-            parameters_ref.addParameterListener(zlp::appendSuffix(zlp::bypass::ID, idx), this);
-            parameters_NA_ref.addParameterListener(zlstate::appendSuffix(zlstate::active::ID, idx), this);
+                             juce::AudioProcessorValueTreeState &parameters_NA)
+            : idx(bandIdx), parameters_ref_(parameters), parameters_NA_ref_(parameters_NA) {
+            parameters_ref_.addParameterListener(zlp::appendSuffix(zlp::bypass::ID, idx), this);
+            parameters_NA_ref_.addParameterListener(zlstate::appendSuffix(zlstate::active::ID, idx), this);
         }
 
         ~ResetAttach() override {
-            parameters_ref.removeParameterListener(zlp::appendSuffix(zlp::bypass::ID, idx), this);
-            parameters_NA_ref.removeParameterListener(zlstate::appendSuffix(zlstate::active::ID, idx), this);
+            parameters_ref_.removeParameterListener(zlp::appendSuffix(zlp::bypass::ID, idx), this);
+            parameters_NA_ref_.removeParameterListener(zlstate::appendSuffix(zlstate::active::ID, idx), this);
         }
 
     private:
         size_t idx;
-        juce::AudioProcessorValueTreeState &parameters_ref;
-        juce::AudioProcessorValueTreeState &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
+        juce::AudioProcessorValueTreeState &parameters_NA_ref_;
         std::atomic<bool> toActive;
 
         constexpr static std::array resetIDs{
@@ -68,7 +68,7 @@ namespace zlpanel {
 
         void handleAsyncUpdate() override {
             if (toActive.load()) {
-                auto *para = parameters_NA_ref.getParameter(zlstate::appendSuffix(zlstate::active::ID, idx));
+                auto *para = parameters_NA_ref_.getParameter(zlstate::appendSuffix(zlstate::active::ID, idx));
                 para->beginChangeGesture();
                 para->setValueNotifyingHost(zlstate::active::convertTo01(true));
                 para->endChangeGesture();
@@ -76,7 +76,7 @@ namespace zlpanel {
                 const auto suffix = zlstate::appendSuffix("", idx);
                 for (size_t j = 0; j < resetDefaultVs.size(); ++j) {
                     const auto resetID = resetIDs[j] + suffix;
-                    auto *para = parameters_ref.getParameter(resetID);
+                    auto *para = parameters_ref_.getParameter(resetID);
                     para->beginChangeGesture();
                     para->setValueNotifyingHost(resetDefaultVs[j]);
                     para->endChangeGesture();

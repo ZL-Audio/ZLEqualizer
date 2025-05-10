@@ -67,14 +67,14 @@ namespace zlpanel {
     }
 
     ButtonPopUp::ButtonPopUp(const size_t bandIdx, juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA, zlgui::UIBase &base)
-        : band{bandIdx}, parameters_ref(parameters), parameters_NA_ref(parametersNA),
+                             juce::AudioProcessorValueTreeState &parameters_NA, zlgui::UIBase &base)
+        : band{bandIdx}, parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
           uiBase(base),
-          fType(*parameters_ref.getRawParameterValue(zlp::appendSuffix(zlp::fType::ID, band))),
-          freqPara(*parameters_ref.getRawParameterValue(zlp::appendSuffix(zlp::freq::ID, band))),
-          background(bandIdx, parameters, parametersNA, base),
+          fType(*parameters_ref_.getRawParameterValue(zlp::appendSuffix(zlp::fType::ID, band))),
+          freqPara(*parameters_ref_.getRawParameterValue(zlp::appendSuffix(zlp::freq::ID, band))),
+          background(bandIdx, parameters, parameters_NA, base),
           pitchLabel(base, parameters.getParameter(zlp::appendSuffix(zlp::freq::ID, bandIdx))) {
-        juce::ignoreUnused(parameters_ref, parameters_NA_ref);
+        juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
 
         addAndMakeVisible(background);
         addAndMakeVisible(pitchLabel);

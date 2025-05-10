@@ -12,41 +12,41 @@
 namespace zlpanel {
     SidePanel::SidePanel(const size_t bandIdx,
                          juce::AudioProcessorValueTreeState &parameters,
-                         juce::AudioProcessorValueTreeState &parametersNA,
+                         juce::AudioProcessorValueTreeState &parameters_NA,
                          zlgui::UIBase &base,
                          zlp::Controller<double> &controller,
                          zlgui::Dragger &sideDragger)
         : idx(bandIdx),
-          parameters_ref(parameters), parameters_NA_ref(parametersNA),
+          parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
           uiBase(base),
           sideF(controller.getFilter(bandIdx).getSideFilter()),
           sideDraggerRef(sideDragger) {
         setInterceptsMouseClicks(false, false);
         const std::string suffix = zlp::appendSuffix("", idx);
         parameterChanged(zlp::dynamicON::ID + suffix,
-                         parameters_ref.getRawParameterValue(zlp::dynamicON::ID + suffix)->load());
+                         parameters_ref_.getRawParameterValue(zlp::dynamicON::ID + suffix)->load());
         parameterChanged(zlp::sideQ::ID + suffix,
-                         parameters_ref.getRawParameterValue(zlp::sideQ::ID + suffix)->load());
+                         parameters_ref_.getRawParameterValue(zlp::sideQ::ID + suffix)->load());
         parameterChanged(zlstate::selectedBandIdx::ID,
-                         parameters_NA_ref.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
+                         parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
         parameterChanged(zlstate::active::ID + suffix,
-                         parameters_NA_ref.getRawParameterValue(zlstate::active::ID + suffix)->load());
+                         parameters_NA_ref_.getRawParameterValue(zlstate::active::ID + suffix)->load());
 
         for (auto &id: changeIDs) {
-            parameters_ref.addParameterListener(id + suffix, this);
+            parameters_ref_.addParameterListener(id + suffix, this);
         }
-        parameters_NA_ref.addParameterListener(zlstate::selectedBandIdx::ID, this);
-        parameters_NA_ref.addParameterListener(zlstate::active::ID + suffix, this);
+        parameters_NA_ref_.addParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref_.addParameterListener(zlstate::active::ID + suffix, this);
         lookAndFeelChanged();
     }
 
     SidePanel::~SidePanel() {
         const std::string suffix = zlp::appendSuffix("", idx);
         for (auto &id: changeIDs) {
-            parameters_ref.removeParameterListener(id + suffix, this);
+            parameters_ref_.removeParameterListener(id + suffix, this);
         }
-        parameters_NA_ref.removeParameterListener(zlstate::selectedBandIdx::ID, this);
-        parameters_NA_ref.removeParameterListener(zlstate::active::ID + suffix, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::active::ID + suffix, this);
     }
 
     void SidePanel::paint(juce::Graphics &g) {

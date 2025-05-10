@@ -15,7 +15,7 @@ namespace zlpanel {
                        zlp::Controller<double> &controller,
                        std::array<zldsp::filter::Ideal<double, 16>, 16> &baseFilters,
                        std::array<zldsp::filter::Ideal<double, 16>, 16> &mainFilters)
-        : parameters_ref(parameters),
+        : parameters_ref_(parameters),
           uiBase(base), c(controller),
           mMainFilters(mainFilters) {
         juce::ignoreUnused(baseFilters);
@@ -23,27 +23,27 @@ namespace zlpanel {
         for (auto &path: paths) {
             path.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 3));
         }
-        for (size_t i = 0; i < zlp::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
             for (const auto &idx: changeIDs) {
                 const auto paraID = zlp::appendSuffix(idx, i);
-                parameterChanged(paraID, parameters_ref.getRawParameterValue(paraID)->load());
-                parameters_ref.addParameterListener(paraID, this);
+                parameterChanged(paraID, parameters_ref_.getRawParameterValue(paraID)->load());
+                parameters_ref_.addParameterListener(paraID, this);
             }
         }
         lookAndFeelChanged();
     }
 
     SumPanel::~SumPanel() {
-        for (size_t i = 0; i < zlp::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
             for (const auto &idx: changeIDs) {
-                parameters_ref.removeParameterListener(zlp::appendSuffix(idx, i), this);
+                parameters_ref_.removeParameterListener(zlp::appendSuffix(idx, i), this);
             }
         }
     }
 
     void SumPanel::paint(juce::Graphics &g) {
         std::array<bool, 5> useLRMS{false, false, false, false, false};
-        for (size_t i = 0; i < zlp::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
             const auto idx = static_cast<size_t>(c.getFilterLRs(i));
             if (!c.getBypass(i)) {
                 useLRMS[idx] = true;
@@ -89,7 +89,7 @@ namespace zlpanel {
         juce::ScopedNoDenormals noDenormals;
         const auto isHardware = uiBase.getIsRenderingHardware();
         std::array<bool, 5> useLRMS{false, false, false, false, false};
-        for (size_t i = 0; i < zlp::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
             const auto idx = static_cast<size_t>(lrTypes[i].load());
             if (!isBypassed[i].load()) {
                 useLRMS[idx] = true;

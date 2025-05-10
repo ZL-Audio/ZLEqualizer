@@ -18,7 +18,7 @@ namespace zlpanel {
                             private juce::AudioProcessorValueTreeState::Listener {
     public:
         SoloPanel(juce::AudioProcessorValueTreeState &parameters,
-                  juce::AudioProcessorValueTreeState &parametersNA,
+                  juce::AudioProcessorValueTreeState &parameters_NA,
                   zlgui::UIBase &base,
                   zlp::Controller<double> &controller,
                   ButtonPanel &buttonPanel);
@@ -28,16 +28,16 @@ namespace zlpanel {
         void paint(juce::Graphics &g) override;
 
         void checkVisible() {
-            setVisible(controller_ref.getSolo());
+            setVisible(controller_ref_.getSolo());
         }
 
         void turnOffSolo() const;
 
     private:
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
-        zldsp::filter::IIR<double, zlp::Controller<double>::FilterSize> &soloF;
-        zlp::Controller<double> &controller_ref;
+        zldsp::filter::IIR<double, zlp::Controller<double>::kFilterSize> &soloF;
+        zlp::Controller<double> &controller_ref_;
         ButtonPanel &buttonPanelRef;
         float currentX{0.}, currentBW{0.};
         double soloQ{0.};

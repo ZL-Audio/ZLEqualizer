@@ -13,102 +13,102 @@ namespace zlp {
     template<typename FloatType>
     FiltersAttach<FloatType>::FiltersAttach(juce::AudioProcessor &processor,
                                             juce::AudioProcessorValueTreeState &parameters,
-                                            juce::AudioProcessorValueTreeState &parametersNA,
+                                            juce::AudioProcessorValueTreeState &parameters_NA,
                                             Controller<FloatType> &controller)
-        : processor_ref(processor), parameters_ref(parameters), parameters_NA_ref(parametersNA),
-          controller_ref(controller), filtersRef(controller.getFilters()) {
+        : processor_ref_(processor), parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
+          controller_ref_(controller), filters_ref_(controller.getFilters()) {
         addListeners();
         initDefaultValues();
-        for (size_t i = 0; i < bandNUM; ++i) {
+        for (size_t i = 0; i < kBandNUM; ++i) {
             const auto suffix = zlp::appendSuffix("", i);
-            sideFreqUpdater[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, sideFreq::ID + suffix);
-            sideQUpdater[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, sideQ::ID + suffix);
-            thresholdUpdater[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, threshold::ID + suffix);
-            kneeUpdater[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, kneeW::ID + suffix);
+            side_freq_updater_[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, sideFreq::ID + suffix);
+            side_q_updater_[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, sideQ::ID + suffix);
+            threshold_updater_[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, threshold::ID + suffix);
+            knee_updater_[i] = std::make_unique<zldsp::chore::ParaUpdater>(parameters, kneeW::ID + suffix);
         }
     }
 
     template<typename FloatType>
     FiltersAttach<FloatType>::~FiltersAttach() {
-        for (size_t i = 0; i < bandNUM; ++i) {
+        for (size_t i = 0; i < kBandNUM; ++i) {
             const auto suffix = appendSuffix("", i);
-            for (auto &ID: IDs) {
-                parameters_ref.removeParameterListener(ID + suffix, this);
+            for (auto &ID: kIDs) {
+                parameters_ref_.removeParameterListener(ID + suffix, this);
             }
         }
-        parameters_NA_ref.removeParameterListener(zlstate::maximumDB::ID, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::maximumDB::ID, this);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::addListeners() {
-        for (size_t i = 0; i < bandNUM; ++i) {
+        for (size_t i = 0; i < kBandNUM; ++i) {
             const auto suffix = appendSuffix("", i);
-            for (auto &ID: IDs) {
-                parameters_ref.addParameterListener(ID + suffix, this);
+            for (auto &ID: kIDs) {
+                parameters_ref_.addParameterListener(ID + suffix, this);
             }
-            parameters_NA_ref.addParameterListener(zlstate::active::ID + suffix, this);
+            parameters_NA_ref_.addParameterListener(zlstate::active::ID + suffix, this);
         }
-        parameters_NA_ref.addParameterListener(zlstate::maximumDB::ID, this);
+        parameters_NA_ref_.addParameterListener(zlstate::maximumDB::ID, this);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::turnOnDynamic(const size_t idx) {
         updateTargetFGQ(idx);
         updateSideFQ(idx);
-        const auto paraDynBypass = parameters_ref.getParameter(zlp::appendSuffix(dynamicBypass::ID, idx));
-        updateParaNotifyHost(paraDynBypass, 0.f);
-        const auto paraDynLearn = parameters_ref.getParameter(zlp::appendSuffix(dynamicLearn::ID, idx));
-        updateParaNotifyHost(paraDynLearn, 1.f);
-        const auto paraThreshold = parameters_ref.getParameter(zlp::appendSuffix(threshold::ID, idx));
-        updateParaNotifyHost(paraThreshold, .5f);
+        const auto para_dyn_bypass = parameters_ref_.getParameter(zlp::appendSuffix(dynamicBypass::ID, idx));
+        updateParaNotifyHost(para_dyn_bypass, 0.f);
+        const auto para_dyn_learn = parameters_ref_.getParameter(zlp::appendSuffix(dynamicLearn::ID, idx));
+        updateParaNotifyHost(para_dyn_learn, 1.f);
+        const auto para_threshold = parameters_ref_.getParameter(zlp::appendSuffix(threshold::ID, idx));
+        updateParaNotifyHost(para_threshold, .5f);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::turnOffDynamic(const size_t idx) {
-        controller_ref.setDynamicON(false, idx);
-        const auto paraDynBypass = parameters_ref.getParameter(zlp::appendSuffix(dynamicBypass::ID, idx));
-        updateParaNotifyHost(paraDynBypass, 1.f);
-        const auto paraDynLearn = parameters_ref.getParameter(zlp::appendSuffix(dynamicLearn::ID, idx));
-        updateParaNotifyHost(paraDynLearn, 0.f);
-        const auto paraDynRelative = parameters_ref.getParameter(zlp::appendSuffix(dynamicRelative::ID, idx));
-        updateParaNotifyHost(paraDynRelative, 0.f);
-        const auto paraSideSwap = parameters_ref.getParameter(zlp::appendSuffix(sideSwap::ID, idx));
-        updateParaNotifyHost(paraSideSwap, 0.f);
-        const auto paraSideSolo = parameters_ref.getParameter(zlp::appendSuffix(sideSolo::ID, idx));
-        updateParaNotifyHost(paraSideSolo, 0.f);
+        controller_ref_.setDynamicON(false, idx);
+        const auto para_dyn_bypass = parameters_ref_.getParameter(zlp::appendSuffix(dynamicBypass::ID, idx));
+        updateParaNotifyHost(para_dyn_bypass, 1.f);
+        const auto para_dyn_learn = parameters_ref_.getParameter(zlp::appendSuffix(dynamicLearn::ID, idx));
+        updateParaNotifyHost(para_dyn_learn, 0.f);
+        const auto para_dyn_relative = parameters_ref_.getParameter(zlp::appendSuffix(dynamicRelative::ID, idx));
+        updateParaNotifyHost(para_dyn_relative, 0.f);
+        const auto para_side_swap = parameters_ref_.getParameter(zlp::appendSuffix(sideSwap::ID, idx));
+        updateParaNotifyHost(para_side_swap, 0.f);
+        const auto para_side_solo = parameters_ref_.getParameter(zlp::appendSuffix(sideSolo::ID, idx));
+        updateParaNotifyHost(para_side_solo, 0.f);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::turnOnDynamicAuto(const size_t idx) {
-        const auto paraThreshold = parameters_ref.getParameter(zlp::appendSuffix(threshold::ID, idx));
-        updateParaNotifyHost(paraThreshold, .5f);
+        const auto para_threshold = parameters_ref_.getParameter(zlp::appendSuffix(threshold::ID, idx));
+        updateParaNotifyHost(para_threshold, .5f);
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::updateTargetFGQ(const size_t idx) {
-        auto tGain = static_cast<float>(controller_ref.getBaseFilter(idx).getGain());
-        switch (controller_ref.getBaseFilter(idx).getFilterType()) {
+        auto t_gain = static_cast<float>(controller_ref_.getBaseFilter(idx).getGain());
+        switch (controller_ref_.getBaseFilter(idx).getFilterType()) {
             case zldsp::filter::FilterType::kPeak:
             case zldsp::filter::FilterType::kBandShelf: {
-                const auto maxDB = maximumDB.load();
-                if (tGain < -maxDB * .5f) {
-                    tGain = juce::jlimit(-maxDB, maxDB, tGain -= maxDB * .125f);
-                } else if (tGain < 0) {
-                    tGain += maxDB * .125f;
-                } else if (tGain < maxDB * .5f) {
-                    tGain -= maxDB * .125f;
+                const auto maxDB = maximum_db_.load();
+                if (t_gain < -maxDB * .5f) {
+                    t_gain = juce::jlimit(-maxDB, maxDB, t_gain -= maxDB * .125f);
+                } else if (t_gain < 0) {
+                    t_gain += maxDB * .125f;
+                } else if (t_gain < maxDB * .5f) {
+                    t_gain -= maxDB * .125f;
                 } else {
-                    tGain = juce::jlimit(-maxDB, maxDB, tGain += maxDB * .125f);
+                    t_gain = juce::jlimit(-maxDB, maxDB, t_gain += maxDB * .125f);
                 }
                 break;
             }
             case zldsp::filter::FilterType::kLowShelf:
             case zldsp::filter::FilterType::kHighShelf:
             case zldsp::filter::FilterType::kTiltShelf: {
-                if (tGain < 0) {
-                    tGain += maximumDB.load() * .25f;
+                if (t_gain < 0) {
+                    t_gain += maximum_db_.load() * .25f;
                 } else {
-                    tGain -= maximumDB.load() * .25f;
+                    t_gain -= maximum_db_.load() * .25f;
                 }
                 break;
             }
@@ -120,130 +120,130 @@ namespace zlp {
                 break;
             }
         }
-        controller_ref.getTargetFilter(idx).setFreq(controller_ref.getBaseFilter(idx).getFreq());
-        controller_ref.getTargetFilter(idx).setFilterType(controller_ref.getBaseFilter(idx).getFilterType());
-        controller_ref.getTargetFilter(idx).setOrder(controller_ref.getBaseFilter(idx).getOrder());
-        const auto paraGain = parameters_ref.getParameter(zlp::appendSuffix(targetGain::ID, idx));
-        updateParaNotifyHost(paraGain, targetGain::convertTo01(tGain));
-        const auto paraQ = parameters_ref.getParameter(zlp::appendSuffix(targetQ::ID, idx));
-        updateParaNotifyHost(paraQ, targetQ::convertTo01(static_cast<float>(controller_ref.getBaseFilter(idx).getQ())));
+        controller_ref_.getTargetFilter(idx).setFreq(controller_ref_.getBaseFilter(idx).getFreq());
+        controller_ref_.getTargetFilter(idx).setFilterType(controller_ref_.getBaseFilter(idx).getFilterType());
+        controller_ref_.getTargetFilter(idx).setOrder(controller_ref_.getBaseFilter(idx).getOrder());
+        const auto para_gain = parameters_ref_.getParameter(zlp::appendSuffix(targetGain::ID, idx));
+        updateParaNotifyHost(para_gain, targetGain::convertTo01(t_gain));
+        const auto para_q = parameters_ref_.getParameter(zlp::appendSuffix(targetQ::ID, idx));
+        updateParaNotifyHost(para_q, targetQ::convertTo01(static_cast<float>(controller_ref_.getBaseFilter(idx).getQ())));
     }
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::updateSideFQ(const size_t idx) {
-        const auto &f{controller_ref.getBaseFilter(idx)};
-        auto [soloFreq, soloQ] = controller_ref.getSoloFilterParas(
+        const auto &f{controller_ref_.getBaseFilter(idx)};
+        auto [solo_freq, solo_q] = controller_ref_.getSoloFilterParas(
             f.getFilterType(), f.getFreq(), f.getQ());
-        const auto soloFreq01 = sideFreq::convertTo01(static_cast<float>(soloFreq));
-        const auto soloQ01 = sideQ::convertTo01(static_cast<float>(soloQ));
-        sideFreqUpdater[idx]->update(soloFreq01);
-        sideQUpdater[idx]->update(soloQ01);
+        const auto solo_freq01 = sideFreq::convertTo01(static_cast<float>(solo_freq));
+        const auto solo_q01 = sideQ::convertTo01(static_cast<float>(solo_q));
+        side_freq_updater_[idx]->update(solo_freq01);
+        side_q_updater_[idx]->update(solo_q01);
     }
 
     template<typename FloatType>
-    void FiltersAttach<FloatType>::parameterChanged(const juce::String &parameterID, float newValue) {
-        if (parameterID == zlstate::maximumDB::ID) {
-            maximumDB.store(zlstate::maximumDB::dBs[static_cast<size_t>(newValue)]);
+    void FiltersAttach<FloatType>::parameterChanged(const juce::String &parameter_id, float new_value) {
+        if (parameter_id == zlstate::maximumDB::ID) {
+            maximum_db_.store(zlstate::maximumDB::dBs[static_cast<size_t>(new_value)]);
             return;
         }
-        const auto idx = static_cast<size_t>(parameterID.getTrailingIntValue());
-        auto value = static_cast<FloatType>(newValue);
-        if (parameterID.startsWith(zlstate::active::ID)) {
-            controller_ref.setIsActive(idx, newValue > .5f);
-        } else if (parameterID.startsWith(bypass::ID)) {
-            controller_ref.setBypass(idx, newValue > .5f);
-        } else if (parameterID.startsWith(fType::ID)) {
+        const auto idx = static_cast<size_t>(parameter_id.getTrailingIntValue());
+        auto value = static_cast<FloatType>(new_value);
+        if (parameter_id.startsWith(zlstate::active::ID)) {
+            controller_ref_.setIsActive(idx, new_value > .5f);
+        } else if (parameter_id.startsWith(bypass::ID)) {
+            controller_ref_.setBypass(idx, new_value > .5f);
+        } else if (parameter_id.startsWith(fType::ID)) {
             const auto fType = static_cast<zldsp::filter::FilterType>(value);
-            controller_ref.getBaseFilter(idx).setFilterType(fType);
-            filtersRef[idx].getMainFilter().setFilterType(fType);
-            controller_ref.getTargetFilter(idx).setFilterType(fType);
-            controller_ref.getMainIdealFilter(idx).setFilterType(fType);
-            controller_ref.getMainIIRFilter(idx).setFilterType(fType);
-            if (sDynLink[idx].load()) {
+            controller_ref_.getBaseFilter(idx).setFilterType(fType);
+            filters_ref_[idx].getMainFilter().setFilterType(fType);
+            controller_ref_.getTargetFilter(idx).setFilterType(fType);
+            controller_ref_.getMainIdealFilter(idx).setFilterType(fType);
+            controller_ref_.getMainIIRFilter(idx).setFilterType(fType);
+            if (s_dyn_link_[idx].load()) {
                 updateSideFQ(idx);
             }
-            controller_ref.updateSgc(idx);
-        } else if (parameterID.startsWith(slope::ID)) {
+            controller_ref_.updateSgc(idx);
+        } else if (parameter_id.startsWith(slope::ID)) {
             const auto newOrder = slope::orderArray[static_cast<size_t>(value)];
-            controller_ref.getBaseFilter(idx).setOrder(newOrder);
-            filtersRef[idx].getMainFilter().setOrder(newOrder);
-            controller_ref.getTargetFilter(idx).setOrder(newOrder);
-            controller_ref.getMainIdealFilter(idx).setOrder(newOrder);
-            controller_ref.getMainIIRFilter(idx).setOrder(newOrder);
-        } else if (parameterID.startsWith(freq::ID)) {
-            controller_ref.getBaseFilter(idx).setFreq(value);
-            filtersRef[idx].getMainFilter().setFreq(value);
-            controller_ref.getTargetFilter(idx).setFreq(value);
-            controller_ref.getMainIdealFilter(idx).setFreq(value);
-            controller_ref.getMainIIRFilter(idx).setFreq(value);
-            if (sDynLink[idx].load()) {
+            controller_ref_.getBaseFilter(idx).setOrder(newOrder);
+            filters_ref_[idx].getMainFilter().setOrder(newOrder);
+            controller_ref_.getTargetFilter(idx).setOrder(newOrder);
+            controller_ref_.getMainIdealFilter(idx).setOrder(newOrder);
+            controller_ref_.getMainIIRFilter(idx).setOrder(newOrder);
+        } else if (parameter_id.startsWith(freq::ID)) {
+            controller_ref_.getBaseFilter(idx).setFreq(value);
+            filters_ref_[idx].getMainFilter().setFreq(value);
+            controller_ref_.getTargetFilter(idx).setFreq(value);
+            controller_ref_.getMainIdealFilter(idx).setFreq(value);
+            controller_ref_.getMainIIRFilter(idx).setFreq(value);
+            if (s_dyn_link_[idx].load()) {
                 updateSideFQ(idx);
             }
-            controller_ref.updateSgc(idx);
-        } else if (parameterID.startsWith(gain::ID)) {
-            value *= static_cast<FloatType>(scale::formatV(parameters_ref.getRawParameterValue(scale::ID)->load()));
+            controller_ref_.updateSgc(idx);
+        } else if (parameter_id.startsWith(gain::ID)) {
+            value *= static_cast<FloatType>(scale::formatV(parameters_ref_.getRawParameterValue(scale::ID)->load()));
             value = gain::range.snapToLegalValue(static_cast<float>(value));
-            controller_ref.getBaseFilter(idx).setGain(value);
-            filtersRef[idx].getMainFilter().setGain(value);
-            controller_ref.getMainIdealFilter(idx).setGain(value);
-            controller_ref.getMainIIRFilter(idx).setGain(value);
-            controller_ref.updateSgc(idx);
-        } else if (parameterID.startsWith(Q::ID)) {
-            controller_ref.getBaseFilter(idx).setQ(value);
-            filtersRef[idx].getMainFilter().setQ(value);
-            controller_ref.getMainIdealFilter(idx).setQ(value);
-            controller_ref.getMainIIRFilter(idx).setQ(value);
-            if (sDynLink[idx].load()) {
+            controller_ref_.getBaseFilter(idx).setGain(value);
+            filters_ref_[idx].getMainFilter().setGain(value);
+            controller_ref_.getMainIdealFilter(idx).setGain(value);
+            controller_ref_.getMainIIRFilter(idx).setGain(value);
+            controller_ref_.updateSgc(idx);
+        } else if (parameter_id.startsWith(Q::ID)) {
+            controller_ref_.getBaseFilter(idx).setQ(value);
+            filters_ref_[idx].getMainFilter().setQ(value);
+            controller_ref_.getMainIdealFilter(idx).setQ(value);
+            controller_ref_.getMainIIRFilter(idx).setQ(value);
+            if (s_dyn_link_[idx].load()) {
                 updateSideFQ(idx);
             }
-            controller_ref.updateSgc(idx);
-        } else if (parameterID.startsWith(lrType::ID)) {
-            controller_ref.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
-        } else if (parameterID.startsWith(dynamicON::ID)) {
-            controller_ref.setDynamicON(newValue > .5f, idx);
-        } else if (parameterID.startsWith(dynamicLearn::ID)) {
-            const auto f = newValue > .5f;
-            if (!f && controller_ref.getLearningHistON(idx)) {
-                controller_ref.setLearningHistON(idx, false);
-                const auto &hist = controller_ref.getLearningHist(idx);
+            controller_ref_.updateSgc(idx);
+        } else if (parameter_id.startsWith(lrType::ID)) {
+            controller_ref_.setFilterLRs(static_cast<lrType::lrTypes>(value), idx);
+        } else if (parameter_id.startsWith(dynamicON::ID)) {
+            controller_ref_.setDynamicON(new_value > .5f, idx);
+        } else if (parameter_id.startsWith(dynamicLearn::ID)) {
+            const auto f = new_value > .5f;
+            if (!f && controller_ref_.getLearningHistON(idx)) {
+                controller_ref_.setLearningHistON(idx, false);
+                const auto &hist = controller_ref_.getLearningHist(idx);
                 const auto thresholdV = static_cast<float>(
-                    -hist.getPercentile(FloatType(0.5)) + controller_ref.getThreshold(idx) + FloatType(40));
+                    -hist.getPercentile(FloatType(0.5)) + controller_ref_.getThreshold(idx) + FloatType(40));
                 const auto kneeV = static_cast<float>(
                                        hist.getPercentile(FloatType(0.95)) - hist.getPercentile(FloatType(0.05))
                                    ) / 120.f;
-                thresholdUpdater[idx]->update(threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)));
-                kneeUpdater[idx]->update(kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV)));
+                threshold_updater_[idx]->update(threshold::convertTo01(threshold::range.snapToLegalValue(thresholdV)));
+                knee_updater_[idx]->update(kneeW::convertTo01(kneeW::range.snapToLegalValue(kneeV)));
             } else {
-                controller_ref.setLearningHistON(idx, f);
+                controller_ref_.setLearningHistON(idx, f);
             }
-        } else if (parameterID.startsWith(dynamicBypass::ID)) {
-            filtersRef[idx].setDynamicBypass(newValue > .5f);
-        } else if (parameterID.startsWith(dynamicRelative::ID)) {
-            controller_ref.setRelative(idx, newValue > .5f);
-        } else if (parameterID.startsWith(sideSwap::ID)) {
-            controller_ref.setSideSwap(idx, newValue > .5f);
-        } else if (parameterID.startsWith(targetGain::ID)) {
-            value *= static_cast<FloatType>(scale::formatV(parameters_ref.getRawParameterValue(scale::ID)->load()));
+        } else if (parameter_id.startsWith(dynamicBypass::ID)) {
+            filters_ref_[idx].setDynamicBypass(new_value > .5f);
+        } else if (parameter_id.startsWith(dynamicRelative::ID)) {
+            controller_ref_.setRelative(idx, new_value > .5f);
+        } else if (parameter_id.startsWith(sideSwap::ID)) {
+            controller_ref_.setSideSwap(idx, new_value > .5f);
+        } else if (parameter_id.startsWith(targetGain::ID)) {
+            value *= static_cast<FloatType>(scale::formatV(parameters_ref_.getRawParameterValue(scale::ID)->load()));
             value = targetGain::range.snapToLegalValue(static_cast<float>(value));
-            controller_ref.getTargetFilter(idx).setGain(value);
-        } else if (parameterID.startsWith(targetQ::ID)) {
-            controller_ref.getTargetFilter(idx).setQ(value);
-        } else if (parameterID.startsWith(threshold::ID)) {
-            controller_ref.setThreshold(idx, value);
-            filtersRef[idx].getComputer().setThreshold(value);
-        } else if (parameterID.startsWith(kneeW::ID)) {
-            filtersRef[idx].getComputer().setKneeW(kneeW::formatV(value));
-        } else if (parameterID.startsWith(sideFreq::ID)) {
-            filtersRef[idx].getSideFilter().setFreq(value);
-        } else if (parameterID.startsWith(attack::ID)) {
-            filtersRef[idx].getFollower().setAttack(value);
-        } else if (parameterID.startsWith(release::ID)) {
-            filtersRef[idx].getFollower().setRelease(value);
-        } else if (parameterID.startsWith(sideQ::ID)) {
-            filtersRef[idx].getSideFilter().setQ(value);
-        } else if (parameterID.startsWith(singleDynLink::ID)) {
-            sDynLink[idx].store(newValue > .5f);
-            if (sDynLink[idx].load()) {
+            controller_ref_.getTargetFilter(idx).setGain(value);
+        } else if (parameter_id.startsWith(targetQ::ID)) {
+            controller_ref_.getTargetFilter(idx).setQ(value);
+        } else if (parameter_id.startsWith(threshold::ID)) {
+            controller_ref_.setThreshold(idx, value);
+            filters_ref_[idx].getComputer().setThreshold(value);
+        } else if (parameter_id.startsWith(kneeW::ID)) {
+            filters_ref_[idx].getComputer().setKneeW(kneeW::formatV(value));
+        } else if (parameter_id.startsWith(sideFreq::ID)) {
+            filters_ref_[idx].getSideFilter().setFreq(value);
+        } else if (parameter_id.startsWith(attack::ID)) {
+            filters_ref_[idx].getFollower().setAttack(value);
+        } else if (parameter_id.startsWith(release::ID)) {
+            filters_ref_[idx].getFollower().setRelease(value);
+        } else if (parameter_id.startsWith(sideQ::ID)) {
+            filters_ref_[idx].getSideFilter().setQ(value);
+        } else if (parameter_id.startsWith(singleDynLink::ID)) {
+            s_dyn_link_[idx].store(new_value > .5f);
+            if (s_dyn_link_[idx].load()) {
                 updateSideFQ(idx);
             }
         }
@@ -251,10 +251,10 @@ namespace zlp {
 
     template<typename FloatType>
     void FiltersAttach<FloatType>::initDefaultValues() {
-        for (int i = 0; i < bandNUM; ++i) {
+        for (int i = 0; i < kBandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
-            for (size_t j = 0; j < defaultVs.size(); ++j) {
-                parameterChanged(IDs[j] + suffix, defaultVs[j]);
+            for (size_t j = 0; j < kDefaultVs.size(); ++j) {
+                parameterChanged(kIDs[j] + suffix, kDefaultVs[j]);
             }
         }
     }

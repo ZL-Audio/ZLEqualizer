@@ -17,7 +17,7 @@ namespace zlpanel {
     public:
         explicit GeneralBox(juce::AudioProcessorValueTreeState &parameters,
                             zlgui::UIBase &base)
-            : parameters_ref(parameters),
+            : parameters_ref_(parameters),
               uiBase(base),
               filterStructure("", zlp::filterStructure::choices, uiBase,
                               zlgui::multilingual::labels::filterStructure,
@@ -46,7 +46,7 @@ namespace zlpanel {
                    {
                        zlp::filterStructure::ID, zlp::zeroLatency::ID
                    },
-                   parameters_ref, boxAttachments);
+                   parameters_ref_, boxAttachments);
             setBufferedToImage(true);
 
             uiBase.getBoxTree().addListener(this);
@@ -85,7 +85,7 @@ namespace zlpanel {
         }
 
     private:
-        juce::AudioProcessorValueTreeState &parameters_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
         zlgui::UIBase &uiBase;
 
         zlgui::CompactCombobox filterStructure;

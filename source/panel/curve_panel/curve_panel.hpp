@@ -42,10 +42,10 @@ namespace zlpanel {
         void repaintCallBack(double nowT);
 
     private:
-        PluginProcessor &processor_ref;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        PluginProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
-        zlp::Controller<double> &controller_ref;
+        zlp::Controller<double> &controller_ref_;
         std::array<zldsp::filter::Ideal<double, 16>, 16> baseFilters, targetFilters, mainFilters;
         BackgroundPanel backgroundPanel;
         FFTPanel fftPanel;

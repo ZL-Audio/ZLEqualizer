@@ -13,17 +13,17 @@ namespace zlpanel {
     CurvePanel::CurvePanel(PluginProcessor &processor,
                            zlgui::UIBase &base)
         : Thread("curve panel"),
-          processor_ref(processor),
-          parameters_ref(processor.parameters), parameters_NA_ref(processor.parameters_NA), uiBase(base),
-          controller_ref(processor.getController()),
-          backgroundPanel(parameters_ref, parameters_NA_ref, base),
-          fftPanel(controller_ref.getAnalyzer(), base),
-          conflictPanel(controller_ref.getConflictAnalyzer(), base),
-          sumPanel(parameters_ref, base, controller_ref, baseFilters, mainFilters),
-          loudnessDisplay(processor_ref, base),
-          buttonPanel(processor_ref, base),
-          soloPanel(parameters_ref, parameters_NA_ref, base, controller_ref, buttonPanel),
-          matchPanel(processor.getController().getMatchAnalyzer(), parameters_NA_ref, base) {
+          processor_ref_(processor),
+          parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA), uiBase(base),
+          controller_ref_(processor.getController()),
+          backgroundPanel(parameters_ref_, parameters_NA_ref_, base),
+          fftPanel(controller_ref_.getAnalyzer(), base),
+          conflictPanel(controller_ref_.getConflictAnalyzer(), base),
+          sumPanel(parameters_ref_, base, controller_ref_, baseFilters, mainFilters),
+          loudnessDisplay(processor_ref_, base),
+          buttonPanel(processor_ref_, base),
+          soloPanel(parameters_ref_, parameters_NA_ref_, base, controller_ref_, buttonPanel),
+          matchPanel(processor.getController().getMatchAnalyzer(), parameters_NA_ref_, base) {
         for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {
             for (auto &f: *filters) {
                 f.prepare(48000.0);
@@ -33,21 +33,21 @@ namespace zlpanel {
         addAndMakeVisible(backgroundPanel, 0);
         addAndMakeVisible(fftPanel, 1);
         addChildComponent(conflictPanel, 2);
-        parameters_NA_ref.addParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref_.addParameterListener(zlstate::selectedBandIdx::ID, this);
         parameterChanged(zlstate::selectedBandIdx::ID,
-                         parameters_NA_ref.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
+                         parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
         addAndMakeVisible(dummyComponent, 4);
         dummyComponent.setInterceptsMouseClicks(false, false);
         for (size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
             const auto i = idx;
             singlePanels[idx] =
-                    std::make_unique<SinglePanel>(i, parameters_ref, parameters_NA_ref, base, controller_ref,
+                    std::make_unique<SinglePanel>(i, parameters_ref_, parameters_NA_ref_, base, controller_ref_,
                                                   baseFilters[i], targetFilters[i], mainFilters[i]);
             dummyComponent.addAndMakeVisible(*singlePanels[idx]);
         }
         for (size_t idx = 0; idx < zlstate::bandNUM; ++idx) {
             const auto i = idx;
-            sidePanels[idx] = std::make_unique<SidePanel>(i, parameters_ref, parameters_NA_ref, base, controller_ref,
+            sidePanels[idx] = std::make_unique<SidePanel>(i, parameters_ref_, parameters_NA_ref_, base, controller_ref_,
                                                           buttonPanel.getSideDragger(i));
             addAndMakeVisible(*sidePanels[idx], 5);
         }
@@ -56,13 +56,13 @@ namespace zlpanel {
         addAndMakeVisible(loudnessDisplay, 8);
         addAndMakeVisible(buttonPanel, 9);
         addChildComponent(matchPanel, 10);
-        parameterChanged(zlp::scale::ID, parameters_ref.getRawParameterValue(zlp::scale::ID)->load());
-        parameters_ref.addParameterListener(zlp::scale::ID, this);
-        parameterChanged(zlstate::maximumDB::ID, parameters_NA_ref.getRawParameterValue(zlstate::maximumDB::ID)->load());
-        parameters_NA_ref.addParameterListener(zlstate::maximumDB::ID, this);
+        parameterChanged(zlp::scale::ID, parameters_ref_.getRawParameterValue(zlp::scale::ID)->load());
+        parameters_ref_.addParameterListener(zlp::scale::ID, this);
+        parameterChanged(zlstate::maximumDB::ID, parameters_NA_ref_.getRawParameterValue(zlstate::maximumDB::ID)->load());
+        parameters_NA_ref_.addParameterListener(zlstate::maximumDB::ID, this);
         parameterChanged(zlstate::minimumFFTDB::ID,
-                         parameters_NA_ref.getRawParameterValue(zlstate::minimumFFTDB::ID)->load());
-        parameters_NA_ref.addParameterListener(zlstate::minimumFFTDB::ID, this);
+                         parameters_NA_ref_.getRawParameterValue(zlstate::minimumFFTDB::ID)->load());
+        parameters_NA_ref_.addParameterListener(zlstate::minimumFFTDB::ID, this);
         startThread(juce::Thread::Priority::low);
 
         uiBase.getValueTree().addListener(this);
@@ -73,10 +73,10 @@ namespace zlpanel {
         if (isThreadRunning()) {
             stopThread(-1);
         }
-        parameters_ref.removeParameterListener(zlp::scale::ID, this);
-        parameters_NA_ref.removeParameterListener(zlstate::selectedBandIdx::ID, this);
-        parameters_NA_ref.removeParameterListener(zlstate::maximumDB::ID, this);
-        parameters_NA_ref.removeParameterListener(zlstate::minimumFFTDB::ID, this);
+        parameters_ref_.removeParameterListener(zlp::scale::ID, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::maximumDB::ID, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::minimumFFTDB::ID, this);
     }
 
     void CurvePanel::paint(juce::Graphics &g) {
@@ -207,7 +207,7 @@ namespace zlpanel {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
             const auto factor = physicalPixelScaleFactor.load();
-            const auto &analyzer = controller_ref.getAnalyzer();
+            const auto &analyzer = controller_ref_.getAnalyzer();
             if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
                 fftPanel.updatePaths(factor);
             }

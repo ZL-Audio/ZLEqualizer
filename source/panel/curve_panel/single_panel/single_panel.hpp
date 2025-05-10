@@ -23,7 +23,7 @@ namespace zlpanel {
     public:
         explicit SinglePanel(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
+                             juce::AudioProcessorValueTreeState &parameters_NA,
                              zlgui::UIBase &base,
                              zlp::Controller<double> &controller,
                              zldsp::filter::Ideal<double, 16> &baseFilter,
@@ -74,9 +74,9 @@ namespace zlpanel {
         juce::SpinLock curveLock, shadowLock, dynLock;
 
         size_t idx;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
-        zlp::Controller<double> &controller_ref;
+        zlp::Controller<double> &controller_ref_;
         zlpanel::ResetAttach resetAttach;
         zldsp::filter::Ideal<double, 16> &baseF, &targetF, &mainF;
 

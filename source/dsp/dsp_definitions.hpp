@@ -12,9 +12,9 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 namespace zlp {
-    inline auto static constexpr versionHint = 1;
+    inline auto static constexpr kVersionHint = 1;
 
-    inline auto static constexpr bandNUM = 16;
+    inline auto static constexpr kBandNUM = 16;
 
     template<typename FloatType>
     inline juce::NormalisableRange<FloatType> getLogMidRange(
@@ -52,7 +52,7 @@ namespace zlp {
     public:
         static std::unique_ptr<juce::AudioParameterFloat> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                                T::name + suffix, T::range, T::defaultV, attributes);
         }
 
@@ -60,7 +60,7 @@ namespace zlp {
                                                               bool automate = true) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::name).
                     withMeta(meta);
-            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                                T::name + suffix, T::range, T::defaultV, attributes);
         }
 
@@ -75,7 +75,7 @@ namespace zlp {
     public:
         static std::unique_ptr<juce::AudioParameterBool> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                               T::name + suffix, T::defaultV, attributes);
         }
 
@@ -83,7 +83,7 @@ namespace zlp {
                                                              bool automate = true) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::name).
                     withMeta(meta);
-            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                               T::name + suffix, T::defaultV, attributes);
         }
 
@@ -98,7 +98,7 @@ namespace zlp {
     public:
         static std::unique_ptr<juce::AudioParameterChoice> get(const std::string &suffix = "", bool automate = true) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::name);
-            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                                 T::name + suffix, T::choices, T::defaultI, attributes);
         }
 
@@ -106,7 +106,7 @@ namespace zlp {
                                                                bool automate = true) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::name).
                     withMeta(meta);
-            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, versionHint),
+            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::ID + suffix, kVersionHint),
                                                                 T::name + suffix, T::choices, T::defaultI, attributes);
         }
 
@@ -127,15 +127,15 @@ namespace zlp {
         int static constexpr defaultI = 0;
 
         enum {
-            peak,
-            lowShelf,
-            lowPass,
-            highShelf,
-            highPass,
-            notch,
-            bandPass,
-            tiltShelf,
-            fTypeNUM
+            kPeak,
+            kLowShelf,
+            kLowPass,
+            kHighShelf,
+            kHighPass,
+            kNotch,
+            kBandPass,
+            kTiltShelf,
+            kFTypeNUM
         };
     };
 
@@ -196,11 +196,11 @@ namespace zlp {
         int static constexpr defaultI = 0;
 
         enum lrTypes {
-            stereo,
-            left,
-            right,
-            mid,
-            side
+            kStereo,
+            kLeft,
+            kRight,
+            kMid,
+            kSide
         };
     };
 
@@ -456,7 +456,7 @@ namespace zlp {
         };
 
         enum FilterStructure {
-            minimum, svf, parallel, matched, mixed, linear
+            kMinimum, kSVF, kParallel, kMatched, kMixed, kLinear
         };
 
         int static constexpr defaultI = 0;
@@ -491,7 +491,7 @@ namespace zlp {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        for (int i = 0; i < bandNUM; ++i) {
+        for (int i = 0; i < kBandNUM; ++i) {
             auto suffix = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
             addOneBandParas(layout, suffix);
         }

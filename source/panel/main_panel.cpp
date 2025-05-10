@@ -11,7 +11,7 @@
 
 namespace zlpanel {
     MainPanel::MainPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : processor_ref(p), state(p.state), uiBase(base),
+        : processor_ref_(p), state(p.state), uiBase(base),
           controlPanel(p, uiBase),
           curvePanel(p, uiBase),
           scalePanel(p, uiBase),
@@ -23,7 +23,7 @@ namespace zlpanel {
           collisionBox(p.parameters_NA, uiBase),
           generalBox(p.parameters, uiBase),
           tooltipLAF(uiBase), tooltipWindow(&curvePanel) {
-        processor_ref.getController().setEditorOn(true);
+        processor_ref_.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);
         addAndMakeVisible(scalePanel);
         addAndMakeVisible(controlPanel);
@@ -52,7 +52,7 @@ namespace zlpanel {
     }
 
     MainPanel::~MainPanel() {
-        processor_ref.getController().setEditorOn(false);
+        processor_ref_.getController().setEditorOn(false);
         state.removeParameterListener(zlstate::fftExtraTilt::ID, this);
         state.removeParameterListener(zlstate::fftExtraSpeed::ID, this);
         state.removeParameterListener(zlstate::refreshRate::ID, this);
@@ -145,12 +145,12 @@ namespace zlpanel {
     }
 
     void MainPanel::updateFFTs() {
-        for (auto &fft: {&processor_ref.getController().getAnalyzer().getMultipleFFT()}) {
+        for (auto &fft: {&processor_ref_.getController().getAnalyzer().getMultipleFFT()}) {
             fft->setExtraTilt(uiBase.getFFTExtraTilt());
             fft->setExtraSpeed(uiBase.getFFTExtraSpeed());
             fft->setRefreshRate(zlstate::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
-        for (auto &fft: {&processor_ref.getController().getConflictAnalyzer().getSyncFFT()}) {
+        for (auto &fft: {&processor_ref_.getController().getConflictAnalyzer().getSyncFFT()}) {
             fft->setRefreshRate(zlstate::refreshRate::rates[uiBase.getRefreshRateID()]);
         }
     }

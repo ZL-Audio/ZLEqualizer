@@ -21,7 +21,7 @@ namespace zlpanel {
     public:
         explicit SidePanel(size_t bandIdx,
                            juce::AudioProcessorValueTreeState &parameters,
-                           juce::AudioProcessorValueTreeState &parametersNA,
+                           juce::AudioProcessorValueTreeState &parameters_NA,
                            zlgui::UIBase &base,
                            zlp::Controller<double> &controller,
                            zlgui::Dragger &sideDragger);
@@ -36,9 +36,9 @@ namespace zlpanel {
 
     private:
         size_t idx;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
-        zldsp::filter::IIR<double, zlp::Controller<double>::FilterSize> &sideF;
+        zldsp::filter::IIR<double, zlp::Controller<double>::kFilterSize> &sideF;
         zlgui::Dragger &sideDraggerRef;
         std::atomic<bool> dynON, selected, actived;
 

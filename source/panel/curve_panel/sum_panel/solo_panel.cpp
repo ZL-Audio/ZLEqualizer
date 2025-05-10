@@ -13,30 +13,30 @@
 
 namespace zlpanel {
     SoloPanel::SoloPanel(juce::AudioProcessorValueTreeState &parameters,
-                         juce::AudioProcessorValueTreeState &parametersNA,
+                         juce::AudioProcessorValueTreeState &parameters_NA,
                          zlgui::UIBase &base,
                          zlp::Controller<double> &controller,
                          ButtonPanel &buttonPanel)
-        : parameters_ref(parameters), parameters_NA_ref(parametersNA),
+        : parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
           uiBase(base),
           soloF(controller.getSoloFilter()),
-          controller_ref(controller), buttonPanelRef(buttonPanel) {
-        juce::ignoreUnused(parameters_ref, parametersNA);
-        parameters_NA_ref.addParameterListener(zlstate::selectedBandIdx::ID, this);
-        for (size_t i = 0; i < zlp::bandNUM; ++i) {
+          controller_ref_(controller), buttonPanelRef(buttonPanel) {
+        juce::ignoreUnused(parameters_ref_, parameters_NA);
+        parameters_NA_ref_.addParameterListener(zlstate::selectedBandIdx::ID, this);
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
             soloUpdaters.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
-                parameters_ref, zlp::appendSuffix(zlp::solo::ID, i)));
+                parameters_ref_, zlp::appendSuffix(zlp::solo::ID, i)));
             sideSoloUpdaters.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
-                parameters_ref, zlp::appendSuffix(zlp::sideSolo::ID, i)));
+                parameters_ref_, zlp::appendSuffix(zlp::sideSolo::ID, i)));
         }
         selectBandIdx.store(static_cast<size_t>(
-            parameters_NA_ref.getRawParameterValue(zlstate::selectedBandIdx::ID)->load()));
+            parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)->load()));
         handleAsyncUpdate();
     }
 
     SoloPanel::~SoloPanel() {
         turnOffSolo();
-        parameters_NA_ref.removeParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::selectedBandIdx::ID, this);
     }
 
     void SoloPanel::paint(juce::Graphics &g) {
@@ -44,7 +44,7 @@ namespace zlpanel {
 
         g.setColour(uiBase.getTextColor().withAlpha(.1f));
         auto bound = getLocalBounds().toFloat();
-        if (controller_ref.getSoloIsSide()) {
+        if (controller_ref_.getSoloIsSide()) {
             const auto x =  buttonPanelRef.getSideDragger(
                 selectBandIdx.load()).getButton().getBoundsInParent().toFloat().getCentreX();
             if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
@@ -65,7 +65,7 @@ namespace zlpanel {
                 currentX = x;
                 handleAsyncUpdate();
             }
-            const auto &f = controller_ref.getMainIdealFilter(bandIdx);
+            const auto &f = controller_ref_.getMainIdealFilter(bandIdx);
             switch (f.getFilterType()) {
                 case zldsp::filter::kHighPass:
                 case zldsp::filter::kLowShelf: {
@@ -116,7 +116,7 @@ namespace zlpanel {
     }
 
     void SoloPanel::turnOffSolo() const {
-        for (size_t i = 0; i < zlp::bandNUM; ++i) {
+        for (size_t i = 0; i < zlp::kBandNUM; ++i) {
             soloUpdaters[i]->updateSync(0.f);
             sideSoloUpdaters[i]->updateSync(0.f);
         }

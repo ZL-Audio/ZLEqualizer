@@ -25,31 +25,31 @@ namespace zlp {
         void addListeners();
 
     private:
-        juce::AudioProcessor &processor_ref;
-        juce::AudioProcessorValueTreeState &parameters_ref;
-        Controller<FloatType> &controller_ref;
+        juce::AudioProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
+        Controller<FloatType> &controller_ref_;
 
-        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlp::bandNUM> mainSoloUpdater, sideSoloUpdater;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlp::kBandNUM> main_solo_updater_, side_solo_updater_;
 
-        constexpr static std::array IDs{
+        constexpr static std::array kIDs{
             fType::ID,
             freq::ID, Q::ID, sideFreq::ID, sideQ::ID,
             solo::ID, sideSolo::ID
         };
 
-        std::atomic<size_t> soloIdx{0};
-        std::atomic<bool> soloIsSide{false};
+        std::atomic<size_t> solo_idx_{0};
+        std::atomic<bool> solo_is_side_{false};
 
-        constexpr static std::array initIDs{
+        constexpr static std::array kInitIDs{
             solo::ID, sideSolo::ID
         };
 
-        constexpr static std::array defaultVs{
+        constexpr static std::array kDefaultVs{
             static_cast<float>(solo::defaultV),
             static_cast<float>(sideSolo::defaultV)
         };
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void initDefaultValues();
     };

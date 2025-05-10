@@ -57,7 +57,7 @@ namespace zlpanel {
     public:
         explicit ButtonPopUp(size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
+                             juce::AudioProcessorValueTreeState &parameters_NA,
                              zlgui::UIBase &base);
 
         ~ButtonPopUp() override;
@@ -76,7 +76,7 @@ namespace zlpanel {
         static constexpr float widthP{7.7916666f}, heightP{4.16667f};
 
         size_t band;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
         std::atomic<float> &fType, &freqPara;
         float direction = -1.f;

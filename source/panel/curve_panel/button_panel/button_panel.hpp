@@ -86,10 +86,10 @@ namespace zlpanel {
         std::array<std::unique_ptr<FilterButtonPanel>, zlstate::bandNUM> panels;
         std::array<std::unique_ptr<LinkButtonPanel>, zlstate::bandNUM> linkButtons;
 
-        PluginProcessor &processor_ref;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        PluginProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
-        zlp::Controller<double> &controller_ref;
+        zlp::Controller<double> &controller_ref_;
 
         std::array<zlgui::SnappingSlider, 3> wheelSlider;
         std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>, 3> wheelAttachment;

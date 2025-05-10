@@ -15,9 +15,9 @@
 namespace zlpanel {
     class CollisionBox final : public juce::Component, private juce::ValueTree::Listener {
     public:
-        explicit CollisionBox(juce::AudioProcessorValueTreeState &parametersNA,
+        explicit CollisionBox(juce::AudioProcessorValueTreeState &parameters_NA,
                               zlgui::UIBase &base)
-            : parameters_NA_ref(parametersNA),
+            : parameters_NA_ref_(parameters_NA),
               uiBase(base),
               collisionC("DET:", zlstate::conflictON::choices, uiBase, zlgui::multilingual::labels::collisionDET),
               strengthS("Strength", uiBase, zlgui::multilingual::labels::collisionStrength),
@@ -32,13 +32,13 @@ namespace zlpanel {
             }
             attach({&collisionC.getCompactBox().getBox()},
                    {zlstate::conflictON::ID},
-                   parameters_NA_ref, boxAttachments);
+                   parameters_NA_ref_, boxAttachments);
             attach({&strengthS.getSlider(), &scaleS.getSlider()},
                    {
                        zlstate::conflictStrength::ID,
                        zlstate::conflictScale::ID
                    },
-                   parameters_NA_ref, sliderAttachments);
+                   parameters_NA_ref_, sliderAttachments);
             setBufferedToImage(true);
 
             uiBase.getBoxTree().addListener(this);
@@ -86,7 +86,7 @@ namespace zlpanel {
         }
 
     private:
-        juce::AudioProcessorValueTreeState &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
 
         zlgui::ClickCombobox collisionC;

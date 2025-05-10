@@ -19,7 +19,7 @@ namespace zlp {
     public:
         explicit FiltersAttach(juce::AudioProcessor &processor,
                                juce::AudioProcessorValueTreeState &parameters,
-                               juce::AudioProcessorValueTreeState &parametersNA,
+                               juce::AudioProcessorValueTreeState &parameters_NA,
                                Controller<FloatType> &controller);
 
         ~FiltersAttach() override;
@@ -37,15 +37,15 @@ namespace zlp {
         void updateSideFQ(size_t idx);
 
     private:
-        juce::AudioProcessor &processor_ref;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
-        Controller<FloatType> &controller_ref;
-        std::array<zldsp::filter::DynamicIIR<FloatType, Controller<FloatType>::FilterSize>, bandNUM> &filtersRef;
-        std::array<std::string, bandNUM * 2> sideParaNames;
-        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, bandNUM> sideFreqUpdater, sideQUpdater;
-        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, bandNUM> thresholdUpdater, kneeUpdater;
+        juce::AudioProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
+        Controller<FloatType> &controller_ref_;
+        std::array<zldsp::filter::DynamicIIR<FloatType, Controller<FloatType>::kFilterSize>, kBandNUM> &filters_ref_;
+        std::array<std::string, kBandNUM * 2> side_para_names_;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, kBandNUM> side_freq_updater_, side_q_updater_;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, kBandNUM> threshold_updater_, knee_updater_;
 
-        constexpr static std::array IDs{
+        constexpr static std::array kIDs{
             bypass::ID, fType::ID, slope::ID, freq::ID, gain::ID, Q::ID,
             lrType::ID, dynamicON::ID, dynamicLearn::ID,
             dynamicBypass::ID, dynamicRelative::ID, sideSwap::ID,
@@ -54,7 +54,7 @@ namespace zlp {
             singleDynLink::ID
         };
 
-        constexpr static std::array defaultVs{
+        constexpr static std::array kDefaultVs{
             float(bypass::defaultV), float(fType::defaultI), float(slope::defaultI),
             freq::defaultV, gain::defaultV, Q::defaultV,
             float(lrType::defaultI), float(dynamicON::defaultV), float(dynamicLearn::defaultV),
@@ -65,22 +65,22 @@ namespace zlp {
             float(singleDynLink::defaultV)
         };
 
-        constexpr static std::array dynamicInitIDs{
+        constexpr static std::array kDynamicInitIDs{
             targetGain::ID, targetQ::ID, sideFreq::ID, sideQ::ID,
             dynamicBypass::ID, singleDynLink::ID
         };
-        constexpr static std::array dynamicResetIDs{
+        constexpr static std::array kDynamicResetIDs{
             dynamicLearn::ID, dynamicBypass::ID,
             sideSolo::ID, dynamicRelative::ID
         };
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void initDefaultValues();
 
-        std::atomic<float> maximumDB{zlstate::maximumDB::dBs[static_cast<size_t>(zlstate::maximumDB::defaultI)]};
+        std::atomic<float> maximum_db_{zlstate::maximumDB::dBs[static_cast<size_t>(zlstate::maximumDB::defaultI)]};
 
-        std::atomic<bool> gDynLink{false};
-        std::array<std::atomic<bool>, bandNUM> sDynLink{};
+        std::atomic<bool> g_dyn_link_{false};
+        std::array<std::atomic<bool>, kBandNUM> s_dyn_link_{};
     };
 }

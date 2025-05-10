@@ -28,7 +28,7 @@ namespace zlpanel {
     private:
         constexpr static float labelSize = 2.75f;
         zlgui::UIBase &uiBase;
-        juce::AudioProcessorValueTreeState &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_NA_ref_;
 
         OutputValuePanel outputValuePanel;
         SettingPanel outputSettingPanel;

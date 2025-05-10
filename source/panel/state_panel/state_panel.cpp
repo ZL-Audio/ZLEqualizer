@@ -13,7 +13,7 @@ namespace zlpanel {
     StatePanel::StatePanel(PluginProcessor &p,
                            zlgui::UIBase &base,
                            UISettingPanel &uiSettingPanel)
-        : uiBase(base), parameters_NA_ref(p.parameters_NA),
+        : uiBase(base), parameters_NA_ref_(p.parameters_NA),
           outputValuePanel(p, base),
           outputSettingPanel(p, base, "", zlgui::boxIdx::outputBox),
           analyzerSettingPanel(p, base, "Analyzer", zlgui::boxIdx::analyzerBox),
@@ -65,7 +65,7 @@ namespace zlpanel {
 
         sideC.getButton().onClick = [this]() {
             const auto isSideOn = static_cast<int>(sideC.getButton().getToggleState());
-            const auto para = parameters_NA_ref.getParameter(zlstate::fftSideON::ID);
+            const auto para = parameters_NA_ref_.getParameter(zlstate::fftSideON::ID);
             para->beginChangeGesture();
             para->setValueNotifyingHost(zlstate::fftSideON::convertTo01(isSideOn));
             para->endChangeGesture();

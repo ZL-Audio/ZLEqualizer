@@ -12,10 +12,10 @@
 namespace zlpanel {
     LinkButtonPanel::LinkButtonPanel(const size_t idx,
                                      juce::AudioProcessorValueTreeState &parameters,
-                                     juce::AudioProcessorValueTreeState &parametersNA,
+                                     juce::AudioProcessorValueTreeState &parameters_NA,
                                      zlgui::UIBase &base,
                                      zlgui::Dragger &sideDragger)
-        : parameters_ref(parameters), parameters_NA_ref(parametersNA),
+        : parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
           uiBase(base),
           sideDraggerRef(sideDragger),
           dynLinkC("L", base),
@@ -30,12 +30,12 @@ namespace zlpanel {
 
         for (auto &ID: IDs) {
             const auto suffixID = zlp::appendSuffix(ID, idx);
-            parameters_ref.addParameterListener(suffixID, this);
-            parameterChanged(suffixID, parameters_ref.getRawParameterValue(suffixID)->load());
+            parameters_ref_.addParameterListener(suffixID, this);
+            parameterChanged(suffixID, parameters_ref_.getRawParameterValue(suffixID)->load());
         }
         for (auto &ID: NAIDs) {
-            parameters_NA_ref.addParameterListener(ID, this);
-            parameterChanged(ID, parameters_NA_ref.getRawParameterValue(ID)->load());
+            parameters_NA_ref_.addParameterListener(ID, this);
+            parameterChanged(ID, parameters_NA_ref_.getRawParameterValue(ID)->load());
         }
         setInterceptsMouseClicks(false, true);
     }
@@ -43,10 +43,10 @@ namespace zlpanel {
     LinkButtonPanel::~LinkButtonPanel() {
         const auto idx = bandIdx.load();
         for (auto &ID: IDs) {
-            parameters_ref.removeParameterListener(zlp::appendSuffix(ID, idx), this);
+            parameters_ref_.removeParameterListener(zlp::appendSuffix(ID, idx), this);
         }
         for (auto &ID: NAIDs) {
-            parameters_NA_ref.removeParameterListener(ID, this);
+            parameters_NA_ref_.removeParameterListener(ID, this);
         }
     }
 
@@ -73,7 +73,7 @@ namespace zlpanel {
     void LinkButtonPanel::mouseDoubleClick(const juce::MouseEvent &event) {
         if (event.mods.isCommandDown() && event.mods.isRightButtonDown()) {
             const auto currentBand = bandIdx.load();
-            auto *para = parameters_ref.getParameter(
+            auto *para = parameters_ref_.getParameter(
                 zlp::appendSuffix(zlp::sideSolo::ID, currentBand));
             para->beginChangeGesture();
             if (para->getValue() < 0.5f) {

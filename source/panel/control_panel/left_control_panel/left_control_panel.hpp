@@ -53,9 +53,9 @@ namespace zlpanel {
         zlgui::CompactButton &getDynamicAutoButton() { return dynLC; }
 
     private:
-        PluginProcessor &processor_ref;
+        PluginProcessor &processor_ref_;
         zlgui::UIBase &uiBase;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
 
         Background background;
 

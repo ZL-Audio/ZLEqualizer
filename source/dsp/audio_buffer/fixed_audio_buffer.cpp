@@ -22,7 +22,7 @@ namespace zldsp::buffer {
     void FixedAudioBuffer<FloatType>::clear() {
         input_buffer_.clear();
         output_buffer_.clear();
-        subBuffer.clear();
+        sub_buffer_.clear();
     }
 
     template<typename FloatType>
@@ -37,7 +37,7 @@ namespace zldsp::buffer {
             latency_in_samples_.store(0);
         }
         // resize subBuffer, inputBuffer and outputBuffer
-        subBuffer.setSize(static_cast<int>(sub_spec_.numChannels),
+        sub_buffer_.setSize(static_cast<int>(sub_spec_.numChannels),
                           static_cast<int>(sub_spec_.maximumBlockSize));
         input_buffer_.setSize(static_cast<int>(main_spec_.numChannels),
                             static_cast<int>(main_spec_.maximumBlockSize) + subBufferSize);
@@ -73,12 +73,12 @@ namespace zldsp::buffer {
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::popSubBuffer() {
-        input_buffer_.pop(subBuffer);
+        input_buffer_.pop(sub_buffer_);
     }
 
     template<typename FloatType>
     void FixedAudioBuffer<FloatType>::pushSubBuffer() {
-        output_buffer_.push(subBuffer);
+        output_buffer_.push(sub_buffer_);
     }
 
     template<typename FloatType>
@@ -103,14 +103,14 @@ namespace zldsp::buffer {
     juce::AudioBuffer<FloatType> FixedAudioBuffer<FloatType>::getSubBufferChannels(
             int channelOffset, int numChannels) {
         return juce::AudioBuffer<FloatType>(
-                subBuffer.getArrayOfWritePointers() + channelOffset,
-                numChannels, subBuffer.getNumSamples());
+                sub_buffer_.getArrayOfWritePointers() + channelOffset,
+                numChannels, sub_buffer_.getNumSamples());
     }
 
     template<typename FloatType>
     juce::dsp::AudioBlock<FloatType> FixedAudioBuffer<FloatType>::getSubBlockChannels(int channelOffset,
                                                                                       int numChannels) {
-        return juce::dsp::AudioBlock<FloatType>(subBuffer).getSubsetChannelBlock(static_cast<size_t>(channelOffset),
+        return juce::dsp::AudioBlock<FloatType>(sub_buffer_).getSubsetChannelBlock(static_cast<size_t>(channelOffset),
                                                                                  static_cast<size_t>(numChannels));
     }
 

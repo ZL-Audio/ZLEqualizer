@@ -17,7 +17,7 @@ namespace zldsp::buffer {
     template<typename FloatType>
     class FixedAudioBuffer {
     public:
-        juce::AudioBuffer<FloatType> subBuffer;
+        juce::AudioBuffer<FloatType> sub_buffer_;
 
         explicit FixedAudioBuffer(int subBufferSize = 1);
 
@@ -44,7 +44,7 @@ namespace zldsp::buffer {
         juce::dsp::AudioBlock<FloatType> getSubBlockChannels(int channelOffset, int numChannels);
 
         inline auto isSubReady() {
-            return input_buffer_.getNumReady() >= subBuffer.getNumSamples();
+            return input_buffer_.getNumReady() >= sub_buffer_.getNumSamples();
         }
 
         inline auto getMainSpec() { return main_spec_; }

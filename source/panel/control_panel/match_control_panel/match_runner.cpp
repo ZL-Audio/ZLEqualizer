@@ -14,11 +14,11 @@ namespace zlpanel {
                              std::array<std::atomic<float>, 251> &atomicDiffs,
                              zlgui::CompactLinearSlider &numBandSlider)
         : Thread("match_runner"), uiBase(base),
-          parameters_ref(p.parameters), parameters_NA_ref(p.parameters_NA),
+          parameters_ref_(p.parameters), parameters_NA_ref_(p.parameters_NA),
           atomicDiffsRef(atomicDiffs),
           slider(numBandSlider) {
-        parameters_NA_ref.addParameterListener(zlstate::maximumDB::ID, this);
-        parameterChanged(zlstate::maximumDB::ID, parameters_NA_ref.getRawParameterValue(zlstate::maximumDB::ID)->load());
+        parameters_NA_ref_.addParameterListener(zlstate::maximumDB::ID, this);
+        parameterChanged(zlstate::maximumDB::ID, parameters_NA_ref_.getRawParameterValue(zlstate::maximumDB::ID)->load());
         std::fill(diffs.begin(), diffs.end(), 0.);
         uiBase.getValueTree().addListener(this);
         addListener(&optimizer);
@@ -28,7 +28,7 @@ namespace zlpanel {
         stopThread(-1);
         removeListener(&optimizer);
         uiBase.getValueTree().removeListener(this);
-        parameters_NA_ref.removeParameterListener(zlstate::maximumDB::ID, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::maximumDB::ID, this);
     }
 
     void MatchRunner::start() {
@@ -113,7 +113,7 @@ namespace zlpanel {
                      zlp::Q::convertTo01(static_cast<float>(filter.getQ())));
         }
         for (size_t i = currentNumBand; i < mFilters.size(); i++) {
-            const auto para = parameters_NA_ref.getParameter(zlstate::appendSuffix(zlstate::active::ID, i));
+            const auto para = parameters_NA_ref_.getParameter(zlstate::appendSuffix(zlstate::active::ID, i));
             para->beginChangeGesture();
             para->setValueNotifyingHost(0.f);
             para->endChangeGesture();

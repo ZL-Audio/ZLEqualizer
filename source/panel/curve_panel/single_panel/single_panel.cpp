@@ -12,39 +12,39 @@
 namespace zlpanel {
     SinglePanel::SinglePanel(const size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
-                             juce::AudioProcessorValueTreeState &parametersNA,
+                             juce::AudioProcessorValueTreeState &parameters_NA,
                              zlgui::UIBase &base,
                              zlp::Controller<double> &controller,
                              zldsp::filter::Ideal<double, 16> &baseFilter,
                              zldsp::filter::Ideal<double, 16> &targetFilter,
                              zldsp::filter::Ideal<double, 16> &mainFilter)
-        : idx(bandIdx), parameters_ref(parameters), parameters_NA_ref(parametersNA),
-          uiBase(base), controller_ref(controller),
-          resetAttach(bandIdx, parameters, parametersNA),
+        : idx(bandIdx), parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
+          uiBase(base), controller_ref_(controller),
+          resetAttach(bandIdx, parameters, parameters_NA),
           baseF(baseFilter), targetF(targetFilter), mainF(mainFilter) {
         curvePath.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 3 + 12));
         shadowPath.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 3 + 12));
         dynPath.preallocateSpace(static_cast<int>(zldsp::filter::kFrequencies.size() * 6 + 12));
 
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
-        juce::ignoreUnused(controller_ref);
+        juce::ignoreUnused(controller_ref_);
 
         parameterChanged(zlstate::selectedBandIdx::ID,
-                         parameters_NA_ref.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
+                         parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
         parameterChanged(zlstate::active::ID + suffix,
-                         parameters_NA_ref.getRawParameterValue(zlstate::active::ID + suffix)->load());
-        parameters_NA_ref.addParameterListener(zlstate::selectedBandIdx::ID, this);
-        parameters_NA_ref.addParameterListener(zlstate::active::ID + suffix, this);
+                         parameters_NA_ref_.getRawParameterValue(zlstate::active::ID + suffix)->load());
+        parameters_NA_ref_.addParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref_.addParameterListener(zlstate::active::ID + suffix, this);
 
         for (auto &id: changeIDs) {
             const auto paraId = id + suffix;
-            parameterChanged(paraId, parameters_ref.getRawParameterValue(paraId)->load());
-            parameters_ref.addParameterListener(paraId, this);
+            parameterChanged(paraId, parameters_ref_.getRawParameterValue(paraId)->load());
+            parameters_ref_.addParameterListener(paraId, this);
         }
         for (auto &id: paraIDs) {
             const auto paraId = id + suffix;
-            parameterChanged(paraId, parameters_ref.getRawParameterValue(paraId)->load());
-            parameters_ref.addParameterListener(paraId, this);
+            parameterChanged(paraId, parameters_ref_.getRawParameterValue(paraId)->load());
+            parameters_ref_.addParameterListener(paraId, this);
         }
 
         setInterceptsMouseClicks(false, false);
@@ -54,13 +54,13 @@ namespace zlpanel {
     SinglePanel::~SinglePanel() {
         const std::string suffix = idx < 10 ? "0" + std::to_string(idx) : std::to_string(idx);
         for (auto &id: changeIDs) {
-            parameters_ref.removeParameterListener(id + suffix, this);
+            parameters_ref_.removeParameterListener(id + suffix, this);
         }
         for (auto &id: paraIDs) {
-            parameters_ref.removeParameterListener(id + suffix, this);
+            parameters_ref_.removeParameterListener(id + suffix, this);
         }
-        parameters_NA_ref.removeParameterListener(zlstate::selectedBandIdx::ID, this);
-        parameters_NA_ref.removeParameterListener(zlstate::active::ID + suffix, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::selectedBandIdx::ID, this);
+        parameters_NA_ref_.removeParameterListener(zlstate::active::ID + suffix, this);
     }
 
     void SinglePanel::paint(juce::Graphics &g) {

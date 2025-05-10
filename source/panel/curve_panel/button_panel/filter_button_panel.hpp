@@ -57,8 +57,8 @@ namespace zlpanel {
         void visibilityChanged() override;
 
     private:
-        PluginProcessor &processor_ref;
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        PluginProcessor &processor_ref_;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
         zlgui::Dragger dragger, targetDragger, sideDragger;
         ButtonPopUp buttonPopUp;

@@ -30,7 +30,7 @@ namespace zlpanel {
         void mouseExit(const juce::MouseEvent &event) override;
 
     private:
-        juce::AudioProcessorValueTreeState &parameters_ref, &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
         juce::String name;
         zlgui::boxIdx mIdx;

@@ -30,8 +30,8 @@ namespace zlpanel {
         void paint(juce::Graphics &g) override;
 
     private:
-        juce::AudioProcessorValueTreeState &parameters_ref;
-        juce::AudioProcessorValueTreeState &parameters_NA_ref;
+        juce::AudioProcessorValueTreeState &parameters_ref_;
+        juce::AudioProcessorValueTreeState &parameters_NA_ref_;
         zlgui::UIBase &uiBase;
         std::atomic<size_t> bandIdx{0};
         std::array<std::atomic<bool>, zlstate::bandNUM> dynamicON{};
