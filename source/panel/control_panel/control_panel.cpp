@@ -14,7 +14,7 @@
 namespace zlpanel {
     ControlPanel::ControlPanel(PluginProcessor &p,
                                zlgui::UIBase &base)
-        : parameters_ref_(p.parameters), parameters_NA_ref_(p.parameters_NA), ui_base_(base),
+        : parameters_ref_(p.parameters_), parameters_NA_ref_(p.parameters_NA_), ui_base_(base),
           left_control_panel_(p, base),
           right_control_panel_(p, base),
           match_control_panel_(p, base) {

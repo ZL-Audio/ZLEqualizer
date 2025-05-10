@@ -13,7 +13,7 @@ namespace zlpanel {
     ButtonPanel::ButtonPanel(PluginProcessor &processor,
                              zlgui::UIBase &base)
         : processor_ref_(processor),
-          parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA),
+          parameters_ref_(processor.parameters_), parameters_NA_ref_(processor.parameters_NA_),
           ui_base_(base), controller_ref_(processor.getController()),
           wheel_slider_{
               zlgui::SnappingSlider{base},

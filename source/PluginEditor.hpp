@@ -37,16 +37,16 @@ public:
 
 private:
     PluginProcessor &processor_ref_;
-    zlstate::Property &property;
-    std::atomic<bool> isSizeChanged{false};
+    zlstate::Property &property_;
+    std::atomic<bool> is_size_changed_{false};
 
     zlgui::UIBase ui_base_;
-    zlpanel::MainPanel mainPanel;
+    zlpanel::MainPanel main_panel_;
 
-    std::unique_ptr<juce::VBlankAttachment> vblank;
+    std::unique_ptr<juce::VBlankAttachment> vblank_;
 
-    juce::Value lastUIWidth, lastUIHeight;
-    constexpr const static std::array IDs{
+    juce::Value last_ui_width_, last_ui_height_;
+    static constexpr std::array kIDs{
         zlstate::windowW::ID,
         zlstate::windowH::ID,
         "text_r", "text_g", "text_b",

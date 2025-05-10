@@ -13,7 +13,7 @@ namespace zlpanel {
     LogoPanel::LogoPanel(PluginProcessor &p,
                          zlgui::UIBase &base,
                          UISettingPanel &uiSettingPanel)
-        : state_ref_(p.state),
+        : state_ref_(p.state_),
           ui_base_(base), panel_to_show_(uiSettingPanel),
           brand_drawable_(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
           logo_drawable_(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {

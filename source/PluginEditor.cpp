@@ -12,16 +12,16 @@
 PluginEditor::PluginEditor(PluginProcessor &p)
     : AudioProcessorEditor(&p),
       processor_ref_(p),
-      property(p.property),
-      ui_base_(p.state),
-      mainPanel(p, ui_base_) {
-    for (auto &ID: IDs) {
-        processor_ref_.state.addParameterListener(ID, this);
+      property_(p.property_),
+      ui_base_(p.state_),
+      main_panel_(p, ui_base_) {
+    for (auto &ID: kIDs) {
+        processor_ref_.state_.addParameterListener(ID, this);
     }
     // set font
-    const auto sourceCodePro = juce::Typeface::createSystemTypefaceFor(
+    const auto font_face = juce::Typeface::createSystemTypefaceFor(
         BinaryData::MiSansLatinMedium_ttf, BinaryData::MiSansLatinMedium_ttfSize);
-    juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(sourceCodePro);
+    juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(font_face);
 
     // set size & size listener
     setResizeLimits(static_cast<int>(zlstate::windowW::minV),
@@ -29,12 +29,12 @@ PluginEditor::PluginEditor(PluginProcessor &p)
                     static_cast<int>(zlstate::windowW::maxV),
                     static_cast<int>(zlstate::windowH::maxV));
     setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
-    lastUIWidth.referTo(p.state.getParameterAsValue(zlstate::windowW::ID));
-    lastUIHeight.referTo(p.state.getParameterAsValue(zlstate::windowH::ID));
-    setSize(lastUIWidth.getValue(), lastUIHeight.getValue());
+    last_ui_width_.referTo(p.state_.getParameterAsValue(zlstate::windowW::ID));
+    last_ui_height_.referTo(p.state_.getParameterAsValue(zlstate::windowH::ID));
+    setSize(last_ui_width_.getValue(), last_ui_height_.getValue());
 
-    // add main panel
-    addAndMakeVisible(mainPanel);
+    // add the main panel
+    addAndMakeVisible(main_panel_);
 
     startTimerHz(2);
 
@@ -42,9 +42,9 @@ PluginEditor::PluginEditor(PluginProcessor &p)
 }
 
 PluginEditor::~PluginEditor() {
-    vblank.reset();
-    for (auto &ID: IDs) {
-        processor_ref_.state.removeParameterListener(ID, this);
+    vblank_.reset();
+    for (auto &id: kIDs) {
+        processor_ref_.state_.removeParameterListener(id, this);
     }
 
     stopTimer();
@@ -55,9 +55,9 @@ void PluginEditor::paint(juce::Graphics &g) {
 }
 
 void PluginEditor::resized() {
-    mainPanel.setBounds(getLocalBounds());
-    lastUIWidth = getWidth();
-    lastUIHeight = getHeight();
+    main_panel_.setBounds(getLocalBounds());
+    last_ui_width_ = getWidth();
+    last_ui_height_ = getHeight();
 }
 
 void PluginEditor::visibilityChanged() {
@@ -74,13 +74,13 @@ void PluginEditor::minimisationStateChanged(bool) {
 
 void PluginEditor::parameterChanged(const juce::String &parameter_id, float new_value) {
     juce::ignoreUnused(parameter_id, new_value);
-    isSizeChanged.store(parameter_id == zlstate::windowH::ID || parameter_id == zlstate::windowW::ID);
+    is_size_changed_.store(parameter_id == zlstate::windowH::ID || parameter_id == zlstate::windowW::ID);
     triggerAsyncUpdate();
 }
 
 void PluginEditor::handleAsyncUpdate() {
-    property.saveAPVTS(processor_ref_.state);
-    if (!isSizeChanged.exchange(false)) {
+    property_.saveAPVTS(processor_ref_.state_);
+    if (!is_size_changed_.exchange(false)) {
         sendLookAndFeelChange();
     }
 }
@@ -93,10 +93,10 @@ void PluginEditor::updateIsShowing() {
     if (isShowing() != ui_base_.getIsEditorShowing()) {
         ui_base_.setIsEditorShowing(isShowing());
         if (ui_base_.getIsEditorShowing()) {
-            vblank = std::make_unique<juce::VBlankAttachment>(
-                &mainPanel, [this](const double x) { mainPanel.repaintCallBack(x); });
+            vblank_ = std::make_unique<juce::VBlankAttachment>(
+                &main_panel_, [this](const double x) { main_panel_.repaintCallBack(x); });
         } else {
-            vblank.reset();
+            vblank_.reset();
         }
     }
 }

@@ -13,7 +13,7 @@ namespace zlpanel {
     StatePanel::StatePanel(PluginProcessor &p,
                            zlgui::UIBase &base,
                            UISettingPanel &uiSettingPanel)
-        : ui_base_(base), parameters_NA_ref_(p.parameters_NA),
+        : ui_base_(base), parameters_NA_ref_(p.parameters_NA_),
           output_value_panel_(p, base),
           output_setting_panel_(p, base, "", zlgui::BoxIdx::kOutputBox),
           analyzer_setting_panel_(p, base, "Analyzer", zlgui::BoxIdx::kAnalyzerBox),
@@ -61,7 +61,7 @@ namespace zlpanel {
                    &sgc_c_.getButton(),
                },
                {zlp::effectON::ID, zlp::sideChain::ID, zlp::staticAutoGain::ID},
-               p.parameters, button_attachments_);
+               p.parameters_, button_attachments_);
 
         side_c_.getButton().onClick = [this]() {
             const auto isSideOn = static_cast<int>(side_c_.getButton().getToggleState());

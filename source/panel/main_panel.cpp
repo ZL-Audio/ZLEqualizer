@@ -11,17 +11,17 @@
 
 namespace zlpanel {
     MainPanel::MainPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : processor_ref_(p), state(p.state), ui_base_(base),
+        : processor_ref_(p), state(p.state_), ui_base_(base),
           controlPanel(p, ui_base_),
           curvePanel(p, ui_base_),
           scalePanel(p, ui_base_),
           statePanel(p, ui_base_, uiSettingPanel),
           uiSettingPanel(p, ui_base_),
           outputBox(p, ui_base_),
-          analyzerBox(p.parameters_NA, ui_base_),
-          dynamicBox(p.parameters, ui_base_),
-          collisionBox(p.parameters_NA, ui_base_),
-          generalBox(p.parameters, ui_base_),
+          analyzerBox(p.parameters_NA_, ui_base_),
+          dynamicBox(p.parameters_, ui_base_),
+          collisionBox(p.parameters_NA_, ui_base_),
+          generalBox(p.parameters_, ui_base_),
           tooltipLAF(ui_base_), tooltipWindow(&curvePanel) {
         processor_ref_.getController().setEditorOn(true);
         addAndMakeVisible(curvePanel);

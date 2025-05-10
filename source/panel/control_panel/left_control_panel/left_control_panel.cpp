@@ -13,8 +13,8 @@ namespace zlpanel {
     LeftControlPanel::LeftControlPanel(PluginProcessor &p,
                                        zlgui::UIBase &base)
         : processor_ref_(p), ui_base_(base),
-          parameters_ref_(p.parameters),
-          parameters_NA_ref_(p.parameters_NA),
+          parameters_ref_(p.parameters_),
+          parameters_NA_ref_(p.parameters_NA_),
           background_(ui_base_),
           bypass_c_("B", base, zlgui::multilingual::Labels::kBandBypass),
           solo_c_("S", base, zlgui::multilingual::Labels::kBandSolo),
@@ -27,7 +27,7 @@ namespace zlpanel {
           freq_c_("FREQ", base, zlgui::multilingual::Labels::kBandFreq),
           gain_c_("GAIN", base, zlgui::multilingual::Labels::kBandGain),
           q_c_("Q", base, zlgui::multilingual::Labels::kBandQ),
-          reset_component_(p.parameters, p.parameters_NA, base),
+          reset_component_(p.parameters_, p.parameters_NA_, base),
           bypass_drawable_(
               juce::Drawable::createFromImageData(BinaryData::fadpowerswitch_svg, BinaryData::fadpowerswitch_svgSize)),
           solo_drawable_(juce::Drawable::createFromImageData(BinaryData::fadsolo_svg, BinaryData::fadsolo_svgSize)),

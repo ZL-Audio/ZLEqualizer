@@ -14,7 +14,7 @@ namespace zlpanel {
                            zlgui::UIBase &base)
         : Thread("curve panel"),
           processor_ref_(processor),
-          parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA), ui_base_(base),
+          parameters_ref_(processor.parameters_), parameters_NA_ref_(processor.parameters_NA_), ui_base_(base),
           controller_ref_(processor.getController()),
           background_panel_(parameters_ref_, parameters_NA_ref_, base),
           fft_panel_(controller_ref_.getAnalyzer(), base),

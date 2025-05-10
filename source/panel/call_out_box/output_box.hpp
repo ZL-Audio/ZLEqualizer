@@ -17,7 +17,7 @@ namespace zlpanel {
     public:
         explicit OutputBox(PluginProcessor &p,
                                   zlgui::UIBase &base)
-            : processor_ref_(p), parameters_ref_(p.parameters),
+            : processor_ref_(p), parameters_ref_(p.parameters_),
               ui_base_(base),
               phase_c_("phase", ui_base_, zlgui::multilingual::Labels::kPhaseFlip),
               agc_c_("A", ui_base_, zlgui::multilingual::Labels::kAutoGC),
@@ -31,8 +31,8 @@ namespace zlpanel {
                                                               BinaryData::autogaincompensation_svgSize)),
               lm_drawable_(juce::Drawable::createFromImageData(BinaryData::loudnessmatch_svg,
                                                              BinaryData::loudnessmatch_svgSize)),
-              agc_updater_(p.parameters, zlp::autoGain::ID),
-              gain_updater_(p.parameters, zlp::outputGain::ID) {
+              agc_updater_(p.parameters_, zlp::autoGain::ID),
+              gain_updater_(p.parameters_, zlp::outputGain::ID) {
             setBufferedToImage(true);
             phase_c_.setDrawable(phase_drawable_.get());
             agc_c_.setDrawable(agc_drawable_.get());

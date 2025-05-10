@@ -14,8 +14,8 @@ namespace zlpanel {
     RightControlPanel::RightControlPanel(PluginProcessor &p,
                                          zlgui::UIBase &base)
         : ui_base_(base),
-          parameters_ref_(p.parameters),
-          parameters_NA_ref_(p.parameters_NA),
+          parameters_ref_(p.parameters_),
+          parameters_NA_ref_(p.parameters_NA_),
           background_(ui_base_),
           dyn_bypass_c_("B", base, zlgui::multilingual::Labels::kBandDynamicBypass),
           dyn_solo_c_("S", base, zlgui::multilingual::Labels::kBandDynamicSolo),

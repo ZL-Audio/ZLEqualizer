@@ -14,8 +14,8 @@
 namespace zlpanel {
     SettingPanel::SettingPanel(PluginProcessor &p, zlgui::UIBase &base,
                                const juce::String &label, zlgui::BoxIdx idx)
-        : parameters_ref_(p.parameters),
-          parameters_NA_ref_(p.parameters_NA),
+        : parameters_ref_(p.parameters_),
+          parameters_NA_ref_(p.parameters_NA_),
           ui_base_(base), setting_name_(label), box_idx_(idx) {
         juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
         setBufferedToImage(true);

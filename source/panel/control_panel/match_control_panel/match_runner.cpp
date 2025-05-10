@@ -14,7 +14,7 @@ namespace zlpanel {
                              std::array<std::atomic<float>, 251> &atomic_diffs,
                              zlgui::CompactLinearSlider &num_band_slider)
         : Thread("match_runner"), ui_base_(base),
-          parameters_ref_(p.parameters), parameters_NA_ref_(p.parameters_NA),
+          parameters_ref_(p.parameters_), parameters_NA_ref_(p.parameters_NA_),
           atomic_diffs_ref_(atomic_diffs),
           num_band_slider_ref_(num_band_slider) {
         parameters_NA_ref_.addParameterListener(zlstate::maximumDB::ID, this);

@@ -14,10 +14,10 @@ namespace zlpanel {
         : processor_ref_(p), ui_base_(base) {
         for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
             const auto suffix = zlp::appendSuffix("", i);
-            is_threshold_auto_paras_[i] = processor_ref_.parameters.getParameter(zlp::dynamicLearn::ID + suffix);
-            is_dynamic_on_paras_[i] = processor_ref_.parameters.getParameter(zlp::dynamicON::ID + suffix);
+            is_threshold_auto_paras_[i] = processor_ref_.parameters_.getParameter(zlp::dynamicLearn::ID + suffix);
+            is_dynamic_on_paras_[i] = processor_ref_.parameters_.getParameter(zlp::dynamicON::ID + suffix);
         }
-        band_idx_para_ = processor_ref_.parameters_NA.getParameter(zlstate::selectedBandIdx::ID);
+        band_idx_para_ = processor_ref_.parameters_NA_.getParameter(zlstate::selectedBandIdx::ID);
         lookAndFeelChanged();
     }
 

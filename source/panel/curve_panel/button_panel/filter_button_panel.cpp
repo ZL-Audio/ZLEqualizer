@@ -12,7 +12,7 @@
 namespace zlpanel {
     FilterButtonPanel::FilterButtonPanel(const size_t bandIdx, PluginProcessor &processor, zlgui::UIBase &base)
         : processor_ref_(processor),
-          parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA),
+          parameters_ref_(processor.parameters_), parameters_NA_ref_(processor.parameters_NA_),
           ui_base_(base),
           dragger_(base), target_dragger_(base), side_dragger_(base),
           button_pop_up_(bandIdx, parameters_ref_, parameters_NA_ref_, base),

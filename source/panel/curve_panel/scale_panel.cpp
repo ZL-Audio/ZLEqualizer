@@ -12,7 +12,7 @@
 
 namespace zlpanel {
     ScalePanel::ScalePanel(PluginProcessor &processor, zlgui::UIBase &base)
-        : parameters_NA_ref_(processor.parameters_NA), ui_base_(base),
+        : parameters_NA_ref_(processor.parameters_NA_), ui_base_(base),
           scale_box_("", zlstate::maximumDB::choices, base),
           min_fft_box_("", zlstate::minimumFFTDB::choices, base) {
         juce::ignoreUnused(ui_base_);

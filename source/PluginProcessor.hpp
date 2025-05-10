@@ -20,17 +20,17 @@
 
 class PluginProcessor : public juce::AudioProcessor {
 public:
-    zlstate::DummyProcessor dummy_processor;
-    juce::AudioProcessorValueTreeState parameters;
-    juce::AudioProcessorValueTreeState parameters_NA;
-    juce::AudioProcessorValueTreeState state;
-    zlstate::Property property;
+    zlstate::DummyProcessor dummy_processor_;
+    juce::AudioProcessorValueTreeState parameters_;
+    juce::AudioProcessorValueTreeState parameters_NA_;
+    juce::AudioProcessorValueTreeState state_;
+    zlstate::Property property_;
 
     PluginProcessor();
 
     ~PluginProcessor() override;
 
-    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
+    void prepareToPlay(double sample_rate, int samples_per_block) override;
 
     void releaseResources() override;
 
@@ -40,9 +40,9 @@ public:
 
     void processBlock(juce::AudioBuffer<double> &, juce::MidiBuffer &) override;
 
-    void processBlockBypassed(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override;
+    void processBlockBypassed(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &) override;
 
-    void processBlockBypassed(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &midiMessages) override;
+    void processBlockBypassed(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &) override;
 
     juce::AudioProcessorEditor *createEditor() override;
 
@@ -66,39 +66,39 @@ public:
 
     const juce::String getProgramName(int index) override;
 
-    void changeProgramName(int index, const juce::String &newName) override;
+    void changeProgramName(int, const juce::String &) override;
 
-    void getStateInformation(juce::MemoryBlock &destData) override;
+    void getStateInformation(juce::MemoryBlock &dest_data) override;
 
-    void setStateInformation(const void *data, int sizeInBytes) override;
+    void setStateInformation(const void *data, int size_in_bytes) override;
 
     bool supportsDoublePrecisionProcessing() const override { return true; }
 
-    inline zlp::Controller<double> &getController() { return controller; }
+    inline zlp::Controller<double> &getController() { return controller_; }
 
-    inline zlp::FiltersAttach<double> &getFiltersAttach() { return filtersAttach; }
+    inline zlp::FiltersAttach<double> &getFiltersAttach() { return filters_attach_; }
 
 private:
-    zlp::Controller<double> controller;
-    zlp::FiltersAttach<double> filtersAttach;
-    zlp::SoloAttach<double> soloAttach;
-    zlp::ChoreAttach<double> choreAttach;
-    juce::AudioBuffer<double> doubleBuffer;
+    zlp::Controller<double> controller_;
+    zlp::FiltersAttach<double> filters_attach_;
+    zlp::SoloAttach<double> solo_attach_;
+    zlp::ChoreAttach<double> chore_attach_;
+    juce::AudioBuffer<double> double_buffer_;
 
     enum ChannelLayout {
-        main1aux0, main1aux1, main1aux2,
-        main2aux0, main2aux1, main2aux2,
-        invalid
+        kMain1Aux0, kMain1Aux1, kMain1Aux2,
+        kMain2Aux0, kMain2Aux1, kMain2Aux2,
+        kInvalid
     };
-    ChannelLayout channelLayout{invalid};
+    ChannelLayout channel_layout_{kInvalid};
 
-    void doubleBufferCopyFrom(int destChan, const juce::AudioBuffer<float> &buffer, int srcChan);
+    void doubleBufferCopyFrom(int dest_chan, const juce::AudioBuffer<float> &buffer, int src_chan);
 
-    void doubleBufferCopyTo(int srcChan, juce::AudioBuffer<float> &buffer, int destChan) const;
+    void doubleBufferCopyTo(int src_chan, juce::AudioBuffer<float> &buffer, int dest_chan) const;
 
-    void doubleBufferCopyFrom(int destChan, const juce::AudioBuffer<double> &buffer, int srcChan);
+    void doubleBufferCopyFrom(int dest_chan, const juce::AudioBuffer<double> &buffer, int src_chan);
 
-    void doubleBufferCopyTo(int srcChan, juce::AudioBuffer<double> &buffer, int destChan) const;
+    void doubleBufferCopyTo(int src_chan, juce::AudioBuffer<double> &buffer, int dest_chan) const;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };

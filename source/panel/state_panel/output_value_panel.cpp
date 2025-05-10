@@ -14,8 +14,8 @@ namespace zlpanel {
     OutputValuePanel::OutputValuePanel(PluginProcessor &p,
                                        zlgui::UIBase &base)
         : processor_ref_(p),
-          parameters_ref_(p.parameters),
-          parameters_NA_ref_(p.parameters_NA),
+          parameters_ref_(p.parameters_),
+          parameters_NA_ref_(p.parameters_NA_),
           ui_base_(base),
           scale_(*parameters_ref_.getRawParameterValue(zlp::scale::ID)) {
         juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
