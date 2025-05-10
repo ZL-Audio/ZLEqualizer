@@ -19,26 +19,26 @@ namespace zlpanel {
                               zlgui::UIBase &base)
             : parameters_NA_ref_(parameters_NA),
               ui_base_(base),
-              collisionC("DET:", zlstate::conflictON::choices, ui_base_, zlgui::multilingual::Labels::kCollisionDET),
-              strengthS("Strength", ui_base_, zlgui::multilingual::Labels::kCollisionStrength),
-              scaleS("Scale", ui_base_, zlgui::multilingual::Labels::kCollisionScale) {
-            collisionC.getLabelLAF().setFontScale(1.5f);
-            collisionC.setLabelScale(.5f);
-            collisionC.setLabelPos(zlgui::ClickCombobox::kLeft);
-            addAndMakeVisible(collisionC);
-            for (auto &c: {&strengthS, &scaleS}) {
+              collision_c_("DET:", zlstate::conflictON::choices, ui_base_, zlgui::multilingual::Labels::kCollisionDET),
+              strength_s_("Strength", ui_base_, zlgui::multilingual::Labels::kCollisionStrength),
+              scale_s_("Scale", ui_base_, zlgui::multilingual::Labels::kCollisionScale) {
+            collision_c_.getLabelLAF().setFontScale(1.5f);
+            collision_c_.setLabelScale(.5f);
+            collision_c_.setLabelPos(zlgui::ClickCombobox::kLeft);
+            addAndMakeVisible(collision_c_);
+            for (auto &c: {&strength_s_, &scale_s_}) {
                 c->setPadding(ui_base_.getFontSize() * .5f, 0.f);
                 addAndMakeVisible(c);
             }
-            attach({&collisionC.getCompactBox().getBox()},
+            attach({&collision_c_.getCompactBox().getBox()},
                    {zlstate::conflictON::ID},
-                   parameters_NA_ref_, boxAttachments);
-            attach({&strengthS.getSlider(), &scaleS.getSlider()},
+                   parameters_NA_ref_, box_attachments_);
+            attach({&strength_s_.getSlider(), &scale_s_.getSlider()},
                    {
                        zlstate::conflictStrength::ID,
                        zlstate::conflictScale::ID
                    },
-                   parameters_NA_ref_, sliderAttachments);
+                   parameters_NA_ref_, slider_attachments_);
             setBufferedToImage(true);
 
             ui_base_.getBoxTree().addListener(this);
@@ -60,44 +60,44 @@ namespace zlpanel {
         }
 
         juce::Rectangle<int> getIdealBound() const {
-            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
-            const auto buttonHeight = static_cast<int>(buttonHeightP * ui_base_.getFontSize());
-            const auto buttonWidth = static_cast<int>(ui_base_.getFontSize() * 2.5);
-            const auto boxHeight = juce::roundToInt(boxHeightP * ui_base_.getFontSize());
-            return {buttonWidth * 3 + padSize * 2, buttonHeight * 2 + boxHeight + padSize};
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto button_height = static_cast<int>(kButtonHeightP * ui_base_.getFontSize());
+            const auto button_width = static_cast<int>(ui_base_.getFontSize() * 2.5);
+            const auto box_height = juce::roundToInt(kBoxHeightP * ui_base_.getFontSize());
+            return {button_width * 3 + pad_size * 2, button_height * 2 + box_height + pad_size};
         }
 
         void resized() override {
-            for (auto &c: {&strengthS, &scaleS}) {
+            for (auto &c: {&strength_s_, &scale_s_}) {
                 c->setPadding(std::round(ui_base_.getFontSize() * 0.5f),
                               std::round(ui_base_.getFontSize() * 0.6f));
             }
 
-            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
-            const auto buttonHeight = static_cast<int>(buttonHeightP * ui_base_.getFontSize());
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto button_height = static_cast<int>(kButtonHeightP * ui_base_.getFontSize());
 
             auto bound = getLocalBounds();
-            bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
-                                         bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
+            bound = juce::Rectangle<int>(bound.getX() + pad_size, bound.getY(),
+                                         bound.getWidth() - pad_size * 2, bound.getHeight() - pad_size);
 
-            scaleS.setBounds(bound.removeFromBottom(buttonHeight));
-            strengthS.setBounds(bound.removeFromBottom(buttonHeight));
-            collisionC.setBounds(bound);
+            scale_s_.setBounds(bound.removeFromBottom(button_height));
+            strength_s_.setBounds(bound.removeFromBottom(button_height));
+            collision_c_.setBounds(bound);
         }
 
     private:
         juce::AudioProcessorValueTreeState &parameters_NA_ref_;
         zlgui::UIBase &ui_base_;
 
-        zlgui::ClickCombobox collisionC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
+        zlgui::ClickCombobox collision_c_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> box_attachments_{};
 
-        zlgui::CompactLinearSlider strengthS, scaleS;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
+        zlgui::CompactLinearSlider strength_s_, scale_s_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> slider_attachments_{};
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override {
-            juce::ignoreUnused(treeWhosePropertyHasChanged);
+            juce::ignoreUnused(tree_whose_property_has_changed);
             if (ui_base_.isBoxProperty(zlgui::BoxIdx::kCollisionBox, property)) {
                 const auto f = static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kCollisionBox));
                 setVisible(f);

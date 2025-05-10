@@ -29,17 +29,17 @@ namespace zlpanel {
             void setFreq(double freq);
 
             void resized() override {
-                label.setBounds(getLocalBounds());
+                label_.setBounds(getLocalBounds());
             }
 
         private:
             zlgui::UIBase &ui_base_;
-            juce::RangedAudioParameter *freqPara;
-            zlgui::NameLookAndFeel laf;
-            juce::Label label;
-            bool hasEditorChanged{false};
+            juce::RangedAudioParameter *freq_para_;
+            zlgui::NameLookAndFeel laf_;
+            juce::Label label_;
+            bool has_editor_changed_{false};
 
-            static constexpr std::array pitchLookUp{
+            static constexpr std::array kPitchLookUp{
                 "A", "A#", "B", "C",
                 "C#", "D", "D#", "E",
                 "F", "F#", "G", "G#"
@@ -68,23 +68,23 @@ namespace zlpanel {
 
         void visibilityChanged() override {
             if (isVisible()) {
-                setBounds(previousBound);
+                setBounds(previous_bound_);
             }
         }
 
     private:
-        static constexpr float widthP{7.7916666f}, heightP{4.16667f};
+        static constexpr float kWidthP{7.7916666f}, kHeightP{4.16667f};
 
-        size_t band;
+        size_t band_idx_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &ui_base_;
-        std::atomic<float> &fType, &freqPara;
-        float direction = -1.f;
-        juce::Rectangle<int> previousBound{};
+        std::atomic<float> &ftype_, &freq_para_;
+        float direction_ = -1.f;
+        juce::Rectangle<int> previous_bound_{};
 
-        ButtonPopUpBackground background;
+        ButtonPopUpBackground background_;
 
-        PitchLabel pitchLabel;
+        PitchLabel pitch_label_;
 
         void updateLabel();
     };

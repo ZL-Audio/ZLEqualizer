@@ -29,6 +29,6 @@ namespace zlpanel {
 
     private:
         zlgui::UIBase &ui_base_;
-        GridPanel gridPanel;
+        GridPanel grid_panel_;
     };
 }

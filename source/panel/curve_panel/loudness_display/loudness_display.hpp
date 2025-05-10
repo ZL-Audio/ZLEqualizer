@@ -29,13 +29,13 @@ namespace zlpanel {
     private:
         PluginProcessor &processor_ref_;
         zlgui::UIBase &ui_base_;
-        juce::Time previousTime{};
+        juce::Time previous_time_{};
 
-        size_t bandIdx{0};
-        std::array<juce::RangedAudioParameter *, zlstate::kBandNUM> isDynamicOnParas{};
-        std::array<juce::RangedAudioParameter *, zlstate::kBandNUM> isThresholdAutoParas{};
-        juce::RangedAudioParameter *bandIdxPara;
-        juce::Colour colour;
-        bool shouldVisible{false};
+        size_t band_idx_{0};
+        std::array<juce::RangedAudioParameter *, zlstate::kBandNUM> is_dynamic_on_paras_{};
+        std::array<juce::RangedAudioParameter *, zlstate::kBandNUM> is_threshold_auto_paras_{};
+        juce::RangedAudioParameter *band_idx_para_;
+        juce::Colour colour_;
+        bool should_visible_{false};
     };
 } // zlpanel

@@ -27,8 +27,8 @@ namespace zlpanel {
     }
 
     void MatchSettingPanel::paint(juce::Graphics &g) {
-        const auto isMatchShow = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
-        if (isMatchShow) {
+        const auto is_match_show = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
+        if (is_match_show) {
             g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.25f));
         } else {
             g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.125f));
@@ -41,7 +41,7 @@ namespace zlpanel {
                                  false, false, true, true);
         g.fillPath(path);
         g.setFont(ui_base_.getFontSize() * 1.375f);
-        if (isMatchShow) {
+        if (is_match_show) {
             g.setColour(ui_base_.getTextColor());
         } else {
             g.setColour(ui_base_.getTextColor().withAlpha(.75f));
@@ -63,9 +63,9 @@ namespace zlpanel {
         ui_base_.closeAllBox();
     }
 
-    void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+    void MatchSettingPanel::valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                                      const juce::Identifier &property) {
-        juce::ignoreUnused(treeWhosePropertyHasChanged);
+        juce::ignoreUnused(tree_whose_property_has_changed);
         if (zlgui::UIBase::isProperty(zlgui::SettingIdx::kMatchPanelShow, property)) {
             repaint();
         }

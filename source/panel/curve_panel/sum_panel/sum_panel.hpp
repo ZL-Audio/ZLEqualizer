@@ -22,16 +22,16 @@ namespace zlpanel {
         explicit SumPanel(juce::AudioProcessorValueTreeState &parameters,
                           zlgui::UIBase &base,
                           zlp::Controller<double> &controller,
-                          std::array<zldsp::filter::Ideal<double, 16>, 16> &baseFilters,
-                          std::array<zldsp::filter::Ideal<double, 16>, 16> &mainFilters);
+                          std::array<zldsp::filter::Ideal<double, 16>, 16> &base_filters,
+                          std::array<zldsp::filter::Ideal<double, 16>, 16> &main_filters);
 
         ~SumPanel() override;
 
         void paint(juce::Graphics &g) override;
 
         void setMaximumDB(const float x) {
-            maximumDB.store(x);
-            toRepaint.store(true);
+            maximum_db_.store(x);
+            to_repaint_.store(true);
         }
 
         bool checkRepaint();
@@ -43,28 +43,28 @@ namespace zlpanel {
         void lookAndFeelChanged() override;
 
     private:
-        std::array<juce::Path, 5> paths, recentPaths, strokePaths;
-        std::array<juce::SpinLock, 5> pathLocks;
-        std::array<juce::Colour, 5> colours;
+        std::array<juce::Path, 5> paths_, recent_paths_, stroke_paths_;
+        std::array<juce::SpinLock, 5> path_locks_;
+        std::array<juce::Colour, 5> colours_;
         juce::AudioProcessorValueTreeState &parameters_ref_;
         zlgui::UIBase &ui_base_;
-        zlp::Controller<double> &c;
-        std::array<zldsp::filter::Ideal<double, 16>, zlstate::kBandNUM> &mMainFilters;
-        std::atomic<float> maximumDB;
-        std::vector<double> dBs{};
-        AtomicBound<float> atomicBound;
-        std::atomic<float> curveThickness{0.f};
+        zlp::Controller<double> &controller_ref_;
+        std::array<zldsp::filter::Ideal<double, 16>, zlstate::kBandNUM> &main_filters_;
+        std::atomic<float> maximum_db_;
+        std::vector<double> dbs_{};
+        AtomicBound<float> atomic_bound_;
+        std::atomic<float> curve_thickness_{0.f};
 
-        static constexpr std::array changeIDs{
+        static constexpr std::array kChangeIDs{
             zlp::bypass::ID, zlp::lrType::ID
         };
 
-        std::array<std::atomic<bool>, zlstate::kBandNUM> isBypassed{};
-        std::array<std::atomic<zlp::lrType::lrTypes>, zlstate::kBandNUM> lrTypes;
+        std::array<std::atomic<bool>, zlstate::kBandNUM> is_bypassed_{};
+        std::array<std::atomic<zlp::lrType::lrTypes>, zlstate::kBandNUM> lr_types_;
 
-        std::atomic<bool> toRepaint{false};
+        std::atomic<bool> to_repaint_{false};
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void updateCurveThickness();
     };

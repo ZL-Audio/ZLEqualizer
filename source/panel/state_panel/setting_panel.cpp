@@ -16,7 +16,7 @@ namespace zlpanel {
                                const juce::String &label, zlgui::BoxIdx idx)
         : parameters_ref_(p.parameters),
           parameters_NA_ref_(p.parameters_NA),
-          ui_base_(base), name(label), mIdx(idx) {
+          ui_base_(base), setting_name_(label), box_idx_(idx) {
         juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
         setBufferedToImage(true);
 
@@ -30,8 +30,8 @@ namespace zlpanel {
     }
 
     void SettingPanel::paint(juce::Graphics &g) {
-        const bool isBoxOpen = static_cast<bool>(ui_base_.getBoxProperty(mIdx));
-        if (isBoxOpen) {
+        const auto is_box_open = static_cast<bool>(ui_base_.getBoxProperty(box_idx_));
+        if (is_box_open) {
             g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.25f));
         } else {
             g.setColour(ui_base_.getTextColor().withMultipliedAlpha(.125f));
@@ -43,28 +43,28 @@ namespace zlpanel {
                                  false, false, true, true);
         g.fillPath(path);
         g.setFont(ui_base_.getFontSize() * 1.375f);
-        if (isBoxOpen) {
+        if (is_box_open) {
             g.setColour(ui_base_.getTextColor());
         } else {
             g.setColour(ui_base_.getTextColor().withAlpha(.75f));
         }
-        g.drawText(name, bound, juce::Justification::centred);
+        g.drawText(setting_name_, bound, juce::Justification::centred);
     }
 
     void SettingPanel::mouseDown(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
         stopTimer(0);
         if (isTimerRunning(1)) return;
-        if (ui_base_.getBoxProperty(mIdx)) {
-            ui_base_.setBoxProperty(mIdx, false);
+        if (ui_base_.getBoxProperty(box_idx_)) {
+            ui_base_.setBoxProperty(box_idx_, false);
         } else {
-            ui_base_.openOneBox(mIdx);
+            ui_base_.openOneBox(box_idx_);
         }
     }
 
     void SettingPanel::mouseEnter(const juce::MouseEvent &event) {
         juce::ignoreUnused(event);
-        if (!ui_base_.getBoxProperty(mIdx)) {
+        if (!ui_base_.getBoxProperty(box_idx_)) {
             startTimer(0, 100);
             startTimer(1, 500);
         }
@@ -78,16 +78,16 @@ namespace zlpanel {
 
     void SettingPanel::timerCallback(const int timerID) {
         if (timerID == 0) {
-            ui_base_.openOneBox(mIdx);
+            ui_base_.openOneBox(box_idx_);
             stopTimer(0);
         } else if (timerID == 1) {
             stopTimer(1);
         }
     }
 
-    void SettingPanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+    void SettingPanel::valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                                 const juce::Identifier &property) {
-        juce::ignoreUnused(treeWhosePropertyHasChanged);
-        if (zlgui::UIBase::isBoxProperty(mIdx, property)) repaint();
+        juce::ignoreUnused(tree_whose_property_has_changed);
+        if (zlgui::UIBase::isBoxProperty(box_idx_, property)) repaint();
     }
 } // zlpanel

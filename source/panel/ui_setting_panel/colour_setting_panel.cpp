@@ -20,165 +20,165 @@ namespace zlpanel {
     }
 
     ColourSettingPanel::ColourSettingPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : pRef(p), ui_base_(base), nameLAF(base),
-          textSelector(base, *this, false),
-          backgroundSelector(base, *this, false),
-          shadowSelector(base, *this, false),
-          glowSelector(base, *this, false),
-          preSelector(base, *this),
-          postSelector(base, *this),
-          sideSelector(base, *this),
-          gridSelector(base, *this),
-          tagSelector(base, *this),
-          gainSelector(base, *this),
-          sideLoudnessSelector(base, *this),
-          cMap1Selector(base), cMap2Selector(base) {
+        : pRef(p), ui_base_(base), name_laf_(base),
+          text_selector_(base, *this, false),
+          background_selector_(base, *this, false),
+          shadow_selector_(base, *this, false),
+          glow_selector_(base, *this, false),
+          pre_selector_(base, *this),
+          post_selector_(base, *this),
+          side_selector_(base, *this),
+          grid_selector_(base, *this),
+          tag_selector_(base, *this),
+          gain_selector_(base, *this),
+          side_loudness_selector_(base, *this),
+          c_map1_selector_(base), c_map2_selector_(base) {
         juce::ignoreUnused(pRef);
-        if (!settingDirectory.isDirectory()) {
-            settingDirectory.createDirectory();
+        if (!kSettingDirectory.isDirectory()) {
+            kSettingDirectory.createDirectory();
         }
-        nameLAF.setFontScale(zlgui::kFontHuge);
-        for (size_t i = 0; i < numSelectors; ++i) {
-            selectorLabels[i].setText(selectorNames[i], juce::dontSendNotification);
-            selectorLabels[i].setJustificationType(juce::Justification::centredRight);
-            selectorLabels[i].setLookAndFeel(&nameLAF);
-            addAndMakeVisible(selectorLabels[i]);
-            addAndMakeVisible(selectors[i]);
+        name_laf_.setFontScale(zlgui::kFontHuge);
+        for (size_t i = 0; i < kNumSelectors; ++i) {
+            selector_labels_[i].setText(kSelectorNames[i], juce::dontSendNotification);
+            selector_labels_[i].setJustificationType(juce::Justification::centredRight);
+            selector_labels_[i].setLookAndFeel(&name_laf_);
+            addAndMakeVisible(selector_labels_[i]);
+            addAndMakeVisible(selectors_[i]);
         }
-        cMap1Label.setText("Colour Map 1", juce::dontSendNotification);
-        cMap1Label.setJustificationType(juce::Justification::centredRight);
-        cMap1Label.setLookAndFeel(&nameLAF);
-        addAndMakeVisible(cMap1Label);
-        addAndMakeVisible(cMap1Selector);
-        cMap2Label.setText("Colour Map 2", juce::dontSendNotification);
-        cMap2Label.setJustificationType(juce::Justification::centredRight);
-        cMap2Label.setLookAndFeel(&nameLAF);
-        addAndMakeVisible(cMap2Label);
-        addAndMakeVisible(cMap2Selector);
-        importLabel.setText("Import Colours", juce::dontSendNotification);
-        importLabel.setJustificationType(juce::Justification::centred);
-        importLabel.setLookAndFeel(&nameLAF);
-        importLabel.addMouseListener(this, false);
-        addAndMakeVisible(importLabel);
-        exportLabel.setText("Export Colours", juce::dontSendNotification);
-        exportLabel.setJustificationType(juce::Justification::centred);
-        exportLabel.setLookAndFeel(&nameLAF);
-        exportLabel.addMouseListener(this, false);
-        addAndMakeVisible(exportLabel);
+        c_map1_label_.setText("Colour Map 1", juce::dontSendNotification);
+        c_map1_label_.setJustificationType(juce::Justification::centredRight);
+        c_map1_label_.setLookAndFeel(&name_laf_);
+        addAndMakeVisible(c_map1_label_);
+        addAndMakeVisible(c_map1_selector_);
+        c_map2_label_.setText("Colour Map 2", juce::dontSendNotification);
+        c_map2_label_.setJustificationType(juce::Justification::centredRight);
+        c_map2_label_.setLookAndFeel(&name_laf_);
+        addAndMakeVisible(c_map2_label_);
+        addAndMakeVisible(c_map2_selector_);
+        import_label_.setText("Import Colours", juce::dontSendNotification);
+        import_label_.setJustificationType(juce::Justification::centred);
+        import_label_.setLookAndFeel(&name_laf_);
+        import_label_.addMouseListener(this, false);
+        addAndMakeVisible(import_label_);
+        export_label_.setText("Export Colours", juce::dontSendNotification);
+        export_label_.setJustificationType(juce::Justification::centred);
+        export_label_.setLookAndFeel(&name_laf_);
+        export_label_.addMouseListener(this, false);
+        addAndMakeVisible(export_label_);
     }
 
     ColourSettingPanel::~ColourSettingPanel() {
-        for (size_t i = 0; i < numSelectors; ++i) {
-            selectorLabels[i].setLookAndFeel(nullptr);
+        for (size_t i = 0; i < kNumSelectors; ++i) {
+            selector_labels_[i].setLookAndFeel(nullptr);
         }
     }
 
     void ColourSettingPanel::loadSetting() {
-        for (size_t i = 0; i < numSelectors; ++i) {
-            selectors[i]->setColour(ui_base_.getColourByIdx(colourIdx[i]));
+        for (size_t i = 0; i < kNumSelectors; ++i) {
+            selectors_[i]->setColour(ui_base_.getColourByIdx(kColourIdx[i]));
         }
-        cMap1Selector.getBox().setSelectedId(static_cast<int>(ui_base_.getCMap1Idx()) + 1);
-        cMap2Selector.getBox().setSelectedId(static_cast<int>(ui_base_.getCMap2Idx()) + 1);
+        c_map1_selector_.getBox().setSelectedId(static_cast<int>(ui_base_.getCMap1Idx()) + 1);
+        c_map2_selector_.getBox().setSelectedId(static_cast<int>(ui_base_.getCMap2Idx()) + 1);
     }
 
     void ColourSettingPanel::saveSetting() {
-        for (size_t i = 0; i < numSelectors; ++i) {
-            ui_base_.setColourByIdx(colourIdx[i], selectors[i]->getColour());
+        for (size_t i = 0; i < kNumSelectors; ++i) {
+            ui_base_.setColourByIdx(kColourIdx[i], selectors_[i]->getColour());
         }
-        ui_base_.setCMap1Idx(static_cast<size_t>(cMap1Selector.getBox().getSelectedId() - 1));
-        ui_base_.setCMap2Idx(static_cast<size_t>(cMap2Selector.getBox().getSelectedId() - 1));
+        ui_base_.setCMap1Idx(static_cast<size_t>(c_map1_selector_.getBox().getSelectedId() - 1));
+        ui_base_.setCMap2Idx(static_cast<size_t>(c_map2_selector_.getBox().getSelectedId() - 1));
         ui_base_.saveToAPVTS();
     }
 
     void ColourSettingPanel::resetSetting() {
-        textSelector.setColour(getIntColour(247, 246, 244, 1.f));
-        backgroundSelector.setColour(getIntColour((255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2, 1.f));
-        shadowSelector.setColour(getIntColour(0, 0, 0, 1.f));
-        glowSelector.setColour(getIntColour(70, 66, 62, 1.f));
-        preSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
-        postSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
-        sideSelector.setColour(getIntColour(252, 18, 197, .1f));
-        gridSelector.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .25f));
-        cMap1Selector.getBox().setSelectedId(zlstate::colourMap1Idx::defaultI + 1);
-        cMap2Selector.getBox().setSelectedId(zlstate::colourMap2Idx::defaultI + 1);
+        text_selector_.setColour(getIntColour(247, 246, 244, 1.f));
+        background_selector_.setColour(getIntColour((255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2, 1.f));
+        shadow_selector_.setColour(getIntColour(0, 0, 0, 1.f));
+        glow_selector_.setColour(getIntColour(70, 66, 62, 1.f));
+        pre_selector_.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
+        post_selector_.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .1f));
+        side_selector_.setColour(getIntColour(252, 18, 197, .1f));
+        grid_selector_.setColour(getIntColour(255 - 8, 255 - 9, 255 - 11, .25f));
+        c_map1_selector_.getBox().setSelectedId(zlstate::colourMap1Idx::defaultI + 1);
+        c_map2_selector_.getBox().setSelectedId(zlstate::colourMap2Idx::defaultI + 1);
         saveSetting();
     }
 
     void ColourSettingPanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        for (size_t i = 0; i < numSelectors; ++i) {
+        for (size_t i = 0; i < kNumSelectors; ++i) {
             bound.removeFromTop(ui_base_.getFontSize());
-            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
-            selectorLabels[i].setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
-            localBound.removeFromLeft(bound.getWidth() * .05f);
-            selectors[i]->setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
+            auto local_bound = bound.removeFromTop(ui_base_.getFontSize() * 3);
+            selector_labels_[i].setBounds(local_bound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            local_bound.removeFromLeft(bound.getWidth() * .05f);
+            selectors_[i]->setBounds(local_bound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
         } {
             bound.removeFromTop(ui_base_.getFontSize());
-            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
-            cMap1Label.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
-            localBound.removeFromLeft(bound.getWidth() * .05f);
-            cMap1Selector.setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
+            auto local_bound = bound.removeFromTop(ui_base_.getFontSize() * 3);
+            c_map1_label_.setBounds(local_bound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            local_bound.removeFromLeft(bound.getWidth() * .05f);
+            c_map1_selector_.setBounds(local_bound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
         } {
             bound.removeFromTop(ui_base_.getFontSize());
-            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
-            cMap2Label.setBounds(localBound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
-            localBound.removeFromLeft(bound.getWidth() * .05f);
-            cMap2Selector.setBounds(localBound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
+            auto local_bound = bound.removeFromTop(ui_base_.getFontSize() * 3);
+            c_map2_label_.setBounds(local_bound.removeFromLeft(bound.getWidth() * .3f).toNearestInt());
+            local_bound.removeFromLeft(bound.getWidth() * .05f);
+            c_map2_selector_.setBounds(local_bound.removeFromLeft(bound.getWidth() * .5f).toNearestInt());
         } {
             bound.removeFromTop(ui_base_.getFontSize());
-            auto localBound = bound.removeFromTop(ui_base_.getFontSize() * 3);
-            importLabel.setBounds(localBound.removeFromLeft(bound.getWidth() * .45f).toNearestInt());
-            localBound.removeFromLeft(bound.getWidth() * .10f);
-            exportLabel.setBounds(localBound.toNearestInt());
+            auto local_bound = bound.removeFromTop(ui_base_.getFontSize() * 3);
+            import_label_.setBounds(local_bound.removeFromLeft(bound.getWidth() * .45f).toNearestInt());
+            local_bound.removeFromLeft(bound.getWidth() * .10f);
+            export_label_.setBounds(local_bound.toNearestInt());
         }
     }
 
     void ColourSettingPanel::mouseDown(const juce::MouseEvent &event) {
-        if (event.originalComponent == &importLabel) {
-            myChooser = std::make_unique<juce::FileChooser>(
-                "Load the colour settings...", settingDirectory, "*.xml",
+        if (event.originalComponent == &import_label_) {
+            chooser_ = std::make_unique<juce::FileChooser>(
+                "Load the colour settings...", kSettingDirectory, "*.xml",
                 true, false, nullptr);
-            constexpr auto settingOpenFlags = juce::FileBrowserComponent::openMode |
+            constexpr auto setting_open_flags = juce::FileBrowserComponent::openMode |
                                               juce::FileBrowserComponent::canSelectFiles;
-            myChooser->launchAsync(settingOpenFlags, [this](const juce::FileChooser &chooser) {
+            chooser_->launchAsync(setting_open_flags, [this](const juce::FileChooser &chooser) {
                 if (chooser.getResults().size() <= 0) { return; }
                 const juce::File settingFile(chooser.getResult());
-                if (const auto xmlInput = juce::XmlDocument::parse(settingFile)) {
-                    for (size_t i = 0; i < tagNames.size(); ++i) {
-                        if (const auto *xmlColour = xmlInput->getChildByName(tagNames[i])) {
+                if (const auto xml_input = juce::XmlDocument::parse(settingFile)) {
+                    for (size_t i = 0; i < kTagNames.size(); ++i) {
+                        if (const auto *xml_colour = xml_input->getChildByName(kTagNames[i])) {
                             const juce::Colour colour = getIntColour(
-                                xmlColour->getIntAttribute("r"),
-                                xmlColour->getIntAttribute("g"),
-                                xmlColour->getIntAttribute("b"),
-                                static_cast<float>(xmlColour->getDoubleAttribute("o")));
-                            ui_base_.setColourByIdx(colourIdx[i], colour);
+                                xml_colour->getIntAttribute("r"),
+                                xml_colour->getIntAttribute("g"),
+                                xml_colour->getIntAttribute("b"),
+                                static_cast<float>(xml_colour->getDoubleAttribute("o")));
+                            ui_base_.setColourByIdx(kColourIdx[i], colour);
                         }
                     }
                     ui_base_.saveToAPVTS();
                     loadSetting();
                 }
             });
-        } else if (event.originalComponent == &exportLabel) {
-            myChooser = std::make_unique<juce::FileChooser>(
-                "Save the colour settings...", settingDirectory.getChildFile("colour.xml"), "*.xml",
+        } else if (event.originalComponent == &export_label_) {
+            chooser_ = std::make_unique<juce::FileChooser>(
+                "Save the colour settings...", kSettingDirectory.getChildFile("colour.xml"), "*.xml",
                 true, false, nullptr);
-            constexpr auto settingSaveFlags = juce::FileBrowserComponent::saveMode |
+            constexpr auto setting_save_flags = juce::FileBrowserComponent::saveMode |
                                               juce::FileBrowserComponent::warnAboutOverwriting;
-            myChooser->launchAsync(settingSaveFlags, [this](const juce::FileChooser &chooser) {
+            chooser_->launchAsync(setting_save_flags, [this](const juce::FileChooser &chooser) {
                 if (chooser.getResults().size() <= 0) { return; }
-                juce::File settingFile(chooser.getResult().withFileExtension("xml"));
-                if (settingFile.create()) {
-                    juce::XmlElement xmlOutput{"colour_setting"};
-                    for (size_t i = 0; i < tagNames.size(); ++i) {
-                        const auto tagName = selectorNames[i];
-                        auto *xmlColour = xmlOutput.createNewChildElement(tagNames[i]);
-                        juce::Colour colour = selectors[i]->getColour();
-                        xmlColour->setAttribute("r", colour.getRed());
-                        xmlColour->setAttribute("g", colour.getGreen());
-                        xmlColour->setAttribute("b", colour.getBlue());
-                        xmlColour->setAttribute("o", colour.getFloatAlpha());
+                juce::File setting_file(chooser.getResult().withFileExtension("xml"));
+                if (setting_file.create()) {
+                    juce::XmlElement xml_output{"colour_setting"};
+                    for (size_t i = 0; i < kTagNames.size(); ++i) {
+                        const auto tag_name = kSelectorNames[i];
+                        auto *xml_colour = xml_output.createNewChildElement(kTagNames[i]);
+                        juce::Colour colour = selectors_[i]->getColour();
+                        xml_colour->setAttribute("r", colour.getRed());
+                        xml_colour->setAttribute("g", colour.getGreen());
+                        xml_colour->setAttribute("b", colour.getBlue());
+                        xml_colour->setAttribute("o", colour.getFloatAlpha());
                     }
-                    const auto result = xmlOutput.writeTo(settingFile);
+                    const auto result = xml_output.writeTo(setting_file);
                     juce::ignoreUnused(result);
                 }
             });

@@ -12,9 +12,9 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace zlpanel {
-    static constexpr float buttonWidthP = 3.22f, buttonHeightP = 3.17f;
-    static constexpr float boxHeightP = 2.14f;
-    static constexpr float rSliderWidthP = 6.44f;
+    static constexpr float kButtonWidthP = 3.22f, kButtonHeightP = 3.17f;
+    static constexpr float kBoxHeightP = 2.14f;
+    static constexpr float kRotarySliderWidthP = 6.44f;
 
     inline void attach(const std::vector<juce::Button *> &buttons,
                        const std::vector<std::string> &ids,

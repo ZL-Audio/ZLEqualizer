@@ -27,8 +27,8 @@ namespace zlpanel {
         void resized() override;
 
         void updateGradient() {
-            if (analyzer.getON()) {
-                analyzer.updateGradient(gradient);
+            if (analyzer_ref_.getON()) {
+                analyzer_ref_.updateGradient(gradient_);
                 setVisible(true);
             } else {
                 setVisible(false);
@@ -36,9 +36,9 @@ namespace zlpanel {
         }
 
     private:
-        zldsp::analyzer::ConflictAnalyzer<double> &analyzer;
+        zldsp::analyzer::ConflictAnalyzer<double> &analyzer_ref_;
         zlgui::UIBase &ui_base_;
-        juce::Path path;
-        juce::ColourGradient gradient;
+        juce::Path path_;
+        juce::ColourGradient gradient_;
     };
 } // zlpanel

@@ -21,7 +21,7 @@ namespace zlpanel {
                   juce::AudioProcessorValueTreeState &parameters_NA,
                   zlgui::UIBase &base,
                   zlp::Controller<double> &controller,
-                  ButtonPanel &buttonPanel);
+                  ButtonPanel &button_panel);
 
         ~SoloPanel() override;
 
@@ -38,14 +38,14 @@ namespace zlpanel {
         zlgui::UIBase &ui_base_;
         zldsp::filter::IIR<double, zlp::Controller<double>::kFilterSize> &soloF;
         zlp::Controller<double> &controller_ref_;
-        ButtonPanel &buttonPanelRef;
-        float currentX{0.}, currentBW{0.};
-        double soloQ{0.};
-        std::atomic<size_t> selectBandIdx{0};
-        std::vector<std::unique_ptr<zldsp::chore::ParaUpdater> > soloUpdaters, sideSoloUpdaters;
+        ButtonPanel &button_panel_ref_;
+        float current_x_{0.}, current_bw_{0.};
+        double solo_q_{0.};
+        std::atomic<size_t> band_idx_{0};
+        std::vector<std::unique_ptr<zldsp::chore::ParaUpdater> > solo_updaters_, side_solo_updaters_;
 
         void handleAsyncUpdate();
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
     };
 } // zlpanel

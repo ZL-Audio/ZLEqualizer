@@ -30,19 +30,19 @@ namespace zlpanel {
         void visibilityChanged() override;
 
         void setMinimumFFTDB(const float x) {
-            minimumFFTDB.store(x);
+            minimum_fft_db_.store(x);
         }
 
     private:
-        zldsp::analyzer::PrePostFFTAnalyzer<double> &analyzerRef;
+        zldsp::analyzer::PrePostFFTAnalyzer<double> &analyzer_ref_;
         zlgui::UIBase &ui_base_;
-        juce::Path prePath{}, postPath{}, postStrokePath{}, sidePath{};
-        juce::Path recentPrePath{}, recentPostPath{}, recentPostStrokePath{}, recentSidePath{};
-        juce::SpinLock pathLock;
-        AtomicPoint<float> leftCorner, rightCorner;
-        AtomicBound<float> atomicBound;
-        std::atomic<float> curveThickness{0.f};
-        std::atomic<bool> firstPath = true;
-        std::atomic<float> minimumFFTDB{-72.f};
+        juce::Path pre_path_{}, post_path_{}, post_stroke_path_{}, side_path_{};
+        juce::Path recent_pre_path_{}, recent_post_path_{}, recent_post_stroke_path_{}, recent_side_path_{};
+        juce::SpinLock path_lock_;
+        AtomicPoint<float> left_corner_, right_corner_;
+        AtomicBound<float> atomic_bound_;
+        std::atomic<float> curve_thickness_{0.f};
+        std::atomic<bool> first_path_ = true;
+        std::atomic<float> minimum_fft_db_{-72.f};
     };
 } // zlpanel

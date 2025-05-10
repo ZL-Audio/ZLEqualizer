@@ -30,17 +30,17 @@ namespace zlpanel {
         void paint(juce::Graphics &g) override;
 
         zlgui::Dragger &getDragger(const size_t idx) const {
-            return panels[idx]->getDragger();
+            return panels_[idx]->getDragger();
         }
 
         zlgui::Dragger &getSideDragger(const size_t idx) const {
-            return panels[idx]->getSideDragger();
+            return panels_[idx]->getSideDragger();
         }
 
         void updateAttach();
 
         bool updateDragger(const size_t idx, const juce::Point<float> pos) {
-            const auto &p = panels[idx];
+            const auto &p = panels_[idx];
             const auto f = p->isVisible()
                                ? p->getDragger().updateButton(pos)
                                : false;
@@ -49,18 +49,18 @@ namespace zlpanel {
         }
 
         void updateOtherDraggers(const size_t idx, const juce::Point<float> targetPos) {
-            const auto &p = panels[idx];
+            const auto &p = panels_[idx];
             p->getPopUp().updateBounds(p->getDragger().getButton());
             p->getTargetDragger().updateButton(targetPos);
             p->getSideDragger().updateButton();
         }
 
         void updateLinkButton(const size_t idx) {
-            linkButtons[idx]->updateBound();
+            link_buttons_[idx]->updateBound();
         }
 
         void updatePopup(const size_t idx, const bool isDraggerMoved = false) {
-            const auto &p = panels[idx];
+            const auto &p = panels_[idx];
             if (isDraggerMoved || p->getPopUp().getBounds().getX() < 0) {
                 p->getPopUp().updateBounds(p->getDragger().getButton());
             }
@@ -83,35 +83,38 @@ namespace zlpanel {
         void mouseDoubleClick(const juce::MouseEvent &event) override;
 
     private:
-        std::array<std::unique_ptr<FilterButtonPanel>, zlstate::kBandNUM> panels;
-        std::array<std::unique_ptr<LinkButtonPanel>, zlstate::kBandNUM> linkButtons;
+        std::array<std::unique_ptr<FilterButtonPanel>, zlstate::kBandNUM> panels_;
+        std::array<std::unique_ptr<LinkButtonPanel>, zlstate::kBandNUM> link_buttons_;
 
         PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &ui_base_;
         zlp::Controller<double> &controller_ref_;
 
-        std::array<zlgui::SnappingSlider, 3> wheelSlider;
-        std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>, 3> wheelAttachment;
+        std::array<zlgui::SnappingSlider, 3> wheel_slider_;
+        std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>, 3> wheel_attachment_;
 
-        std::atomic<float> maximumDB;
-        std::atomic<size_t> selectBandIdx{0};
+        std::atomic<float> maximum_db_;
+        std::atomic<size_t> band_idx_{0};
 
-        static constexpr std::array IDs{
+        static constexpr std::array kIDs{
             zlp::freq::ID, zlp::gain::ID, zlp::Q::ID, zlp::targetGain::ID, zlp::targetQ::ID
         };
 
-        static constexpr std::array NAIDs{zlstate::maximumDB::ID, zlstate::selectedBandIdx::ID};
+        static constexpr std::array kNAIDs{zlstate::maximumDB::ID, zlstate::selectedBandIdx::ID};
 
-        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlstate::kBandNUM> freqUpdaters, gainUpdaters, QUpdaters;
-        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>, zlstate::kBandNUM> targetGainUpdaters, targetQUpdaters;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>,
+                    zlstate::kBandNUM> freq_updaters_, gain_updaters_, q_updaters_;
+        std::array<std::unique_ptr<zldsp::chore::ParaUpdater>,
+                    zlstate::kBandNUM> target_gain_updaters_, target_q_updaters_;
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         inline static float xtoFreq(const float x, const juce::Rectangle<float> bound) {
             const auto portion = (x - bound.getX()) / bound.getWidth();
             return std::exp(portion *
-                            static_cast<float>(std::log(zldsp::filter::kFrequencies.back() / zldsp::filter::kFrequencies.front())))
+                            static_cast<float>(std::log(
+                                zldsp::filter::kFrequencies.back() / zldsp::filter::kFrequencies.front())))
                    * static_cast<float>(zldsp::filter::kFrequencies.front());
         }
 
@@ -121,17 +124,17 @@ namespace zlpanel {
 
         size_t findAvailableBand() const;
 
-        juce::LassoComponent<size_t> lassoComponent;
-        std::atomic<bool> isDuringLasso{false};
-        juce::SelectedItemSet<size_t> itemsSet;
-        int previousLassoNum{0};
-        std::atomic<bool> isLeftClick{true};
-        std::array<std::atomic<float>, zlstate::kBandNUM> previousFreqs{}, previousGains{}, previousQs{};
-        std::array<std::atomic<float>, zlstate::kBandNUM> previousTargetGains{}, previousTargetQs{};
+        juce::LassoComponent<size_t> lasso_component_;
+        std::atomic<bool> is_during_lasso_{false};
+        juce::SelectedItemSet<size_t> items_set_;
+        int previous_lasso_num_{0};
+        std::atomic<bool> is_left_click_{true};
+        std::array<std::atomic<float>, zlstate::kBandNUM> previous_freqs_{}, previous_gains_{}, previous_qs_{};
+        std::array<std::atomic<float>, zlstate::kBandNUM> previous_target_gains_{}, previous_target_qs_{};
 
-        std::atomic<bool> toAttachGroup{false};
+        std::atomic<bool> to_attach_group_{false};
 
-        void findLassoItemsInArea(juce::Array<size_t> &itemsFound, const juce::Rectangle<int> &area) override;
+        void findLassoItemsInArea(juce::Array<size_t> &items_found, const juce::Rectangle<int> &area) override;
 
         juce::SelectedItemSet<size_t> &getLassoSelection() override;
 
@@ -141,12 +144,12 @@ namespace zlpanel {
 
         void attachGroup(size_t idx);
 
-        inline void drawFilterParas(juce::Graphics &g, zldsp::filter::FilterType fType,
-                                    float freqP, float gainP, const juce::Rectangle<float> &bound);
+        inline void drawFilterParas(juce::Graphics &g, zldsp::filter::FilterType ftype,
+                                    float freq_p, float gain_p, const juce::Rectangle<float> &bound);
 
-        inline void drawFreq(juce::Graphics &g, float freqP, const juce::Rectangle<float> &bound, bool isTop);
+        inline void drawFreq(juce::Graphics &g, float freq_p, const juce::Rectangle<float> &bound, bool is_top);
 
-        inline void drawGain(juce::Graphics &g, float gainP, const juce::Rectangle<float> &bound, bool isLeft);
+        inline void drawGain(juce::Graphics &g, float gain_p, const juce::Rectangle<float> &bound, bool is_left);
 
         inline void loadPreviousParameters();
     };

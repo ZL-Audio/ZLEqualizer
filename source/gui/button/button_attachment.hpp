@@ -41,12 +41,12 @@ namespace zlgui {
         }
 
     private:
-        void setValue(const float newValue) {
+        void setValue(const float new_value) {
             const juce::ScopedValueSetter<bool> svs(ignore_callbacks_, true);
             if (SendClickNotification) {
-                button_.setToggleState(newValue >= 0.5f, juce::sendNotificationSync);
+                button_.setToggleState(new_value >= 0.5f, juce::sendNotificationSync);
             } else {
-                button_.setToggleState(newValue >= 0.5f, juce::dontSendNotification);
+                button_.setToggleState(new_value >= 0.5f, juce::dontSendNotification);
             }
         }
 

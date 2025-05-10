@@ -15,7 +15,7 @@
 namespace zlpanel {
     class ColourSettingPanel final : public juce::Component {
     public:
-        static constexpr float heightP = 56.f;
+        static constexpr float kHeightP = 56.f;
 
         explicit ColourSettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
@@ -34,26 +34,26 @@ namespace zlpanel {
     private:
         PluginProcessor &pRef;
         zlgui::UIBase &ui_base_;
-        zlgui::NameLookAndFeel nameLAF;
-        zlgui::ColourOpacitySelector textSelector, backgroundSelector, shadowSelector, glowSelector;
-        zlgui::ColourOpacitySelector preSelector, postSelector, sideSelector, gridSelector, tagSelector;
-        zlgui::ColourOpacitySelector gainSelector, sideLoudnessSelector;
-        static constexpr size_t numSelectors = 11;
-        std::array<juce::Label, numSelectors> selectorLabels;
-        std::array<zlgui::ColourOpacitySelector *, numSelectors> selectors{
-            &textSelector,
-            &backgroundSelector,
-            &shadowSelector,
-            &glowSelector,
-            &preSelector,
-            &postSelector,
-            &sideSelector,
-            &gridSelector,
-            &tagSelector,
-            &gainSelector,
-            &sideLoudnessSelector
+        zlgui::NameLookAndFeel name_laf_;
+        zlgui::ColourOpacitySelector text_selector_, background_selector_, shadow_selector_, glow_selector_;
+        zlgui::ColourOpacitySelector pre_selector_, post_selector_, side_selector_, grid_selector_, tag_selector_;
+        zlgui::ColourOpacitySelector gain_selector_, side_loudness_selector_;
+        static constexpr size_t kNumSelectors = 11;
+        std::array<juce::Label, kNumSelectors> selector_labels_;
+        std::array<zlgui::ColourOpacitySelector *, kNumSelectors> selectors_{
+            &text_selector_,
+            &background_selector_,
+            &shadow_selector_,
+            &glow_selector_,
+            &pre_selector_,
+            &post_selector_,
+            &side_selector_,
+            &grid_selector_,
+            &tag_selector_,
+            &gain_selector_,
+            &side_loudness_selector_
         };
-        std::array<std::string, numSelectors> selectorNames{
+        static constexpr std::array<std::string, kNumSelectors> kSelectorNames{
             "Text Colour",
             "Background Colour",
             "Shadow Colour",
@@ -67,7 +67,7 @@ namespace zlpanel {
             "Side Loudness Colour"
         };
 
-        std::array<zlgui::ColourIdx, numSelectors> colourIdx{
+        static constexpr std::array<zlgui::ColourIdx, kNumSelectors> kColourIdx{
             zlgui::ColourIdx::kTextColour,
             zlgui::ColourIdx::kBackgroundColour,
             zlgui::ColourIdx::kShadowColour,
@@ -81,7 +81,7 @@ namespace zlpanel {
             zlgui::ColourIdx::kSideLoudnessColour
         };
 
-        std::array<std::string, numSelectors> tagNames{
+        static constexpr std::array<std::string, kNumSelectors> kTagNames{
             "text_colour",
             "background_colour",
             "shadow_colour",
@@ -92,12 +92,12 @@ namespace zlpanel {
             "grid_colour",
         };
 
-        juce::Label cMap1Label, cMap2Label;
-        zlgui::ColourMapSelector cMap1Selector, cMap2Selector;
-        juce::Label importLabel, exportLabel;
+        juce::Label c_map1_label_, c_map2_label_;
+        zlgui::ColourMapSelector c_map1_selector_, c_map2_selector_;
+        juce::Label import_label_, export_label_;
 
-        std::unique_ptr<juce::FileChooser> myChooser;
-        inline auto static const settingDirectory =
+        std::unique_ptr<juce::FileChooser> chooser_;
+        inline auto static const kSettingDirectory =
                 juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
                 .getChildFile("Audio")
                 .getChildFile("Presets")

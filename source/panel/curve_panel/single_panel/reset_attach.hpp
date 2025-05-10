@@ -18,30 +18,30 @@ namespace zlpanel {
         explicit ResetAttach(const size_t bandIdx,
                              juce::AudioProcessorValueTreeState &parameters,
                              juce::AudioProcessorValueTreeState &parameters_NA)
-            : idx(bandIdx), parameters_ref_(parameters), parameters_NA_ref_(parameters_NA) {
-            parameters_ref_.addParameterListener(zlp::appendSuffix(zlp::bypass::ID, idx), this);
-            parameters_NA_ref_.addParameterListener(zlstate::appendSuffix(zlstate::active::ID, idx), this);
+            : band_idx_(bandIdx), parameters_ref_(parameters), parameters_NA_ref_(parameters_NA) {
+            parameters_ref_.addParameterListener(zlp::appendSuffix(zlp::bypass::ID, band_idx_), this);
+            parameters_NA_ref_.addParameterListener(zlstate::appendSuffix(zlstate::active::ID, band_idx_), this);
         }
 
         ~ResetAttach() override {
-            parameters_ref_.removeParameterListener(zlp::appendSuffix(zlp::bypass::ID, idx), this);
-            parameters_NA_ref_.removeParameterListener(zlstate::appendSuffix(zlstate::active::ID, idx), this);
+            parameters_ref_.removeParameterListener(zlp::appendSuffix(zlp::bypass::ID, band_idx_), this);
+            parameters_NA_ref_.removeParameterListener(zlstate::appendSuffix(zlstate::active::ID, band_idx_), this);
         }
 
     private:
-        size_t idx;
+        size_t band_idx_;
         juce::AudioProcessorValueTreeState &parameters_ref_;
         juce::AudioProcessorValueTreeState &parameters_NA_ref_;
-        std::atomic<bool> toActive;
+        std::atomic<bool> to_active_;
 
-        constexpr static std::array resetIDs{
+        static constexpr std::array kResetIDs{
             zlp::solo::ID, zlp::sideSolo::ID,
             zlp::dynamicON::ID, zlp::dynamicLearn::ID,
             zlp::threshold::ID, zlp::kneeW::ID, zlp::attack::ID, zlp::release::ID,
             zlp::bypass::ID, zlp::fType::ID, zlp::slope::ID, zlp::lrType::ID
         };
 
-        inline const static std::array resetDefaultVs{
+        static constexpr std::array kResetDefaultVs{
             zlp::solo::convertTo01(zlp::solo::defaultV),
             zlp::sideSolo::convertTo01(zlp::sideSolo::defaultV),
             zlp::dynamicON::convertTo01(zlp::dynamicON::defaultV),
@@ -56,29 +56,28 @@ namespace zlpanel {
             zlp::lrType::convertTo01(zlp::lrType::defaultI),
         };
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override {
-            if (parameterID.startsWith(zlp::bypass::ID) && newValue < .5f) {
-                toActive.store(true);
+        void parameterChanged(const juce::String &parameter_id, float new_value) override {
+            if (parameter_id.startsWith(zlp::bypass::ID) && new_value < .5f) {
+                to_active_.store(true);
                 triggerAsyncUpdate();
-            } else if (parameterID.startsWith(zlstate::active::ID) && newValue < .5f) {
-                toActive.store(false);
+            } else if (parameter_id.startsWith(zlstate::active::ID) && new_value < .5f) {
+                to_active_.store(false);
                 triggerAsyncUpdate();
             }
         }
 
         void handleAsyncUpdate() override {
-            if (toActive.load()) {
-                auto *para = parameters_NA_ref_.getParameter(zlstate::appendSuffix(zlstate::active::ID, idx));
+            if (to_active_.load()) {
+                auto *para = parameters_NA_ref_.getParameter(zlstate::appendSuffix(zlstate::active::ID, band_idx_));
                 para->beginChangeGesture();
                 para->setValueNotifyingHost(zlstate::active::convertTo01(true));
                 para->endChangeGesture();
             } else {
-                const auto suffix = zlstate::appendSuffix("", idx);
-                for (size_t j = 0; j < resetDefaultVs.size(); ++j) {
-                    const auto resetID = resetIDs[j] + suffix;
-                    auto *para = parameters_ref_.getParameter(resetID);
+                const auto suffix = zlstate::appendSuffix("", band_idx_);
+                for (size_t j = 0; j < kResetDefaultVs.size(); ++j) {
+                    auto *para = parameters_ref_.getParameter(kResetIDs[j] + suffix);
                     para->beginChangeGesture();
-                    para->setValueNotifyingHost(resetDefaultVs[j]);
+                    para->setValueNotifyingHost(kResetDefaultVs[j]);
                     para->endChangeGesture();
                 }
             }

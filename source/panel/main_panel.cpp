@@ -83,24 +83,24 @@ namespace zlpanel {
             const auto gapWidth = juce::roundToInt(height * .5f);
 
             x -= labelWidth / 2; {
-                const auto mBound = outputBox.getIdealBound();
-                outputBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+                const auto m_bound = outputBox.getIdealBound();
+                outputBox.setBounds(m_bound.withPosition(x - m_bound.getWidth() / 2, y));
             }
             x -= (labelWidth + gapWidth); {
-                const auto mBound = analyzerBox.getIdealBound();
-                analyzerBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+                const auto m_bound = analyzerBox.getIdealBound();
+                analyzerBox.setBounds(m_bound.withPosition(x - m_bound.getWidth() / 2, y));
             }
             x -= (labelWidth + gapWidth); {
-                const auto mBound = dynamicBox.getIdealBound();
-                dynamicBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+                const auto m_bound = dynamicBox.getIdealBound();
+                dynamicBox.setBounds(m_bound.withPosition(x - m_bound.getWidth() / 2, y));
             }
             x -= (labelWidth + gapWidth); {
-                const auto mBound = collisionBox.getIdealBound();
-                collisionBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+                const auto m_bound = collisionBox.getIdealBound();
+                collisionBox.setBounds(m_bound.withPosition(x - m_bound.getWidth() / 2, y));
             }
             x -= (labelWidth + gapWidth); {
-                const auto mBound = generalBox.getIdealBound();
-                generalBox.setBounds(mBound.withPosition(x - mBound.getWidth() / 2, y));
+                const auto m_bound = generalBox.getIdealBound();
+                generalBox.setBounds(m_bound.withPosition(x - m_bound.getWidth() / 2, y));
             }
         }
 
@@ -114,8 +114,8 @@ namespace zlpanel {
         scalePanel.setBounds(scaleBound.toNearestInt());
     }
 
-    void MainPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        juce::ignoreUnused(parameterID, newValue);
+    void MainPanel::parameterChanged(const juce::String &parameter_id, float new_value) {
+        juce::ignoreUnused(parameter_id, new_value);
         triggerAsyncUpdate();
     }
 

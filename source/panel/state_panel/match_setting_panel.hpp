@@ -28,9 +28,9 @@ namespace zlpanel {
 
     private:
         zlgui::UIBase &ui_base_;
-        juce::Identifier identifier{"match_panel"};
+        juce::Identifier identifier_{"match_panel"};
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override;
     };
 } // zlpanel

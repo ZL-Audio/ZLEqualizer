@@ -23,19 +23,19 @@ namespace zlpanel {
         void resized() override;
 
         void updatePaths() {
-            matchAnalyzerPanel.updatePaths();
+            match_analyzer_panel_.updatePaths();
         }
 
         void updateDraggers() {
-            matchAnalyzerPanel.updateDraggers();
+            match_analyzer_panel_.updateDraggers();
         }
 
         void visibilityChanged() override {
-            matchAnalyzerPanel.setVisible(isVisible());
+            match_analyzer_panel_.setVisible(isVisible());
         }
 
     private:
         zlgui::UIBase &ui_base_;
-        MatchAnalyzerPanel matchAnalyzerPanel;
+        MatchAnalyzerPanel match_analyzer_panel_;
     };
 } // zlpanel

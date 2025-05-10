@@ -13,24 +13,24 @@
 namespace zlpanel {
     ScalePanel::ScalePanel(PluginProcessor &processor, zlgui::UIBase &base)
         : parameters_NA_ref_(processor.parameters_NA), ui_base_(base),
-          scaleBox("", zlstate::maximumDB::choices, base),
-          minFFTBox("", zlstate::minimumFFTDB::choices, base) {
+          scale_box_("", zlstate::maximumDB::choices, base),
+          min_fft_box_("", zlstate::minimumFFTDB::choices, base) {
         juce::ignoreUnused(ui_base_);
-        scaleBox.getLAF().setFontScale(zlgui::kFontLarge);
-        scaleBox.getBox().setJustificationType(juce::Justification::centredRight);
-        scaleBox.getBox().onChange = [this]() {
+        scale_box_.getLAF().setFontScale(zlgui::kFontLarge);
+        scale_box_.getBox().setJustificationType(juce::Justification::centredRight);
+        scale_box_.getBox().onChange = [this]() {
             handleAsyncUpdate();
         };
-        minFFTBox.getLAF().setFontScale(zlgui::kFontLarge);
-        minFFTBox.getBox().setJustificationType(juce::Justification::centredRight);
-        minFFTBox.getBox().onChange = [this]() {
+        min_fft_box_.getLAF().setFontScale(zlgui::kFontLarge);
+        min_fft_box_.getBox().setJustificationType(juce::Justification::centredRight);
+        min_fft_box_.getBox().onChange = [this]() {
             handleAsyncUpdate();
         };
-        attach({&scaleBox.getBox(), &minFFTBox.getBox()},
+        attach({&scale_box_.getBox(), &min_fft_box_.getBox()},
                {zlstate::maximumDB::ID, zlstate::minimumFFTDB::ID},
-               parameters_NA_ref_, boxAttachments);
-        addAndMakeVisible(scaleBox);
-        addAndMakeVisible(minFFTBox);
+               parameters_NA_ref_, box_attachments_);
+        addAndMakeVisible(scale_box_);
+        addAndMakeVisible(min_fft_box_);
         handleAsyncUpdate();
 
         SettableTooltipClient::setTooltip(ui_base_.getToolTipText(zlgui::multilingual::Labels::kDBScale));
@@ -47,19 +47,19 @@ namespace zlpanel {
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize());
 
         g.setFont(ui_base_.getFontSize() * zlgui::kFontLarge);
-        for (auto &d: scaleDBs) {
+        for (auto &d: kScaleDBs) {
             const auto y = d * bound.getHeight() + bound.getY() - ui_base_.getFontSize() * .75f;
-            const auto lTextBound = juce::Rectangle<float>(bound.getX(), y, bound.getWidth() * .4f,
+            const auto l_text_bound = juce::Rectangle<float>(bound.getX(), y, bound.getWidth() * .4f,
                                                            ui_base_.getFontSize() * 1.5f);
-            const auto leftDB = static_cast<int>(std::round(-2 * d * maximumDB.load() + maximumDB.load()));
+            const auto left_db = static_cast<int>(std::round(-2 * d * maximum_db_.load() + maximum_db_.load()));
             g.setColour(ui_base_.getTextColor());
-            g.drawText(juce::String(leftDB), lTextBound, juce::Justification::centredRight);
-            const auto rTextBound = juce::Rectangle<float>(bound.getCentreX(), y, bound.getWidth() * .4f,
+            g.drawText(juce::String(left_db), l_text_bound, juce::Justification::centredRight);
+            const auto r_text_bound = juce::Rectangle<float>(bound.getCentreX(), y, bound.getWidth() * .4f,
                                                            ui_base_.getFontSize() * 1.5f);
-            const auto fftDB = static_cast<int>(std::round(minimumFFTDB.load() * d));
-            if (fftDB > -100) {
+            const auto fft_db = static_cast<int>(std::round(minimum_fft_db_.load() * d));
+            if (fft_db > -100) {
                 g.setColour(ui_base_.getTextInactiveColor());
-                g.drawText(juce::String(fftDB), rTextBound, juce::Justification::centredRight);
+                g.drawText(juce::String(fft_db), r_text_bound, juce::Justification::centredRight);
             }
         }
     }
@@ -68,25 +68,25 @@ namespace zlpanel {
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize());
         {
-            auto boxBound = juce::Rectangle<float>(ui_base_.getFontSize() * 4.f, ui_base_.getFontSize() * 1.5f);
-            boxBound = boxBound.withCentre({bound.getCentreX(), bound.getY()});
-            boxBound.removeFromRight(ui_base_.getFontSize() * .95f);
-            boxBound.removeFromLeft(ui_base_.getFontSize() * .05f);
-            scaleBox.setBounds(boxBound.toNearestInt());
+            auto box_bound = juce::Rectangle<float>(ui_base_.getFontSize() * 4.f, ui_base_.getFontSize() * 1.5f);
+            box_bound = box_bound.withCentre({bound.getCentreX(), bound.getY()});
+            box_bound.removeFromRight(ui_base_.getFontSize() * .95f);
+            box_bound.removeFromLeft(ui_base_.getFontSize() * .05f);
+            scale_box_.setBounds(box_bound.toNearestInt());
         }
         {
-            auto boxBound = juce::Rectangle<float>(bound.getWidth(), ui_base_.getFontSize() * 1.5f);
-            boxBound = boxBound.withCentre({bound.getCentreX(), bound.getBottom()});
-            boxBound.removeFromRight(ui_base_.getFontSize() * .5f);
-            boxBound.removeFromLeft(ui_base_.getFontSize() * .5f);
-            minFFTBox.setBounds(boxBound.toNearestInt());
+            auto box_bound = juce::Rectangle<float>(bound.getWidth(), ui_base_.getFontSize() * 1.5f);
+            box_bound = box_bound.withCentre({bound.getCentreX(), bound.getBottom()});
+            box_bound.removeFromRight(ui_base_.getFontSize() * .5f);
+            box_bound.removeFromLeft(ui_base_.getFontSize() * .5f);
+            min_fft_box_.setBounds(box_bound.toNearestInt());
         }
     }
 
     void ScalePanel::handleAsyncUpdate() {
-        maximumDB.store(zlstate::maximumDB::dBs[
+        maximum_db_.store(zlstate::maximumDB::dBs[
             static_cast<size_t>(parameters_NA_ref_.getRawParameterValue(zlstate::maximumDB::ID)->load())]);
-        minimumFFTDB.store(zlstate::minimumFFTDB::dBs[
+        minimum_fft_db_.store(zlstate::minimumFFTDB::dBs[
             static_cast<size_t>(parameters_NA_ref_.getRawParameterValue(zlstate::minimumFFTDB::ID)->load())]);
         repaint();
     }

@@ -16,46 +16,46 @@ namespace zlpanel {
           processor_ref_(processor),
           parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA), ui_base_(base),
           controller_ref_(processor.getController()),
-          backgroundPanel(parameters_ref_, parameters_NA_ref_, base),
-          fftPanel(controller_ref_.getAnalyzer(), base),
-          conflictPanel(controller_ref_.getConflictAnalyzer(), base),
-          sumPanel(parameters_ref_, base, controller_ref_, baseFilters, mainFilters),
-          loudnessDisplay(processor_ref_, base),
-          buttonPanel(processor_ref_, base),
-          soloPanel(parameters_ref_, parameters_NA_ref_, base, controller_ref_, buttonPanel),
-          matchPanel(processor.getController().getMatchAnalyzer(), parameters_NA_ref_, base) {
-        for (auto &filters: {&baseFilters, &targetFilters, &mainFilters}) {
+          background_panel_(parameters_ref_, parameters_NA_ref_, base),
+          fft_panel_(controller_ref_.getAnalyzer(), base),
+          conflict_panel_(controller_ref_.getConflictAnalyzer(), base),
+          sum_panel_(parameters_ref_, base, controller_ref_, base_filters_, main_filters_),
+          loudness_display_(processor_ref_, base),
+          button_panel_(processor_ref_, base),
+          solo_panel_(parameters_ref_, parameters_NA_ref_, base, controller_ref_, button_panel_),
+          match_panel_(processor.getController().getMatchAnalyzer(), parameters_NA_ref_, base) {
+        for (auto &filters: {&base_filters_, &target_filters_, &main_filters_}) {
             for (auto &f: *filters) {
                 f.prepare(48000.0);
                 f.prepareDBSize(ws.size());
             }
         }
-        addAndMakeVisible(backgroundPanel, 0);
-        addAndMakeVisible(fftPanel, 1);
-        addChildComponent(conflictPanel, 2);
+        addAndMakeVisible(background_panel_, 0);
+        addAndMakeVisible(fft_panel_, 1);
+        addChildComponent(conflict_panel_, 2);
         parameters_NA_ref_.addParameterListener(zlstate::selectedBandIdx::ID, this);
         parameterChanged(zlstate::selectedBandIdx::ID,
                          parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
-        addAndMakeVisible(dummyComponent, 4);
-        dummyComponent.setInterceptsMouseClicks(false, false);
+        addAndMakeVisible(dummy_component_, 4);
+        dummy_component_.setInterceptsMouseClicks(false, false);
         for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
             const auto i = idx;
-            singlePanels[idx] =
+            single_panels_[idx] =
                     std::make_unique<SinglePanel>(i, parameters_ref_, parameters_NA_ref_, base, controller_ref_,
-                                                  baseFilters[i], targetFilters[i], mainFilters[i]);
-            dummyComponent.addAndMakeVisible(*singlePanels[idx]);
+                                                  base_filters_[i], target_filters_[i], main_filters_[i]);
+            dummy_component_.addAndMakeVisible(*single_panels_[idx]);
         }
         for (size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
             const auto i = idx;
-            sidePanels[idx] = std::make_unique<SidePanel>(i, parameters_ref_, parameters_NA_ref_, base, controller_ref_,
-                                                          buttonPanel.getSideDragger(i));
-            addAndMakeVisible(*sidePanels[idx], 5);
+            side_panels_[idx] = std::make_unique<SidePanel>(i, parameters_ref_, parameters_NA_ref_, base, controller_ref_,
+                                                          button_panel_.getSideDragger(i));
+            addAndMakeVisible(*side_panels_[idx], 5);
         }
-        addAndMakeVisible(sumPanel, 6);
-        addChildComponent(soloPanel, 7);
-        addAndMakeVisible(loudnessDisplay, 8);
-        addAndMakeVisible(buttonPanel, 9);
-        addChildComponent(matchPanel, 10);
+        addAndMakeVisible(sum_panel_, 6);
+        addChildComponent(solo_panel_, 7);
+        addAndMakeVisible(loudness_display_, 8);
+        addAndMakeVisible(button_panel_, 9);
+        addChildComponent(match_panel_, 10);
         parameterChanged(zlp::scale::ID, parameters_ref_.getRawParameterValue(zlp::scale::ID)->load());
         parameters_ref_.addParameterListener(zlp::scale::ID, this);
         parameterChanged(zlstate::maximumDB::ID, parameters_NA_ref_.getRawParameterValue(zlstate::maximumDB::ID)->load());
@@ -82,143 +82,143 @@ namespace zlpanel {
     void CurvePanel::paint(juce::Graphics &g) {
         juce::ignoreUnused(g);
         if (!ui_base_.getIsRenderingHardware()) {
-            physicalPixelScaleFactor.store(g.getInternalContext().getPhysicalPixelScaleFactor());
+            physical_pixel_scale_factor_.store(g.getInternalContext().getPhysicalPixelScaleFactor());
         }
     }
 
     void CurvePanel::paintOverChildren(juce::Graphics &g) {
         juce::ignoreUnused(g);
-        if (toNotify) {
-            toNotify = false;
+        if (to_notify_) {
+            to_notify_ = false;
             notify();
         }
     }
 
     void CurvePanel::resized() {
         const auto bound = getLocalBounds();
-        backgroundPanel.setBounds(bound);
-        fftPanel.setBounds(bound);
-        conflictPanel.setBounds(bound);
-        dummyComponent.setBounds(bound);
+        background_panel_.setBounds(bound);
+        fft_panel_.setBounds(bound);
+        conflict_panel_.setBounds(bound);
+        dummy_component_.setBounds(bound);
         for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
-            singlePanels[i]->setBounds(bound);
+            single_panels_[i]->setBounds(bound);
         }
         const auto sideBound = bound.toFloat().withTop(bound.toFloat().getBottom() - 2.f * ui_base_.getFontSize());
         for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
-            sidePanels[i]->setBounds(sideBound.toNearestInt());
+            side_panels_[i]->setBounds(sideBound.toNearestInt());
         }
-        sumPanel.setBounds(bound);
-        soloPanel.setBounds(bound);
-        buttonPanel.setBounds(bound);
-        matchPanel.setBounds(bound);
+        sum_panel_.setBounds(bound);
+        solo_panel_.setBounds(bound);
+        button_panel_.setBounds(bound);
+        match_panel_.setBounds(bound);
 
-        auto lBound = getLocalBounds().toFloat();
-        lBound = juce::Rectangle<float>(lBound.getX() + lBound.getWidth() * 0.666f,
-                                        lBound.getBottom() - ui_base_.getFontSize() * .5f,
-                                        lBound.getWidth() * .09f, ui_base_.getFontSize() * .5f);
-        loudnessDisplay.setBounds(lBound.toNearestInt());
+        auto l_bound = getLocalBounds().toFloat();
+        l_bound = juce::Rectangle<float>(l_bound.getX() + l_bound.getWidth() * 0.666f,
+                                        l_bound.getBottom() - ui_base_.getFontSize() * .5f,
+                                        l_bound.getWidth() * .09f, ui_base_.getFontSize() * .5f);
+        loudness_display_.setBounds(l_bound.toNearestInt());
     }
 
-    void CurvePanel::parameterChanged(const juce::String &parameterID, const float newValue) {
-        if (parameterID == zlstate::selectedBandIdx::ID) {
-            currentBandIdx.store(static_cast<size_t>(newValue));
-        } else if (parameterID == zlstate::maximumDB::ID) {
-            const auto idx = static_cast<size_t>(newValue);
-            const auto maxDB = zlstate::maximumDB::dBs[idx];
-            sumPanel.setMaximumDB(maxDB);
+    void CurvePanel::parameterChanged(const juce::String &parameter_id, const float new_value) {
+        if (parameter_id == zlstate::selectedBandIdx::ID) {
+            band_idx_.store(static_cast<size_t>(new_value));
+        } else if (parameter_id == zlstate::maximumDB::ID) {
+            const auto idx = static_cast<size_t>(new_value);
+            const auto max_db = zlstate::maximumDB::dBs[idx];
+            sum_panel_.setMaximumDB(max_db);
             for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
-                singlePanels[i]->setMaximumDB(maxDB);
+                single_panels_[i]->setMaximumDB(max_db);
             }
-        } else if (parameterID == zlp::scale::ID) {
-            const auto scale = static_cast<double>(zlp::scale::formatV(newValue));
+        } else if (parameter_id == zlp::scale::ID) {
+            const auto scale = static_cast<double>(zlp::scale::formatV(new_value));
             for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
-                singlePanels[i]->setScale(scale);
+                single_panels_[i]->setScale(scale);
             }
-        } else if (parameterID == zlstate::minimumFFTDB::ID) {
-            const auto idx = static_cast<size_t>(newValue);
-            const auto minDB = zlstate::minimumFFTDB::dBs[idx];
-            fftPanel.setMinimumFFTDB(minDB);
+        } else if (parameter_id == zlstate::minimumFFTDB::ID) {
+            const auto idx = static_cast<size_t>(new_value);
+            const auto min_db = zlstate::minimumFFTDB::dBs[idx];
+            fft_panel_.setMinimumFFTDB(min_db);
         }
     }
 
     void CurvePanel::valueTreePropertyChanged(juce::ValueTree &, const juce::Identifier &property) {
         if (property == zlgui::kMatchIdentifiers[static_cast<size_t>(zlgui::SettingIdx::kMatchPanelShow)]) {
             const auto f = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kMatchPanelShow));
-            showMatchPanel.store(f);
-            matchPanel.setVisible(f);
-            buttonPanel.setVisible(!f);
-            loudnessDisplay.updateVisible(!f);
-            if (f) { soloPanel.turnOffSolo(); }
+            show_match_panel_.store(f);
+            match_panel_.setVisible(f);
+            button_panel_.setVisible(!f);
+            loudness_display_.updateVisible(!f);
+            if (f) { solo_panel_.turnOffSolo(); }
         } else if (property == zlgui::kMatchIdentifiers[static_cast<size_t>(
                        zlgui::SettingIdx::kUISettingPanelShow)]) {
             const auto f = static_cast<bool>(ui_base_.getProperty(zlgui::SettingIdx::kUISettingPanelShow));
-            showUISettingsPanel = f;
+            show_ui_setting_panel_ = f;
         }
     }
 
     void CurvePanel::repaintCallBack(const double nowT) {
-        if (showUISettingsPanel) { return; }
-        const auto refreshRateMul = showMatchPanel.load() ? 2.0 : 1.0;
-        if ((nowT - currentT) * 1000.0 > static_cast<double>(ui_base_.getRefreshRateMS()) * refreshRateMul) {
-            buttonPanel.updateAttach();
-            auto isCurrentDraggerMoved = false;
+        if (show_ui_setting_panel_) { return; }
+        const auto refresh_rate_mul = show_match_panel_.load() ? 2.0 : 1.0;
+        if ((nowT - current_t_) * 1000.0 > static_cast<double>(ui_base_.getRefreshRateMS()) * refresh_rate_mul) {
+            button_panel_.updateAttach();
+            auto is_current_dragger_moved = false;
             for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
-                const auto f = buttonPanel.updateDragger(i, singlePanels[i]->getButtonPos());
-                if (i == previousBandIdx) isCurrentDraggerMoved = f;
+                const auto f = button_panel_.updateDragger(i, single_panels_[i]->getButtonPos());
+                if (i == previous_band_idx_) is_current_dragger_moved = f;
             }
-            if (previousBandIdx != currentBandIdx.load()) {
-                if (previousBandIdx < zlstate::kBandNUM) {
-                    buttonPanel.updateLinkButton(previousBandIdx);
+            if (previous_band_idx_ != band_idx_.load()) {
+                if (previous_band_idx_ < zlstate::kBandNUM) {
+                    button_panel_.updateLinkButton(previous_band_idx_);
                 }
-                previousBandIdx = currentBandIdx.load();
-                buttonPanel.updatePopup(previousBandIdx);
-                buttonPanel.updateLinkButton(previousBandIdx);
+                previous_band_idx_ = band_idx_.load();
+                button_panel_.updatePopup(previous_band_idx_);
+                button_panel_.updateLinkButton(previous_band_idx_);
             } else {
-                buttonPanel.updateOtherDraggers(previousBandIdx,
-                                                singlePanels[previousBandIdx]->getTargetButtonPos());
-                buttonPanel.updatePopup(previousBandIdx, isCurrentDraggerMoved);
-                buttonPanel.updateLinkButton(previousBandIdx);
+                button_panel_.updateOtherDraggers(previous_band_idx_,
+                                                single_panels_[previous_band_idx_]->getTargetButtonPos());
+                button_panel_.updatePopup(previous_band_idx_, is_current_dragger_moved);
+                button_panel_.updateLinkButton(previous_band_idx_);
             }
 
-            conflictPanel.updateGradient();
-            loudnessDisplay.checkVisible();
-            soloPanel.checkVisible();
-            for (const auto &panel: singlePanels) {
+            conflict_panel_.updateGradient();
+            loudness_display_.checkVisible();
+            solo_panel_.checkVisible();
+            for (const auto &panel: single_panels_) {
                 panel->updateVisible();
             }
-            singlePanels[currentBandIdx.load()]->toFront(false);
-            for (const auto &panel: sidePanels) {
+            single_panels_[band_idx_.load()]->toFront(false);
+            for (const auto &panel: side_panels_) {
                 panel->updateDragger();
             }
-            if (showMatchPanel.load()) {
-                matchPanel.updateDraggers();
+            if (show_match_panel_.load()) {
+                match_panel_.updateDraggers();
             }
-            if (!toNotify) {
-                toNotify = true;
+            if (!to_notify_) {
+                to_notify_ = true;
                 repaint();
-                currentT = nowT;
+                current_t_ = nowT;
             }
         }
     }
 
     void CurvePanel::run() {
-        juce::ScopedNoDenormals noDenormals;
+        juce::ScopedNoDenormals no_denormals;
         while (!threadShouldExit()) {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
-            const auto factor = physicalPixelScaleFactor.load();
+            const auto factor = physical_pixel_scale_factor_.load();
             const auto &analyzer = controller_ref_.getAnalyzer();
             if (analyzer.getPreON() || analyzer.getPostON() || analyzer.getSideON()) {
-                fftPanel.updatePaths(factor);
+                fft_panel_.updatePaths(factor);
             }
             for (size_t i = 0; i < zlstate::kBandNUM; ++i) {
-                if (singlePanels[i]->checkRepaint()) {
-                    singlePanels[i]->run(factor);
+                if (single_panels_[i]->checkRepaint()) {
+                    single_panels_[i]->run(factor);
                 }
             }
-            sumPanel.run(factor);
-            if (showMatchPanel.load()) {
-                matchPanel.updatePaths();
+            sum_panel_.run(factor);
+            if (show_match_panel_.load()) {
+                match_panel_.updatePaths();
             }
         }
     }

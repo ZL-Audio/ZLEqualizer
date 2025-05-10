@@ -12,15 +12,15 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 inline std::optional<double> parseFreqPitchString(juce::String s) {
-    static constexpr std::array<std::string, 12> pitchLookUp{
+    static constexpr std::array<std::string, 12> kPitchLookUp{
         "A", "A#", "B", "C",
         "C#", "D", "D#", "E",
         "F", "F#", "G", "G#"
     };
-    for (size_t i = 0; i < pitchLookUp.size(); ++i) {
-        if (s.startsWithIgnoreCase(pitchLookUp[11 - i])) {
+    for (size_t i = 0; i < kPitchLookUp.size(); ++i) {
+        if (s.startsWithIgnoreCase(kPitchLookUp[11 - i])) {
             auto shift = static_cast<double>(11 - i) / 12.0;
-            s = s.substring(static_cast<int>(pitchLookUp[11 - i].length()));
+            s = s.substring(static_cast<int>(kPitchLookUp[11 - i].length()));
             shift += s.getDoubleValue();
             return 27.5 * std::pow(2.0, shift);
         }
@@ -28,7 +28,7 @@ inline std::optional<double> parseFreqPitchString(juce::String s) {
     return std::nullopt;
 }
 
-inline double parseFreqValueString(juce::String s) {
+inline double parseFreqValueString(const juce::String &s) {
     const auto k = (s.contains("k") || s.contains("K")) ? 1000.0 : 1.0;
     return s.getDoubleValue() * k;
 }

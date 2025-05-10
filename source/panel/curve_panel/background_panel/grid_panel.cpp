@@ -22,30 +22,30 @@ namespace zlpanel {
             return;
         }
         g.setColour(ui_base_.getTextInactiveColor());
-        for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
-            g.drawText(backgroundFreqsNames[i], textBounds[i], juce::Justification::bottomRight);
+        for (size_t i = 0; i < kBackgroundFreqs.size(); ++i) {
+            g.drawText(kBackgroundFreqsNames[i], text_bounds_[i], juce::Justification::bottomRight);
         }
         g.setColour(ui_base_.getColourByIdx(zlgui::kGridColour));
-        g.fillRectList(rectList);
+        g.fillRectList(rect_list_);
     }
 
     void GridPanel::resized() {
-        rectList.clear();
+        rect_list_.clear();
         auto bound = getLocalBounds().toFloat();
         const auto thickness = ui_base_.getFontSize() * 0.1f;
-        for (size_t i = 0; i < backgroundFreqs.size(); ++i) {
-            const auto x = backgroundFreqs[i] * bound.getWidth() + bound.getX();
-            rectList.add({x - thickness * .5f, bound.getY(), thickness, bound.getHeight()});
-            textBounds[i] = juce::Rectangle<float>(x - ui_base_.getFontSize() * 3 - ui_base_.getFontSize() * 0.125f,
+        for (size_t i = 0; i < kBackgroundFreqs.size(); ++i) {
+            const auto x = kBackgroundFreqs[i] * bound.getWidth() + bound.getX();
+            rect_list_.add({x - thickness * .5f, bound.getY(), thickness, bound.getHeight()});
+            text_bounds_[i] = juce::Rectangle<float>(x - ui_base_.getFontSize() * 3 - ui_base_.getFontSize() * 0.125f,
                                                    bound.getBottom() - ui_base_.getFontSize() * 2,
                                                    ui_base_.getFontSize() * 3, ui_base_.getFontSize() * 2);
         }
 
         bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() - 2 * ui_base_.getFontSize());
 
-        for (auto &d: backgroundDBs) {
+        for (auto &d: kBackgroundDBs) {
             const auto y = d * bound.getHeight() + bound.getY();
-            rectList.add({bound.getX(), y - thickness * .5f, bound.getWidth(), thickness});
+            rect_list_.add({bound.getX(), y - thickness * .5f, bound.getWidth(), thickness});
         }
     }
 }

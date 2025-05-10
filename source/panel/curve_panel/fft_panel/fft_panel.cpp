@@ -12,82 +12,82 @@
 namespace zlpanel {
     FFTPanel::FFTPanel(zldsp::analyzer::PrePostFFTAnalyzer<double> &analyzer,
                        zlgui::UIBase &base)
-        : analyzerRef(analyzer), ui_base_(base) {
+        : analyzer_ref_(analyzer), ui_base_(base) {
         setInterceptsMouseClicks(false, false);
     }
 
     FFTPanel::~FFTPanel() {
-        analyzerRef.setON(false);
+        analyzer_ref_.setON(false);
     }
 
     void FFTPanel::paint(juce::Graphics &g) {
-        juce::GenericScopedTryLock lock{pathLock};
+        juce::GenericScopedTryLock lock{path_lock_};
         if (!lock.isLocked()) { return; }
-        if (analyzerRef.getPreON() && !recentPrePath.isEmpty()) {
+        if (analyzer_ref_.getPreON() && !recent_pre_path_.isEmpty()) {
             g.setColour(ui_base_.getColourByIdx(zlgui::kPreColour));
-            g.fillPath(recentPrePath);
+            g.fillPath(recent_pre_path_);
         }
-        if (analyzerRef.getPostON() && !recentPostPath.isEmpty()) {
+        if (analyzer_ref_.getPostON() && !recent_post_path_.isEmpty()) {
             g.setColour(ui_base_.getTextColor().withAlpha(0.5f));
             if (ui_base_.getIsRenderingHardware()) {
-                g.strokePath(recentPostPath, juce::PathStrokeType{
-                                 curveThickness.load(),
+                g.strokePath(recent_post_path_, juce::PathStrokeType{
+                                 curve_thickness_.load(),
                                  juce::PathStrokeType::curved,
                                  juce::PathStrokeType::rounded
                              });
             } else {
-                g.fillPath(recentPostStrokePath);
+                g.fillPath(recent_post_stroke_path_);
             }
 
             g.setColour(ui_base_.getColourByIdx(zlgui::kPostColour));
-            g.fillPath(recentPostPath);
+            g.fillPath(recent_post_path_);
         }
 
-        if (analyzerRef.getSideON() && !recentSidePath.isEmpty()) {
+        if (analyzer_ref_.getSideON() && !recent_side_path_.isEmpty()) {
             g.setColour(ui_base_.getColourByIdx(zlgui::kSideColour));
-            g.fillPath(recentSidePath);
+            g.fillPath(recent_side_path_);
         }
     }
 
     void FFTPanel::resized() {
         const auto bound = getLocalBounds().toFloat();
-        leftCorner.store({bound.getX() * 0.9f, bound.getBottom() * 1.1f});
-        rightCorner.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
-        atomicBound.store(bound);
-        curveThickness.store(ui_base_.getFontSize() * 0.1f);
+        left_corner_.store({bound.getX() * 0.9f, bound.getBottom() * 1.1f});
+        right_corner_.store({bound.getRight() * 1.1f, bound.getBottom() * 1.1f});
+        atomic_bound_.store(bound);
+        curve_thickness_.store(ui_base_.getFontSize() * 0.1f);
     }
 
     void FFTPanel::updatePaths(const float physicalPixelScaleFactor) {
-        analyzerRef.updatePaths(prePath, postPath, sidePath, atomicBound.load(), minimumFFTDB.load());
-        for (auto &path: {&prePath, &postPath, &sidePath}) {
+        analyzer_ref_.updatePaths(pre_path_, post_path_, side_path_, atomic_bound_.load(), minimum_fft_db_.load());
+        for (auto &path: {&pre_path_, &post_path_, &side_path_}) {
             if (!path->isEmpty()) {
-                path->lineTo(rightCorner.load());
-                path->lineTo(leftCorner.load());
+                path->lineTo(right_corner_.load());
+                path->lineTo(left_corner_.load());
                 path->closeSubPath();
             }
         } {
             if (ui_base_.getIsRenderingHardware()) {
-                juce::GenericScopedLock lock{pathLock};
-                recentPrePath = prePath;
-                recentPostPath = postPath;
+                juce::GenericScopedLock lock{path_lock_};
+                recent_pre_path_ = pre_path_;
+                recent_post_path_ = post_path_;
             } else {
                 juce::PathStrokeType stroke{
-                    curveThickness.load(), juce::PathStrokeType::curved, juce::PathStrokeType::rounded
+                    curve_thickness_.load(), juce::PathStrokeType::curved, juce::PathStrokeType::rounded
                 };
-                stroke.createStrokedPath(postStrokePath, postPath, {}, physicalPixelScaleFactor);
-                juce::GenericScopedLock lock{pathLock};
-                recentPrePath = prePath;
-                recentPostPath = postPath;
-                recentPostStrokePath = postStrokePath;
+                stroke.createStrokedPath(post_stroke_path_, post_path_, {}, physicalPixelScaleFactor);
+                juce::GenericScopedLock lock{path_lock_};
+                recent_pre_path_ = pre_path_;
+                recent_post_path_ = post_path_;
+                recent_post_stroke_path_ = post_stroke_path_;
             }
         }
-        if (analyzerRef.getSideON()) {
-            juce::GenericScopedLock lock{pathLock};
-            recentSidePath = sidePath;
+        if (analyzer_ref_.getSideON()) {
+            juce::GenericScopedLock lock{path_lock_};
+            recent_side_path_ = side_path_;
         }
     }
 
     void FFTPanel::visibilityChanged() {
-        analyzerRef.setON(isVisible());
+        analyzer_ref_.setON(isVisible());
     }
 } // zlpanel

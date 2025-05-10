@@ -30,12 +30,12 @@ namespace zlpanel {
         void resized() override;
 
         void setMaximumDB(const float x) {
-            maximumDB.store(x);
+            maximum_db_.store(x);
             triggerAsyncUpdate();
         }
 
         void setMinimumFFTDB(const float x) {
-            minimumFFTDB.store(x);
+            minimum_fft_db_.store(x);
             triggerAsyncUpdate();
         }
 
@@ -43,11 +43,11 @@ namespace zlpanel {
         juce::AudioProcessorValueTreeState &parameters_NA_ref_;
         zlgui::UIBase &ui_base_;
 
-        zlgui::CompactCombobox scaleBox, minFFTBox;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments;
-        std::atomic<float> maximumDB{12.f}, minimumFFTDB{-72.f};
+        zlgui::CompactCombobox scale_box_, min_fft_box_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> box_attachments_;
+        std::atomic<float> maximum_db_{12.f}, minimum_fft_db_{-72.f};
 
-        static constexpr std::array<float, 5> scaleDBs = {
+        static constexpr std::array<float, 5> kScaleDBs = {
             1.f / 6.f, 2.f / 6.f, 0.5, 4.f / 6.f, 5.f / 6.f
         };
 

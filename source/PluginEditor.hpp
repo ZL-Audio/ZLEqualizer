@@ -71,7 +71,7 @@ private:
 
     void timerCallback() override;
 
-    void parameterChanged(const juce::String &parameterID, float newValue) override;
+    void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
     void handleAsyncUpdate() override;
 

@@ -18,11 +18,11 @@ namespace zlpanel {
         : parameters_ref_(parameters),
           parameters_NA_ref_(parameters_NA),
           ui_base_(base),
-          drawable(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
-          button(base, drawable.get(), nullptr, zlgui::multilingual::Labels::kBandOff) {
+          drawable_(juce::Drawable::createFromImageData(BinaryData::xmark_svg, BinaryData::xmark_svgSize)),
+          button_(base, drawable_.get(), nullptr, zlgui::multilingual::Labels::kBandOff) {
         juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
-        button.getButton().onClick = [this]() {
-            const auto currentBand = bandIdx.load();
+        button_.getButton().onClick = [this]() {
+            const auto currentBand = band_idx_.load();
             const auto isCurrentBandSelected = ui_base_.getIsBandSelected(currentBand);
             for(size_t idx = 0; idx < zlstate::kBandNUM; ++idx) {
                 if (idx == currentBand || (isCurrentBandSelected && ui_base_.getIsBandSelected(idx))) {
@@ -33,17 +33,17 @@ namespace zlpanel {
                 }
             }
         };
-        button.setPadding(.0f, .0f, .0f, .0f);
-        addAndMakeVisible(button);
+        button_.setPadding(.0f, .0f, .0f, .0f);
+        addAndMakeVisible(button_);
     }
 
     ResetComponent::~ResetComponent() = default;
 
     void ResetComponent::resized() {
-        button.setBounds(getLocalBounds());
+        button_.setBounds(getLocalBounds());
     }
 
     void ResetComponent::attachGroup(const size_t idx) {
-        bandIdx.store(idx);
+        band_idx_.store(idx);
     }
 } // zlpanel

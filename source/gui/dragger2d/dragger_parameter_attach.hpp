@@ -32,9 +32,9 @@ namespace zlgui {
 
         void enableY(const bool f) { is_y_attached_.store(f); }
 
-        void setX(float newValue) const;
+        void setX(float new_value) const;
 
-        void setY(float newValue) const;
+        void setY(float new_value) const;
 
     private:
         void draggerValueChanged(Dragger *dragger) override;

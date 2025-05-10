@@ -27,10 +27,10 @@ namespace zlpanel {
         void mouseDoubleClick(const juce::MouseEvent &event) override;
 
     private:
-        juce::AudioProcessorValueTreeState &stateRef;
+        juce::AudioProcessorValueTreeState &state_ref_;
         zlgui::UIBase &ui_base_;
-        UISettingPanel &panelToShow;
-        const std::unique_ptr<juce::Drawable> brandDrawable, logoDrawable;
-        juce::Justification justification{juce::Justification::topLeft};
+        UISettingPanel &panel_to_show_;
+        const std::unique_ptr<juce::Drawable> brand_drawable_, logo_drawable_;
+        juce::Justification justification_{juce::Justification::topLeft};
     };
 } // zlpanel

@@ -19,45 +19,45 @@ namespace zlpanel {
                                   zlgui::UIBase &base)
             : processor_ref_(p), parameters_ref_(p.parameters),
               ui_base_(base),
-              phaseC("phase", ui_base_, zlgui::multilingual::Labels::kPhaseFlip),
-              agcC("A", ui_base_, zlgui::multilingual::Labels::kAutoGC),
-              lmC("L", ui_base_, zlgui::multilingual::Labels::kLoudnessMatch),
-              scaleS("Scale", ui_base_, zlgui::multilingual::Labels::kScale),
-              outGainS("Out Gain", ui_base_, zlgui::multilingual::Labels::kOutputGain),
-              phaseDrawable(
+              phase_c_("phase", ui_base_, zlgui::multilingual::Labels::kPhaseFlip),
+              agc_c_("A", ui_base_, zlgui::multilingual::Labels::kAutoGC),
+              lm_c_("L", ui_base_, zlgui::multilingual::Labels::kLoudnessMatch),
+              scale_s_("Scale", ui_base_, zlgui::multilingual::Labels::kScale),
+              out_gain_s_("Out Gain", ui_base_, zlgui::multilingual::Labels::kOutputGain),
+              phase_drawable_(
                   juce::Drawable::createFromImageData(BinaryData::fadphase_svg,
                                                       BinaryData::fadphase_svgSize)),
-              agcDrawable(juce::Drawable::createFromImageData(BinaryData::autogaincompensation_svg,
+              agc_drawable_(juce::Drawable::createFromImageData(BinaryData::autogaincompensation_svg,
                                                               BinaryData::autogaincompensation_svgSize)),
-              lmDrawable(juce::Drawable::createFromImageData(BinaryData::loudnessmatch_svg,
+              lm_drawable_(juce::Drawable::createFromImageData(BinaryData::loudnessmatch_svg,
                                                              BinaryData::loudnessmatch_svgSize)),
-              agcUpdater(p.parameters, zlp::autoGain::ID),
-              gainUpdater(p.parameters, zlp::outputGain::ID) {
+              agc_updater_(p.parameters, zlp::autoGain::ID),
+              gain_updater_(p.parameters, zlp::outputGain::ID) {
             setBufferedToImage(true);
-            phaseC.setDrawable(phaseDrawable.get());
-            agcC.setDrawable(agcDrawable.get());
-            lmC.setDrawable(lmDrawable.get());
+            phase_c_.setDrawable(phase_drawable_.get());
+            agc_c_.setDrawable(agc_drawable_.get());
+            lm_c_.setDrawable(lm_drawable_.get());
 
-            for (auto &c: {&phaseC, &agcC, &lmC}) {
+            for (auto &c: {&phase_c_, &agc_c_, &lm_c_}) {
                 c->getLAF().enableShadow(false);
                 c->getLAF().setShrinkScale(0.f);
                 addAndMakeVisible(c);
             }
-            for (auto &c: {&scaleS, &outGainS}) {
+            for (auto &c: {&scale_s_, &out_gain_s_}) {
                 addAndMakeVisible(c);
             }
-            attach({&phaseC.getButton(), &agcC.getButton(), &lmC.getButton()},
+            attach({&phase_c_.getButton(), &agc_c_.getButton(), &lm_c_.getButton()},
                    {zlp::phaseFlip::ID, zlp::autoGain::ID, zlp::loudnessMatcherON::ID},
-                   parameters_ref_, buttonAttachments);
-            attach({&scaleS.getSlider(), &outGainS.getSlider()},
+                   parameters_ref_, button_attachments_);
+            attach({&scale_s_.getSlider(), &out_gain_s_.getSlider()},
                    {zlp::scale::ID, zlp::outputGain::ID},
-                   parameters_ref_, sliderAttachments);
+                   parameters_ref_, slider_attachments_);
 
-            lmC.getButton().onClick = [this]() {
-                if (!lmC.getButton().getToggleState()) {
+            lm_c_.getButton().onClick = [this]() {
+                if (!lm_c_.getButton().getToggleState()) {
                     const auto newGain = -processor_ref_.getController().getLoudnessMatcherDiff();
-                    agcUpdater.updateSync(0.f);
-                    gainUpdater.updateSync(zlp::outputGain::convertTo01(static_cast<float>(newGain)));
+                    agc_updater_.updateSync(0.f);
+                    gain_updater_.updateSync(zlp::outputGain::convertTo01(static_cast<float>(newGain)));
                 }
             };
 
@@ -80,22 +80,22 @@ namespace zlpanel {
         }
 
         juce::Rectangle<int> getIdealBound() const {
-            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
-            const auto buttonHeight = static_cast<int>(buttonHeightP * ui_base_.getFontSize());
-            const auto buttonWidth = static_cast<int>(ui_base_.getFontSize() * 2.5);
-            return {buttonWidth * 3 + padSize * 2, buttonHeight * 3 + padSize};
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto button_height = static_cast<int>(kButtonHeightP * ui_base_.getFontSize());
+            const auto button_width = static_cast<int>(ui_base_.getFontSize() * 2.5);
+            return {button_width * 3 + pad_size * 2, button_height * 3 + pad_size};
         }
 
         void resized() override {
-            for (auto &c: {&scaleS, &outGainS}) {
+            for (auto &c: {&scale_s_, &out_gain_s_}) {
                 c->setPadding(std::round(ui_base_.getFontSize() * 0.5f),
                               std::round(ui_base_.getFontSize() * 0.6f));
             }
 
-            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.5f);
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.5f);
             auto bound = getLocalBounds();
-            bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
-                                         bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
+            bound = juce::Rectangle<int>(bound.getX() + pad_size, bound.getY(),
+                                         bound.getWidth() - pad_size * 2, bound.getHeight() - pad_size);
 
             juce::Grid grid;
             using Track = juce::Grid::TrackInfo;
@@ -105,11 +105,11 @@ namespace zlpanel {
             grid.templateColumns = {Track(Fr(50)), Track(Fr(50)), Track(Fr(50))};
 
             grid.items = {
-                juce::GridItem(scaleS).withArea(1, 1, 2, 4),
-                juce::GridItem(phaseC).withArea(2, 1),
-                juce::GridItem(agcC).withArea(2, 2),
-                juce::GridItem(lmC).withArea(2, 3),
-                juce::GridItem(outGainS).withArea(3, 1, 4, 4)
+                juce::GridItem(scale_s_).withArea(1, 1, 2, 4),
+                juce::GridItem(phase_c_).withArea(2, 1),
+                juce::GridItem(agc_c_).withArea(2, 2),
+                juce::GridItem(lm_c_).withArea(2, 3),
+                juce::GridItem(out_gain_s_).withArea(3, 1, 4, 4)
             };
 
             grid.performLayout(bound);
@@ -120,21 +120,21 @@ namespace zlpanel {
         juce::AudioProcessorValueTreeState &parameters_ref_;
         zlgui::UIBase &ui_base_;
 
-        zlgui::CompactButton phaseC, agcC, lmC;
-        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > buttonAttachments{};
+        zlgui::CompactButton phase_c_, agc_c_, lm_c_;
+        juce::OwnedArray<zlgui::ButtonCusAttachment<false> > button_attachments_{};
 
-        zlgui::CompactLinearSlider scaleS, outGainS;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
+        zlgui::CompactLinearSlider scale_s_, out_gain_s_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> slider_attachments_{};
 
-        const std::unique_ptr<juce::Drawable> phaseDrawable;
-        const std::unique_ptr<juce::Drawable> agcDrawable;
-        const std::unique_ptr<juce::Drawable> lmDrawable;
+        const std::unique_ptr<juce::Drawable> phase_drawable_;
+        const std::unique_ptr<juce::Drawable> agc_drawable_;
+        const std::unique_ptr<juce::Drawable> lm_drawable_;
 
-        zldsp::chore::ParaUpdater agcUpdater, gainUpdater;
+        zldsp::chore::ParaUpdater agc_updater_, gain_updater_;
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override {
-            juce::ignoreUnused(treeWhosePropertyHasChanged, property);
+            juce::ignoreUnused(tree_whose_property_has_changed, property);
             if (ui_base_.isBoxProperty(zlgui::BoxIdx::kOutputBox, property)) {
                 const auto f = static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kOutputBox));
                 setVisible(f);

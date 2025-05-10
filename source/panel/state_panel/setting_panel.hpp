@@ -32,12 +32,12 @@ namespace zlpanel {
     private:
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &ui_base_;
-        juce::String name;
-        zlgui::BoxIdx mIdx;
+        juce::String setting_name_;
+        zlgui::BoxIdx box_idx_;
 
         void timerCallback(int timerID) override;
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override;
     };
 } // zlpanel

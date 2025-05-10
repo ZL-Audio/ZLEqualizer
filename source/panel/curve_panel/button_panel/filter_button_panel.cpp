@@ -14,56 +14,56 @@ namespace zlpanel {
         : processor_ref_(processor),
           parameters_ref_(processor.parameters), parameters_NA_ref_(processor.parameters_NA),
           ui_base_(base),
-          dragger(base), targetDragger(base), sideDragger(base),
-          buttonPopUp(bandIdx, parameters_ref_, parameters_NA_ref_, base),
-          band{bandIdx},
-          currentSelectedBandIdx(*parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)) {
-        dragger.addMouseListener(this, true);
-        dragger.getButton().setBufferedToImage(true);
-        dragger.setBroughtToFrontOnMouseClick(true);
-        targetDragger.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::upDownArrow);
-        targetDragger.setBroughtToFrontOnMouseClick(true);
-        sideDragger.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::rectangle);
+          dragger_(base), target_dragger_(base), side_dragger_(base),
+          button_pop_up_(bandIdx, parameters_ref_, parameters_NA_ref_, base),
+          band_idx_{bandIdx},
+          c_band_idx_(*parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)) {
+        dragger_.addMouseListener(this, true);
+        dragger_.getButton().setBufferedToImage(true);
+        dragger_.setBroughtToFrontOnMouseClick(true);
+        target_dragger_.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::upDownArrow);
+        target_dragger_.setBroughtToFrontOnMouseClick(true);
+        side_dragger_.getLAF().setDraggerShape(zlgui::DraggerLookAndFeel::DraggerShape::rectangle);
         lookAndFeelChanged();
-        for (const auto &idx: IDs) {
-            const auto idxD = zlp::appendSuffix(idx, band);
+        for (const auto &idx: kIDs) {
+            const auto idxD = zlp::appendSuffix(idx, band_idx_);
             parameters_ref_.addParameterListener(idxD, this);
             parameterChanged(idxD, parameters_ref_.getRawParameterValue(idxD)->load());
         }
-        for (const auto &idx: NAIDs) {
-            const auto idxS = zlstate::appendSuffix(idx, band);
-            parameters_NA_ref_.addParameterListener(idxS, this);
-            parameterChanged(idxS, parameters_NA_ref_.getRawParameterValue(idxS)->load());
+        for (const auto &idx: kNAIDs) {
+            const auto idx_s = zlstate::appendSuffix(idx, band_idx_);
+            parameters_NA_ref_.addParameterListener(idx_s, this);
+            parameterChanged(idx_s, parameters_NA_ref_.getRawParameterValue(idx_s)->load());
         }
         parameters_NA_ref_.addParameterListener(zlstate::selectedBandIdx::ID, this);
         parameterChanged(zlstate::selectedBandIdx::ID,
                          parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)->load());
 
-        for (auto &d: {&sideDragger, &targetDragger, &dragger}) {
-            d->setScale(scale);
+        for (auto &d: {&side_dragger_, &target_dragger_, &dragger_}) {
+            d->setScale(kScale);
             addAndMakeVisible(d);
         }
-        addChildComponent(buttonPopUp);
-        // set current band if dragger is clicked
-        dragger.getButton().onClick = [this]() {
-            if (dragger.getButton().getToggleState()) {
-                if (static_cast<size_t>(currentSelectedBandIdx.load()) != band) {
+        addChildComponent(button_pop_up_);
+        // set the current band if dragger is clicked
+        dragger_.getButton().onClick = [this]() {
+            if (dragger_.getButton().getToggleState()) {
+                if (static_cast<size_t>(c_band_idx_.load()) != band_idx_) {
                     auto *para = parameters_NA_ref_.getParameter(zlstate::selectedBandIdx::ID);
                     para->beginChangeGesture();
-                    para->setValueNotifyingHost(zlstate::selectedBandIdx::convertTo01(static_cast<int>(band)));
+                    para->setValueNotifyingHost(zlstate::selectedBandIdx::convertTo01(static_cast<int>(band_idx_)));
                     para->endChangeGesture();
                 }
-                buttonPopUp.toFront(false);
-                buttonPopUp.setVisible(true);
+                button_pop_up_.toFront(false);
+                button_pop_up_.setVisible(true);
             } else {
-                buttonPopUp.setVisible(false);
+                button_pop_up_.setVisible(false);
             }
         };
         // disable link if side dragger is clicked
-        sideDragger.getButton().onClick = [this]() {
-            if (sideDragger.getButton().getToggleState()) {
+        side_dragger_.getButton().onClick = [this]() {
+            if (side_dragger_.getButton().getToggleState()) {
                 const auto para = parameters_ref_.
-                        getParameter(zlp::appendSuffix(zlp::singleDynLink::ID, band));
+                        getParameter(zlp::appendSuffix(zlp::singleDynLink::ID, band_idx_));
                 para->beginChangeGesture();
                 para->setValueNotifyingHost(0.f);
                 para->endChangeGesture();
@@ -71,17 +71,17 @@ namespace zlpanel {
         };
 
         setInterceptsMouseClicks(false, true);
-        dragger.setInterceptsMouseClicks(false, true);
-        targetDragger.setInterceptsMouseClicks(false, true);
-        sideDragger.setInterceptsMouseClicks(false, true);
+        dragger_.setInterceptsMouseClicks(false, true);
+        target_dragger_.setInterceptsMouseClicks(false, true);
+        side_dragger_.setInterceptsMouseClicks(false, true);
     }
 
     FilterButtonPanel::~FilterButtonPanel() {
-        for (const auto &idx: IDs) {
-            parameters_ref_.removeParameterListener(zlp::appendSuffix(idx, band), this);
+        for (const auto &idx: kIDs) {
+            parameters_ref_.removeParameterListener(zlp::appendSuffix(idx, band_idx_), this);
         }
-        for (const auto &idx: NAIDs) {
-            parameters_NA_ref_.removeParameterListener(zlstate::appendSuffix(idx, band), this);
+        for (const auto &idx: kNAIDs) {
+            parameters_NA_ref_.removeParameterListener(zlstate::appendSuffix(idx, band_idx_), this);
         }
         parameters_NA_ref_.removeParameterListener(zlstate::selectedBandIdx::ID, this);
     }
@@ -91,116 +91,116 @@ namespace zlpanel {
     }
 
     void FilterButtonPanel::setMaximumDB(const float db) {
-        maximumDB.store(db);
-        toUpdateAttachment.store(true);
-        toUpdateTargetAttachment.store(true);
-        toUpdateDraggers.store(true);
+        maximum_db_.store(db);
+        to_update_attachment_.store(true);
+        to_update_target_attachment_.store(true);
+        to_update_draggers_.store(true);
     }
 
-    void FilterButtonPanel::parameterChanged(const juce::String &parameterID, float newValue) {
-        if (parameterID == zlstate::selectedBandIdx::ID) {
-            isSelectedTarget.store(static_cast<size_t>(newValue) == band);
-            toUpdateTargetAttachment.store(true);
-            toUpdateDraggers.store(true);
+    void FilterButtonPanel::parameterChanged(const juce::String &parameter_id, float new_value) {
+        if (parameter_id == zlstate::selectedBandIdx::ID) {
+            is_selected_target_.store(static_cast<size_t>(new_value) == band_idx_);
+            to_update_target_attachment_.store(true);
+            to_update_draggers_.store(true);
             return;
         }
-        if (parameterID.startsWith(zlp::fType::ID)) {
-            fType.store(static_cast<zldsp::filter::FilterType>(newValue));
+        if (parameter_id.startsWith(zlp::fType::ID)) {
+            f_type_.store(static_cast<zldsp::filter::FilterType>(new_value));
 
-            toUpdateAttachment.store(true);
-            toUpdateTargetAttachment.store(true);
-            toUpdateBounds.store(true);
-            toUpdateDraggers.store(true);
-        } else if (parameterID.startsWith(zlstate::active::ID)) {
-            const auto f = newValue > .5f;
-            isActiveTarget.store(f);
-            toUpdateTargetAttachment.store(true);
-            toUpdateDraggers.store(true);
-        } else if (parameterID.startsWith(zlp::dynamicON::ID)) {
-            isDynamicHasTarget.store(newValue > .5f);
-            toUpdateTargetAttachment.store(true);
-            toUpdateDraggers.store(true);
-        } else if (parameterID.startsWith(zlp::lrType::ID)) {
-            lrType.store(static_cast<zlp::lrType::lrTypes>(newValue));
-            toUpdateDraggerLabel.store(true);
-            toUpdateDraggers.store(true);
+            to_update_attachment_.store(true);
+            to_update_target_attachment_.store(true);
+            to_update_bounds_.store(true);
+            to_update_draggers_.store(true);
+        } else if (parameter_id.startsWith(zlstate::active::ID)) {
+            const auto f = new_value > .5f;
+            is_active_target_.store(f);
+            to_update_target_attachment_.store(true);
+            to_update_draggers_.store(true);
+        } else if (parameter_id.startsWith(zlp::dynamicON::ID)) {
+            is_dynamic_has_target_.store(new_value > .5f);
+            to_update_target_attachment_.store(true);
+            to_update_draggers_.store(true);
+        } else if (parameter_id.startsWith(zlp::lrType::ID)) {
+            lr_type_.store(static_cast<zlp::lrType::lrTypes>(new_value));
+            to_update_dragger_label_.store(true);
+            to_update_draggers_.store(true);
         }
     }
 
     void FilterButtonPanel::handleAsyncUpdate() {
-        const auto f = isActiveTarget.load();
+        const auto f = is_active_target_.load();
         setVisible(f);
-        dragger.setVisible(f);
-        dragger.getButton().setToggleState(isSelectedTarget.load(), juce::sendNotificationSync);
-        if (toUpdateAttachment.exchange(false)) {
+        dragger_.setVisible(f);
+        dragger_.getButton().setToggleState(is_selected_target_.load(), juce::sendNotificationSync);
+        if (to_update_attachment_.exchange(false)) {
             updateAttachment();
         }
-        if (toUpdateTargetAttachment.exchange(false)) {
+        if (to_update_target_attachment_.exchange(false)) {
             updateTargetAttachment();
         }
-        if (toUpdateDraggerLabel.exchange(false)) {
+        if (to_update_dragger_label_.exchange(false)) {
             updateDraggerLabel();
         }
-        if (toUpdateBounds.exchange(false)) {
+        if (to_update_bounds_.exchange(false)) {
             updateBounds();
         }
-        dragger.getButton().repaint();
+        dragger_.getButton().repaint();
     }
 
     void FilterButtonPanel::updateAttachment() {
-        const auto maxDB = maximumDB.load();
-        const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
-        switch (fType.load()) {
+        const auto c_maximum_db = maximum_db_.load();
+        const auto gain_range = juce::NormalisableRange<float>(-c_maximum_db, c_maximum_db, .01f);
+        switch (f_type_.load()) {
             case zldsp::filter::FilterType::kPeak:
             case zldsp::filter::FilterType::kBandShelf:
             case zldsp::filter::FilterType::kLowShelf:
             case zldsp::filter::FilterType::kHighShelf:
             case zldsp::filter::FilterType::kTiltShelf: {
-                auto *para1 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::freq::ID, band));
-                auto *para2 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::gain::ID, band));
-                attachment = std::make_unique<zlgui::DraggerParameterAttach>(
-                    *para1, freqRange,
-                    *para2, gainRange,
-                    dragger);
-                attachment->enableX(true);
-                attachment->enableY(true);
-                attachment->sendInitialUpdate();
+                auto *para1 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::freq::ID, band_idx_));
+                auto *para2 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::gain::ID, band_idx_));
+                base_attach_ = std::make_unique<zlgui::DraggerParameterAttach>(
+                    *para1, kFreqRange,
+                    *para2, gain_range,
+                    dragger_);
+                base_attach_->enableX(true);
+                base_attach_->enableY(true);
+                base_attach_->sendInitialUpdate();
                 break;
             }
             case zldsp::filter::FilterType::kNotch:
             case zldsp::filter::FilterType::kLowPass:
             case zldsp::filter::FilterType::kHighPass:
             case zldsp::filter::FilterType::kBandPass: {
-                auto *para1 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::freq::ID, band));
-                auto *para2 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::gain::ID, band));
-                attachment = std::make_unique<zlgui::DraggerParameterAttach>(
-                    *para1, freqRange,
-                    *para2, gainRange,
-                    dragger);
-                attachment->enableX(true);
-                attachment->enableY(false); {
-                    attachment->setY(0.5f);
+                auto *para1 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::freq::ID, band_idx_));
+                auto *para2 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::gain::ID, band_idx_));
+                base_attach_ = std::make_unique<zlgui::DraggerParameterAttach>(
+                    *para1, kFreqRange,
+                    *para2, gain_range,
+                    dragger_);
+                base_attach_->enableX(true);
+                base_attach_->enableY(false); {
+                    base_attach_->setY(0.5f);
                 }
-                attachment->sendInitialUpdate();
+                base_attach_->sendInitialUpdate();
                 break;
             }
         }
     }
 
     void FilterButtonPanel::updateBounds() {
-        dragger.setBounds(getLocalBounds());
-        targetDragger.setBounds(getLocalBounds());
-        sideDragger.setBounds(getLocalBounds());
+        dragger_.setBounds(getLocalBounds());
+        target_dragger_.setBounds(getLocalBounds());
+        side_dragger_.setBounds(getLocalBounds());
         auto bound = getLocalBounds().toFloat();
         bound.removeFromRight((1 - 0.98761596f) * bound.getWidth());
-        switch (fType.load()) {
+        switch (f_type_.load()) {
             case zldsp::filter::FilterType::kPeak:
             case zldsp::filter::FilterType::kBandShelf: {
-                dragger.setButtonArea(
+                dragger_.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
                         bound.getHeight() - 2 * ui_base_.getFontSize()));
-                targetDragger.setButtonArea(
+                target_dragger_.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
                         bound.getHeight() - 2 * ui_base_.getFontSize()));
@@ -209,11 +209,11 @@ namespace zlpanel {
             case zldsp::filter::FilterType::kLowShelf:
             case zldsp::filter::FilterType::kHighShelf:
             case zldsp::filter::FilterType::kTiltShelf: {
-                dragger.setButtonArea(
+                dragger_.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
                         bound.getHeight() * .5f - 1 * ui_base_.getFontSize()));
-                targetDragger.setButtonArea(
+                target_dragger_.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
                         bound.getHeight() * .5f - 1 * ui_base_.getFontSize()));
@@ -223,137 +223,137 @@ namespace zlpanel {
             case zldsp::filter::FilterType::kLowPass:
             case zldsp::filter::FilterType::kHighPass:
             case zldsp::filter::FilterType::kBandPass: {
-                dragger.setButtonArea(
+                dragger_.setButtonArea(
                     bound.withSizeKeepingCentre(
                         bound.getWidth(),
-                        scale * ui_base_.getFontSize()));
+                        kScale * ui_base_.getFontSize()));
                 break;
             }
         }
-        juce::Rectangle<float> sideBound{
-            bound.getX(), bound.getBottom() - 2 * ui_base_.getFontSize() - .5f * scale * ui_base_.getFontSize(),
-            bound.getWidth(), scale * ui_base_.getFontSize()
+        juce::Rectangle<float> side_bound{
+            bound.getX(), bound.getBottom() - 2 * ui_base_.getFontSize() - .5f * kScale * ui_base_.getFontSize(),
+            bound.getWidth(), kScale * ui_base_.getFontSize()
         };
-        sideBound = sideBound.withSizeKeepingCentre(sideBound.getWidth(), 1.f);
-        sideDragger.setButtonArea(sideBound);
+        side_bound = side_bound.withSizeKeepingCentre(side_bound.getWidth(), 1.f);
+        side_dragger_.setButtonArea(side_bound);
     }
 
     void FilterButtonPanel::updateTargetAttachment() {
-        bool isFilterTypeHasTarget = false;
-        switch (fType.load()) {
+        bool is_filter_type_has_target = false;
+        switch (f_type_.load()) {
             case zldsp::filter::FilterType::kPeak:
             case zldsp::filter::FilterType::kBandShelf:
             case zldsp::filter::FilterType::kLowShelf:
             case zldsp::filter::FilterType::kHighShelf:
             case zldsp::filter::FilterType::kTiltShelf: {
-                isFilterTypeHasTarget = true;
+                is_filter_type_has_target = true;
                 break;
             }
             case zldsp::filter::FilterType::kNotch:
             case zldsp::filter::FilterType::kLowPass:
             case zldsp::filter::FilterType::kHighPass:
             case zldsp::filter::FilterType::kBandPass: {
-                isFilterTypeHasTarget = false;
+                is_filter_type_has_target = false;
                 break;
             }
         }
-        if (isDynamicHasTarget.load() && isFilterTypeHasTarget &&
-            isSelectedTarget.load() && isActiveTarget.load()) {
-            const auto maxDB = maximumDB.load();
+        if (is_dynamic_has_target_.load() && is_filter_type_has_target &&
+            is_selected_target_.load() && is_active_target_.load()) {
+            const auto maxDB = maximum_db_.load();
             const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
-            auto *para1 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::freq::ID, band));
-            auto *para3 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::targetGain::ID, band));
-            targetAttach = std::make_unique<zlgui::DraggerParameterAttach>(
-                *para1, freqRange,
+            auto *para1 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::freq::ID, band_idx_));
+            auto *para3 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::targetGain::ID, band_idx_));
+            target_attach_ = std::make_unique<zlgui::DraggerParameterAttach>(
+                *para1, kFreqRange,
                 *para3, gainRange,
-                targetDragger);
-            targetAttach->enableX(true);
-            targetAttach->enableY(true);
-            targetAttach->sendInitialUpdate();
-            targetDragger.setVisible(true);
+                target_dragger_);
+            target_attach_->enableX(true);
+            target_attach_->enableY(true);
+            target_attach_->sendInitialUpdate();
+            target_dragger_.setVisible(true);
         } else {
-            targetAttach.reset();
-            targetDragger.setVisible(false);
+            target_attach_.reset();
+            target_dragger_.setVisible(false);
         }
-        if (isDynamicHasTarget.load() && isSelectedTarget.load() && isActiveTarget.load()) {
-            const auto maxDB = maximumDB.load();
-            const auto gainRange = juce::NormalisableRange<float>(-maxDB, maxDB, .01f);
-            auto *para2 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::sideFreq::ID, band));
-            auto *para3 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::targetGain::ID, band));
-            sideAttach = std::make_unique<zlgui::DraggerParameterAttach>(
-                *para2, freqRange,
-                *para3, gainRange,
-                sideDragger);
-            sideAttach->enableX(true);
-            sideAttach->enableY(false);
-            sideAttach->sendInitialUpdate();
-            sideDragger.setVisible(true);
+        if (is_dynamic_has_target_.load() && is_selected_target_.load() && is_active_target_.load()) {
+            const auto c_maximum_db = maximum_db_.load();
+            const auto gain_range = juce::NormalisableRange<float>(-c_maximum_db, c_maximum_db, .01f);
+            auto *para2 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::sideFreq::ID, band_idx_));
+            auto *para3 = parameters_ref_.getParameter(zlp::appendSuffix(zlp::targetGain::ID, band_idx_));
+            side_attach_ = std::make_unique<zlgui::DraggerParameterAttach>(
+                *para2, kFreqRange,
+                *para3, gain_range,
+                side_dragger_);
+            side_attach_->enableX(true);
+            side_attach_->enableY(false);
+            side_attach_->sendInitialUpdate();
+            side_dragger_.setVisible(true);
         } else {
-            sideAttach.reset();
-            sideDragger.setVisible(false);
+            side_attach_.reset();
+            side_dragger_.setVisible(false);
         }
     }
 
     void FilterButtonPanel::updateDraggerLabel() {
-        switch (lrType.load()) {
+        switch (lr_type_.load()) {
             case zlp::lrType::kStereo:
-                dragger.getLAF().setLabel("");
+                dragger_.getLAF().setLabel("");
             break;
             case zlp::lrType::kLeft:
-                dragger.getLAF().setLabel("L");
+                dragger_.getLAF().setLabel("L");
             break;
             case zlp::lrType::kRight:
-                dragger.getLAF().setLabel("R");
+                dragger_.getLAF().setLabel("R");
             break;
             case zlp::lrType::kMid:
-                dragger.getLAF().setLabel("M");
+                dragger_.getLAF().setLabel("M");
             break;
             case zlp::lrType::kSide:
-                dragger.getLAF().setLabel("S");
+                dragger_.getLAF().setLabel("S");
             break;
         }
     }
 
     void FilterButtonPanel::setSelected(const bool f) {
-        if (dragger.getButton().getToggleState() != f) {
-            dragger.getButton().setToggleState(f, juce::NotificationType::sendNotificationSync);
+        if (dragger_.getButton().getToggleState() != f) {
+            dragger_.getButton().setToggleState(f, juce::NotificationType::sendNotificationSync);
         }
-        if (targetDragger.getButton().getToggleState()) {
-            targetDragger.getButton().setToggleState(false, juce::NotificationType::dontSendNotification);
+        if (target_dragger_.getButton().getToggleState()) {
+            target_dragger_.getButton().setToggleState(false, juce::NotificationType::dontSendNotification);
         }
-        if (sideDragger.getButton().getToggleState()) {
-            sideDragger.getButton().setToggleState(false, juce::NotificationType::dontSendNotification);
+        if (side_dragger_.getButton().getToggleState()) {
+            side_dragger_.getButton().setToggleState(false, juce::NotificationType::dontSendNotification);
         }
     }
 
     void FilterButtonPanel::mouseDoubleClick(const juce::MouseEvent &event) {
         if (event.mods.isCommandDown()) {
-            const auto currentBand = band;
+            const auto c_band_idx = band_idx_;
             if (event.mods.isLeftButtonDown()) {
                 // turn on/off current band dynamic
-                const auto paraID = zlp::appendSuffix(zlp::dynamicON::ID, currentBand);
-                const auto newValue = 1.f - parameters_ref_.getRawParameterValue(paraID)->load(); {
-                    auto *para = parameters_ref_.getParameter(paraID);
+                const auto parameter_id = zlp::appendSuffix(zlp::dynamicON::ID, c_band_idx);
+                const auto new_value = 1.f - parameters_ref_.getRawParameterValue(parameter_id)->load(); {
+                    auto *para = parameters_ref_.getParameter(parameter_id);
                     para->beginChangeGesture();
-                    para->setValueNotifyingHost(newValue);
+                    para->setValueNotifyingHost(new_value);
                     para->endChangeGesture();
                 }
-                float dynLinkValue = 0.0;
-                if (newValue > 0.5f) {
-                    processor_ref_.getFiltersAttach().turnOnDynamic(currentBand);
-                    dynLinkValue = static_cast<float>(ui_base_.getDynLink());
+                float dyn_link_value = 0.0;
+                if (new_value > 0.5f) {
+                    processor_ref_.getFiltersAttach().turnOnDynamic(c_band_idx);
+                    dyn_link_value = static_cast<float>(ui_base_.getDynLink());
                 } else {
-                    processor_ref_.getFiltersAttach().turnOffDynamic(currentBand);
+                    processor_ref_.getFiltersAttach().turnOffDynamic(c_band_idx);
                 } {
                     auto *para = parameters_ref_.getParameter(
-                        zlp::appendSuffix(zlp::singleDynLink::ID, currentBand));
+                        zlp::appendSuffix(zlp::singleDynLink::ID, c_band_idx));
                     para->beginChangeGesture();
-                    para->setValueNotifyingHost(dynLinkValue);
+                    para->setValueNotifyingHost(dyn_link_value);
                     para->endChangeGesture();
                 }
             } else if (event.mods.isRightButtonDown()) {
                 auto *para = parameters_ref_.getParameter(
-                    zlp::appendSuffix(zlp::solo::ID, currentBand));
+                    zlp::appendSuffix(zlp::solo::ID, c_band_idx));
                 para->beginChangeGesture();
                 if (para->getValue() < 0.5f) {
                     para->setValueNotifyingHost(1.f);
@@ -366,16 +366,16 @@ namespace zlpanel {
     }
 
     void FilterButtonPanel::lookAndFeelChanged() {
-        for (auto &d: {&sideDragger, &targetDragger, &dragger}) {
-            d->getLAF().setColour(ui_base_.getColorMap1(band));
+        for (auto &d: {&side_dragger_, &target_dragger_, &dragger_}) {
+            d->getLAF().setColour(ui_base_.getColorMap1(band_idx_));
         }
     }
 
     void FilterButtonPanel::visibilityChanged() {
         if (!isVisible()) {
-            buttonPopUp.setBounds({
+            button_pop_up_.setBounds({
                 std::numeric_limits<int>::min() / 2, std::numeric_limits<int>::min() / 2,
-                buttonPopUp.getBounds().getWidth(), buttonPopUp.getBounds().getHeight()
+                button_pop_up_.getBounds().getWidth(), button_pop_up_.getBounds().getHeight()
             });
         }
     }

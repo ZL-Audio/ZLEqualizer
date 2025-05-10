@@ -18,33 +18,33 @@ namespace zlpanel {
         explicit DynamicBox(juce::AudioProcessorValueTreeState &parameters, zlgui::UIBase &base)
             : parameters_ref_(parameters),
               ui_base_(base),
-              lookaheadS("Lookahead", ui_base_, zlgui::multilingual::Labels::kLookahead),
-              rmsS("RMS", ui_base_, zlgui::multilingual::Labels::kRMS),
-              smoothS("Smooth", ui_base_, zlgui::multilingual::Labels::kSmooth),
-              dynHQC("HQ:", zlp::dynHQ::choices, ui_base_, zlgui::multilingual::Labels::kHighQuality) {
-            for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
+              lookahead_s_("Lookahead", ui_base_, zlgui::multilingual::Labels::kLookahead),
+              rms_s_("RMS", ui_base_, zlgui::multilingual::Labels::kRMS),
+              smooth_s_("Smooth", ui_base_, zlgui::multilingual::Labels::kSmooth),
+              dyn_hq_c_("HQ:", zlp::dynHQ::choices, ui_base_, zlgui::multilingual::Labels::kHighQuality) {
+            for (auto &c: {&lookahead_s_, &rms_s_, &smooth_s_}) {
                 addAndMakeVisible(c);
             }
             attach({
-                       &lookaheadS.getSlider(), &rmsS.getSlider(), &smoothS.getSlider()
+                       &lookahead_s_.getSlider(), &rms_s_.getSlider(), &smooth_s_.getSlider()
                    },
                    {
                        zlp::dynLookahead::ID, zlp::dynRMS::ID, zlp::dynSmooth::ID
                    },
-                   parameters_ref_, sliderAttachments);
-            for (auto &c: {&dynHQC}) {
+                   parameters_ref_, slider_attachments_);
+            for (auto &c: {&dyn_hq_c_}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.5f);
                 c->setLabelPos(zlgui::ClickCombobox::kLeft);
                 addAndMakeVisible(c);
             }
             attach({
-                       &dynHQC.getCompactBox().getBox(),
+                       &dyn_hq_c_.getCompactBox().getBox(),
                    },
                    {
                        zlp::dynHQ::ID
                    },
-                   parameters_ref_, boxAttachments);
+                   parameters_ref_, box_attachments_);
             setBufferedToImage(true);
             ui_base_.getBoxTree().addListener(this);
         }
@@ -65,44 +65,44 @@ namespace zlpanel {
         }
 
         juce::Rectangle<int> getIdealBound() const {
-            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
-            const auto buttonHeight = static_cast<int>(buttonHeightP * ui_base_.getFontSize());
-            const auto buttonWidth = static_cast<int>(ui_base_.getFontSize() * 2.5);
-            const auto boxHeight = juce::roundToInt(boxHeightP * ui_base_.getFontSize());
-            return {buttonWidth * 3 + padSize * 2, buttonHeight * 3 + boxHeight + padSize};
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto button_height = static_cast<int>(kButtonHeightP * ui_base_.getFontSize());
+            const auto button_width = static_cast<int>(ui_base_.getFontSize() * 2.5);
+            const auto box_height = juce::roundToInt(kBoxHeightP * ui_base_.getFontSize());
+            return {button_width * 3 + pad_size * 2, button_height * 3 + box_height + pad_size};
         }
 
         void resized() override {
-            for (auto &c: {&lookaheadS, &rmsS, &smoothS}) {
+            for (auto &c: {&lookahead_s_, &rms_s_, &smooth_s_}) {
                 c->setPadding(std::round(ui_base_.getFontSize() * 0.5f),
                               std::round(ui_base_.getFontSize() * 0.6f));
             }
 
-            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
-            const auto buttonHeight = static_cast<int>(buttonHeightP * ui_base_.getFontSize());
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto button_height = static_cast<int>(kButtonHeightP * ui_base_.getFontSize());
 
             auto bound = getLocalBounds();
-            bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
-                                         bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
+            bound = juce::Rectangle<int>(bound.getX() + pad_size, bound.getY(),
+                                         bound.getWidth() - pad_size * 2, bound.getHeight() - pad_size);
 
-            lookaheadS.setBounds(bound.removeFromTop(buttonHeight));
-            rmsS.setBounds(bound.removeFromTop(buttonHeight));
-            smoothS.setBounds(bound.removeFromTop(buttonHeight));
-            dynHQC.setBounds(bound);
+            lookahead_s_.setBounds(bound.removeFromTop(button_height));
+            rms_s_.setBounds(bound.removeFromTop(button_height));
+            smooth_s_.setBounds(bound.removeFromTop(button_height));
+            dyn_hq_c_.setBounds(bound);
         }
 
     private:
         juce::AudioProcessorValueTreeState &parameters_ref_;
         zlgui::UIBase &ui_base_;
 
-        zlgui::CompactLinearSlider lookaheadS, rmsS, smoothS;
-        zlgui::ClickCombobox dynHQC;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachments{};
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
+        zlgui::CompactLinearSlider lookahead_s_, rms_s_, smooth_s_;
+        zlgui::ClickCombobox dyn_hq_c_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> slider_attachments_{};
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> box_attachments_{};
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override {
-            juce::ignoreUnused(treeWhosePropertyHasChanged);
+            juce::ignoreUnused(tree_whose_property_has_changed);
             if (ui_base_.isBoxProperty(zlgui::BoxIdx::kDynamicBox, property)) {
                 const auto f = static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kDynamicBox));
                 setVisible(f);

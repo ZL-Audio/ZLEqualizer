@@ -72,9 +72,9 @@ void PluginEditor::minimisationStateChanged(bool) {
     updateIsShowing();
 }
 
-void PluginEditor::parameterChanged(const juce::String &parameterID, float newValue) {
-    juce::ignoreUnused(parameterID, newValue);
-    isSizeChanged.store(parameterID == zlstate::windowH::ID || parameterID == zlstate::windowW::ID);
+void PluginEditor::parameterChanged(const juce::String &parameter_id, float new_value) {
+    juce::ignoreUnused(parameter_id, new_value);
+    isSizeChanged.store(parameter_id == zlstate::windowH::ID || parameter_id == zlstate::windowW::ID);
     triggerAsyncUpdate();
 }
 

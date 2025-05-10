@@ -32,12 +32,12 @@ namespace zlgui {
         attachment_y_.sendInitialUpdate();
     }
 
-    void DraggerParameterAttach::setX(const float newValue) const {
-        dragger_.setXPortion(range_x_.convertTo0to1(range_x_.snapToLegalValue(newValue)));
+    void DraggerParameterAttach::setX(const float new_value) const {
+        dragger_.setXPortion(range_x_.convertTo0to1(range_x_.snapToLegalValue(new_value)));
     }
 
-    void DraggerParameterAttach::setY(const float newValue) const {
-        dragger_.setYPortion(range_y_.convertTo0to1(range_y_.snapToLegalValue(newValue)));
+    void DraggerParameterAttach::setY(const float new_value) const {
+        dragger_.setYPortion(range_y_.convertTo0to1(range_y_.snapToLegalValue(new_value)));
     }
 
     void DraggerParameterAttach::dragStarted(Dragger *) {

@@ -22,30 +22,28 @@ namespace zlpanel {
     class FilterButtonPanel final : public juce::Component,
                                     private juce::AudioProcessorValueTreeState::Listener {
     public:
-        explicit FilterButtonPanel(size_t bandIdx,
-                                   PluginProcessor &processor,
-                                   zlgui::UIBase &base);
+        explicit FilterButtonPanel(size_t bandIdx, PluginProcessor &processor, zlgui::UIBase &base);
 
         ~FilterButtonPanel() override;
 
         void resized() override;
 
-        zlgui::Dragger &getDragger() { return dragger; }
+        zlgui::Dragger &getDragger() { return dragger_; }
 
-        zlgui::Dragger &getTargetDragger() { return targetDragger; }
+        zlgui::Dragger &getTargetDragger() { return target_dragger_; }
 
-        zlgui::Dragger &getSideDragger() { return sideDragger; }
+        zlgui::Dragger &getSideDragger() { return side_dragger_; }
 
-        ButtonPopUp &getPopUp() { return buttonPopUp; }
+        ButtonPopUp &getPopUp() { return button_pop_up_; }
 
-        bool getSelected() { return dragger.getButton().getToggleState(); }
+        bool getSelected() { return dragger_.getButton().getToggleState(); }
 
         void setSelected(bool f);
 
         void setMaximumDB(float db);
 
         void updateDraggers() {
-            if (toUpdateDraggers.exchange(false)) {
+            if (to_update_draggers_.exchange(false)) {
                 handleAsyncUpdate();
             }
         }
@@ -60,28 +58,27 @@ namespace zlpanel {
         PluginProcessor &processor_ref_;
         juce::AudioProcessorValueTreeState &parameters_ref_, &parameters_NA_ref_;
         zlgui::UIBase &ui_base_;
-        zlgui::Dragger dragger, targetDragger, sideDragger;
-        ButtonPopUp buttonPopUp;
-        std::unique_ptr<zlgui::DraggerParameterAttach> attachment, targetAttach, sideAttach;
-        std::atomic<float> maximumDB{zlstate::maximumDB::dBs[static_cast<size_t>(zlstate::maximumDB::defaultI)]};
-        std::atomic<zldsp::filter::FilterType> fType;
-        std::atomic<zlp::lrType::lrTypes> lrType;
-        const size_t band;
-        std::atomic<float> &currentSelectedBandIdx;
-        std::atomic<bool> isDynamicHasTarget{false}, isSelectedTarget{false}, isActiveTarget{false};
+        zlgui::Dragger dragger_, target_dragger_, side_dragger_;
+        ButtonPopUp button_pop_up_;
+        std::unique_ptr<zlgui::DraggerParameterAttach> base_attach_, target_attach_, side_attach_;
+        std::atomic<float> maximum_db_{zlstate::maximumDB::dBs[static_cast<size_t>(zlstate::maximumDB::defaultI)]};
+        std::atomic<zldsp::filter::FilterType> f_type_;
+        std::atomic<zlp::lrType::lrTypes> lr_type_;
+        const size_t band_idx_;
+        std::atomic<float> &c_band_idx_;
+        std::atomic<bool> is_dynamic_has_target_{false}, is_selected_target_{false}, is_active_target_{false};
 
-        static constexpr std::array IDs{zlp::fType::ID, zlp::lrType::ID, zlp::dynamicON::ID};
-        static constexpr std::array NAIDs{zlstate::active::ID};
-        static constexpr auto scale = 1.5f;
+        static constexpr std::array kIDs{zlp::fType::ID, zlp::lrType::ID, zlp::dynamicON::ID};
+        static constexpr std::array kNAIDs{zlstate::active::ID};
+        static constexpr auto kScale = 1.5f;
 
-        std::atomic<bool> toUpdateAttachment{false}, toUpdateBounds{false}, toUpdateTargetAttachment{false},
-                toUpdateDraggerLabel{false};
+        std::atomic<bool> to_update_draggers_{false};
+        std::atomic<bool> to_update_attachment_{false}, to_update_bounds_{false};
+        std::atomic<bool> to_update_target_attachment_{false}, to_update_dragger_label_{false};
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        void parameterChanged(const juce::String &parameter_id, float new_value) override;
 
         void handleAsyncUpdate();
-
-        std::atomic<bool> toUpdateDraggers{false};
 
         void updateAttachment();
 
@@ -91,7 +88,7 @@ namespace zlpanel {
 
         void updateDraggerLabel();
 
-        const juce::NormalisableRange<float> freqRange{
+        const juce::NormalisableRange<float> kFreqRange{
             10.f, 20000.f,
             [](float rangeStart, float rangeEnd, float valueToRemap) {
                 return std::exp(valueToRemap * std::log(

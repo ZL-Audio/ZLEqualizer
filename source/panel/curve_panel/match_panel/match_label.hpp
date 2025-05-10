@@ -22,7 +22,7 @@ namespace zlpanel {
 
     private:
         zlgui::UIBase &ui_base_;
-        zlgui::NameLookAndFeel labelLAF;
-        juce::Label runningLabel;
+        zlgui::NameLookAndFeel label_laf_;
+        juce::Label running_label_;
     };
 } // zlpanel

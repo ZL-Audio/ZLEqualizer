@@ -16,20 +16,20 @@ namespace zlpanel {
                          juce::AudioProcessorValueTreeState &parameters_NA,
                          zlgui::UIBase &base,
                          zlp::Controller<double> &controller,
-                         ButtonPanel &buttonPanel)
+                         ButtonPanel &button_panel)
         : parameters_ref_(parameters), parameters_NA_ref_(parameters_NA),
           ui_base_(base),
           soloF(controller.getSoloFilter()),
-          controller_ref_(controller), buttonPanelRef(buttonPanel) {
+          controller_ref_(controller), button_panel_ref_(button_panel) {
         juce::ignoreUnused(parameters_ref_, parameters_NA);
         parameters_NA_ref_.addParameterListener(zlstate::selectedBandIdx::ID, this);
         for (size_t i = 0; i < zlp::kBandNUM; ++i) {
-            soloUpdaters.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
+            solo_updaters_.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
                 parameters_ref_, zlp::appendSuffix(zlp::solo::ID, i)));
-            sideSoloUpdaters.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
+            side_solo_updaters_.emplace_back(std::make_unique<zldsp::chore::ParaUpdater>(
                 parameters_ref_, zlp::appendSuffix(zlp::sideSolo::ID, i)));
         }
-        selectBandIdx.store(static_cast<size_t>(
+        band_idx_.store(static_cast<size_t>(
             parameters_NA_ref_.getRawParameterValue(zlstate::selectedBandIdx::ID)->load()));
         handleAsyncUpdate();
     }
@@ -40,42 +40,42 @@ namespace zlpanel {
     }
 
     void SoloPanel::paint(juce::Graphics &g) {
-        const size_t bandIdx = selectBandIdx.load();
+        const size_t c_band_idx = band_idx_.load();
 
         g.setColour(ui_base_.getTextColor().withAlpha(.1f));
         auto bound = getLocalBounds().toFloat();
         if (controller_ref_.getSoloIsSide()) {
-            const auto x =  buttonPanelRef.getSideDragger(
-                selectBandIdx.load()).getButton().getBoundsInParent().toFloat().getCentreX();
-            if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
-                currentX = x;
+            const auto x =  button_panel_ref_.getSideDragger(
+                band_idx_.load()).getButton().getBoundsInParent().toFloat().getCentreX();
+            if (std::abs(x - current_x_) >= 0.001 || std::abs(soloF.getQ() - solo_q_) >= 0.001) {
+                current_x_ = x;
                 handleAsyncUpdate();
             }
-            const auto boundWidth = bound.getWidth();
-            const auto leftWidth = currentX - currentBW * boundWidth;
-            const auto rightWidth = boundWidth - currentX - currentBW * boundWidth;
-            const auto leftArea = bound.removeFromLeft(leftWidth);
-            const auto rightArea = bound.removeFromRight(rightWidth);
-            g.fillRect(leftArea);
-            g.fillRect(rightArea);
+            const auto bound_width = bound.getWidth();
+            const auto left_width = current_x_ - current_bw_ * bound_width;
+            const auto right_width = bound_width - current_x_ - current_bw_ * bound_width;
+            const auto left_area = bound.removeFromLeft(left_width);
+            const auto right_area = bound.removeFromRight(right_width);
+            g.fillRect(left_area);
+            g.fillRect(right_area);
         } else {
-            const auto x = buttonPanelRef.getDragger(selectBandIdx.load()
+            const auto x = button_panel_ref_.getDragger(c_band_idx
                 ).getButton().getBoundsInParent().toFloat().getCentreX();
-            if (std::abs(x - currentX) >= 0.001 || std::abs(soloF.getQ() - soloQ) >= 0.001) {
-                currentX = x;
+            if (std::abs(x - current_x_) >= 0.001 || std::abs(soloF.getQ() - solo_q_) >= 0.001) {
+                current_x_ = x;
                 handleAsyncUpdate();
             }
-            const auto &f = controller_ref_.getMainIdealFilter(bandIdx);
+            const auto &f = controller_ref_.getMainIdealFilter(c_band_idx);
             switch (f.getFilterType()) {
                 case zldsp::filter::kHighPass:
                 case zldsp::filter::kLowShelf: {
-                    bound.removeFromLeft(currentX);
+                    bound.removeFromLeft(current_x_);
                     g.fillRect(bound);
                     break;
                 }
                 case zldsp::filter::kLowPass:
                 case zldsp::filter::kHighShelf: {
-                    bound = bound.removeFromLeft(currentX);
+                    bound = bound.removeFromLeft(current_x_);
                     g.fillRect(bound);
                     break;
                 }
@@ -86,39 +86,39 @@ namespace zlpanel {
                 case zldsp::filter::kBandShelf:
                 case zldsp::filter::kBandPass:
                 case zldsp::filter::kNotch: {
-                    const auto boundWidth = bound.getWidth();
-                    const auto leftWidth = currentX - currentBW * boundWidth;
-                    const auto rightWidth = boundWidth - currentX - currentBW * boundWidth;
-                    const auto leftArea = bound.removeFromLeft(leftWidth);
-                    const auto rightArea = bound.removeFromRight(rightWidth);
-                    g.fillRect(leftArea);
-                    g.fillRect(rightArea);
+                    const auto bound_width = bound.getWidth();
+                    const auto left_width = current_x_ - current_bw_ * bound_width;
+                    const auto right_width = bound_width - current_x_ - current_bw_ * bound_width;
+                    const auto left_area = bound.removeFromLeft(left_width);
+                    const auto right_area = bound.removeFromRight(right_width);
+                    g.fillRect(left_area);
+                    g.fillRect(right_area);
                 }
             }
         }
     }
 
     void SoloPanel::handleAsyncUpdate() {
-        soloQ = soloF.getQ();
-        const auto bw = std::asinh(0.5f / soloQ);
-        currentBW = static_cast<float>(bw) / std::log(2200.f);
+        solo_q_ = soloF.getQ();
+        const auto bw = std::asinh(0.5f / solo_q_);
+        current_bw_ = static_cast<float>(bw) / std::log(2200.f);
     }
 
-    void SoloPanel::parameterChanged(const juce::String &parameterID, const float newValue) {
-        juce::ignoreUnused(parameterID);
-        const auto previousBandIdx = selectBandIdx.load();
-        const auto currentBandIdx = static_cast<size_t>(newValue);
-        if (previousBandIdx != currentBandIdx) {
-            soloUpdaters[previousBandIdx]->update(0.f);
-            sideSoloUpdaters[previousBandIdx]->update(0.f);
+    void SoloPanel::parameterChanged(const juce::String &parameter_id, const float new_value) {
+        juce::ignoreUnused(parameter_id);
+        const auto previous_band_idx = band_idx_.load();
+        const auto c_band_idx = static_cast<size_t>(new_value);
+        if (previous_band_idx != c_band_idx) {
+            solo_updaters_[previous_band_idx]->update(0.f);
+            side_solo_updaters_[previous_band_idx]->update(0.f);
         }
-        selectBandIdx.store(currentBandIdx);
+        band_idx_.store(c_band_idx);
     }
 
     void SoloPanel::turnOffSolo() const {
         for (size_t i = 0; i < zlp::kBandNUM; ++i) {
-            soloUpdaters[i]->updateSync(0.f);
-            sideSoloUpdaters[i]->updateSync(0.f);
+            solo_updaters_[i]->updateSync(0.f);
+            side_solo_updaters_[i]->updateSync(0.f);
         }
     }
 } // zlpanel

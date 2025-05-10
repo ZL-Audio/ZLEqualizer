@@ -13,21 +13,21 @@ namespace zlpanel {
     LogoPanel::LogoPanel(PluginProcessor &p,
                          zlgui::UIBase &base,
                          UISettingPanel &uiSettingPanel)
-        : stateRef(p.state),
-          ui_base_(base), panelToShow(uiSettingPanel),
-          brandDrawable(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
-          logoDrawable(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
-        juce::ignoreUnused(stateRef);
+        : state_ref_(p.state),
+          ui_base_(base), panel_to_show_(uiSettingPanel),
+          brand_drawable_(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
+          logo_drawable_(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
+        juce::ignoreUnused(state_ref_);
         SettableTooltipClient::setTooltip(ui_base_.getToolTipText(zlgui::multilingual::Labels::kPluginLogo));
         setBufferedToImage(true);
     }
 
     void LogoPanel::paint(juce::Graphics &g) {
-        const auto tempBrand = brandDrawable->createCopy();
-        const auto tempLogo = logoDrawable->createCopy();
-        tempBrand->replaceColour(juce::Colour(0, 0, 0), ui_base_.getTextColor());
-        tempLogo->replaceColour(juce::Colour(0, 0, 0), ui_base_.getTextColor());
-        tempLogo->replaceColour(
+        const auto temp_brand = brand_drawable_->createCopy();
+        const auto temp_logo = logo_drawable_->createCopy();
+        temp_brand->replaceColour(juce::Colour(0, 0, 0), ui_base_.getTextColor());
+        temp_logo->replaceColour(juce::Colour(0, 0, 0), ui_base_.getTextColor());
+        temp_logo->replaceColour(
             juce::Colour(static_cast<juce::uint8>(0), static_cast<juce::uint8>(0), static_cast<juce::uint8>(0), .5f),
             ui_base_.getTextColor().withMultipliedAlpha(.5f));
 
@@ -35,31 +35,31 @@ namespace zlpanel {
         const auto padding = juce::jmin(ui_base_.getFontSize() * 0.5f, ui_base_.getFontSize() * 0.5f);
         bound = bound.withSizeKeepingCentre(bound.getWidth() - padding, bound.getHeight() - padding);
 
-        auto boundToUse = juce::Rectangle<float>(bound.getWidth(), ui_base_.getFontSize() * 2.f);
-        bound = justification.appliedToRectangle(boundToUse, bound);
+        auto bound_to_use = juce::Rectangle<float>(bound.getWidth(), ui_base_.getFontSize() * 2.f);
+        bound = justification_.appliedToRectangle(bound_to_use, bound);
 
-        const auto logoWOH = static_cast<float>(logoDrawable->getWidth()) /
-                             static_cast<float>(logoDrawable->getHeight());
-        const auto brandWOH = static_cast<float>(brandDrawable->getWidth()) /
-                              static_cast<float>(brandDrawable->getHeight());
-        const auto widthOverHeight = logoWOH + brandWOH + 0.1f;
-        const auto width = juce::jmin(bound.getWidth(), bound.getHeight() * widthOverHeight);
-        const auto height = juce::jmin(bound.getHeight(), bound.getWidth() / widthOverHeight);
+        const auto logo_woh = static_cast<float>(logo_drawable_->getWidth()) /
+                             static_cast<float>(logo_drawable_->getHeight());
+        const auto brand_woh = static_cast<float>(brand_drawable_->getWidth()) /
+                              static_cast<float>(brand_drawable_->getHeight());
+        const auto woh = logo_woh + brand_woh + 0.1f;
+        const auto width = juce::jmin(bound.getWidth(), bound.getHeight() * woh);
+        const auto height = juce::jmin(bound.getHeight(), bound.getWidth() / woh);
 
-        boundToUse = juce::Rectangle<float>(width, height);
-        bound = justification.appliedToRectangle(boundToUse, bound);
+        bound_to_use = juce::Rectangle<float>(width, height);
+        bound = justification_.appliedToRectangle(bound_to_use, bound);
 
-        tempBrand->setTransform(
-            juce::AffineTransform::scale(bound.getHeight() / static_cast<float>(brandDrawable->getHeight())));
-        tempBrand->drawAt(g, bound.getX(), bound.getY(), 1.0f);
+        temp_brand->setTransform(
+            juce::AffineTransform::scale(bound.getHeight() / static_cast<float>(brand_drawable_->getHeight())));
+        temp_brand->drawAt(g, bound.getX(), bound.getY(), 1.0f);
 
-        tempLogo->setTransform(
-            juce::AffineTransform::scale(bound.getHeight() / static_cast<float>(logoDrawable->getHeight())));
-        tempLogo->drawAt(g, bound.getX() + bound.getHeight() * (widthOverHeight - logoWOH), bound.getY(), 1.0f);
+        temp_logo->setTransform(
+            juce::AffineTransform::scale(bound.getHeight() / static_cast<float>(logo_drawable_->getHeight())));
+        temp_logo->drawAt(g, bound.getX() + bound.getHeight() * (woh - logo_woh), bound.getY(), 1.0f);
     }
 
     void LogoPanel::setJustification(const int justificationFlags) {
-        justification = justificationFlags;
+        justification_ = justificationFlags;
     }
 
     void LogoPanel::mouseDoubleClick(const juce::MouseEvent &event) {
@@ -69,8 +69,8 @@ namespace zlpanel {
                 static_cast<int>(zlstate::windowW::defaultV),
                 static_cast<int>(zlstate::windowH::defaultV));
         } else {
-            panelToShow.loadSetting();
-            panelToShow.setVisible(true);
+            panel_to_show_.loadSetting();
+            panel_to_show_.setVisible(true);
         }
     }
 } // zlpanel

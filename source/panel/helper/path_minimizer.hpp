@@ -14,43 +14,42 @@
 namespace zlpanel {
     class PathMinimizer {
     public:
-        static constexpr float tol = 0.01f;
+        static constexpr float kTol = 0.01f;
 
-        explicit PathMinimizer(juce::Path &path) : p(path) {
+        explicit PathMinimizer(juce::Path &path) : path_ref_(path) {
         }
 
         template<bool start = true>
         void startNewSubPath(const float x, const float y) {
             if (start) {
-                p.startNewSubPath(x, y);
+                path_ref_.startNewSubPath(x, y);
             } else {
-                p.lineTo(x, y);
+                path_ref_.lineTo(x, y);
             }
-            startX = x;
-            startY = y;
-            currentX = x;
-            currentY = y;
+            start_x_ = x;
+            start_y_ = y;
+            current_x_ = x;
+            current_y_ = y;
         }
 
         void lineTo(const float x, const float y) {
-            const auto w = (currentX - startX) / (x - startX);
-            const auto linPred = w * startY + (1.f - w) * y;
-            if (std::abs(linPred - currentY) > tol) {
-                p.lineTo(currentX, currentY);
-                startX = x;
-                startY = y;
+            const auto w = (current_x_ - start_x_) / (x - start_x_);
+            if (std::abs(w * start_y_ + (1.f - w) * y - current_y_) > kTol) {
+                path_ref_.lineTo(current_x_, current_y_);
+                start_x_ = x;
+                start_y_ = y;
             }
-            currentX = x;
-            currentY = y;
+            current_x_ = x;
+            current_y_ = y;
         }
 
         void finish() const {
-            p.lineTo(currentX, currentY);
+            path_ref_.lineTo(current_x_, current_y_);
         }
 
     private:
-        juce::Path &p;
-        float startX{0.}, startY{0.};
-        float currentX{0.}, currentY{0.};
+        juce::Path &path_ref_;
+        float start_x_{0.}, start_y_{0.};
+        float current_x_{0.}, current_y_{0.};
     };
 }

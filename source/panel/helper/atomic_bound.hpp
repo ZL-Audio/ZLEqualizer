@@ -18,26 +18,26 @@ namespace zlpanel {
         AtomicBound() = default;
 
         void store(const juce::Rectangle<FloatType> &bound) {
-            x.store(bound.getX());
-            y.store(bound.getY());
-            width.store(bound.getWidth());
-            height.store(bound.getHeight());
+            x_.store(bound.getX());
+            y_.store(bound.getY());
+            width_.store(bound.getWidth());
+            height_.store(bound.getHeight());
         }
 
         juce::Rectangle<FloatType> load() const {
-            return {x.load(), y.load(), width.load(), height.load()};
+            return {x_.load(), y_.load(), width_.load(), height_.load()};
         }
 
-        FloatType getX() const { return x.load(); }
+        FloatType getX() const { return x_.load(); }
 
-        FloatType getY() const { return y.load(); }
+        FloatType getY() const { return y_.load(); }
 
-        FloatType getWidth() const { return width.load(); }
+        FloatType getWidth() const { return width_.load(); }
 
-        FloatType getHeight() const { return height.load(); }
+        FloatType getHeight() const { return height_.load(); }
 
     private:
-        std::atomic<FloatType> x{}, y{}, width{}, height{};
+        std::atomic<FloatType> x_{}, y_{}, width_{}, height_{};
     };
 
     template <typename FloatType>
@@ -46,19 +46,19 @@ namespace zlpanel {
         AtomicPoint() = default;
 
         void store(const juce::Point<FloatType> &p) {
-            x.store(p.getX());
-            y.store(p.getY());
+            x_.store(p.getX());
+            y_.store(p.getY());
         }
 
         juce::Point<FloatType> load() const {
-            return {x.load(), y.load()};
+            return {x_.load(), y_.load()};
         }
 
-        FloatType getX() const { return x.load(); }
+        FloatType getX() const { return x_.load(); }
 
-        FloatType getY() const { return y.load(); }
+        FloatType getY() const { return y_.load(); }
 
     private:
-        std::atomic<FloatType> x{}, y{};
+        std::atomic<FloatType> x_{}, y_{};
     };
 }

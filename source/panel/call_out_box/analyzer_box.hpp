@@ -19,31 +19,31 @@ namespace zlpanel {
                                zlgui::UIBase &base)
             : parameters_NA_ref_(parameters_NA),
               ui_base_(base),
-              fftPreON("Pre:", zlstate::fftPreON::choices, ui_base_, zlgui::multilingual::Labels::kFFTPre),
-              fftPostON("Post:", zlstate::fftPostON::choices, ui_base_, zlgui::multilingual::Labels::kFFTPost),
-              fftSideON("Side:", zlstate::fftSideON::choices, ui_base_, zlgui::multilingual::Labels::kFFTSide),
-              ffTSpeed("", zlstate::ffTSpeed::choices, ui_base_, zlgui::multilingual::Labels::kFFTDecay),
-              fftTilt("", zlstate::ffTTilt::choices, ui_base_, zlgui::multilingual::Labels::kFFTSlope) {
-            for (auto &c: {&fftPreON, &fftPostON, &fftSideON}) {
+              fft_pre_on_("Pre:", zlstate::fftPreON::choices, ui_base_, zlgui::multilingual::Labels::kFFTPre),
+              fft_post_on_("Post:", zlstate::fftPostON::choices, ui_base_, zlgui::multilingual::Labels::kFFTPost),
+              fft_side_on_("Side:", zlstate::fftSideON::choices, ui_base_, zlgui::multilingual::Labels::kFFTSide),
+              fft_speed_("", zlstate::ffTSpeed::choices, ui_base_, zlgui::multilingual::Labels::kFFTDecay),
+              fft_tilt_("", zlstate::ffTTilt::choices, ui_base_, zlgui::multilingual::Labels::kFFTSlope) {
+            for (auto &c: {&fft_pre_on_, &fft_post_on_, &fft_side_on_}) {
                 c->getLabelLAF().setFontScale(1.5f);
                 c->setLabelScale(.5f);
                 c->setLabelPos(zlgui::ClickCombobox::kLeft);
                 addAndMakeVisible(c);
             }
-            for (auto &c: {&ffTSpeed, &fftTilt}) {
+            for (auto &c: {&fft_speed_, &fft_tilt_}) {
                 addAndMakeVisible(c);
             }
             attach({
-                       &fftPreON.getCompactBox().getBox(),
-                       &fftPostON.getCompactBox().getBox(),
-                       &fftSideON.getCompactBox().getBox(),
-                       &ffTSpeed.getBox(), &fftTilt.getBox()
+                       &fft_pre_on_.getCompactBox().getBox(),
+                       &fft_post_on_.getCompactBox().getBox(),
+                       &fft_side_on_.getCompactBox().getBox(),
+                       &fft_speed_.getBox(), &fft_tilt_.getBox()
                    },
                    {
                        zlstate::fftPreON::ID, zlstate::fftPostON::ID, zlstate::fftSideON::ID,
                        zlstate::ffTSpeed::ID, zlstate::ffTTilt::ID
                    },
-                   parameters_NA_ref_, boxAttachments);
+                   parameters_NA_ref_, box_attachments_);
             setBufferedToImage(true);
 
             ui_base_.getBoxTree().addListener(this);
@@ -65,17 +65,17 @@ namespace zlpanel {
         }
 
         juce::Rectangle<int> getIdealBound() const {
-            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
-            const auto buttonWidth = static_cast<int>(ui_base_.getFontSize() * 2.5);
-            const auto boxHeight = juce::roundToInt(boxHeightP * ui_base_.getFontSize());
-            return {buttonWidth * 3 + padSize * 2, boxHeight * 5 + padSize};
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto button_width = static_cast<int>(ui_base_.getFontSize() * 2.5);
+            const auto box_height = juce::roundToInt(kBoxHeightP * ui_base_.getFontSize());
+            return {button_width * 3 + pad_size * 2, box_height * 5 + pad_size};
         }
 
         void resized() override {
-            const auto padSize = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
+            const auto pad_size = juce::roundToInt(ui_base_.getFontSize() * 0.25f);
             auto bound = getLocalBounds();
-            bound = juce::Rectangle<int>(bound.getX() + padSize, bound.getY(),
-                                         bound.getWidth() - padSize * 2, bound.getHeight() - padSize);
+            bound = juce::Rectangle<int>(bound.getX() + pad_size, bound.getY(),
+                                         bound.getWidth() - pad_size * 2, bound.getHeight() - pad_size);
 
             juce::Grid grid;
             using Track = juce::Grid::TrackInfo;
@@ -85,11 +85,11 @@ namespace zlpanel {
             grid.templateColumns = {Track(Fr(50))};
 
             grid.items = {
-                juce::GridItem(fftPreON).withArea(1, 1),
-                juce::GridItem(fftPostON).withArea(2, 1),
-                juce::GridItem(fftSideON).withArea(3, 1),
-                juce::GridItem(ffTSpeed).withArea(4, 1),
-                juce::GridItem(fftTilt).withArea(5, 1)
+                juce::GridItem(fft_pre_on_).withArea(1, 1),
+                juce::GridItem(fft_post_on_).withArea(2, 1),
+                juce::GridItem(fft_side_on_).withArea(3, 1),
+                juce::GridItem(fft_speed_).withArea(4, 1),
+                juce::GridItem(fft_tilt_).withArea(5, 1)
             };
             grid.performLayout(bound);
         }
@@ -98,13 +98,13 @@ namespace zlpanel {
         juce::AudioProcessorValueTreeState &parameters_NA_ref_;
         zlgui::UIBase &ui_base_;
 
-        zlgui::ClickCombobox fftPreON, fftPostON, fftSideON;
-        zlgui::CompactCombobox ffTSpeed, fftTilt;
-        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> boxAttachments{};
+        zlgui::ClickCombobox fft_pre_on_, fft_post_on_, fft_side_on_;
+        zlgui::CompactCombobox fft_speed_, fft_tilt_;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> box_attachments_{};
 
-        void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+        void valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                       const juce::Identifier &property) override {
-            juce::ignoreUnused(treeWhosePropertyHasChanged);
+            juce::ignoreUnused(tree_whose_property_has_changed);
             if (ui_base_.isBoxProperty(zlgui::BoxIdx::kAnalyzerBox, property)) {
                 const auto f = static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kAnalyzerBox));
                 setVisible(f);

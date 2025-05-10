@@ -11,12 +11,12 @@
 
 namespace zlpanel {
     MatchLabel::MatchLabel(zlgui::UIBase &base)
-        : ui_base_(base), labelLAF(base) {
-        runningLabel.setText("Running", juce::dontSendNotification);
-        runningLabel.setJustificationType(juce::Justification::centred);
-        labelLAF.setFontScale(5.f);
-        runningLabel.setLookAndFeel(&labelLAF);
-        addAndMakeVisible(runningLabel);
+        : ui_base_(base), label_laf_(base) {
+        running_label_.setText("Running", juce::dontSendNotification);
+        running_label_.setJustificationType(juce::Justification::centred);
+        label_laf_.setFontScale(5.f);
+        running_label_.setLookAndFeel(&label_laf_);
+        addAndMakeVisible(running_label_);
         setBufferedToImage(true);
     }
 
@@ -26,7 +26,7 @@ namespace zlpanel {
 
     void MatchLabel::resized() {
         const auto bound = getLocalBounds().toFloat();
-        runningLabel.setBounds(bound.withSizeKeepingCentre(
+        running_label_.setBounds(bound.withSizeKeepingCentre(
             bound.getWidth() * .5f, ui_base_.getFontSize() * 5.f).toNearestInt());
     }
 } // zlpanel

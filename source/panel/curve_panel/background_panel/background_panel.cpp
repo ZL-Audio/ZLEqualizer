@@ -14,11 +14,11 @@ namespace zlpanel {
                                  juce::AudioProcessorValueTreeState &parameters_NA,
                                  zlgui::UIBase &base)
         : ui_base_(base),
-          gridPanel(base) {
+          grid_panel_(base) {
         juce::ignoreUnused(parameters, parameters_NA);
         setInterceptsMouseClicks(false, true);
         setOpaque(true);
-        addAndMakeVisible(gridPanel);
+        addAndMakeVisible(grid_panel_);
         setBufferedToImage(true);
     }
 
@@ -29,6 +29,6 @@ namespace zlpanel {
     }
 
     void BackgroundPanel::resized() {
-        gridPanel.setBounds(getLocalBounds());
+        grid_panel_.setBounds(getLocalBounds());
     }
 }

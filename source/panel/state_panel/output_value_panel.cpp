@@ -17,9 +17,9 @@ namespace zlpanel {
           parameters_ref_(p.parameters),
           parameters_NA_ref_(p.parameters_NA),
           ui_base_(base),
-          scale(*parameters_ref_.getRawParameterValue(zlp::scale::ID)) {
+          scale_(*parameters_ref_.getRawParameterValue(zlp::scale::ID)) {
         juce::ignoreUnused(parameters_ref_, parameters_NA_ref_);
-        lmPara = parameters_ref_.getParameter(zlp::loudnessMatcherON::ID);
+        lm_para_ = parameters_ref_.getParameter(zlp::loudnessMatcherON::ID);
         lookAndFeelChanged();
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
@@ -34,10 +34,10 @@ namespace zlpanel {
 
     void OutputValuePanel::paint(juce::Graphics &g) {
         g.setFont(ui_base_.getFontSize() * 1.375f);
-        if (showGain) {
+        if (show_gain_) {
             g.setColour(ui_base_.getColourByIdx(zlgui::kGainColour));
-            g.drawText(gainString, gainBound, juce::Justification::centred);
-            g.drawText(scaleString, scaleBound, juce::Justification::centred);
+            g.drawText(gain_string_, gain_bound_, juce::Justification::centred);
+            g.drawText(scale_string_, scale_bound_, juce::Justification::centred);
         } else {
             if (static_cast<bool>(ui_base_.getBoxProperty(zlgui::BoxIdx::kOutputBox))) {
                 g.setColour(ui_base_.getTextColor());
@@ -57,51 +57,51 @@ namespace zlpanel {
 
     void OutputValuePanel::lookAndFeelChanged() {
         if (ui_base_.getColourByIdx(zlgui::kGainColour).getAlpha() > juce::uint8(0)) {
-            showGain = true;
+            show_gain_ = true;
             startTimer(0, 1500);
         } else {
             stopTimer(0);
-            showGain = false;
+            show_gain_ = false;
             repaint();
         }
     }
 
     void OutputValuePanel::resized() {
-        gainBound = getLocalBounds().toFloat();
-        scaleBound = gainBound.removeFromRight(gainBound.getWidth() * .5f);
+        gain_bound_ = getLocalBounds().toFloat();
+        scale_bound_ = gain_bound_.removeFromRight(gain_bound_.getWidth() * .5f);
         const auto bound = getLocalBounds().toFloat();
-        backgroundPath.clear();
-        backgroundPath.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
+        background_path_.clear();
+        background_path_.addRoundedRectangle(bound.getX(), bound.getY(), bound.getWidth(), bound.getHeight(),
                                            ui_base_.getFontSize() * .5f, ui_base_.getFontSize() * .5f,
                                            false, false, true, true);
     }
 
     void OutputValuePanel::updateGainValue() {
-        const auto newGain = static_cast<float>(processor_ref_.getController().getGainCompensation());
-        const auto newScale = scale.load();
-        const auto newLearning = lmPara->getValue() > .5f;
-        if (std::abs(newGain - currentGain) > 0.0 || std::abs(newScale - currentScale) > 0.0 ||
-            newLearning != currentLearning) {
-            currentGain = newGain;
-            currentScale = newScale;
-            currentLearning = newLearning;
-            if (!currentLearning) {
-                if (currentGain <= 0.04) {
-                    gainString = juce::String(currentGain, 1, false);
+        const auto new_gain = static_cast<float>(processor_ref_.getController().getGainCompensation());
+        const auto new_scale = scale_.load();
+        const auto new_learning = lm_para_->getValue() > .5f;
+        if (std::abs(new_gain - c_gain_) > 0.0 || std::abs(new_scale - c_scale_) > 0.0 ||
+            new_learning != c_learning_) {
+            c_gain_ = new_gain;
+            c_scale_ = new_scale;
+            c_learning_ = new_learning;
+            if (!c_learning_) {
+                if (c_gain_ <= 0.04) {
+                    gain_string_ = juce::String(c_gain_, 1, false);
                 } else {
-                    gainString = "+" + juce::String(currentGain, 1, false);
+                    gain_string_ = "+" + juce::String(c_gain_, 1, false);
                 }
             } else {
-                gainString = "L";
+                gain_string_ = "L";
             }
-            scaleString = juce::String(static_cast<int>(std::round(scale.load()))) + "%";
+            scale_string_ = juce::String(static_cast<int>(std::round(scale_.load()))) + "%";
             repaint();
         }
     }
 
-    void OutputValuePanel::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
+    void OutputValuePanel::valueTreePropertyChanged(juce::ValueTree &tree_whose_property_has_changed,
                                                     const juce::Identifier &property) {
-        juce::ignoreUnused(treeWhosePropertyHasChanged);
+        juce::ignoreUnused(tree_whose_property_has_changed);
         if (zlgui::UIBase::isBoxProperty(zlgui::BoxIdx::kOutputBox, property)) {
             repaint();
         }
