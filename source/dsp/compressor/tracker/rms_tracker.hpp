@@ -75,18 +75,18 @@ namespace zldsp::compressor {
         }
 
         void processBufferRMS(juce::AudioBuffer<FloatType> &buffer) {
-            FloatType _ms = 0;
+            FloatType ms = 0;
             for (auto channel = 0; channel < buffer.getNumChannels(); channel++) {
                 auto data = buffer.getReadPointer(channel);
-                _ms += zldsp::vector::sumsqr(data, static_cast<size_t>(buffer.getNumSamples()));
+                ms += zldsp::vector::sumsqr(data, static_cast<size_t>(buffer.getNumSamples()));
             }
-            _ms = _ms / static_cast<FloatType>(buffer.getNumSamples());
+            ms = ms / static_cast<FloatType>(buffer.getNumSamples());
 
             if (loudness_buffer_.size() == c_buffer_size_) {
                 m_loudness_ -= loudness_buffer_.popFront();
             }
-            loudness_buffer_.pushBack(_ms);
-            m_loudness_ += _ms;
+            loudness_buffer_.pushBack(ms);
+            m_loudness_ += ms;
         }
 
         /**

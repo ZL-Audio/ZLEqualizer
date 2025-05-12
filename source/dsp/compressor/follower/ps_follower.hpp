@@ -114,41 +114,41 @@ namespace zldsp::compressor {
 
         void update() {
             // cache atomic values
-            const auto currentAttackTime = static_cast<double>(attack_time_.load());
-            const auto currentReleaseTime = static_cast<double>(release_time_.load());
-            const auto currentSmoothPortion = static_cast<double>(smooth_portion_.load());
-            const auto currentPunchPortion = static_cast<double>(punch_portion_.load());
+            const auto current_attack_time = static_cast<double>(attack_time_.load());
+            const auto current_release_time = static_cast<double>(release_time_.load());
+            const auto current_smooth_portion = static_cast<double>(smooth_portion_.load());
+            const auto current_punch_portion = static_cast<double>(punch_portion_.load());
             // update attack
-            if (currentAttackTime < 0.001) {
+            if (current_attack_time < 0.001) {
                 attack_ = FloatType(0);
             } else {
                 if (UsePunch) {
                     attack_ = static_cast<FloatType>(std::exp(
-                        exp_factor_ / currentAttackTime / (1. - std::pow(std::abs(currentPunchPortion), 2.) * 0.125)));
+                        exp_factor_ / current_attack_time / (1. - std::pow(std::abs(current_punch_portion), 2.) * 0.125)));
                 } else {
-                    attack_ = static_cast<FloatType>(std::exp(exp_factor_ / currentAttackTime));
+                    attack_ = static_cast<FloatType>(std::exp(exp_factor_ / current_attack_time));
                 }
             }
             attack_c_ = FloatType(1) - attack_;
             // update release
-            if (currentReleaseTime < 0.001) {
+            if (current_release_time < 0.001) {
                 release_ = FloatType(0);
             } else {
-                release_ = static_cast<FloatType>(std::exp(exp_factor_ / currentReleaseTime));
+                release_ = static_cast<FloatType>(std::exp(exp_factor_ / current_release_time));
             }
             release_c_ = FloatType(1) - release_;
             if (UseSmooth) {
                 // update smooth
-                smooth_ = static_cast<FloatType>(currentSmoothPortion);
+                smooth_ = static_cast<FloatType>(current_smooth_portion);
                 smooth_c_ = FloatType(1) - smooth_;
             }
             if (UsePunch) {
                 // update punch
-                if (currentAttackTime < 0.001 || std::abs(currentPunchPortion) < 0.001) {
+                if (current_attack_time < 0.001 || std::abs(current_punch_portion) < 0.001) {
                     punch_ = FloatType(0);
                 } else {
                     punch_ = static_cast<FloatType>(std::exp(
-                        exp_factor_ / currentAttackTime / std::abs(currentPunchPortion)));
+                        exp_factor_ / current_attack_time / std::abs(current_punch_portion)));
                 }
                 punch_c_ = FloatType(1) - punch_;
             }

@@ -43,10 +43,10 @@ namespace zldsp::loudness {
         }
 
         void process(juce::dsp::AudioBlock<FloatType> block) {
-            const auto numTotal = static_cast<int>(block.getNumSamples());
+            const auto num_total = static_cast<int>(block.getNumSamples());
             int start_idx = 0;
             juce::dsp::AudioBlock<FloatType> small_block(small_buffer_);
-            while (numTotal - start_idx >= max_idx_ - current_idx_) {
+            while (num_total - start_idx >= max_idx_ - current_idx_) {
                 // now we get a full 100 ms small block
                 const auto sub_block = block.getSubBlock(static_cast<size_t>(start_idx),
                                                         static_cast<size_t>(max_idx_ - current_idx_));
@@ -57,13 +57,13 @@ namespace zldsp::loudness {
                 current_idx_ = 0;
                 update();
             }
-            if (numTotal - start_idx > 0) {
+            if (num_total - start_idx > 0) {
                 const auto sub_block = block.getSubBlock(static_cast<size_t>(start_idx),
-                                                        static_cast<size_t>(numTotal - start_idx));
+                                                        static_cast<size_t>(num_total - start_idx));
                 auto small_sub_block = small_block.getSubBlock(static_cast<size_t>(current_idx_),
-                                                            static_cast<size_t>(numTotal - start_idx));
+                                                            static_cast<size_t>(num_total - start_idx));
                 small_sub_block.copyFrom(sub_block);
-                current_idx_ += numTotal - start_idx;
+                current_idx_ += num_total - start_idx;
             }
         }
 

@@ -78,7 +78,7 @@ namespace zldsp::gain {
         }
 
     private:
-        zldsp::chore::SmoothedValue<FloatType, zldsp::chore::SmoothedTypes::FixLin> gain_;
+        zldsp::chore::SmoothedValue<FloatType, zldsp::chore::SmoothedTypes::FixLin> gain_{FloatType(1)};
         kfr::univector<FloatType> gain_vs_;
     };
 }

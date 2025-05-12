@@ -61,7 +61,7 @@ namespace zldsp::eq_match {
 
     template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::run() {
-        juce::ScopedNoDenormals noDenormals;
+        juce::ScopedNoDenormals no_denormals;
         while (!threadShouldExit()) {
             fft_analyzer_.run();
             const auto flag = wait(-1);
@@ -76,13 +76,13 @@ namespace zldsp::eq_match {
 
     template<typename FloatType>
     void EqMatchAnalyzer<FloatType>::setTargetSlope(const float x) {
-        const float tiltShiftTotal = (fft_analyzer_.kMaxFreqLog2 - fft_analyzer_.kMinFreqLog2) * x;
-        const float tiltShiftDelta = tiltShiftTotal / static_cast<float>(kPointNum - 1);
-        float tiltShift = -tiltShiftTotal * .5f;
+        const float tilt_shift_total = (fft_analyzer_.kMaxFreqLog2 - fft_analyzer_.kMinFreqLog2) * x;
+        const float tilt_shift_delta = tilt_shift_total / static_cast<float>(kPointNum - 1);
+        float tilt_shift = -tilt_shift_total * .5f;
         if (to_update_from_load_.load() == false) {
             for (size_t i = 0; i < load_dbs_.size(); i++) {
-                load_dbs_[i] = tiltShift;
-                tiltShift += tiltShiftDelta;
+                load_dbs_[i] = tilt_shift;
+                tilt_shift += tilt_shift_delta;
             }
             to_update_from_load_.store(true);
         }

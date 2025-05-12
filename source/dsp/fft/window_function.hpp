@@ -23,12 +23,12 @@ namespace zldsp::fft {
                        const FloatType scale = FloatType(1),
                        const bool normalise = true, const bool cycle = true, const FloatType beta = 0) {
             if (cycle) {
-                std::vector<FloatType> tempWindow;
-                tempWindow.resize(size + 1);
+                std::vector<FloatType> temp_window;
+                temp_window.resize(size + 1);
                 juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(
-                    tempWindow.data(), size + 1, method, normalise, beta);
+                    temp_window.data(), size + 1, method, normalise, beta);
                 window_.resize(size);
-                zldsp::vector::copy(window_.data(), tempWindow.data(), size);
+                zldsp::vector::copy(window_.data(), temp_window.data(), size);
             } else {
                 window_.resize(size);
                 juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(

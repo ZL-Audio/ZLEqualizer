@@ -216,7 +216,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiB
 }
 
 void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &) {
-    juce::ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals no_denormals;
     if (buffer.getNumSamples() == 0) return; // ignore empty blocks
     double_buffer_.setSize(4, buffer.getNumSamples(), false, false, true);
     switch (channel_layout_) {
