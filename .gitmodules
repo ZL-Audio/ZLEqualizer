@@ -8,4 +8,4 @@
 	branch = master
 [submodule "kfr"]
 	path = kfr
-	url = https://github.com/kfrlib/kfr
+	url = https://github.com/ZL-Audio/kfr
