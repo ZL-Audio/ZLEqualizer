@@ -22,7 +22,7 @@ namespace zldsp::analyzer {
     template<typename FloatType>
     class ConflictAnalyzer final : private juce::Thread, juce::AsyncUpdater {
     public:
-        static constexpr size_t kPointNum = 251;
+        static constexpr size_t kPointNum = 125;
 
         explicit ConflictAnalyzer(size_t fft_order = 12);
 
