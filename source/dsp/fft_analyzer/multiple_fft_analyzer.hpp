@@ -125,7 +125,7 @@ namespace zldsp::analyzer {
         void setOrder(int fft_order) {
             fft_.setOrder(static_cast<size_t>(fft_order));
             window_.setWindow(fft_.getSize(), juce::dsp::WindowingFunction<float>::hann,
-                             1.f / static_cast<float>(fft_.getSize()), true, true);
+                              1.f / static_cast<float>(fft_.getSize()), true, true);
             fft_size_.store(fft_.getSize());
 
             delta_t_.store(sample_rate_.load() / static_cast<float>(fft_size_.load()));
@@ -133,7 +133,8 @@ namespace zldsp::analyzer {
 
             const auto currentDeltaT = .5f * delta_t_.load();
             for (size_t idx = 0; idx < seq_input_freqs_.size(); ++idx) {
-                seq_input_freqs_[idx] = static_cast<float>(seq_input_starts_[idx] + seq_input_ends_[idx] - 1) * currentDeltaT;
+                seq_input_freqs_[idx] = static_cast<float>(seq_input_starts_[idx] + seq_input_ends_[idx] - 1) *
+                                        currentDeltaT;
             }
             interplot_freqs_[0] = seq_input_freqs_[0];
             for (size_t idx = 1; idx < seq_input_freqs_.size(); ++idx) {
@@ -238,25 +239,27 @@ namespace zldsp::analyzer {
                     for (size_t j = 0; j < smoothed_db.size(); ++j) {
                         const auto currentDB = juce::Decibels::gainToDecibels(fft_buffer_[j], -240.f);
                         smoothed_db[j] = currentDB < smoothed_db[j]
-                                            ? smoothed_db[j] * decay + currentDB * (1 - decay)
-                                            : currentDB;
+                                             ? smoothed_db[j] * decay + currentDB * (1 - decay)
+                                             : currentDB;
                     }
 
                     for (size_t j = 0; j < seq_input_dbs_.size(); ++j) {
                         const auto startIdx = seq_input_starts_[j];
                         const auto endIdx = seq_input_ends_[j];
                         seq_input_dbs_[j] = *std::max_element(
-                                             smoothed_db.begin() + startIdx,
-                                             smoothed_db.begin() + endIdx);
+                            smoothed_db.begin() + startIdx,
+                            smoothed_db.begin() + endIdx);
                     }
 
+                    seq_akima_->prepare();
+                    seq_akima_->eval(interplot_freqs_.data(), pre_interplot_dbs_[i].data(), interplot_freqs_.size());
                     for (size_t j = 0; j < seq_input_freqs_.size() - 1; ++j) {
                         pre_interplot_dbs_[i][j * 2] = seq_input_dbs_[j];
-                        pre_interplot_dbs_[i][j * 2 + 1] = (seq_input_dbs_[j] + seq_input_dbs_[j + 1]) * .5f;
+                        pre_interplot_dbs_[i][j * 2 + 1] =
+                                std::min(std::max(seq_input_dbs_[j], seq_input_dbs_[j + 1]),
+                                         pre_interplot_dbs_[i][j * 2 + 1]);
                     }
                     pre_interplot_dbs_[i].back() = seq_input_dbs_.back();
-                    // seq_akima_->prepare();
-                    // seq_akima_->eval(interplot_freqs_.data(), pre_interplot_dbs_[i].data(), interplot_freqs_.size());
                 }
             } {
                 const float total_tilt = tilt_slope_.load() + extra_tilt_.load();
@@ -265,8 +268,9 @@ namespace zldsp::analyzer {
                     if (ready_flags_[i].load() == false) {
                         for (size_t idx = 0; idx < interplot_freqs_.size(); ++idx) {
                             interplot_dbs_[i][idx] = (std::log(
-                                interplot_freqs_[idx] / kMinFreq) / std::log(
-                                    kMaxFreq / kMinFreq) - .5f) * tilt_shift_total + pre_interplot_dbs_[i][idx];
+                                                          interplot_freqs_[idx] / kMinFreq) / std::log(
+                                                          kMaxFreq / kMinFreq) - .5f) * tilt_shift_total +
+                                                     pre_interplot_dbs_[i][idx];
                         }
                         ready_flags_[i].store(true);
                     }
@@ -294,20 +298,20 @@ namespace zldsp::analyzer {
             for (const auto &i: is_on_vector) {
                 const auto &path{paths[i]};
                 path.get().startNewSubPath(bound.getX(), bound.getBottom() + 10.f);
-                {
-                    const auto x = std::log(interplot_freqs_[0] / kMinFreq) / std::log(kMaxFreq / kMinFreq) * width;
-                    const auto y = replaceWithFinite(ready_dbs_[i][0] / current_min_db * height + boundY);
-                    path.get().lineTo(x, y);
-                }
-                const auto split_idx = (ready_dbs_[i].size() / 16) * 2 + 1;
-                for (size_t idx = 1; idx < split_idx; idx += 2) {
-                    const auto x1 = std::log(interplot_freqs_[idx] / kMinFreq) / std::log(kMaxFreq / kMinFreq) * width;
-                    const auto y1 = replaceWithFinite(ready_dbs_[i][idx] / current_min_db * height + boundY);
-                    const auto x2 = std::log(interplot_freqs_[idx + 1] / kMinFreq) / std::log(kMaxFreq / kMinFreq) * width;
-                    const auto y2 = replaceWithFinite(ready_dbs_[i][idx + 1] / current_min_db * height + boundY);
-                    path.get().quadraticTo(x1, y1, x2, y2);
-                }
-                for (size_t idx = split_idx; idx < ready_dbs_[i].size(); ++idx) {
+                // {
+                //     const auto x = std::log(interplot_freqs_[0] / kMinFreq) / std::log(kMaxFreq / kMinFreq) * width;
+                //     const auto y = replaceWithFinite(ready_dbs_[i][0] / current_min_db * height + boundY);
+                //     path.get().lineTo(x, y);
+                // }
+                // const auto split_idx = (ready_dbs_[i].size() / 16) * 2 + 1;
+                // for (size_t idx = 1; idx < split_idx; idx += 2) {
+                //     const auto x1 = std::log(interplot_freqs_[idx] / kMinFreq) / std::log(kMaxFreq / kMinFreq) * width;
+                //     const auto y1 = replaceWithFinite(ready_dbs_[i][idx] / current_min_db * height + boundY);
+                //     const auto x2 = std::log(interplot_freqs_[idx + 1] / kMinFreq) / std::log(kMaxFreq / kMinFreq) * width;
+                //     const auto y2 = replaceWithFinite(ready_dbs_[i][idx + 1] / current_min_db * height + boundY);
+                //     path.get().quadraticTo(x1, y1, x2, y2);
+                // }
+                for (size_t idx = 0; idx < ready_dbs_[i].size(); ++idx) {
                     const auto x = std::log(interplot_freqs_[idx] / kMinFreq) / std::log(kMaxFreq / kMinFreq) * width;
                     const auto y = replaceWithFinite(ready_dbs_[i][idx] / current_min_db * height + boundY);
                     path.get().lineTo(x, y);
