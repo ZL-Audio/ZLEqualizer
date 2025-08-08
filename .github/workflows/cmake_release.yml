@@ -252,7 +252,7 @@ jobs:
         ref: ${{ github.ref }}
 
     - name: Get Artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with: 
         path: installers/
 
