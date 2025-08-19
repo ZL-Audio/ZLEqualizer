@@ -42,8 +42,10 @@ namespace zldsp::filter {
             const auto sr = spec.sampleRate / static_cast<double>(spec.maximumBlockSize);
             follower_.prepare(sr);
             tracker_.prepare(sr);
-
-            computer_.setRatio(FloatType(1000));
+            // difference 1
+            // you should expose this ratio as a parameter instead of setting it at fixed 1000
+            // set to 4 here for example
+            computer_.setRatio(FloatType(4));
             s_buffer_copy_.setSize(static_cast<int>(spec.numChannels),
                                 static_cast<int>(spec.maximumBlockSize));
         }
@@ -149,20 +151,34 @@ namespace zldsp::filter {
             // calculate the reduction
             const auto reducedLoudness = currentLoudness - computer_.eval(currentLoudness);
             // calculate gain/Q mix portion
-            auto portion = std::min(reducedLoudness / computer_.getReductionAtKnee(), FloatType(1));
-            // smooth the portion
-            portion = follower_.processSample(portion);
-            if (c_dynamic_bypass_) {
-                portion = 0;
-            }
+            // auto portion = std::min(reducedLoudness / computer_.getReductionAtKnee(), FloatType(1));
+            //
+            // difference 2
+            // first, with TDR approach, you should not make Q dynamic
+            // next, you should not use portion to calculate Gain value
+            // instead, use the reduction directly
+            //
+            // portion = follower_.processSample(portion);
+            // if (c_dynamic_bypass_) {
+            //     portion = 0;
+            // }
+            const auto smoothedReduction = follower_.processSample(reducedLoudness);
             if (c_is_per_sample_) {
+                // use the reduction directly
+                // t_filter_ is useless, for better performance you may remove all DSP/GUI code related to it
+                // if you want to do both downward & upward, just change the - to +
                 m_filter_.template setGain<true, false, false>(
-                    (1 - portion) * b_filter_.getGain() + portion * t_filter_.getGain());
-                m_filter_.template setQ<true, false, false>((1 - portion) * b_filter_.getQ() + portion * t_filter_.getQ());
+                     std::clamp(b_filter_.getGain() - smoothedReduction, FloatType(-30), FloatType(30)));
+                // m_filter_.template setGain<true, false, false>(
+                //     (1 - portion) * b_filter_.getGain() + portion * t_filter_.getGain());
+                // m_filter_.template setQ<true, false, false>((1 - portion) * b_filter_.getQ() + portion * t_filter_.getQ());
             } else {
+                // if always high-quality, delete this else branch
+                // I recommend always high-quality, although it costs more CPU
+                //
                 m_filter_.template setGain<true, false, true>(
-                    (1 - portion) * b_filter_.getGain() + portion * t_filter_.getGain());
-                m_filter_.template setQ<true, false, true>((1 - portion) * b_filter_.getQ() + portion * t_filter_.getQ());
+                    std::clamp(b_filter_.getGain() - smoothedReduction, FloatType(-30), FloatType(30)));
+                // m_filter_.template setQ<true, false, true>((1 - portion) * b_filter_.getQ() + portion * t_filter_.getQ());
                 m_filter_.updateCoeffs();
             }
             if (m_filter_.getShouldBeParallel()) {
