@@ -13,7 +13,6 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include "dsp_definitions.hpp"
-#include "audio_buffer/audio_buffer.hpp"
 #include "filter/filter.hpp"
 #include "splitter/splitter.hpp"
 #include "fft_analyzer/fft_analyzer.hpp"
@@ -64,7 +63,8 @@ namespace zlp {
 
         inline zldsp::filter::IIR<FloatType, kFilterSize> &getSoloFilter() { return solo_filter_; }
 
-        std::tuple<FloatType, FloatType> getSoloFilterParas(zldsp::filter::FilterType fType, FloatType freq, FloatType q);
+        std::tuple<FloatType, FloatType> getSoloFilterParas(zldsp::filter::FilterType fType, FloatType freq,
+                                                            FloatType q);
 
         inline void setSideChain(const bool x) { side_chain_.store(x); }
 
@@ -76,7 +76,9 @@ namespace zlp {
 
         bool getLearningHistON(const size_t idx) const { return is_hist_on_[idx].load(); }
 
-        zldsp::histogram::AtomicHistogram<FloatType, 80> &getLearningHist(const size_t idx) { return atomic_histograms_[idx]; }
+        zldsp::histogram::AtomicHistogram<FloatType, 80> &getLearningHist(const size_t idx) {
+            return atomic_histograms_[idx];
+        }
 
         void setLookAhead(FloatType x);
 
@@ -180,7 +182,9 @@ namespace zlp {
         std::array<zldsp::filter::DynamicIIR<FloatType, kFilterSize>, kBandNUM> filters_ =
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
                     return std::array{
-                        zldsp::filter::DynamicIIR<FloatType, kFilterSize>{std::get<Is>(b_filters_), std::get<Is>(t_filters_)}...
+                        zldsp::filter::DynamicIIR<FloatType, kFilterSize>{
+                            std::get<Is>(b_filters_), std::get<Is>(t_filters_)
+                        }...
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(b_filters_)> >());
 
@@ -226,7 +230,8 @@ namespace zlp {
                 [&]<size_t... Is>(std::index_sequence<Is...>) {
                     return std::array{
                         zldsp::filter::MixedCorrection<FloatType, kBandNUM, kFilterSize>{
-                            main_IIRs_, main_ideals_, std::get<Is>(filter_lr_indices_), c_is_bypass_, mixed_w1_, mixed_w2_
+                            main_IIRs_, main_ideals_, std::get<Is>(filter_lr_indices_), c_is_bypass_, mixed_w1_,
+                            mixed_w2_
                         }...
                     };
                 }(std::make_index_sequence<std::tuple_size_v<decltype(filter_lr_indices_)> >());
@@ -271,9 +276,6 @@ namespace zlp {
         std::array<bool, kBandNUM> c_is_hist_on_{};
         std::atomic<bool> to_update_hist_{true};
         std::array<std::atomic<FloatType>, kBandNUM> thresholds_{};
-
-        static inline double kSubBufferLength = 0.001;
-        zldsp::buffer::FixedAudioBuffer<FloatType> sub_buffer_;
 
         zldsp::delay::SampleDelay<FloatType> delay_;
 

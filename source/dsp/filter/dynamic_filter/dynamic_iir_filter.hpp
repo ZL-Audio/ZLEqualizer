@@ -39,15 +39,13 @@ namespace zldsp::filter {
             s_filter_.template setOrder<false>(2);
             s_filter_.template setFilterType<false>(zldsp::filter::FilterType::kBandPass);
             s_filter_.prepare(spec);
-            const auto sr = spec.sampleRate / static_cast<double>(spec.maximumBlockSize);
-            follower_.prepare(sr);
-            tracker_.prepare(sr);
+            follower_.prepare(spec.sampleRate);
             // difference 1
             // you should expose this ratio as a parameter instead of setting it at fixed 1000
             // set to 4 here for example
-            computer_.setRatio(FloatType(4));
+            computer_.setRatio(FloatType(2));
             s_buffer_copy_.setSize(static_cast<int>(spec.numChannels),
-                                static_cast<int>(spec.maximumBlockSize));
+                                   static_cast<int>(spec.maximumBlockSize));
         }
 
         /**
@@ -117,7 +115,7 @@ namespace zldsp::filter {
             filter_structure_.store(x);
         }
 
-        void setIsPerSample(const bool x) { is_per_sample_.store(x); }
+        void setIsPerSample(const bool) {}
 
         void setBaseLine(const FloatType x) { comp_baseline_ = x; }
 
@@ -136,55 +134,44 @@ namespace zldsp::filter {
         std::atomic<FilterStructure> filter_structure_{FilterStructure::kIIR};
         FilterStructure current_filter_structure_{FilterStructure::kIIR};
         juce::AudioBuffer<FloatType> sample_buffer_;
-        std::atomic<bool> is_per_sample_{false};
-        bool c_is_per_sample_{false};
 
         template<bool IsBypassed = false>
         void processDynamic(juce::AudioBuffer<FloatType> &mBuffer, juce::AudioBuffer<FloatType> &sBuffer) {
             s_buffer_copy_.makeCopyOf(sBuffer, true);
             s_filter_.processPre(s_buffer_copy_);
             s_filter_.process(s_buffer_copy_);
-            // feed side-chain into the tracker
-            tracker_.processBufferRMS(s_buffer_copy_);
-            // get loudness from tracker
-            const auto currentLoudness = tracker_.getMomentaryLoudness() - comp_baseline_;
-            // calculate the reduction
-            const auto reducedLoudness = currentLoudness - computer_.eval(currentLoudness);
-            // calculate gain/Q mix portion
-            // auto portion = std::min(reducedLoudness / computer_.getReductionAtKnee(), FloatType(1));
-            //
-            // difference 2
-            // first, with TDR approach, you should not make Q dynamic
-            // next, you should not use portion to calculate Gain value
-            // instead, use the reduction directly
-            //
-            // portion = follower_.processSample(portion);
-            // if (c_dynamic_bypass_) {
-            //     portion = 0;
-            // }
-            const auto smoothedReduction = follower_.processSample(reducedLoudness);
-            if (c_is_per_sample_) {
-                // use the reduction directly
-                // t_filter_ is useless, for better performance you may remove all DSP/GUI code related to it
-                // if you want to do both downward & upward, just change the - to +
-                m_filter_.template setGain<true, false, false>(
-                     std::clamp(b_filter_.getGain() - smoothedReduction, FloatType(-30), FloatType(30)));
-                // m_filter_.template setGain<true, false, false>(
-                //     (1 - portion) * b_filter_.getGain() + portion * t_filter_.getGain());
-                // m_filter_.template setQ<true, false, false>((1 - portion) * b_filter_.getQ() + portion * t_filter_.getQ());
+            const auto base_gain = b_filter_.getGain();
+            if (sBuffer.getNumChannels() <= 1) {
+                for (int i = 0; i < mBuffer.getNumSamples(); ++i) {
+                    const auto currentLoudness = juce::Decibels::gainToDecibels(std::abs(sBuffer.getSample(0, i))) - comp_baseline_;
+                    const auto reducedLoudness = currentLoudness - computer_.eval(currentLoudness);
+                    const auto smoothedReduction = follower_.processSample(reducedLoudness);
+
+                    auto sub_main_buffer = juce::AudioBuffer<FloatType>(mBuffer.getArrayOfWritePointers(),
+                                                                  mBuffer.getNumChannels(), i, 1);
+                    m_filter_.template setGain<true, false, true>(
+                    std::clamp(base_gain - smoothedReduction, FloatType(-30), FloatType(30)));
+                    m_filter_.updateCoeffs();
+                    m_filter_.process(sub_main_buffer);
+                }
             } else {
-                // if always high-quality, delete this else branch
-                // I recommend always high-quality, although it costs more CPU
-                //
-                m_filter_.template setGain<true, false, true>(
-                    std::clamp(b_filter_.getGain() - smoothedReduction, FloatType(-30), FloatType(30)));
-                // m_filter_.template setQ<true, false, true>((1 - portion) * b_filter_.getQ() + portion * t_filter_.getQ());
-                m_filter_.updateCoeffs();
-            }
-            if (m_filter_.getShouldBeParallel()) {
-                m_filter_.template process<IsBypassed>(m_filter_.getParallelBuffer());
-            } else {
-                m_filter_.template process<IsBypassed>(mBuffer);
+                for (int i = 0; i < mBuffer.getNumSamples(); ++i) {
+                    FloatType currentLoudness{0};
+                    for (int chan = 0; chan < sBuffer.getNumChannels(); ++chan) {
+                        const auto sample = sBuffer.getSample(chan, i);
+                        currentLoudness += sample * sample;
+                    }
+                    currentLoudness = juce::Decibels::gainToDecibels(currentLoudness) * FloatType(0.5) - comp_baseline_;
+                    const auto reducedLoudness = currentLoudness - computer_.eval(currentLoudness);
+                    const auto smoothedReduction = follower_.processSample(reducedLoudness);
+
+                    auto sub_main_buffer = juce::AudioBuffer<FloatType>(mBuffer.getArrayOfWritePointers(),
+                                                                  mBuffer.getNumChannels(), i, 1);
+                    m_filter_.template setGain<true, false, true>(
+                    std::clamp(base_gain - smoothedReduction, FloatType(-30), FloatType(30)));
+                    m_filter_.updateCoeffs();
+                    m_filter_.template process<IsBypassed>(sub_main_buffer);
+                }
             }
         }
 
@@ -207,7 +194,6 @@ namespace zldsp::filter {
             c_dynamic_on_ = dynamic_on_.load();
             if (c_dynamic_on_) {
                 c_dynamic_bypass_ = dynamic_bypass_.load();
-                c_is_per_sample_ = is_per_sample_.load();
                 computer_.prepareBuffer();
                 tracker_.prepareBuffer();
                 follower_.prepareBuffer();

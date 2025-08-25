@@ -240,11 +240,11 @@ namespace zldsp::filter {
          */
         template<bool Update = true, bool Async = true, bool Force = false>
         void setGain(const FloatType x) {
-            if (Async) {
+            if constexpr (Async) {
                 gain_.store(static_cast<double>(x));
-                if (Update) to_update_fgq_.store(true);
+                if constexpr (Update) to_update_fgq_.store(true);
             } else {
-                if (Force) {
+                if constexpr (Force) {
                     c_gain_.setCurrentAndTarget(static_cast<double>(x));
                 } else {
                     c_gain_.setTarget(static_cast<double>(x));
@@ -254,7 +254,7 @@ namespace zldsp::filter {
 
         template<bool Async = true>
         FloatType getGain() const {
-            if (Async) {
+            if constexpr (Async) {
                 return static_cast<FloatType>(gain_.load());
             } else {
                 return static_cast<FloatType>(c_gain_.getCurrent());

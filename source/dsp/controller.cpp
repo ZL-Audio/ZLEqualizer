@@ -35,20 +35,14 @@ namespace zlp {
             static_cast<int>(zlp::dynLookahead::range.end / 1000.f * static_cast<float>(spec.sampleRate)) + 1);
         delay_.prepare({spec.sampleRate, spec.maximumBlockSize, 2});
 
-        sub_buffer_.prepare({spec.sampleRate, spec.maximumBlockSize, 4});
         sample_rate_.store(spec.sampleRate);
-        updateSubBuffer();
-    }
-
-    template<typename FloatType>
-    void Controller<FloatType>::updateSubBuffer() {
-        sub_buffer_.setSubBufferSize(static_cast<int>(kSubBufferLength * sample_rate_.load()));
 
         for (auto &f: filters_) {
             f.getTracker().setMaximumMomentarySeconds(static_cast<FloatType>(zlp::dynRMS::range.end / 1000.f));
         }
 
-        juce::dsp::ProcessSpec subSpec{sample_rate_.load(), sub_buffer_.getSubSpec().maximumBlockSize, 2};
+        juce::dsp::ProcessSpec subSpec{spec.sampleRate, spec.maximumBlockSize, 2};
+
         for (auto &f: filters_) {
             f.prepare(subSpec);
         }
@@ -186,35 +180,7 @@ namespace zlp {
         }
         // process lookahead
         delay_.process(main_buffer);
-        if (is_zero_latency_.load()) {
-            int start_sample = 0;
-            const int sample_per_buffer = static_cast<int>(sub_buffer_.getSubSpec().maximumBlockSize);
-            while (start_sample < buffer.getNumSamples()) {
-                const int actual_num_sample = std::min(sample_per_buffer, buffer.getNumSamples() - start_sample);
-                auto sub_main_buffer = juce::AudioBuffer<FloatType>(main_buffer.getArrayOfWritePointers(),
-                                                                  2, start_sample, actual_num_sample);
-                auto sub_side_buffer = juce::AudioBuffer<FloatType>(side_buffer.getArrayOfWritePointers(),
-                                                                  2, start_sample, actual_num_sample);
-                processSubBuffer(sub_main_buffer, sub_side_buffer);
-                start_sample += sample_per_buffer;
-            }
-        } else {
-            auto block = juce::dsp::AudioBlock<FloatType>(buffer);
-            // ---------------- start sub buffer
-            sub_buffer_.pushBlock(block);
-            while (sub_buffer_.isSubReady()) {
-                sub_buffer_.popSubBuffer();
-                // create main sub buffer and side sub buffer
-                auto sub_main_buffer = juce::AudioBuffer<FloatType>(sub_buffer_.sub_buffer_.getArrayOfWritePointers() + 0,
-                                                                  2, sub_buffer_.sub_buffer_.getNumSamples());
-                auto sub_side_buffer = juce::AudioBuffer<FloatType>(sub_buffer_.sub_buffer_.getArrayOfWritePointers() + 2,
-                                                                  2, sub_buffer_.sub_buffer_.getNumSamples());
-                processSubBuffer(sub_main_buffer, sub_side_buffer);
-                sub_buffer_.pushSubBuffer();
-            }
-            sub_buffer_.popBlock(block);
-            // ---------------- end sub buffer
-        }
+        processSubBuffer(main_buffer, side_buffer);
         phase_flipper_.process(main_buffer);
     }
 
@@ -377,7 +343,8 @@ namespace zlp {
                         atomic_histograms_[i].sync(histograms_[i]);
                     }
                 } else if (c_is_editor_on_) {
-                    side_loudness_[i].store(filters_[i].getTracker().getMomentaryLoudness() - filters_[i].getBaseLine());
+                    side_loudness_[i].
+                            store(filters_[i].getTracker().getMomentaryLoudness() - filters_[i].getBaseLine());
                 }
             }
         }
@@ -429,13 +396,17 @@ namespace zlp {
         // add parallel filters first
         processParallelPostLRMS<IsBypassed>(0, true, sub_main_buffer, sub_side_buffer);
         if (use_lr_) {
-            processParallelPostLRMS<IsBypassed>(1, true, lr_main_splitter_.getLBuffer(), lr_side_splitter_.getLBuffer());
-            processParallelPostLRMS<IsBypassed>(2, true, lr_main_splitter_.getRBuffer(), lr_side_splitter_.getRBuffer());
+            processParallelPostLRMS<IsBypassed>(1, true, lr_main_splitter_.getLBuffer(),
+                                                lr_side_splitter_.getLBuffer());
+            processParallelPostLRMS<IsBypassed>(2, true, lr_main_splitter_.getRBuffer(),
+                                                lr_side_splitter_.getRBuffer());
             lr_main_splitter_.combine(sub_main_buffer);
         }
         if (use_ms_) {
-            processParallelPostLRMS<IsBypassed>(3, true, ms_main_splitter_.getMBuffer(), ms_side_splitter_.getMBuffer());
-            processParallelPostLRMS<IsBypassed>(4, true, ms_main_splitter_.getSBuffer(), ms_side_splitter_.getSBuffer());
+            processParallelPostLRMS<IsBypassed>(3, true, ms_main_splitter_.getMBuffer(),
+                                                ms_side_splitter_.getMBuffer());
+            processParallelPostLRMS<IsBypassed>(4, true, ms_main_splitter_.getSBuffer(),
+                                                ms_side_splitter_.getSBuffer());
             ms_main_splitter_.combine(sub_main_buffer);
         }
         processParallelPostLRMS<IsBypassed>(0, false, sub_main_buffer, sub_side_buffer);
@@ -444,8 +415,10 @@ namespace zlp {
         }
         if (use_lr_) {
             lr_main_splitter_.split(sub_main_buffer);
-            processParallelPostLRMS<IsBypassed>(1, false, lr_main_splitter_.getLBuffer(), lr_side_splitter_.getLBuffer());
-            processParallelPostLRMS<IsBypassed>(2, false, lr_main_splitter_.getRBuffer(), lr_side_splitter_.getRBuffer());
+            processParallelPostLRMS<IsBypassed>(1, false, lr_main_splitter_.getLBuffer(),
+                                                lr_side_splitter_.getLBuffer());
+            processParallelPostLRMS<IsBypassed>(2, false, lr_main_splitter_.getRBuffer(),
+                                                lr_side_splitter_.getRBuffer());
             if (c_is_sgc_on_) {
                 compensation_gains_[1].template process<IsBypassed>(lr_main_splitter_.getLBuffer());
                 compensation_gains_[2].template process<IsBypassed>(lr_main_splitter_.getRBuffer());
@@ -454,8 +427,10 @@ namespace zlp {
         }
         if (use_ms_) {
             ms_main_splitter_.split(sub_main_buffer);
-            processParallelPostLRMS<IsBypassed>(3, false, ms_main_splitter_.getMBuffer(), ms_side_splitter_.getMBuffer());
-            processParallelPostLRMS<IsBypassed>(4, false, ms_main_splitter_.getSBuffer(), ms_side_splitter_.getSBuffer());
+            processParallelPostLRMS<IsBypassed>(3, false, ms_main_splitter_.getMBuffer(),
+                                                ms_side_splitter_.getMBuffer());
+            processParallelPostLRMS<IsBypassed>(4, false, ms_main_splitter_.getSBuffer(),
+                                                ms_side_splitter_.getSBuffer());
             if (c_is_sgc_on_) {
                 compensation_gains_[3].template process<IsBypassed>(ms_main_splitter_.getMBuffer());
                 compensation_gains_[4].template process<IsBypassed>(ms_main_splitter_.getSBuffer());
@@ -573,9 +548,6 @@ namespace zlp {
     template<typename FloatType>
     void Controller<FloatType>::handleAsyncUpdate() {
         int currentLatency = static_cast<int>(delay_.getDelaySamples());
-        if (!is_zero_latency_.load()) {
-            currentLatency += static_cast<int>(sub_buffer_.getLatencySamples());
-        }
         currentLatency += latency_.load();
         processor_ref_.setLatencySamples(currentLatency);
     }
@@ -597,7 +569,7 @@ namespace zlp {
             case zldsp::filter::FilterType::kLowPass:
             case zldsp::filter::FilterType::kHighShelf: {
                 auto soloFreq = static_cast<FloatType>(
-                    std::sqrt(sub_buffer_.getMainSpec().sampleRate / 2) * std::sqrt(freq));
+                    std::sqrt(sample_rate_.load(std::memory_order::relaxed) / 2) * std::sqrt(freq));
                 auto scale = soloFreq / freq;
                 soloFreq = static_cast<FloatType>(std::min(std::max(soloFreq, FloatType(10)), FloatType(20000)));
                 auto bw = std::max(std::log2(scale) * 2, FloatType(0.01));
@@ -706,27 +678,28 @@ namespace zlp {
             case filterStructure::kMatched: {
                 const auto singleLatency = prototype_corrections_[0].getLatency();
                 new_latency = singleLatency
-                             + static_cast<int>(use_lr_) * singleLatency
-                             + static_cast<int>(use_ms_) * singleLatency;
+                              + static_cast<int>(use_lr_) * singleLatency
+                              + static_cast<int>(use_ms_) * singleLatency;
                 break;
             }
             case filterStructure::kMixed: {
                 const auto single_latency = mixed_corrections_[0].getLatency();
                 new_latency = single_latency
-                             + static_cast<int>(use_lr_) * single_latency
-                             + static_cast<int>(use_ms_) * single_latency;
+                              + static_cast<int>(use_lr_) * single_latency
+                              + static_cast<int>(use_ms_) * single_latency;
                 break;
             }
             case filterStructure::kLinear: {
                 const auto single_latency = linear_filters_[0].getLatency();
                 new_latency = single_latency
-                             + static_cast<int>(use_lr_) * single_latency
-                             + static_cast<int>(use_ms_) * single_latency;
+                              + static_cast<int>(use_lr_) * single_latency
+                              + static_cast<int>(use_ms_) * single_latency;
                 break;
             }
         }
         if (new_latency != latency_.load()) {
-            const auto delay_in_seconds = static_cast<FloatType>(new_latency) / static_cast<FloatType>(sample_rate_.load());
+            const auto delay_in_seconds = static_cast<FloatType>(new_latency) / static_cast<FloatType>(sample_rate_.
+                                              load());
             dummy_main_delay_.setDelaySeconds(delay_in_seconds);
             dummy_side_delay_.setDelaySeconds(delay_in_seconds);
             latency_.store(new_latency);
