@@ -1,0 +1,142 @@
+name: AAX Pre Release
+
+on:
+  workflow_dispatch:
+
+# When pushing new commits, cancel any running builds on that branch
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+  BUILD_DIR: Builds
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DISPLAY: :0 # linux pluginval needs this
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+# jobs are run in paralell on different machines
+# all steps run in series
+jobs:
+  build_and_test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      matrix:
+        include:
+          - name: macOS-x86
+            os: macos-15
+            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
+          - name: macOS-arm
+            os: macos-15
+            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
+          - name: Windows-x86
+            os: windows-latest
+            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            pluginval-binary: ./pluginval.exe
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
+
+    steps:
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: choco install ninja
+
+      - name: Install macOS Deps
+        if: ${{ matrix.name == 'macOS' }}
+        run: brew install ninja osxutils
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Import Certificates (macOS)
+        uses: apple-actions/import-codesign-certs@v5 # only exists as a tag right now
+        if: ${{ (matrix.name == 'macOS') && (env.p12-file-base64 != '')}}
+        with:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
+        env:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+
+      - name: Configure and Build (macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+
+      - name: Configure and Build (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call ${{ matrix.vcvars64_path }}
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+
+      - name: Read in .env from CMake
+        shell: bash
+        run: |
+          cat .env # show us the config
+          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+
+      - name: Check AAX releases
+        shell: bash
+        run: |
+          ls "${{ env.ARTIFACTS_PATH }}/AAX"
+
+      - name: Upload AAX
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: "${{ env.ARTIFACTS_PATH }}/AAX/*.aaxplugin"
+
+  pre-release:
+    name: Release AAX
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    permissions:
+      contents: write
+
+    steps:
+    - name: Get artifacts
+      uses: actions/download-artifact@v5
+
+    - name: Download AAX pre-release repo
+      uses: actions/checkout@v5
+      with:
+        repository: "ZL-Audio/ZLEqualizerAAX"
+        fetch-depth: 0
+        path: "release_repo"
+        ssh-key: ${{ secrets.AAX_RELEASE_DEPLOY_KEY }}
+
+    - name: Remove old AAX releases
+      run: |
+        rm -rf "release_repo/macOS"
+        rm -rf "release_repo/Windows"
+        rm -rf "release_repo/macOS-x86"
+        rm -rf "release_repo/macOS-arm"
+        rm -rf "release_repo/Windows-x86"
+
+    - name: Move current AAX pre-releases
+      run: |
+        mv -v "macOS-x86" "release_repo/macOS-x86"
+        mv -v "macOS-arm" "release_repo/macOS-arm"
+        mv -v "Windows-x86" "release_repo/Windows-x86"
+
+    - name: Commit AAX pre-release repo
+      run: |
+        cd "release_repo"
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git checkout --orphan newBranch
+        git add -A
+        git commit -m "pre-release"
+        git branch -D main
+        git branch -m main
+        git push -f origin main

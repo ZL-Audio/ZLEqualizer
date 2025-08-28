@@ -1,0 +1,130 @@
+name: macOS/Windows/Linux Heavy Test
+
+on:
+  workflow_dispatch:
+
+# When pushing new commits, cancel any running builds on that branch
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+  BUILD_DIR: Builds
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DISPLAY: :0 # linux pluginval needs this
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  SCCACHE_GHA_ENABLED: true
+  SCCACHE_CACHE_MULTIARCH: 1
+
+# jobs are run in paralell on different machines
+# all steps run in series
+jobs:
+  build_and_test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-22.04
+            pluginval-binary: ./pluginval
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=24
+          - name: macOS
+            os: macos-15
+            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+            cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DZL_EQ_BAND_NUM=24
+          - name: Windows
+            os: windows-2022
+            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            pluginval-binary: ./pluginval.exe
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=24
+
+    steps:
+      - name: Set up Clang (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 20
+
+      # This also starts up our "fake" display Xvfb, needed for pluginval
+      - name: Install Deps (Linux)
+        if: runner.os == 'Linux'
+        # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
+        run: |
+          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev xvfb ninja-build
+          sudo /usr/bin/Xvfb $DISPLAY &
+
+      - name: Install Deps (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: brew install ninja osxutils
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Configure and Build (Linux & macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+
+      - name: Configure and Build (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call ${{ matrix.vcvars64_path }}
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+
+      - name: Test
+        working-directory: ${{ env.BUILD_DIR }}
+        run: ctest --output-on-failure -j4 -VV
+
+      - name: Read in .env from CMake # see GitHubENV.cmake
+        shell: bash
+        run: |
+          cat .env # show us the config
+          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+
+      - name: Pluginval setup
+        shell: bash
+        run: |
+          curl -LO "https://github.com/Tracktion/pluginval/releases/download/v1.0.3/pluginval_${{ runner.os }}.zip"
+          7z x pluginval_${{ runner.os }}.zip
+          echo "PLUGINVAL_DISABLED=Plugin state restoration" >> $GITHUB_ENV
+
+      - name: Setup Pluginval random seed
+        uses: josStorer/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYYMMDD
+
+      - name: Pluginval VST3 validations
+        if: ${{ runner.os != 'macOS' }}
+        shell: bash
+        run: |
+          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+        env:
+          STRICTNESS_LEVEL: 10
+          TIMEOUT_MS: 7200000
+          REPEAT: 10
+          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
+
+      - name: Pluginval AU validations (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        shell: bash
+        run: |
+          sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
+          sudo killall -9 AudioComponentRegistrar
+          ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+        env:
+          STRICTNESS_LEVEL: 10
+          TIMEOUT_MS: 7200000
+          REPEAT: 10
+          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"

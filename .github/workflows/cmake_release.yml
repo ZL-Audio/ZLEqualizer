@@ -1,0 +1,238 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+# When pushing new commits, cancel any running builds on that branch
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+  BUILD_DIR: Builds
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DISPLAY: :0 # linux pluginval needs this
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+# jobs are run in paralell on different machines
+# all steps run in series
+jobs:
+  build_and_test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      matrix:
+        include:
+          - name: Linux-x86
+            os: ubuntu-22.04
+            app_suffix: ""
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
+          - name: Linux-arm
+            os: ubuntu-22.04-arm
+            app_suffix: ""
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
+          - name: macOS-x86
+            os: macos-15
+            app_suffix: ".app"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_EQ_BAND_NUM=24
+          - name: macOS-arm
+            os: macos-15
+            app_suffix: ".app"
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_EQ_BAND_NUM=24
+          - name: Windows-x86
+            os: windows-latest
+            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            app_suffix: ".exe"
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
+          - name: Windows-arm
+            os: windows-11-arm
+            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsarm64.bat"'
+            app_suffix: ".exe"
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DJUCE_USE_SIMD=0 -DZL_EQ_BAND_NUM=24
+
+    steps:
+      - name: Set up Clang (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 20
+
+      # This also starts up our "fake" display Xvfb, needed for pluginval
+      - name: Install Deps (Linux)
+        if: runner.os == 'Linux'
+        # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
+        run: |
+          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev xvfb ninja-build
+          sudo /usr/bin/Xvfb $DISPLAY &
+
+      - name: Install Deps (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja osxutils
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Configure and Build (Linux & macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+
+      - name: Configure and Build (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call ${{ matrix.vcvars64_path }}
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+
+      - name: Read in .env from CMake # see GitHubENV.cmake
+        shell: bash
+        run: |
+          cat .env # show us the config
+          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+
+      - name: Set up custom git config
+        run: git config --global http.postBuffer 1048576000
+
+      - name: Download AAX pre-release repo
+        if: (matrix.name == 'macOS-x86') || (matrix.name == 'macOS-arm') || (matrix.name == 'Windows-x86')
+        uses: actions/checkout@v5
+        with:
+          repository: "ZL-Audio/ZLEqualizerAAX"
+          path: "aax_releases"
+          ssh-key: ${{ secrets.AAX_RELEASE_DEPLOY_KEY }}
+
+      - name: Set additional env vars for next steps
+        shell: bash
+        run: |
+          echo "AAX_PATH=aax_releases/${{ matrix.name }}/${{ env.PRODUCT_NAME }}.aaxplugin" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
+
+      - name: Check dependencies
+        shell: bash
+        run: python3 -u packaging/check_dependency.py
+
+      - name: Import Certificates (macOS)
+        uses: apple-actions/import-codesign-certs@v5 # only exists as a tag right now
+        if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '') }}
+        with:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+          p12-password: ${{ secrets.DEV_ID_APP_PASSWORD }}
+        env:
+          p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
+
+      - name: Codesign and Create Individual Packages (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          python3 -u packaging/packager_macOS.py
+        env:
+          DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
+
+      - name: Sign Final Package (macOS)
+        if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV != '') }}
+        run: productsign --sign "${{ secrets.APPLE_INSTALLER_DEV }}" "${{ env.ARTIFACT_NAME }}_unsigned.pkg" "${{ env.ARTIFACT_NAME }}.pkg"
+        env:
+          APPLE_INSTALLER_DEV: ${{ secrets.APPLE_INSTALLER_DEV }}
+
+      - name: Rename Final Package (macOS)
+        if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV == '') }}
+        run: mv "${{ env.ARTIFACT_NAME }}_unsigned.pkg" "${{ env.ARTIFACT_NAME }}.pkg"
+        env:
+          APPLE_INSTALLER_DEV: ${{ secrets.APPLE_INSTALLER_DEV }}
+
+      - name: Notarize and Staple PKG (macOS)
+        if: ${{ (runner.os == 'macOS') && (env.NOTARIZATION_USERNAME != '')}}
+        run: |
+          xcrun notarytool submit "${{ env.ARTIFACT_NAME }}.pkg" --apple-id ${{ secrets.NOTARIZATION_USERNAME }} --password ${{ secrets.NOTARIZATION_PASSWORD }} --team-id ${{ secrets.TEAM_ID }} --wait
+          xcrun stapler staple "${{ env.ARTIFACT_NAME }}.pkg"
+        env:
+          NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
+
+      - name: Create DMG (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          mkdir "${{ env.ARTIFACTS_PATH }}/dmgtmp"
+          mv "${{ env.ARTIFACT_NAME }}.pkg" "${{ env.ARTIFACTS_PATH }}/dmgtmp"
+          hdiutil create "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -ov -volname "${{ env.ARTIFACT_NAME }}" -fs HFS+ -srcfolder "${{ env.ARTIFACTS_PATH }}/dmgtmp"
+          hdiutil convert "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -format UDZO -o "${{ env.ARTIFACT_NAME }}.dmg"
+
+      - name: Upload DMG (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: "${{ env.ARTIFACT_NAME }}.dmg"
+
+      - name: Generate InnoScript (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          python3 -u packaging/packager_Windows.py
+          cat "packaging\installer.iss"
+
+      - name: Generate Installer (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          iscc "packaging\installer.iss"
+          mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
+
+      - name: Upload Exe (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
+
+      - name: Generate Zip (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        working-directory: ${{ env.ARTIFACTS_PATH }}
+        run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" "-xr!lib${{ env.PRODUCT_NAME }}_SharedCode.a" .
+
+      - name: Upload Zip (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
+
+  release:
+    if: contains(github.ref, 'tags/')
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 1
+        fetch-tags: true
+        ref: ${{ github.ref }}
+
+    - name: Get Artifacts
+      uses: actions/download-artifact@v5
+      with: 
+        path: installers/
+
+    - name: Generate Signed Build Provenance Attestations
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: |
+          installers/*/*.exe
+          installers/*/*.zip
+          installers/*/*.dmg
+
+    - name: Create Release
+      run: gh release create ${{ github.ref_name }} --prerelease installers/*/*.exe installers/*/*.zip installers/*/*.dmg

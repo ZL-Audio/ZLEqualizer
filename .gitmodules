@@ -1,0 +1,11 @@
+[submodule "JUCE"]
+	path = JUCE
+	url = https://github.com/ZL-Audio/JUCE
+	branch = master
+[submodule "nlopt"]
+	path = nlopt
+	url = https://github.com/ZL-Audio/nlopt
+	branch = master
+[submodule "kfr"]
+	path = kfr
+	url = https://github.com/ZL-Audio/kfr
