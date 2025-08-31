@@ -171,9 +171,17 @@ namespace zldsp::filter {
             return filters_;
         }
 
+        [[nodiscard]] bool getShouldBeParallel() const {
+            return should_be_parallel_;
+        }
+
+        std::span<FloatType *> getParallelBuffer() {
+            return parallel_buffers_pointers_;
+        }
+
     private:
         std::array<TDFBase<FloatType>, FilterSize> filters_{};
-        std::vector<std::vector<FloatType>> parallel_buffers_;
+        std::vector<std::vector<FloatType> > parallel_buffers_;
         std::vector<FloatType *> parallel_buffers_pointers_;
         bool should_be_parallel_ = false;
         FloatType parallel_multiplier_{};

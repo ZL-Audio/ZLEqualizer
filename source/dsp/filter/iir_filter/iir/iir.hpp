@@ -43,6 +43,15 @@ namespace zldsp::filter {
             updateCoeffs();
         }
 
+        void forceUpdate() {
+            c_filter_type_ = empty_.getFilterType();
+            c_order_ = empty_.getOrder();
+            c_freq_.setCurrentAndTarget(empty_.getFreq());
+            c_gain_.setCurrentAndTarget(empty_.getGain());
+            c_q_.setCurrentAndTarget(empty_.getQ());
+            updateCoeffs();
+        }
+
         /**
          * prepare for processing the incoming audio buffer
          * @return
@@ -70,16 +79,16 @@ namespace zldsp::filter {
          * @param freq
          */
         template<bool Force = false>
-        void setFreq(const FloatType freq) {
+        void setFreq(const double freq) {
             if constexpr (Force) {
-                c_freq_.setCurrentAndTarget(static_cast<double>(freq));
+                c_freq_.setCurrentAndTarget(freq);
             } else {
-                c_freq_.setTarget(static_cast<double>(freq));
+                c_freq_.setTarget(freq);
             }
         }
 
-        FloatType getFreq() const {
-            return static_cast<FloatType>(c_freq_.getTarget());
+        [[nodiscard]] double getFreq() const {
+            return c_freq_.getTarget();
         }
 
         /**
@@ -87,16 +96,16 @@ namespace zldsp::filter {
          * @param gain
          */
         template<bool Force = false>
-        void setGain(const FloatType gain) {
+        void setGain(const double gain) {
             if constexpr (Force) {
-                c_gain_.setCurrentAndTarget(static_cast<double>(gain));
+                c_gain_.setCurrentAndTarget(gain);
             } else {
-                c_gain_.setTarget(static_cast<double>(gain));
+                c_gain_.setTarget(gain);
             }
         }
 
-        FloatType getGain() const {
-            return static_cast<FloatType>(c_gain_.getTarget());
+        [[nodiscard]] double getGain() const {
+            return c_gain_.getTarget();
         }
 
         /**
@@ -104,16 +113,16 @@ namespace zldsp::filter {
          * @param q
          */
         template<bool Force = false>
-        void setQ(const FloatType q) {
+        void setQ(const double q) {
             if constexpr (Force) {
-                c_q_.setCurrentAndTarget(static_cast<double>(q));
+                c_q_.setCurrentAndTarget(q);
             } else {
-                c_q_.setTarget(static_cast<double>(q));
+                c_q_.setTarget(q);
             }
         }
 
-        FloatType getQ() const {
-            return static_cast<FloatType>(c_q_.getTarget());
+        [[nodiscard]] double getQ() const {
+            return c_q_.getTarget();
         }
 
         void skipSmooth() {
