@@ -16,7 +16,7 @@
 
 namespace zldsp::filter {
     template<typename FloatType>
-    class IIRBase {
+    class TDFBase {
     public:
         // w should be an array of std::exp(-2pi * f / samplerate * i)
         static void updateResponse(
@@ -40,7 +40,7 @@ namespace zldsp::filter {
                        static_cast<FloatType>(coeff[2]) * wi2);
         }
 
-        IIRBase() = default;
+        TDFBase() = default;
 
         void prepare(const size_t num_channels) {
             s1_.resize(num_channels);
@@ -67,11 +67,11 @@ namespace zldsp::filter {
             }
         }
 
-        FloatType processSample(const size_t channel, FloatType inputValue) {
-            const auto outputValue = inputValue * coeff_[0] + s1_[channel];
-            s1_[channel] = (inputValue * coeff_[1]) - (outputValue * coeff_[3]) + s2_[channel];
-            s2_[channel] = (inputValue * coeff_[2]) - (outputValue * coeff_[4]);
-            return outputValue;
+        FloatType processSample(const size_t channel, FloatType input) {
+            const auto output = input * coeff_[0] + s1_[channel];
+            s1_[channel] = (input * coeff_[1]) - (output * coeff_[3]) + s2_[channel];
+            s2_[channel] = (input * coeff_[2]) - (output * coeff_[4]);
+            return output;
         }
 
         void updateFromBiquad(const std::array<double, 6> &coeff) {

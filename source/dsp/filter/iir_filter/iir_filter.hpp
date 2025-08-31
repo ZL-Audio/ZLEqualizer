@@ -9,4 +9,6 @@
 
 #pragma once
 
-#include "single_iir_filter.hpp"
+#include "tdf/tdf.hpp"
+#include "svf/svf.hpp"
+#include "parallel/parallel.hpp"
