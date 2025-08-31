@@ -40,7 +40,7 @@ namespace zldsp::filter {
             c_freq_.prepare(sample_rate, 0.1);
             c_gain_.prepare(sample_rate, 0.001);
             c_q_.prepare(sample_rate, 0.001);
-            updateCoeffs();
+            empty_.setToUpdatePara();
         }
 
         void forceUpdate() {

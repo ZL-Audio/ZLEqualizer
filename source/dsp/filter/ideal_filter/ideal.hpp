@@ -83,27 +83,13 @@ namespace zldsp::filter {
         }
 
         void updateParas() {
-            current_filter_num_ = updateIIRCoeffs(filter_type_.load(), order_.load(),
-                                                  freq_.load(), fs_.load(),
-                                                  gain_.load(), q_.load(), coeffs_);
-        }
-
-        void updateResponse(const std::span<const std::complex<FloatType>> wis,
-                            std::span<const std::complex<FloatType>> response) {
-            std::fill(response.begin(), response.end(), std::complex(FloatType(1), FloatType(0)));
-            for (size_t i = 0; i < current_filter_num_; ++i) {
-                IdealBase<FloatType>::updateResponse(coeffs_[i], wis, response);
-            }
-        }
-
-        void updateMagnitude(const std::span<const FloatType> ws,
-                             std::span<FloatType> dbs) {
-            std::fill(dbs.begin(), dbs.end(), FloatType(1));
-            for (size_t i = 0; i < current_filter_num_; ++i) {
-                IdealBase<FloatType>::updateMagnitude(coeffs_[i], ws, dbs);
-            }
-            auto db_v = kfr::make_univector(dbs);
-            db_v = FloatType(20) * kfr::log10(kfr::max(db_v, FloatType(1e-12)));
+            current_filter_num_ = updateIIRCoeffs(filter_type_.load(std::memory_order::relaxed),
+                                                  order_.load(std::memory_order::relaxed),
+                                                  freq_.load(std::memory_order::relaxed),
+                                                  fs_.load(std::memory_order::relaxed),
+                                                  gain_.load(std::memory_order::relaxed),
+                                                  q_.load(std::memory_order::relaxed),
+                                                  coeffs_);
         }
 
         FloatType getDB(FloatType w) {
@@ -115,6 +101,14 @@ namespace zldsp::filter {
         }
 
         std::atomic<bool> &getUpdateFlag() { return to_update_; }
+
+        [[nodiscard]] size_t getFilterNum() const {
+            return current_filter_num_;
+        }
+
+        std::array<std::array<double, 6>, FilterSize> &getCoeff() {
+            return coeffs_;
+        }
 
     private:
         std::array<std::array<double, 6>, FilterSize> coeffs_{};

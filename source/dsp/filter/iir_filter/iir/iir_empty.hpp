@@ -29,6 +29,10 @@ namespace zldsp::filter {
             return to_update_fgq_.exchange(false, std::memory_order::acquire);
         }
 
+        void setToUpdatePara() {
+            to_update_para_.store(true, std::memory_order::release);
+        }
+
         template<bool Update = true>
         void setFreq(const double freq) {
             freq_.store(freq, std::memory_order::relaxed);

@@ -112,6 +112,14 @@ namespace zldsp::filter {
             return filters_;
         }
 
+        [[nodiscard]] size_t getFilterNum() const {
+            return this->current_filter_num_;
+        }
+
+        std::array<std::array<double, 6>, FilterSize> &getCoeff() {
+            return this->coeffs_;
+        }
+
     private:
         std::array<TDFBase<FloatType>, FilterSize> filters_{};
 

@@ -36,7 +36,7 @@ namespace zldsp::filter {
             filter_.forceUpdate();
         }
 
-        void prepareBuffer(const FloatType threshold_shift) {
+        bool prepareBuffer(const FloatType threshold_shift) {
             if (dynamic_on_.load(std::memory_order::relaxed) != c_dynamic_on_) {
                 c_dynamic_on_ = dynamic_on_.load(std::memory_order::relaxed);
                 // reset gain to base gain
@@ -49,64 +49,12 @@ namespace zldsp::filter {
                 c_gain_diff_ = target_gain_.load(std::memory_order::relaxed) - c_base_gain_;
                 updateThreshold(threshold_shift);
             }
-            filter_.prepareBuffer();
+            return filter_.prepareBuffer();
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) {
             filter_.prepare(sample_rate, num_channels, max_num_samples);
             follower_.prepare(sample_rate);
-        }
-
-        /**
-         * process the incoming audio buffer
-         * @tparam IsBypassed
-         * @param main_buffer
-         * @param side_buffer
-         * @param num_samples
-         */
-        template<bool IsBypassed = false>
-        void process(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
-                     const size_t num_samples) {
-            if (c_dynamic_on_) {
-                if (main_buffer.size() == 1) {
-                    const auto main_pointer = main_buffer[0];
-                    const auto side_pointer = side_buffer[0];
-                    for (size_t i = 0; i < num_samples; ++i) {
-                        const auto side_db = zldsp::chore::gainToDecibels(std::abs(side_pointer[i]));
-                        auto p = (side_db - low_) * slope_;
-                        p = p * p;
-                        filter_.template setGain<true>(c_base_gain_ + p * c_gain_diff_);
-                        filter_.updateGain();
-                        if constexpr (IsBypassed) {
-                            filter_.processSample(0, main_pointer[i]);
-                        } else {
-                            main_pointer[i] = filter_.processSample(0, main_pointer[i]);
-                        }
-                    }
-                } else {
-                    for (size_t i = 0; i < num_samples; ++i) {
-                        FloatType sum_sqr = 0;
-                        for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
-                            const auto sample = side_buffer[chan][i];
-                            sum_sqr += sample * sample;
-                        }
-                        const auto side_db = zldsp::chore::squareGainToDecibels(sum_sqr);
-                        auto p = (side_db - low_) * slope_;
-                        p = p * p;
-                        filter_.template setGain<true>(c_base_gain_ + p * c_gain_diff_);
-                        filter_.updateGain();
-                        for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
-                            if constexpr (IsBypassed) {
-                                filter_.processSample(chan, main_buffer[chan][i]);
-                            } else {
-                                main_buffer[chan][i] = filter_.processSample(chan, main_buffer[chan][i]);
-                            }
-                        }
-                    }
-                }
-            } else {
-                filter_.template process<IsBypassed>(main_buffer, num_samples);
-            }
         }
 
         void setDynamicON(const bool f) {
@@ -125,6 +73,10 @@ namespace zldsp::filter {
             knee_.store(knee, std::memory_order::relaxed);
         }
 
+        FilterType &getFilter() {
+            return filter_;
+        }
+
     protected:
         IIREmpty &empty_;
         FilterType filter_;
@@ -138,6 +90,56 @@ namespace zldsp::filter {
 
         std::atomic<FloatType> threshold_, knee_;
         FloatType low_{}, slope_{};
+
+        /**
+         * process the incoming audio buffer
+         * @tparam IsBypassed
+         * @param main_buffer
+         * @param side_buffer
+         * @param num_samples
+         */
+        template<bool IsBypassed = false>
+        void process(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
+                     const size_t num_samples) {
+            if (c_dynamic_on_) {
+                if (main_buffer.size() == 1) {
+                    const auto main_pointer = main_buffer[0];
+                    const auto side_pointer = side_buffer[0];
+                    for (size_t i = 0; i < num_samples; ++i) {
+                        const auto side_db = zldsp::chore::gainToDecibels(std::abs(side_pointer[i]));
+                        const auto p = (side_db - low_) * slope_;
+                        filter_.template setGain<true>(c_base_gain_ + p * p * c_gain_diff_);
+                        filter_.updateGain();
+                        if constexpr (IsBypassed) {
+                            filter_.processSample(0, main_pointer[i]);
+                        } else {
+                            main_pointer[i] = filter_.processSample(0, main_pointer[i]);
+                        }
+                    }
+                } else {
+                    for (size_t i = 0; i < num_samples; ++i) {
+                        FloatType sum_sqr = 0;
+                        for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
+                            const auto sample = side_buffer[chan][i];
+                            sum_sqr += sample * sample;
+                        }
+                        const auto side_db = zldsp::chore::squareGainToDecibels(sum_sqr);
+                        const auto p = (side_db - low_) * slope_;
+                        filter_.template setGain<true>(c_base_gain_ + p * p * c_gain_diff_);
+                        filter_.updateGain();
+                        for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
+                            if constexpr (IsBypassed) {
+                                filter_.processSample(chan, main_buffer[chan][i]);
+                            } else {
+                                main_buffer[chan][i] = filter_.processSample(chan, main_buffer[chan][i]);
+                            }
+                        }
+                    }
+                }
+            } else {
+                filter_.template process<IsBypassed>(main_buffer, num_samples);
+            }
+        }
 
         void updateThreshold(const FloatType threshold_shift) {
             const auto threshold = threshold_.load(std::memory_order_relaxed) + threshold_shift;
