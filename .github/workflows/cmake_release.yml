@@ -50,7 +50,7 @@ jobs:
             os: windows-11-arm
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsarm64.bat"'
             app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DJUCE_USE_SIMD=0 -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
 
     steps:
       - name: Set up Clang (Linux)
