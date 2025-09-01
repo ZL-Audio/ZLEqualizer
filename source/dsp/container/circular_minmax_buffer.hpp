@@ -12,17 +12,16 @@
 #include "circular_buffer.hpp"
 
 namespace zldsp::container {
-    /**
-     * a circular buffer that can track the min/max value
-     * @tparam T the type of elements
-     * @tparam FindMin
-     * @tparam FindMax
-     */
     enum MinMaxBufferType {
         kFindMin, kFindMax
     };
 
-    template<typename T, MinMaxBufferType BufferType>
+    /**
+     * a circular buffer that can track the min/max value
+     * @tparam T the type of elements
+     * @tparam kBufferType
+     */
+    template<typename T, MinMaxBufferType kBufferType>
     class CircularMinMaxBuffer {
     public:
         explicit CircularMinMaxBuffer(const size_t capacity = 1) {
@@ -67,12 +66,12 @@ namespace zldsp::container {
                 minmax_buffer_.popFront();
             }
             // maintain monotonicity
-            if constexpr (BufferType == kFindMin) {
+            if constexpr (kBufferType == kFindMin) {
                 while (!minmax_buffer_.isEmpty() && minmax_buffer_.getBack().first >= x) {
                     minmax_buffer_.popBack();
                 }
             }
-            if constexpr (BufferType == kFindMax) {
+            if constexpr (kBufferType == kFindMax) {
                 while (!minmax_buffer_.isEmpty() && minmax_buffer_.getBack().first <= x) {
                     minmax_buffer_.popBack();
                 }
@@ -85,6 +84,6 @@ namespace zldsp::container {
 
     private:
         unsigned long long head_{0}, count_{0}, size_{0};
-        CircularBuffer<std::pair<T, unsigned long long>> minmax_buffer_{1};
+        CircularBuffer<std::pair<T, unsigned long long> > minmax_buffer_{1};
     };
 }

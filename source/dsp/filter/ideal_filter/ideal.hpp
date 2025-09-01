@@ -9,22 +9,18 @@
 
 #pragma once
 
-#include <atomic>
-
 #include "ideal_base.hpp"
 #include "coeff/ideal_coeff.hpp"
 #include "../filter_design/filter_design.hpp"
 #include "../../chore/decibels.hpp"
-#include "../../gain/safe_gain.hpp"
-#include "../../vector/kfr_import.hpp"
 
 namespace zldsp::filter {
     /**
      * an ideal prototype filter which holds coeffs for calculating responses
      * @tparam FloatType the float type of input audio buffer
-     * @tparam FilterSize the number of cascading filters
+     * @tparam kFilterSize the number of cascading filters
      */
-    template<typename FloatType, size_t FilterSize>
+    template<typename FloatType, size_t kFilterSize>
     class Ideal {
     public:
         explicit Ideal() = default;
@@ -34,11 +30,11 @@ namespace zldsp::filter {
         }
 
         void forceUpdate(const FilterParameters &paras) {
-            c_filter_type_ = paras.filter_type_;
+            c_filter_type_ = paras.filter_type;
             c_order_ = paras.order_;
-            c_freq_ = paras.freq_;
+            c_freq_ = paras.freq;
             c_gain_ = paras.gain_;
-            c_q_ = paras.q_;
+            c_q_ = paras.q;
             updateCoeffs();
         }
 
@@ -101,12 +97,12 @@ namespace zldsp::filter {
             return current_filter_num_;
         }
 
-        std::array<std::array<double, 6>, FilterSize> &getCoeff() {
+        std::array<std::array<double, 6>, kFilterSize> &getCoeff() {
             return coeffs_;
         }
 
     protected:
-        std::array<std::array<double, 6>, FilterSize> coeffs_{};
+        std::array<std::array<double, 6>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
         double c_gain_{0.0}, c_q_{0.707}, c_freq_{1000.0};
         size_t c_order_{2};
@@ -114,17 +110,10 @@ namespace zldsp::filter {
 
         double sample_rate_{48000.0};
 
-        static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
+        static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 6>, FilterSize> &coeffs) {
-            return FilterDesign::updateCoeffs<FilterSize,
-                IdealCoeff::get1LowShelf, IdealCoeff::get1HighShelf, IdealCoeff::get1TiltShelf,
-                IdealCoeff::get1LowPass, IdealCoeff::get1HighPass,
-                IdealCoeff::get2Peak,
-                IdealCoeff::get2LowShelf, IdealCoeff::get2HighShelf, IdealCoeff::get2TiltShelf,
-                IdealCoeff::get2LowPass, IdealCoeff::get2HighPass,
-                IdealCoeff::get2BandPass, IdealCoeff::get2Notch>(
-                filterType, n, f, fs, g0, q0, coeffs);
+                                      std::array<std::array<double, 6>, kFilterSize> &coeffs) {
+            return FilterDesign::updateCoeffs<IdealCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
         }
     };
 }

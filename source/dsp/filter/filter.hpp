@@ -10,5 +10,6 @@
 #pragma once
 
 #include "iir_filter/iir_filter.hpp"
-#include "ideal_filter/ideal_filter.hpp"
+#include "ideal_filter/ideal.hpp"
+#include "ideal_filter/ideal_empty.hpp"
 #include "filter_design/filter_design.hpp"

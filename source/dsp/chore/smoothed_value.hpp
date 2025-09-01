@@ -17,7 +17,7 @@ namespace zldsp::chore {
         kLin, kMul, kFixLin, kFixMul
     };
 
-    template<typename FloatType, SmoothedTypes SmoothedType = SmoothedTypes::kLin>
+    template<typename FloatType, SmoothedTypes kSmoothedType = kLin>
     class SmoothedValue {
     public:
         SmoothedValue() {
@@ -29,14 +29,14 @@ namespace zldsp::chore {
         }
 
         void prepare(const double sample_rate, const double ramp_length_in_seconds) {
-            if constexpr (SmoothedType == kLin || SmoothedType == kMul) {
+            if constexpr (kSmoothedType == kLin || kSmoothedType == kMul) {
                 max_count_ = static_cast<int>(sample_rate * ramp_length_in_seconds);
                 max_count_inverse_ = static_cast<FloatType>(1) / static_cast<FloatType>(max_count_);
-            } else if constexpr (SmoothedType == kFixLin) {
+            } else if constexpr (kSmoothedType == kFixLin) {
                 inc_ = static_cast<FloatType>(1.0 / (sample_rate * ramp_length_in_seconds));
                 increase_inc_ = inc_;
                 decrease_inc_ = -inc_;
-            } else if constexpr (SmoothedType == kFixMul) {
+            } else if constexpr (kSmoothedType == kFixMul) {
                 inc_ = static_cast<FloatType>(std::pow(2.0, 1.0 / (sample_rate * ramp_length_in_seconds)));
                 increase_inc_ = inc_;
                 decrease_inc_ = FloatType(1.0) / inc_;
@@ -50,13 +50,13 @@ namespace zldsp::chore {
                 count_ = 0;
                 return;
             }
-            if constexpr (SmoothedType == kLin) {
+            if constexpr (kSmoothedType == kLin) {
                 inc_ = (target_ - current_) * max_count_inverse_;
                 count_ = max_count_;
-            } else if constexpr (SmoothedType == kMul) {
+            } else if constexpr (kSmoothedType == kMul) {
                 inc_ = std::exp(std::log(target_ / current_) * max_count_inverse_);
                 count_ = max_count_;
-            } else if constexpr (SmoothedType == kFixLin || SmoothedType == kFixMul) {
+            } else if constexpr (kSmoothedType == kFixLin || kSmoothedType == kFixMul) {
                 count_ = 1;
                 is_increasing_ = target_ > current_;
             }
@@ -76,13 +76,13 @@ namespace zldsp::chore {
 
         FloatType getNext() {
             if (count_ == 0) { return current_; }
-            if constexpr (SmoothedType == kLin) {
+            if constexpr (kSmoothedType == kLin) {
                 current_ += inc_;
                 count_ -= 1;
-            } else if constexpr (SmoothedType == kMul) {
+            } else if constexpr (kSmoothedType == kMul) {
                 current_ *= inc_;
                 count_ -= 1;
-            } else if constexpr (SmoothedType == kFixLin) {
+            } else if constexpr (kSmoothedType == kFixLin) {
                 if (is_increasing_) {
                     current_ += increase_inc_;
                     if (current_ > target_) {
@@ -96,7 +96,7 @@ namespace zldsp::chore {
                         count_ = 0;
                     }
                 }
-            } else if constexpr (SmoothedType == kFixMul) {
+            } else if constexpr (kSmoothedType == kFixMul) {
                 if (is_increasing_) {
                     current_ *= increase_inc_;
                     if (current_ > target_) {

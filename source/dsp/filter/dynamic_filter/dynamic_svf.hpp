@@ -16,26 +16,26 @@ namespace zldsp::filter {
     /**
      * a dynamic IIR filter which processes audio on the real-time thread
      * @tparam FloatType the float type of input audio buffer
-     * @tparam FilterSize the number of cascading filters
+     * @tparam kFilterSize the number of cascading filters
      */
-    template<typename FloatType, size_t FilterSize>
-    class DynamicSVF final : public DynamicBase<SVF<FloatType, FilterSize>, FloatType> {
+    template<typename FloatType, size_t kFilterSize>
+    class DynamicSVF final : public DynamicBase<SVF<FloatType, kFilterSize>, FloatType> {
     public:
         explicit DynamicSVF()
-            : DynamicBase<SVF<FloatType, FilterSize>, FloatType>() {
+            : DynamicBase<SVF<FloatType, kFilterSize>, FloatType>() {
         }
 
         /**
          * process the incoming audio buffer
-         * @tparam IsBypassed
+         * @tparam bypass
          * @param main_buffer
          * @param side_buffer
          * @param num_samples
          */
-        template<bool IsBypassed = false>
+        template<bool bypass = false>
         void processSVF(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                         const size_t num_samples) {
-            DynamicBase<SVF<FloatType, FilterSize>, FloatType>::template process<IsBypassed>(
+            DynamicBase<SVF<FloatType, kFilterSize>, FloatType>::template process<bypass>(
                 main_buffer, side_buffer, num_samples);
         }
     };

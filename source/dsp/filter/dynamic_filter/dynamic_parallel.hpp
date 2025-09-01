@@ -16,30 +16,30 @@ namespace zldsp::filter {
     /**
      * a dynamic IIR filter which processes audio on the real-time thread
      * @tparam FloatType the float type of input audio buffer
-     * @tparam FilterSize the number of cascading filters
+     * @tparam kFilterSize the number of cascading filters
      */
-    template<typename FloatType, size_t FilterSize>
-    class DynamicParallel final : public DynamicBase<Parallel<FloatType, FilterSize>, FloatType> {
+    template<typename FloatType, size_t kFilterSize>
+    class DynamicParallel final : public DynamicBase<Parallel<FloatType, kFilterSize>, FloatType> {
     public:
         explicit DynamicParallel()
-            : DynamicBase<Parallel<FloatType, FilterSize>, FloatType>() {
+            : DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>() {
         }
 
         /**
          * process the incoming audio buffer
-         * @tparam IsBypassed
+         * @tparam bypass
          * @param main_buffer
          * @param side_buffer
          * @param num_samples
          */
-        template<bool IsBypassed = false>
+        template<bool bypass = false>
         void processParallel(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                              const size_t num_samples) {
             if (this->filter_.getShouldBeParallel()) {
-                DynamicBase<Parallel<FloatType, FilterSize>, FloatType>::template process<IsBypassed>(
+                DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>::template process<bypass>(
                     this->filter_.getParallelBuffer(), side_buffer, num_samples);
             } else {
-                DynamicBase<Parallel<FloatType, FilterSize>, FloatType>::template process<IsBypassed>(
+                DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>::template process<bypass>(
                     main_buffer, side_buffer, num_samples);
             }
         }

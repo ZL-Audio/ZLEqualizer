@@ -10,4 +10,3 @@
 #pragma once
 
 #include "origin_gain.hpp"
-#include "safe_gain.hpp"

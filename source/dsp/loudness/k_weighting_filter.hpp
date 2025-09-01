@@ -13,7 +13,7 @@
 #include "../filter/filter.hpp"
 
 namespace zldsp::loudness {
-    template<typename FloatType, bool UseLowPass = false>
+    template<typename FloatType, bool kUseLowPass = false>
     class KWeightingFilter {
     public:
         KWeightingFilter() = default;
@@ -27,7 +27,7 @@ namespace zldsp::loudness {
                 zldsp::filter::MartinCoeff::get2HighPass(w1, 0.500242812458813));
             high_shelf_.updateFromBiquad(
                 zldsp::filter::MartinCoeff::get2HighShelf(w2, 1.5847768458311522, 0.7096433028107384));
-            if constexpr (UseLowPass) {
+            if constexpr (kUseLowPass) {
                 low_pass_.prepare(num_channels);
                 const auto w3 = 2.0 * std::numbers::pi * 22000.0 / sample_rate;
                 low_pass_.updateFromBiquad(
@@ -38,7 +38,7 @@ namespace zldsp::loudness {
         void reset() {
             high_pass_.reset();
             high_shelf_.reset();
-            if constexpr (UseLowPass) {
+            if constexpr (kUseLowPass) {
                 low_pass_.reset();
             }
         }
@@ -50,7 +50,7 @@ namespace zldsp::loudness {
                     auto sample = samples[i];
                     sample = high_pass_.processSample(channel, sample);
                     sample = high_shelf_.processSample(channel, sample);
-                    if constexpr (UseLowPass) {
+                    if constexpr (kUseLowPass) {
                         sample = low_pass_.processSample(channel, sample);
                     }
                     samples[i] = sample;
@@ -63,7 +63,7 @@ namespace zldsp::loudness {
         }
 
     private:
-        zldsp::filter::IIRBase<FloatType> high_pass_, high_shelf_, low_pass_;
+        zldsp::filter::TDFBase<FloatType> high_pass_, high_shelf_, low_pass_;
         static constexpr FloatType kBias = static_cast<FloatType>(1.0051643348917434);
     };
 }

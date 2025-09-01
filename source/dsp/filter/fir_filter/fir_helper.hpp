@@ -11,7 +11,6 @@
 
 #include <cmath>
 #include <span>
-#include <numeric>
 #include <numbers>
 
 namespace zldsp::filter {

@@ -12,7 +12,7 @@
 #include "k_weighting_filter.hpp"
 
 namespace zldsp::loudness {
-    template<typename FloatType, bool UseLowPass = false>
+    template<typename FloatType, bool kUseLowPass = false>
     class LUFSMeter {
     public:
         LUFSMeter() = default;
@@ -101,7 +101,7 @@ namespace zldsp::loudness {
         }
 
     private:
-        KWeightingFilter<FloatType, UseLowPass> k_weighting_filter_;
+        KWeightingFilter<FloatType, kUseLowPass> k_weighting_filter_;
         std::vector<std::vector<FloatType>> small_buffer_;
         std::vector<FloatType *> small_buffer_ptrs_;
         int current_idx_{0}, max_idx_{0};

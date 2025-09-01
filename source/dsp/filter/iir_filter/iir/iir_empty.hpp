@@ -33,10 +33,10 @@ namespace zldsp::filter {
             to_update_para_.store(true, std::memory_order::release);
         }
 
-        template<bool Update = true>
+        template<bool update = true>
         void setFreq(const double freq) {
             freq_.store(freq, std::memory_order::relaxed);
-            if constexpr (Update) {
+            if constexpr (update) {
                 to_update_fgq_.store(true, std::memory_order::release);
             }
         }
@@ -49,10 +49,10 @@ namespace zldsp::filter {
          * set the gain of the filter
          * @param gain
          */
-        template<bool Update = true>
+        template<bool update = true>
         void setGain(const double gain) {
             gain_.store(gain, std::memory_order::relaxed);
-            if constexpr (Update) {
+            if constexpr (update) {
                 to_update_fgq_.store(true, std::memory_order::release);
             }
         }
@@ -65,10 +65,10 @@ namespace zldsp::filter {
          * set the Q value of the filter
          * @param q
          */
-        template<bool Update = true>
+        template<bool update = true>
         void setQ(const double q) {
             q_.store(q, std::memory_order::relaxed);
-            if constexpr (Update) {
+            if constexpr (update) {
                 to_update_fgq_.store(true, std::memory_order::release);
             }
         }
@@ -77,10 +77,10 @@ namespace zldsp::filter {
             return q_.load(std::memory_order::relaxed);
         }
 
-        template<bool Update = true>
+        template<bool update = true>
         void setFilterType(const FilterType filter_type) {
             filter_type_.store(filter_type, std::memory_order::relaxed);
-            if constexpr (Update) {
+            if constexpr (update) {
                 to_update_para_.store(true, std::memory_order::release);
             }
         }
@@ -89,10 +89,10 @@ namespace zldsp::filter {
             return filter_type_.load(std::memory_order::relaxed);
         }
 
-        template<bool Update = true>
+        template<bool update = true>
         void setOrder(const size_t order) {
             order_.store(order, std::memory_order::relaxed);
-            if constexpr (Update) {
+            if constexpr (update) {
                 to_update_para_.store(true, std::memory_order::release);
             }
         }

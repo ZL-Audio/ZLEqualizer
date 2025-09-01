@@ -21,12 +21,12 @@ namespace zldsp::filter {
     /**
      * an IIR filter which processes audio on the real-time thread
      * @tparam FloatType the float type of input audio buffer
-     * @tparam FilterSize the number of cascading filters
+     * @tparam kFilterSize the number of cascading filters
      */
-    template<typename FloatType, size_t FilterSize>
-    class TDF final : public IIR<FloatType, FilterSize> {
+    template<typename FloatType, size_t kFilterSize>
+    class TDF final : public IIR<kFilterSize> {
     public:
-        explicit TDF() : IIR<FloatType, FilterSize>() {
+        explicit TDF() : IIR<kFilterSize>() {
         }
 
         void reset() override {
@@ -36,7 +36,7 @@ namespace zldsp::filter {
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t) override {
-            IIR<FloatType, FilterSize>::prepareSampleRate(sample_rate);
+            IIR<kFilterSize>::prepareSampleRate(sample_rate);
             for (auto &f: filters_) {
                 f.prepare(num_channels);
             }
@@ -47,26 +47,26 @@ namespace zldsp::filter {
          * @param buffer
          * @param num_samples
          */
-        template<bool IsBypassed = false>
+        template<bool bypass = false>
         void process(std::span<FloatType *> buffer, const size_t num_samples) {
             if (this->c_freq_.isSmoothing() || this->c_gain_.isSmoothing() || this->c_q_.isSmoothing()) {
-                processTDF<IsBypassed, true>(buffer, num_samples);
+                processTDF<bypass, true>(buffer, num_samples);
             } else {
-                processTDF<IsBypassed, false>(buffer, num_samples);
+                processTDF<bypass, false>(buffer, num_samples);
             }
         }
 
-        template<bool IsBypassed = false, bool IsSmooth = false>
+        template<bool bypass = false, bool smooth = false>
         void processTDF(std::span<FloatType *> buffer, const size_t num_samples) {
             for (size_t i = 0; i < num_samples; ++i) {
-                if constexpr (IsSmooth) {
+                if constexpr (smooth) {
                     this->c_freq_.getNext();
                     this->c_gain_.getNext();
                     this->c_q_.getNext();
                     updateCoeffs();
                 }
                 for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                    if constexpr (IsBypassed) {
+                    if constexpr (bypass) {
                         processSample(channel, buffer[channel][i]);
                     } else {
                         buffer[channel][i] = processSample(channel, buffer[channel][i]);
@@ -89,9 +89,9 @@ namespace zldsp::filter {
             const auto next_freq = this->c_freq_.getCurrent();
             const auto next_gain = this->c_gain_.getCurrent();
             const auto next_q = this->c_q_.getCurrent();
-            this->current_filter_num_ = updateIIRCoeffs(this->c_filter_type_, this->c_order_,
-                                                        next_freq, this->sample_rate_,
-                                                        next_gain, next_q, this->coeffs_);
+            this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
+                                                                          next_freq, this->sample_rate_,
+                                                                          next_gain, next_q, this->coeffs_);
             for (size_t i = 0; i < this->current_filter_num_; ++i) {
                 filters_[i].updateFromBiquad(this->coeffs_[i]);
             }
@@ -108,7 +108,7 @@ namespace zldsp::filter {
          * get the array of 2nd order filters
          * @return
          */
-        std::array<TDFBase<FloatType>, FilterSize> &getFilters() {
+        std::array<TDFBase<FloatType>, kFilterSize> &getFilters() {
             return filters_;
         }
 
@@ -116,24 +116,11 @@ namespace zldsp::filter {
             return this->current_filter_num_;
         }
 
-        std::array<std::array<double, 6>, FilterSize> &getCoeff() {
+        std::array<std::array<double, 6>, kFilterSize> &getCoeff() {
             return this->coeffs_;
         }
 
     private:
-        std::array<TDFBase<FloatType>, FilterSize> filters_{};
-
-        static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
-                                      const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 6>, FilterSize> &coeffs) {
-            return FilterDesign::updateCoeffs<FilterSize,
-                MartinCoeff::get1LowShelf, MartinCoeff::get1HighShelf, MartinCoeff::get1TiltShelf,
-                MartinCoeff::get1LowPass, MartinCoeff::get1HighPass,
-                MartinCoeff::get2Peak,
-                MartinCoeff::get2LowShelf, MartinCoeff::get2HighShelf, MartinCoeff::get2TiltShelf,
-                MartinCoeff::get2LowPass, MartinCoeff::get2HighPass,
-                MartinCoeff::get2BandPass, MartinCoeff::get2Notch>(
-                filterType, n, f, fs, g0, q0, coeffs);
-        }
+        std::array<TDFBase<FloatType>, kFilterSize> filters_{};
     };
 }

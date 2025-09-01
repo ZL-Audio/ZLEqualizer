@@ -31,12 +31,12 @@ namespace zldsp::filter {
             std::fill(s2_.begin(), s2_.end(), static_cast<FloatType>(0));
         }
 
-        template <bool isBypass = false>
+        template <bool bypass = false>
         void process(std::span<FloatType*> buffer, const size_t num_samples) noexcept {
             for (size_t channel = 0; channel < buffer.size(); ++channel) {
                 auto *samples = buffer[channel];
                 for (size_t i = 0; i < num_samples; ++i) {
-                    if constexpr (isBypass) {
+                    if constexpr (bypass) {
                         processSample(channel, samples[i]);
                     } else {
                         samples[i] = processSample(channel, samples[i]);

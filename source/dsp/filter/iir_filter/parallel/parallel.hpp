@@ -22,12 +22,12 @@ namespace zldsp::filter {
     /**
      * an IIR filter which processes audio on the real-time thread
      * @tparam FloatType the float type of input audio buffer
-     * @tparam FilterSize the number of cascading filters
+     * @tparam kFilterSize the number of cascading filters
      */
-    template<typename FloatType, size_t FilterSize>
-    class Parallel final : public IIR<FloatType, FilterSize> {
+    template<typename FloatType, size_t kFilterSize>
+    class Parallel final : public IIR<kFilterSize> {
     public:
-        explicit Parallel() : IIR<FloatType, FilterSize>() {
+        explicit Parallel() : IIR<kFilterSize>() {
         }
 
         void reset() override {
@@ -37,7 +37,7 @@ namespace zldsp::filter {
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) override {
-            IIR<FloatType, FilterSize>::prepareSampleRate(sample_rate);
+            IIR<kFilterSize>::prepareSampleRate(sample_rate);
             for (auto &f: filters_) {
                 f.prepare(num_channels);
             }
@@ -53,36 +53,36 @@ namespace zldsp::filter {
          * @param buffer
          * @param num_samples
          */
-        template<bool IsBypassed = false>
+        template<bool bypass = false>
         void process(std::span<FloatType *> buffer, const size_t num_samples) {
             if (this->c_freq_.isSmoothing() || this->c_gain_.isSmoothing() || this->c_q_.isSmoothing()) {
                 if (should_be_parallel_) {
                     zldsp::vector::copy(parallel_buffers_pointers_, buffer, num_samples);
-                    processParallel<IsBypassed, true>(parallel_buffers_pointers_, num_samples);
+                    processParallel<bypass, true>(parallel_buffers_pointers_, num_samples);
                 } else {
-                    processParallel<IsBypassed, true>(buffer, num_samples);
+                    processParallel<bypass, true>(buffer, num_samples);
                 }
             } else {
                 if (should_be_parallel_) {
                     zldsp::vector::copy(parallel_buffers_pointers_, buffer, num_samples);
-                    processParallel<IsBypassed, false>(parallel_buffers_pointers_, num_samples);
+                    processParallel<bypass, false>(parallel_buffers_pointers_, num_samples);
                 } else {
-                    processParallel<IsBypassed, false>(buffer, num_samples);
+                    processParallel<bypass, false>(buffer, num_samples);
                 }
             }
         }
 
-        template<bool IsBypassed = false, bool IsSmooth = false>
+        template<bool bypass = false, bool smooth = false>
         void processParallel(std::span<FloatType *> buffer, const size_t num_samples) {
             for (size_t i = 0; i < num_samples; ++i) {
-                if constexpr (IsSmooth) {
+                if constexpr (smooth) {
                     this->c_freq_.getNext();
                     this->c_gain_.getNext();
                     this->c_q_.getNext();
                     updateCoeffs();
                 }
                 for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                    if constexpr (IsBypassed) {
+                    if constexpr (bypass) {
                         processSample(channel, buffer[channel][i]);
                     } else {
                         buffer[channel][i] = processSample(channel, buffer[channel][i]);
@@ -103,9 +103,9 @@ namespace zldsp::filter {
          * @param buffer
          * @param num_samples
          */
-        template<bool IsBypassed = false>
+        template<bool bypass = false>
         void processPost(std::span<FloatType *> buffer, const size_t num_samples) {
-            if constexpr (!IsBypassed) {
+            if constexpr (!bypass) {
                 if (should_be_parallel_) {
                     for (size_t i = 0; i < buffer.size(); ++i) {
                         auto v1 = kfr::make_univector(buffer[i], num_samples);
@@ -123,29 +123,29 @@ namespace zldsp::filter {
             const auto next_freq = this->c_freq_.getCurrent();
             const auto next_gain = this->c_gain_.getCurrent();
             const auto next_q = this->c_q_.getCurrent();
-            if (this->c_filter_type_ == FilterType::kPeak && this->c_order_ <= 4) {
+            if (this->c_filter_type_ == kPeak && this->c_order_ <= 4) {
                 should_be_parallel_ = true;
-                this->current_filter_num_ = updateIIRCoeffs(FilterType::kBandPass, this->c_order_,
-                                                            next_freq, this->sample_rate_,
-                                                            next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = this->updateIIRCoeffs(FilterType::kBandPass, this->c_order_,
+                                                                  next_freq, this->sample_rate_,
+                                                                  next_gain, next_q, this->coeffs_);
                 updateGain();
-            } else if (this->c_filter_type_ == FilterType::kLowShelf && this->c_order_ <= 2) {
+            } else if (this->c_filter_type_ == kLowShelf && this->c_order_ <= 2) {
                 should_be_parallel_ = true;
-                this->current_filter_num_ = updateIIRCoeffs(FilterType::kLowPass, this->c_order_,
-                                                            next_freq, this->sample_rate_,
-                                                            next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(FilterType::kLowPass, this->c_order_,
+                                                                              next_freq, this->sample_rate_,
+                                                                              next_gain, next_q, this->coeffs_);
                 updateGain();
-            } else if (this->c_filter_type_ == FilterType::kHighShelf && this->c_order_ <= 2) {
+            } else if (this->c_filter_type_ == kHighShelf && this->c_order_ <= 2) {
                 should_be_parallel_ = true;
-                this->current_filter_num_ = updateIIRCoeffs(FilterType::kHighPass, this->c_order_,
-                                                            next_freq, this->sample_rate_,
-                                                            next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(kHighPass, this->c_order_,
+                                                                              next_freq, this->sample_rate_,
+                                                                              next_gain, next_q, this->coeffs_);
                 updateGain();
             } else {
                 should_be_parallel_ = false;
-                this->current_filter_num_ = updateIIRCoeffs(this->c_filter_type_, this->c_order_,
-                                                            next_freq, this->sample_rate_,
-                                                            next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
+                                                                              next_freq, this->sample_rate_,
+                                                                              next_gain, next_q, this->coeffs_);
             }
             for (size_t i = 0; i < this->current_filter_num_; ++i) {
                 filters_[i].updateFromBiquad(this->coeffs_[i]);
@@ -167,7 +167,7 @@ namespace zldsp::filter {
          * get the array of 2nd order filters
          * @return
          */
-        std::array<TDFBase<FloatType>, FilterSize> &getFilters() {
+        std::array<TDFBase<FloatType>, kFilterSize> &getFilters() {
             return filters_;
         }
 
@@ -180,23 +180,10 @@ namespace zldsp::filter {
         }
 
     private:
-        std::array<TDFBase<FloatType>, FilterSize> filters_{};
+        std::array<TDFBase<FloatType>, kFilterSize> filters_{};
         std::vector<std::vector<FloatType> > parallel_buffers_;
         std::vector<FloatType *> parallel_buffers_pointers_;
         bool should_be_parallel_ = false;
         FloatType parallel_multiplier_{};
-
-        static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
-                                      const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 6>, FilterSize> &coeffs) {
-            return FilterDesign::updateCoeffs<FilterSize,
-                MartinCoeff::get1LowShelf, MartinCoeff::get1HighShelf, MartinCoeff::get1TiltShelf,
-                MartinCoeff::get1LowPass, MartinCoeff::get1HighPass,
-                MartinCoeff::get2Peak,
-                MartinCoeff::get2LowShelf, MartinCoeff::get2HighShelf, MartinCoeff::get2TiltShelf,
-                MartinCoeff::get2LowPass, MartinCoeff::get2HighPass,
-                MartinCoeff::get2BandPass, MartinCoeff::get2Notch>(
-                filterType, n, f, fs, g0, q0, coeffs);
-        }
     };
 }

@@ -101,12 +101,12 @@ namespace zldsp::filter {
 
         /**
          * process the incoming audio buffer
-         * @tparam IsBypassed
+         * @tparam bypass
          * @param main_buffer
          * @param side_buffer
          * @param num_samples
          */
-        template<bool IsBypassed = false>
+        template<bool bypass = false>
         void process(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                      const size_t num_samples) {
             if (c_dynamic_on_) {
@@ -119,7 +119,7 @@ namespace zldsp::filter {
                             (side_db - low_) * slope_, static_cast<FloatType>(0), static_cast<FloatType>(1));
                         filter_.template setGain<true>(c_base_gain_ + follower_.processSample(p * p) * c_gain_diff_);
                         filter_.updateGain();
-                        if constexpr (IsBypassed) {
+                        if constexpr (bypass) {
                             filter_.processSample(0, main_pointer[i]);
                         } else {
                             main_pointer[i] = filter_.processSample(0, main_pointer[i]);
@@ -138,7 +138,7 @@ namespace zldsp::filter {
                         filter_.template setGain<true>(c_base_gain_ + follower_.processSample(p * p) * c_gain_diff_);
                         filter_.updateGain();
                         for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
-                            if constexpr (IsBypassed) {
+                            if constexpr (bypass) {
                                 filter_.processSample(chan, main_buffer[chan][i]);
                             } else {
                                 main_buffer[chan][i] = filter_.processSample(chan, main_buffer[chan][i]);
@@ -147,7 +147,7 @@ namespace zldsp::filter {
                     }
                 }
             } else {
-                filter_.template process<IsBypassed>(main_buffer, num_samples);
+                filter_.template process<bypass>(main_buffer, num_samples);
             }
         }
 

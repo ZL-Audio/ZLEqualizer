@@ -21,7 +21,7 @@ namespace zldsp::compressor {
      * a computer that computes the current compression
      * @tparam FloatType
      */
-    template<typename FloatType, bool OutputDiff = false>
+    template<typename FloatType, bool kOutputDiff = false>
     class KneeComputer final : public ComputerBase<FloatType> {
     public:
         KneeComputer() = default;
@@ -44,7 +44,7 @@ namespace zldsp::compressor {
 
         FloatType eval(FloatType x) override {
             if (x <= low_th_) {
-                if constexpr (OutputDiff) {
+                if constexpr (kOutputDiff) {
                     return FloatType(0);
                 } else {
                     return x;
@@ -140,7 +140,7 @@ namespace zldsp::compressor {
                 const auto a1 = -low_th_;
                 para_mid_g0_[0] = a0;
                 const auto a0a1 = a0 * a1;
-                if constexpr (OutputDiff) {
+                if constexpr (kOutputDiff) {
                     para_mid_g0_[1] = FloatType(2) * a0a1;
                 } else {
                     para_mid_g0_[1] = FloatType(2) * a0a1 + FloatType(1);
@@ -162,7 +162,7 @@ namespace zldsp::compressor {
                     para_high_g0_[1] = alpha * linear_curve_.b + beta * up_curve_.b;
                     para_high_g0_[0] = beta * up_curve_.a;
                 }
-                if constexpr (OutputDiff) {
+                if constexpr (kOutputDiff) {
                     para_high_g0_[1] -= FloatType(1);
                 }
             } {
@@ -172,7 +172,7 @@ namespace zldsp::compressor {
                 } else {
                     para_over_g0_[0] = linear_curve_.b;
                     para_over_g0_[1] = linear_curve_.c;
-                    if constexpr (OutputDiff) {
+                    if constexpr (kOutputDiff) {
                         para_over_g0_[0] -= FloatType(1);
                     }
                 }

@@ -13,20 +13,20 @@
 #include "../../vector/vector.hpp"
 
 namespace zldsp::filter {
-    template<typename FloatType, size_t DefaultFFTOrder = 10>
+    template<typename FloatType, size_t kDefaultFFTOrder = 10>
     class FIRBase {
     public:
         virtual ~FIRBase() = default;
 
         void prepare(const double sample_rate, const size_t num_channels) {
             if (sample_rate <= 50000) {
-                setOrder(num_channels, DefaultFFTOrder);
+                setOrder(num_channels, kDefaultFFTOrder);
             } else if (sample_rate <= 100000) {
-                setOrder(num_channels, DefaultFFTOrder + 1);
+                setOrder(num_channels, kDefaultFFTOrder + 1);
             } else if (sample_rate <= 200000) {
-                setOrder(num_channels, DefaultFFTOrder + 2);
+                setOrder(num_channels, kDefaultFFTOrder + 2);
             } else {
-                setOrder(num_channels, DefaultFFTOrder + 3);
+                setOrder(num_channels, kDefaultFFTOrder + 3);
             }
             reset();
         }
@@ -45,7 +45,7 @@ namespace zldsp::filter {
             std::fill(fft_in_.begin(), fft_in_.end(), 0.f);
         }
 
-        template<bool IsBypassed = false>
+        template<bool bypass = false>
         void process(std::span<FloatType *> buffer, const size_t num_samples) {
             for (size_t i = 0; i < num_samples; ++i) {
                 for (size_t chan = 0; chan < buffer.size(); ++chan) {
@@ -61,7 +61,7 @@ namespace zldsp::filter {
                 count_ += 1;
                 if (count_ == hop_size_) {
                     count_ = 0;
-                    processFrame<IsBypassed>();
+                    processFrame<bypass>();
                 }
             }
         }
@@ -72,7 +72,7 @@ namespace zldsp::filter {
         zldsp::fft::KFREngine<float> fft_;
         kfr::univector<float> window1_, window2_;
 
-        size_t fft_order_ = DefaultFFTOrder;
+        size_t fft_order_ = kDefaultFFTOrder;
         size_t fft_size_ = static_cast<size_t>(1) << fft_order_;
         size_t num_bins_ = fft_size_ / 2 + 1;
         size_t overlap_ = 4; // 75% overlap
@@ -115,7 +115,7 @@ namespace zldsp::filter {
             fft_data_.resize(fft_size_ * 2);
         }
 
-        template<bool IsBypassed = false>
+        template<bool bypass = false>
         void processFrame() {
             for (size_t idx = 0; idx < input_fifo_.size(); ++idx) {
 
@@ -125,7 +125,7 @@ namespace zldsp::filter {
                     zldsp::vector::copy(fft_in_.data() + fft_size_ - pos_, input_fifo_[idx].data(), pos_);
                 }
 
-                if constexpr (!IsBypassed) {
+                if constexpr (!bypass) {
                     fft_in_ = fft_in_ * window1_;
 
                     fft_.forward(fft_in_.data(), fft_data_.data());

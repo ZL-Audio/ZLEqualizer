@@ -17,14 +17,14 @@
 namespace zldsp::filter {
     static constexpr size_t kMatchDefaultOrder = 9;
 
-    template<typename FloatType, size_t FilterNum, size_t FilterSize>
+    template<typename FloatType, size_t kFilterNum, size_t kFilterSize>
     class MatchCorrection final : FIRBase<FloatType, kMatchDefaultOrder> {
     public:
         MatchCorrection() : FIRBase<FloatType, kMatchDefaultOrder>() {
         }
 
-        void prepareBuffer(std::span<TDF<float, FilterSize> > tdfs,
-                           std::span<Ideal<float, FilterSize> > ideals,
+        void prepareBuffer(std::span<TDF<float, kFilterSize> > tdfs,
+                           std::span<Ideal<float, kFilterSize> > ideals,
                            std::span<bool> to_update,
                            std::span<size_t> on_indices) {
             if (on_indices.empty()) {
@@ -114,7 +114,7 @@ namespace zldsp::filter {
         static constexpr float kMinMagnitude = 1e-8f, kMaxMagnitude = 1e8f;
         kfr::univector<std::complex<float> > w_prototype_{}, w_biquad_{};
         kfr::univector<std::complex<float> > proto_res_{}, biquad_res_{};
-        std::array<kfr::univector<std::complex<float> >, FilterNum> corrections_{};
+        std::array<kfr::univector<std::complex<float> >, kFilterNum> corrections_{};
         kfr::univector<std::complex<float> > total_correction_{};
 
         void setOrder(size_t num_channels, size_t order) override {

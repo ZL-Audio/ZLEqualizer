@@ -30,9 +30,9 @@ namespace zldsp::filter {
     };
 
     struct FilterParameters {
-        FilterType filter_type_;
-        size_t order_;
-        double freq_, gain_, q_;
+        FilterType filter_type;
+        size_t order;
+        double freq, gain, q;
     };
 
     inline double dotProduct(const std::array<double, 3> &x, const std::array<double, 3> &y) {

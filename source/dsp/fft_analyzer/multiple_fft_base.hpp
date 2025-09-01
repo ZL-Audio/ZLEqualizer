@@ -21,12 +21,12 @@
 
 namespace zldsp::analyzer {
     /**
-     * a fft analyzer which make sure that multiple FFTs are synchronized in time
+     * a fft analyzer that makes sure that multiple FFTs are synchronized in time
      * @tparam FloatType the float type of input audio buffers
-     * @tparam FFTNum the number of FFTs
-     * @tparam PointNum the number of output points
+     * @tparam kFFTNum the number of FFTs
+     * @tparam kPointNum the number of output points
      */
-    template<typename FloatType, size_t FFTNum, size_t PointNum>
+    template<typename FloatType, size_t kFFTNum, size_t kPointNum>
     class MultipleFFTBase {
     private:
         static constexpr float kMinDB = -256.f;
@@ -48,7 +48,7 @@ namespace zldsp::analyzer {
 
         ~MultipleFFTBase() = default;
 
-        void prepare(const double sample_rate, std::array<size_t, FFTNum> num_channels) {
+        void prepare(const double sample_rate, std::array<size_t, kFFTNum> num_channels) {
             lock_.lock();
             sample_rate_.store(static_cast<float>(sample_rate), std::memory_order::relaxed);
             if (sample_rate <= 50000) {
@@ -76,15 +76,15 @@ namespace zldsp::analyzer {
          * @param buffers
          * @param num_samples
          */
-        void process(std::array<std::span<FloatType *>, FFTNum> buffers, const size_t num_samples) {
+        void process(std::array<std::span<FloatType *>, kFFTNum> buffers, const size_t num_samples) {
             int free_space = abstract_fifo_.getNumFree();
-            for (size_t i = 0; i < FFTNum; ++i) {
+            for (size_t i = 0; i < kFFTNum; ++i) {
                 if (!is_on_[i].load(std::memory_order::relaxed)) continue;
                 free_space = std::min(free_space, static_cast<int>(num_samples));
             }
             if (free_space == 0) { return; }
             const auto range = abstract_fifo_.prepareToWrite(free_space);
-            for (size_t i = 0; i < FFTNum; ++i) {
+            for (size_t i = 0; i < kFFTNum; ++i) {
                 if (!is_on_[i].load(std::memory_order::relaxed)) continue;
                 const auto buffer = buffers[i];
                 if (range.block_size1 > 0) {
@@ -120,7 +120,7 @@ namespace zldsp::analyzer {
             bool to_update{false};
             // cache on indices
             std::vector<size_t> is_on_vector{};
-            for (size_t i = 0; i < FFTNum; ++i) {
+            for (size_t i = 0; i < kFFTNum; ++i) {
                 if (is_on_[i].load()) is_on_vector.push_back(i);
             }
             // pull data from FIFO
@@ -227,8 +227,8 @@ namespace zldsp::analyzer {
             return to_update;
         }
 
-        void setON(std::array<bool, FFTNum> fs) {
-            for (size_t i = 0; i < FFTNum; ++i) {
+        void setON(std::array<bool, kFFTNum> fs) {
+            for (size_t i = 0; i < kFFTNum; ++i) {
                 is_on_[i].store(fs[i], std::memory_order::relaxed);
             }
         }
@@ -278,8 +278,8 @@ namespace zldsp::analyzer {
         size_t default_fft_order_ = 12;
         zldsp::lock::SpinLock lock_;
 
-        std::array<std::vector<std::vector<float> >, FFTNum> sample_fifos_;
-        std::array<std::vector<std::vector<float> >, FFTNum> circular_buffers_;
+        std::array<std::vector<std::vector<float> >, kFFTNum> sample_fifos_;
+        std::array<std::vector<std::vector<float> >, kFFTNum> circular_buffers_;
         zldsp::container::AbstractFIFO abstract_fifo_{0};
         std::vector<float> fft_buffer_, ms_fft_buffer_;
 
@@ -288,18 +288,18 @@ namespace zldsp::analyzer {
         std::atomic<bool> to_update_akima_{true};
         std::vector<float> seq_input_freqs_{};
         std::vector<size_t> seq_input_starts_, seq_input_ends_;
-        std::array<std::vector<float>, FFTNum> seq_input_dbs_{};
+        std::array<std::vector<float>, kFFTNum> seq_input_dbs_{};
 
-        std::array<std::unique_ptr<zldsp::interpolation::SeqMakima<float> >, FFTNum> seq_akima_;
+        std::array<std::unique_ptr<zldsp::interpolation::SeqMakima<float> >, kFFTNum> seq_akima_;
 
         std::vector<float> interplot_freqs_{}, interplot_freqs_p_{};
         std::vector<float> reduced_freqs_{}, reduced_dbs_{};
         std::vector<size_t> reduced_pos_{};
-        std::array<std::vector<float>, FFTNum> interplot_dbs_{};
-        std::array<std::vector<float>, FFTNum> result_dbs_{};
+        std::array<std::vector<float>, kFFTNum> interplot_dbs_{};
+        std::array<std::vector<float>, kFFTNum> result_dbs_{};
 
         std::atomic<float> refresh_rate_{60}, tilt_slope_{4.5f};
-        std::array<std::atomic<float>, FFTNum> decay_rates_{}, actual_decay_rates_{};
+        std::array<std::atomic<float>, kFFTNum> decay_rates_{}, actual_decay_rates_{};
         std::atomic<float> extra_tilt_{0.f}, extra_speed_{1.f};
 
         std::vector<float> tilt_shift_{};
@@ -308,10 +308,10 @@ namespace zldsp::analyzer {
         zldsp::fft::KFREngine<float> fft_;
         kfr::univector<float> window_;
 
-        std::array<std::atomic<bool>, FFTNum> to_reset_;
+        std::array<std::atomic<bool>, kFFTNum> to_reset_;
 
-        std::array<std::atomic<bool>, FFTNum> is_on_{};
-        std::array<std::atomic<bool>, FFTNum> is_frozen_{};
+        std::array<std::atomic<bool>, kFFTNum> is_on_{};
+        std::array<std::atomic<bool>, kFFTNum> is_frozen_{};
 
         void prepareAkima() {
             // cache sample rate and frequency values
@@ -322,19 +322,19 @@ namespace zldsp::analyzer {
             // calculate start/end indices
             bool force_last_range = false; {
                 const auto freq_delta = sample_rate / static_cast<double>(fft_size);
-                const auto freq_mul = std::pow(max_freq / min_freq, 2. / static_cast<double>(PointNum));
+                const auto freq_mul = std::pow(max_freq / min_freq, 2. / static_cast<double>(kPointNum));
                 auto freq = min_freq * std::sqrt(freq_mul);
                 seq_input_starts_.clear();
-                seq_input_starts_.reserve(PointNum / 2);
+                seq_input_starts_.reserve(kPointNum / 2);
                 seq_input_ends_.clear();
-                seq_input_ends_.reserve(PointNum / 2);
+                seq_input_ends_.reserve(kPointNum / 2);
 
                 seq_input_starts_.emplace_back(0);
                 seq_input_ends_.emplace_back(
                     std::max(static_cast<size_t>(std::round(freq / freq_delta)),
                              static_cast<size_t>(1)));
                 const auto limit = fft_size / 2;
-                for (size_t i = 0; i < PointNum / 2 + 1; ++i) {
+                for (size_t i = 0; i < kPointNum / 2 + 1; ++i) {
                     freq *= freq_mul;
                     const auto new_index = std::min(static_cast<size_t>(std::round(freq / freq_delta)), limit);
                     if (new_index > seq_input_ends_.back()) {
@@ -361,7 +361,7 @@ namespace zldsp::analyzer {
                 if (force_last_range) {
                     seq_input_freqs_.back() = static_cast<float>(0.5 * sample_rate);
                 }
-                for (size_t i = 0; i < FFTNum; ++i) {
+                for (size_t i = 0; i < kFFTNum; ++i) {
                     seq_input_dbs_[i].resize(seq_input_freqs_.size());
                     seq_akima_[i] = std::make_unique<zldsp::interpolation::SeqMakima<float> >(
                         seq_input_freqs_.data(), seq_input_dbs_[i].data(), seq_input_freqs_.size(),
@@ -371,12 +371,12 @@ namespace zldsp::analyzer {
             // calculate the Akima output x
             {
                 auto freq = min_freq;
-                const auto freq_mul = std::pow(max_freq / min_freq, 1.1 / static_cast<double>(PointNum));
+                const auto freq_mul = std::pow(max_freq / min_freq, 1.1 / static_cast<double>(kPointNum));
                 reduced_freqs_.clear();
                 reduced_pos_.clear();
-                reduced_pos_.reserve(PointNum);
+                reduced_pos_.reserve(kPointNum);
                 interplot_freqs_.clear();
-                interplot_freqs_.reserve(PointNum);
+                interplot_freqs_.reserve(kPointNum);
                 for (size_t i = 1; i < seq_input_freqs_.size(); ++i) {
                     if (freq >= seq_input_freqs_[i]) {
                         continue;
@@ -407,7 +407,7 @@ namespace zldsp::analyzer {
                     interplot_freqs_p_[i] = std::log(interplot_freqs_[i]) * temp_scale - temp_bias;
                 }
 
-                for (size_t i = 0; i < FFTNum; ++i) {
+                for (size_t i = 0; i < kFFTNum; ++i) {
                     interplot_dbs_[i].resize(interplot_freqs_.size());
                     result_dbs_[i].resize(interplot_freqs_.size());
                 }
@@ -431,7 +431,7 @@ namespace zldsp::analyzer {
             }
         }
 
-        void setOrder(const int fft_order, std::array<size_t, FFTNum> &num_channels) {
+        void setOrder(const int fft_order, std::array<size_t, kFFTNum> &num_channels) {
             fft_.setOrder(static_cast<size_t>(fft_order));
             const auto fft_size = fft_.getSize();
 
@@ -443,7 +443,7 @@ namespace zldsp::analyzer {
             fft_buffer_.resize(fft_size * 2);
             ms_fft_buffer_.resize(fft_size / 2 + 1);
             abstract_fifo_.setCapacity(static_cast<int>(fft_size));
-            for (size_t i = 0; i < FFTNum; ++i) {
+            for (size_t i = 0; i < kFFTNum; ++i) {
                 sample_fifos_[i].resize(num_channels[i]);
                 circular_buffers_[i].resize(num_channels[i]);
                 for (size_t chan = 0; chan < num_channels[i]; ++chan) {
@@ -456,7 +456,7 @@ namespace zldsp::analyzer {
         }
 
         void updateActualDecayRate() {
-            for (size_t i = 0; i < FFTNum; ++i) {
+            for (size_t i = 0; i < kFFTNum; ++i) {
                 const auto x = 1 - (1 - decay_rates_[i].load(std::memory_order::relaxed)
                                ) * extra_speed_.load(std::memory_order::relaxed);
                 actual_decay_rates_[i].store(

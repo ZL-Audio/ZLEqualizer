@@ -13,7 +13,7 @@
 #include "lufs_meter.hpp"
 
 namespace zldsp::loudness {
-    template<typename FloatType, bool UseLowPass = false>
+    template<typename FloatType, bool kUseLowPass = false>
     class LUFSMatcher {
     public:
         LUFSMatcher() = default;
@@ -52,7 +52,7 @@ namespace zldsp::loudness {
         }
 
     private:
-        LUFSMeter<FloatType, UseLowPass> pre_loudness_meter_, post_loudness_meter_;
+        LUFSMeter<FloatType, kUseLowPass> pre_loudness_meter_, post_loudness_meter_;
         std::atomic<FloatType> loudness_diff_{FloatType(0)};
         double sample_rate_{48000}, current_count_{0};
     };
