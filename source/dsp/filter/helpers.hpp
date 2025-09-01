@@ -14,6 +14,8 @@
 #include <numeric>
 #include <numbers>
 
+#include "../chore/decibels.hpp"
+
 namespace zldsp::filter {
     constexpr static double pi = std::numbers::pi;
     constexpr static double ppi = 2 * std::numbers::pi;
@@ -27,16 +29,22 @@ namespace zldsp::filter {
         kIIR, kSVF, kParallel
     };
 
+    struct FilterParameters {
+        FilterType filter_type_;
+        size_t order_;
+        double freq_, gain_, q_;
+    };
+
     inline double dotProduct(const std::array<double, 3> &x, const std::array<double, 3> &y) {
         return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
     }
 
     inline double gainToDB(const double gain) {
-        return std::log10(std::max(std::abs(gain), 1e-16)) * 20;
+        return chore::gainToDecibels(gain);
     }
 
     inline double dbToGain(const double db) {
-        return std::pow(10, db * 0.05);
+        return chore::decibelsToGain(db);
     }
 
     inline std::array<double, 2> getBandwidth(const double w0, const double q) {

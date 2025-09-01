@@ -13,6 +13,7 @@
 #include <juce_dsp/juce_dsp.h>
 
 #include "../dsp/vector/vector.hpp"
+#include "../dsp/filter/dynamic_filter/dynamic_tdf.hpp"
 
 namespace zlp {
     class Controller final : private juce::AsyncUpdater {
@@ -30,6 +31,9 @@ namespace zlp {
 
     private:
         juce::AudioProcessor &p_ref_;
+
+        zldsp::filter::IIREmpty empty_;
+        zldsp::filter::DynamicTDF<double, 1> filter_;
 
         void handleAsyncUpdate() override {
 

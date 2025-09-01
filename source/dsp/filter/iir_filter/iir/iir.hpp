@@ -9,12 +9,10 @@
 
 #pragma once
 
-#include <atomic>
 #include <span>
 
 #include "../../filter_design/filter_design.hpp"
 #include "../../../chore/smoothed_value.hpp"
-#include "../coeff/martin_coeff.hpp"
 #include "iir_empty.hpp"
 
 namespace zldsp::filter {
@@ -26,8 +24,7 @@ namespace zldsp::filter {
     template<typename FloatType, size_t FilterSize>
     class IIR {
     public:
-        explicit IIR(IIREmpty &empty) : empty_(empty) {
-        }
+        explicit IIR() = default;
 
         virtual ~IIR() = default;
 
@@ -40,35 +37,38 @@ namespace zldsp::filter {
             c_freq_.prepare(sample_rate, 0.1);
             c_gain_.prepare(sample_rate, 0.001);
             c_q_.prepare(sample_rate, 0.001);
-            empty_.setToUpdatePara();
         }
 
-        void forceUpdate() {
-            c_filter_type_ = empty_.getFilterType();
-            c_order_ = empty_.getOrder();
-            c_freq_.setCurrentAndTarget(empty_.getFreq());
-            c_gain_.setCurrentAndTarget(empty_.getGain());
-            c_q_.setCurrentAndTarget(empty_.getQ());
+        void forceUpdate(const FilterParameters &paras) {
+            c_filter_type_ = paras.filter_type_;
+            c_order_ = paras.order_;
+            c_freq_.setCurrentAndTarget(paras.freq_);
+            c_gain_.setCurrentAndTarget(paras.gain_);
+            c_q_.setCurrentAndTarget(paras.q_);
             updateCoeffs();
+        }
+
+        void forceUpdate(const IIREmpty &empty) {
+            forceUpdate(empty.getParas());
         }
 
         /**
          * prepare for processing the incoming audio buffer
          * @return
          */
-        bool prepareBuffer() {
+        bool prepareBuffer(IIREmpty &empty) {
             bool update = false;
-            if (empty_.getToUpdatePara()) {
-                c_filter_type_ = empty_.getFilterType();
-                c_order_ = empty_.getOrder();
+            if (empty.getToUpdatePara()) {
+                c_filter_type_ = empty.getFilterType();
+                c_order_ = empty.getOrder();
                 updateCoeffs();
                 reset();
                 update = true;
             }
-            if (empty_.getToUpdateFGQ()) {
-                c_freq_.setTarget(empty_.getFreq());
-                c_gain_.setTarget(empty_.getGain());
-                c_q_.setTarget(empty_.getQ());
+            if (empty.getToUpdateFGQ()) {
+                c_freq_.setTarget(empty.getFreq());
+                c_gain_.setTarget(empty.getGain());
+                c_q_.setTarget(empty.getQ());
                 update = true;
             }
             return update;
@@ -167,8 +167,7 @@ namespace zldsp::filter {
         virtual void updateGain() = 0;
 
     protected:
-        IIREmpty &empty_;
-
+        std::array<std::array<double, 6>, FilterSize> coeffs_{};
         size_t current_filter_num_{1};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kLin> c_gain_{0.0};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kMul> c_q_{0.707};
@@ -177,7 +176,5 @@ namespace zldsp::filter {
         FilterType c_filter_type_{FilterType::kPeak};
 
         double sample_rate_{48000.0};
-
-        std::array<std::array<double, 6>, FilterSize> coeffs_{};
     };
 }

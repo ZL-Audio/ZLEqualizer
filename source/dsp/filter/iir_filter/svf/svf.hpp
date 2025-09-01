@@ -24,9 +24,9 @@ namespace zldsp::filter {
      * @tparam FilterSize the number of cascading filters
      */
     template<typename FloatType, size_t FilterSize>
-    class SVF final : IIR<FloatType, FilterSize> {
+    class SVF final : public IIR<FloatType, FilterSize> {
     public:
-        explicit SVF(IIREmpty &empty) : IIR<FloatType, FilterSize>(empty) {
+        explicit SVF() : IIR<FloatType, FilterSize>() {
         }
 
         void reset() override {

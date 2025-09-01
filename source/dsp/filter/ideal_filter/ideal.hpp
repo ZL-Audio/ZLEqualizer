@@ -15,6 +15,7 @@
 #include "coeff/ideal_coeff.hpp"
 #include "../filter_design/filter_design.hpp"
 #include "../../chore/decibels.hpp"
+#include "../../gain/safe_gain.hpp"
 #include "../../vector/kfr_import.hpp"
 
 namespace zldsp::filter {
@@ -28,79 +29,73 @@ namespace zldsp::filter {
     public:
         explicit Ideal() = default;
 
-        void prepare(const double sampleRate) {
-            fs_.store(sampleRate, std::memory_order::relaxed);
-            to_update_.store(true, std::memory_order::release);
+        void prepare(const double sample_rate) {
+            sample_rate_ = sample_rate;
         }
 
-        void setFreq(const FloatType x) {
-            freq_.store(x, std::memory_order::relaxed);
-            to_update_.store(true, std::memory_order::release);
+        void forceUpdate(const FilterParameters &paras) {
+            c_filter_type_ = paras.filter_type_;
+            c_order_ = paras.order_;
+            c_freq_ = paras.freq_;
+            c_gain_ = paras.gain_;
+            c_q_ = paras.q_;
+            updateCoeffs();
         }
 
-        FloatType getFreq() const {
-            return static_cast<FloatType>(freq_.load(std::memory_order::relaxed));
+        void setFreq(const double freq) {
+            c_freq_ = freq;
         }
 
-        void setGain(const FloatType x) {
-            if (std::abs(static_cast<double>(x) - gain_.load()) > 1e-6) {
-                gain_.store(x, std::memory_order::relaxed);
-                to_update_.store(true, std::memory_order::release);
-            }
+        double getFreq() const {
+            return c_freq_;
         }
 
-        FloatType getGain() const {
-            return static_cast<FloatType>(gain_.load(std::memory_order::relaxed));
+        void setGain(const double gain) {
+            c_gain_ = gain;
         }
 
-        void setQ(const FloatType x) {
-            if (std::abs(static_cast<double>(x) - q_.load()) > 1e-6) {
-                q_.store(x, std::memory_order::relaxed);
-                to_update_.store(true, std::memory_order::release);
-            }
+        double getGain() const {
+            return c_gain_;
         }
 
-        FloatType getQ() const {
-            return static_cast<FloatType>(q_.load(std::memory_order::relaxed));
+        void setQ(const double q) {
+            c_q_ = q;
         }
 
-        void setFilterType(const FilterType x) {
-            filter_type_.store(x, std::memory_order::relaxed);
-            to_update_.store(true, std::memory_order::release);
+        double getQ() const {
+            return c_q_;
+        }
+
+        void setFilterType(const FilterType filter_type) {
+            c_filter_type_ = filter_type;
         }
 
         FilterType getFilterType() const {
-            return filter_type_.load(std::memory_order::relaxed);
+            return c_filter_type_;
         }
 
-        void setOrder(const size_t x) {
-            order_.store(x, std::memory_order::relaxed);
-            to_update_.store(true, std::memory_order::release);
+        void setOrder(const size_t order) {
+            c_order_ = x;
         }
 
         size_t getOrder() const {
-            return order_.load(std::memory_order::relaxed);
+            return c_order_;
         }
 
-        void updateParas() {
-            current_filter_num_ = updateIIRCoeffs(filter_type_.load(std::memory_order::relaxed),
-                                                  order_.load(std::memory_order::relaxed),
-                                                  freq_.load(std::memory_order::relaxed),
-                                                  fs_.load(std::memory_order::relaxed),
-                                                  gain_.load(std::memory_order::relaxed),
-                                                  q_.load(std::memory_order::relaxed),
+        void updateCoeffs() {
+            current_filter_num_ = updateIIRCoeffs(c_filter_type_, c_order_,
+                                                  c_freq_, sample_rate_,
+                                                  c_gain_, c_q_,
                                                   coeffs_);
         }
 
-        FloatType getDB(FloatType w) {
+        FloatType getDB(FloatType w) const {
             double g0 = 1.0;
             for (size_t i = 0; i < current_filter_num_; ++i) {
                 g0 *= IdealBase<FloatType>::getMagnitude(coeffs_[i], w);
             }
             return static_cast<FloatType>(chore::gainToDecibels(g0));
         }
-
-        std::atomic<bool> &getUpdateFlag() { return to_update_; }
 
         [[nodiscard]] size_t getFilterNum() const {
             return current_filter_num_;
@@ -110,14 +105,14 @@ namespace zldsp::filter {
             return coeffs_;
         }
 
-    private:
+    protected:
         std::array<std::array<double, 6>, FilterSize> coeffs_{};
-        std::atomic<size_t> order_{2};
         size_t current_filter_num_{1};
-        std::atomic<double> freq_{1000.0}, gain_{0.0}, q_{0.707};
-        std::atomic<double> fs_{48000.0};
-        std::atomic<FilterType> filter_type_ = FilterType::kPeak;
-        std::atomic<bool> to_update_{false};
+        double c_gain_{0.0}, c_q_{0.707}, c_freq_{1000.0};
+        size_t c_order_{2};
+        FilterType c_filter_type_{FilterType::kPeak};
+
+        double sample_rate_{48000.0};
 
         static size_t updateIIRCoeffs(const FilterType filterType, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,

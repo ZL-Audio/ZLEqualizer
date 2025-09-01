@@ -15,7 +15,7 @@
 
 namespace zldsp::filter {
     /**
-     * an empty IIR filter which holds filter parameters
+     * an empty IIR filter which holds atomic filter parameters
      */
     class IIREmpty {
     public:
@@ -41,7 +41,7 @@ namespace zldsp::filter {
             }
         }
 
-        double getFreq() const {
+        [[nodiscard]] double getFreq() const {
             return freq_.load(std::memory_order::relaxed);
         }
 
@@ -57,7 +57,7 @@ namespace zldsp::filter {
             }
         }
 
-        double getGain() const {
+        [[nodiscard]] double getGain() const {
             return gain_.load(std::memory_order::relaxed);
         }
 
@@ -73,7 +73,7 @@ namespace zldsp::filter {
             }
         }
 
-        double getQ() const {
+        [[nodiscard]] double getQ() const {
             return q_.load(std::memory_order::relaxed);
         }
 
@@ -85,7 +85,7 @@ namespace zldsp::filter {
             }
         }
 
-        FilterType getFilterType() const {
+        [[nodiscard]] FilterType getFilterType() const {
             return filter_type_.load(std::memory_order::relaxed);
         }
 
@@ -97,8 +97,12 @@ namespace zldsp::filter {
             }
         }
 
-        size_t getOrder() const {
+        [[nodiscard]] size_t getOrder() const {
             return order_.load(std::memory_order::relaxed);
+        }
+
+        [[nodiscard]] FilterParameters getParas() const {
+            return FilterParameters{getFilterType(), getOrder(), getFreq(), getGain(), getQ()};
         }
 
     private:

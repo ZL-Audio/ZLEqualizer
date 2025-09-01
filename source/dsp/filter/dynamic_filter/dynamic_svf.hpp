@@ -19,10 +19,10 @@ namespace zldsp::filter {
      * @tparam FilterSize the number of cascading filters
      */
     template<typename FloatType, size_t FilterSize>
-    class DynamicSVF final : DynamicBase<SVF<FloatType, FilterSize>, FloatType, FilterSize> {
+    class DynamicSVF final : public DynamicBase<SVF<FloatType, FilterSize>, FloatType> {
     public:
-        explicit DynamicSVF(IIREmpty &empty)
-            : DynamicBase<SVF<FloatType, FilterSize>, FloatType, FilterSize>(empty) {
+        explicit DynamicSVF()
+            : DynamicBase<SVF<FloatType, FilterSize>, FloatType>() {
         }
 
         /**
@@ -35,7 +35,7 @@ namespace zldsp::filter {
         template<bool IsBypassed = false>
         void processSVF(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                         const size_t num_samples) {
-            DynamicBase<SVF<FloatType, FilterSize>, FloatType, FilterSize>::template process<IsBypassed>(
+            DynamicBase<SVF<FloatType, FilterSize>, FloatType>::template process<IsBypassed>(
                 main_buffer, side_buffer, num_samples);
         }
     };

@@ -15,61 +15,73 @@
 
 namespace zldsp::filter {
     /**
-     * an empty filter which holds filter parameters
-     * @tparam FloatType the float type of input audio buffer
+     * an empty ideal filter which holds atomic filter parameters
+     * @tparam double the float type of input audio buffer
      */
-    template<typename FloatType>
-    class Empty {
+    class IdealEmpty {
     public:
-        explicit Empty() = default;
+        explicit IdealEmpty() = default;
 
-        void prepare(const double sampleRate) {
-            fs_.store(sampleRate, std::memory_order::relaxed);
+        void setToUpdatePara() {
             to_update_para_.store(true, std::memory_order::release);
         }
 
-        void setFreq(const FloatType x) {
+        std::atomic<bool> &getUpdateParaFlag() { return to_update_para_; }
+
+        void setFreq(const double x) {
             freq_.store(x, std::memory_order::relaxed);
             to_update_para_.store(true, std::memory_order::release);
         }
 
-        FloatType getFreq() const { return static_cast<FloatType>(freq_.load(std::memory_order::relaxed)); }
+        [[nodiscard]] double getFreq() const {
+            return freq_.load(std::memory_order::relaxed);
+        }
 
-        void setGain(const FloatType x) {
+        void setGain(const double x) {
             gain_.store(x, std::memory_order::relaxed);
             to_update_para_.store(true, std::memory_order::release);
         }
 
-        FloatType getGain() const { return static_cast<FloatType>(gain_.load(std::memory_order::relaxed)); }
+        [[nodiscard]] double getGain() const {
+            return gain_.load(std::memory_order::relaxed);
+        }
 
-        void setQ(const FloatType x) {
+        void setQ(const double x) {
             q_.store(x, std::memory_order::relaxed);
             to_update_para_.store(true, std::memory_order::release);
         }
 
-        FloatType getQ() const { return static_cast<FloatType>(q_.load(std::memory_order::relaxed)); }
+        [[nodiscard]] double getQ() const {
+            return q_.load(std::memory_order::relaxed);
+        }
 
         void setFilterType(const FilterType x) {
             filter_type_.store(x, std::memory_order::relaxed);
             to_update_para_.store(true, std::memory_order::release);
         }
 
-        FilterType getFilterType() const { return filter_type_.load(std::memory_order::relaxed); }
+        [[nodiscard]] FilterType getFilterType() const {
+            return filter_type_.load(std::memory_order::relaxed);
+        }
 
         void setOrder(const size_t x) {
             order_.store(x, std::memory_order::relaxed);
             to_update_para_.store(true, std::memory_order::release);
         }
 
-        size_t getOrder() const { return order_.load(std::memory_order::relaxed); }
+        [[nodiscard]] size_t getOrder() const {
+            return order_.load(std::memory_order::relaxed);
+        }
 
-        std::atomic<bool> &getUpdateParaFlag() { return to_update_para_; }
+        [[nodiscard]] FilterParameters getParas() const {
+            return FilterParameters{getFilterType(), getOrder(), getFreq(), getGain(), getQ()};
+        }
 
     private:
-        std::atomic<bool> to_update_para_{true};
-        std::atomic<size_t> filter_num_{1}, order_{2};
         std::atomic<double> freq_{1000.0}, gain_{0.0}, q_{0.707};
-        std::atomic<double> fs_{48000.0};
-        std::atomic<FilterType> filter_type_ = FilterType::kPeak;
+        std::atomic<size_t> order_{2};
+        std::atomic<FilterType> filter_type_{FilterType::kPeak};
+
+        std::atomic<bool> to_update_para_{true};
     };
 }

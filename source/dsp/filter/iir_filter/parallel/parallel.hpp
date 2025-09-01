@@ -25,9 +25,9 @@ namespace zldsp::filter {
      * @tparam FilterSize the number of cascading filters
      */
     template<typename FloatType, size_t FilterSize>
-    class Parallel final : IIR<FloatType, FilterSize> {
+    class Parallel final : public IIR<FloatType, FilterSize> {
     public:
-        explicit Parallel(IIREmpty &empty) : IIR<FloatType, FilterSize>(empty) {
+        explicit Parallel() : IIR<FloatType, FilterSize>() {
         }
 
         void reset() override {

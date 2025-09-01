@@ -19,10 +19,10 @@ namespace zldsp::filter {
      * @tparam FilterSize the number of cascading filters
      */
     template<typename FloatType, size_t FilterSize>
-    class DynamicParallel final : DynamicBase<Parallel<FloatType, FilterSize>, FloatType, FilterSize> {
+    class DynamicParallel final : public DynamicBase<Parallel<FloatType, FilterSize>, FloatType> {
     public:
-        explicit DynamicParallel(IIREmpty &empty)
-            : DynamicBase<Parallel<FloatType, FilterSize>, FloatType, FilterSize>(empty) {
+        explicit DynamicParallel()
+            : DynamicBase<Parallel<FloatType, FilterSize>, FloatType>() {
         }
 
         /**
@@ -36,10 +36,10 @@ namespace zldsp::filter {
         void processParallel(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                              const size_t num_samples) {
             if (this->filter_.getShouldBeParallel()) {
-                DynamicBase<Parallel<FloatType, FilterSize>, FloatType, FilterSize>::template process<IsBypassed>(
+                DynamicBase<Parallel<FloatType, FilterSize>, FloatType>::template process<IsBypassed>(
                     this->filter_.getParallelBuffer(), side_buffer, num_samples);
             } else {
-                DynamicBase<Parallel<FloatType, FilterSize>, FloatType, FilterSize>::template process<IsBypassed>(
+                DynamicBase<Parallel<FloatType, FilterSize>, FloatType>::template process<IsBypassed>(
                     main_buffer, side_buffer, num_samples);
             }
         }

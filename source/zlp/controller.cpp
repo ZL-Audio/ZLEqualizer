@@ -17,6 +17,12 @@ namespace zlp {
 
     void Controller::prepare(double sample_rate, size_t max_num_samples) {
         juce::ignoreUnused(sample_rate, max_num_samples);
+        empty_.setGain(-5.0);
+        filter_.prepare(sample_rate, 2, max_num_samples);
+        filter_.setDynamicON(true);
+        filter_.setThreshold(-20.0);
+        filter_.setKnee(5.0);
+        filter_.setTargetGain(-10.0);
     }
 
     template<bool IsBypassed>
@@ -24,6 +30,8 @@ namespace zlp {
                              std::array<double *, 2> side_pointers,
                              const size_t num_samples) {
         juce::ignoreUnused(main_pointers, side_pointers, num_samples);
+        filter_.prepareBuffer(empty_, 0.0);
+        filter_.processTDF(main_pointers, side_pointers, num_samples);
     }
 
     template void Controller::process<true>(std::array<double *, 2>, std::array<double *, 2>, size_t);
