@@ -32,7 +32,7 @@ namespace zlp {
     private:
         juce::AudioProcessor &p_ref_;
 
-        zldsp::filter::IIREmpty empty_;
+        zldsp::filter::Empty empty_;
         zldsp::filter::DynamicTDF<double, 1> filter_;
 
         void handleAsyncUpdate() override {

@@ -15,15 +15,18 @@
 
 namespace zldsp::filter {
     /**
-     * an empty ideal filter which holds atomic filter parameters
-     * @tparam double the float type of input audio buffer
+     * an empty IIR filter which holds atomic filter parameters
      */
-    class IdealEmpty {
+    class Empty {
     public:
-        explicit IdealEmpty() = default;
+        explicit Empty() = default;
 
         void setToUpdatePara() {
             to_update_para_.store(true, std::memory_order::release);
+        }
+
+        bool getToUpdatePara() {
+            return to_update_para_.exchange(false, std::memory_order::acquire);
         }
 
         std::atomic<bool> &getUpdateParaFlag() { return to_update_para_; }

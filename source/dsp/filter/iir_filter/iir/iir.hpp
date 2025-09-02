@@ -11,7 +11,6 @@
 
 #include "../../filter_design/filter_design.hpp"
 #include "../../../chore/smoothed_value.hpp"
-#include "iir_empty.hpp"
 
 namespace zldsp::filter {
     /**
@@ -36,39 +35,20 @@ namespace zldsp::filter {
             c_q_.prepare(sample_rate, 0.001);
         }
 
-        void forceUpdate(const FilterParameters &paras) {
-            c_filter_type_ = paras.filter_type;
-            c_order_ = paras.order;
-            c_freq_.setCurrentAndTarget(paras.freq);
-            c_gain_.setCurrentAndTarget(paras.gain);
-            c_q_.setCurrentAndTarget(paras.q);
-            updateCoeffs();
-        }
-
-        void forceUpdate(const IIREmpty &empty) {
-            forceUpdate(empty.getParas());
-        }
-
         /**
-         * prepare for processing the incoming audio buffer
+         * update filter parameters
          * @return
          */
-        bool prepareBuffer(IIREmpty &empty) {
-            bool update = false;
-            if (empty.getToUpdatePara()) {
-                c_filter_type_ = empty.getFilterType();
-                c_order_ = empty.getOrder();
-                updateCoeffs();
+        void updateParas(const FilterParameters &paras) {
+            if (paras.filter_type != c_filter_type_ || paras.order != c_order_) {
+                c_filter_type_ = paras.filter_type;
+                c_order_ = paras.order;
                 reset();
-                update = true;
+                updateCoeffs();
             }
-            if (empty.getToUpdateFGQ()) {
-                c_freq_.setTarget(empty.getFreq());
-                c_gain_.setTarget(empty.getGain());
-                c_q_.setTarget(empty.getQ());
-                update = true;
-            }
-            return update;
+            c_freq_.setTarget(paras.freq);
+            c_gain_.setTarget(paras.gain);
+            c_q_.setTarget(paras.q);
         }
 
         /**

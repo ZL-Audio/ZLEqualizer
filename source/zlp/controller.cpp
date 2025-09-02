@@ -23,6 +23,9 @@ namespace zlp {
         filter_.setThreshold(-20.0);
         filter_.setKnee(5.0);
         filter_.setTargetGain(-10.0);
+
+        filter_.getFilter().updateParas(empty_.getParas());
+        filter_.prepareBuffer(empty_.getGain(), 0.0);
     }
 
     template<bool IsBypassed>
@@ -30,7 +33,7 @@ namespace zlp {
                              std::array<double *, 2> side_pointers,
                              const size_t num_samples) {
         juce::ignoreUnused(main_pointers, side_pointers, num_samples);
-        filter_.prepareBuffer(empty_, 0.0);
+
         filter_.processTDF(main_pointers, side_pointers, num_samples);
     }
 

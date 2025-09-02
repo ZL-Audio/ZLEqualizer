@@ -14,7 +14,7 @@
 #include "../../filter_design/filter_design.hpp"
 #include "../coeff/martin_coeff.hpp"
 #include "tdf_base.hpp"
-#include "../iir/iir_empty.hpp"
+#include "../../empty_filter/empty.hpp"
 #include "../iir/iir.hpp"
 
 namespace zldsp::filter {
@@ -98,7 +98,7 @@ namespace zldsp::filter {
         }
 
         /**
-         * update filter coefficients
+         * update filter coefficients when only gain changes
          */
         void updateGain() override {
             updateCoeffs();

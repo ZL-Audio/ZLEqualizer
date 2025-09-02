@@ -11,7 +11,6 @@
 
 #include <span>
 
-#include "../iir_filter/iir/iir_empty.hpp"
 #include "../../compressor/follower/ps_follower.hpp"
 #include "../../chore/decibels.hpp"
 
@@ -30,20 +29,21 @@ namespace zldsp::filter {
             follower_.reset();
         }
 
-        void forceUpdate(IIREmpty &empty) {
-            filter_.forceUpdate(empty);
-        }
-
-        bool prepareBuffer(IIREmpty &empty, const FloatType threshold_shift) {
+        /**
+         * cache dynamic parameters for upcoming audio buffer
+         * @param base_gain
+         * @param threshold_shift
+         */
+        void prepareBuffer(double base_gain, const FloatType threshold_shift) {
             if (dynamic_on_.load(std::memory_order::relaxed) != c_dynamic_on_) {
                 c_dynamic_on_ = dynamic_on_.load(std::memory_order::relaxed);
                 // reset gain to base gain
-                filter_.setGain(empty.getGain());
+                filter_.setGain(base_gain);
                 follower_.reset(static_cast<FloatType>(0));
             }
             if (c_dynamic_on_) {
                 follower_.prepareBuffer();
-                c_base_gain_ = empty.getGain();
+                c_base_gain_ = base_gain;
                 c_gain_diff_ = target_gain_.load(std::memory_order::relaxed) - c_base_gain_;
                 if (to_update_tk_.exchange(false, std::memory_order::acquire)
                     || std::abs(c_threshold_shift_ - threshold_shift) > static_cast<FloatType>(1e-3)) {
@@ -51,7 +51,6 @@ namespace zldsp::filter {
                     updateThreshold(threshold_shift);
                 }
             }
-            return filter_.prepareBuffer(empty);
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) {

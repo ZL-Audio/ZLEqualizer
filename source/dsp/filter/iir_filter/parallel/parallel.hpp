@@ -14,7 +14,7 @@
 #include "../../../vector/vector.hpp"
 #include "../../filter_design/filter_design.hpp"
 #include "../coeff/martin_coeff.hpp"
-#include "../iir/iir_empty.hpp"
+#include "../../empty_filter/empty.hpp"
 #include "../iir/iir.hpp"
 #include "../tdf/tdf_base.hpp"
 
@@ -153,7 +153,8 @@ namespace zldsp::filter {
         }
 
         /**
-         * update filter coefficients
+         * update filter coefficients when only gain changes
+         * for parallel filters, only multiplier needs to be updated
          */
         void updateGain() override {
             if (should_be_parallel_) {
