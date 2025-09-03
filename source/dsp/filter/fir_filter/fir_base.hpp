@@ -66,7 +66,9 @@ namespace zldsp::filter {
             }
         }
 
-        int getLatency() const { return latency_; }
+        [[nodiscard]] int getLatency() const { return latency_; }
+
+        [[nodiscard]] size_t getNumBins() const { return num_bin_; }
 
     protected:
         zldsp::fft::KFREngine<float> fft_;
@@ -74,7 +76,7 @@ namespace zldsp::filter {
 
         size_t fft_order_ = kDefaultFFTOrder;
         size_t fft_size_ = static_cast<size_t>(1) << fft_order_;
-        size_t num_bins_ = fft_size_ / 2 + 1;
+        size_t num_bin_ = fft_size_ / 2 + 1;
         size_t overlap_ = 4; // 75% overlap
         size_t hop_size_ = fft_size_ / overlap_;
         static constexpr float kWindowCorrection = 2.0f / 3.0f;
@@ -94,7 +96,7 @@ namespace zldsp::filter {
         void setFFTOrder(const size_t num_channels, const size_t order) {
             fft_order_ = order;
             fft_size_ = static_cast<size_t>(1) << fft_order_;
-            num_bins_ = fft_size_ / 2 + 1;
+            num_bin_ = fft_size_ / 2 + 1;
             hop_size_ = fft_size_ / overlap_;
             latency_ = static_cast<int>(fft_size_);
 
@@ -118,7 +120,6 @@ namespace zldsp::filter {
         template<bool bypass = false>
         void processFrame() {
             for (size_t idx = 0; idx < input_fifo_.size(); ++idx) {
-
                 // Copy the input FIFO into the FFT working space in two parts.
                 zldsp::vector::copy(fft_in_.data(), input_fifo_[idx].data() + pos_, fft_size_ - pos_);
                 if (pos_ > 0) {
