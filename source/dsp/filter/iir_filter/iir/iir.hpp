@@ -39,6 +39,19 @@ namespace zldsp::filter {
          * update filter parameters
          * @return
          */
+        void forceUpdate(const FilterParameters &paras) {
+            c_filter_type_ = paras.filter_type;
+            c_order_ = paras.order;
+            c_freq_.setCurrentAndTarget(paras.freq);
+            c_gain_.setCurrentAndTarget(paras.gain);
+            c_q_.setCurrentAndTarget(paras.q);
+            updateCoeffs();
+        }
+
+        /**
+         * update filter parameters
+         * @return
+         */
         void updateParas(const FilterParameters &paras) {
             if (paras.filter_type != c_filter_type_ || paras.order != c_order_) {
                 c_filter_type_ = paras.filter_type;

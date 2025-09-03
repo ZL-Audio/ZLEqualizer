@@ -38,8 +38,6 @@ namespace zldsp::filter {
             }
         }
 
-        virtual void prepareCorrection(size_t num_bin) = 0;
-
         void update(std::array<TDF<float, kFilterSize>, kFilterNum> &tdfs,
                     std::array<Ideal<float, kFilterSize>, kFilterNum> &ideals,
                     std::span<size_t> update_indices) {
@@ -57,16 +55,14 @@ namespace zldsp::filter {
                     }
                     // update biquad response
                     const auto biquad_coeff = tdf.getCoeff()[idx];
-                    for (size_t w_idx = 1; w_idx < w_prototype_.size(); ++w_idx) {
-                        biquad_res_[w_idx] = TDFBase<float>::getResponse(biquad_coeff, w_prototype_[w_idx]);
+                    for (size_t w_idx = 1; w_idx < w_biquad_.size(); ++w_idx) {
+                        biquad_res_[w_idx] = TDFBase<float>::getResponse(biquad_coeff, w_biquad_[w_idx]);
                     }
                     // update correction
                     updateCorrection(i);
                 }
             }
         }
-
-        virtual void updateCorrection(size_t idx) = 0;
 
         std::array<kfr::univector<std::complex<float> >, kFilterNum> &getCorrections() {
             return corrections_;
@@ -77,5 +73,9 @@ namespace zldsp::filter {
         kfr::univector<std::complex<float> > w_prototype_{}, w_biquad_{};
         kfr::univector<std::complex<float> > proto_res_{}, biquad_res_{};
         std::array<kfr::univector<std::complex<float> >, kFilterNum> corrections_{};
+
+        virtual void prepareCorrection(size_t num_bin) = 0;
+
+        virtual void updateCorrection(size_t idx) = 0;
     };
 }

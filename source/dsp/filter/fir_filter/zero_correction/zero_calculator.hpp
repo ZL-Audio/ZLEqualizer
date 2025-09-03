@@ -13,26 +13,12 @@
 
 namespace zldsp::filter {
     template<size_t kFilterNum, size_t kFilterSize>
-    class MixedCalculator final : public CorrectionCalculator<kFilterNum, kFilterSize> {
+    class ZeroCalculator final : public CorrectionCalculator<kFilterNum, kFilterSize> {
     public:
-        static constexpr size_t kStartDecayIdx = 16, kEndDecayIdx = 256;
-
-        explicit MixedCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
-            decays_.resize(kEndDecayIdx);
-            const auto k1 = std::log(static_cast<float>(kStartDecayIdx));
-            const auto k2 = std::log(static_cast<float>(kEndDecayIdx));
-            const auto k3 = 1.f / (k2 - k1);
-            for (size_t i = 0; i < kStartDecayIdx; ++i) {
-                decays_[i] = 0.f;
-            }
-            for (size_t i = kStartDecayIdx; i < kEndDecayIdx; ++i) {
-                decays_[i] = std::clamp((std::log(static_cast<float>(i)) - k1) * k3, 0.f, 1.f);
-            }
+        explicit ZeroCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
         }
 
     private:
-        std::vector<float> decays_{};
-
         void prepareCorrection(const size_t) override {
         }
 
@@ -41,19 +27,7 @@ namespace zldsp::filter {
             auto &biquad_res{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_res_};
             auto &correction{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_[idx]};
 
-            for (size_t w_idx = kStartDecayIdx; w_idx < kEndDecayIdx; ++w_idx) {
-                auto proto = proto_res[w_idx];
-                auto biquad = biquad_res[w_idx];
-                if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
-                    // ill condition, keep correction the same
-                } else {
-                    // normal condition
-                    auto z = std::complex(std::abs(proto), 0.f) / biquad;
-                    const auto k = decays_[w_idx];
-                    correction[w_idx] *= std::polar(std::fma(k, std::abs(z) - 1.0f, 1.0f), k * std::arg(z));
-                }
-            }
-            for (size_t w_idx = kEndDecayIdx; w_idx < correction.size(); ++w_idx) {
+            for (size_t w_idx = 1; w_idx < correction.size(); ++w_idx) {
                 auto proto = proto_res[w_idx];
                 auto biquad = biquad_res[w_idx];
                 if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
@@ -64,7 +38,7 @@ namespace zldsp::filter {
                 }
             }
             // if a single correction is larger than 40 dB, scale back to 40 dB
-            for (size_t w_idx = kStartDecayIdx; w_idx < correction.size(); ++w_idx) {
+            for (size_t w_idx = 1; w_idx < correction.size(); ++w_idx) {
                 if (std::max(std::abs(correction[w_idx].real()), std::abs(correction[w_idx].imag())) > 100.f) {
                     correction[w_idx] *= 100.f / std::abs(correction[w_idx]);
                 }

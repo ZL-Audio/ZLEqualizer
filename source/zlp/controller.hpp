@@ -14,6 +14,13 @@
 
 #include "../dsp/vector/vector.hpp"
 #include "../dsp/filter/dynamic_filter/dynamic_tdf.hpp"
+#include "../dsp/filter/ideal_filter/ideal.hpp"
+#include "../dsp/filter/fir_filter/match_correction/match_correction.hpp"
+#include "../dsp/filter/fir_filter/match_correction/match_calculator.hpp"
+#include "../dsp/filter/fir_filter/mixed_correction/mixed_correction.hpp"
+#include "../dsp/filter/fir_filter/mixed_correction/mixed_calculator.hpp"
+#include "../dsp/filter/fir_filter/zero_correction/zero_correction.hpp"
+#include "../dsp/filter/fir_filter/zero_correction/zero_calculator.hpp"
 
 namespace zlp {
     class Controller final : private juce::AsyncUpdater {
@@ -34,6 +41,14 @@ namespace zlp {
 
         zldsp::filter::Empty empty_;
         zldsp::filter::DynamicTDF<double, 1> filter_;
+
+        std::array<zldsp::filter::Ideal<float, 1>, 1> ideal_;
+        std::array<zldsp::filter::TDF<float, 1>, 1> tdf_;
+        std::array<size_t, 1> update_indices{};
+        std::array<size_t, 1> on_indices{};
+
+        zldsp::filter::ZeroCalculator<1, 1> calculator_;
+        zldsp::filter::ZeroCorrection<double> correction_;
 
         void handleAsyncUpdate() override {
 

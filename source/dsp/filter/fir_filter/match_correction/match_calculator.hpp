@@ -13,11 +13,11 @@
 
 namespace zldsp::filter {
     template<size_t kFilterNum, size_t kFilterSize>
-    class MatchCorrection final : CorrectionCalculator<kFilterNum, kFilterSize> {
+    class MatchCalculator final : public CorrectionCalculator<kFilterNum, kFilterSize> {
     public:
         static constexpr size_t kStartDecayIdx = 16, kEndDecayIdx = 128;
 
-        explicit MatchCorrection() : CorrectionCalculator<kFilterNum, kFilterSize>() {
+        explicit MatchCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
             decays_.resize(kEndDecayIdx);
             const auto k1 = std::log(static_cast<float>(kStartDecayIdx));
             const auto k2 = std::log(static_cast<float>(kEndDecayIdx));
@@ -30,7 +30,10 @@ namespace zldsp::filter {
             }
         }
 
-        void prepareCorrection(const size_t num_bin) override {
+    private:
+        std::vector<float> decays_{};
+
+        void prepareCorrection(const size_t) override {
         }
 
         void updateCorrection(const size_t idx) override {
@@ -41,43 +44,31 @@ namespace zldsp::filter {
             for (size_t w_idx = kStartDecayIdx; w_idx < kEndDecayIdx; ++w_idx) {
                 auto proto = proto_res[w_idx];
                 auto biquad = biquad_res[w_idx];
-                const auto proto_mag = std::abs(proto);
-                const auto biquad_mag = std::abs(biquad);
-                if (biquad_mag < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
-                    if (std::abs(proto_res) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
-                        // 0 / 0 condition
-                        correction[w_idx] = std::complex(1.f, 0.f);
-                    } else {
-                        // x / 0 condition, use the previous correction
-                        correction[w_idx] = correction[w_idx - 1];
-                    }
+                if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
+                    // ill condition, keep correction the same
                 } else {
                     // normal condition
                     auto z = proto / biquad;
                     const auto k = decays_[w_idx];
-                    correction[w_idx] = std::polar(std::fma(k, std::abs(z) - 1.0f, 1.0f), k * std::arg(z));
+                    correction[w_idx] *= std::polar(std::fma(k, std::abs(z) - 1.0f, 1.0f), k * std::arg(z));
                 }
             }
             for (size_t w_idx = kEndDecayIdx; w_idx < correction.size(); ++w_idx) {
                 auto proto = proto_res[w_idx];
                 auto biquad = biquad_res[w_idx];
-                const auto biquad_mag = std::abs(biquad);
-                if (biquad_mag < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
-                    if (std::abs(proto_res) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
-                        // 0 / 0 condition
-                        correction[w_idx] = std::complex(1.f, 0.f);
-                    } else {
-                        // x / 0 condition, use the previous correction
-                        correction[w_idx] = correction[w_idx - 1];
-                    }
+                if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
+                    // ill condition, keep correction the same
                 } else {
                     // normal condition
-                    correction[w_idx] = proto / biquad;
+                    correction[w_idx] *= (proto / biquad);
+                }
+            }
+            // if a single correction is larger than 40 dB, scale back to 40 dB
+            for (size_t w_idx = kStartDecayIdx; w_idx < correction.size(); ++w_idx) {
+                if (std::max(std::abs(correction[w_idx].real()), std::abs(correction[w_idx].imag())) > 100.f) {
+                    correction[w_idx] *= 100.f / std::abs(correction[w_idx]);
                 }
             }
         }
-
-    private:
-        std::vector<float> decays_{};
     };
 }

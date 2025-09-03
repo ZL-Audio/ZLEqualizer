@@ -13,7 +13,7 @@
 #include "../../vector/vector.hpp"
 
 namespace zldsp::filter {
-    template<typename FloatType, size_t kDefaultFFTOrder = 10>
+    template<typename FloatType, size_t kDefaultFFTOrder>
     class FIRBase {
     public:
         virtual ~FIRBase() = default;
@@ -68,7 +68,7 @@ namespace zldsp::filter {
 
         [[nodiscard]] int getLatency() const { return latency_; }
 
-        [[nodiscard]] size_t getNumBins() const { return num_bin_; }
+        [[nodiscard]] size_t getNumBin() const { return num_bin_; }
 
     protected:
         zldsp::fft::KFREngine<float> fft_;

@@ -31,9 +31,9 @@ namespace zldsp::filter {
 
         void forceUpdate(const FilterParameters &paras) {
             c_filter_type_ = paras.filter_type;
-            c_order_ = paras.order_;
+            c_order_ = paras.order;
             c_freq_ = paras.freq;
-            c_gain_ = paras.gain_;
+            c_gain_ = paras.gain;
             c_q_ = paras.q;
             updateCoeffs();
         }
@@ -71,7 +71,7 @@ namespace zldsp::filter {
         }
 
         void setOrder(const size_t order) {
-            c_order_ = x;
+            c_order_ = order;
         }
 
         size_t getOrder() const {
