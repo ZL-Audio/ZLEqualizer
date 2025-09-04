@@ -18,6 +18,18 @@ namespace zlp {
     inline static constexpr size_t kBandNum = 24;
 #endif
 
+    enum FilterStatus {
+        kOff, kBypass, kOn
+    };
+
+    enum FilterStereo {
+        kStereo, kLeft, kRight, kMid, kSide
+    };
+
+    enum FilterStructure {
+        kMinimum, kSVF, kParallel, kMatched, kMixed, kLinear
+    };
+
     template<typename FloatType>
     inline juce::NormalisableRange<FloatType> getLogMidRange(
         const FloatType x_min, const FloatType x_max, const FloatType x_mid, const FloatType x_interval) {
@@ -207,6 +219,17 @@ namespace zlp {
         }
     };
 
+    class PFilterStructure : public ChoiceParameters<PFilterStructure> {
+    public:
+        auto static constexpr kID = "filter_structure";
+        auto static constexpr kName = "Filter Structure";
+        inline auto static const kChoices = juce::StringArray{
+            "Minimum Phase", "State Variable", "Parallel",
+            "Matched Phase", "Mixed Phase", "Linear Phase"
+        };
+        int static constexpr kDefaultI = 0;
+    };
+
     class PExtSide : public BoolParameters<PExtSide> {
     public:
         auto static constexpr kID = "external_side";
@@ -276,14 +299,6 @@ namespace zlp {
         auto static constexpr kName = "LRMode";
         inline auto static const kChoices = juce::StringArray{"Stereo", "Left", "Right", "Mid", "Side"};
         int static constexpr kDefaultI = 0;
-
-        enum Mode {
-            kStereo,
-            kLeft,
-            kRight,
-            kMid,
-            kSide
-        };
     };
 
     class PFreq : public FloatParameters<PFreq> {
@@ -403,7 +418,7 @@ namespace zlp {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(PExtSide::get(), PBypass::get());
+        layout.add(PFilterStructure::get(), PExtSide::get(), PBypass::get());
         for (size_t i = 0; i < kBandNum; ++i) {
             const auto suffix = std::to_string(i);
             layout.add(PFilterStatus::get(suffix), PFilterType::get(suffix), POrder::get(suffix), PLRMode::get(suffix),

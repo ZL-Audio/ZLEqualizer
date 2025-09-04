@@ -27,7 +27,7 @@ namespace zldsp::filter {
     template<typename FloatType, size_t kFilterSize>
     class Parallel final : public IIR<kFilterSize> {
     public:
-        explicit Parallel() : IIR<kFilterSize>() {
+        Parallel() : IIR<kFilterSize>() {
         }
 
         void reset() override {
@@ -42,6 +42,7 @@ namespace zldsp::filter {
                 f.prepare(num_channels);
             }
             parallel_buffers_.resize(num_channels);
+            parallel_buffers_pointers_.resize(num_channels);
             for (size_t i = 0; i < num_channels; ++i) {
                 parallel_buffers_[i].resize(max_num_samples);
                 parallel_buffers_pointers_[i] = parallel_buffers_[i].data();

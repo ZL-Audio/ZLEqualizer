@@ -19,7 +19,7 @@ namespace zldsp::filter {
      */
     class Empty {
     public:
-        explicit Empty() = default;
+        Empty() = default;
 
         void setToUpdatePara() {
             to_update_para_.store(true, std::memory_order::release);

@@ -21,8 +21,7 @@ namespace zldsp::filter {
     template<typename FloatType, size_t kFilterSize>
     class DynamicTDF final : public DynamicBase<TDF<FloatType, kFilterSize>, FloatType> {
     public:
-        explicit DynamicTDF()
-            : DynamicBase<TDF<FloatType, kFilterSize>, FloatType>() {
+        DynamicTDF() : DynamicBase<TDF<FloatType, kFilterSize>, FloatType>() {
         }
 
         /**

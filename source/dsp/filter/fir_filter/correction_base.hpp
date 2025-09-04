@@ -15,7 +15,7 @@ namespace zldsp::filter {
     template<typename FloatType, size_t kDefaultFFTOrder, size_t kStartIdx>
     class CorrectionBase final : public FIRBase<FloatType, kDefaultFFTOrder> {
     public:
-        explicit CorrectionBase() : FIRBase<FloatType, kDefaultFFTOrder>() {
+        CorrectionBase() : FIRBase<FloatType, kDefaultFFTOrder>() {
         }
 
         void updateCorrection(std::span<kfr::univector<std::complex<float> > > corrections,

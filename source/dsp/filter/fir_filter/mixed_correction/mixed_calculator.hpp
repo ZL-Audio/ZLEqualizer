@@ -17,7 +17,7 @@ namespace zldsp::filter {
     public:
         static constexpr size_t kStartDecayIdx = 16, kEndDecayIdx = 256;
 
-        explicit MixedCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
+        MixedCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
             decays_.resize(kEndDecayIdx);
             const auto k1 = std::log(static_cast<float>(kStartDecayIdx));
             const auto k2 = std::log(static_cast<float>(kEndDecayIdx));

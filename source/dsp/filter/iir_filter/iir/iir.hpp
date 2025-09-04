@@ -20,7 +20,7 @@ namespace zldsp::filter {
     template<size_t kFilterSize>
     class IIR {
     public:
-        explicit IIR() = default;
+        IIR() = default;
 
         virtual ~IIR() = default;
 

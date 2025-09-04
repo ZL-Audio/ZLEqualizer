@@ -15,7 +15,7 @@ namespace zldsp::filter {
     template<size_t kFilterNum, size_t kFilterSize>
     class ZeroCalculator final : public CorrectionCalculator<kFilterNum, kFilterSize> {
     public:
-        explicit ZeroCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
+        ZeroCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
         }
 
     private:

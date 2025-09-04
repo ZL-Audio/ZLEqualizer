@@ -21,8 +21,7 @@ namespace zldsp::filter {
     template<typename FloatType, size_t kFilterSize>
     class DynamicParallel final : public DynamicBase<Parallel<FloatType, kFilterSize>, FloatType> {
     public:
-        explicit DynamicParallel()
-            : DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>() {
+        DynamicParallel() : DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>() {
         }
 
         /**

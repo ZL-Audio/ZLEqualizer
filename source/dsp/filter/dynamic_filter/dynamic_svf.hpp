@@ -21,8 +21,7 @@ namespace zldsp::filter {
     template<typename FloatType, size_t kFilterSize>
     class DynamicSVF final : public DynamicBase<SVF<FloatType, kFilterSize>, FloatType> {
     public:
-        explicit DynamicSVF()
-            : DynamicBase<SVF<FloatType, kFilterSize>, FloatType>() {
+        DynamicSVF() : DynamicBase<SVF<FloatType, kFilterSize>, FloatType>() {
         }
 
         /**

@@ -26,7 +26,7 @@ namespace zldsp::filter {
     template<typename FloatType, size_t kFilterSize>
     class SVF final : public IIR<kFilterSize> {
     public:
-        explicit SVF() : IIR<kFilterSize>() {
+        SVF() : IIR<kFilterSize>() {
         }
 
         void reset() override {

@@ -22,7 +22,7 @@ namespace zldsp::filter {
     template<class FilterType, typename FloatType>
     class DynamicBase {
     public:
-        explicit DynamicBase() = default;
+        DynamicBase() = default;
 
         void reset() {
             filter_.reset();
@@ -34,22 +34,14 @@ namespace zldsp::filter {
          * @param base_gain
          * @param threshold_shift
          */
-        void prepareBuffer(double base_gain, const FloatType threshold_shift) {
-            if (dynamic_on_.load(std::memory_order::relaxed) != c_dynamic_on_) {
-                c_dynamic_on_ = dynamic_on_.load(std::memory_order::relaxed);
-                // reset gain to base gain
-                filter_.setGain(base_gain);
-                follower_.reset(static_cast<FloatType>(0));
-            }
-            if (c_dynamic_on_) {
-                follower_.prepareBuffer();
-                c_base_gain_ = base_gain;
-                c_gain_diff_ = target_gain_.load(std::memory_order::relaxed) - c_base_gain_;
-                if (to_update_tk_.exchange(false, std::memory_order::acquire)
-                    || std::abs(c_threshold_shift_ - threshold_shift) > static_cast<FloatType>(1e-3)) {
-                    c_threshold_shift_ = threshold_shift;
-                    updateThreshold(threshold_shift);
-                }
+        void prepareBuffer(const double base_gain, const FloatType threshold_shift) {
+            follower_.prepareBuffer();
+            c_base_gain_ = base_gain;
+            c_gain_diff_ = target_gain_.load(std::memory_order::relaxed) - c_base_gain_;
+            if (to_update_tk_.exchange(false, std::memory_order::acquire)
+                || std::abs(c_threshold_shift_ - threshold_shift) > static_cast<FloatType>(1e-3)) {
+                c_threshold_shift_ = threshold_shift;
+                updateThreshold(threshold_shift);
             }
         }
 
@@ -59,7 +51,7 @@ namespace zldsp::filter {
         }
 
         void setDynamicON(const bool f) {
-            dynamic_on_.store(f, std::memory_order::relaxed);
+            c_dynamic_on_ = f;
         }
 
         void setTargetGain(const double target_gain) {
@@ -88,7 +80,6 @@ namespace zldsp::filter {
         FilterType filter_{};
         zldsp::compressor::PSFollower<FloatType, true, false> follower_;
 
-        std::atomic<bool> dynamic_on_{false};
         bool c_dynamic_on_{false};
 
         std::atomic<double> target_gain_{};

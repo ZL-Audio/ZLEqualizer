@@ -23,7 +23,7 @@ namespace zldsp::filter {
     template<typename FloatType, size_t kFilterSize>
     class Ideal {
     public:
-        explicit Ideal() = default;
+        Ideal() = default;
 
         void prepare(const double sample_rate) {
             sample_rate_ = sample_rate;

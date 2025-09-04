@@ -18,7 +18,7 @@ namespace zldsp::filter {
     template<size_t kFilterNum, size_t kFilterSize>
     class CorrectionCalculator {
     public:
-        explicit CorrectionCalculator() = default;
+        CorrectionCalculator() = default;
 
         virtual ~CorrectionCalculator() = default;
 
@@ -40,9 +40,11 @@ namespace zldsp::filter {
 
         void update(std::array<TDF<float, kFilterSize>, kFilterNum> &tdfs,
                     std::array<Ideal<float, kFilterSize>, kFilterNum> &ideals,
-                    std::span<size_t> update_indices) {
+                    const std::span<size_t> indices,
+                    std::array<bool, kFilterNum> &update_flags) {
             // update filter corrections
-            for (size_t &i: update_indices) {
+            for (const size_t &i : indices) {
+                if (!update_flags[i]) { continue; }
                 std::fill(corrections_[i].begin(), corrections_[i].end(), std::complex(1.f, 0.f));
                 auto &ideal{ideals[i]};
                 auto &tdf{tdfs[i]};
