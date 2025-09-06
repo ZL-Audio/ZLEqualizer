@@ -29,12 +29,6 @@ namespace zldsp::compressor {
         virtual void reset([[maybe_unused]] FloatType x) {}
 
         /**
-         * update values before processing a buffer
-         * @return whether the follower has been updated
-         */
-        virtual bool prepareBuffer() = 0;
-
-        /**
          * process a sample
          * @param x
          * @return

@@ -13,6 +13,11 @@
 #include "lufs_meter.hpp"
 
 namespace zldsp::loudness {
+    /**
+     * a integrated matcher which matches the loudness of pre and post
+     * @tparam FloatType the float type of input audio buffer
+     * @tparam kUseLowPass whether to use an extra lowpass filter at 22,000 Hz
+     */
     template<typename FloatType, bool kUseLowPass = false>
     class LUFSMatcher {
     public:
@@ -32,14 +37,24 @@ namespace zldsp::loudness {
             current_count_ = 0.0;
         }
 
+        /**
+         * process the pre audio input
+         * @param pre
+         * @param num_samples
+         */
         void processPre(std::span<FloatType*> pre, const size_t num_samples) {
             pre_loudness_meter_.process(pre, num_samples);
         }
 
+        /**
+         * process the post audio input
+         * @param post
+         * @param num_samples
+         */
         void processPost(std::span<FloatType*> post, const size_t num_samples) {
             post_loudness_meter_.process(post, num_samples);
             current_count_ += static_cast<double>(num_samples);
-            if (current_count_ >= sample_rate_) {
+            while (current_count_ >= sample_rate_) {
                 current_count_ -= sample_rate_;
                 const auto pre_loudness = pre_loudness_meter_.getIntegratedLoudness();
                 const auto post_loudness = post_loudness_meter_.getIntegratedLoudness();
@@ -47,6 +62,11 @@ namespace zldsp::loudness {
             }
         }
 
+        /**
+         * thread-safe method
+         * get the value of post audio loudness - pre audio loudness
+         * @return
+         */
         FloatType getDiff() const {
             return loudness_diff_.load(std::memory_order::relaxed);
         }

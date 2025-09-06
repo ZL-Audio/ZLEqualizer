@@ -12,6 +12,11 @@
 #include "k_weighting_filter.hpp"
 
 namespace zldsp::loudness {
+    /**
+     * a integrated loudness meter
+     * @tparam FloatType the float type of input audio buffer
+     * @tparam kUseLowPass whether to use an extra lowpass filter at 22,000 Hz
+     */
     template<typename FloatType, bool kUseLowPass = false>
     class LUFSMeter {
     public:
@@ -81,6 +86,10 @@ namespace zldsp::loudness {
             }
         }
 
+        /**
+         *
+         * @return integrated loudness
+         */
         FloatType getIntegratedLoudness() const {
             const auto total_count = kfr::sum(histogram_);
             if (total_count < FloatType(0.5)) { return FloatType(0); }

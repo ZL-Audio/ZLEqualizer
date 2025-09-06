@@ -35,6 +35,7 @@ namespace zldsp::filter {
         void processParallel(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                              const size_t num_samples) {
             if (this->filter_.getShouldBeParallel()) {
+                zldsp::vector::copy(this->filter_.getParallelBuffer(), main_buffer, num_samples);
                 DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>::template process<bypass>(
                     this->filter_.getParallelBuffer(), side_buffer, num_samples);
             } else {
@@ -44,7 +45,7 @@ namespace zldsp::filter {
         }
 
         /**
-         * add the parallel buffer
+         * add the parallel buffer to the incoming audio buffer
          * @param main_buffer
          * @param num_samples
          */

@@ -24,54 +24,92 @@ namespace zldsp::filter {
     public:
         DynamicBase() = default;
 
+        /**
+         * reset IIR filter state and follower state
+         */
         void reset() {
             filter_.reset();
-            follower_.reset();
+            follower_.reset(static_cast<FloatType>(0));
         }
 
         /**
-         * cache dynamic parameters for upcoming audio buffer
-         * @param base_gain
-         * @param threshold_shift
+         * prepare the dynamic filter
+         * @param sample_rate
+         * @param num_channels
+         * @param max_num_samples
          */
-        void prepareBuffer(const double base_gain, const FloatType threshold_shift) {
-            follower_.prepareBuffer();
-            c_base_gain_ = base_gain;
-            c_gain_diff_ = target_gain_.load(std::memory_order::relaxed) - c_base_gain_;
-            if (to_update_tk_.exchange(false, std::memory_order::acquire)
-                || std::abs(c_threshold_shift_ - threshold_shift) > static_cast<FloatType>(1e-3)) {
-                c_threshold_shift_ = threshold_shift;
-                updateThreshold(threshold_shift);
-            }
-        }
-
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) {
             filter_.prepare(sample_rate, num_channels, max_num_samples);
             follower_.prepare(sample_rate);
         }
 
-        void setDynamicON(const bool f) {
-            c_dynamic_on_ = f;
+        /**
+         * turn on/off dynamic
+         * @param dynamic_on
+         */
+        void setDynamicON(const bool dynamic_on) {
+            // if dynamic is turned off, reset filter gain to base gain
+            if (dynamic_on != dynamic_on_ && !dynamic_on) {
+                filter_.setGain(base_gain_);
+                follower_.reset(static_cast<FloatType>(0));
+            }
+            dynamic_on_ = dynamic_on;
         }
 
+        /**
+         * set dynamic filter base gain
+         * @param base_gain
+         */
+        void setBaseGain(const double base_gain) {
+            base_gain_ = base_gain;
+            gain_diff_ = target_gain_ - base_gain_;
+        }
+
+        /**
+         * set dynamic filter target gain
+         * @param target_gain
+         */
         void setTargetGain(const double target_gain) {
-            target_gain_.store(target_gain, std::memory_order::relaxed);
+            target_gain_ = target_gain;
+            gain_diff_ = target_gain_ - base_gain_;
         }
 
+        /**
+         * set dynamic filter threshold
+         * @param threshold
+         */
+        template<bool to_update = true>
         void setThreshold(const FloatType threshold) {
-            threshold_.store(threshold, std::memory_order::relaxed);
-            to_update_tk_.store(true, std::memory_order::release);
+            threshold_ = threshold;
+            if constexpr (to_update) {
+                updateTK();
+            }
         }
 
+        /**
+         * set dynamic filter knee width
+         * @param knee
+         */
+        template<bool to_update = true>
         void setKnee(const FloatType knee) {
-            knee_.store(knee, std::memory_order::relaxed);
-            to_update_tk_.store(true, std::memory_order::release);
+            knee_ = knee;
+            if constexpr (to_update) {
+                updateTK();
+            }
         }
 
+        /**
+         *
+         * @return the underlying IIR filter
+         */
         FilterType &getFilter() {
             return filter_;
         }
 
+        /**
+         *
+         * @return the underlying follower
+         */
         zldsp::compressor::PSFollower<FloatType, true, false> &getFollower() {
             return follower_;
         }
@@ -80,14 +118,11 @@ namespace zldsp::filter {
         FilterType filter_{};
         zldsp::compressor::PSFollower<FloatType, true, false> follower_;
 
-        bool c_dynamic_on_{false};
+        bool dynamic_on_{false};
+        double base_gain_{}, target_gain_{}, gain_diff_{};
 
-        std::atomic<double> target_gain_{};
-        double c_base_gain_{}, c_gain_diff_{};
-
-        std::atomic<bool> to_update_tk_{false};
-        std::atomic<FloatType> threshold_, knee_;
-        FloatType low_{}, slope_{}, c_threshold_shift_{};
+        FloatType threshold_{}, knee_{};
+        FloatType low_{}, slope_{}, threshold_shift_{};
 
         /**
          * process the incoming audio buffer
@@ -99,7 +134,7 @@ namespace zldsp::filter {
         template<bool bypass = false>
         void process(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                      const size_t num_samples) {
-            if (c_dynamic_on_) {
+            if (dynamic_on_) {
                 if (main_buffer.size() == 1) {
                     const auto main_pointer = main_buffer[0];
                     const auto side_pointer = side_buffer[0];
@@ -107,7 +142,7 @@ namespace zldsp::filter {
                         const auto side_db = zldsp::chore::gainToDecibels(std::abs(side_pointer[i]));
                         const auto p = std::clamp(
                             (side_db - low_) * slope_, static_cast<FloatType>(0), static_cast<FloatType>(1));
-                        filter_.template setGain<true>(c_base_gain_ + follower_.processSample(p * p) * c_gain_diff_);
+                        filter_.template setGain<true>(base_gain_ + follower_.processSample(p * p) * gain_diff_);
                         filter_.updateGain();
                         if constexpr (bypass) {
                             filter_.processSample(0, main_pointer[i]);
@@ -125,7 +160,7 @@ namespace zldsp::filter {
                         const auto side_db = zldsp::chore::squareGainToDecibels(sum_sqr);
                         const auto p = std::clamp(
                             (side_db - low_) * slope_, static_cast<FloatType>(0), static_cast<FloatType>(1));
-                        filter_.template setGain<true>(c_base_gain_ + follower_.processSample(p * p) * c_gain_diff_);
+                        filter_.template setGain<true>(base_gain_ + follower_.processSample(p * p) * gain_diff_);
                         filter_.updateGain();
                         for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
                             if constexpr (bypass) {
@@ -141,11 +176,9 @@ namespace zldsp::filter {
             }
         }
 
-        void updateThreshold(const FloatType threshold_shift) {
-            const auto threshold = threshold_.load(std::memory_order_relaxed) + threshold_shift;
-            const auto knee = knee_.load(std::memory_order_relaxed);
-            low_ = threshold - knee;
-            slope_ = static_cast<FloatType>(0.5) / knee;
+        void updateTK() {
+            low_ = threshold_ - knee_;
+            slope_ = static_cast<FloatType>(0.5) / knee_;
         }
     };
 }
