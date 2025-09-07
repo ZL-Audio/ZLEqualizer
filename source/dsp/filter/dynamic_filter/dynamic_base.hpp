@@ -48,10 +48,15 @@ namespace zldsp::filter {
          * @param dynamic_on
          */
         void setDynamicON(const bool dynamic_on) {
-            // if dynamic is turned off, reset filter gain to base gain
-            if (dynamic_on != dynamic_on_ && !dynamic_on) {
-                filter_.setGain(base_gain_);
-                follower_.reset(static_cast<FloatType>(0));
+            if (dynamic_on != dynamic_on_) {
+                dynamic_on_ = dynamic_on;
+                if (!dynamic_on_) {
+                    // if dynamic is turned off, reset filter gain to base gain
+                    filter_.setGain(base_gain_);
+                } else {
+                    // if dynamic is turned on, reset the follower
+                    follower_.reset(static_cast<FloatType>(0));
+                }
             }
             dynamic_on_ = dynamic_on;
         }
@@ -135,7 +140,10 @@ namespace zldsp::filter {
         void process(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                      const size_t num_samples) {
             if (dynamic_on_) {
+                // make sure that freq & q are update to date
+                filter_.skipSmooth();
                 if (main_buffer.size() == 1) {
+                    // only one channel, we take abs
                     const auto main_pointer = main_buffer[0];
                     const auto side_pointer = side_buffer[0];
                     for (size_t i = 0; i < num_samples; ++i) {
@@ -151,6 +159,7 @@ namespace zldsp::filter {
                         }
                     }
                 } else {
+                    // multiple channels, we take root of sum square
                     for (size_t i = 0; i < num_samples; ++i) {
                         FloatType sum_sqr = 0;
                         for (size_t chan = 0; chan < main_buffer.size(); ++chan) {

@@ -119,7 +119,6 @@ namespace zldsp::filter {
             c_freq_.setCurrentAndTarget(c_freq_.getTarget());
             c_gain_.setCurrentAndTarget(c_gain_.getTarget());
             c_q_.setCurrentAndTarget(c_q_.getTarget());
-            updateCoeffs();
         }
 
         /**
