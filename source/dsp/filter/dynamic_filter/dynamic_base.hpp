@@ -13,6 +13,7 @@
 
 #include "../../compressor/follower/ps_follower.hpp"
 #include "../../chore/decibels.hpp"
+#include "../../vector/vector.hpp"
 
 namespace zldsp::filter {
     /**
@@ -33,6 +34,14 @@ namespace zldsp::filter {
         }
 
         /**
+         * reset dynamic status
+         */
+        void resetDynamic() {
+            filter_.setGain(base_gain_);
+            follower_.reset(static_cast<FloatType>(0));
+        }
+
+        /**
          * prepare the dynamic filter
          * @param sample_rate
          * @param num_channels
@@ -41,24 +50,6 @@ namespace zldsp::filter {
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) {
             filter_.prepare(sample_rate, num_channels, max_num_samples);
             follower_.prepare(sample_rate);
-        }
-
-        /**
-         * turn on/off dynamic
-         * @param dynamic_on
-         */
-        void setDynamicON(const bool dynamic_on) {
-            if (dynamic_on != dynamic_on_) {
-                dynamic_on_ = dynamic_on;
-                if (!dynamic_on_) {
-                    // if dynamic is turned off, reset filter gain to base gain
-                    filter_.setGain(base_gain_);
-                } else {
-                    // if dynamic is turned on, reset the follower
-                    follower_.reset(static_cast<FloatType>(0));
-                }
-            }
-            dynamic_on_ = dynamic_on;
         }
 
         /**
@@ -127,31 +118,52 @@ namespace zldsp::filter {
         double base_gain_{}, target_gain_{}, gain_diff_{};
 
         FloatType threshold_{}, knee_{};
-        FloatType low_{}, slope_{}, threshold_shift_{};
+        FloatType threshold_shift_{};
+        FloatType low_abs_{}, slope_abs_{};
+        FloatType low_sqr_{}, slope_sqr_{};
 
         /**
          * process the incoming audio buffer
-         * @tparam bypass
          * @param main_buffer
          * @param side_buffer
          * @param num_samples
          */
-        template<bool bypass = false>
+        template<bool bypass = false, bool dynamic_on = false, bool dynamic_bypass = false>
         void process(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
                      const size_t num_samples) {
-            if (dynamic_on_) {
+            if constexpr (dynamic_on) {
+                if constexpr (dynamic_bypass) {
+                    filter_.template setGain<true>(base_gain_);
+                    filter_.updateGain();
+                }
                 // make sure that freq & q are update to date
                 filter_.skipSmooth();
+                // calculate portion using SIMD
+                auto side_v = kfr::make_univector(side_buffer[0], num_samples);
+                if (side_buffer.size() == 1) {
+                    side_v = kfr::log10(kfr::max(kfr::abs(side_v), FloatType(1e-12)));
+                    side_v = (side_v - low_abs_) * slope_abs_;
+                } else {
+                    side_v = kfr::sqr(side_v);
+                    for (size_t chan = 0; chan < side_buffer.size(); ++chan) {
+                        side_v = side_v + kfr::sqr(kfr::make_univector(side_buffer[chan], num_samples));
+                    }
+                    side_v = kfr::log10(kfr::max(side_v, FloatType(1e-24)));
+                    side_v = (side_v - low_sqr_) * slope_sqr_;
+                }
+                side_v = kfr::clamp(side_v, FloatType(0), FloatType(1));
+                // dynamic processing
                 if (main_buffer.size() == 1) {
-                    // only one channel, we take abs
                     const auto main_pointer = main_buffer[0];
-                    const auto side_pointer = side_buffer[0];
                     for (size_t i = 0; i < num_samples; ++i) {
-                        const auto side_db = zldsp::chore::gainToDecibels(std::abs(side_pointer[i]));
-                        const auto p = std::clamp(
-                            (side_db - low_) * slope_, static_cast<FloatType>(0), static_cast<FloatType>(1));
-                        filter_.template setGain<true>(base_gain_ + follower_.processSample(p * p) * gain_diff_);
-                        filter_.updateGain();
+                        if constexpr (dynamic_bypass) {
+                            const auto p = side_v[i];
+                            follower_.processSample(p * p);
+                        } else {
+                            const auto p = side_v[i];
+                            filter_.template setGain<true>(base_gain_ + follower_.processSample(p * p) * gain_diff_);
+                            filter_.updateGain();
+                        }
                         if constexpr (bypass) {
                             filter_.processSample(0, main_pointer[i]);
                         } else {
@@ -159,18 +171,15 @@ namespace zldsp::filter {
                         }
                     }
                 } else {
-                    // multiple channels, we take root of sum square
                     for (size_t i = 0; i < num_samples; ++i) {
-                        FloatType sum_sqr = 0;
-                        for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
-                            const auto sample = side_buffer[chan][i];
-                            sum_sqr += sample * sample;
+                        if constexpr (dynamic_bypass) {
+                            const auto p = side_v[i];
+                            follower_.processSample(p * p);
+                        } else {
+                            const auto p = side_v[i];
+                            filter_.template setGain<true>(base_gain_ + follower_.processSample(p * p) * gain_diff_);
+                            filter_.updateGain();
                         }
-                        const auto side_db = zldsp::chore::squareGainToDecibels(sum_sqr);
-                        const auto p = std::clamp(
-                            (side_db - low_) * slope_, static_cast<FloatType>(0), static_cast<FloatType>(1));
-                        filter_.template setGain<true>(base_gain_ + follower_.processSample(p * p) * gain_diff_);
-                        filter_.updateGain();
                         for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
                             if constexpr (bypass) {
                                 filter_.processSample(chan, main_buffer[chan][i]);
@@ -186,8 +195,13 @@ namespace zldsp::filter {
         }
 
         void updateTK() {
-            low_ = threshold_ - knee_;
-            slope_ = static_cast<FloatType>(0.5) / knee_;
+            const auto low = threshold_ - knee_;
+            const auto slope = static_cast<FloatType>(0.5) / knee_;
+            low_abs_ = low / static_cast<FloatType>(20);
+            slope_abs_ = slope * static_cast<FloatType>(20);
+
+            low_sqr_ = low / static_cast<FloatType>(10);
+            slope_sqr_ = slope * static_cast<FloatType>(10);
         }
     };
 }

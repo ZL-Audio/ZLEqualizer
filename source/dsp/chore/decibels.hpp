@@ -25,6 +25,6 @@ namespace zldsp::chore {
 
     template<typename FloatType>
     FloatType squareGainToDecibels(const FloatType value) {
-        return FloatType(10) * std::log10(std::max(value, FloatType(1e-12)));
+        return FloatType(10) * std::log10(std::max(value, FloatType(1e-24)));
     }
 }

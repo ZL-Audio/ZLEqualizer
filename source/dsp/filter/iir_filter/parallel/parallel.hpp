@@ -58,14 +58,22 @@ namespace zldsp::filter {
         void process(std::span<FloatType *> buffer, const size_t num_samples) {
             if (this->c_freq_.isSmoothing() || this->c_gain_.isSmoothing() || this->c_q_.isSmoothing()) {
                 if (should_be_parallel_) {
-                    zldsp::vector::copy(parallel_buffers_pointers_, buffer, num_samples);
+                    parallel_buffers_pointers_.clear();
+                    for (size_t chan = 0; chan < buffer.size(); ++chan) {
+                        parallel_buffers_pointers_.emplace_back(parallel_buffers_[chan].data());
+                        zldsp::vector::copy(parallel_buffers_[chan].data(), buffer[chan], num_samples);
+                    }
                     processParallel<bypass, true>(parallel_buffers_pointers_, num_samples);
                 } else {
                     processParallel<bypass, true>(buffer, num_samples);
                 }
             } else {
                 if (should_be_parallel_) {
-                    zldsp::vector::copy(parallel_buffers_pointers_, buffer, num_samples);
+                    parallel_buffers_pointers_.clear();
+                    for (size_t chan = 0; chan < buffer.size(); ++chan) {
+                        parallel_buffers_pointers_.emplace_back(parallel_buffers_[chan].data());
+                        zldsp::vector::copy(parallel_buffers_[chan].data(), buffer[chan], num_samples);
+                    }
                     processParallel<bypass, false>(parallel_buffers_pointers_, num_samples);
                 } else {
                     processParallel<bypass, false>(buffer, num_samples);

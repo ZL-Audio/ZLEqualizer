@@ -31,11 +31,11 @@ namespace zldsp::filter {
          * @param side_buffer
          * @param num_samples
          */
-        template<bool bypass = false>
-        void processSVF(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
-                        const size_t num_samples) {
-            DynamicBase<SVF<FloatType, kFilterSize>, FloatType>::template process<bypass>(
-                main_buffer, side_buffer, num_samples);
+        template<bool bypass = false, bool dynamic_on = false, bool dynamic_bypass = false>
+        void processDynamic(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
+                            const size_t num_samples) {
+            DynamicBase<SVF<FloatType, kFilterSize>, FloatType>::template process<
+                bypass, dynamic_on, dynamic_bypass>(main_buffer, side_buffer, num_samples);
         }
     };
 }
