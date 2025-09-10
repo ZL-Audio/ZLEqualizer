@@ -72,7 +72,7 @@ namespace zldsp::oversample::halfband_coeff {
             case k64_10_100:
                 return kCoeff_64_10_100<FloatType>;
             case k32_22_100:
-                default:
+            default:
                 return kCoeff_32_22_100<FloatType>;
         }
     }
