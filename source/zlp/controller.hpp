@@ -60,6 +60,7 @@ namespace zlp {
         }
 
     private:
+        // juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
         juce::AudioProcessor &p_ref_;
         // filter structure
         std::atomic<FilterStructure> filter_structure_{};

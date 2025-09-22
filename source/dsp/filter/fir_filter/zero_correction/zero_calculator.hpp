@@ -12,9 +12,11 @@
 #include "../calculator_base.hpp"
 
 namespace zldsp::filter {
-    template<size_t kFilterNum, size_t kFilterSize>
+    template <size_t kFilterNum, size_t kFilterSize>
     class ZeroCalculator final : public CorrectionCalculator<kFilterNum, kFilterSize> {
     public:
+        static constexpr size_t kStartDecayIdx = 128;
+
         ZeroCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
         }
 
@@ -23,16 +25,21 @@ namespace zldsp::filter {
         }
 
         void updateCorrection(const size_t idx) override {
-            auto &proto_res{CorrectionCalculator<kFilterNum, kFilterSize>::proto_res_};
-            auto &biquad_res{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_res_};
-            auto &correction{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_[idx]};
+            auto& proto_res{CorrectionCalculator<kFilterNum, kFilterSize>::proto_res_};
+            auto& biquad_res{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_res_};
+            auto& correction{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_[idx]};
 
-            for (size_t w_idx = 1; w_idx < correction.size(); ++w_idx) {
+            for (size_t w_idx = 1; w_idx < kStartDecayIdx; ++w_idx) {
+                auto biquad = biquad_res[w_idx];
+                correction[w_idx] *= std::polar(1.f, -std::arg(biquad));
+            }
+            for (size_t w_idx = kStartDecayIdx; w_idx < correction.size(); ++w_idx) {
                 auto proto = proto_res[w_idx];
                 auto biquad = biquad_res[w_idx];
                 if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
                     // ill condition, keep correction the same
-                } else {
+                }
+                else {
                     // normal condition
                     correction[w_idx] *= std::complex(std::abs(proto), 0.f) / biquad;
                 }
@@ -43,6 +50,7 @@ namespace zldsp::filter {
                     correction[w_idx] *= 100.f / std::abs(correction[w_idx]);
                 }
             }
+            correction[0] = correction[1];
         }
     };
 }

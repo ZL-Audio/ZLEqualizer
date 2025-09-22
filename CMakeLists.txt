@@ -44,9 +44,10 @@ endif ()
 
 if (NOT DEFINED ZL_EQ_BAND_NUM)
     message(STATUS "Compiling with default band number: 24")
-    set(ZL_EQ_BAND_NUM 24)
+    add_definitions(-DZL_EQ_BAND_NUM=24)
 else ()
     message(STATUS "Compiling with custom band number: ${ZL_EQ_BAND_NUM}")
+    add_definitions(-DZL_EQ_BAND_NUM=${ZL_EQ_BAND_NUM})
 endif ()
 
 if (DEFINED ZL_JUCE_FORMATS)

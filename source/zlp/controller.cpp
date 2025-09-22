@@ -113,6 +113,8 @@ namespace zlp {
                     not_off_total_.emplace_back(i);
                 }
             }
+            to_update_lrms_.store(true, std::memory_order::release);
+            // logger.logMessage(std::to_string(c_filter_status_[0]));
         }
     }
 
@@ -230,11 +232,11 @@ namespace zlp {
             unit_latency = zero_corrections_[0].getLatency();
         }
         // calculate total latency and update
-        int new_latency = 2 * unit_latency;
-        if (correction_on_indices_[0].empty() && correction_on_indices_[1].empty()) {
-            new_latency -= unit_latency;
-        } else if (correction_on_indices_[2].empty() && correction_on_indices_[3].empty()) {
-            new_latency -= unit_latency;
+        int new_latency = 0;
+        if (is_lr_on_) {
+            new_latency += unit_latency;
+        } else if (is_ms_on_) {
+            new_latency += unit_latency;
         }
         if (latency.exchange(new_latency, std::memory_order::relaxed) != new_latency) {
             triggerAsyncUpdate();
@@ -243,6 +245,12 @@ namespace zlp {
     }
 
     void Controller::prepareCorrection() {
+        for (const auto &idx : correction_on_total_) {
+            if (res_update_flags_[idx]) {
+                res_tdfs_[idx].forceUpdate(filter_paras_[idx]);
+                res_ideals_[idx].forceUpdate(filter_paras_[idx]);
+            }
+        }
         switch (c_filter_structure_) {
             case kMatched: {
                 match_calculator_.update(res_tdfs_, res_ideals_, correction_on_total_, res_update_flags_);
@@ -265,8 +273,14 @@ namespace zlp {
         for (size_t lr = 0; lr < 4; ++lr) {
             for (const size_t &i: correction_on_indices_[lr]) {
                 if (res_update_flags_[i]) {
-                    res_update_flags_[i] = false;
                     to_update_correction_[lr] = true;
+                }
+            }
+        }
+        for (size_t lr = 0; lr < 4; ++lr) {
+            for (const size_t &i: correction_on_indices_[lr]) {
+                if (res_update_flags_[i]) {
+                    res_update_flags_[i] = false;
                 }
             }
         }

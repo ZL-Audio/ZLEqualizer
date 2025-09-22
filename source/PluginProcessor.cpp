@@ -13,9 +13,9 @@
 //==============================================================================
 PluginProcessor::PluginProcessor()
     : AudioProcessor(BusesProperties()
-          .withInput("Input", juce::AudioChannelSet::stereo(), true)
-          .withInput("Aux", juce::AudioChannelSet::stereo(), true)
-          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+                     .withInput("Input", juce::AudioChannelSet::stereo(), true)
+                     .withInput("Aux", juce::AudioChannelSet::stereo(), true)
+                     .withOutput("Output", juce::AudioChannelSet::stereo(), true)
       ),
       dummy_processor_(),
       parameters_(*this, nullptr,
@@ -29,8 +29,13 @@ PluginProcessor::PluginProcessor()
              zlstate::getStateParameterLayout()),
       property_(state_),
       controller_(*this),
+      chore_attachment_(*this, parameters_, controller_),
       ext_side_(*parameters_.getRawParameterValue(zlp::PExtSide::kID)),
       bypass_(*parameters_.getRawParameterValue(zlp::PBypass::kID)) {
+    for (size_t i = 0; i < zlp::kBandNum; ++i) {
+        filter_attachments_[i] = std::make_unique<zlp::FilterAttach>(
+            *this, parameters_, controller_, i);
+    }
 }
 
 PluginProcessor::~PluginProcessor() = default;
@@ -86,7 +91,7 @@ const juce::String PluginProcessor::getProgramName(int index) {
     return {};
 }
 
-void PluginProcessor::changeProgramName(int, const juce::String &) {
+void PluginProcessor::changeProgramName(int, const juce::String&) {
 }
 
 //==============================================================================
@@ -98,8 +103,8 @@ void PluginProcessor::prepareToPlay(const double sample_rate, const int samples_
         side_pointers_[i] = side_buffer_[i].data();
     }
     // determine current channel layout
-    const auto *main_bus = getBus(true, 0);
-    const auto *aux_bus = getBus(true, 1);
+    const auto* main_bus = getBus(true, 0);
+    const auto* aux_bus = getBus(true, 1);
     channel_layout_ = ChannelLayout::kInvalid;
     if (main_bus == nullptr) {
         return;
@@ -107,17 +112,22 @@ void PluginProcessor::prepareToPlay(const double sample_rate, const int samples_
     if (main_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
         if (aux_bus == nullptr || !aux_bus->isEnabled()) {
             channel_layout_ = ChannelLayout::kMain1Aux0;
-        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
+        }
+        else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
             channel_layout_ = ChannelLayout::kMain1Aux1;
-        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+        }
+        else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
             channel_layout_ = ChannelLayout::kMain1Aux2;
         }
-    } else if (main_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+    }
+    else if (main_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
         if (aux_bus == nullptr || !aux_bus->isEnabled()) {
             channel_layout_ = ChannelLayout::kMain2Aux0;
-        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
+        }
+        else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
             channel_layout_ = ChannelLayout::kMain2Aux1;
-        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+        }
+        else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
             channel_layout_ = ChannelLayout::kMain2Aux2;
         }
     }
@@ -127,215 +137,225 @@ void PluginProcessor::prepareToPlay(const double sample_rate, const int samples_
 void PluginProcessor::releaseResources() {
 }
 
-bool PluginProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
+bool PluginProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
     if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::stereo() &&
         layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo() &&
         (layouts.getChannelSet(true, 1).isDisabled() ||
-         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono() ||
-         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::stereo())) {
+            layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono() ||
+            layouts.getChannelSet(true, 1) == juce::AudioChannelSet::stereo())) {
         return true;
     }
     if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::mono() &&
         layouts.getMainOutputChannelSet() == juce::AudioChannelSet::mono() &&
         (layouts.getChannelSet(true, 1).isDisabled() ||
-         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono() ||
-         layouts.getChannelSet(true, 1) == juce::AudioChannelSet::stereo())) {
+            layouts.getChannelSet(true, 1) == juce::AudioChannelSet::mono() ||
+            layouts.getChannelSet(true, 1) == juce::AudioChannelSet::stereo())) {
         return true;
     }
     return false;
 }
 
-void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &) {
+void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&) {
     if (bypass_.load(std::memory_order::relaxed) > .5f) {
         processBlockInternal<true>(buffer);
-    } else {
+    }
+    else {
         processBlockInternal<false>(buffer);
     }
 }
 
-void PluginProcessor::processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &) {
+void PluginProcessor::processBlock(juce::AudioBuffer<double>& buffer, juce::MidiBuffer&) {
     if (bypass_.load(std::memory_order::relaxed) > .5f) {
         processBlockInternal<true>(buffer);
-    } else {
+    }
+    else {
         processBlockInternal<false>(buffer);
     }
 }
 
-void PluginProcessor::processBlockBypassed(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &) {
+void PluginProcessor::processBlockBypassed(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&) {
     processBlockInternal<true>(buffer);
 }
 
-void PluginProcessor::processBlockBypassed(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &) {
+void PluginProcessor::processBlockBypassed(juce::AudioBuffer<double>& buffer, juce::MidiBuffer&) {
     processBlockInternal<true>(buffer);
 }
 
-template<bool IsBypassed>
-void PluginProcessor::processBlockInternal(juce::AudioBuffer<float> &buffer) {
+template <bool bypass>
+void PluginProcessor::processBlockInternal(juce::AudioBuffer<float>& buffer) {
     juce::ScopedNoDenormals no_denormals;
     if (buffer.getNumSamples() == 0) return; // ignore empty blocks
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;
     const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
     switch (channel_layout_) {
-        case kMain1Aux0: {
-            zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
-            zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
+    case kMain1Aux0: {
+        zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
+        zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
+        zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
+        zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
+        break;
+    }
+    case kMain1Aux1: {
+        zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
+        zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
+        if (c_ext_side) {
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(1), num_samples);
+        }
+        else {
             zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-            zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
-            break;
         }
-        case kMain1Aux1: {
-            zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
-            zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
-            if (c_ext_side) {
-                zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(1), num_samples);
-            } else {
-                zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-            }
-            zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
-            break;
+        zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
+        break;
+    }
+    case kMain1Aux2: {
+        zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
+        zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
+        if (c_ext_side) {
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(1), num_samples);
+            zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(2), num_samples);
         }
-        case kMain1Aux2: {
-            zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
-            zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
-            if (c_ext_side) {
-                zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(1), num_samples);
-                zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(2), num_samples);
-            } else {
-                zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-                zldsp::vector::copy(side_pointers_[1], main_pointers_[0], num_samples);
-            }
+        else {
+            zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
+            zldsp::vector::copy(side_pointers_[1], main_pointers_[0], num_samples);
+        }
 
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
-            break;
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
+        break;
+    }
+    case kMain2Aux0: {
+        zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
+        zldsp::vector::copy(main_pointers_[1], buffer.getReadPointer(1), num_samples);
+        zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
+        zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(1), main_pointers_[1], num_samples);
+        break;
+    }
+    case kMain2Aux1: {
+        zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
+        zldsp::vector::copy(main_pointers_[1], buffer.getReadPointer(1), num_samples);
+        if (c_ext_side) {
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
+            zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(2), num_samples);
         }
-        case kMain2Aux0: {
-            zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
-            zldsp::vector::copy(main_pointers_[1], buffer.getReadPointer(1), num_samples);
+        else {
             zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
             zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(1), main_pointers_[1], num_samples);
-            break;
         }
-        case kMain2Aux1: {
-            zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
-            zldsp::vector::copy(main_pointers_[1], buffer.getReadPointer(1), num_samples);
-            if (c_ext_side) {
-                zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
-                zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(2), num_samples);
-            } else {
-                zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-                zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
-            }
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(1), main_pointers_[1], num_samples);
-            break;
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(1), main_pointers_[1], num_samples);
+        break;
+    }
+    case kMain2Aux2: {
+        zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
+        zldsp::vector::copy(main_pointers_[1], buffer.getReadPointer(1), num_samples);
+        if (c_ext_side) {
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
+            zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(3), num_samples);
         }
-        case kMain2Aux2: {
-            zldsp::vector::copy(main_pointers_[0], buffer.getReadPointer(0), num_samples);
-            zldsp::vector::copy(main_pointers_[1], buffer.getReadPointer(1), num_samples);
-            if (c_ext_side) {
-                zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
-                zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(3), num_samples);
-            } else {
-                zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-                zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
-            }
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
-            zldsp::vector::copy(buffer.getWritePointer(1), main_pointers_[1], num_samples);
-            break;
+        else {
+            zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
+            zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
         }
-        case kInvalid: {
-            return;
-        }
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(0), main_pointers_[0], num_samples);
+        zldsp::vector::copy(buffer.getWritePointer(1), main_pointers_[1], num_samples);
+        break;
+    }
+    case kInvalid: {
+        return;
+    }
     }
 }
 
-template<bool IsBypassed>
-void PluginProcessor::processBlockInternal(juce::AudioBuffer<double> &buffer) {
+template <bool bypass>
+void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
     juce::ScopedNoDenormals no_denormals;
     if (buffer.getNumSamples() == 0) return; // ignore empty blocks
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;
     const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
     switch (channel_layout_) {
-        case kMain1Aux0: {
-            main_pointers_[0] = buffer.getWritePointer(0);
-            zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
+    case kMain1Aux0: {
+        main_pointers_[0] = buffer.getWritePointer(0);
+        zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
+        zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
+        zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        break;
+    }
+    case kMain1Aux1: {
+        main_pointers_[0] = buffer.getWritePointer(0);
+        zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
+        if (c_ext_side) {
+            side_pointers_[0] = buffer.getWritePointer(1);
+        }
+        else {
+            zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
+        }
+        zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        break;
+    }
+    case kMain1Aux2: {
+        main_pointers_[0] = buffer.getWritePointer(0);
+        zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
+        if (c_ext_side) {
+            side_pointers_[0] = buffer.getWritePointer(1);
+            side_pointers_[1] = buffer.getWritePointer(2);
+        }
+        else {
             zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
             zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            break;
         }
-        case kMain1Aux1: {
-            main_pointers_[0] = buffer.getWritePointer(0);
-            zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
-            if (c_ext_side) {
-                side_pointers_[0] = buffer.getWritePointer(1);
-            } else {
-                zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-            }
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        break;
+    }
+    case kMain2Aux0: {
+        main_pointers_[0] = buffer.getWritePointer(0);
+        main_pointers_[1] = buffer.getWritePointer(1);
+        zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
+        zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        break;
+    }
+    case kMain2Aux1: {
+        main_pointers_[0] = buffer.getWritePointer(0);
+        main_pointers_[1] = buffer.getWritePointer(1);
+        if (c_ext_side) {
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
             zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            break;
         }
-        case kMain1Aux2: {
-            main_pointers_[0] = buffer.getWritePointer(0);
-            zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
-            if (c_ext_side) {
-                side_pointers_[0] = buffer.getWritePointer(1);
-                side_pointers_[1] = buffer.getWritePointer(2);
-            } else {
-                zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-                zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
-            }
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            break;
-        }
-        case kMain2Aux0: {
-            main_pointers_[0] = buffer.getWritePointer(0);
-            main_pointers_[1] = buffer.getWritePointer(1);
+        else {
             zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
             zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            break;
         }
-        case kMain2Aux1: {
-            main_pointers_[0] = buffer.getWritePointer(0);
-            main_pointers_[1] = buffer.getWritePointer(1);
-            if (c_ext_side) {
-                zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
-                zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
-            } else {
-                zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-                zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
-            }
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            break;
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        break;
+    }
+    case kMain2Aux2: {
+        main_pointers_[0] = buffer.getWritePointer(0);
+        main_pointers_[1] = buffer.getWritePointer(1);
+        if (c_ext_side) {
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
+            zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(3), num_samples);
         }
-        case kMain2Aux2: {
-            main_pointers_[0] = buffer.getWritePointer(0);
-            main_pointers_[1] = buffer.getWritePointer(1);
-            if (c_ext_side) {
-                zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
-                zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(3), num_samples);
-            } else {
-                zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
-                zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
-            }
-            controller_.template process<IsBypassed>(main_pointers_, side_pointers_, num_samples);
-            break;
+        else {
+            zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
+            zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
         }
-        case kInvalid: {
-            return;
-        }
+        controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
+        break;
+    }
+    case kInvalid: {
+        return;
+    }
     }
 }
 
@@ -343,11 +363,12 @@ bool PluginProcessor::hasEditor() const {
     return true;
 }
 
-juce::AudioProcessorEditor *PluginProcessor::createEditor() {
-    return new PluginEditor(*this);
+juce::AudioProcessorEditor* PluginProcessor::createEditor() {
+    // return new PluginEditor(*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
-void PluginProcessor::getStateInformation(juce::MemoryBlock &dest_data) {
+void PluginProcessor::getStateInformation(juce::MemoryBlock& dest_data) {
     auto temp_tree = juce::ValueTree("ZLCompressorParaState");
     temp_tree.appendChild(parameters_.copyState(), nullptr);
     temp_tree.appendChild(na_parameters_.copyState(), nullptr);
@@ -355,7 +376,7 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock &dest_data) {
     copyXmlToBinary(*xml, dest_data);
 }
 
-void PluginProcessor::setStateInformation(const void *data, int size_in_bytes) {
+void PluginProcessor::setStateInformation(const void* data, int size_in_bytes) {
     std::unique_ptr<juce::XmlElement> xml_state(getXmlFromBinary(data, size_in_bytes));
     if (xml_state != nullptr && xml_state->hasTagName("ZLCompressorParaState")) {
         const auto temp_tree = juce::ValueTree::fromXml(*xml_state);
@@ -364,7 +385,7 @@ void PluginProcessor::setStateInformation(const void *data, int size_in_bytes) {
     }
 }
 
-juce::AudioProcessor *JUCE_CALLTYPE
+juce::AudioProcessor*JUCE_CALLTYPE
 
 createPluginFilter() {
     return new PluginProcessor();

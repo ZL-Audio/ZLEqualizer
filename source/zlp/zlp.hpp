@@ -11,3 +11,5 @@
 
 #include "zlp_definitions.hpp"
 #include "controller.hpp"
+#include "filter_attach.hpp"
+#include "chore_attach.hpp"

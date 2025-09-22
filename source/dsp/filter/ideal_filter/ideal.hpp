@@ -42,7 +42,7 @@ namespace zldsp::filter {
             c_freq_ = freq;
         }
 
-        double getFreq() const {
+        [[nodiscard]] double getFreq() const {
             return c_freq_;
         }
 
@@ -50,7 +50,7 @@ namespace zldsp::filter {
             c_gain_ = gain;
         }
 
-        double getGain() const {
+        [[nodiscard]] double getGain() const {
             return c_gain_;
         }
 
@@ -58,7 +58,7 @@ namespace zldsp::filter {
             c_q_ = q;
         }
 
-        double getQ() const {
+        [[nodiscard]] double getQ() const {
             return c_q_;
         }
 
@@ -66,7 +66,7 @@ namespace zldsp::filter {
             c_filter_type_ = filter_type;
         }
 
-        FilterType getFilterType() const {
+        [[nodiscard]] FilterType getFilterType() const {
             return c_filter_type_;
         }
 
@@ -74,7 +74,7 @@ namespace zldsp::filter {
             c_order_ = order;
         }
 
-        size_t getOrder() const {
+        [[nodiscard]] size_t getOrder() const {
             return c_order_;
         }
 

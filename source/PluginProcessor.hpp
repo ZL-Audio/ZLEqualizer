@@ -78,6 +78,8 @@ private:
     std::array<std::vector<double>, 2> main_buffer_, side_buffer_;
     std::array<double *, 2> main_pointers_{}, side_pointers_{};
     zlp::Controller controller_;
+    std::array<std::unique_ptr<zlp::FilterAttach>, zlp::kBandNum> filter_attachments_;
+    zlp::ChoreAttach chore_attachment_;
 
     enum ChannelLayout {
         kMain1Aux0, kMain1Aux1, kMain1Aux2,
@@ -90,9 +92,9 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 
-    template<bool IsBypassed = false>
+    template<bool bypass = false>
     void processBlockInternal(juce::AudioBuffer<float> &buffer);
 
-    template<bool IsBypassed = false>
+    template<bool bypass = false>
     void processBlockInternal(juce::AudioBuffer<double> &buffer);
 };

@@ -10,6 +10,7 @@
 #pragma once
 
 #include "fir_base.hpp"
+#include <iostream>
 
 namespace zldsp::filter {
     template<typename FloatType, size_t kDefaultFFTOrder, size_t kStartIdx>
