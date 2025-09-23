@@ -115,14 +115,32 @@ namespace zlp {
         std::array<zldsp::filter::Ideal<float, kFilterSize>, kBandNum> res_ideals_{};
         std::array<zldsp::filter::TDF<float, kFilterSize>, kBandNum> res_tdfs_{};
         // match correction
+        zldsp::fft::KFREngine<float> match_fft_;
         zldsp::filter::MatchCalculator<kBandNum, kFilterSize> match_calculator_;
-        std::array<zldsp::filter::MatchCorrection<double>, 4> match_corrections_{};
+        std::array<zldsp::filter::MatchCorrection<double>, 4> match_corrections_{
+            zldsp::filter::MatchCorrection<double>(match_fft_),
+            zldsp::filter::MatchCorrection<double>(match_fft_),
+            zldsp::filter::MatchCorrection<double>(match_fft_),
+            zldsp::filter::MatchCorrection<double>(match_fft_),
+        };
         // mixed correction
+        zldsp::fft::KFREngine<float> mixed_fft_;
         zldsp::filter::MixedCalculator<kBandNum, kFilterSize> mixed_calculator_;
-        std::array<zldsp::filter::MixedCorrection<double>, 4> mixed_corrections_{};
+        std::array<zldsp::filter::MixedCorrection<double>, 4> mixed_corrections_{
+            zldsp::filter::MixedCorrection<double>(mixed_fft_),
+            zldsp::filter::MixedCorrection<double>(mixed_fft_),
+            zldsp::filter::MixedCorrection<double>(mixed_fft_),
+            zldsp::filter::MixedCorrection<double>(mixed_fft_)
+        };
         // linear phase (zero phase) correction
+        zldsp::fft::KFREngine<float> zero_fft_;
         zldsp::filter::ZeroCalculator<kBandNum, kFilterSize> zero_calculator_;
-        std::array<zldsp::filter::ZeroCorrection<double>, 4> zero_corrections_{};
+        std::array<zldsp::filter::ZeroCorrection<double>, 4> zero_corrections_{
+            zldsp::filter::ZeroCorrection<double>(zero_fft_),
+            zldsp::filter::ZeroCorrection<double>(zero_fft_),
+            zldsp::filter::ZeroCorrection<double>(zero_fft_),
+            zldsp::filter::ZeroCorrection<double>(zero_fft_)
+        };
 
         // array to hold dynamic gains
         std::array<std::atomic<double>, kBandNum> dynamic_gain_display_{};

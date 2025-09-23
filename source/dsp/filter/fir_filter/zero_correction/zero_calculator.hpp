@@ -15,12 +15,25 @@ namespace zldsp::filter {
     template <size_t kFilterNum, size_t kFilterSize>
     class ZeroCalculator final : public CorrectionCalculator<kFilterNum, kFilterSize> {
     public:
-        static constexpr size_t kStartDecayIdx = 128;
+        static constexpr size_t kStartDecayIdx = 1, kEndDecayIdx = 32;
 
         ZeroCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
+            decays_.resize(kEndDecayIdx);
+            const auto k1 = std::log(static_cast<float>(kStartDecayIdx));
+            const auto k2 = std::log(static_cast<float>(kEndDecayIdx));
+            const auto k3 = 1.f / (k2 - k1);
+            for (size_t i = 0; i < kStartDecayIdx; ++i) {
+                decays_[i] = 0.f;
+            }
+            for (size_t i = kStartDecayIdx; i < kEndDecayIdx; ++i) {
+                const auto t = std::clamp((std::log(static_cast<float>(i)) - k1) * k3, 0.f, 1.f);
+                decays_[i] = t * t * (3.f - 2.f * t);
+            }
         }
 
     private:
+        std::vector<float> decays_{};
+
         void prepareCorrection(const size_t) override {
         }
 
@@ -29,11 +42,11 @@ namespace zldsp::filter {
             auto& biquad_res{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_res_};
             auto& correction{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_[idx]};
 
-            for (size_t w_idx = 1; w_idx < kStartDecayIdx; ++w_idx) {
+            for (size_t w_idx = kStartDecayIdx; w_idx < kEndDecayIdx; ++w_idx) {
                 auto biquad = biquad_res[w_idx];
-                correction[w_idx] *= std::polar(1.f, -std::arg(biquad));
+                correction[w_idx] *= std::polar(1.f, -std::arg(biquad) * decays_[w_idx]);
             }
-            for (size_t w_idx = kStartDecayIdx; w_idx < correction.size(); ++w_idx) {
+            for (size_t w_idx = kEndDecayIdx; w_idx < correction.size(); ++w_idx) {
                 auto proto = proto_res[w_idx];
                 auto biquad = biquad_res[w_idx];
                 if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {

@@ -78,7 +78,7 @@ namespace zlp {
             c_filter_structure_ = filter_structure_.load(std::memory_order::relaxed);
             c_correction_enabled_ = (c_filter_structure_ == kMatched)
                                     || (c_filter_structure_ == kMixed)
-                                    || (c_filter_structure_ == kLinear);
+                                    || (c_filter_structure_ == kZero);
             if (c_correction_enabled_) {
                 // not zero latency, calculate latency later with LRMS info
                 to_update_correction_indices_ = true;
@@ -228,7 +228,7 @@ namespace zlp {
             unit_latency = match_corrections_[0].getLatency();
         } else if (c_filter_structure_ == kMixed) {
             unit_latency = mixed_corrections_[0].getLatency();
-        } else if (c_filter_structure_ == kLinear) {
+        } else if (c_filter_structure_ == kZero) {
             unit_latency = zero_corrections_[0].getLatency();
         }
         // calculate total latency and update
@@ -260,7 +260,7 @@ namespace zlp {
                 mixed_calculator_.update(res_tdfs_, res_ideals_, correction_on_total_, res_update_flags_);
                 break;
             }
-            case kLinear: {
+            case kZero: {
                 zero_calculator_.update(res_tdfs_, res_ideals_, correction_on_total_, res_update_flags_);
                 break;
             }
@@ -298,7 +298,7 @@ namespace zlp {
                                                                 correction_on_indices_[lr + 1]);
                         break;
                     }
-                    case kLinear: {
+                    case kZero: {
                         zero_corrections_[lr].updateCorrection(zero_calculator_.getCorrections(),
                                                                correction_on_indices_[lr + 1]);
                         break;
@@ -330,7 +330,7 @@ namespace zlp {
             case kMinimum:
             case kMatched:
             case kMixed:
-            case kLinear: {
+            case kZero: {
                 processDynamic(tdf_filters_, main_pointers, side_pointers, num_samples);
                 break;
             }
@@ -359,7 +359,7 @@ namespace zlp {
                 processCorrections<bypass>(mixed_corrections_, main_pointers, num_samples);
                 break;
             }
-            case kLinear: {
+            case kZero: {
                 processCorrections<bypass>(zero_corrections_, main_pointers, num_samples);
                 break;
             }

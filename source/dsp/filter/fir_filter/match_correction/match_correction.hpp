@@ -13,5 +13,5 @@
 
 namespace zldsp::filter {
     template<typename FloatType>
-    using MatchCorrection = CorrectionBase<FloatType, 9, 16>;
+    using MatchCorrection = CorrectionBase<FloatType, 9, 2>;
 }

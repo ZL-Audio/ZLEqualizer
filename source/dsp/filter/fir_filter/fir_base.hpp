@@ -16,6 +16,9 @@ namespace zldsp::filter {
     template<typename FloatType, size_t kDefaultFFTOrder>
     class FIRBase {
     public:
+        explicit FIRBase(zldsp::fft::KFREngine<float> &fft) : fft_(fft) {
+        }
+
         virtual ~FIRBase() = default;
 
         void prepare(const double sample_rate, const size_t num_channels) {
@@ -71,7 +74,7 @@ namespace zldsp::filter {
         [[nodiscard]] size_t getNumBin() const { return num_bin_; }
 
     protected:
-        zldsp::fft::KFREngine<float> fft_;
+        zldsp::fft::KFREngine<float> &fft_;
         kfr::univector<float> window1_, window2_;
 
         size_t fft_order_ = kDefaultFFTOrder;

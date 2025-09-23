@@ -9,14 +9,14 @@
 
 #pragma once
 
+#include "../../fft/kfr_engine.hpp"
 #include "fir_base.hpp"
-#include <iostream>
 
 namespace zldsp::filter {
     template<typename FloatType, size_t kDefaultFFTOrder, size_t kStartIdx>
     class CorrectionBase final : public FIRBase<FloatType, kDefaultFFTOrder> {
     public:
-        CorrectionBase() : FIRBase<FloatType, kDefaultFFTOrder>() {
+        explicit CorrectionBase(zldsp::fft::KFREngine<float> &fft) : FIRBase<FloatType, kDefaultFFTOrder>(fft) {
         }
 
         void updateCorrection(std::span<kfr::univector<std::complex<float> > > corrections,
@@ -42,14 +42,49 @@ namespace zldsp::filter {
                     }
                 }
             }
+            // apply the window
+            std::copy(total_correction_.begin(), total_correction_.end(), dummy_correction_.begin());
+            dummy_correction_[0] = std::complex(dummy_correction_[0].real(), 0.f);
+            const auto nyquist_idx = dummy_correction_.size() / 2;
+            dummy_correction_[nyquist_idx] = std::complex(dummy_correction_[nyquist_idx].real(), 0.f);
+            for (size_t i = 1; i < nyquist_idx; ++i) {
+                dummy_correction_[dummy_correction_.size() - i] = std::conj(dummy_correction_[i]);
+            }
+            FIRBase<FloatType, kDefaultFFTOrder>::fft_.backward(dummy_correction_.data(), fir_coeffs_.data());
+
+            std::rotate(fir_coeffs_.begin(),
+                fir_coeffs_.begin() + static_cast<std::ptrdiff_t>(fir_coeffs_.size() / 2),
+                fir_coeffs_.end());
+
+            for (size_t i = 0; i < fir_coeffs_.size(); ++i) {
+                const auto p = static_cast<double>(i) / static_cast<double>(fir_coeffs_.size() - 1);
+                const auto window = 0.5 * (1.0 - std::cos(2.0 * std::numbers::pi * p)) / static_cast<double>(fir_coeffs_.size());
+                fir_coeffs_[i] *= static_cast<float>(window);
+            }
+            FIRBase<FloatType, kDefaultFFTOrder>::fft_.forward(fir_coeffs_.data(), dummy_correction_.data());
+
+            std::copy(dummy_correction_.begin(),
+                dummy_correction_.begin() + static_cast<ptrdiff_t>(total_correction_.size()),
+                total_correction_.begin());
+            for (size_t i = 0; i < total_correction_.size(); ++i) {
+                if (i % 2 == 1) {
+                    total_correction_[i] = -total_correction_[i];
+                }
+            }
+            total_correction_.back() = std::complex(std::abs(total_correction_[total_correction_.size() - 2]), 0.f);
         }
 
     private:
         kfr::univector<std::complex<float> > total_correction_{};
         size_t multiplication_size_{};
 
+        kfr::univector<std::complex<float> > dummy_correction_{};
+        kfr::univector<float> fir_coeffs_{};
+
         void setOrder(size_t num_channels, size_t order) override {
             FIRBase<FloatType, kDefaultFFTOrder>::setFFTOrder(num_channels, order);
+            fir_coeffs_.resize(FIRBase<FloatType, kDefaultFFTOrder>::fft_size_);
+            dummy_correction_.resize(FIRBase<FloatType, kDefaultFFTOrder>::fft_size_);
 
             total_correction_.resize(FIRBase<FloatType, kDefaultFFTOrder>::num_bin_);
             std::fill(total_correction_.begin(), total_correction_.end(), std::complex(1.f, 0.f));
@@ -59,14 +94,12 @@ namespace zldsp::filter {
         }
 
         void processSpectrum() override {
+            auto *cdata = reinterpret_cast<std::complex<float> *>(
+                FIRBase<FloatType, kDefaultFFTOrder>::fft_data_.data());
             if constexpr (kStartIdx == 0) {
-                auto *cdata = reinterpret_cast<std::complex<float> *>(
-                    FIRBase<FloatType, kDefaultFFTOrder>::fft_data_.data());
                 auto c_vector = kfr::make_univector(cdata, total_correction_.size());
                 c_vector = c_vector * total_correction_;
             } else {
-                auto *cdata = reinterpret_cast<std::complex<float> *>(
-                    FIRBase<FloatType, kDefaultFFTOrder>::fft_data_.data());
                 auto c_vector = kfr::make_univector(cdata + kStartIdx, multiplication_size_);
                 auto m_vector = kfr::make_univector(total_correction_.data() + kStartIdx, multiplication_size_);
                 c_vector = c_vector * m_vector;

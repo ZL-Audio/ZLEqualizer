@@ -15,7 +15,7 @@ namespace zldsp::filter {
     template<size_t kFilterNum, size_t kFilterSize>
     class MixedCalculator final : public CorrectionCalculator<kFilterNum, kFilterSize> {
     public:
-        static constexpr size_t kStartDecayIdx = 16, kEndDecayIdx = 256;
+        static constexpr size_t kStartDecayIdx = 16, kEndDecayIdx = 128;
 
         MixedCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
             decays_.resize(kEndDecayIdx);
@@ -26,7 +26,8 @@ namespace zldsp::filter {
                 decays_[i] = 0.f;
             }
             for (size_t i = kStartDecayIdx; i < kEndDecayIdx; ++i) {
-                decays_[i] = std::clamp((std::log(static_cast<float>(i)) - k1) * k3, 0.f, 1.f);
+                const auto t = std::clamp((std::log(static_cast<float>(i)) - k1) * k3, 0.f, 1.f);
+                decays_[i] = t * t * (3.f - 2.f * t);
             }
         }
 

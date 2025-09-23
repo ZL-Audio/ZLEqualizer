@@ -27,7 +27,7 @@ namespace zlp {
     };
 
     enum FilterStructure {
-        kMinimum, kSVF, kParallel, kMatched, kMixed, kLinear
+        kMinimum, kSVF, kParallel, kMatched, kMixed, kZero
     };
 
     template<typename FloatType>
@@ -225,7 +225,7 @@ namespace zlp {
         auto static constexpr kName = "Filter Structure";
         inline auto static const kChoices = juce::StringArray{
             "Minimum Phase", "State Variable", "Parallel",
-            "Matched Phase", "Mixed Phase", "Linear Phase"
+            "Matched Phase", "Mixed Phase", "Zero Phase"
         };
         int static constexpr kDefaultI = 0;
     };
