@@ -21,7 +21,7 @@ namespace zlstate {
 #endif
 
     // float
-    template<class T>
+    template <class T>
     class FloatParameters {
     public:
         static std::unique_ptr<juce::AudioParameterFloat> get(const bool automate = true) {
@@ -30,16 +30,16 @@ namespace zlstate {
                                                                T::kName, T::kRange, T::kDefaultV, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterFloat> get(const std::string &suffix, const bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterFloat> get(const std::string& suffix, const bool automate = true) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::kName);
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                                T::kName + suffix, T::kRange, T::kDefaultV, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterFloat> get(const std::string &suffix, const bool meta,
+        static std::unique_ptr<juce::AudioParameterFloat> get(const std::string& suffix, const bool meta,
                                                               const bool automate = true) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::kName).
-                    withMeta(meta);
+                                                                    withMeta(meta);
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                                T::kName + suffix, T::kRange, T::kDefaultV, attributes);
         }
@@ -50,7 +50,7 @@ namespace zlstate {
     };
 
     // bool
-    template<class T>
+    template <class T>
     class BoolParameters {
     public:
         static std::unique_ptr<juce::AudioParameterBool> get(bool automate = true) {
@@ -59,16 +59,16 @@ namespace zlstate {
                                                               T::kName, T::kDefaultV, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterBool> get(const std::string &suffix, bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterBool> get(const std::string& suffix, bool automate = true) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::kName);
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                               T::kName + suffix, T::kDefaultV, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterBool> get(const std::string &suffix, const bool meta,
+        static std::unique_ptr<juce::AudioParameterBool> get(const std::string& suffix, const bool meta,
                                                              const bool automate = true) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::kName).
-                    withMeta(meta);
+                                                                   withMeta(meta);
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                               T::kName + suffix, T::kDefaultV, attributes);
         }
@@ -79,7 +79,7 @@ namespace zlstate {
     };
 
     // choice
-    template<class T>
+    template <class T>
     class ChoiceParameters {
     public:
         static std::unique_ptr<juce::AudioParameterChoice> get(const bool automate = true) {
@@ -88,17 +88,17 @@ namespace zlstate {
                                                                 T::kName, T::kChoices, T::kDefaultI, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterChoice> get(const std::string &suffix, const bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterChoice> get(const std::string& suffix, const bool automate = true) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::kName);
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                                 T::kName + suffix, T::kChoices, T::kDefaultI,
                                                                 attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterChoice> get(const std::string &suffix, const bool meta,
+        static std::unique_ptr<juce::AudioParameterChoice> get(const std::string& suffix, const bool meta,
                                                                const bool automate = true) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::kName).
-                    withMeta(meta);
+                                                                     withMeta(meta);
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                                 T::kName + suffix, T::kChoices, T::kDefaultI,
                                                                 attributes);
@@ -337,8 +337,8 @@ namespace zlstate {
         int static constexpr kDefaultI = 5;
     };
 
-    inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout &layout,
-                             const std::string &suffix = "",
+    inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout& layout,
+                             const std::string& suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
                              const bool add_opacity = false, const float opacity = 1.f) {
         layout.add(std::make_unique<juce::AudioParameterInt>(
@@ -357,7 +357,7 @@ namespace zlstate {
         }
     }
 
-    static constexpr std::array<std::string, 9> kColourNames{
+    static constexpr std::array<std::string_view, 9> kColourNames{
         "text", "background",
         "shadow", "glow",
         "pre", "post", "reduction",
@@ -395,9 +395,9 @@ namespace zlstate {
                    PTooltipLang::get());
 
         for (size_t i = 0; i < kColourNames.size(); ++i) {
-            const auto &name = kColourNames[i];
-            const auto &dv = kColourDefaults[i];
-            addOneColour(layout, name, dv.r, dv.g, dv.b, dv.has_opacity, dv.opacity);
+            const auto& name = kColourNames[i];
+            const auto& dv = kColourDefaults[i];
+            addOneColour(layout, std::string(name), dv.r, dv.g, dv.b, dv.has_opacity, dv.opacity);
         }
 
         layout.add(PColourMap1Idx::get(), PColourMap2Idx::get());

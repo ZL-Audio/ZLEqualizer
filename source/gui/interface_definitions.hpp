@@ -36,7 +36,7 @@ namespace zlgui {
         kSensitivityNum
     };
 
-    static constexpr std::array<std::string, kColourNum> kColourNames = zlstate::kColourNames;
+    static constexpr std::array<std::string_view, kColourNum> kColourNames = zlstate::kColourNames;
 
     enum PanelSettingIdx {
         kLUFSLearnButton,

@@ -252,10 +252,10 @@ namespace zlgui {
 
     void UIBase::loadFromAPVTS() {
         for (size_t i = 0; i < kColourNum; ++i) {
-            const auto r = static_cast<juce::uint8>(state.getRawParameterValue(kColourNames[i] + "_r")->load());
-            const auto g = static_cast<juce::uint8>(state.getRawParameterValue(kColourNames[i] + "_g")->load());
-            const auto b = static_cast<juce::uint8>(state.getRawParameterValue(kColourNames[i] + "_b")->load());
-            const auto o = static_cast<float>(state.getRawParameterValue(kColourNames[i] + "_o")->load());
+            const auto r = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_r")->load());
+            const auto g = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_g")->load());
+            const auto b = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_b")->load());
+            const auto o = static_cast<float>(state.getRawParameterValue(std::string(kColourNames[i]) + "_o")->load());
             custom_colours_[i] = juce::Colour(r, g, b, o);
         }
         wheel_sensitivity_[0] = state.getRawParameterValue(zlstate::PWheelSensitivity::kID)->load();
@@ -287,10 +287,10 @@ namespace zlgui {
                 custom_colours_[i].getFloatAlpha()
             };
             const std::array<std::string, 4> ID{
-                kColourNames[i] + "_r",
-                kColourNames[i] + "_g",
-                kColourNames[i] + "_b",
-                kColourNames[i] + "_o"
+                std::string(kColourNames[i]) + "_r",
+                std::string(kColourNames[i]) + "_g",
+                std::string(kColourNames[i]) + "_b",
+                std::string(kColourNames[i]) + "_o"
             };
             for (size_t j = 0; j < 4; ++j) {
                 savePara(ID[j], rgbo[j]);
