@@ -25,20 +25,31 @@
 #include "../dsp/filter/fir_filter/zero_correction/zero_correction.hpp"
 #include "../dsp/filter/fir_filter/zero_correction/zero_calculator.hpp"
 #include "../dsp/splitter/inplace_ms_splitter.hpp"
+#include "../dsp/histogram/histogram.hpp"
 
 namespace zlp {
+    template <typename T, std::size_t N, typename... Args, std::size_t... I>
+    constexpr std::array<T, N> make_array_of_impl(std::index_sequence<I...>, Args&&... args) {
+        return {{(static_cast<void>(I), T(std::forward<Args>(args)...))...}};
+    }
+
+    template <typename T, std::size_t N, typename... Args>
+    constexpr std::array<T, N> make_array_of(Args&&... args) {
+        return make_array_of_impl<T, N>(std::make_index_sequence<N>{}, std::forward<Args>(args)...);
+    }
+
     class Controller final : private juce::AsyncUpdater {
     public:
         static constexpr size_t kFilterSize = 16;
         static constexpr size_t kAnalyzerPointNum = 251;
 
-        explicit Controller(juce::AudioProcessor &processor);
+        explicit Controller(juce::AudioProcessor& processor);
 
         void prepare(double sample_rate, size_t max_num_samples);
 
-        template<bool bypass = false>
-        void process(std::array<double *, 2> main_pointers,
-                     std::array<double *, 2> side_pointers,
+        template <bool bypass = false>
+        void process(std::array<double*, 2> main_pointers,
+                     std::array<double*, 2> side_pointers,
                      size_t num_samples);
 
         void setFilterStructure(const FilterStructure filter_structure) {
@@ -55,13 +66,12 @@ namespace zlp {
             to_update_lrms_.store(true, std::memory_order::release);
         }
 
-        std::array<zldsp::filter::Empty, kBandNum> &getEmptyFilters() {
+        std::array<zldsp::filter::Empty, kBandNum>& getEmptyFilters() {
             return emptys_;
         }
 
     private:
-        // juce::FileLogger logger{juce::File{"/Volumes/Ramdisk/log.txt"}, ""};
-        juce::AudioProcessor &p_ref_;
+        juce::AudioProcessor& p_ref_;
         // filter structure
         std::atomic<FilterStructure> filter_structure_{};
         FilterStructure c_filter_structure_{zlp::FilterStructure::kMinimum};
@@ -87,16 +97,35 @@ namespace zlp {
         std::array<zldsp::filter::Empty, kBandNum> emptys_{};
         std::array<zldsp::filter::Empty, kBandNum> side_emptys_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> filter_paras_{};
+
+        // dynamic handlers
+        std::array<zldsp::filter::DynamicSideHandler<double>, kBandNum> dynamic_side_handlers_
+            = make_array_of<zldsp::filter::DynamicSideHandler<double>, kBandNum>();
         // dynamic TDF filters
-        std::array<zldsp::filter::DynamicTDF<double, kFilterSize>, kBandNum> tdf_filters_{};
+        std::array<zldsp::filter::DynamicTDF<double, kFilterSize>, kBandNum> tdf_filters_
+            = [&]<size_t... Is>(std::index_sequence<Is...>) {
+                return std::array{
+                    zldsp::filter::DynamicTDF<double, kFilterSize>{std::get<Is>(dynamic_side_handlers_)}...
+                };
+            }(std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
         // dynamic SVF filters
-        std::array<zldsp::filter::DynamicSVF<double, kFilterSize>, kBandNum> svf_filters_{};
+        std::array<zldsp::filter::DynamicSVF<double, kFilterSize>, kBandNum> svf_filters_
+            = [&]<size_t... Is>(std::index_sequence<Is...>) {
+                return std::array{
+                    zldsp::filter::DynamicSVF<double, kFilterSize>{std::get<Is>(dynamic_side_handlers_)}...
+                };
+            }(std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
         // dynamic parallel filters
-        std::array<zldsp::filter::DynamicParallel<double, kFilterSize>, kBandNum> parallel_filters_{};
+        std::array<zldsp::filter::DynamicParallel<double, kFilterSize>, kBandNum> parallel_filters_
+            = [&]<size_t... Is>(std::index_sequence<Is...>) {
+                return std::array{
+                    zldsp::filter::DynamicParallel<double, kFilterSize>{std::get<Is>(dynamic_side_handlers_)}...
+                };
+            }(std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
         // side-buffer
         std::array<std::vector<double>, 2> side_buffers{};
-        std::array<double *, 2> side_stereo_pointer{};
-        std::array<double *, 1> side_single_pointer{};
+        std::array<double*, 2> side_stereo_pointer{};
+        std::array<double*, 1> side_single_pointer{};
         // side-chain filters
         std::array<zldsp::filter::TDF<double, kFilterSize / 2>, kBandNum> side_filters_{};
         // solo filter
@@ -117,30 +146,37 @@ namespace zlp {
         // match correction
         zldsp::fft::KFREngine<float> match_fft_;
         zldsp::filter::MatchCalculator<kBandNum, kFilterSize> match_calculator_;
-        std::array<zldsp::filter::MatchCorrection<double>, 4> match_corrections_{
-            zldsp::filter::MatchCorrection<double>(match_fft_),
-            zldsp::filter::MatchCorrection<double>(match_fft_),
-            zldsp::filter::MatchCorrection<double>(match_fft_),
-            zldsp::filter::MatchCorrection<double>(match_fft_),
-        };
+        std::array<zldsp::filter::MatchCorrection<double>, 4> match_corrections_
+            = make_array_of<zldsp::filter::MatchCorrection<double>, 4>(match_fft_);
         // mixed correction
         zldsp::fft::KFREngine<float> mixed_fft_;
         zldsp::filter::MixedCalculator<kBandNum, kFilterSize> mixed_calculator_;
-        std::array<zldsp::filter::MixedCorrection<double>, 4> mixed_corrections_{
-            zldsp::filter::MixedCorrection<double>(mixed_fft_),
-            zldsp::filter::MixedCorrection<double>(mixed_fft_),
-            zldsp::filter::MixedCorrection<double>(mixed_fft_),
-            zldsp::filter::MixedCorrection<double>(mixed_fft_)
-        };
+        std::array<zldsp::filter::MixedCorrection<double>, 4> mixed_corrections_
+            = make_array_of<zldsp::filter::MixedCorrection<double>, 4>(mixed_fft_);
         // linear phase (zero phase) correction
         zldsp::fft::KFREngine<float> zero_fft_;
         zldsp::filter::ZeroCalculator<kBandNum, kFilterSize> zero_calculator_;
-        std::array<zldsp::filter::ZeroCorrection<double>, 4> zero_corrections_{
-            zldsp::filter::ZeroCorrection<double>(zero_fft_),
-            zldsp::filter::ZeroCorrection<double>(zero_fft_),
-            zldsp::filter::ZeroCorrection<double>(zero_fft_),
-            zldsp::filter::ZeroCorrection<double>(zero_fft_)
-        };
+        std::array<zldsp::filter::ZeroCorrection<double>, 4> zero_corrections_
+            = make_array_of<zldsp::filter::ZeroCorrection<double>, 4>(zero_fft_);
+
+        // dynamic related parameters
+        std::array<std::atomic<bool>, kBandNum> dynamic_th_update_{};
+        std::array<std::atomic<bool>, kBandNum> dynamic_th_relative_{};
+        std::array<bool, kBandNum> c_dynamic_th_relative_{};
+        std::array<std::atomic<bool>, kBandNum> dynamic_th_learn_{};
+        std::array<bool, kBandNum> c_dynamic_th_learn_{};
+        std::array<std::atomic<double>, kBandNum> dynamic_threshold_{};
+        std::array<double, kBandNum> c_dynamic_threshold_{};
+        std::array<std::atomic<double>, kBandNum> dynamic_knee_{};
+        std::array<std::atomic<bool>, kBandNum> dynamic_ar_update_{};
+        std::array<std::atomic<double>, kBandNum> dynamic_attack_{};
+        std::array<std::atomic<double>, kBandNum> dynamic_release_{};
+        // histogram for dynamic auto-threshold
+        std::array<zldsp::histogram::Histogram<double>, kBandNum> histograms_
+            = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, size_t(80));
+        std::array<zldsp::histogram::Histogram<double>, kBandNum> slow_histograms_
+            = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, size_t(80));
+        std::array<std::atomic<double>, kBandNum> learned_thresholds_{};
 
         // array to hold dynamic gains
         std::array<std::atomic<double>, kBandNum> dynamic_gain_display_{};
@@ -161,40 +197,40 @@ namespace zlp {
 
         void prepareCorrection();
 
-        void prepareSideFilters();
+        void prepareDynamicParameters();
 
         void handleAsyncUpdate() override;
 
-        template<typename DynamicFilterArrayType>
-        void processDynamic(DynamicFilterArrayType &dynamic_filters,
-                            std::array<double *, 2> main_pointers,
-                            std::array<double *, 2> side_pointers,
+        template <typename DynamicFilterArrayType>
+        void processDynamic(DynamicFilterArrayType& dynamic_filters,
+                            std::array<double*, 2> main_pointers,
+                            std::array<double*, 2> side_pointers,
                             size_t num_samples);
 
-        template<typename DynamicFilterArrayType>
-        void processOneChannelDynamic(DynamicFilterArrayType &dynamic_filters,
+        template <typename DynamicFilterArrayType>
+        void processOneChannelDynamic(DynamicFilterArrayType& dynamic_filters,
                                       size_t lrms_idx,
-                                      std::span<double *> main_pointers,
-                                      std::span<double *> side_pointers1,
-                                      std::span<double *> side_pointers2,
+                                      std::span<double*> main_pointers,
+                                      std::span<double*> side_pointers1,
+                                      std::span<double*> side_pointers2,
                                       size_t num_samples);
 
-        template<bool bypass = false, bool dynamic_on = false, bool dynamic_bypass = false,
-            typename DynamicFilterArrayType>
-        void processOneBandDynamic(DynamicFilterArrayType &dynamic_filters,
+        template <bool bypass = false, bool dynamic_on = false, bool dynamic_bypass = false,
+                  typename DynamicFilterArrayType>
+        void processOneBandDynamic(DynamicFilterArrayType& dynamic_filters,
                                    size_t i,
-                                   std::span<double *> main_pointers,
-                                   std::span<double *> side_pointers,
+                                   std::span<double*> main_pointers,
+                                   std::span<double*> side_pointers,
                                    size_t num_samples);
 
-        void processParallelPost(std::span<double *> main_pointers, size_t num_samples);
+        void processParallelPost(std::span<double*> main_pointers, size_t num_samples);
 
-        template<bool bypass, typename CorrectionArrayType>
-        void processCorrections(CorrectionArrayType &corrections, std::span<double *> main_pointers,
+        template <bool bypass, typename CorrectionArrayType>
+        void processCorrections(CorrectionArrayType& corrections, std::span<double*> main_pointers,
                                 size_t num_samples);
     };
 
-    extern template void Controller::process<true>(std::array<double *, 2>, std::array<double *, 2>, size_t);
+    extern template void Controller::process<true>(std::array<double*, 2>, std::array<double*, 2>, size_t);
 
-    extern template void Controller::process<false>(std::array<double *, 2>, std::array<double *, 2>, size_t);
+    extern template void Controller::process<false>(std::array<double*, 2>, std::array<double*, 2>, size_t);
 }

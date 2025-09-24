@@ -18,10 +18,11 @@ namespace zldsp::filter {
      * @tparam FloatType the float type of input audio buffer
      * @tparam kFilterSize the number of cascading filters
      */
-    template<typename FloatType, size_t kFilterSize>
+    template <typename FloatType, size_t kFilterSize>
     class DynamicTDF final : public DynamicBase<TDF<FloatType, kFilterSize>, FloatType> {
     public:
-        DynamicTDF() : DynamicBase<TDF<FloatType, kFilterSize>, FloatType>() {
+        DynamicTDF(DynamicSideHandler<FloatType>& handler)
+            : DynamicBase<TDF<FloatType, kFilterSize>, FloatType>(handler) {
         }
 
         /**
@@ -30,8 +31,8 @@ namespace zldsp::filter {
          * @param side_buffer
          * @param num_samples
          */
-        template<bool bypass = false, bool dynamic_on = false, bool dynamic_bypass = false>
-        void processDynamic(std::span<FloatType *> main_buffer, std::span<FloatType *> side_buffer,
+        template <bool bypass = false, bool dynamic_on = false, bool dynamic_bypass = false>
+        void processDynamic(std::span<FloatType*> main_buffer, std::span<FloatType*> side_buffer,
                             const size_t num_samples) {
             DynamicBase<TDF<FloatType, kFilterSize>, FloatType>::template process<
                 bypass, dynamic_on, dynamic_bypass>(main_buffer, side_buffer, num_samples);

@@ -33,6 +33,7 @@ namespace zlp {
         side_single_pointer[0] = side_stereo_pointer[0];
 
         for (size_t i = 0; i < kBandNum; ++i) {
+            dynamic_side_handlers_[i].prepare(sample_rate);
             tdf_filters_[i].prepare(sample_rate, 2, max_num_samples);
             tdf_filters_[i].getFilter().updateParas(filter_paras_[i]);
             svf_filters_[i].prepare(sample_rate, 2, max_num_samples);
@@ -70,6 +71,7 @@ namespace zlp {
             }
             prepareCorrection();
         }
+        prepareDynamicParameters();
     }
 
     void Controller::prepareStatus() {
@@ -114,7 +116,6 @@ namespace zlp {
                 }
             }
             to_update_lrms_.store(true, std::memory_order::release);
-            // logger.logMessage(std::to_string(c_filter_status_[0]));
         }
     }
 
@@ -128,23 +129,15 @@ namespace zlp {
                 if (filter_type != filter_paras_[i].filter_type) {
                     prepareOneBandDynamics(i);
                 }
+                dynamic_side_handlers_[i].setBaseGain(filter_paras_[i].gain);
                 if (c_filter_structure_ == kSVF) {
                     svf_filters_[i].getFilter().updateParas(filter_paras_[i]);
-                    svf_filters_[i].setBaseGain(filter_paras_[i].gain);
                 } else if (c_filter_structure_ == kParallel) {
                     parallel_filters_[i].getFilter().updateParas(filter_paras_[i]);
-                    parallel_filters_[i].setBaseGain(filter_paras_[i].gain);
                 } else {
                     tdf_filters_[i].getFilter().updateParas(filter_paras_[i]);
-                    tdf_filters_[i].setBaseGain(filter_paras_[i].gain);
                 }
                 res_update_flags_[i] = true;
-            }
-        }
-        // update not-off side filters
-        for (const size_t &i: not_off_total_) {
-            if (side_emptys_[i].getToUpdatePara()) {
-                side_filters_[i].updateParas(side_emptys_[i].getParas());
             }
         }
     }
@@ -183,6 +176,10 @@ namespace zlp {
                 tdf_filters_[i].resetDynamic();
                 side_filters_[i].reset();
                 to_update_correction_indices_ = true;
+
+                side_emptys_[i].getUpdateParaFlag().store(true, std::memory_order::relaxed);
+                dynamic_th_update_[i].store(true, std::memory_order::relaxed);
+                dynamic_ar_update_[i].store(true, std::memory_order::relaxed);
             }
         } else {
             // turn dynamic off and reset filter gain
@@ -313,10 +310,49 @@ namespace zlp {
         }
     }
 
-    void Controller::prepareSideFilters() {
+    void Controller::prepareDynamicParameters() {
         for (const size_t &i: not_off_total_) {
+            if (!dynamic_on_[i]) {
+                continue;
+            }
             if (side_emptys_[i].getUpdateParaFlag()) {
                 side_filters_[i].updateParas(side_emptys_[i].getParas());
+            }
+            if (dynamic_th_update_[i].exchange(false, std::memory_order::acquire)) {
+                if (c_dynamic_th_relative_[i] != dynamic_th_relative_[i].load(std::memory_order::relaxed)) {
+                    c_dynamic_th_relative_[i] = dynamic_th_relative_[i].load(std::memory_order::relaxed);
+                    histograms_[i].reset();
+                    slow_histograms_[i].reset();
+                    if (c_dynamic_th_relative_[i]) {
+                        learned_thresholds_[i].store(-5.0, std::memory_order::relaxed);
+                    } else {
+                        learned_thresholds_[i].store(-40.0, std::memory_order::relaxed);
+                    }
+                }
+                if (c_dynamic_th_learn_[i] != dynamic_th_learn_[i].load(std::memory_order::relaxed)) {
+                    c_dynamic_th_learn_[i] = dynamic_th_learn_[i].load(std::memory_order::relaxed);
+                    if (c_dynamic_th_learn_[i]) {
+                        histograms_[i].reset();
+                        slow_histograms_[i].reset();
+                        if (c_dynamic_th_relative_[i]) {
+                            learned_thresholds_[i].store(-5.0, std::memory_order::relaxed);
+                        } else {
+                            learned_thresholds_[i].store(-40.0, std::memory_order::relaxed);
+                        }
+                    }
+                }
+                if (c_dynamic_th_learn_[i]) {
+                    c_dynamic_threshold_[i] = dynamic_threshold_[i].load(std::memory_order::relaxed) + 40.0;
+                } else {
+                    c_dynamic_threshold_[i] = dynamic_threshold_[i].load(std::memory_order::relaxed);
+                    dynamic_side_handlers_[i].setThreshold<false>(c_dynamic_threshold_[i]);
+                }
+                dynamic_side_handlers_[i].setKnee(dynamic_knee_[i].load(std::memory_order::relaxed));
+            }
+            if (dynamic_ar_update_[i].exchange(false, std::memory_order::acquire)) {
+                auto &follower{dynamic_side_handlers_[i].getFollower()};
+                follower.setAttack<false>(dynamic_attack_[i].load(std::memory_order::relaxed));
+                follower.setRelease<true>(dynamic_release_[i].load(std::memory_order::relaxed));
             }
         }
     }
