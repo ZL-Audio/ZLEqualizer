@@ -17,7 +17,7 @@ namespace zldsp::chore {
         kLin, kMul, kFixLin, kFixMul
     };
 
-    template<typename FloatType, SmoothedTypes kSmoothedType = kLin>
+    template <typename FloatType, SmoothedTypes kSmoothedType = kLin>
     class SmoothedValue {
     public:
         SmoothedValue() {

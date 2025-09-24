@@ -34,17 +34,17 @@ public:
 
     void releaseResources() override;
 
-    bool isBusesLayoutSupported(const BusesLayout &layouts) const override;
+    bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
 
-    void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &) override;
+    void processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&) override;
 
-    void processBlock(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &) override;
+    void processBlock(juce::AudioBuffer<double>& buffer, juce::MidiBuffer&) override;
 
-    void processBlockBypassed(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &) override;
+    void processBlockBypassed(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&) override;
 
-    void processBlockBypassed(juce::AudioBuffer<double> &buffer, juce::MidiBuffer &) override;
+    void processBlockBypassed(juce::AudioBuffer<double>& buffer, juce::MidiBuffer&) override;
 
-    juce::AudioProcessorEditor *createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
 
     bool hasEditor() const override;
 
@@ -66,17 +66,17 @@ public:
 
     const juce::String getProgramName(int index) override;
 
-    void changeProgramName(int, const juce::String &) override;
+    void changeProgramName(int, const juce::String&) override;
 
-    void getStateInformation(juce::MemoryBlock &dest_data) override;
+    void getStateInformation(juce::MemoryBlock& dest_data) override;
 
-    void setStateInformation(const void *data, int size_in_bytes) override;
+    void setStateInformation(const void* data, int size_in_bytes) override;
 
     bool supportsDoublePrecisionProcessing() const override { return true; }
 
 private:
     std::array<std::vector<double>, 2> main_buffer_, side_buffer_;
-    std::array<double *, 2> main_pointers_{}, side_pointers_{};
+    std::array<double*, 2> main_pointers_{}, side_pointers_{};
     zlp::Controller controller_;
     std::array<std::unique_ptr<zlp::FilterAttach>, zlp::kBandNum> filter_attachments_;
     zlp::ChoreAttach chore_attachment_;
@@ -92,9 +92,9 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 
-    template<bool bypass = false>
-    void processBlockInternal(juce::AudioBuffer<float> &buffer);
+    template <bool bypass = false>
+    void processBlockInternal(juce::AudioBuffer<float>& buffer);
 
-    template<bool bypass = false>
-    void processBlockInternal(juce::AudioBuffer<double> &buffer);
+    template <bool bypass = false>
+    void processBlockInternal(juce::AudioBuffer<double>& buffer);
 };

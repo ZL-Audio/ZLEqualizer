@@ -66,8 +66,50 @@ namespace zlp {
             to_update_lrms_.store(true, std::memory_order::release);
         }
 
+        void setDynamicON(const size_t idx, const bool dynamic_on) {
+            dynamic_on_[idx].store(dynamic_on, std::memory_order::relaxed);
+        }
+
+        void setDynamicBypass(const size_t idx, const bool dynamic_bypass) {
+            dynamic_bypass_[idx].store(dynamic_bypass, std::memory_order::relaxed);
+        }
+
+        void setDynamicRelative(const size_t idx, const bool is_relative) {
+            dynamic_th_relative_[idx].store(is_relative, std::memory_order::relaxed);
+            dynamic_th_update_[idx].store(true, std::memory_order::release);
+        }
+
+        void setDynamicLearn(const size_t idx, const bool is_learn) {
+            dynamic_th_learn_[idx].store(is_learn, std::memory_order::relaxed);
+            dynamic_th_update_[idx].store(true, std::memory_order::release);
+        }
+
+        void setDynamicThreshold(const size_t idx, const double threshold) {
+            dynamic_threshold_[idx].store(threshold, std::memory_order::relaxed);
+            dynamic_th_update_[idx].store(true, std::memory_order::release);
+        }
+
+        void setDynamicKnee(const size_t idx, const double knee) {
+            dynamic_knee_[idx].store(knee, std::memory_order::relaxed);
+            dynamic_th_update_[idx].store(true, std::memory_order::release);
+        }
+
+        void setDynamicAttack(const size_t idx, const double attack) {
+            dynamic_attack_[idx].store(attack, std::memory_order::relaxed);
+            dynamic_ar_update_[idx].store(true, std::memory_order::release);
+        }
+
+        void setDynamicRelease(const size_t idx, const double release) {
+            dynamic_release_[idx].store(release, std::memory_order::relaxed);
+            dynamic_ar_update_[idx].store(true, std::memory_order::release);
+        }
+
         std::array<zldsp::filter::Empty, kBandNum>& getEmptyFilters() {
             return emptys_;
+        }
+
+        std::array<zldsp::filter::Empty, kBandNum>& getSideEmptyFilters() {
+            return side_emptys_;
         }
 
     private:
@@ -97,7 +139,6 @@ namespace zlp {
         std::array<zldsp::filter::Empty, kBandNum> emptys_{};
         std::array<zldsp::filter::Empty, kBandNum> side_emptys_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> filter_paras_{};
-
         // dynamic handlers
         std::array<zldsp::filter::DynamicSideHandler<double>, kBandNum> dynamic_side_handlers_
             = make_array_of<zldsp::filter::DynamicSideHandler<double>, kBandNum>();
@@ -124,8 +165,7 @@ namespace zlp {
             }(std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
         // side-buffer
         std::array<std::vector<double>, 2> side_buffers{};
-        std::array<double*, 2> side_stereo_pointer{};
-        std::array<double*, 1> side_single_pointer{};
+        std::vector<double*> side_copy_pointers_{};
         // side-chain filters
         std::array<zldsp::filter::TDF<double, kFilterSize / 2>, kBandNum> side_filters_{};
         // solo filter
@@ -160,6 +200,7 @@ namespace zlp {
             = make_array_of<zldsp::filter::ZeroCorrection<double>, 4>(zero_fft_);
 
         // dynamic related parameters
+        std::array<std::atomic<double>, kBandNum> target_gains_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_update_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_relative_{};
         std::array<bool, kBandNum> c_dynamic_th_relative_{};
@@ -172,6 +213,7 @@ namespace zlp {
         std::array<std::atomic<double>, kBandNum> dynamic_attack_{};
         std::array<std::atomic<double>, kBandNum> dynamic_release_{};
         // histogram for dynamic auto-threshold
+        double hist_unit_decay_{1.0}, slow_hist_unit_decay_{1.0};
         std::array<zldsp::histogram::Histogram<double>, kBandNum> histograms_
             = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, size_t(80));
         std::array<zldsp::histogram::Histogram<double>, kBandNum> slow_histograms_

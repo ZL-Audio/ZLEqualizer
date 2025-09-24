@@ -27,7 +27,7 @@ namespace zldsp::histogram {
         }
 
         void reset() {
-            std::fill(bins_.begin(), bins_.end(), 0.);
+            std::ranges::fill(bins_, 0.);
             total_count_ = 0.;
         }
 
