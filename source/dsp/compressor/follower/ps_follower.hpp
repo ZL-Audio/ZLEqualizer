@@ -71,7 +71,8 @@ namespace zldsp::compressor {
                 const auto y2 = x >= y_ ? attack_ * (y_ - x) + x : release_ * (y_ - x) + x;
                 y0 = smooth_ * (y1 - y2) + y2;
             } else {
-                y0 = x >= y_ ? attack_ * (y_ - x) + x : release_ * (y_ - x) + x;
+                state_ = std::max(x, release_ * (state_ - x) + x);
+                y0 = attack_ * (y_ - state_) + state_;
             }
             if constexpr (kUsePP) {
                 const auto slope0 = y0 - y_;
