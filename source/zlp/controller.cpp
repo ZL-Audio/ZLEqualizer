@@ -19,10 +19,12 @@ namespace zlp {
         for (auto& v : correction_on_indices_) {
             v.reserve(kBandNum);
         }
+        for (auto& f : side_emptys_) {
+            f.setFilterType(zldsp::filter::kBandPass);
+        }
     }
 
     void Controller::prepare(double sample_rate, size_t max_num_samples) {
-        juce::ignoreUnused(sample_rate, max_num_samples);
         c_filter_structure_ = kMinimum;
 
         side_buffers[0].resize(max_num_samples);
@@ -316,7 +318,7 @@ namespace zlp {
             if (!dynamic_on_[i]) {
                 continue;
             }
-            if (side_emptys_[i].getUpdateParaFlag()) {
+            if (side_emptys_[i].getToUpdatePara()) {
                 auto para = side_emptys_[i].getParas();
                 dynamic_side_handlers_[i].setTargetGain(para.gain);
                 para.gain = 0.0;
@@ -510,7 +512,6 @@ namespace zlp {
                 side_current_loudness = zldsp::chore::squareGainToDecibels(side_total_loudness);
                 histograms_[i].push(side_current_loudness);
                 side_hist_loudness = histograms_[i].getPercentile(0.5);
-
                 slow_histograms_[i].setDecay(std::pow(slow_hist_unit_decay_, static_cast<double>(num_samples)));
                 slow_histograms_[i].push(side_current_loudness - side_total_loudness);
                 learned_thresholds_[i].store(slow_histograms_[i].getPercentile(0.5), std::memory_order::relaxed);

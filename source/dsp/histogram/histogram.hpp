@@ -12,7 +12,7 @@
 #include "../vector/kfr_import.hpp"
 
 namespace zldsp::histogram {
-    template<typename FloatType>
+    template <typename FloatType>
     class Histogram {
     public:
         Histogram(FloatType min_val, FloatType max_val, size_t num_bin)
@@ -32,12 +32,16 @@ namespace zldsp::histogram {
         }
 
         void push(const FloatType value) {
-            if (value < min_val_ || value >= max_val_) {
-                return;
-            }
-            const auto bin_index = static_cast<size_t>((value - min_val_) / bin_width_);
             bins_ = bins_ * decay_;
-            bins_[bin_index] += 1.0;
+
+            if (value < min_val_) {
+                bins_[0] += 1.0;
+            } else if (value >= max_val_) {
+                bins_[bins_.size() - 1] += 1.0;
+            } else {
+                const auto bin_index = static_cast<size_t>((value - min_val_) / bin_width_);
+                bins_[bin_index] += 1.0;
+            }
 
             total_count_ = total_count_ * decay_ + 1.0;
         }

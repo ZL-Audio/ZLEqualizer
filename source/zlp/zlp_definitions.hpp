@@ -380,7 +380,7 @@ namespace zlp {
     public:
         auto static constexpr kID = "knee_width";
         auto static constexpr kName = "Knee Width";
-        inline auto static const kRange = juce::NormalisableRange<float>(0.f, 32.f, .01f, .5f);
+        inline auto static const kRange = getLogMidRangeShift(1.f, 33.f, 9.f, 0.01f, -1.f);
         auto static constexpr kDefaultV = 8.f;
     };
 

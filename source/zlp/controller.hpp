@@ -68,6 +68,7 @@ namespace zlp {
 
         void setDynamicON(const size_t idx, const bool dynamic_on) {
             dynamic_on_[idx].store(dynamic_on, std::memory_order::relaxed);
+            to_update_dynamic_.store(true, std::memory_order::release);
         }
 
         void setDynamicBypass(const size_t idx, const bool dynamic_bypass) {
@@ -77,6 +78,10 @@ namespace zlp {
         void setDynamicRelative(const size_t idx, const bool is_relative) {
             dynamic_th_relative_[idx].store(is_relative, std::memory_order::relaxed);
             dynamic_th_update_[idx].store(true, std::memory_order::release);
+        }
+
+        void setDynamicSwap(const size_t idx, const bool is_swap) {
+            dynamic_swap_[idx].store(is_swap, std::memory_order::relaxed);
         }
 
         void setDynamicLearn(const size_t idx, const bool is_learn) {
@@ -128,13 +133,6 @@ namespace zlp {
         bool is_lr_on_{false}, is_ms_on_{false};
         // not off indices for stereo/l/r/m/s
         std::array<std::vector<size_t>, 5> not_off_indices_{};
-        // filter dynamic flags
-        std::array<std::atomic<bool>, kBandNum> dynamic_on_{};
-        std::array<std::atomic<bool>, kBandNum> dynamic_bypass_{};
-        std::array<bool, kBandNum> c_dynamic_on_{};
-        std::atomic<bool> to_update_dynamic_{false};
-        // filter dynamic swap flags
-        std::array<std::atomic<bool>, kBandNum> dynamic_swap_{};
         // empty filters for holding atomic parameters
         std::array<zldsp::filter::Empty, kBandNum> emptys_{};
         std::array<zldsp::filter::Empty, kBandNum> side_emptys_{};
@@ -199,6 +197,13 @@ namespace zlp {
         std::array<zldsp::filter::ZeroCorrection<double>, 4> zero_corrections_
             = make_array_of<zldsp::filter::ZeroCorrection<double>, 4>(zero_fft_);
 
+        // filter dynamic flags
+        std::array<std::atomic<bool>, kBandNum> dynamic_on_{};
+        std::array<std::atomic<bool>, kBandNum> dynamic_bypass_{};
+        std::array<bool, kBandNum> c_dynamic_on_{};
+        std::atomic<bool> to_update_dynamic_{false};
+        // filter dynamic swap flags
+        std::array<std::atomic<bool>, kBandNum> dynamic_swap_{};
         // dynamic related parameters
         std::array<std::atomic<double>, kBandNum> target_gains_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_update_{};
@@ -215,11 +220,10 @@ namespace zlp {
         // histogram for dynamic auto-threshold
         double hist_unit_decay_{1.0}, slow_hist_unit_decay_{1.0};
         std::array<zldsp::histogram::Histogram<double>, kBandNum> histograms_
-            = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, size_t(80));
+            = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, static_cast<size_t>(80));
         std::array<zldsp::histogram::Histogram<double>, kBandNum> slow_histograms_
-            = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, size_t(80));
+            = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, static_cast<size_t>(80));
         std::array<std::atomic<double>, kBandNum> learned_thresholds_{};
-
         // array to hold dynamic gains
         std::array<std::atomic<double>, kBandNum> dynamic_gain_display_{};
 

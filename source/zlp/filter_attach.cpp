@@ -13,8 +13,11 @@ namespace zlp {
     FilterAttach::FilterAttach(juce::AudioProcessor&,
                                juce::AudioProcessorValueTreeState& parameters,
                                Controller& controller, const size_t idx)
-        : parameters_(parameters), controller_(controller),
-          idx_(idx), empty_(controller.getEmptyFilters()[idx]) {
+        : parameters_(parameters),
+          controller_(controller),
+          idx_(idx),
+          empty_(controller.getEmptyFilters()[idx]),
+          side_empty_(controller.getSideEmptyFilters()[idx]) {
         for (size_t i = 0; i < kIDs.size(); ++i) {
             parameterChanged(kIDs[i], kDefaultVs[i]);
             parameters_.addParameterListener(kIDs[i] + std::to_string(idx_), this);
@@ -42,6 +45,30 @@ namespace zlp {
             empty_.setGain(value);
         } else if (parameter_ID.startsWith(PQ::kID)) {
             empty_.setQ(value);
+        } else if (parameter_ID.startsWith(PDynamicON::kID)) {
+            controller_.setDynamicON(idx_, value > .5f);
+        } else if (parameter_ID.startsWith(PDynamicBypass::kID)) {
+            controller_.setDynamicBypass(idx_, value > .5f);
+        } else if (parameter_ID.startsWith(PDynamicLearn::kID)) {
+            controller_.setDynamicLearn(idx_, value > .5f);
+        } else if (parameter_ID.startsWith(PDynamicRelative::kID)) {
+            controller_.setDynamicRelative(idx_, value > .5f);
+        } else if (parameter_ID.startsWith(PSideSwap::kID)) {
+            controller_.setDynamicSwap(idx_, value > .5f);
+        } else if (parameter_ID.startsWith(PThreshold::kID)) {
+            controller_.setDynamicThreshold(idx_, value);
+        } else if (parameter_ID.startsWith(PKneeW::kID)) {
+            controller_.setDynamicKnee(idx_, value);
+        } else if (parameter_ID.startsWith(PAttack::kID)) {
+            controller_.setDynamicAttack(idx_, value);
+        } else if (parameter_ID.startsWith(PRelease::kID)) {
+            controller_.setDynamicRelease(idx_, value);
+        } else if (parameter_ID.startsWith(PSideFreq::kID)) {
+            side_empty_.setFreq(value);
+        } else if (parameter_ID.startsWith(PSideQ::kID)) {
+            side_empty_.setQ(value);
+        } else if (parameter_ID.startsWith(PTargetGain::kID)) {
+            side_empty_.setGain(value);
         }
     }
 }

@@ -68,7 +68,7 @@ namespace zldsp::filter {
          */
         template <bool to_update = true>
         void setKnee(const FloatType knee) {
-            knee_ = knee;
+            knee_ = std::max(knee, static_cast<FloatType>(0.01));
             if constexpr (to_update) {
                 updateTK();
             }
@@ -111,8 +111,7 @@ namespace zldsp::filter {
         zldsp::compressor::PSFollower<FloatType, false, false> follower_;
         double base_gain_{}, target_gain_{}, gain_diff_{};
 
-        FloatType threshold_{}, knee_{};
-        FloatType threshold_shift_{};
+        FloatType threshold_{}, knee_{static_cast<FloatType>(0.01)};
         FloatType low_abs_{}, slope_abs_{};
         FloatType low_sqr_{}, slope_sqr_{};
 
