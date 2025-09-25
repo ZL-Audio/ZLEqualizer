@@ -10,9 +10,9 @@
 #include "compact_combobox.hpp"
 
 namespace zlgui::combobox {
-    CompactCombobox::CompactCombobox(const juce::StringArray &choices,
-                                     UIBase &base, const juce::String &tooltip_text,
-                                     const std::vector<juce::String> &item_labels)
+    CompactCombobox::CompactCombobox(const juce::StringArray& choices,
+                                     UIBase& base, const juce::String& tooltip_text,
+                                     const std::vector<juce::String>& item_labels)
         : base_(base),
           box_laf_(base) {
         if (item_labels.size() < static_cast<size_t>(choices.size())) {
@@ -55,31 +55,31 @@ namespace zlgui::combobox {
         combo_box_.setBounds(bound.toNearestInt());
     }
 
-    void CompactCombobox::mouseUp(const juce::MouseEvent &event) {
+    void CompactCombobox::mouseUp(const juce::MouseEvent& event) {
         combo_box_.mouseUp(event);
     }
 
-    void CompactCombobox::mouseDown(const juce::MouseEvent &event) {
+    void CompactCombobox::mouseDown(const juce::MouseEvent& event) {
         combo_box_.mouseDown(event);
     }
 
-    void CompactCombobox::mouseDrag(const juce::MouseEvent &event) {
+    void CompactCombobox::mouseDrag(const juce::MouseEvent& event) {
         combo_box_.mouseDrag(event);
     }
 
-    void CompactCombobox::mouseEnter(const juce::MouseEvent &event) {
+    void CompactCombobox::mouseEnter(const juce::MouseEvent& event) {
         combo_box_.mouseEnter(event);
         box_laf_.setBoxAlpha(1.f);
         combo_box_.repaint();
     }
 
-    void CompactCombobox::mouseExit(const juce::MouseEvent &event) {
+    void CompactCombobox::mouseExit(const juce::MouseEvent& event) {
         combo_box_.mouseExit(event);
         box_laf_.setBoxAlpha(0.f);
         combo_box_.repaint();
     }
 
-    void CompactCombobox::mouseMove(const juce::MouseEvent &event) {
+    void CompactCombobox::mouseMove(const juce::MouseEvent& event) {
         combo_box_.mouseMove(event);
     }
 }

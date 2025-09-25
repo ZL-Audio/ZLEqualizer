@@ -15,37 +15,37 @@ namespace zlgui::combobox {
     class CompactCombobox final : public juce::Component,
                                   public juce::SettableTooltipClient {
     public:
-        CompactCombobox(const juce::StringArray &choices, UIBase &base,
-                        const juce::String &tooltip_text = "",
-                        const std::vector<juce::String> &item_labels = {});
+        CompactCombobox(const juce::StringArray& choices, UIBase& base,
+                        const juce::String& tooltip_text = "",
+                        const std::vector<juce::String>& item_labels = {});
 
         ~CompactCombobox() override;
 
         void resized() override;
 
-        void mouseUp(const juce::MouseEvent &event) override;
+        void mouseUp(const juce::MouseEvent& event) override;
 
-        void mouseDown(const juce::MouseEvent &event) override;
+        void mouseDown(const juce::MouseEvent& event) override;
 
-        void mouseDrag(const juce::MouseEvent &event) override;
+        void mouseDrag(const juce::MouseEvent& event) override;
 
-        void mouseEnter(const juce::MouseEvent &event) override;
+        void mouseEnter(const juce::MouseEvent& event) override;
 
-        void mouseExit(const juce::MouseEvent &event) override;
+        void mouseExit(const juce::MouseEvent& event) override;
 
-        void mouseMove(const juce::MouseEvent &event) override;
+        void mouseMove(const juce::MouseEvent& event) override;
 
         inline void setEditable(const bool x) {
             setAlpha(x ? 1.f : .25f);
             setInterceptsMouseClicks(x, false);
         }
 
-        inline juce::ComboBox &getBox() { return combo_box_; }
+        inline juce::ComboBox& getBox() { return combo_box_; }
 
-        inline CompactComboboxLookAndFeel &getLAF() { return box_laf_; }
+        inline CompactComboboxLookAndFeel& getLAF() { return box_laf_; }
 
     private:
-        zlgui::UIBase &base_;
+        zlgui::UIBase& base_;
         CompactComboboxLookAndFeel box_laf_;
         juce::ComboBox combo_box_;
     };

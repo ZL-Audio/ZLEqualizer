@@ -10,9 +10,9 @@
 #include "click_combobox.hpp"
 
 namespace zlgui::combobox {
-    ClickCombobox::ClickCombobox(UIBase &base, const std::vector<std::string> &choices,
-                                 const juce::String &tooltip_text,
-                                 const std::vector<juce::String> &item_labels)
+    ClickCombobox::ClickCombobox(UIBase& base, const std::vector<std::string>& choices,
+                                 const juce::String& tooltip_text,
+                                 const std::vector<juce::String>& item_labels)
         : base_(base) {
         choice_text_ = choices;
         if (tooltip_text.length() > 0) {
@@ -27,9 +27,9 @@ namespace zlgui::combobox {
         combo_box_.addListener(this);
     }
 
-    ClickCombobox::ClickCombobox(UIBase &base, const std::vector<juce::Drawable *> &choices,
-                                 const juce::String &tooltip_text,
-                                 const std::vector<juce::String> &item_labels)
+    ClickCombobox::ClickCombobox(UIBase& base, const std::vector<juce::Drawable*>& choices,
+                                 const juce::String& tooltip_text,
+                                 const std::vector<juce::String>& item_labels)
         : base_(base) {
         choice_icons_ = choices;
         if (tooltip_text.length() > 0) {
@@ -48,7 +48,7 @@ namespace zlgui::combobox {
         combo_box_.removeListener(this);
     }
 
-    void ClickCombobox::paint(juce::Graphics &g) {
+    void ClickCombobox::paint(juce::Graphics& g) {
         if (combo_box_.getSelectedItemIndex() < 0) return;
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth() * width_scale_, bound.getHeight() * height_scale_);
@@ -65,7 +65,7 @@ namespace zlgui::combobox {
         }
     }
 
-    void ClickCombobox::mouseDown(const juce::MouseEvent &) {
+    void ClickCombobox::mouseDown(const juce::MouseEvent&) {
         combo_box_.setSelectedItemIndex(
             (combo_box_.getSelectedItemIndex() + 1) % combo_box_.getNumItems(),
             juce::sendNotificationSync);
@@ -76,7 +76,7 @@ namespace zlgui::combobox {
         height_scale_ = height_scale;
     }
 
-    void ClickCombobox::comboBoxChanged(juce::ComboBox *) {
+    void ClickCombobox::comboBoxChanged(juce::ComboBox*) {
         if (combo_box_.getSelectedItemIndex() >= 0 && !item_labels_.empty()) {
             SettableTooltipClient::setTooltip(item_labels_[static_cast<size_t>(combo_box_.getSelectedItemIndex())]);
         }
