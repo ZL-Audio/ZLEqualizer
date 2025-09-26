@@ -305,7 +305,7 @@ namespace zlp {
     public:
         auto static constexpr kID = "freq";
         auto static constexpr kName = "Freq";
-        inline auto static const kRange = getLogMidRange(10.f, 20000.f, 1000.f, 0.1f);
+        inline auto static const kRange = getLogMidRange(10.f, 160000.f, 1000.f, 0.1f);
         auto static constexpr kDefaultV = 1000.f;
     };
 
@@ -404,7 +404,7 @@ namespace zlp {
     public:
         auto static constexpr kID = "side_freq";
         auto static constexpr kName = "Side Freq";
-        inline auto static const kRange = getLogMidRange(10.f, 20000.f, 1000.f, 0.1f);
+        inline auto static const kRange = getLogMidRange(10.f, 160000.f, 1000.f, 0.1f);
         auto static constexpr kDefaultV = 1000.f;
     };
 
