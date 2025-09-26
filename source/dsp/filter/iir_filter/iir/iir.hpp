@@ -10,6 +10,7 @@
 #pragma once
 
 #include "../../filter_design/filter_design.hpp"
+#include "../coeff/martin_coeff.hpp"
 #include "../../../chore/smoothed_value.hpp"
 
 namespace zldsp::filter {
@@ -33,7 +34,12 @@ namespace zldsp::filter {
             c_freq_.prepare(sample_rate, 0.1);
             c_gain_.prepare(sample_rate, 0.001);
             c_q_.prepare(sample_rate, 0.001);
-            freq_max_ = std::round(sample_rate / 48000.0) * 20000.0;
+            for (size_t i = 1; i < 32; ++i) {
+                if (sample_rate < static_cast<double>(i) * 48000.1) {
+                    freq_max_ = static_cast<double>(i) * 20000.0;
+                    break;
+                }
+            }
             c_freq_.setCurrentAndTarget(std::min(c_freq_.getTarget(), freq_max_));
             updateCoeffs();
         }
@@ -158,6 +164,14 @@ namespace zldsp::filter {
          * update filter gain
          */
         virtual void updateGain() = 0;
+
+        size_t getFilterNum() const {
+            return current_filter_num_;
+        }
+
+        std::array<std::array<double, 6>, kFilterSize>& getCoeff() {
+            return coeffs_;
+        }
 
     protected:
         std::array<std::array<double, 6>, kFilterSize> coeffs_{};

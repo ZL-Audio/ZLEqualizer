@@ -24,12 +24,16 @@ namespace zlp {
         }
     }
 
-    void Controller::prepare(double sample_rate, size_t max_num_samples) {
+    void Controller::prepare(const double sample_rate, const size_t max_num_samples) {
         c_filter_structure_ = kMinimum;
 
         side_buffers[0].resize(max_num_samples);
         side_buffers[1].resize(max_num_samples);
         side_copy_pointers_.reserve(2);
+
+        for (size_t i = 0; i < kBandNum; ++i) {
+            filter_paras_[i] = emptys_[i].getParas();
+        }
 
         for (size_t i = 0; i < kBandNum; ++i) {
             dynamic_side_handlers_[i].prepare(sample_rate);

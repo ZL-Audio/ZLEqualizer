@@ -11,10 +11,7 @@
 
 #include <span>
 
-#include "../../filter_design/filter_design.hpp"
-#include "../coeff/martin_coeff.hpp"
 #include "tdf_base.hpp"
-#include "../../empty_filter/empty.hpp"
 #include "../iir/iir.hpp"
 
 namespace zldsp::filter {
@@ -110,14 +107,6 @@ namespace zldsp::filter {
          */
         std::array<TDFBase<FloatType>, kFilterSize> &getFilters() {
             return filters_;
-        }
-
-        [[nodiscard]] size_t getFilterNum() const {
-            return this->current_filter_num_;
-        }
-
-        std::array<std::array<double, 6>, kFilterSize> &getCoeff() {
-            return this->coeffs_;
         }
 
     private:

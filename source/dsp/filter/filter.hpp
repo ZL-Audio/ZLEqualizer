@@ -11,5 +11,5 @@
 
 #include "iir_filter/iir_filter.hpp"
 #include "ideal_filter/ideal.hpp"
-#include "ideal_filter/ideal_empty.hpp"
+#include "empty_filter/empty.hpp"
 #include "filter_design/filter_design.hpp"

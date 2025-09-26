@@ -99,7 +99,7 @@ namespace zldsp::filter {
             return follower_;
         }
 
-        double& getBaseGain() {
+        double getBaseGain() const {
             return base_gain_;
         }
 

@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <atomic>
 #include <numbers>
 #include <cmath>
 #include <algorithm>
