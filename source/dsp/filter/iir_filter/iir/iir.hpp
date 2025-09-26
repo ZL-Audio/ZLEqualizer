@@ -34,12 +34,7 @@ namespace zldsp::filter {
             c_freq_.prepare(sample_rate, 0.1);
             c_gain_.prepare(sample_rate, 0.001);
             c_q_.prepare(sample_rate, 0.001);
-            for (size_t i = 1; i < 32; ++i) {
-                if (sample_rate < static_cast<double>(i) * 48000.1) {
-                    freq_max_ = static_cast<double>(i) * 20000.0;
-                    break;
-                }
-            }
+            freq_max_ = std::floor(sample_rate / 44100.0 * 20000.0);
             c_freq_.setCurrentAndTarget(std::min(c_freq_.getTarget(), freq_max_));
             updateCoeffs();
         }

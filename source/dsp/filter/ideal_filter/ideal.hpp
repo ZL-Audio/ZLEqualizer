@@ -27,12 +27,7 @@ namespace zldsp::filter {
 
         void prepare(const double sample_rate) {
             sample_rate_ = sample_rate;
-            for (size_t i = 1; i < 32; ++i) {
-                if (sample_rate < static_cast<double>(i) * 48000.1) {
-                    freq_max_ = static_cast<double>(i) * 20000.0;
-                    break;
-                }
-            }
+            freq_max_ = std::floor(sample_rate / 44100.0 * 20000.0);
         }
 
         void forceUpdate(const FilterParameters &paras) {
