@@ -220,11 +220,15 @@ namespace zlp {
         std::array<std::atomic<double>, kBandNum> dynamic_release_{};
         // histogram for dynamic auto-threshold
         double hist_unit_decay_{1.0}, slow_hist_unit_decay_{1.0};
+        std::array<double, 3> hist_percentiles_{0.1, 0.5, 0.9};
+        std::array<double, 3> hist_target_temp_{};
+        std::array<double, 3> hist_results_{};
         std::array<zldsp::histogram::Histogram<double>, kBandNum> histograms_
             = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, static_cast<size_t>(80));
         std::array<zldsp::histogram::Histogram<double>, kBandNum> slow_histograms_
             = make_array_of<zldsp::histogram::Histogram<double>, kBandNum>(-80.0, 0.0, static_cast<size_t>(80));
         std::array<std::atomic<double>, kBandNum> learned_thresholds_{};
+        std::array<std::atomic<double>, kBandNum> learned_knees_{};
         // array to hold dynamic gains
         std::array<std::atomic<double>, kBandNum> dynamic_gain_display_{};
 

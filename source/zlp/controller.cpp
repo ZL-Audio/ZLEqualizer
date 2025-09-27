@@ -343,6 +343,7 @@ namespace zlp {
                         slow_histograms_[i].reset();
                         learned_thresholds_[i].store(-40.0, std::memory_order::relaxed);
                     }
+                    hist_results_[1] = 0.0;
                 }
                 if (c_dynamic_th_learn_[i]) {
                     c_dynamic_threshold_[i] = dynamic_threshold_[i].load(std::memory_order::relaxed) + 40.0;
@@ -504,26 +505,31 @@ namespace zlp {
             // process side filter
             side_filters_[i].process(side_copy_pointers_, num_samples);
             // calculate side histogram loudness if dynamic learn is on
-            double side_hist_loudness = 0.0;
             if (c_dynamic_th_learn_[i]) {
                 double side_current_loudness = 0.0;
                 for (size_t chan = 0; chan < side_pointers.size(); ++chan) {
                     auto side_v = kfr::make_univector(side_copy_pointers_[chan], num_samples);
                     side_current_loudness += kfr::sumsqr(side_v) / static_cast<double>(num_samples);
                 }
+                side_current_loudness = zldsp::chore::squareGainToDecibels(side_current_loudness);
                 // update histograms
-                histograms_[i].setDecay(std::pow(hist_unit_decay_, static_cast<double>(num_samples)));
-                side_current_loudness = zldsp::chore::squareGainToDecibels(side_total_loudness);
-                histograms_[i].push(side_current_loudness);
-                side_hist_loudness = histograms_[i].getPercentile(0.5);
                 slow_histograms_[i].setDecay(std::pow(slow_hist_unit_decay_, static_cast<double>(num_samples)));
                 slow_histograms_[i].push(side_current_loudness - side_total_loudness);
-                learned_thresholds_[i].store(slow_histograms_[i].getPercentile(0.5), std::memory_order::relaxed);
+                slow_histograms_[i].getPercentiles(hist_percentiles_, hist_target_temp_, hist_results_);
+                learned_thresholds_[i].store(hist_results_[1],
+                                             std::memory_order::relaxed);
+                learned_knees_[i].store(std::max(0.5 * (hist_results_[2] - hist_results_[0]), 2.0),
+                                        std::memory_order::relaxed);
+
+                histograms_[i].setDecay(std::pow(hist_unit_decay_, static_cast<double>(num_samples)));
+                histograms_[i].push(side_current_loudness);
+                histograms_[i].getPercentiles(hist_percentiles_, hist_target_temp_, hist_results_);
+                dynamic_side_handlers_[i].setKnee<false>(std::max(0.5 * (hist_results_[2] - hist_results_[0]), 5.0));
             }
             // update actual threshold if required
             if (c_dynamic_th_relative_[i] || c_dynamic_th_learn_[i]) {
                 dynamic_side_handlers_[i].setThreshold(
-                    side_hist_loudness - side_total_loudness + c_dynamic_threshold_[i]);
+                    hist_results_[1] - side_total_loudness + c_dynamic_threshold_[i]);
             }
         }
         // process the actual filter

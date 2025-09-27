@@ -64,6 +64,40 @@ namespace zldsp::histogram {
             return max_val_;
         }
 
+        /**
+         * get the approximate values at multiple given percentiles
+         * @param ps sorted percentiles, 0.0 < ps < 1.0
+         * @param target_counts temp buffer for storing target counts
+         * @param results
+         * @return
+         */
+        void getPercentiles(std::span<double> ps,
+                            std::span<double> target_counts,
+                            std::span<FloatType> results) const {
+            // calculate target counts
+            for (size_t i = 0; i < ps.size(); ++i) {
+                target_counts[i] = total_count_ * ps[i];
+            }
+            double current_count{0.};
+            size_t p_idx{0};
+            for (size_t i = 0; i < bins_.size(); ++i) {
+                current_count += bins_[i];
+                while (current_count >= target_counts[p_idx]) {
+                    const auto fraction = bins_[i] > 1e-3
+                                              ? (target_counts[p_idx] - (current_count - bins_[i])) / bins_[i]
+                                              : 0.0;
+                    results[p_idx] = min_val_ + static_cast<FloatType>(static_cast<double>(i) + fraction) * bin_width_;
+                    p_idx += 1;
+                    if (p_idx == ps.size()) {
+                        return;
+                    }
+                }
+            }
+            for (; p_idx < ps.size(); ++p_idx) {
+                results[p_idx] = max_val_;
+            }
+        }
+
     private:
         FloatType min_val_, max_val_;
         kfr::univector<double> bins_;
