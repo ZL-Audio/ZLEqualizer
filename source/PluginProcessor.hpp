@@ -79,6 +79,8 @@ private:
     std::array<double*, 2> main_pointers_{}, side_pointers_{};
     zlp::Controller controller_;
     std::array<std::unique_ptr<zlp::FilterAttach>, zlp::kBandNum> filter_attachments_;
+    std::array<std::unique_ptr<zlp::FilterDynamicAttach>, zlp::kBandNum> filter_dynamic_attachments_;
+    std::array<std::unique_ptr<zlp::FilterSideAttach>, zlp::kBandNum> filter_side_attachments_;
     zlp::ChoreAttach chore_attachment_;
 
     enum ChannelLayout {

@@ -17,7 +17,6 @@ namespace zlp {
           controller_(controller),
           idx_(idx),
           empty_(controller.getEmptyFilters()[idx]),
-          side_empty_(controller.getSideEmptyFilters()[idx]),
           dynamic_on_(*parameters.getRawParameterValue(PDynamicON::kID + std::to_string(idx))),
           side_link_(*parameters.getRawParameterValue(PSideLink::kID + std::to_string(idx))),
           side_filter_type_updater_(parameters, PSideFilterType::kID + std::to_string(idx)),
@@ -62,44 +61,12 @@ namespace zlp {
                 side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideQ();
             }
-        } else if (parameter_ID.startsWith(PDynamicON::kID)) {
-            controller_.setDynamicON(idx_, value > .5f);
-        } else if (parameter_ID.startsWith(PDynamicBypass::kID)) {
-            controller_.setDynamicBypass(idx_, value > .5f);
-        } else if (parameter_ID.startsWith(PDynamicLearn::kID)) {
-            controller_.setDynamicLearn(idx_, value > .5f);
-        } else if (parameter_ID.startsWith(PDynamicRelative::kID)) {
-            controller_.setDynamicRelative(idx_, value > .5f);
-        } else if (parameter_ID.startsWith(PSideSwap::kID)) {
-            controller_.setDynamicSwap(idx_, value > .5f);
         } else if (parameter_ID.startsWith(PSideLink::kID)) {
             if (value > .5f) {
                 updateSideFilterType();
                 updateSideFreq();
                 updateSideQ();
             }
-        } else if (parameter_ID.startsWith(PThreshold::kID)) {
-            controller_.setDynamicThreshold(idx_, value);
-        } else if (parameter_ID.startsWith(PKneeW::kID)) {
-            controller_.setDynamicKnee(idx_, value);
-        } else if (parameter_ID.startsWith(PAttack::kID)) {
-            controller_.setDynamicAttack(idx_, value);
-        } else if (parameter_ID.startsWith(PRelease::kID)) {
-            controller_.setDynamicRelease(idx_, value);
-        } else if (parameter_ID.startsWith(PSideFilterType::kID)) {
-            if (value < .5f) {
-                side_empty_.setFilterType(zldsp::filter::kBandPass);
-            } else if (value < 1.5f) {
-                side_empty_.setFilterType(zldsp::filter::kLowPass);
-            } else {
-                side_empty_.setFilterType(zldsp::filter::kHighPass);
-            }
-        } else if (parameter_ID.startsWith(PSideFreq::kID)) {
-            side_empty_.setFreq(value);
-        } else if (parameter_ID.startsWith(PSideQ::kID)) {
-            side_empty_.setQ(value);
-        } else if (parameter_ID.startsWith(PTargetGain::kID)) {
-            side_empty_.setGain(value);
         }
     }
 

@@ -10,52 +10,33 @@
 #pragma once
 
 #include "controller.hpp"
-#include "juce_helper/para_updater.hpp"
 
 namespace zlp {
-    class FilterAttach final : private juce::AudioProcessorValueTreeState::Listener {
+    class FilterSideAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
-        explicit FilterAttach(juce::AudioProcessor& processor,
+        explicit FilterSideAttach(juce::AudioProcessor& processor,
                               juce::AudioProcessorValueTreeState& parameters,
                               Controller& controller,
                               size_t idx);
 
-        ~FilterAttach() override;
+        ~FilterSideAttach() override;
 
     private:
         juce::AudioProcessorValueTreeState& parameters_;
         Controller& controller_;
         size_t idx_;
-        zldsp::filter::Empty& empty_;
-
-        std::atomic<float>& dynamic_on_;
-        std::atomic<float>& side_link_;
-
-        juce_helper::ParaUpdater side_filter_type_updater_;
-        juce_helper::ParaUpdater side_freq_updater_;
-        juce_helper::ParaUpdater side_Q_updater_;
+        zldsp::filter::Empty& side_empty_;
 
         static constexpr std::array kIDs{
-            PFilterStatus::kID, PFilterType::kID, POrder::kID, PLRMode::kID,
-            PFreq::kID, PGain::kID, PQ::kID,
-            PSideLink::kID,
+            PSideFilterType::kID, PSideOrder::kID, PSideFreq::kID, PSideQ::kID, PTargetGain::kID
         };
 
         static constexpr std::array kDefaultVs{
-            static_cast<float>(PFilterStatus::kDefaultI),
-            static_cast<float>(PFilterType::kDefaultI),
-            static_cast<float>(POrder::kDefaultI),
-            static_cast<float>(PLRMode::kDefaultI),
-            PFreq::kDefaultV, PGain::kDefaultV, PQ::kDefaultV,
-            static_cast<float>(PSideLink::kDefaultV),
+            static_cast<float>(PSideFilterType::kDefaultI),
+            static_cast<float>(PSideOrder::kDefaultI),
+            PSideFreq::kDefaultV, PSideQ::kDefaultV, PTargetGain::kDefaultV
         };
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
-
-        void updateSideFilterType();
-
-        void updateSideFreq();
-
-        void updateSideQ();
     };
 } // zlp

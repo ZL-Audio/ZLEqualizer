@@ -417,6 +417,17 @@ namespace zlp {
         int static constexpr kDefaultI = 0;
     };
 
+    class PSideOrder : public ChoiceParameters<PSideOrder> {
+    public:
+        auto static constexpr kID = "side_order";
+        auto static constexpr kName = "Side Order";
+        inline auto static const kChoices = juce::StringArray{
+            "6 dB/oct", "12 dB/oct", "24 dB/oct", "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"
+        };
+        int static constexpr kDefaultI = 1;
+        static constexpr std::array<size_t, 8> kOrderArray{1, 2, 4, 6, 8, 12, 16};
+    };
+
     class PSideFreq : public FloatParameters<PSideFreq> {
     public:
         auto static constexpr kID = "side_freq";
@@ -449,7 +460,8 @@ namespace zlp {
                        PSideSwap::get(suffix),
                        PSideLink::get(suffix, true, true),
                        PThreshold::get(suffix), PKneeW::get(suffix), PAttack::get(suffix), PRelease::get(suffix),
-                       PSideFilterType::get(suffix), PSideFreq::get(suffix), PSideQ::get(suffix));
+                       PSideFilterType::get(suffix), PSideOrder::get(suffix),
+                       PSideFreq::get(suffix), PSideQ::get(suffix));
         }
         return layout;
     }

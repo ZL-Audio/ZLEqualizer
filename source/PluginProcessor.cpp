@@ -33,8 +33,9 @@ PluginProcessor::PluginProcessor()
       ext_side_(*parameters_.getRawParameterValue(zlp::PExtSide::kID)),
       bypass_(*parameters_.getRawParameterValue(zlp::PBypass::kID)) {
     for (size_t i = 0; i < zlp::kBandNum; ++i) {
-        filter_attachments_[i] = std::make_unique<zlp::FilterAttach>(
-            *this, parameters_, controller_, i);
+        filter_attachments_[i] = std::make_unique<zlp::FilterAttach>(*this, parameters_, controller_, i);
+        filter_dynamic_attachments_[i] = std::make_unique<zlp::FilterDynamicAttach>(*this, parameters_, controller_, i);
+        filter_side_attachments_[i] = std::make_unique<zlp::FilterSideAttach>(*this, parameters_, controller_, i);
     }
 }
 
@@ -361,7 +362,7 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock& dest_data) {
     copyXmlToBinary(*xml, dest_data);
 }
 
-void PluginProcessor::setStateInformation(const void* data, int size_in_bytes) {
+void PluginProcessor::setStateInformation(const void* data, const int size_in_bytes) {
     std::unique_ptr<juce::XmlElement> xml_state(getXmlFromBinary(data, size_in_bytes));
     if (xml_state != nullptr && xml_state->hasTagName("ZLCompressorParaState")) {
         const auto temp_tree = juce::ValueTree::fromXml(*xml_state);
