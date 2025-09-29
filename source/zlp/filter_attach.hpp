@@ -10,6 +10,7 @@
 #pragma once
 
 #include "controller.hpp"
+#include "juce_helper/para_updater.hpp"
 
 namespace zlp {
     class FilterAttach final : private juce::AudioProcessorValueTreeState::Listener {
@@ -27,14 +28,24 @@ namespace zlp {
         size_t idx_;
         zldsp::filter::Empty& empty_;
         zldsp::filter::Empty& side_empty_;
+
+        std::atomic<float>& dynamic_on_;
+        std::atomic<float>& side_link_;
+
+        juce_helper::ParaUpdater side_filter_type_updater_;
+        juce_helper::ParaUpdater side_freq_updater_;
+        juce_helper::ParaUpdater side_Q_updater_;
+
         static constexpr std::array kIDs{
             PFilterStatus::kID, PFilterType::kID, POrder::kID, PLRMode::kID,
             PFreq::kID, PGain::kID, PQ::kID,
             PDynamicON::kID, PDynamicBypass::kID,
-            PDynamicLearn::kID, PDynamicRelative::kID, PSideSwap::kID,
+            PDynamicLearn::kID, PDynamicRelative::kID,
+            PSideSwap::kID, PSideLink::kID,
             PThreshold::kID, PKneeW::kID, PAttack::kID, PRelease::kID,
-            PSideFreq::kID, PSideQ::kID, PTargetGain::kID
+            PSideFilterType::kID, PSideFreq::kID, PSideQ::kID, PTargetGain::kID
         };
+
         static constexpr std::array kDefaultVs{
             static_cast<float>(PFilterStatus::kDefaultI),
             static_cast<float>(PFilterType::kDefaultI),
@@ -46,10 +57,18 @@ namespace zlp {
             static_cast<float>(PDynamicLearn::kDefaultV),
             static_cast<float>(PDynamicRelative::kDefaultV),
             static_cast<float>(PSideSwap::kDefaultV),
+            static_cast<float>(PSideLink::kDefaultV),
             PThreshold::kDefaultV, PKneeW::kDefaultV, PAttack::kDefaultV, PRelease::kDefaultV,
+            static_cast<float>(PSideFilterType::kDefaultI),
             PSideFreq::kDefaultV, PSideQ::kDefaultV, PTargetGain::kDefaultV
         };
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
+
+        void updateSideFilterType();
+
+        void updateSideFreq();
+
+        void updateSideQ();
     };
 } // zlp

@@ -140,14 +140,14 @@ namespace zlp {
                                                                T::kName, T::kRange, T::kDefaultV, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterFloat> get(const std::string& suffix, const bool automate = true) {
-            auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::kName);
+        static std::unique_ptr<juce::AudioParameterFloat> get(const std::string& suffix) {
+            auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(true).withLabel(T::kName);
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                                T::kName + suffix, T::kRange, T::kDefaultV, attributes);
         }
 
         static std::unique_ptr<juce::AudioParameterFloat> get(const std::string& suffix, const bool meta,
-                                                              const bool automate = true) {
+                                                              const bool automate) {
             auto attributes = juce::AudioParameterFloatAttributes().withAutomatable(automate).withLabel(T::kName).
                                                                     withMeta(meta);
             return std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(T::kID + suffix, kVersionHint),
@@ -163,20 +163,20 @@ namespace zlp {
     template <class T>
     class BoolParameters {
     public:
-        static std::unique_ptr<juce::AudioParameterBool> get(bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterBool> get(const bool automate = true) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::kName);
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::kID, kVersionHint),
                                                               T::kName, T::kDefaultV, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterBool> get(const std::string& suffix, bool automate = true) {
-            auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::kName);
+        static std::unique_ptr<juce::AudioParameterBool> get(const std::string& suffix) {
+            auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(true).withLabel(T::kName);
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                               T::kName + suffix, T::kDefaultV, attributes);
         }
 
         static std::unique_ptr<juce::AudioParameterBool> get(const std::string& suffix, const bool meta,
-                                                             const bool automate = true) {
+                                                             const bool automate) {
             auto attributes = juce::AudioParameterBoolAttributes().withAutomatable(automate).withLabel(T::kName).
                                                                    withMeta(meta);
             return std::make_unique<juce::AudioParameterBool>(juce::ParameterID(T::kID + suffix, kVersionHint),
@@ -198,15 +198,15 @@ namespace zlp {
                                                                 T::kName, T::kChoices, T::kDefaultI, attributes);
         }
 
-        static std::unique_ptr<juce::AudioParameterChoice> get(const std::string& suffix, const bool automate = true) {
-            auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::kName);
+        static std::unique_ptr<juce::AudioParameterChoice> get(const std::string& suffix) {
+            auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(true).withLabel(T::kName);
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::kID + suffix, kVersionHint),
                                                                 T::kName + suffix, T::kChoices, T::kDefaultI,
                                                                 attributes);
         }
 
         static std::unique_ptr<juce::AudioParameterChoice> get(const std::string& suffix, const bool meta,
-                                                               const bool automate = true) {
+                                                               const bool automate) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::kName).
                                                                      withMeta(meta);
             return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::kID + suffix, kVersionHint),
@@ -368,6 +368,13 @@ namespace zlp {
         auto static constexpr kDefaultV = false;
     };
 
+    class PSideLink : public BoolParameters<PSideLink> {
+    public:
+        auto static constexpr kID = "side_link";
+        auto static constexpr kName = "Side Link";
+        auto static constexpr kDefaultV = false;
+    };
+
     class PThreshold : public FloatParameters<PThreshold> {
     public:
         auto static constexpr kID = "threshold";
@@ -400,6 +407,16 @@ namespace zlp {
         auto static constexpr kDefaultV = 500.f;
     };
 
+    class PSideFilterType : public ChoiceParameters<PSideFilterType> {
+    public:
+        auto static constexpr kID = "side_filter_type";
+        auto static constexpr kName = "Side Filter Type";
+        inline auto static const kChoices = juce::StringArray{
+            "Band Pass", "Low Pass", "High Pass"
+        };
+        int static constexpr kDefaultI = 0;
+    };
+
     class PSideFreq : public FloatParameters<PSideFreq> {
     public:
         auto static constexpr kID = "side_freq";
@@ -421,12 +438,18 @@ namespace zlp {
         layout.add(PFilterStructure::get(), PExtSide::get(), PBypass::get());
         for (size_t i = 0; i < kBandNum; ++i) {
             const auto suffix = std::to_string(i);
-            layout.add(PFilterStatus::get(suffix), PFilterType::get(suffix), POrder::get(suffix), PLRMode::get(suffix),
-                       PFreq::get(suffix), PGain::get(suffix), PTargetGain::get(suffix), PQ::get(suffix),
+            layout.add(PFilterStatus::get(suffix),
+                       PFilterType::get(suffix, true, true),
+                       POrder::get(suffix), PLRMode::get(suffix),
+                       PFreq::get(suffix, true, true),
+                       PGain::get(suffix), PTargetGain::get(suffix),
+                       PQ::get(suffix, true, true),
                        PDynamicON::get(suffix), PDynamicLearn::get(suffix),
-                       PDynamicBypass::get(suffix), PDynamicRelative::get(suffix), PSideSwap::get(suffix),
+                       PDynamicBypass::get(suffix), PDynamicRelative::get(suffix),
+                       PSideSwap::get(suffix),
+                       PSideLink::get(suffix, true, true),
                        PThreshold::get(suffix), PKneeW::get(suffix), PAttack::get(suffix), PRelease::get(suffix),
-                       PSideFreq::get(suffix), PSideQ::get(suffix));
+                       PSideFilterType::get(suffix), PSideFreq::get(suffix), PSideQ::get(suffix));
         }
         return layout;
     }

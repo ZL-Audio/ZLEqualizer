@@ -24,7 +24,7 @@ namespace zlp::juce_helper {
         }
 
         void update(const float para_value) {
-            value_.store(para_value);
+            value_.store(para_value, std::memory_order::relaxed);
             triggerAsyncUpdate();
         }
 
@@ -42,7 +42,7 @@ namespace zlp::juce_helper {
 
         void handleAsyncUpdate() override {
             para_->beginChangeGesture();
-            para_->setValueNotifyingHost(value_.load());
+            para_->setValueNotifyingHost(value_.load(std::memory_order::relaxed));
             para_->endChangeGesture();
         }
     };
