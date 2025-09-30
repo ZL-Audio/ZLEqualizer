@@ -15,8 +15,9 @@ namespace zlp {
                              Controller& controller)
         : parameters_(parameters), controller_(controller) {
         for (size_t i = 0; i < kIDs.size(); ++i) {
-            parameterChanged(kIDs[i], kDefaultVs[i]);
             parameters_.addParameterListener(kIDs[i], this);
+            parameterChanged(kIDs[i],
+                             parameters.getRawParameterValue(kIDs[i])->load(std::memory_order::relaxed));
         }
     }
 

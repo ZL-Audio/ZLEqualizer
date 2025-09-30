@@ -59,6 +59,12 @@ namespace zlp {
 
         hist_unit_decay_ = std::pow(0.9, 1.0 / sample_rate);
         slow_hist_unit_decay_ = std::pow(0.99, 1.0 / sample_rate);
+
+        for (size_t chan = 0; chan < 2; ++chan) {
+            pre_main_buffers_[chan].resize(max_num_samples);
+            pre_main_pointers_[chan] = pre_main_buffers_[chan].data();
+        }
+        fft_analyzer_.prepare(sample_rate, {2, 2, 2});
     }
 
     void Controller::prepareBuffer() {
@@ -365,6 +371,11 @@ namespace zlp {
     void Controller::process(std::array<double*, 2> main_pointers, std::array<double*, 2> side_pointers,
                              const size_t num_samples) {
         prepareBuffer();
+        c_editor_on_ = editor_on_.load(std::memory_order::relaxed);
+        if (c_editor_on_) {
+            zldsp::vector::copy(pre_main_pointers_[0], main_pointers[0], num_samples);
+            zldsp::vector::copy(pre_main_pointers_[1], main_pointers[1], num_samples);
+        }
         switch (c_filter_structure_) {
         case kMinimum:
         case kMatched:
@@ -382,6 +393,12 @@ namespace zlp {
             processParallelPost(main_pointers, num_samples);
             break;
         }
+        }
+
+        if (c_editor_on_) {
+            fft_analyzer_.process(
+                {std::span(main_pointers), std::span(pre_main_pointers_), std::span(side_pointers)},
+                num_samples);
         }
 
         switch (c_filter_structure_) {

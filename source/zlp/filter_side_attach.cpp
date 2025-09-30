@@ -11,16 +11,17 @@
 
 namespace zlp {
     FilterSideAttach::FilterSideAttach(juce::AudioProcessor&,
-                               juce::AudioProcessorValueTreeState& parameters,
-                               Controller& controller, const size_t idx)
+                                       juce::AudioProcessorValueTreeState& parameters,
+                                       Controller& controller, const size_t idx)
         : parameters_(parameters),
           controller_(controller),
           idx_(idx),
           side_empty_(controller.getSideEmptyFilters()[idx]) {
         juce::ignoreUnused(controller_);
         for (size_t i = 0; i < kIDs.size(); ++i) {
-            parameterChanged(kIDs[i], kDefaultVs[i]);
-            parameters_.addParameterListener(kIDs[i] + std::to_string(idx_), this);
+            const auto ID = kIDs[i] + std::to_string(idx_);
+            parameters_.addParameterListener(ID, this);
+            parameterChanged(ID, parameters.getRawParameterValue(ID)->load(std::memory_order::relaxed));
         }
     }
 

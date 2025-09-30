@@ -221,62 +221,62 @@ namespace zlp {
 
     class PFilterStructure : public ChoiceParameters<PFilterStructure> {
     public:
-        auto static constexpr kID = "filter_structure";
-        auto static constexpr kName = "Filter Structure";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "filter_structure";
+        static constexpr auto kName = "Filter Structure";
+        inline static const auto kChoices = juce::StringArray{
             "Minimum Phase", "State Variable", "Parallel",
             "Matched Phase", "Mixed Phase", "Zero Phase"
         };
-        int static constexpr kDefaultI = 0;
+        static constexpr int kDefaultI = 0;
     };
 
     class PExtSide : public BoolParameters<PExtSide> {
     public:
-        auto static constexpr kID = "external_side";
-        auto static constexpr kName = "External Side";
-        auto static constexpr kDefaultV = false;
+        static constexpr auto kID = "external_side";
+        static constexpr auto kName = "External Side";
+        static constexpr auto kDefaultV = false;
     };
 
     class PBypass : public ChoiceParameters<PBypass> {
     public:
-        auto static constexpr kID = "bypass";
-        auto static constexpr kName = "Bypass";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "bypass";
+        static constexpr auto kName = "Bypass";
+        inline static const auto kChoices = juce::StringArray{
             "ON", "Bypass"
         };
-        int static constexpr kDefaultI = 0;
+        static constexpr int kDefaultI = 0;
     };
 
     class PFilterStatus : public ChoiceParameters<PFilterStatus> {
     public:
-        auto static constexpr kID = "filter_status";
-        auto static constexpr kName = "Filter Status";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "filter_status";
+        static constexpr auto kName = "Filter Status";
+        inline static const auto kChoices = juce::StringArray{
             "OFF", "Bypass", "ON"
         };
-        int static constexpr kDefaultI = 0;
+        static constexpr int kDefaultI = 0;
     };
 
     class PFilterType : public ChoiceParameters<PFilterType> {
     public:
-        auto static constexpr kID = "filter_type";
-        auto static constexpr kName = "Filter Type";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "filter_type";
+        static constexpr auto kName = "Filter Type";
+        inline static const auto kChoices = juce::StringArray{
             "Peak", "Low Shelf", "Low Pass",
             "High Shelf", "High Pass", "Notch",
             "Band Pass", "Tilt Shelf"
         };
-        int static constexpr kDefaultI = 0;
+        static constexpr int kDefaultI = 0;
     };
 
     class POrder : public ChoiceParameters<POrder> {
     public:
-        auto static constexpr kID = "order";
-        auto static constexpr kName = "Order";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "order";
+        static constexpr auto kName = "Order";
+        inline static const auto kChoices = juce::StringArray{
             "6 dB/oct", "12 dB/oct", "24 dB/oct", "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"
         };
-        int static constexpr kDefaultI = 1;
+        static constexpr int kDefaultI = 1;
         static constexpr std::array<size_t, 8> kOrderArray{1, 2, 4, 6, 8, 12, 16};
 
         static size_t convertToIdx(const size_t order) {
@@ -295,153 +295,153 @@ namespace zlp {
 
     class PLRMode : public ChoiceParameters<PLRMode> {
     public:
-        auto static constexpr kID = "lr_mode";
-        auto static constexpr kName = "LRMode";
-        inline auto static const kChoices = juce::StringArray{"Stereo", "Left", "Right", "Mid", "Side"};
-        int static constexpr kDefaultI = 0;
+        static constexpr auto kID = "lr_mode";
+        static constexpr auto kName = "LRMode";
+        inline static const auto kChoices = juce::StringArray{"Stereo", "Left", "Right", "Mid", "Side"};
+        static constexpr int kDefaultI = 0;
     };
 
     class PFreq : public FloatParameters<PFreq> {
     public:
-        auto static constexpr kID = "freq";
-        auto static constexpr kName = "Freq";
-        inline auto static const kRange = getLogMidRange(10.f, 160000.f, 1000.f, 0.1f);
-        auto static constexpr kDefaultV = 1000.f;
+        static constexpr auto kID = "freq";
+        static constexpr auto kName = "Freq";
+        inline static const auto kRange = getLogMidRange(10.f, 160000.f, 1000.f, 0.1f);
+        static constexpr auto kDefaultV = 1000.f;
     };
 
     class PGain : public FloatParameters<PGain> {
     public:
-        auto static constexpr kID = "gain";
-        auto static constexpr kName = "Gain";
-        inline auto static const kRange = juce::NormalisableRange<float>(-30, 30, .01f);
-        auto static constexpr kDefaultV = 0.f;
+        static constexpr auto kID = "gain";
+        static constexpr auto kName = "Gain";
+        inline static const auto kRange = juce::NormalisableRange<float>(-30, 30, .01f);
+        static constexpr auto kDefaultV = 0.f;
     };
 
     class PTargetGain : public FloatParameters<PTargetGain> {
     public:
-        auto static constexpr kID = "target_gain";
-        auto static constexpr kName = "Target Gain";
-        inline auto static const kRange = juce::NormalisableRange<float>(-30, 30, .01f);
-        auto static constexpr kDefaultV = 0.f;
+        static constexpr auto kID = "target_gain";
+        static constexpr auto kName = "Target Gain";
+        inline static const auto kRange = juce::NormalisableRange<float>(-30, 30, .01f);
+        static constexpr auto kDefaultV = 0.f;
     };
 
     class PQ : public FloatParameters<PQ> {
     public:
-        auto static constexpr kID = "q";
-        auto static constexpr kName = "Q";
-        inline auto static const kRange = getLogMidRange(0.025f, 25.f, 0.707f, 0.001f);
-        auto static constexpr kDefaultV = 0.707f;
+        static constexpr auto kID = "q";
+        static constexpr auto kName = "Q";
+        inline static const auto kRange = getLogMidRange(0.025f, 25.f, 0.707f, 0.001f);
+        static constexpr auto kDefaultV = 0.707f;
     };
 
     class PDynamicON : public BoolParameters<PDynamicON> {
     public:
-        auto static constexpr kID = "dynamic_on";
-        auto static constexpr kName = "Dynamic ON";
-        auto static constexpr kDefaultV = false;
+        static constexpr auto kID = "dynamic_on";
+        static constexpr auto kName = "Dynamic ON";
+        static constexpr auto kDefaultV = false;
     };
 
     class PDynamicLearn : public BoolParameters<PDynamicLearn> {
     public:
-        auto static constexpr kID = "dynamic_learn";
-        auto static constexpr kName = "Dynamic Learn";
-        auto static constexpr kDefaultV = false;
+        static constexpr auto kID = "dynamic_learn";
+        static constexpr auto kName = "Dynamic Learn";
+        static constexpr auto kDefaultV = false;
     };
 
     class PDynamicBypass : public BoolParameters<PDynamicBypass> {
     public:
-        auto static constexpr kID = "dynamic_bypass";
-        auto static constexpr kName = "Dynamic Bypass";
-        auto static constexpr kDefaultV = false;
+        static constexpr auto kID = "dynamic_bypass";
+        static constexpr auto kName = "Dynamic Bypass";
+        static constexpr auto kDefaultV = false;
     };
 
     class PDynamicRelative : public BoolParameters<PDynamicRelative> {
     public:
-        auto static constexpr kID = "dynamic_relative";
-        auto static constexpr kName = "Dynamic Relative";
-        auto static constexpr kDefaultV = false;
+        static constexpr auto kID = "dynamic_relative";
+        static constexpr auto kName = "Dynamic Relative";
+        static constexpr auto kDefaultV = false;
     };
 
     class PSideSwap : public BoolParameters<PSideSwap> {
     public:
-        auto static constexpr kID = "side_swap";
-        auto static constexpr kName = "Side Swap";
-        auto static constexpr kDefaultV = false;
+        static constexpr auto kID = "side_swap";
+        static constexpr auto kName = "Side Swap";
+        static constexpr auto kDefaultV = false;
     };
 
     class PSideLink : public BoolParameters<PSideLink> {
     public:
-        auto static constexpr kID = "side_link";
-        auto static constexpr kName = "Side Link";
-        auto static constexpr kDefaultV = false;
+        static constexpr auto kID = "side_link";
+        static constexpr auto kName = "Side Link";
+        static constexpr auto kDefaultV = false;
     };
 
     class PThreshold : public FloatParameters<PThreshold> {
     public:
-        auto static constexpr kID = "threshold";
-        auto static constexpr kName = "Threshold (dB)";
-        inline auto static const kRange = juce::NormalisableRange<float>(-80.f, 0.f, 0.1f);
-        auto static constexpr kDefaultV = -40.f;
+        static constexpr auto kID = "threshold";
+        static constexpr auto kName = "Threshold (dB)";
+        inline static const auto kRange = juce::NormalisableRange<float>(-80.f, 0.f, 0.1f);
+        static constexpr auto kDefaultV = -40.f;
     };
 
     class PKneeW : public FloatParameters<PKneeW> {
     public:
-        auto static constexpr kID = "knee_width";
-        auto static constexpr kName = "Knee Width";
-        inline auto static const kRange = getLogMidRangeShift(1.f, 33.f, 9.f, 0.01f, -1.f);
-        auto static constexpr kDefaultV = 8.f;
+        static constexpr auto kID = "knee_width";
+        static constexpr auto kName = "Knee Width";
+        inline static const auto kRange = getLogMidRangeShift(1.f, 33.f, 9.f, 0.01f, -1.f);
+        static constexpr auto kDefaultV = 8.f;
     };
 
     class PAttack : public FloatParameters<PAttack> {
     public:
-        auto static constexpr kID = "attack";
-        auto static constexpr kName = "Attack";
-        inline auto static const kRange = getLogMidRangeShift(20.f, 1020.f, 120.f, 0.01f, -20.f);
-        auto static constexpr kDefaultV = 100.f;
+        static constexpr auto kID = "attack";
+        static constexpr auto kName = "Attack";
+        inline static const auto kRange = getLogMidRangeShift(20.f, 1020.f, 120.f, 0.01f, -20.f);
+        static constexpr auto kDefaultV = 100.f;
     };
 
     class PRelease : public FloatParameters<PRelease> {
     public:
-        auto static constexpr kID = "release";
-        auto static constexpr kName = "Release";
-        inline auto static const kRange = getLogMidRangeShift(100.f, 5100.f, 600.f, 0.01f, -100.f);
-        auto static constexpr kDefaultV = 500.f;
+        static constexpr auto kID = "release";
+        static constexpr auto kName = "Release";
+        inline static const auto kRange = getLogMidRangeShift(100.f, 5100.f, 600.f, 0.01f, -100.f);
+        static constexpr auto kDefaultV = 500.f;
     };
 
     class PSideFilterType : public ChoiceParameters<PSideFilterType> {
     public:
-        auto static constexpr kID = "side_filter_type";
-        auto static constexpr kName = "Side Filter Type";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "side_filter_type";
+        static constexpr auto kName = "Side Filter Type";
+        inline static const auto kChoices = juce::StringArray{
             "Band Pass", "Low Pass", "High Pass"
         };
-        int static constexpr kDefaultI = 0;
+        static constexpr int kDefaultI = 0;
     };
 
     class PSideOrder : public ChoiceParameters<PSideOrder> {
     public:
-        auto static constexpr kID = "side_order";
-        auto static constexpr kName = "Side Order";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "side_order";
+        static constexpr auto kName = "Side Order";
+        inline static const auto kChoices = juce::StringArray{
             "6 dB/oct", "12 dB/oct", "24 dB/oct", "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"
         };
-        int static constexpr kDefaultI = 1;
+        static constexpr int kDefaultI = 1;
         static constexpr std::array<size_t, 8> kOrderArray{1, 2, 4, 6, 8, 12, 16};
     };
 
     class PSideFreq : public FloatParameters<PSideFreq> {
     public:
-        auto static constexpr kID = "side_freq";
-        auto static constexpr kName = "Side Freq";
-        inline auto static const kRange = getLogMidRange(10.f, 160000.f, 1000.f, 0.1f);
-        auto static constexpr kDefaultV = 1000.f;
+        static constexpr auto kID = "side_freq";
+        static constexpr auto kName = "Side Freq";
+        inline static const auto kRange = getLogMidRange(10.f, 160000.f, 1000.f, 0.1f);
+        static constexpr auto kDefaultV = 1000.f;
     };
 
     class PSideQ : public FloatParameters<PSideQ> {
     public:
-        auto static constexpr kID = "side_q";
-        auto static constexpr kName = "Side Q";
-        inline auto static const kRange = getLogMidRange(0.025f, 25.f, 0.707f, 0.001f);
-        auto static constexpr kDefaultV = 0.707f;
+        static constexpr auto kID = "side_q";
+        static constexpr auto kName = "Side Q";
+        inline static const auto kRange = getLogMidRange(0.025f, 25.f, 0.707f, 0.001f);
+        static constexpr auto kDefaultV = 0.707f;
     };
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {

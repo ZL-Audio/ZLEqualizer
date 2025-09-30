@@ -31,12 +31,6 @@ namespace zlp {
             PSideFilterType::kID, PSideOrder::kID, PSideFreq::kID, PSideQ::kID, PTargetGain::kID
         };
 
-        static constexpr std::array kDefaultVs{
-            static_cast<float>(PSideFilterType::kDefaultI),
-            static_cast<float>(PSideOrder::kDefaultI),
-            PSideFreq::kDefaultV, PSideQ::kDefaultV, PTargetGain::kDefaultV
-        };
-
         void parameterChanged(const juce::String& parameter_ID, float value) override;
     };
 } // zlp

@@ -10,22 +10,24 @@
 #pragma once
 
 #include "controller.hpp"
+#include "../state/state_definitions.hpp"
 
 namespace zlp {
-    class ChoreAttach final : private juce::AudioProcessorValueTreeState::Listener {
+    class AnalyzerAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
-        explicit ChoreAttach(juce::AudioProcessor& processor,
-                             juce::AudioProcessorValueTreeState& parameters,
+        explicit AnalyzerAttach(juce::AudioProcessor& processor,
+                             juce::AudioProcessorValueTreeState& parameters_NA,
                              Controller& controller);
 
-        ~ChoreAttach() override;
+        ~AnalyzerAttach() override;
 
     private:
-        juce::AudioProcessorValueTreeState& parameters_;
+        juce::AudioProcessorValueTreeState& parameters_NA_;
         Controller& controller_;
 
         static constexpr std::array kIDs{
-            PFilterStructure::kID
+            zlstate::PFFTPreON::kID, zlstate::PFFTPostON::kID, zlstate::PFFTSideON::kID,
+            zlstate::PFFTSpeed::kID, zlstate::PFFTTilt::kID
         };
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;

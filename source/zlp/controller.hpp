@@ -25,6 +25,8 @@
 #include "../dsp/filter/fir_filter/mixed_correction/mixed_calculator.hpp"
 #include "../dsp/filter/fir_filter/zero_correction/zero_correction.hpp"
 #include "../dsp/filter/fir_filter/zero_correction/zero_calculator.hpp"
+
+#include "../dsp/fft_analyzer/multiple_fft_analyzer.hpp"
 #include "../dsp/splitter/inplace_ms_splitter.hpp"
 #include "../dsp/histogram/histogram.hpp"
 
@@ -116,6 +118,14 @@ namespace zlp {
 
         std::array<zldsp::filter::Empty, kBandNum>& getSideEmptyFilters() {
             return side_emptys_;
+        }
+
+        void setEditorON(const bool editor_on) {
+            editor_on_.store(editor_on, std::memory_order::relaxed);
+        }
+
+        zldsp::analyzer::MultipleFFTAnalyzer<double, 3, 251>& getFFTAnalyzer() {
+            return fft_analyzer_;
         }
 
     private:
@@ -231,6 +241,12 @@ namespace zlp {
         std::array<std::atomic<double>, kBandNum> learned_knees_{};
         // array to hold dynamic gains
         std::array<std::atomic<double>, kBandNum> dynamic_gain_display_{};
+
+        std::array<std::vector<double>, 2> pre_main_buffers_{};
+        std::array<double*, 2> pre_main_pointers_{};
+        std::atomic<bool> editor_on_{false};
+        bool c_editor_on_{false};
+        zldsp::analyzer::MultipleFFTAnalyzer<double, 3, 251> fft_analyzer_;
 
         void prepareBuffer();
 

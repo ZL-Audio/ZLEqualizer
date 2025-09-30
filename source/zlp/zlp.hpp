@@ -15,3 +15,4 @@
 #include "filter_dynamic_attach.hpp"
 #include "filter_side_attach.hpp"
 #include "chore_attach.hpp"
+#include "analyzer_attach.hpp"

@@ -41,15 +41,6 @@ namespace zlp {
             PSideLink::kID,
         };
 
-        static constexpr std::array kDefaultVs{
-            static_cast<float>(PFilterStatus::kDefaultI),
-            static_cast<float>(PFilterType::kDefaultI),
-            static_cast<float>(POrder::kDefaultI),
-            static_cast<float>(PLRMode::kDefaultI),
-            PFreq::kDefaultV, PGain::kDefaultV, PQ::kDefaultV,
-            static_cast<float>(PSideLink::kDefaultV),
-        };
-
         void parameterChanged(const juce::String& parameter_ID, float value) override;
 
         void updateSideFilterType();

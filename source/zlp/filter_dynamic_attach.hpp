@@ -33,15 +33,6 @@ namespace zlp {
             PThreshold::kID, PKneeW::kID, PAttack::kID, PRelease::kID,
         };
 
-        static constexpr std::array kDefaultVs{
-            static_cast<float>(PDynamicON::kDefaultV),
-            static_cast<float>(PDynamicBypass::kDefaultV),
-            static_cast<float>(PDynamicLearn::kDefaultV),
-            static_cast<float>(PDynamicRelative::kDefaultV),
-            static_cast<float>(PSideSwap::kDefaultV),
-            PThreshold::kDefaultV, PKneeW::kDefaultV, PAttack::kDefaultV, PRelease::kDefaultV
-        };
-
         void parameterChanged(const juce::String& parameter_ID, float value) override;
     };
 } // zlp

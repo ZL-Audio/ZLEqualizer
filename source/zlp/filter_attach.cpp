@@ -23,8 +23,9 @@ namespace zlp {
           side_freq_updater_(parameters, PSideFreq::kID + std::to_string(idx)),
           side_Q_updater_(parameters, PSideQ::kID + std::to_string(idx)) {
         for (size_t i = 0; i < kIDs.size(); ++i) {
-            parameterChanged(kIDs[i], kDefaultVs[i]);
-            parameters_.addParameterListener(kIDs[i] + std::to_string(idx_), this);
+            const auto ID =  kIDs[i] + std::to_string(idx_);
+            parameters_.addParameterListener(ID, this);
+            parameterChanged(ID, parameters.getRawParameterValue(ID)->load(std::memory_order::relaxed));
         }
     }
 
@@ -86,15 +87,15 @@ namespace zlp {
         if (filter_type == zldsp::filter::kPeak
             || filter_type == zldsp::filter::kLowShelf
             || filter_type == zldsp::filter::kHighShelf) {
-            const auto freq = empty_.getFreq();
-            side_freq_updater_.update(zlp::PSideFreq::kRange.convertTo0to1(freq));
+            const auto freq = static_cast<float>(empty_.getFreq());
+            side_freq_updater_.update(PSideFreq::kRange.convertTo0to1(freq));
         }
     }
 
     void FilterAttach::updateSideQ() {
         if (empty_.getFilterType() == zldsp::filter::kPeak) {
             const auto q = empty_.getQ();
-            side_Q_updater_.update(zlp::PSideQ::kRange.convertTo0to1(q));
+            side_Q_updater_.update(PSideQ::kRange.convertTo0to1(q));
         }
     }
 }

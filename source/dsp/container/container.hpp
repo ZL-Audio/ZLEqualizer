@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "array.hpp"
 #include "circular_buffer.hpp"
 #include "circular_minmax_buffer.hpp"
 #include "abstract_fifo.hpp"

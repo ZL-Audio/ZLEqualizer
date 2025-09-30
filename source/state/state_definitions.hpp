@@ -111,106 +111,151 @@ namespace zlstate {
 
     class PEQMaxDB : public ChoiceParameters<PEQMaxDB> {
     public:
-        auto static constexpr kID = "eq_max_db";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "eq_max_db";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
             "6 dB", "12 dB", "30 dB"
         };
         static constexpr std::array kDBs = {6.f, 12.f, 30.f};
-        int static constexpr kDefaultI = 1;
+        static constexpr int kDefaultI = 1;
     };
 
-    class PEQMinDB : public ChoiceParameters<PEQMinDB> {
+    class PFFTMinDB : public ChoiceParameters<PFFTMinDB> {
     public:
-        auto static constexpr kID = "eq_min_db";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "fft_min_db";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
             "-60", "-72", "-96", "-120"
         };
         static constexpr std::array kDBs = {-60.f, -72.f, -96.f, -120.f};
-        int static constexpr kDefaultI = 1;
+        static constexpr int kDefaultI = 1;
 
         static float getMinDBFromIndex(const float x) {
             return kDBs[static_cast<size_t>(std::round(x))];
         }
     };
 
+    class PFFTPreON : public BoolParameters<PFFTPreON> {
+    public:
+        static constexpr auto kID = "fft_pre_on";
+        static constexpr auto kName = "";
+        static constexpr auto kDefaultV = true;
+    };
+
+    class PFFTPostON : public BoolParameters<PFFTPostON> {
+    public:
+        static constexpr auto kID = "fft_post_on";
+        static constexpr auto kName = "";
+        static constexpr auto kDefaultV = true;
+    };
+
+    class PFFTSideON : public BoolParameters<PFFTSideON> {
+    public:
+        static constexpr auto kID = "fft_side_on";
+        static constexpr auto kName = "";
+        static constexpr auto kDefaultV = true;
+    };
+
+    class PFFTSpeed : public ChoiceParameters<PFFTSpeed> {
+    public:
+        static constexpr auto kID = "fft_speed";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "Very Fast", "Fast", "Medium", "Slow", "Very Slow"
+        };
+        static constexpr std::array<float, 5> kSpeeds{0.90f, 0.93f, 0.95f, 0.98f, 0.99f};
+        static constexpr int kDefaultI = 2;
+    };
+
+    class PFFTTilt : public ChoiceParameters<PFFTTilt> {
+    public:
+        static constexpr auto kID = "fft_tilt";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "0 dB/oct", "1.5 dB/oct", "3 dB/oct", "4.5 dB/oct", "6 dB/oct"
+        };
+        static constexpr std::array<float, 5> kSlopes{0.f, 1.5f, 3.f, 4.5f, 6.f};
+        static constexpr int kDefaultI = 3;
+    };
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(PEQMaxDB::get(), PEQMinDB::get());
+        layout.add(PEQMaxDB::get(), PFFTMinDB::get(),
+                   PFFTPreON::get(), PFFTPostON::get(), PFFTSideON::get(),
+                   PFFTSpeed::get(), PFFTTilt::get());
         return layout;
     }
 
     class PWindowW : public FloatParameters<PWindowW> {
     public:
-        auto static constexpr kID = "window_w";
-        auto static constexpr kName = "";
-        inline static constexpr float minV = 600.f;
-        inline static constexpr float maxV = 6000.f;
-        inline static constexpr float kDefaultV = 600.f;
-        inline auto static const kRange = juce::NormalisableRange<float>(minV, maxV, 1.f);
+        static constexpr auto kID = "window_w";
+        static constexpr auto kName = "";
+        static constexpr auto kMinV = 600.f;
+        static constexpr auto kMaxV = 6000.f;
+        static constexpr auto kDefaultV = 600.f;
+        inline static const auto kRange = juce::NormalisableRange<float>(kMinV, kMaxV, 1.f);
     };
 
     class PWindowH : public FloatParameters<PWindowH> {
     public:
-        auto static constexpr kID = "window_h";
-        auto static constexpr kName = "";
-        inline static constexpr float minV = 282.f;
-        inline static constexpr float maxV = 6000.f;
-        inline static constexpr float kDefaultV = 371.f;
-        inline auto static const kRange = juce::NormalisableRange<float>(minV, maxV, 1.f);
+        static constexpr auto kID = "window_h";
+        static constexpr auto kName = "";
+        static constexpr auto kMinV = 282.f;
+        static constexpr auto kMaxV = 6000.f;
+        static constexpr auto kDefaultV = 371.f;
+        inline static const auto kRange = juce::NormalisableRange<float>(kMinV, kMaxV, 1.f);
     };
 
     class PWheelSensitivity : public FloatParameters<PWheelSensitivity> {
     public:
-        auto static constexpr kID = "wheel_sensitivity";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
-        auto static constexpr kDefaultV = 1.f;
+        static constexpr auto kID = "wheel_sensitivity";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        static constexpr auto kDefaultV = 1.f;
     };
 
     class PWheelFineSensitivity : public FloatParameters<PWheelFineSensitivity> {
     public:
-        auto static constexpr kID = "wheel_fine_sensitivity";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
-        auto static constexpr kDefaultV = .12f;
+        static constexpr auto kID = "wheel_fine_sensitivity";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
+        static constexpr auto kDefaultV = .12f;
     };
 
     class PWheelShiftReverse : public ChoiceParameters<PWheelShiftReverse> {
     public:
-        auto static constexpr kID = "wheel_shift_reverse";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "wheel_shift_reverse";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
             "No Change", "Reverse"
         };
-        int static constexpr kDefaultI = 0;
+        static constexpr int kDefaultI = 0;
     };
 
     class PDragSensitivity : public FloatParameters<PDragSensitivity> {
     public:
-        auto static constexpr kID = "drag_sensitivity";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
-        auto static constexpr kDefaultV = 1.f;
+        static constexpr auto kID = "drag_sensitivity";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        static constexpr auto kDefaultV = 1.f;
     };
 
     class PDragFineSensitivity : public FloatParameters<PDragFineSensitivity> {
     public:
-        auto static constexpr kID = "drag_fine_sensitivity";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
-        auto static constexpr kDefaultV = .25f;
+        static constexpr auto kID = "drag_fine_sensitivity";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
+        static constexpr auto kDefaultV = .25f;
     };
 
     class PRotaryStyle : public ChoiceParameters<PRotaryStyle> {
     public:
-        auto static constexpr kID = "rotary_style";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "rotary_style";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
             "Circular", "Horizontal", "Vertical", "Horiz + Vert"
         };
-        int static constexpr kDefaultI = 3;
+        static constexpr int kDefaultI = 3;
         inline static std::array<juce::Slider::SliderStyle, 4> styles{
             juce::Slider::Rotary,
             juce::Slider::RotaryHorizontalDrag,
@@ -221,70 +266,70 @@ namespace zlstate {
 
     class PRotaryDragSensitivity : public FloatParameters<PRotaryDragSensitivity> {
     public:
-        auto static constexpr kID = "rotary_drag_sensitivity";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(2.f, 32.f, 0.01f);
-        auto static constexpr kDefaultV = 10.f;
+        static constexpr auto kID = "rotary_drag_sensitivity";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(2.f, 32.f, 0.01f);
+        static constexpr auto kDefaultV = 10.f;
     };
 
     class PSliderDoubleClickFunc : public ChoiceParameters<PSliderDoubleClickFunc> {
     public:
-        auto static constexpr kID = "slider_double_click_func";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "slider_double_click_func";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
             "Return Default", "Open Editor"
         };
-        int static constexpr kDefaultI = 1;
+        static constexpr int kDefaultI = 1;
     };
 
     class PTargetRefreshSpeed : public ChoiceParameters<PTargetRefreshSpeed> {
     public:
-        auto static constexpr kID = "target_refresh_speed_id";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "target_refresh_speed_id";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
             "120 Hz", "90 Hz", "60 Hz", "30 Hz", "15 Hz"
         };
         static constexpr std::array<double, 5> kRates{120.0, 90.0, 60.0, 30.0, 15.0};
-        int static constexpr kDefaultI = 3;
+        static constexpr int kDefaultI = 3;
     };
 
     class PFFTExtraTilt : public FloatParameters<PFFTExtraTilt> {
     public:
-        auto static constexpr kID = "fft_extra_tilt";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(-4.5f, 4.5f, .01f);
-        auto static constexpr kDefaultV = 0.f;
+        static constexpr auto kID = "fft_extra_tilt";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(-4.5f, 4.5f, .01f);
+        static constexpr auto kDefaultV = 0.f;
     };
 
     class PFFTExtraSpeed : public FloatParameters<PFFTExtraSpeed> {
     public:
-        auto static constexpr kID = "fft_extra_speed";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(0.f, 2.f, .01f);
-        auto static constexpr kDefaultV = 1.f;
+        static constexpr auto kID = "fft_extra_speed";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 2.f, .01f);
+        static constexpr auto kDefaultV = 1.f;
     };
 
     class PMagCurveThickness : public FloatParameters<PMagCurveThickness> {
     public:
-        auto static constexpr kID = "mag_curve_thickness";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(0.f, 4.f, .01f);
-        auto static constexpr kDefaultV = 1.f;
+        static constexpr auto kID = "mag_curve_thickness";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 4.f, .01f);
+        static constexpr auto kDefaultV = 1.f;
     };
 
     class PEQCurveThickness : public FloatParameters<PEQCurveThickness> {
     public:
-        auto static constexpr kID = "eq_curve_thickness";
-        auto static constexpr kName = "";
-        inline auto static const kRange = juce::NormalisableRange<float>(0.f, 4.f, .01f);
-        auto static constexpr kDefaultV = 1.f;
+        static constexpr auto kID = "eq_curve_thickness";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 4.f, .01f);
+        static constexpr auto kDefaultV = 1.f;
     };
 
     class PTooltipLang : public ChoiceParameters<PTooltipLang> {
     public:
-        auto static constexpr kID = "tool_tip_lang";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "tool_tip_lang";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
             "Off",
             "System",
             "English",
@@ -295,14 +340,14 @@ namespace zlstate {
             juce::String(juce::CharPointer_UTF8("Deutsch")),
             juce::String(juce::CharPointer_UTF8("Español"))
         };
-        int static constexpr kDefaultI = 1;
+        static constexpr int kDefaultI = 1;
     };
 
     class PColourMapIdx : public ChoiceParameters<PColourMapIdx> {
     public:
-        auto static constexpr kID = "colour_map_idx";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = juce::StringArray{
+        static constexpr auto kID = "colour_map_idx";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
             "Default Light", "Default Dark",
             "Seaborn Normal Light", "Seaborn Normal Dark",
             "Seaborn Bright Light", "Seaborn Bright Dark"
@@ -318,23 +363,23 @@ namespace zlstate {
             kColourMapNum
         };
 
-        int static constexpr kDefaultI = 0;
+        static constexpr int kDefaultI = 0;
     };
 
     class PColourMap1Idx : public ChoiceParameters<PColourMap1Idx> {
     public:
-        auto static constexpr kID = "colour_map_1_idx";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = PColourMapIdx::kChoices;
-        int static constexpr kDefaultI = 1;
+        static constexpr auto kID = "colour_map_1_idx";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PColourMapIdx::kChoices;
+        static constexpr int kDefaultI = 1;
     };
 
     class PColourMap2Idx : public ChoiceParameters<PColourMap2Idx> {
     public:
-        auto static constexpr kID = "colour_map_2_idx";
-        auto static constexpr kName = "";
-        inline auto static const kChoices = PColourMapIdx::kChoices;
-        int static constexpr kDefaultI = 5;
+        static constexpr auto kID = "colour_map_2_idx";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PColourMapIdx::kChoices;
+        static constexpr int kDefaultI = 5;
     };
 
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout& layout,

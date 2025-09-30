@@ -23,10 +23,10 @@ PluginEditor::PluginEditor(PluginProcessor& p)
     // addAndMakeVisible(main_panel_);
 
     // set size & size listener
-    setResizeLimits(static_cast<int>(zlstate::PWindowW::minV),
-                    static_cast<int>(zlstate::PWindowH::minV),
-                    static_cast<int>(zlstate::PWindowW::maxV),
-                    static_cast<int>(zlstate::PWindowH::maxV));
+    setResizeLimits(static_cast<int>(zlstate::PWindowW::kMinV),
+                    static_cast<int>(zlstate::PWindowH::kMinV),
+                    static_cast<int>(zlstate::PWindowW::kMaxV),
+                    static_cast<int>(zlstate::PWindowH::kMaxV));
     setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
 
     this->resizableCorner = std::make_unique<zlgui::ResizeCorner>(base_, this, getConstrainer(),

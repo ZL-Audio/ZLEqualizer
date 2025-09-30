@@ -14,15 +14,11 @@
 #include "zlp/zlp.hpp"
 #include "state/state.hpp"
 
-#if (MSVC)
-#include "ipps.h"
-#endif
-
 class PluginProcessor : public juce::AudioProcessor {
 public:
     zlstate::DummyProcessor dummy_processor_;
     juce::AudioProcessorValueTreeState parameters_;
-    juce::AudioProcessorValueTreeState na_parameters_;
+    juce::AudioProcessorValueTreeState parameters_NA_;
     juce::AudioProcessorValueTreeState state_;
     zlstate::Property property_;
 
@@ -82,6 +78,7 @@ private:
     std::array<std::unique_ptr<zlp::FilterDynamicAttach>, zlp::kBandNum> filter_dynamic_attachments_;
     std::array<std::unique_ptr<zlp::FilterSideAttach>, zlp::kBandNum> filter_side_attachments_;
     zlp::ChoreAttach chore_attachment_;
+    zlp::AnalyzerAttach analyzer_attachment_;
 
     enum ChannelLayout {
         kMain1Aux0, kMain1Aux1, kMain1Aux2,
