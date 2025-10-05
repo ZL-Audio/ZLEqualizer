@@ -15,6 +15,7 @@ namespace zlpanel {
                                              zlgui::UIBase& base,
                                              const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
+        control_background_(base),
         close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
                                                             BinaryData::close_svgSize)),
         close_button_(base, close_drawable_.get(), nullptr),
@@ -45,6 +46,9 @@ namespace zlpanel {
                                                               BinaryData::dynamic_svgSize)),
         dynamic_button_(base, dynamic_drawable_.get(), dynamic_drawable_.get(),
                         tooltip_helper.getToolTipText(multilingual::kBandDynamic)) {
+        control_background_.setBufferedToImage(true);
+        addAndMakeVisible(control_background_);
+
         close_button_.setBufferedToImage(true);
         addAndMakeVisible(close_button_);
         close_button_.getButton().onClick = [this]() {
@@ -107,6 +111,8 @@ namespace zlpanel {
                 turnOnOffDynamic();
             }
         };
+
+        setInterceptsMouseClicks(false, true);
     }
 
     SubLeftControlPanel::~SubLeftControlPanel() = default;
@@ -125,6 +131,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
         auto bound = getLocalBounds();
+        control_background_.setBounds(bound);
         bound.reduce(padding, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
@@ -147,7 +154,7 @@ namespace zlpanel {
         q_slider_.setBounds(bound.removeFromRight(slider_width));
         bound.removeFromRight((slider_width + padding) * 2);
 
-        const auto box_height = juce::roundToInt(base_.getFontSize() * kBoxScale);
+        const auto box_height = juce::roundToInt(base_.getFontSize() * kBoxHeightScale);
         const auto h_padding = (bound.getHeight() - 3 * box_height) / 4;
         bound.removeFromBottom(h_padding);
         stereo_box_.setBounds(bound.removeFromBottom(box_height));

@@ -13,6 +13,38 @@
 #include "right_control_panel.hpp"
 
 namespace zlpanel {
-    class ControlPanel {
+    class ControlPanel final : public juce::Component {
+    public:
+        explicit ControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+                              const multilingual::TooltipHelper& tooltip_helper);
+
+        ~ControlPanel() override = default;
+
+        int getIdealWidth() const;
+
+        int getIdealHeight() const;
+
+        void resized() override;
+
+        void repaintCallBackSlow();
+
+        void updateBand();
+
+        void updateFreqMax(double freq_max);
+
+    private:
+        PluginProcessor& p_ref_;
+        zlgui::UIBase& base_;
+
+        LeftControlPanel left_control_panel_;
+        RightControlPanel right_control_panel_;
+
+        std::atomic<float>* dynamic_on_ptr_{nullptr};
+        bool c_dynamic_on_{false};
+
+        juce::Rectangle<int> left_bound{};
+        juce::Rectangle<int> center_bound{};
+
+        void turnOnOffDynamic(bool dynamic_on);
     };
 }

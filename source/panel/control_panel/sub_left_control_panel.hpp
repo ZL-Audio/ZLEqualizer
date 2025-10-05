@@ -13,6 +13,7 @@
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
 #include "../multilingual/tooltip_helper.hpp"
+#include "control_background.hpp"
 
 namespace zlpanel {
     class SubLeftControlPanel final : public juce::Component {
@@ -34,6 +35,8 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_;
+
+        ControlBackground control_background_;
 
         const std::unique_ptr<juce::Drawable> close_drawable_;
         zlgui::button::ClickButton close_button_;

@@ -13,9 +13,17 @@
 
 #pragma once
 
+#include "../../gui/gui.hpp"
+#include "../helper/helper.hpp"
+
 namespace zlpanel {
+    class ControlBackground final : public juce::Component {
+    public:
+        explicit ControlBackground(zlgui::UIBase& base);
 
-    class ControlBackground {
+        void paint(juce::Graphics& g) override;
+
+    private:
+        zlgui::UIBase& base_;
     };
-
 }

@@ -14,6 +14,8 @@
 #include "../helper/helper.hpp"
 #include "../multilingual/tooltip_helper.hpp"
 
+#include "control_background.hpp"
+
 namespace zlpanel {
     class RightControlPanel final : public juce::Component {
     public:
@@ -36,6 +38,8 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_;
+
+        ControlBackground control_background_;
 
         const std::unique_ptr<juce::Drawable> bypass_drawable_;
         zlgui::button::ClickButton bypass_button_;

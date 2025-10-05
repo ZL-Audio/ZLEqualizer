@@ -29,6 +29,8 @@ namespace zlpanel {
 
         void updateFreqMax(double freq_max);
 
+        void turnOnOffDynamic(bool dynamic_on);
+
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
@@ -43,8 +45,5 @@ namespace zlpanel {
         zlgui::slider::TwoValueRotarySlider<true, true, false> gain_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> gain_attachment_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> target_gain_attachment_;
-
-        std::atomic<float>* dynamic_on_ptr_{nullptr};
-        bool c_dynamic_on_{false};
     };
 } // zlpanel

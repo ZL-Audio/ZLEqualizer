@@ -19,11 +19,14 @@ namespace zlpanel {
                      tooltip_helper.getToolTipText(multilingual::kBandFreq)),
         gain_slider_("", base,
                      tooltip_helper.getToolTipText(multilingual::kBandGain)) {
+        sub_left_control_panel_.setBufferedToImage(true);
+        addAndMakeVisible(sub_left_control_panel_);
+
         addAndMakeVisible(freq_slider_);
         gain_slider_.setShowSlider2(false);
         addAndMakeVisible(gain_slider_);
+
         setInterceptsMouseClicks(false, true);
-        setBufferedToImage(true);
     }
 
     LeftControlPanel::~LeftControlPanel() = default;
@@ -49,13 +52,6 @@ namespace zlpanel {
     }
 
     void LeftControlPanel::repaintCallBackSlow() {
-        if (dynamic_on_ptr_ != nullptr) {
-            const auto dynamic_on = dynamic_on_ptr_->load(std::memory_order::relaxed) > .5f;
-            if (dynamic_on != c_dynamic_on_) {
-                c_dynamic_on_ = dynamic_on;
-                gain_slider_.setShowSlider2(dynamic_on);
-            }
-        }
         updater_.updateComponents();
         sub_left_control_panel_.repaintCallBackSlow();
     }
@@ -63,14 +59,12 @@ namespace zlpanel {
     void LeftControlPanel::updateBand() {
         if (base_.getSelectedBand() < zlp::kBandNum) {
             const auto band_s = std::to_string(base_.getSelectedBand());
-            dynamic_on_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PDynamicON::kID + band_s);
             updateFreqMax(freq_max_);
             gain_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 gain_slider_.getSlider1(), p_ref_.parameters_, zlp::PGain::kID + band_s, updater_);
             target_gain_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 gain_slider_.getSlider2(), p_ref_.parameters_, zlp::PTargetGain::kID + band_s, updater_);
         } else {
-            dynamic_on_ptr_ = nullptr;
             freq_attachment_.reset();
             gain_attachment_.reset();
             target_gain_attachment_.reset();
@@ -89,5 +83,9 @@ namespace zlpanel {
         } else {
             freq_attachment_.reset();
         }
+    }
+
+    void LeftControlPanel::turnOnOffDynamic(const bool dynamic_on) {
+        gain_slider_.setShowSlider2(dynamic_on);
     }
 }

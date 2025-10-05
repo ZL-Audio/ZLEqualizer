@@ -15,6 +15,7 @@ namespace zlpanel {
                                          zlgui::UIBase& base,
                                          const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
+        control_background_(base),
         bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
                                                              BinaryData::bypass_svgSize)),
         bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
@@ -48,6 +49,9 @@ namespace zlpanel {
                      tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFreq)),
         q_slider_("", base,
                   tooltip_helper.getToolTipText(multilingual::kBandDynamicSideQ)) {
+        control_background_.setBufferedToImage(true);
+        addAndMakeVisible(control_background_);
+
         bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
 
@@ -100,7 +104,6 @@ namespace zlpanel {
         addAndMakeVisible(q_slider_);
 
         setInterceptsMouseClicks(false, true);
-        setBufferedToImage(true);
     }
 
     RightControlPanel::~RightControlPanel() = default;
@@ -122,6 +125,8 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
         auto bound = getLocalBounds();
+        control_background_.setBounds(bound);
+
         bound.reduce(padding, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
