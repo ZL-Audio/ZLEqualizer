@@ -43,7 +43,7 @@ namespace zldsp::interpolation {
                 deltas_[i] = (ys_[i + 1] - ys_[i]) / (xs_[i + 1] - xs_[i]);
             }
             auto left_delta = FloatType(2) * deltas_[0] - deltas_[1];
-            auto right_delta = FloatType(2) * deltas_.end()[-1] - deltas_.end()[-2];
+            auto right_delta = FloatType(2) * deltas_[deltas_.size() - 1] - deltas_[deltas_.size() - 2];
 
             const auto n = derivatives_.size();
 
