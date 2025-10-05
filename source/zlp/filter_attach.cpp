@@ -12,18 +12,18 @@
 namespace zlp {
     FilterAttach::FilterAttach(juce::AudioProcessor&,
                                juce::AudioProcessorValueTreeState& parameters,
-                               Controller& controller, const size_t idx)
-        : parameters_(parameters),
-          controller_(controller),
-          idx_(idx),
-          empty_(controller.getEmptyFilters()[idx]),
-          dynamic_on_(*parameters.getRawParameterValue(PDynamicON::kID + std::to_string(idx))),
-          side_link_(*parameters.getRawParameterValue(PSideLink::kID + std::to_string(idx))),
-          side_filter_type_updater_(parameters, PSideFilterType::kID + std::to_string(idx)),
-          side_freq_updater_(parameters, PSideFreq::kID + std::to_string(idx)),
-          side_Q_updater_(parameters, PSideQ::kID + std::to_string(idx)) {
+                               Controller& controller, const size_t idx) :
+        parameters_(parameters),
+        controller_(controller),
+        idx_(idx),
+        empty_(controller.getEmptyFilters()[idx]),
+        dynamic_on_(*parameters.getRawParameterValue(PDynamicON::kID + std::to_string(idx))),
+        side_link_(*parameters.getRawParameterValue(PSideLink::kID + std::to_string(idx))),
+        side_filter_type_updater_(parameters, PSideFilterType::kID + std::to_string(idx)),
+        side_freq_updater_(parameters, PSideFreq::kID + std::to_string(idx)),
+        side_Q_updater_(parameters, PSideQ::kID + std::to_string(idx)) {
         for (size_t i = 0; i < kIDs.size(); ++i) {
-            const auto ID =  kIDs[i] + std::to_string(idx_);
+            const auto ID = kIDs[i] + std::to_string(idx_);
             parameters_.addParameterListener(ID, this);
             parameterChanged(ID, parameters.getRawParameterValue(ID)->load(std::memory_order::relaxed));
         }

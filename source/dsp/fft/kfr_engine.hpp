@@ -17,8 +17,8 @@
 #pragma clang diagnostic pop
 
 namespace zldsp::fft {
-    template<typename FloatType>
-    void fillCycleHanningWindow(kfr::univector<FloatType> &window, const size_t size) {
+    template <typename FloatType>
+    void fillCycleHanningWindow(kfr::univector<FloatType>& window, const size_t size) {
         kfr::univector<float> temp_window;
         temp_window.resize(size + 1);
         temp_window = kfr::window_hann<FloatType>(size + 1);
@@ -26,38 +26,38 @@ namespace zldsp::fft {
         window = actual_window;
     }
 
-    template<typename FloatType>
+    template <typename FloatType>
     class KFREngine {
     public:
         KFREngine() = default;
 
         void setOrder(const size_t order) {
             fft_size_ = static_cast<size_t>(1) << order;
-            fft_plan_ = std::make_unique<kfr::dft_plan_real<FloatType> >(fft_size_);
+            fft_plan_ = std::make_unique<kfr::dft_plan_real<FloatType>>(fft_size_);
             temp_buffer_.resize(fft_plan_->temp_size);
         }
 
-        void forward(FloatType *in_buffer, std::complex<FloatType> *out_buffer) {
+        void forward(FloatType* in_buffer, std::complex<FloatType>* out_buffer) {
             fft_plan_->execute(out_buffer, in_buffer, temp_buffer_.data());
         }
 
-        void forward(FloatType *in_buffer, FloatType *float_out_buffer) {
-            auto out_buffer = reinterpret_cast<std::complex<FloatType> *>(float_out_buffer);
+        void forward(FloatType* in_buffer, FloatType* float_out_buffer) {
+            auto out_buffer = reinterpret_cast<std::complex<FloatType>*>(float_out_buffer);
             forward(in_buffer, out_buffer);
         }
 
-        void backward(std::complex<FloatType> *out_buffer, FloatType *in_buffer) {
+        void backward(std::complex<FloatType>* out_buffer, FloatType* in_buffer) {
             fft_plan_->execute(in_buffer, out_buffer, temp_buffer_.data());
         }
 
-        void backward(FloatType *float_out_buffer, FloatType *in_buffer) {
-            auto out_buffer = reinterpret_cast<std::complex<FloatType> *>(float_out_buffer);
+        void backward(FloatType* float_out_buffer, FloatType* in_buffer) {
+            auto out_buffer = reinterpret_cast<std::complex<FloatType>*>(float_out_buffer);
             backward(out_buffer, in_buffer);
         }
 
-        void forwardMagnitudeOnly(FloatType *buffer) {
+        void forwardMagnitudeOnly(FloatType* buffer) {
             forward(buffer, buffer);
-            auto *out = reinterpret_cast<std::complex<FloatType> *>(buffer);
+            auto* out = reinterpret_cast<std::complex<FloatType>*>(buffer);
             for (size_t i = 0; i < (fft_size_ / 2) + 1; ++i) {
                 buffer[i] = std::abs(out[i]);
             }
@@ -67,7 +67,7 @@ namespace zldsp::fft {
 
     private:
         size_t fft_size_{0};
-        std::unique_ptr<kfr::dft_plan_real<FloatType> > fft_plan_;
+        std::unique_ptr<kfr::dft_plan_real<FloatType>> fft_plan_;
         kfr::univector<kfr::u8> temp_buffer_;
     };
 }

@@ -29,7 +29,7 @@ namespace zldsp::filter {
             return to_update_para_.exchange(false, std::memory_order::acquire);
         }
 
-        std::atomic<bool> &getUpdateParaFlag() { return to_update_para_; }
+        std::atomic<bool>& getUpdateParaFlag() { return to_update_para_; }
 
         void setFreq(const double x) {
             freq_.store(x, std::memory_order::relaxed);

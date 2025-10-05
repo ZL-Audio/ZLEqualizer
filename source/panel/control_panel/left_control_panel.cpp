@@ -12,13 +12,13 @@
 namespace zlpanel {
     LeftControlPanel::LeftControlPanel(PluginProcessor& p,
                                        zlgui::UIBase& base,
-                                       const multilingual::TooltipHelper& tooltip_helper)
-        : p_ref_(p), base_(base), updater_(),
-          sub_left_control_panel_(p, base, tooltip_helper),
-          freq_slider_("", base,
-                       tooltip_helper.getToolTipText(multilingual::kBandFreq)),
-          gain_slider_("", base,
-                       tooltip_helper.getToolTipText(multilingual::kBandGain)) {
+                                       const multilingual::TooltipHelper& tooltip_helper) :
+        p_ref_(p), base_(base), updater_(),
+        sub_left_control_panel_(p, base, tooltip_helper),
+        freq_slider_("", base,
+                     tooltip_helper.getToolTipText(multilingual::kBandFreq)),
+        gain_slider_("", base,
+                     tooltip_helper.getToolTipText(multilingual::kBandGain)) {
         addAndMakeVisible(freq_slider_);
         gain_slider_.setShowSlider2(false);
         addAndMakeVisible(gain_slider_);
@@ -40,8 +40,9 @@ namespace zlpanel {
         const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
+        bound.reduce(padding, padding);
         bound.removeFromTop(button_height);
-        bound.removeFromLeft(2 * padding + slider_width);
+        bound.removeFromLeft(padding + slider_width);
         freq_slider_.setBounds(bound.removeFromLeft(slider_width));
         bound.removeFromLeft(padding);
         gain_slider_.setBounds(bound.removeFromLeft(slider_width));

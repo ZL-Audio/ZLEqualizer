@@ -13,9 +13,10 @@
 #
 #  You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
-import matplotlib.pyplot as plt
+
 
 def print_and_plot_coeff(ax, order=64, width=0.10, stop=80, method="remez"):
     label = "{}_{}_{}_{}".format(method, order, width, stop)
@@ -35,6 +36,7 @@ def print_and_plot_coeff(ax, order=64, width=0.10, stop=80, method="remez"):
     (w, H) = signal.freqz(coeff, worN=2048)
     ax.plot(w, 20 * np.log10(np.abs(H)), label=label)
     print(",".join(x.astype(str) for x in coeff))
+
 
 fig, ax = plt.subplots()
 o, w, s = 32, 0.20, 80

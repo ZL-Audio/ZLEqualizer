@@ -14,11 +14,11 @@
 #include <complex>
 
 namespace zldsp::filter {
-    template<typename SampleType>
+    template <typename SampleType>
     class IdealBase {
     public:
         static void updateMagnitude(
-            const std::array<double, 6> &coeff,
+            const std::array<double, 6>& coeff,
             const std::span<const SampleType> ws, std::span<SampleType> gains) {
             for (size_t idx = 0; idx < ws.size(); ++idx) {
                 gains[idx] *= getMagnitude(coeff, ws[idx]);
@@ -26,14 +26,14 @@ namespace zldsp::filter {
         }
 
         static void updateResponse(
-            const std::array<double, 6> &coeff,
-            const std::span<const std::complex<SampleType> > wis, std::span<std::complex<SampleType> > response) {
+            const std::array<double, 6>& coeff,
+            const std::span<const std::complex<SampleType>> wis, std::span<std::complex<SampleType>> response) {
             for (size_t idx = 0; idx < wis.size(); ++idx) {
                 response[idx] *= getResponse(coeff, wis[idx]);
             }
         }
 
-        static SampleType getMagnitude(const std::array<double, 6> &coeff, const SampleType w) {
+        static SampleType getMagnitude(const std::array<double, 6>& coeff, const SampleType w) {
             const auto w_2 = w * w;
             const auto t1 = coeff[2] - coeff[0] * w_2;
             const auto denominator = coeff[1] * coeff[1] * w_2 + t1 * t1;
@@ -42,15 +42,15 @@ namespace zldsp::filter {
             return static_cast<SampleType>(std::sqrt(numerator / denominator));
         }
 
-        static std::complex<SampleType> getResponse(const std::array<double, 6> &coeff,
-                                                    const std::complex<SampleType> &wi) {
+        static std::complex<SampleType> getResponse(const std::array<double, 6>& coeff,
+                                                    const std::complex<SampleType>& wi) {
             const auto wi2 = wi * wi;
             return (static_cast<SampleType>(coeff[3]) * wi2 +
-                    static_cast<SampleType>(coeff[4]) * wi +
-                    static_cast<SampleType>(coeff[5])) / (
-                       static_cast<SampleType>(coeff[0]) * wi2 +
-                       static_cast<SampleType>(coeff[1]) * wi +
-                       static_cast<SampleType>(coeff[2]));
+                static_cast<SampleType>(coeff[4]) * wi +
+                static_cast<SampleType>(coeff[5])) / (
+                static_cast<SampleType>(coeff[0]) * wi2 +
+                static_cast<SampleType>(coeff[1]) * wi +
+                static_cast<SampleType>(coeff[2]));
         }
     };
 }

@@ -18,7 +18,7 @@ namespace zldsp::loudness {
      * @tparam FloatType the float type of input audio buffer
      * @tparam kUseLowPass whether to use an extra lowpass filter at 22,000 Hz
      */
-    template<typename FloatType, bool kUseLowPass = false>
+    template <typename FloatType, bool kUseLowPass = false>
     class LUFSMatcher {
     public:
         LUFSMatcher() = default;

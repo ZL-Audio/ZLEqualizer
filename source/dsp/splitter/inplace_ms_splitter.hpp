@@ -16,7 +16,7 @@ namespace zldsp::splitter {
      * a splitter that splits the stereo audio signal input mid signal and side signal
      * @tparam FloatType
      */
-    template<typename FloatType>
+    template <typename FloatType>
     class InplaceMSSplitter {
     public:
         enum GainMode {
@@ -28,8 +28,8 @@ namespace zldsp::splitter {
         /**
          * switch left/right buffer to mid/side buffer
          */
-        template<GainMode Mode = GainMode::kPre>
-        static constexpr void split(FloatType *l_buffer, FloatType *r_buffer, const size_t num_samples) {
+        template <GainMode Mode = GainMode::kPre>
+        static constexpr void split(FloatType* l_buffer, FloatType* r_buffer, const size_t num_samples) {
             auto l_vector = kfr::make_univector(l_buffer, num_samples);
             auto r_vector = kfr::make_univector(r_buffer, num_samples);
 
@@ -48,8 +48,8 @@ namespace zldsp::splitter {
         /**
          * switch mis/side buffer to left/right buffer
          */
-        template<GainMode Mode = GainMode::kPre>
-        static constexpr void combine(FloatType *l_buffer, FloatType *r_buffer, const size_t num_samples) {
+        template <GainMode Mode = GainMode::kPre>
+        static constexpr void combine(FloatType* l_buffer, FloatType* r_buffer, const size_t num_samples) {
             auto l_vector = kfr::make_univector(l_buffer, num_samples);
             auto r_vector = kfr::make_univector(r_buffer, num_samples);
 

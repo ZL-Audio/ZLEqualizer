@@ -10,7 +10,7 @@
 #include "dragger_component.hpp"
 
 namespace zlgui::dragger {
-    Dragger::Dragger(UIBase &base)
+    Dragger::Dragger(UIBase& base)
         : base_(base), dragger_laf_(base) {
         button_.addMouseListener(this, false);
         dragger_laf_.setColour(base_.getColorMap1(1));
@@ -24,7 +24,7 @@ namespace zlgui::dragger {
         button_.removeMouseListener(this);
     }
 
-    bool Dragger::updateButton(const juce::Point<float> &center) {
+    bool Dragger::updateButton(const juce::Point<float>& center) {
         if (std::abs(button_pos_.x - center.x) > 0.1f || std::abs(button_pos_.y - center.y) > 0.1f) {
             button_pos_ = center;
             button_.setTransform(juce::AffineTransform::translation(button_pos_.x, button_pos_.y));
@@ -37,21 +37,21 @@ namespace zlgui::dragger {
         return updateButton(current_pos_);
     }
 
-    void Dragger::mouseDown(const juce::MouseEvent &e) {
+    void Dragger::mouseDown(const juce::MouseEvent& e) {
         current_pos_ = button_pos_;
         global_pos_ = e.position + button_pos_;
         button_.setToggleState(true, juce::NotificationType::sendNotificationSync);
         const BailOutChecker checker(this);
-        listeners_.callChecked(checker, [&](Dragger::Listener &l) { l.dragStarted(this); });
+        listeners_.callChecked(checker, [&](Dragger::Listener& l) { l.dragStarted(this); });
     }
 
-    void Dragger::mouseUp(const juce::MouseEvent &e) {
+    void Dragger::mouseUp(const juce::MouseEvent& e) {
         juce::ignoreUnused(e);
         const BailOutChecker checker(this);
-        listeners_.callChecked(checker, [&](Dragger::Listener &l) { l.dragEnded(this); });
+        listeners_.callChecked(checker, [&](Dragger::Listener& l) { l.dragEnded(this); });
     }
 
-    void Dragger::mouseDrag(const juce::MouseEvent &e) {
+    void Dragger::mouseDrag(const juce::MouseEvent& e) {
         // calculate shift and update global position
         const auto new_global_pos = e.position + button_pos_;
         auto shift = new_global_pos - global_pos_;
@@ -89,7 +89,7 @@ namespace zlgui::dragger {
         y_portion_ = 1.f - (current_pos_.getY() - button_area_.getY()) / button_area_.getHeight();
         // call listeners
         const BailOutChecker checker(this);
-        listeners_.callChecked(checker, [&](Listener &l) { l.draggerValueChanged(this); });
+        listeners_.callChecked(checker, [&](Listener& l) { l.draggerValueChanged(this); });
     }
 
     void Dragger::setButtonArea(const juce::Rectangle<float> bound) {
@@ -106,11 +106,11 @@ namespace zlgui::dragger {
         setYPortion(y_portion_);
     }
 
-    void Dragger::addListener(Listener *listener) {
+    void Dragger::addListener(Listener* listener) {
         listeners_.add(listener);
     }
 
-    void Dragger::removeListener(Listener *listener) {
+    void Dragger::removeListener(Listener* listener) {
         listeners_.remove(listener);
     }
 

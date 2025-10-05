@@ -15,10 +15,10 @@
 namespace zlgui::tooltip {
     class TooltipLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
-        explicit TooltipLookAndFeel(UIBase &base) : base_(base) {
+        explicit TooltipLookAndFeel(UIBase& base) : base_(base) {
         }
 
-        juce::Rectangle<int> getTooltipBounds(const juce::String &tip_text,
+        juce::Rectangle<int> getTooltipBounds(const juce::String& tip_text,
                                               const juce::Point<int> screen_pos,
                                               const juce::Rectangle<int> parent_area) override {
             const auto tl = getTipTextLayout(tip_text,
@@ -42,7 +42,7 @@ namespace zlgui::tooltip {
             }
         }
 
-        void drawTooltip(juce::Graphics &g, const juce::String &text, const int width, const int height) override {
+        void drawTooltip(juce::Graphics& g, const juce::String& text, const int width, const int height) override {
             juce::Rectangle<float> bound{static_cast<float>(width), static_cast<float>(height)};
 
             g.setColour(base_.getBackgroundColor().withAlpha(.875f));
@@ -55,12 +55,12 @@ namespace zlgui::tooltip {
         }
 
     private:
-        UIBase &base_;
+        UIBase& base_;
 
         static constexpr float kPaddingScale = .5f;
 
-        [[nodiscard]] juce::TextLayout getTipTextLayout(const juce::String &text,
-                                          const float w, const float h) const {
+        [[nodiscard]] juce::TextLayout getTipTextLayout(const juce::String& text,
+                                                        const float w, const float h) const {
             juce::AttributedString s;
             s.setJustification(juce::Justification::centredLeft);
             s.append(text, juce::FontOptions(base_.getFontSize() * 1.5f), base_.getTextColor());

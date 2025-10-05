@@ -21,7 +21,7 @@ namespace zldsp::container {
      * @tparam T the type of elements
      * @tparam kBufferType
      */
-    template<typename T, MinMaxBufferType kBufferType>
+    template <typename T, MinMaxBufferType kBufferType>
     class CircularMinMaxBuffer {
     public:
         explicit CircularMinMaxBuffer(const size_t capacity = 1) {
@@ -84,6 +84,6 @@ namespace zldsp::container {
 
     private:
         unsigned long long head_{0}, count_{0}, size_{0};
-        CircularBuffer<std::pair<T, unsigned long long> > minmax_buffer_{1};
+        CircularBuffer<std::pair<T, unsigned long long>> minmax_buffer_{1};
     };
 }

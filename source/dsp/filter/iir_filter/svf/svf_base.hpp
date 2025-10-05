@@ -15,7 +15,7 @@
 #include <span>
 
 namespace zldsp::filter {
-    template<typename FloatType>
+    template <typename FloatType>
     class SVFBase {
     public:
         SVFBase() = default;
@@ -34,7 +34,7 @@ namespace zldsp::filter {
         template <bool bypass = false>
         void process(std::span<FloatType*> buffer, const size_t num_samples) noexcept {
             for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                auto *samples = buffer[channel];
+                auto* samples = buffer[channel];
                 for (size_t i = 0; i < num_samples; ++i) {
                     if constexpr (bypass) {
                         processSample(channel, samples[i]);
@@ -57,7 +57,7 @@ namespace zldsp::filter {
             return chp_ * y_hp + cbp_ * y_bp + clp_ * y_lp;
         }
 
-        void updateFromBiquad(const std::array<double, 6> &coeff) {
+        void updateFromBiquad(const std::array<double, 6>& coeff) {
             const auto temp1 = std::sqrt(std::abs((-coeff[0] - coeff[1] - coeff[2])));
             const auto temp2 = std::sqrt(std::abs((-coeff[0] + coeff[1] - coeff[2])));
             g_ = static_cast<FloatType>(temp1 / temp2);

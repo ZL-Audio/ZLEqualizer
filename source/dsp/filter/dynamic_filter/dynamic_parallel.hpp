@@ -38,8 +38,7 @@ namespace zldsp::filter {
                 zldsp::vector::copy(this->filter_.getParallelBuffer(), main_buffer, num_samples);
                 DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>::template process<
                     bypass, dynamic_on, dynamic_bypass>(this->filter_.getParallelBuffer(), side_buffer, num_samples);
-            }
-            else {
+            } else {
                 DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>::template process<
                     bypass, dynamic_on, dynamic_bypass>(main_buffer, side_buffer, num_samples);
             }

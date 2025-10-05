@@ -11,28 +11,28 @@
 #include "PluginEditor.hpp"
 
 //==============================================================================
-PluginProcessor::PluginProcessor()
-    : AudioProcessor(BusesProperties()
-                     .withInput("Input", juce::AudioChannelSet::stereo(), true)
-                     .withInput("Aux", juce::AudioChannelSet::stereo(), true)
-                     .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-      ),
-      dummy_processor_(),
-      parameters_(*this, nullptr,
-                  juce::Identifier("ZLEqualizerParameters"),
-                  zlp::getParameterLayout()),
-      parameters_NA_(dummy_processor_, nullptr,
-                     juce::Identifier("ZLEqualizerNAParameters"),
-                     zlstate::getNAParameterLayout()),
-      state_(dummy_processor_, nullptr,
-             juce::Identifier("ZLEqualizerState"),
-             zlstate::getStateParameterLayout()),
-      property_(state_),
-      controller_(*this),
-      chore_attachment_(*this, parameters_, controller_),
-      analyzer_attachment_(*this, parameters_NA_, controller_),
-      ext_side_(*parameters_.getRawParameterValue(zlp::PExtSide::kID)),
-      bypass_(*parameters_.getRawParameterValue(zlp::PBypass::kID)) {
+PluginProcessor::PluginProcessor() :
+    AudioProcessor(BusesProperties()
+                   .withInput("Input", juce::AudioChannelSet::stereo(), true)
+                   .withInput("Aux", juce::AudioChannelSet::stereo(), true)
+                   .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+        ),
+    dummy_processor_(),
+    parameters_(*this, nullptr,
+                juce::Identifier("ZLEqualizerParameters"),
+                zlp::getParameterLayout()),
+    parameters_NA_(dummy_processor_, nullptr,
+                   juce::Identifier("ZLEqualizerNAParameters"),
+                   zlstate::getNAParameterLayout()),
+    state_(dummy_processor_, nullptr,
+           juce::Identifier("ZLEqualizerState"),
+           zlstate::getStateParameterLayout()),
+    property_(state_),
+    controller_(*this),
+    chore_attachment_(*this, parameters_, controller_),
+    analyzer_attachment_(*this, parameters_NA_, controller_),
+    ext_side_(*parameters_.getRawParameterValue(zlp::PExtSide::kID)),
+    bypass_(*parameters_.getRawParameterValue(zlp::PBypass::kID)) {
     for (size_t i = 0; i < zlp::kBandNum; ++i) {
         filter_attachments_[i] = std::make_unique<zlp::FilterAttach>(*this, parameters_, controller_, i);
         filter_dynamic_attachments_[i] = std::make_unique<zlp::FilterDynamicAttach>(*this, parameters_, controller_, i);
@@ -179,7 +179,8 @@ void PluginProcessor::processBlockBypassed(juce::AudioBuffer<double>& buffer, ju
 template <bool bypass>
 void PluginProcessor::processBlockInternal(juce::AudioBuffer<float>& buffer) {
     juce::ScopedNoDenormals no_denormals;
-    if (buffer.getNumSamples() == 0) return; // ignore empty blocks
+    if (buffer.getNumSamples() == 0)
+        return; // ignore empty blocks
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;
     const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
     switch (channel_layout_) {
@@ -269,7 +270,8 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<float>& buffer) {
 template <bool bypass>
 void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
     juce::ScopedNoDenormals no_denormals;
-    if (buffer.getNumSamples() == 0) return; // ignore empty blocks
+    if (buffer.getNumSamples() == 0)
+        return; // ignore empty blocks
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;
     const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
     switch (channel_layout_) {
@@ -372,7 +374,7 @@ void PluginProcessor::setStateInformation(const void* data, const int size_in_by
     }
 }
 
-juce::AudioProcessor*JUCE_CALLTYPE
+juce::AudioProcessor* JUCE_CALLTYPE
 
 createPluginFilter() {
     return new PluginProcessor();

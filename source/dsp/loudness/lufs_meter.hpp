@@ -17,7 +17,7 @@ namespace zldsp::loudness {
      * @tparam FloatType the float type of input audio buffer
      * @tparam kUseLowPass whether to use an extra lowpass filter at 22,000 Hz
      */
-    template<typename FloatType, bool kUseLowPass = false>
+    template <typename FloatType, bool kUseLowPass = false>
     class LUFSMeter {
     public:
         LUFSMeter() = default;
@@ -47,12 +47,12 @@ namespace zldsp::loudness {
             ready_count_ = 0;
             std::fill(histogram_.begin(), histogram_.end(), FloatType(0));
             std::fill(histogram_sums_.begin(), histogram_sums_.end(), FloatType(0));
-            for (auto &buffer : small_buffer_) {
+            for (auto& buffer : small_buffer_) {
                 std::fill(buffer.begin(), buffer.end(), FloatType(0));
             }
         }
 
-        void process(std::span<FloatType *> buffer, const size_t num_samples) {
+        void process(std::span<FloatType*> buffer, const size_t num_samples) {
             const auto num_total = static_cast<int>(num_samples);
             int start_idx = 0;
             while (num_total - start_idx >= max_idx_ - current_idx_) {
@@ -112,7 +112,7 @@ namespace zldsp::loudness {
     private:
         KWeightingFilter<FloatType, kUseLowPass> k_weighting_filter_;
         std::vector<std::vector<FloatType>> small_buffer_;
-        std::vector<FloatType *> small_buffer_ptrs_;
+        std::vector<FloatType*> small_buffer_ptrs_;
         int current_idx_{0}, max_idx_{0};
         int ready_count_{0};
         FloatType mean_mul_{1};
@@ -142,7 +142,8 @@ namespace zldsp::loudness {
                 return;
             }
             // calculate the mean square
-            const auto mean_square = (sum_squares_[0] + sum_squares_[1] + sum_squares_[2] + sum_squares_[3]) * mean_mul_;
+            const auto mean_square = (sum_squares_[0] + sum_squares_[1] + sum_squares_[2] + sum_squares_[3]) *
+                mean_mul_;
             // update histogram
             if (mean_square >= FloatType(1.1724653045822963e-7)) {
                 // if greater than -70 LKFS

@@ -11,12 +11,12 @@
 
 #include "BinaryData.h"
 
-PluginEditor::PluginEditor(PluginProcessor& p)
-    : AudioProcessorEditor(&p),
-      p_ref_(p),
-      property_(p.property_),
-      base_(p.state_),
-      main_panel_(p, base_) {
+PluginEditor::PluginEditor(PluginProcessor& p) :
+    AudioProcessorEditor(&p),
+    p_ref_(p),
+    property_(p.property_),
+    base_(p.state_),
+    main_panel_(p, base_) {
     // set font
     const auto font_face = juce::Typeface::createSystemTypefaceFor(
         BinaryData::MiSansLatinMedium_ttf, BinaryData::MiSansLatinMedium_ttfSize);

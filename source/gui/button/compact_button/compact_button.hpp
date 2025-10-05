@@ -17,8 +17,8 @@
 namespace zlgui::button {
     class CompactButton final : public juce::Component {
     public:
-        explicit CompactButton(const juce::String &labelText, UIBase &base,
-                               const juce::String &tooltip_text);
+        explicit CompactButton(const juce::String& labelText, UIBase& base,
+                               const juce::String& tooltip_text);
 
         ~CompactButton() override;
 
@@ -26,16 +26,16 @@ namespace zlgui::button {
 
         void buttonDownAnimation();
 
-        inline juce::ToggleButton &getButton() { return button_; }
+        inline juce::ToggleButton& getButton() { return button_; }
 
         inline void setEditable(const bool x) {
             setAlpha(x ? 1.f : .5f);
             button_.setInterceptsMouseClicks(x, false);
         }
 
-        inline void setDrawable(juce::Drawable *x) { laf_.setDrawable(x); }
+        inline void setDrawable(juce::Drawable* x) { laf_.setDrawable(x); }
 
-        CompactButtonLookAndFeel &getLAF() { return laf_; }
+        CompactButtonLookAndFeel& getLAF() { return laf_; }
 
         void lookAndFeelChanged() override {
             laf_.updateImages();
@@ -46,7 +46,7 @@ namespace zlgui::button {
         }
 
     private:
-        UIBase &base_;
+        UIBase& base_;
 
         juce::ToggleButton button_;
         CompactButtonLookAndFeel laf_;

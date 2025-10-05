@@ -69,7 +69,7 @@ namespace zldsp::filter {
         const auto A = std::sqrt(g);
         const auto Awq = std::sqrt(A) * w0 / q;
         const auto w02 = w0 * w0;
-        return {A, Awq,  w02, A, A * Awq, A * A * w02};
+        return {A, Awq, w02, A, A * Awq, A * A * w02};
     }
 
     std::array<double, 6> IdealCoeff::get2HighShelf(const double w0, const double g, const double q) {

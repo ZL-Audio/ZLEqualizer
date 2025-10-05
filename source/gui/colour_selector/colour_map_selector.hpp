@@ -17,19 +17,19 @@ namespace zlgui::colour_selector {
     class ColourMapSelector final : public juce::Component,
                                     private juce::ComboBox::Listener {
     public:
-        explicit ColourMapSelector(zlgui::UIBase &base, float box_width = .5f);
+        explicit ColourMapSelector(zlgui::UIBase& base, float box_width = .5f);
 
-        void paint(juce::Graphics &g) override;
+        void paint(juce::Graphics& g) override;
 
         void resized() override;
 
-        juce::ComboBox &getBox() { return map_box_.getBox(); }
+        juce::ComboBox& getBox() { return map_box_.getBox(); }
 
     private:
-        UIBase &base_;
+        UIBase& base_;
         combobox::CompactCombobox map_box_;
         float map_box_width_p_{.5f};
 
-        void comboBoxChanged(juce::ComboBox *combo_box_that_has_changed) override;
+        void comboBoxChanged(juce::ComboBox* combo_box_that_has_changed) override;
     };
 } // zlgui

@@ -20,7 +20,7 @@ namespace zldsp::filter {
      * @tparam FloatType the float type of input audio buffer
      * @tparam kFilterSize the number of cascading filters
      */
-    template<typename FloatType, size_t kFilterSize>
+    template <typename FloatType, size_t kFilterSize>
     class Ideal {
     public:
         Ideal() = default;
@@ -30,7 +30,7 @@ namespace zldsp::filter {
             freq_max_ = std::floor(sample_rate / 44100.0 * 20000.0);
         }
 
-        void forceUpdate(const FilterParameters &paras) {
+        void forceUpdate(const FilterParameters& paras) {
             c_filter_type_ = paras.filter_type;
             c_order_ = paras.order;
             c_freq_ = std::min(paras.freq, freq_max_);
@@ -98,12 +98,22 @@ namespace zldsp::filter {
             return current_filter_num_;
         }
 
-        std::array<std::array<double, 6>, kFilterSize> &getCoeff() {
+        std::array<std::array < double, 6>
+        ,
+        kFilterSize
+        >
+        &
+        getCoeff() {
             return coeffs_;
         }
 
     protected:
-        std::array<std::array<double, 6>, kFilterSize> coeffs_{};
+        std::array<std::array < double, 6>
+        ,
+        kFilterSize
+        >
+        coeffs_ {
+        };
         size_t current_filter_num_{1};
         double freq_max_{20000.0};
         double c_gain_{0.0}, c_q_{0.707}, c_freq_{1000.0};
@@ -114,7 +124,7 @@ namespace zldsp::filter {
 
         static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 6>, kFilterSize> &coeffs) {
+                                      std::array<std::array < double, 6>, kFilterSize> &coeffs) {
             return FilterDesign::updateCoeffs<IdealCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
         }
     };

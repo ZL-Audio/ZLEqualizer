@@ -16,7 +16,7 @@
 #include "../vector/vector.hpp"
 
 namespace zldsp::gain {
-    template<typename FloatType>
+    template <typename FloatType>
     class Gain {
     public:
         Gain() noexcept = default;
@@ -51,8 +51,8 @@ namespace zldsp::gain {
             gain_vs_.resize(max_num_samples);
         }
 
-        template<bool bypass = false>
-        void process(std::span<FloatType *> buffer, const size_t num_samples) {
+        template <bool bypass = false>
+        void process(std::span<FloatType*> buffer, const size_t num_samples) {
             if (!gain_.isSmoothing()) {
                 if constexpr (bypass) return;
                 for (size_t chan = 0; chan < buffer.size(); ++chan) {

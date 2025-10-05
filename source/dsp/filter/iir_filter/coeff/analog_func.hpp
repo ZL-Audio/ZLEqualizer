@@ -28,6 +28,6 @@ namespace zldsp::filter {
         static double get2TiltShelfMagnitude2(double w0, double g, double q, double w);
 
     private:
-        static double get2Magnitude2(const std::array<double, 6> &coeff, double w);
+        static double get2Magnitude2(const std::array<double, 6>& coeff, double w);
     };
 }

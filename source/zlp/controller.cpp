@@ -10,7 +10,8 @@
 #include "controller.hpp"
 
 namespace zlp {
-    Controller::Controller(juce::AudioProcessor& processor) : p_ref_(processor) {
+    Controller::Controller(juce::AudioProcessor& processor) :
+        p_ref_(processor) {
         not_off_total_.reserve(kBandNum);
         for (auto& v : not_off_indices_) {
             v.reserve(kBandNum);
@@ -355,14 +356,14 @@ namespace zlp {
                     c_dynamic_threshold_[i] = dynamic_threshold_[i].load(std::memory_order::relaxed) + 40.0;
                 } else {
                     c_dynamic_threshold_[i] = dynamic_threshold_[i].load(std::memory_order::relaxed);
-                    dynamic_side_handlers_[i].setThreshold<false>(c_dynamic_threshold_[i]);
+                    dynamic_side_handlers_[i].setThreshold < false > (c_dynamic_threshold_[i]);
                 }
                 dynamic_side_handlers_[i].setKnee(dynamic_knee_[i].load(std::memory_order::relaxed));
             }
             if (dynamic_ar_update_[i].exchange(false, std::memory_order::acquire)) {
                 auto& follower{dynamic_side_handlers_[i].getFollower()};
-                follower.setAttack<false>(dynamic_attack_[i].load(std::memory_order::relaxed));
-                follower.setRelease<true>(dynamic_release_[i].load(std::memory_order::relaxed));
+                follower.setAttack < false > (dynamic_attack_[i].load(std::memory_order::relaxed));
+                follower.setRelease < true > (dynamic_release_[i].load(std::memory_order::relaxed));
             }
         }
     }
@@ -470,29 +471,29 @@ namespace zlp {
                 if (c_dynamic_on_[i]) {
                     const auto swap = dynamic_swap_[i].load(std::memory_order::relaxed);
                     if (dynamic_bypass_[i].load(std::memory_order::relaxed)) {
-                        processOneBandDynamic<true, true, true>(dynamic_filters, i, main_pointers,
-                                                                swap ? side_pointers2 : side_pointers1, num_samples);
+                        processOneBandDynamic < true, true, true > (dynamic_filters, i, main_pointers,
+                            swap ? side_pointers2 : side_pointers1, num_samples);
                     } else {
-                        processOneBandDynamic<true, true, false>(dynamic_filters, i, main_pointers,
-                                                                 swap ? side_pointers2 : side_pointers1, num_samples);
+                        processOneBandDynamic < true, true, false > (dynamic_filters, i, main_pointers,
+                            swap ? side_pointers2 : side_pointers1, num_samples);
                     }
                 } else {
-                    processOneBandDynamic<true, false, false>(dynamic_filters, i, main_pointers, side_pointers1,
-                                                              num_samples);
+                    processOneBandDynamic < true, false, false > (dynamic_filters, i, main_pointers, side_pointers1,
+                        num_samples);
                 }
             } else {
                 if (c_dynamic_on_[i]) {
                     const auto swap = dynamic_swap_[i].load(std::memory_order::relaxed);
                     if (dynamic_bypass_[i].load(std::memory_order::relaxed)) {
-                        processOneBandDynamic<false, true, true>(dynamic_filters, i, main_pointers,
-                                                                 swap ? side_pointers2 : side_pointers1, num_samples);
+                        processOneBandDynamic < false, true, true > (dynamic_filters, i, main_pointers,
+                            swap ? side_pointers2 : side_pointers1, num_samples);
                     } else {
-                        processOneBandDynamic<false, true, false>(dynamic_filters, i, main_pointers,
-                                                                  swap ? side_pointers2 : side_pointers1, num_samples);
+                        processOneBandDynamic < false, true, false > (dynamic_filters, i, main_pointers,
+                            swap ? side_pointers2 : side_pointers1, num_samples);
                     }
                 } else {
-                    processOneBandDynamic<false, false, false>(dynamic_filters, i, main_pointers, side_pointers1,
-                                                               num_samples);
+                    processOneBandDynamic < false, false, false > (dynamic_filters, i, main_pointers, side_pointers1,
+                        num_samples);
                 }
             }
         }
@@ -541,7 +542,8 @@ namespace zlp {
                 histograms_[i].setDecay(std::pow(hist_unit_decay_, static_cast<double>(num_samples)));
                 histograms_[i].push(side_current_loudness);
                 histograms_[i].getPercentiles(hist_percentiles_, hist_target_temp_, hist_results_);
-                dynamic_side_handlers_[i].setKnee<false>(std::max(0.5 * (hist_results_[2] - hist_results_[0]), 5.0));
+                dynamic_side_handlers_[i].setKnee < false > (
+                    std::max(0.5 * (hist_results_[2] - hist_results_[0]), 5.0));
             }
             // update actual threshold if required
             if (c_dynamic_th_relative_[i] || c_dynamic_th_learn_[i]) {
@@ -558,7 +560,7 @@ namespace zlp {
     void Controller::processParallelPost(std::span<double*> main_pointers, size_t num_samples) {
         for (const size_t& i : not_off_indices_[0]) {
             if (c_filter_status_[i] == kOn) {
-                parallel_filters_[i].processPost<false>(main_pointers, num_samples);
+                parallel_filters_[i].processPost < false > (main_pointers, num_samples);
             }
         }
         if (is_lr_on_) {
@@ -566,13 +568,13 @@ namespace zlp {
 
             for (const size_t& i : not_off_indices_[1]) {
                 if (c_filter_status_[i] == kOn) {
-                    parallel_filters_[i].processPost<false>(main_lr_pointers[0], num_samples);
+                    parallel_filters_[i].processPost < false > (main_lr_pointers[0], num_samples);
                 }
             }
 
             for (const size_t& i : not_off_indices_[2]) {
                 if (c_filter_status_[i] == kOn) {
-                    parallel_filters_[i].processPost<false>(main_lr_pointers[1], num_samples);
+                    parallel_filters_[i].processPost < false > (main_lr_pointers[1], num_samples);
                 }
             }
         }
@@ -583,13 +585,13 @@ namespace zlp {
 
             for (const size_t& i : not_off_indices_[3]) {
                 if (c_filter_status_[i] == kOn) {
-                    parallel_filters_[i].processPost<false>(main_ms_pointers[0], num_samples);
+                    parallel_filters_[i].processPost < false > (main_ms_pointers[0], num_samples);
                 }
             }
 
             for (const size_t& i : not_off_indices_[4]) {
                 if (c_filter_status_[i] == kOn) {
-                    parallel_filters_[i].processPost<false>(main_ms_pointers[1], num_samples);
+                    parallel_filters_[i].processPost < false > (main_ms_pointers[1], num_samples);
                 }
             }
 

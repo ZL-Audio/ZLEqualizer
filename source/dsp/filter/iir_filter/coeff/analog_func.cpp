@@ -10,7 +10,7 @@
 #include "analog_func.hpp"
 
 namespace zldsp::filter {
-    double AnalogFunc::get2Magnitude2(const std::array<double, 6> &coeff, const double w) {
+    double AnalogFunc::get2Magnitude2(const std::array<double, 6>& coeff, const double w) {
         const auto w_2 = w * w;
         const auto t1 = coeff[2] - coeff[0] * w_2;
         const auto denominator = coeff[1] * coeff[1] * w_2 + t1 * t1;

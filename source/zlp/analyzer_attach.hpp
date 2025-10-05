@@ -16,8 +16,8 @@ namespace zlp {
     class AnalyzerAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit AnalyzerAttach(juce::AudioProcessor& processor,
-                             juce::AudioProcessorValueTreeState& parameters_NA,
-                             Controller& controller);
+                                juce::AudioProcessorValueTreeState& parameters_NA,
+                                Controller& controller);
 
         ~AnalyzerAttach() override;
 

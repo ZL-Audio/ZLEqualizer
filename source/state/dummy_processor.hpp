@@ -24,15 +24,15 @@ namespace zlstate {
         void releaseResources() override {
         }
 
-        bool isBusesLayoutSupported(const BusesLayout &) const override { return true; }
+        bool isBusesLayoutSupported(const BusesLayout&) const override { return true; }
 
-        void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override {
+        void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override {
         }
 
-        void processBlock(juce::AudioBuffer<double> &, juce::MidiBuffer &) override {
+        void processBlock(juce::AudioBuffer<double>&, juce::MidiBuffer&) override {
         }
 
-        juce::AudioProcessorEditor *createEditor() override { return nullptr; }
+        juce::AudioProcessorEditor* createEditor() override { return nullptr; }
 
         bool hasEditor() const override { return false; }
 
@@ -55,13 +55,13 @@ namespace zlstate {
 
         const juce::String getProgramName(int) override { return {}; }
 
-        void changeProgramName(int, const juce::String &) override {
+        void changeProgramName(int, const juce::String&) override {
         }
 
-        void getStateInformation(juce::MemoryBlock &) override {
+        void getStateInformation(juce::MemoryBlock&) override {
         }
 
-        void setStateInformation(const void *, int) override {
+        void setStateInformation(const void*, int) override {
         }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DummyProcessor)

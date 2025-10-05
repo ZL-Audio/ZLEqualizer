@@ -12,8 +12,8 @@
 namespace zlp {
     AnalyzerAttach::AnalyzerAttach(juce::AudioProcessor&,
                                    juce::AudioProcessorValueTreeState& parameters_NA,
-                                   Controller& controller)
-        : parameters_NA_(parameters_NA), controller_(controller) {
+                                   Controller& controller) :
+        parameters_NA_(parameters_NA), controller_(controller) {
         for (size_t i = 0; i < kIDs.size(); ++i) {
             parameters_NA.addParameterListener(kIDs[i], this);
             parameterChanged(kIDs[i],

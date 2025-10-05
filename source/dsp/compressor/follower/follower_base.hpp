@@ -10,7 +10,7 @@
 #pragma once
 
 namespace zldsp::compressor {
-    template<typename FloatType>
+    template <typename FloatType>
     class FollowerBase {
     public:
         FollowerBase() = default;
@@ -21,12 +21,14 @@ namespace zldsp::compressor {
          * call before processing starts
          * @param sr sampleRate
          */
-        virtual void prepare([[maybe_unused]] double sr) {}
+        virtual void prepare([[maybe_unused]] double sr) {
+        }
 
         /**
          * reset the follower
          */
-        virtual void reset([[maybe_unused]] FloatType x) {}
+        virtual void reset([[maybe_unused]] FloatType x) {
+        }
 
         /**
          * process a sample

@@ -18,7 +18,7 @@ namespace zldsp::oversample {
      * @tparam FloatType
      * @tparam NumStage number of oversampling stages
      */
-    template<typename FloatType, size_t NumStage>
+    template <typename FloatType, size_t NumStage>
     class OverSampler {
     public:
         explicit OverSampler() {
@@ -40,7 +40,7 @@ namespace zldsp::oversample {
         }
 
         explicit OverSampler(std::array<halfband_coeff::CoeffID, NumStage> coeff_IDs) {
-            for (const auto &coeff_ID: coeff_IDs) {
+            for (const auto& coeff_ID : coeff_IDs) {
                 stages_.emplace_back(OverSampleStage<FloatType>{
                     halfband_coeff::getCoeffByID<FloatType>(coeff_ID),
                     halfband_coeff::getCoeffByID<FloatType>(coeff_ID)
@@ -60,7 +60,7 @@ namespace zldsp::oversample {
          * reset the internal oversampling states
          */
         void reset() {
-            for (auto &stage: stages_) {
+            for (auto& stage : stages_) {
                 stage.reset();
             }
         }
@@ -78,7 +78,7 @@ namespace zldsp::oversample {
          * @param buffer input samples
          * @param num_samples
          */
-        void upsample(std::span<FloatType *> buffer, const size_t num_samples) {
+        void upsample(std::span<FloatType*> buffer, const size_t num_samples) {
             auto stage_num_sample = num_samples;
             stages_[0].template upsample<true>(buffer, stage_num_sample);
             for (size_t i = 1; i < NumStage; ++i) {
@@ -92,7 +92,7 @@ namespace zldsp::oversample {
          * @param buffer output samples
          * @param num_samples
          */
-        void downsample(std::span<FloatType *> buffer, const size_t num_samples) {
+        void downsample(std::span<FloatType*> buffer, const size_t num_samples) {
             auto stage_num_sample = num_samples << (NumStage - 1);
             for (size_t i = NumStage - 1; i > 0; --i) {
                 stages_[i].template downsample<false>(stages_[i - 1].getOSPointer(), stage_num_sample);
@@ -104,18 +104,18 @@ namespace zldsp::oversample {
         /**
          * @return the internal over-sampled buffer
          */
-        std::vector<std::vector<FloatType> > &getOSBuffer() {
+        std::vector<std::vector<FloatType>>& getOSBuffer() {
             return stages_.back().getOSBuffer();
         }
 
         /**
          * @return pointers to the internal over-sampled buffer
          */
-        std::vector<FloatType *> &getOSPointer() {
+        std::vector<FloatType*>& getOSPointer() {
             return stages_.back().getOSPointer();
         }
 
     private:
-        std::vector<OverSampleStage<FloatType> > stages_;
+        std::vector<OverSampleStage<FloatType>> stages_;
     };
 }

@@ -12,8 +12,8 @@
 namespace zlp {
     ChoreAttach::ChoreAttach(juce::AudioProcessor&,
                              juce::AudioProcessorValueTreeState& parameters,
-                             Controller& controller)
-        : parameters_(parameters), controller_(controller) {
+                             Controller& controller) :
+        parameters_(parameters), controller_(controller) {
         for (size_t i = 0; i < kIDs.size(); ++i) {
             parameters_.addParameterListener(kIDs[i], this);
             parameterChanged(kIDs[i],

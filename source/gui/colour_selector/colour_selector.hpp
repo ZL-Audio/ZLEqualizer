@@ -18,12 +18,12 @@ namespace zlgui::colour_selector {
     class ColourSelector final : public juce::Component,
                                  private juce::ChangeListener {
     public:
-        explicit ColourSelector(zlgui::UIBase &base, juce::Component &parent,
+        explicit ColourSelector(zlgui::UIBase& base, juce::Component& parent,
                                 float width_s = 12.f, float height_s = 10.f);
 
-        void paint(juce::Graphics &g) override;
+        void paint(juce::Graphics& g) override;
 
-        void mouseDown(const juce::MouseEvent &event) override;
+        void mouseDown(const juce::MouseEvent& event) override;
 
         void setColour(const juce::Colour c) {
             colour_ = c;
@@ -40,12 +40,12 @@ namespace zlgui::colour_selector {
         }
 
     private:
-        zlgui::UIBase &base_;
+        zlgui::UIBase& base_;
         zlgui::CallOutBoxLAF laf_;
-        juce::Component &parent_ref_;
+        juce::Component& parent_ref_;
         float selector_width_s_, selector_height_s_;
 
-        void changeListenerCallback(juce::ChangeBroadcaster *source) override;
+        void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
         juce::Colour colour_ = juce::Colours::red;
     };

@@ -23,9 +23,9 @@ namespace zlgui {
             kScaleWithHeight
         };
 
-        ResizeCorner(UIBase &base,
-                     juce::Component *componentToResize,
-                     juce::ComponentBoundsConstrainer *constrainer,
+        ResizeCorner(UIBase& base,
+                     juce::Component* componentToResize,
+                     juce::ComponentBoundsConstrainer* constrainer,
                      const ScaleType scale_type = kScaleWithWidth,
                      const float corner_scale = .025f)
             : juce::ResizableCornerComponent(componentToResize, constrainer),
@@ -36,7 +36,7 @@ namespace zlgui {
             setBufferedToImage(true);
         }
 
-        void paint(juce::Graphics &g) override {
+        void paint(juce::Graphics& g) override {
             const auto bound = getLocalBounds().toFloat();
             auto rect1 = juce::Rectangle<float>{
                 bound.getX() + bound.getWidth() * (1.f - kDefaultRectScale), bound.getY(),
@@ -59,11 +59,11 @@ namespace zlgui {
             g.fillRect(rect2);
         }
 
-        void mouseEnter(const juce::MouseEvent &) override {
+        void mouseEnter(const juce::MouseEvent&) override {
             setAlpha(1.f);
         }
 
-        void mouseExit(const juce::MouseEvent &) override {
+        void mouseExit(const juce::MouseEvent&) override {
             setAlpha(.1f);
         }
 
@@ -76,24 +76,24 @@ namespace zlgui {
         }
 
     private:
-        UIBase &base_;
+        UIBase& base_;
         const float corner_scale_ = 0.05f;
         const ScaleType scale_type_ = kScaleWithWidth;
 
         void updateCornerBound() {
-            auto *parent = getParentComponent();
+            auto* parent = getParentComponent();
             if (parent != nullptr) {
                 const auto parent_bound = parent->getLocalBounds();
                 int corner_size{0};
                 switch (scale_type_) {
-                    case kScaleWithWidth: {
-                        corner_size = parent_bound.getWidth();
-                        break;
-                    }
-                    case kScaleWithHeight: {
-                        corner_size = parent_bound.getHeight();
-                        break;
-                    }
+                case kScaleWithWidth: {
+                    corner_size = parent_bound.getWidth();
+                    break;
+                }
+                case kScaleWithHeight: {
+                    corner_size = parent_bound.getHeight();
+                    break;
+                }
                 }
                 corner_size = std::max(1, static_cast<int>(
                                            std::round(static_cast<float>(corner_size) * corner_scale_)));

@@ -12,7 +12,7 @@
 #include "../calculator_base.hpp"
 
 namespace zldsp::filter {
-    template<size_t kFilterNum, size_t kFilterSize>
+    template <size_t kFilterNum, size_t kFilterSize>
     class MatchCalculator final : public CorrectionCalculator<kFilterNum, kFilterSize> {
     public:
         static constexpr size_t kStartDecayIdx = 2, kEndDecayIdx = 32;
@@ -38,14 +38,14 @@ namespace zldsp::filter {
         }
 
         void updateCorrection(const size_t idx) override {
-            auto &proto_res{CorrectionCalculator<kFilterNum, kFilterSize>::proto_res_};
-            auto &biquad_res{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_res_};
-            auto &correction{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_[idx]};
+            auto& proto_res{CorrectionCalculator < kFilterNum, kFilterSize > ::proto_res_};
+            auto& biquad_res{CorrectionCalculator < kFilterNum, kFilterSize > ::biquad_res_};
+            auto& correction{CorrectionCalculator < kFilterNum, kFilterSize > ::corrections_[idx]};
 
             for (size_t w_idx = kStartDecayIdx; w_idx < kEndDecayIdx; ++w_idx) {
                 auto proto = proto_res[w_idx];
                 auto biquad = biquad_res[w_idx];
-                if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
+                if (std::abs(biquad) < CorrectionCalculator < kFilterNum, kFilterSize > ::kMinMagnitude) {
                     // ill condition, keep correction the same
                 } else {
                     // normal condition
@@ -57,7 +57,7 @@ namespace zldsp::filter {
             for (size_t w_idx = kEndDecayIdx; w_idx < correction.size(); ++w_idx) {
                 auto proto = proto_res[w_idx];
                 auto biquad = biquad_res[w_idx];
-                if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
+                if (std::abs(biquad) < CorrectionCalculator < kFilterNum, kFilterSize > ::kMinMagnitude) {
                     // ill condition, keep correction the same
                 } else {
                     // normal condition

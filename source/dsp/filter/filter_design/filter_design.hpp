@@ -12,7 +12,7 @@
 #include "../helpers.hpp"
 
 namespace zldsp::filter::FilterDesign {
-    template<class Coeff, FilterType filter_type>
+    template <class Coeff, FilterType filter_type>
     size_t updatePassCoeffs(const size_t n, const size_t start_idx,
                             const double w0, const double q0,
                             std::span<std::array<double, 6>> coeffs) {
@@ -46,7 +46,7 @@ namespace zldsp::filter::FilterDesign {
         return number;
     }
 
-    template<class Coeff, FilterType filter_type>
+    template <class Coeff, FilterType filter_type>
     size_t updateShelfCoeffs(const size_t n, const size_t start_idx,
                              const double w0, const double g0, const double q0,
                              std::span<std::array<double, 6>> coeffs) {
@@ -88,7 +88,7 @@ namespace zldsp::filter::FilterDesign {
         return number;
     }
 
-    template<class Coeff>
+    template <class Coeff>
     size_t updateBandPassCoeffs(const size_t n, const size_t start_idx,
                                 const double w0, const double q0,
                                 std::span<std::array<double, 6>> coeffs) {
@@ -106,7 +106,7 @@ namespace zldsp::filter::FilterDesign {
         return number;
     }
 
-    template<class Coeff>
+    template <class Coeff>
     size_t updateNotchCoeffs(const size_t n, const size_t start_idx,
                              const double w0, const double q0,
                              std::span<std::array<double, 6>> coeffs) {
@@ -124,7 +124,7 @@ namespace zldsp::filter::FilterDesign {
         return number;
     }
 
-    template<class Coeff>
+    template <class Coeff>
     size_t updateBandShelfCoeffs(const size_t n, const size_t start_idx,
                                  const double w0, const double g0, const double q0,
                                  std::span<std::array<double, 6>> coeffs) {
@@ -149,49 +149,49 @@ namespace zldsp::filter::FilterDesign {
         return n1 + n2;
     }
 
-    template<class Coeff>
+    template <class Coeff>
     size_t updateCoeffs(const FilterType filterType, const size_t n,
                         const double f, const double fs, const double gDB, const double q0,
                         std::span<std::array<double, 6>> coeffs) {
         const auto w0 = ppi * f / fs;
         const auto g0 = dbToGain(gDB);
         switch (filterType) {
-            case kPeak:
-                switch (n) {
-                    case 0:
-                    case 1: return 0;
-                    case 2: {
-                        coeffs[0] = Coeff::get2Peak(w0, g0, q0);
-                        return 1;
-                    }
-                    default: {
-                        return updateBandShelfCoeffs<Coeff>(n, 0, w0, g0, q0, coeffs);
-                    }
-                }
-            case kLowShelf:
-                return updateShelfCoeffs<Coeff, kLowShelf>(
-                    n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
-                    coeffs);
-            case kLowPass:
-                return updatePassCoeffs<Coeff, kLowPass>(n, 0, w0, q0, coeffs);
-            case kHighShelf:
-                return updateShelfCoeffs<Coeff, kHighShelf>(
-                    n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
-                    coeffs);
-            case kHighPass:
-                return updatePassCoeffs<Coeff, kHighPass>(n, 0, w0, q0, coeffs);
-            case kBandShelf:
+        case kPeak:
+            switch (n) {
+            case 0:
+            case 1: return 0;
+            case 2: {
+                coeffs[0] = Coeff::get2Peak(w0, g0, q0);
+                return 1;
+            }
+            default: {
                 return updateBandShelfCoeffs<Coeff>(n, 0, w0, g0, q0, coeffs);
-            case kTiltShelf:
-                return updateShelfCoeffs<Coeff, kTiltShelf>(
-                    n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
-                    coeffs);
-            case kNotch:
-                return updateNotchCoeffs<Coeff>(n, 0, w0, q0, coeffs);
-            case kBandPass:
-                return updateBandPassCoeffs<Coeff>(n, 0, w0, q0, coeffs);
-            default:
-                return 0;
+            }
+            }
+        case kLowShelf:
+            return updateShelfCoeffs<Coeff, kLowShelf>(
+                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
+                coeffs);
+        case kLowPass:
+            return updatePassCoeffs<Coeff, kLowPass>(n, 0, w0, q0, coeffs);
+        case kHighShelf:
+            return updateShelfCoeffs<Coeff, kHighShelf>(
+                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
+                coeffs);
+        case kHighPass:
+            return updatePassCoeffs<Coeff, kHighPass>(n, 0, w0, q0, coeffs);
+        case kBandShelf:
+            return updateBandShelfCoeffs<Coeff>(n, 0, w0, g0, q0, coeffs);
+        case kTiltShelf:
+            return updateShelfCoeffs<Coeff, kTiltShelf>(
+                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
+                coeffs);
+        case kNotch:
+            return updateNotchCoeffs<Coeff>(n, 0, w0, q0, coeffs);
+        case kBandPass:
+            return updateBandPassCoeffs<Coeff>(n, 0, w0, q0, coeffs);
+        default:
+            return 0;
         }
     }
 }

@@ -15,9 +15,9 @@ namespace zlp {
     class FilterSideAttach final : private juce::AudioProcessorValueTreeState::Listener {
     public:
         explicit FilterSideAttach(juce::AudioProcessor& processor,
-                              juce::AudioProcessorValueTreeState& parameters,
-                              Controller& controller,
-                              size_t idx);
+                                  juce::AudioProcessorValueTreeState& parameters,
+                                  Controller& controller,
+                                  size_t idx);
 
         ~FilterSideAttach() override;
 
@@ -33,4 +33,4 @@ namespace zlp {
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
     };
-} // zlp
+}

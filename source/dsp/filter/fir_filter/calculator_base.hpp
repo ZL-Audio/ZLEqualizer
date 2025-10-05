@@ -15,7 +15,7 @@
 #include "fir_helper.hpp"
 
 namespace zldsp::filter {
-    template<size_t kFilterNum, size_t kFilterSize>
+    template <size_t kFilterNum, size_t kFilterSize>
     class CorrectionCalculator {
     public:
         CorrectionCalculator() = default;
@@ -32,22 +32,22 @@ namespace zldsp::filter {
             proto_res_.resize(num_bin);
             biquad_res_.resize(num_bin);
 
-            for (auto &correction: corrections_) {
+            for (auto& correction : corrections_) {
                 correction.resize(num_bin);
                 correction[0] = std::complex(1.f, 0.f);
             }
         }
 
-        void update(std::array<TDF<float, kFilterSize>, kFilterNum> &tdfs,
-                    std::array<Ideal<float, kFilterSize>, kFilterNum> &ideals,
+        void update(std::array<TDF < float, kFilterSize>, kFilterNum> &tdfs,
+                    std::array<Ideal < float, kFilterSize>, kFilterNum> &ideals,
                     const std::span<size_t> indices,
-                    std::array<bool, kFilterNum> &update_flags) {
+                    std::array<bool, kFilterNum>& update_flags) {
             // update filter corrections
-            for (const size_t &i : indices) {
+            for (const size_t& i : indices) {
                 if (!update_flags[i]) { continue; }
                 std::fill(corrections_[i].begin(), corrections_[i].end(), std::complex(1.f, 0.f));
-                auto &ideal{ideals[i]};
-                auto &tdf{tdfs[i]};
+                auto& ideal{ideals[i]};
+                auto& tdf{tdfs[i]};
                 const auto filter_num = ideal.getFilterNum();
                 for (size_t idx = 0; idx < filter_num; ++idx) {
                     // update proto response
@@ -66,15 +66,15 @@ namespace zldsp::filter {
             }
         }
 
-        std::array<kfr::univector<std::complex<float> >, kFilterNum> &getCorrections() {
+        std::array<kfr::univector<std::complex<float>>, kFilterNum>& getCorrections() {
             return corrections_;
         }
 
     protected:
         static constexpr float kMinMagnitude = 1e-8f, kMaxMagnitude = 1e8f;
-        kfr::univector<std::complex<float> > w_prototype_{}, w_biquad_{};
-        kfr::univector<std::complex<float> > proto_res_{}, biquad_res_{};
-        std::array<kfr::univector<std::complex<float> >, kFilterNum> corrections_{};
+        kfr::univector<std::complex<float>> w_prototype_{}, w_biquad_{};
+        kfr::univector<std::complex<float>> proto_res_{}, biquad_res_{};
+        std::array<kfr::univector<std::complex<float>>, kFilterNum> corrections_{};
 
         virtual void prepareCorrection(size_t num_bin) = 0;
 

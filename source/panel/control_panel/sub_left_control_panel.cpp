@@ -13,38 +13,38 @@
 namespace zlpanel {
     SubLeftControlPanel::SubLeftControlPanel(PluginProcessor& p,
                                              zlgui::UIBase& base,
-                                             const multilingual::TooltipHelper& tooltip_helper)
-        : p_ref_(p), base_(base), updater_(),
-          close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
-                                                              BinaryData::close_svgSize)),
-          close_button_(base, close_drawable_.get(), nullptr),
-          bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
-                                                               BinaryData::bypass_svgSize)),
-          bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
-                         tooltip_helper.getToolTipText(multilingual::kBandBypass)),
-          label_laf_(base),
-          freq_label_("", "FREQ"),
-          gain_label_("", "GAIN"),
-          q_label_("", "Q"),
-          left_drawable_(juce::Drawable::createFromImageData(BinaryData::left_arrow_svg,
-                                                             BinaryData::left_arrow_svgSize)),
-          left_button_(base, left_drawable_.get(), nullptr),
-          band_label_("", ""),
-          right_drawable_(juce::Drawable::createFromImageData(BinaryData::right_arrow_svg,
-                                                              BinaryData::right_arrow_svgSize)),
-          right_button_(base, right_drawable_.get(), nullptr),
-          ftype_box_(zlp::PFilterType::kChoices, base,
-                     tooltip_helper.getToolTipText(multilingual::kBandType)),
-          slope_box_(zlp::POrder::kChoices, base,
-                     tooltip_helper.getToolTipText(multilingual::kBandSlope)),
-          stereo_box_(zlp::PLRMode::kChoices, base,
-                      tooltip_helper.getToolTipText(multilingual::kBandStereoMode)),
-          q_slider_("", base,
-                    tooltip_helper.getToolTipText(multilingual::kBandQ)),
-          dynamic_drawable_(juce::Drawable::createFromImageData(BinaryData::dynamic_svg,
-                                                                BinaryData::dynamic_svgSize)),
-          dynamic_button_(base, dynamic_drawable_.get(), dynamic_drawable_.get(),
-                          tooltip_helper.getToolTipText(multilingual::kBandDynamic)) {
+                                             const multilingual::TooltipHelper& tooltip_helper) :
+        p_ref_(p), base_(base), updater_(),
+        close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
+                                                            BinaryData::close_svgSize)),
+        close_button_(base, close_drawable_.get(), nullptr),
+        bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
+                                                             BinaryData::bypass_svgSize)),
+        bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
+                       tooltip_helper.getToolTipText(multilingual::kBandBypass)),
+        label_laf_(base),
+        freq_label_("", "FREQ"),
+        gain_label_("", "GAIN"),
+        q_label_("", "Q"),
+        left_drawable_(juce::Drawable::createFromImageData(BinaryData::left_arrow_svg,
+                                                           BinaryData::left_arrow_svgSize)),
+        left_button_(base, left_drawable_.get(), nullptr),
+        band_label_("", ""),
+        right_drawable_(juce::Drawable::createFromImageData(BinaryData::right_arrow_svg,
+                                                            BinaryData::right_arrow_svgSize)),
+        right_button_(base, right_drawable_.get(), nullptr),
+        ftype_box_(zlp::PFilterType::kChoices, base,
+                   tooltip_helper.getToolTipText(multilingual::kBandType)),
+        slope_box_(zlp::POrder::kChoices, base,
+                   tooltip_helper.getToolTipText(multilingual::kBandSlope)),
+        stereo_box_(zlp::PLRMode::kChoices, base,
+                    tooltip_helper.getToolTipText(multilingual::kBandStereoMode)),
+        q_slider_("", base,
+                  tooltip_helper.getToolTipText(multilingual::kBandQ)),
+        dynamic_drawable_(juce::Drawable::createFromImageData(BinaryData::dynamic_svg,
+                                                              BinaryData::dynamic_svgSize)),
+        dynamic_button_(base, dynamic_drawable_.get(), dynamic_drawable_.get(),
+                        tooltip_helper.getToolTipText(multilingual::kBandDynamic)) {
         close_button_.setBufferedToImage(true);
         addAndMakeVisible(close_button_);
         close_button_.getButton().onClick = [this]() {
@@ -125,7 +125,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
         auto bound = getLocalBounds();
-        bound.removeFromRight(padding);
+        bound.reduce(padding, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
         right_button_.setBounds(top_bound.removeFromRight(button_height / 2));

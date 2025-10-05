@@ -15,13 +15,13 @@
 #include <span>
 
 namespace zldsp::filter {
-    template<typename FloatType>
+    template <typename FloatType>
     class TDFBase {
     public:
         // w should be an array of std::exp(-2pi * f / samplerate * i)
         static void updateResponse(
-            const std::array<double, 6> &coeff,
-            const std::vector<std::complex<FloatType> > &wis, std::vector<std::complex<FloatType> > &response) {
+            const std::array<double, 6>& coeff,
+            const std::vector<std::complex<FloatType>>& wis, std::vector<std::complex<FloatType>>& response) {
             for (size_t idx = 0; idx < wis.size(); ++idx) {
                 response[idx] *= getResponse(coeff, wis[idx]);
             }
@@ -29,15 +29,15 @@ namespace zldsp::filter {
 
         // w should be std::exp(-2pi * f / samplerate * i)
         // const auto wi = std::exp(std::complex<FloatType>(FloatType(0), w))
-        static std::complex<FloatType> getResponse(const std::array<double, 6> &coeff,
-                                                    const std::complex<FloatType> &wi) {
+        static std::complex<FloatType> getResponse(const std::array<double, 6>& coeff,
+                                                   const std::complex<FloatType>& wi) {
             const auto wi2 = wi * wi;
             return (static_cast<FloatType>(coeff[3]) +
-                    static_cast<FloatType>(coeff[4]) * wi +
-                    static_cast<FloatType>(coeff[5]) * wi2) / (
-                       static_cast<FloatType>(coeff[0]) +
-                       static_cast<FloatType>(coeff[1]) * wi +
-                       static_cast<FloatType>(coeff[2]) * wi2);
+                static_cast<FloatType>(coeff[4]) * wi +
+                static_cast<FloatType>(coeff[5]) * wi2) / (
+                static_cast<FloatType>(coeff[0]) +
+                static_cast<FloatType>(coeff[1]) * wi +
+                static_cast<FloatType>(coeff[2]) * wi2);
         }
 
         TDFBase() = default;
@@ -56,7 +56,7 @@ namespace zldsp::filter {
         template <bool bypass = false>
         void process(std::span<FloatType*> buffer, const size_t num_samples) noexcept {
             for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                auto *samples = buffer[channel];
+                auto* samples = buffer[channel];
                 for (size_t i = 0; i < num_samples; ++i) {
                     if constexpr (bypass) {
                         processSample(channel, samples[i]);
@@ -74,7 +74,7 @@ namespace zldsp::filter {
             return output;
         }
 
-        void updateFromBiquad(const std::array<double, 6> &coeff) {
+        void updateFromBiquad(const std::array<double, 6>& coeff) {
             const auto a0_inv = 1.0 / coeff[0];
             coeff_[0] = static_cast<FloatType>(coeff[3] * a0_inv);
             coeff_[1] = static_cast<FloatType>(coeff[4] * a0_inv);

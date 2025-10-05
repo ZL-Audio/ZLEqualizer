@@ -18,7 +18,7 @@ namespace zldsp::filter {
      * an IIR filter which processes audio on the real-time thread
      * @tparam kFilterSize the number of cascading filters
      */
-    template<size_t kFilterSize>
+    template <size_t kFilterSize>
     class IIR {
     public:
         IIR() = default;
@@ -43,7 +43,7 @@ namespace zldsp::filter {
          * update filter parameters
          * @return
          */
-        void forceUpdate(const FilterParameters &paras) {
+        void forceUpdate(const FilterParameters& paras) {
             c_filter_type_ = paras.filter_type;
             c_order_ = paras.order;
             c_freq_.setCurrentAndTarget(std::min(paras.freq, freq_max_));
@@ -56,7 +56,7 @@ namespace zldsp::filter {
          * update filter parameters
          * @return
          */
-        void updateParas(const FilterParameters &paras) {
+        void updateParas(const FilterParameters& paras) {
             if (paras.filter_type != c_filter_type_ || paras.order != c_order_) {
                 c_filter_type_ = paras.filter_type;
                 c_order_ = paras.order;
@@ -72,7 +72,7 @@ namespace zldsp::filter {
          * set the frequency of the filter
          * @param freq
          */
-        template<bool force = false>
+        template <bool force = false>
         void setFreq(double freq) {
             freq = std::min(freq, freq_max_);
             if constexpr (force) {
@@ -90,7 +90,7 @@ namespace zldsp::filter {
          * set the gain of the filter
          * @param gain
          */
-        template<bool force = false>
+        template <bool force = false>
         void setGain(const double gain) {
             if constexpr (force) {
                 c_gain_.setCurrentAndTarget(gain);
@@ -107,7 +107,7 @@ namespace zldsp::filter {
          * set the Q value of the filter
          * @param q
          */
-        template<bool force = false>
+        template <bool force = false>
         void setQ(const double q) {
             if constexpr (force) {
                 c_q_.setCurrentAndTarget(q);
@@ -164,12 +164,22 @@ namespace zldsp::filter {
             return current_filter_num_;
         }
 
-        std::array<std::array<double, 6>, kFilterSize>& getCoeff() {
+        std::array<std::array < double, 6>
+        ,
+        kFilterSize
+        >
+        &
+        getCoeff() {
             return coeffs_;
         }
 
     protected:
-        std::array<std::array<double, 6>, kFilterSize> coeffs_{};
+        std::array<std::array < double, 6>
+        ,
+        kFilterSize
+        >
+        coeffs_ {
+        };
         size_t current_filter_num_{1};
         double freq_max_{20000.0};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kLin> c_gain_{0.0};
@@ -182,7 +192,7 @@ namespace zldsp::filter {
 
         static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 6>, kFilterSize> &coeffs) {
+                                      std::array<std::array < double, 6>, kFilterSize> &coeffs) {
             return FilterDesign::updateCoeffs<MartinCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
         }
     };

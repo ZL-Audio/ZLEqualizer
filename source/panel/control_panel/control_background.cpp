@@ -7,24 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include "control_background.hpp"
 
-#include <juce_gui_basics/juce_gui_basics.h>
-
-namespace zlgui::tooltip {
-    class TooltipWindow final : public juce::TooltipWindow {
-    public:
-        explicit TooltipWindow(Component* parentComponent, const int millisecondsBeforeTipAppears = 700)
-            : juce::TooltipWindow(parentComponent, millisecondsBeforeTipAppears) {
-        }
-
-        juce::String getTipFor(Component& c) override {
-            return is_on_ ? juce::TooltipWindow::getTipFor(c) : juce::String();
-        }
-
-        void setON(const bool x) { is_on_ = x; }
-
-    private:
-        bool is_on_{true};
-    };
+namespace zlpanel {
 }

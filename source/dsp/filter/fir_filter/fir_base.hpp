@@ -13,10 +13,10 @@
 #include "../../vector/vector.hpp"
 
 namespace zldsp::filter {
-    template<typename FloatType, size_t kDefaultFFTOrder>
+    template <typename FloatType, size_t kDefaultFFTOrder>
     class FIRBase {
     public:
-        explicit FIRBase(zldsp::fft::KFREngine<float> &fft) : fft_(fft) {
+        explicit FIRBase(zldsp::fft::KFREngine<float>& fft) : fft_(fft) {
         }
 
         virtual ~FIRBase() = default;
@@ -37,19 +37,19 @@ namespace zldsp::filter {
         void reset() {
             pos_ = 0;
             count_ = 0;
-            for (auto &fifo: input_fifo_) {
+            for (auto& fifo : input_fifo_) {
                 fifo.resize(fft_size_);
                 std::fill(fifo.begin(), fifo.end(), 0.f);
             }
-            for (auto &fifo: output_fifo_) {
+            for (auto& fifo : output_fifo_) {
                 fifo.resize(fft_size_);
                 std::fill(fifo.begin(), fifo.end(), 0.f);
             }
             std::fill(fft_in_.begin(), fft_in_.end(), 0.f);
         }
 
-        template<bool bypass = false>
-        void process(std::span<FloatType *> buffer, const size_t num_samples) {
+        template <bool bypass = false>
+        void process(std::span<FloatType*> buffer, const size_t num_samples) {
             for (size_t i = 0; i < num_samples; ++i) {
                 for (size_t chan = 0; chan < buffer.size(); ++chan) {
                     input_fifo_[chan][pos_] = static_cast<float>(buffer[chan][i]);
@@ -74,7 +74,7 @@ namespace zldsp::filter {
         [[nodiscard]] size_t getNumBin() const { return num_bin_; }
 
     protected:
-        zldsp::fft::KFREngine<float> &fft_;
+        zldsp::fft::KFREngine<float>& fft_;
         kfr::univector<float> window1_, window2_;
 
         size_t fft_order_ = kDefaultFFTOrder;
@@ -89,7 +89,7 @@ namespace zldsp::filter {
         // write position in input FIFO and read position in output FIFO.
         size_t pos_ = 0;
         // circular buffers for incoming and outgoing audio data.
-        std::vector<kfr::univector<float> > input_fifo_, output_fifo_;
+        std::vector<kfr::univector<float>> input_fifo_, output_fifo_;
         // circular FFT working space which contains interleaved complex numbers.
         kfr::univector<float> fft_in_, fft_data_;
 
@@ -120,7 +120,7 @@ namespace zldsp::filter {
             fft_data_.resize(fft_size_ * 2);
         }
 
-        template<bool bypass = false>
+        template <bool bypass = false>
         void processFrame() {
             for (size_t idx = 0; idx < input_fifo_.size(); ++idx) {
                 // Copy the input FIFO into the FFT working space in two parts.

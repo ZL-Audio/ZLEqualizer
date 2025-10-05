@@ -16,7 +16,7 @@ namespace zldsp::container {
      * a circular buffer
      * @tparam T the type of elements
      */
-    template<typename T>
+    template <typename T>
     class CircularBuffer {
     public:
         explicit CircularBuffer(const size_t capacity) {
@@ -27,8 +27,8 @@ namespace zldsp::container {
 
         [[nodiscard]] size_t size() const {
             return tail_ >= head_
-            ? static_cast<size_t>(tail_ - head_)
-            : static_cast<size_t>(tail_ + static_cast<unsigned int>(data_.size()) - head_);
+                       ? static_cast<size_t>(tail_ - head_)
+                       : static_cast<size_t>(tail_ + static_cast<unsigned int>(data_.size()) - head_);
         }
 
         [[nodiscard]] bool isEmpty() const {

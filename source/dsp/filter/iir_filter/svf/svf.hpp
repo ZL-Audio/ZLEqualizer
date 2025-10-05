@@ -20,7 +20,7 @@ namespace zldsp::filter {
      * @tparam FloatType the float type of input audio buffer
      * @tparam kFilterSize the number of cascading filters
      */
-    template<typename FloatType, size_t kFilterSize>
+    template <typename FloatType, size_t kFilterSize>
     class SVF final : public IIR<kFilterSize> {
     public:
         SVF() : IIR<kFilterSize>() {
@@ -33,8 +33,8 @@ namespace zldsp::filter {
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t) override {
-            IIR<kFilterSize>::prepareSampleRate(sample_rate);
-            for (auto &f: filters_) {
+            IIR < kFilterSize > ::prepareSampleRate(sample_rate);
+            for (auto& f : filters_) {
                 f.prepare(num_channels);
             }
         }
@@ -44,8 +44,8 @@ namespace zldsp::filter {
          * @param buffer
          * @param num_samples
          */
-        template<bool bypass = false>
-        void process(std::span<FloatType *> buffer, const size_t num_samples) {
+        template <bool bypass = false>
+        void process(std::span<FloatType*> buffer, const size_t num_samples) {
             if (this->c_freq_.isSmoothing() || this->c_gain_.isSmoothing() || this->c_q_.isSmoothing()) {
                 processSVF<bypass, true>(buffer, num_samples);
             } else {
@@ -53,8 +53,8 @@ namespace zldsp::filter {
             }
         }
 
-        template<bool bypass = false, bool smooth = false>
-        void processSVF(std::span<FloatType *> buffer, const size_t num_samples) {
+        template <bool bypass = false, bool smooth = false>
+        void processSVF(std::span<FloatType*> buffer, const size_t num_samples) {
             for (size_t i = 0; i < num_samples; ++i) {
                 if constexpr (smooth) {
                     this->c_freq_.getNext();
@@ -86,9 +86,9 @@ namespace zldsp::filter {
             const auto next_freq = this->c_freq_.getCurrent();
             const auto next_gain = this->c_gain_.getCurrent();
             const auto next_q = this->c_q_.getCurrent();
-            this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
-                                                                          next_freq, this->sample_rate_,
-                                                                          next_gain, next_q, this->coeffs_);
+            this->current_filter_num_ = IIR < kFilterSize > ::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
+                                                                              next_freq, this->sample_rate_,
+                                                                              next_gain, next_q, this->coeffs_);
             for (size_t i = 0; i < this->current_filter_num_; ++i) {
                 filters_[i].updateFromBiquad(this->coeffs_[i]);
             }
@@ -105,7 +105,7 @@ namespace zldsp::filter {
          * get the array of 2nd order filters
          * @return
          */
-        std::array<SVFBase<FloatType>, kFilterSize> &getFilters() {
+        std::array<SVFBase<FloatType>, kFilterSize>& getFilters() {
             return filters_;
         }
 

@@ -79,8 +79,7 @@ namespace zldsp::filter {
             if (side_buffer.size() == 1) {
                 side_v = kfr::log10(kfr::max(kfr::abs(side_v), FloatType(1e-12)));
                 side_v = (side_v - low_abs_) * slope_abs_;
-            }
-            else {
+            } else {
                 side_v = kfr::sqr(side_v);
                 for (size_t chan = 0; chan < side_buffer.size(); ++chan) {
                     side_v = side_v + kfr::sqr(kfr::make_univector(side_buffer[chan], num_samples));

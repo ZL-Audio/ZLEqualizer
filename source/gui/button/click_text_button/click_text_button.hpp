@@ -18,9 +18,9 @@
 namespace zlgui::button {
     class ClickTextButton final : public juce::Component {
     public:
-        explicit ClickTextButton(UIBase &base,
-                                 const juce::String &text = "",
-                                 const juce::String &tooltip_text = "")
+        explicit ClickTextButton(UIBase& base,
+                                 const juce::String& text = "",
+                                 const juce::String& tooltip_text = "")
             : look_and_feel_(base) {
             button_.setButtonText(text);
             button_.setLookAndFeel(&look_and_feel_);
@@ -40,9 +40,9 @@ namespace zlgui::button {
             button_.setBounds(getLocalBounds());
         }
 
-        juce::TextButton &getButton() { return button_; }
+        juce::TextButton& getButton() { return button_; }
 
-        ClickTextButtonLookAndFeel &getLAF() { return look_and_feel_; }
+        ClickTextButtonLookAndFeel& getLAF() { return look_and_feel_; }
 
     private:
         ClickTextButtonLookAndFeel look_and_feel_;

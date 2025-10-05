@@ -14,10 +14,10 @@
 namespace zlgui::slider {
     class SnappingSlider final : public juce::Slider {
     public:
-        explicit SnappingSlider(UIBase &base, const juce::String &name = "") : juce::Slider(name), base_(base) {
+        explicit SnappingSlider(UIBase& base, const juce::String& name = "") : juce::Slider(name), base_(base) {
         }
 
-        void mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &w) override {
+        void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& w) override {
             // avoid duplicate mousewheel events
             if (event.eventTime == last_wheel_time_) { return; }
             last_wheel_time_ = event.eventTime;
@@ -49,7 +49,7 @@ namespace zlgui::slider {
         }
 
     protected:
-        UIBase &base_;
+        UIBase& base_;
         float cumulative_x_{0.f}, cumulative_y_{0.f};
         juce::Time last_wheel_time_{};
 

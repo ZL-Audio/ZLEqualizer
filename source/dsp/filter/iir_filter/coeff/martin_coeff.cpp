@@ -76,14 +76,14 @@ namespace zldsp::filter {
     std::array<double, 6> MartinCoeff::get2LowPass(const double w0, const double q) {
         const auto a = solve_a(w0, 0.5 / q, 1);
         const auto A = get_AB(a);
-        std::array<double, 3> ws{};
+        std::array < double, 3 > ws{};
         if (w0 > kPi / 32) {
             ws = {0, 0.5 * w0, w0};
         } else {
             ws = {kPi, w0, 0.5 * (kPi + w0)};
         }
-        std::array<std::array<double, 3>, 3> phi{};
-        std::array<double, 3> res{};
+        std::array < std::array < double, 3 >, 3 > phi{};
+        std::array < double, 3 > res{};
         for (size_t i = 0; i < 3; ++i) {
             phi[i] = get_phi(ws[i]);
             res[i] = AnalogFunc::get2LowPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
@@ -98,7 +98,7 @@ namespace zldsp::filter {
         const auto A = get_AB(a);
         const auto phi0 = get_phi(w0);
 
-        std::array<double, 3> b{};
+        std::array < double, 3 > b{};
         b[0] = q * std::sqrt(dotProduct(A, phi0)) / 4 / phi0[1];
         b[1] = -2 * b[0];
         b[2] = b[0];
@@ -115,7 +115,7 @@ namespace zldsp::filter {
             const auto R1 = dotProduct(phi0, A);
             const auto R2 = dotProduct({-1, 1, 4 * (phi0[0] - phi0[1])}, A);
 
-            std::array<double, 3> B{};
+            std::array < double, 3 > B{};
             B[0] = 0.0;
             B[2] = (R1 - R2 * phi0[1]) / 4 / std::pow(phi0[1], 2);
             B[1] = R2 + 4 * (phi0[1] - phi0[0]) * B[2];
@@ -125,14 +125,14 @@ namespace zldsp::filter {
         } else {
             const auto _w = getBandwidth(w0, q);
             const auto w1 = _w[0], w2 = _w[1];
-            std::array<double, 3> ws{0, w0, w0 > kPiHalf ? w1 : w2};
+            std::array < double, 3 > ws{0, w0, w0 > kPiHalf ? w1 : w2};
             const auto _ws = ws;
-            std::array<double, 3> B{-1, -1, -1};
+            std::array < double, 3 > B{-1, -1, -1};
             size_t trial = 0;
             while (!check_AB(B) && trial < 20) {
                 trial += 1;
-                std::array<std::array<double, 3>, 3> phi{};
-                std::array<double, 3> res{};
+                std::array < std::array < double, 3 >, 3 > phi{};
+                std::array < double, 3 > res{};
                 for (size_t i = 0; i < 3; ++i) {
                     phi[i] = get_phi(ws[i]);
                     res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
@@ -142,8 +142,8 @@ namespace zldsp::filter {
             }
             if (trial == 20) {
                 ws = _ws;
-                std::array<std::array<double, 3>, 3> phi{};
-                std::array<double, 3> res{};
+                std::array < std::array < double, 3 >, 3 > phi{};
+                std::array < double, 3 > res{};
                 for (size_t i = 0; i < 3; ++i) {
                     phi[i] = get_phi(ws[i]);
                     res[i] = AnalogFunc::get2BandPassMagnitude2(w0, q, ws[i]) * dotProduct(phi[i], A);
@@ -157,7 +157,7 @@ namespace zldsp::filter {
     }
 
     std::array<double, 6> MartinCoeff::get2Notch(const double w0, const double q) {
-        std::array<double, 3> b{};
+        std::array < double, 3 > b{};
         if (w0 < kPi) {
             b = {1, -2 * std::cos(w0), 1};
         } else {
@@ -169,8 +169,8 @@ namespace zldsp::filter {
         const auto w1 = _w[0], w2 = _w[1];
         const std::array<double, 3> ws{0, w1, w2 < kPi ? w2 : 0.5 * (w0 + w1)};
 
-        std::array<std::array<double, 3>, 3> phi{};
-        std::array<double, 3> res{};
+        std::array < std::array < double, 3 >, 3 > phi{};
+        std::array < double, 3 > res{};
         for (size_t i = 0; i < 3; ++i) {
             phi[i] = get_phi(ws[i]);
             res[i] = dotProduct(phi[i], B) / AnalogFunc::get2NotchMagnitude2(w0, q, ws[i]);
@@ -189,7 +189,7 @@ namespace zldsp::filter {
         const auto R1 = dotProduct(A, phi0) * std::pow(g, 2);
         const auto R2 = (-A[0] + A[1] + 4 * (phi0[0] - phi0[1]) * A[2]) * std::pow(g, 2);
 
-        std::array<double, 3> B{A[0], 0, 0};
+        std::array < double, 3 > B{A[0], 0, 0};
         B[2] = (R1 - R2 * phi0[1] - B[0]) / (4 * std::pow(phi0[1], 2));
         B[1] = R2 + B[0] + 4 * (phi0[1] - phi0[0]) * B[2];
         const auto b = get_ab(B);
@@ -210,7 +210,7 @@ namespace zldsp::filter {
         const auto c0 = c2 * std::pow(w0, 4);
         const auto c1 = -2 * (1 + g) * std::pow(q * w0, 2);
         auto delta = c1 * c1 - 4 * c0 * c2;
-        std::array<double, 3> ws{};
+        std::array < double, 3 > ws{};
         if (delta <= 0) {
             ws = {0, w0 / 2, w0};
         } else {
@@ -229,13 +229,13 @@ namespace zldsp::filter {
                 }
             }
         }
-        std::array<double, 3> B{-1, -1, -1};
+        std::array < double, 3 > B{-1, -1, -1};
         size_t trial = 0;
         const auto _ws = ws;
         while (!check_AB(B) && trial < 20) {
             trial += 1;
-            std::array<std::array<double, 3>, 3> phi{};
-            std::array<double, 3> res{};
+            std::array < std::array < double, 3 >, 3 > phi{};
+            std::array < double, 3 > res{};
             for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
                 res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dotProduct(phi[i], A);
@@ -245,8 +245,8 @@ namespace zldsp::filter {
         }
         if (trial == 20) {
             ws = _ws;
-            std::array<std::array<double, 3>, 3> phi{};
-            std::array<double, 3> res{};
+            std::array < std::array < double, 3 >, 3 > phi{};
+            std::array < double, 3 > res{};
             for (size_t i = 0; i < 3; ++i) {
                 phi[i] = get_phi(ws[i]);
                 res[i] = AnalogFunc::get2TiltShelfMagnitude2(w0, g, q, ws[i]) * dotProduct(phi[i], A);
@@ -275,7 +275,7 @@ namespace zldsp::filter {
     }
 
     std::array<double, 3> MartinCoeff::solve_a(const double w0, const double b, const double c) {
-        std::array<double, 3> a{};
+        std::array < double, 3 > a{};
         a[0] = 1.0;
         if (b <= c) {
             a[1] = -2 * std::exp(-b * w0) * std::cos(std::sqrt(c * c - b * b) * w0);
@@ -286,20 +286,20 @@ namespace zldsp::filter {
         return a;
     }
 
-    std::array<double, 3> MartinCoeff::get_AB(const std::array<double, 3> &a) {
-        std::array<double, 3> A{};
+    std::array<double, 3> MartinCoeff::get_AB(const std::array<double, 3>& a) {
+        std::array < double, 3 > A{};
         A[0] = std::pow(a[0] + a[1] + a[2], 2);
         A[1] = std::pow(a[0] - a[1] + a[2], 2);
         A[2] = -4 * a[2];
         return A;
     }
 
-    bool MartinCoeff::check_AB(const std::array<double, 3> &A) {
+    bool MartinCoeff::check_AB(const std::array<double, 3>& A) {
         return A[0] > 0 && A[1] > 0 && std::pow(0.5 * (std::sqrt(A[0]) + std::sqrt(A[1])), 2) + A[2] > 0;
     }
 
-    std::array<double, 3> MartinCoeff::get_ab(const std::array<double, 3> &A) {
-        std::array<double, 3> a{};
+    std::array<double, 3> MartinCoeff::get_ab(const std::array<double, 3>& A) {
+        std::array < double, 3 > a{};
         const auto A0 = std::sqrt(std::max(A[0], 0.0));
         const auto A1 = std::sqrt(std::max(A[1], 0.0));
         auto W = 0.5 * (A0 + A1);
@@ -311,16 +311,16 @@ namespace zldsp::filter {
     }
 
     std::array<double, 3> MartinCoeff::get_phi(const double w) {
-        std::array<double, 3> phi{};
+        std::array < double, 3 > phi{};
         phi[0] = 1 - std::pow(std::sin(w / 2), 2);
         phi[1] = 1 - phi[0];
         phi[2] = 4 * phi[0] * phi[1];
         return phi;
     }
 
-    std::array<double, 3> MartinCoeff::linear_solve(const std::array<std::array<double, 3>, 3> &A,
-                                                    const std::array<double, 3> &b) {
-        std::array<double, 3> x{};
+    std::array<double, 3> MartinCoeff::linear_solve(const std::array<std::array < double, 3>, 3> &A,
+                                                    const std::array<double, 3>& b) {
+        std::array < double, 3 > x{};
         if (std::abs(A[0][0]) > std::abs(A[0][1])) {
             x[0] = b[0] / A[0][0];
             auto denominator = -(A[1][2] * A[2][1] - A[1][1] * A[2][2]);

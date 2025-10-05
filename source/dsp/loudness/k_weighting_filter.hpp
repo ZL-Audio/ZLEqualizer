@@ -18,7 +18,7 @@ namespace zldsp::loudness {
      * @tparam FloatType the float type of input audio buffer
      * @tparam kUseLowPass whether to use an extra lowpass filter at 22,000 Hz
      */
-    template<typename FloatType, bool kUseLowPass = false>
+    template <typename FloatType, bool kUseLowPass = false>
     class KWeightingFilter {
     public:
         KWeightingFilter() = default;
@@ -49,7 +49,7 @@ namespace zldsp::loudness {
             }
         }
 
-        void process(std::span<FloatType *> buffer, const size_t num_samples) {
+        void process(std::span<FloatType*> buffer, const size_t num_samples) {
             for (size_t channel = 0; channel < buffer.size(); ++channel) {
                 auto samples = buffer[channel];
                 for (size_t i = 0; i < num_samples; ++i) {

@@ -13,41 +13,41 @@
 namespace zlpanel {
     RightControlPanel::RightControlPanel(PluginProcessor& p,
                                          zlgui::UIBase& base,
-                                         const multilingual::TooltipHelper& tooltip_helper)
-        : p_ref_(p), base_(base), updater_(),
-          bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
-                                                               BinaryData::bypass_svgSize)),
-          bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
-                         tooltip_helper.getToolTipText(multilingual::kBandDynamicBypass)),
-          auto_drawable_(juce::Drawable::createFromImageData(BinaryData::auto_svg,
-                                                             BinaryData::auto_svgSize)),
-          auto_button_(base, auto_drawable_.get(), auto_drawable_.get(),
-                       tooltip_helper.getToolTipText(multilingual::kBandDynamicAuto)),
-          relative_drawable_(juce::Drawable::createFromImageData(BinaryData::relative_svg,
-                                                                 BinaryData::relative_svgSize)),
-          relative_button_(base, relative_drawable_.get(), relative_drawable_.get(),
-                           tooltip_helper.getToolTipText(multilingual::kBandDynamicRelative)),
-          swap_drawable_(juce::Drawable::createFromImageData(BinaryData::shuffle_svg,
-                                                             BinaryData::shuffle_svgSize)),
-          swap_button_(base, swap_drawable_.get(), swap_drawable_.get(),
-                       tooltip_helper.getToolTipText(multilingual::kBandSideSwap)),
-          ftype_box_(zlp::PSideFilterType::kChoices, base),
-          slope_box_(zlp::PSideOrder::kChoices, base),
-          th_slider_("Threshold", base,
+                                         const multilingual::TooltipHelper& tooltip_helper) :
+        p_ref_(p), base_(base), updater_(),
+        bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
+                                                             BinaryData::bypass_svgSize)),
+        bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
+                       tooltip_helper.getToolTipText(multilingual::kBandDynamicBypass)),
+        auto_drawable_(juce::Drawable::createFromImageData(BinaryData::auto_svg,
+                                                           BinaryData::auto_svgSize)),
+        auto_button_(base, auto_drawable_.get(), auto_drawable_.get(),
+                     tooltip_helper.getToolTipText(multilingual::kBandDynamicAuto)),
+        relative_drawable_(juce::Drawable::createFromImageData(BinaryData::relative_svg,
+                                                               BinaryData::relative_svgSize)),
+        relative_button_(base, relative_drawable_.get(), relative_drawable_.get(),
+                         tooltip_helper.getToolTipText(multilingual::kBandDynamicRelative)),
+        swap_drawable_(juce::Drawable::createFromImageData(BinaryData::shuffle_svg,
+                                                           BinaryData::shuffle_svgSize)),
+        swap_button_(base, swap_drawable_.get(), swap_drawable_.get(),
+                     tooltip_helper.getToolTipText(multilingual::kBandSideSwap)),
+        ftype_box_(zlp::PSideFilterType::kChoices, base),
+        slope_box_(zlp::PSideOrder::kChoices, base),
+        th_slider_("Threshold", base,
+                   tooltip_helper.getToolTipText(multilingual::kBandDynamicThreshold)),
+        knee_slider_("Knee", base,
                      tooltip_helper.getToolTipText(multilingual::kBandDynamicThreshold)),
-          knee_slider_("Knee", base,
-                       tooltip_helper.getToolTipText(multilingual::kBandDynamicThreshold)),
-          attack_slider_("Attack", base,
-                         tooltip_helper.getToolTipText(multilingual::kBandDynamicAttack)),
-          release_slider_("Release", base,
-                          tooltip_helper.getToolTipText(multilingual::kBandDynamicRelease)),
-          label_laf_(base),
-          freq_label_("", "FREQ"),
-          q_label_("", "Q"),
-          freq_slider_("", base,
-                       tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFreq)),
-          q_slider_("", base,
-                    tooltip_helper.getToolTipText(multilingual::kBandDynamicSideQ)) {
+        attack_slider_("Attack", base,
+                       tooltip_helper.getToolTipText(multilingual::kBandDynamicAttack)),
+        release_slider_("Release", base,
+                        tooltip_helper.getToolTipText(multilingual::kBandDynamicRelease)),
+        label_laf_(base),
+        freq_label_("", "FREQ"),
+        q_label_("", "Q"),
+        freq_slider_("", base,
+                     tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFreq)),
+        q_slider_("", base,
+                  tooltip_helper.getToolTipText(multilingual::kBandDynamicSideQ)) {
         bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
 
@@ -122,7 +122,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
         auto bound = getLocalBounds();
-        bound.removeFromLeft(padding);
+        bound.reduce(padding, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
         bypass_button_.setBounds(top_bound.removeFromLeft(button_height));

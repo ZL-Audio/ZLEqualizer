@@ -13,13 +13,13 @@
 #include "fir_base.hpp"
 
 namespace zldsp::filter {
-    template<typename FloatType, size_t kDefaultFFTOrder, size_t kStartIdx>
+    template <typename FloatType, size_t kDefaultFFTOrder, size_t kStartIdx>
     class CorrectionBase final : public FIRBase<FloatType, kDefaultFFTOrder> {
     public:
-        explicit CorrectionBase(zldsp::fft::KFREngine<float> &fft) : FIRBase<FloatType, kDefaultFFTOrder>(fft) {
+        explicit CorrectionBase(zldsp::fft::KFREngine<float>& fft) : FIRBase<FloatType, kDefaultFFTOrder>(fft) {
         }
 
-        void updateCorrection(std::span<kfr::univector<std::complex<float> > > corrections,
+        void updateCorrection(std::span<kfr::univector<std::complex<float>>> corrections,
                               const std::span<size_t> on_indices) {
             if (on_indices.empty()) {
                 std::fill(total_correction_.begin(), total_correction_.end(), std::complex(1.f, 0.f));
@@ -27,7 +27,7 @@ namespace zldsp::filter {
             }
             // multiply corrections
             bool is_first = true;
-            for (const size_t &i: on_indices) {
+            for (const size_t& i : on_indices) {
                 if (is_first) {
                     total_correction_ = corrections[i];
                     is_first = false;
@@ -53,19 +53,20 @@ namespace zldsp::filter {
             FIRBase<FloatType, kDefaultFFTOrder>::fft_.backward(dummy_correction_.data(), fir_coeffs_.data());
 
             std::rotate(fir_coeffs_.begin(),
-                fir_coeffs_.begin() + static_cast<std::ptrdiff_t>(fir_coeffs_.size() / 2),
-                fir_coeffs_.end());
+                        fir_coeffs_.begin() + static_cast<std::ptrdiff_t>(fir_coeffs_.size() / 2),
+                        fir_coeffs_.end());
 
             for (size_t i = 0; i < fir_coeffs_.size(); ++i) {
                 const auto p = static_cast<double>(i) / static_cast<double>(fir_coeffs_.size() - 1);
-                const auto window = 0.5 * (1.0 - std::cos(2.0 * std::numbers::pi * p)) / static_cast<double>(fir_coeffs_.size());
+                const auto window = 0.5 * (1.0 - std::cos(2.0 * std::numbers::pi * p)) / static_cast<double>(fir_coeffs_
+                    .size());
                 fir_coeffs_[i] *= static_cast<float>(window);
             }
             FIRBase<FloatType, kDefaultFFTOrder>::fft_.forward(fir_coeffs_.data(), dummy_correction_.data());
 
             std::copy(dummy_correction_.begin(),
-                dummy_correction_.begin() + static_cast<ptrdiff_t>(total_correction_.size()),
-                total_correction_.begin());
+                      dummy_correction_.begin() + static_cast<ptrdiff_t>(total_correction_.size()),
+                      total_correction_.begin());
             for (size_t i = 0; i < total_correction_.size(); ++i) {
                 if (i % 2 == 1) {
                     total_correction_[i] = -total_correction_[i];
@@ -75,10 +76,10 @@ namespace zldsp::filter {
         }
 
     private:
-        kfr::univector<std::complex<float> > total_correction_{};
+        kfr::univector<std::complex<float>> total_correction_{};
         size_t multiplication_size_{};
 
-        kfr::univector<std::complex<float> > dummy_correction_{};
+        kfr::univector<std::complex<float>> dummy_correction_{};
         kfr::univector<float> fir_coeffs_{};
 
         void setOrder(size_t num_channels, size_t order) override {
@@ -94,7 +95,7 @@ namespace zldsp::filter {
         }
 
         void processSpectrum() override {
-            auto *cdata = reinterpret_cast<std::complex<float> *>(
+            auto* cdata = reinterpret_cast<std::complex<float>*>(
                 FIRBase<FloatType, kDefaultFFTOrder>::fft_data_.data());
             if constexpr (kStartIdx == 0) {
                 auto c_vector = kfr::make_univector(cdata, total_correction_.size());

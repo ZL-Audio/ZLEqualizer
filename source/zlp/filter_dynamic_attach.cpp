@@ -12,10 +12,10 @@
 namespace zlp {
     FilterDynamicAttach::FilterDynamicAttach(juce::AudioProcessor&,
                                              juce::AudioProcessorValueTreeState& parameters,
-                                             Controller& controller, const size_t idx)
-        : parameters_(parameters),
-          controller_(controller),
-          idx_(idx) {
+                                             Controller& controller, const size_t idx) :
+        parameters_(parameters),
+        controller_(controller),
+        idx_(idx) {
         for (size_t i = 0; i < kIDs.size(); ++i) {
             const auto ID = kIDs[i] + std::to_string(idx_);
             parameters_.addParameterListener(ID, this);

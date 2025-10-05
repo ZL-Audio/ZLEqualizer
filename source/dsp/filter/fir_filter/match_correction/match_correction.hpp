@@ -12,6 +12,6 @@
 #include "../correction_base.hpp"
 
 namespace zldsp::filter {
-    template<typename FloatType>
+    template <typename FloatType>
     using MatchCorrection = CorrectionBase<FloatType, 9, 2>;
 }

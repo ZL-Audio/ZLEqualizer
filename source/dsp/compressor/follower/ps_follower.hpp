@@ -24,7 +24,7 @@ namespace zldsp::compressor {
      * @tparam kUseSmooth whether to use smooth
      * @tparam kUsePP whether to use pump-punch
      */
-    template<typename FloatType, bool kUseSmooth = false, bool kUsePP = false>
+    template <typename FloatType, bool kUseSmooth = false, bool kUsePP = false>
     class PSFollower final : public FollowerBase<FloatType> {
     public:
         PSFollower() = default;
@@ -50,7 +50,7 @@ namespace zldsp::compressor {
         /**
          * update values before processing a buffer by copying parameters from another follower
          */
-        void copyFrom(PSFollower &other) {
+        void copyFrom(PSFollower& other) {
             attack_ = other.attack_;
             release_ = other.release_;
             if constexpr (kUseSmooth) {
@@ -76,29 +76,29 @@ namespace zldsp::compressor {
             if constexpr (kUsePP) {
                 const auto slope0 = y0 - y_;
                 switch (pp_state_) {
-                    case PPState::kOff: {
+                case PPState::kOff: {
+                    slope_ = slope0;
+                    y_ = y0;
+                    break;
+                }
+                case PPState::kPump: {
+                    if (slope0 < slope_) {
+                        slope_ = pp_ * (slope_ - slope0) + slope0;
+                    } else {
                         slope_ = slope0;
-                        y_ = y0;
-                        break;
                     }
-                    case PPState::kPump: {
-                        if (slope0 < slope_) {
-                            slope_ = pp_ * (slope_ - slope0) + slope0;
-                        } else {
-                            slope_ = slope0;
-                        }
-                        y_ += slope_;
-                        break;
+                    y_ += slope_;
+                    break;
+                }
+                case PPState::kPunch: {
+                    if (slope0 > slope_ && slope_ >= FloatType(0)) {
+                        slope_ = pp_ * (slope_ - slope0) + slope0;
+                    } else {
+                        slope_ = slope0;
                     }
-                    case PPState::kPunch: {
-                        if (slope0 > slope_ && slope_ >= FloatType(0)) {
-                            slope_ = pp_ * (slope_ - slope0) + slope0;
-                        } else {
-                            slope_ = slope0;
-                        }
-                        y_ += slope_;
-                        break;
-                    }
+                    y_ += slope_;
+                    break;
+                }
                 }
             } else {
                 y_ = y0;
@@ -106,7 +106,7 @@ namespace zldsp::compressor {
             return y_;
         }
 
-        template<bool to_update = true>
+        template <bool to_update = true>
         void setAttack(const FloatType millisecond) {
             attack_time_ = millisecond;
             if constexpr (to_update) {
@@ -114,7 +114,7 @@ namespace zldsp::compressor {
             }
         }
 
-        template<bool to_update = true>
+        template <bool to_update = true>
         void setRelease(const FloatType millisecond) {
             release_time_ = millisecond;
             if constexpr (to_update) {
@@ -126,7 +126,7 @@ namespace zldsp::compressor {
          *
          * @param x a float between 0.0 and 1.0
          */
-        template<bool to_update = true>
+        template <bool to_update = true>
         void setPumpPunch(const FloatType x) {
             pp_portion_ = x;
             if constexpr (to_update) {
@@ -138,7 +138,7 @@ namespace zldsp::compressor {
          *
          * @param x a float between 0.0 and 1.0
          */
-        template<bool to_update = true>
+        template <bool to_update = true>
         void setSmooth(const FloatType x) {
             smooth_portion_ = x;
             if constexpr (to_update) {

@@ -16,10 +16,10 @@
 namespace zlgui {
     class CompactButtonLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
-        explicit CompactButtonLookAndFeel(UIBase &base) : base_(base) {
+        explicit CompactButtonLookAndFeel(UIBase& base) : base_(base) {
         }
 
-        void drawToggleButton(juce::Graphics &g, juce::ToggleButton &button, bool, bool) override {
+        void drawToggleButton(juce::Graphics& g, juce::ToggleButton& button, bool, bool) override {
             const auto is_pressed = button.getToggleState() ^ reverse_;
 
             auto bounds = button.getLocalBounds().toFloat();
@@ -69,7 +69,7 @@ namespace zlgui {
 
         inline void setDepth(const float x) { button_depth_ = x; }
 
-        inline void setDrawable(juce::Drawable *x) {
+        inline void setDrawable(juce::Drawable* x) {
             drawable_ = x;
             updateImages();
         }
@@ -92,11 +92,11 @@ namespace zlgui {
     private:
         static constexpr auto kPlacement = juce::RectanglePlacement::centred;
 
-        UIBase &base_;
+        UIBase& base_;
 
         bool reverse_{false}, with_shadow_{true};
         float button_depth_{0.f}, shrink_scale_{1.f}, scale_{1.f};
-        juce::Drawable *drawable_ = nullptr;
+        juce::Drawable* drawable_ = nullptr;
         std::unique_ptr<juce::Drawable> internal_img_;
     };
 }
