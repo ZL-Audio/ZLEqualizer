@@ -28,7 +28,7 @@ jobs:
           - name: Linux-x86
             os: ubuntu-22.04
             app_suffix: ""
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DKFR_ARCHS="sse2;avx;avx2" -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
           - name: Linux-arm
             os: ubuntu-22.04-arm
             app_suffix: ""
@@ -36,7 +36,7 @@ jobs:
           - name: macOS-x86
             os: macos-15
             app_suffix: ".app"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DKFR_ARCHS="sse2;avx;avx2" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_EQ_BAND_NUM=24
           - name: macOS-arm
             os: macos-15
             app_suffix: ".app"
@@ -45,7 +45,7 @@ jobs:
             os: windows-latest
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ARCHS="sse2;avx;avx2" -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
           - name: Windows-arm
             os: windows-11-arm
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsarm64.bat"'
