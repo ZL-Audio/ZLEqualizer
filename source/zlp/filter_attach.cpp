@@ -94,7 +94,7 @@ namespace zlp {
 
     void FilterAttach::updateSideQ() {
         if (empty_.getFilterType() == zldsp::filter::kPeak) {
-            const auto q = empty_.getQ();
+            const auto q = static_cast<float>(empty_.getQ());
             side_Q_updater_.update(PSideQ::kRange.convertTo0to1(q));
         }
     }

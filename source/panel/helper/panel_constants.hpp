@@ -9,5 +9,11 @@
 
 #pragma once
 
-#include "compact_combobox/compact_combobox.hpp"
-#include "../attachment/combobox_attachment.hpp"
+namespace zlpanel {
+    static constexpr float kPaddingScale = .5f;
+    static constexpr float kSliderScale = 6.5f;
+    static constexpr float kButtonScale = 2.25f;
+    static constexpr float kBoxScale = 1.75f;
+    static constexpr float kSliderHeightScale = 2.8f;
+    static constexpr float kSmallSliderScale = 5.5f;
+}

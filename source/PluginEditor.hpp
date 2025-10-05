@@ -10,10 +10,10 @@
 #pragma once
 
 #include "PluginProcessor.hpp"
-#include "BinaryData.h"
 
-#include "state/state.hpp"
+#include "panel/main_panel.hpp"
 #include "gui/gui.hpp"
+#include "state/state.hpp"
 
 //==============================================================================
 class PluginEditor : public juce::AudioProcessorEditor,
@@ -42,6 +42,7 @@ private:
     juce::Value last_ui_width_, last_ui_height_;
 
     zlgui::UIBase base_;
+    zlpanel::MainPanel main_panel_;
 
     std::unique_ptr<juce::VBlankAttachment> vblank_;
 

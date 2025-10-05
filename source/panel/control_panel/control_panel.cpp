@@ -7,7 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include "control_panel.hpp"
 
-#include "compact_combobox/compact_combobox.hpp"
-#include "../attachment/combobox_attachment.hpp"
+namespace zlpanel {
+}

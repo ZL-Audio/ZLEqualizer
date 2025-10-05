@@ -16,10 +16,10 @@
 namespace zlgui::button {
     class ClickButton final : public juce::Component {
     public:
-        explicit ClickButton(UIBase &base,
-                             juce::Drawable *normal_image = nullptr,
-                             juce::Drawable *normal_on_image = nullptr,
-                             const juce::String &tooltip_text = "")
+        explicit ClickButton(UIBase& base,
+                             juce::Drawable* normal_image = nullptr,
+                             juce::Drawable* normal_on_image = nullptr,
+                             const juce::String& tooltip_text = "")
             : base_(base), normal_(normal_image), normal_on_(normal_on_image) {
             if (normal_on_image != nullptr) {
                 button_.setToggleable(true);
@@ -42,17 +42,7 @@ namespace zlgui::button {
             button_.setBounds(getLocalBounds());
         }
 
-        inline juce::DrawableButton &getButton() { return button_; }
-
-        void lookAndFeelChanged() override {
-            updateImages();
-        }
-
-        void visibilityChanged() override {
-            if (isVisible()) {
-                updateImages();
-            }
-        }
+        inline juce::DrawableButton& getButton() { return button_; }
 
         void updateImages() {
             if (normal_ != nullptr) {
@@ -79,12 +69,26 @@ namespace zlgui::button {
             on_over_alpha_ = on_over_alpha;
         }
 
+        bool getToggleState() const {
+            return button_.getToggleState();
+        }
+
     private:
-        zlgui::UIBase &base_;
+        zlgui::UIBase& base_;
         juce::DrawableButton button_{"", juce::DrawableButton::ImageFitted};
         juce::Drawable *normal_ = nullptr, *normal_on_ = nullptr;
         float alpha_{.5f}, over_alpha_{1.f}, on_alpha_{1.f}, on_over_alpha_{1.f};
 
         std::unique_ptr<juce::Drawable> normal_img_, normal_on_img_, over_img_, over_on_img_;
+
+        void lookAndFeelChanged() override {
+            updateImages();
+        }
+
+        void visibilityChanged() override {
+            if (isVisible()) {
+                updateImages();
+            }
+        }
     };
-} // zlgui
+}

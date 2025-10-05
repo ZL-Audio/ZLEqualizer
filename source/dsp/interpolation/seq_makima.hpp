@@ -45,16 +45,15 @@ namespace zldsp::interpolation {
             auto left_delta = FloatType(2) * deltas_[0] - deltas_[1];
             auto right_delta = FloatType(2) * deltas_.end()[-1] - deltas_.end()[-2];
 
-            derivatives_.front() = left_derivative_;
-            derivatives_.back() = right_derivative_;
+            const auto n = derivatives_.size();
 
+            derivatives_[0] = left_derivative_;
+            derivatives_[n - 1] = right_derivative_;
             derivatives_[1] = calculateD(left_delta, deltas_[0], deltas_[1], deltas_[2]);
-
-            for (size_t i = 2; i < derivatives_.size() - 2; ++i) {
+            for (size_t i = 2; i < n - 2; ++i) {
                 derivatives_[i] = calculateD(deltas_[i - 2], deltas_[i - 1], deltas_[i], deltas_[i + 1]);
             }
-
-            derivatives_.end()[-2] = calculateD(deltas_.end()[-3], deltas_.end()[-2], deltas_.end()[-1], right_delta);
+            derivatives_[n - 2] = calculateD(deltas_[n - 3], deltas_[n - 2], deltas_[n - 1], right_delta);
         }
 
         /**

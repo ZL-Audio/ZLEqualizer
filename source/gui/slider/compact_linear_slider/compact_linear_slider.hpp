@@ -11,9 +11,10 @@
 
 #include "../../label/name_look_and_feel.hpp"
 #include "../extra_slider/snapping_slider.h"
+#include <cstdio>
 
 namespace zlgui::slider {
-    template<bool UseBackground = true, bool UseDisplay = true, bool UseName = true>
+    template <bool kUseBackground = true, bool kUseDisplay = true, bool kUseName = true>
     class CompactLinearSlider final : public juce::Component,
                                       private juce::Label::Listener,
                                       private juce::Slider::Listener,
@@ -21,27 +22,27 @@ namespace zlgui::slider {
     private:
         class Background final : public juce::Component {
         public:
-            explicit Background(UIBase &base) : base_(base) {
+            explicit Background(UIBase& base) : base_(base) {
                 setInterceptsMouseClicks(false, false);
                 setBufferedToImage(true);
             }
 
-            void paint(juce::Graphics &g) override {
+            void paint(juce::Graphics& g) override {
                 base_.fillRoundedInnerShadowRectangle(g, getLocalBounds().toFloat(),
                                                       base_.getFontSize() * 0.5f, {.blur_radius = 0.66f});
             }
 
         private:
-            UIBase &base_;
+            UIBase& base_;
         };
 
         class Display final : public juce::Component {
         public:
-            explicit Display(UIBase &base) : base_(base) {
+            explicit Display(UIBase& base) : base_(base) {
                 setInterceptsMouseClicks(false, false);
             }
 
-            void paint(juce::Graphics &g) override {
+            void paint(juce::Graphics& g) override {
                 auto bound = getLocalBounds().toFloat();
                 bound = bound.withWidth(value_ * bound.getWidth());
                 g.saveState();
@@ -63,14 +64,14 @@ namespace zlgui::slider {
             }
 
         private:
-            UIBase &base_;
+            UIBase& base_;
             float value_{0.f};
             juce::Path mask_;
         };
 
     public:
-        explicit CompactLinearSlider(const juce::String &label_text, UIBase &base,
-                                     const juce::String &tooltip_text = "")
+        explicit CompactLinearSlider(const juce::String& label_text, UIBase& base,
+                                     const juce::String& tooltip_text = "")
             : base_(base), background_(base_), display_(base_),
               slider_(base_),
               name_look_and_feel_(base_), text_look_and_feel_(base_) {
@@ -84,8 +85,12 @@ namespace zlgui::slider {
             slider_.setInterceptsMouseClicks(false, false);
             slider_.addListener(this);
 
-            if (UseBackground) { addAndMakeVisible(background_); }
-            if (UseDisplay) { addAndMakeVisible(display_); }
+            if constexpr (kUseBackground) {
+                addAndMakeVisible(background_);
+            }
+            if constexpr (kUseDisplay) {
+                addAndMakeVisible(display_);
+            }
 
             text_.setText(getDisplayValue(slider_), juce::dontSendNotification);
             text_.setJustificationType(juce::Justification::centred);
@@ -96,7 +101,7 @@ namespace zlgui::slider {
             addAndMakeVisible(text_);
 
             // setup label
-            if (UseName) {
+            if constexpr (kUseName) {
                 text_look_and_feel_.setAlpha(0.f);
                 label_.setText(label_text, juce::dontSendNotification);
                 label_.setJustificationType(juce::Justification::centred);
@@ -124,37 +129,43 @@ namespace zlgui::slider {
 
         void resized() override {
             const auto bound = getLocalBounds();
-            if (UseBackground) { background_.setBounds(bound); }
-            if (UseDisplay) { display_.setBounds(bound); }
+            if constexpr (kUseBackground) {
+                background_.setBounds(bound);
+            }
+            if constexpr (kUseDisplay) {
+                display_.setBounds(bound);
+            }
             slider_.setBounds(bound);
             text_.setBounds(bound);
-            if (UseName) { label_.setBounds(bound); }
+            if constexpr (kUseName) {
+                label_.setBounds(bound);
+            }
         }
 
-        void mouseUp(const juce::MouseEvent &event) override {
+        void mouseUp(const juce::MouseEvent& event) override {
             if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown() || event.mods.isRightButtonDown()) {
                 return;
             }
             slider_.mouseUp(event);
         }
 
-        void mouseDown(const juce::MouseEvent &event) override {
+        void mouseDown(const juce::MouseEvent& event) override {
             if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown() || event.mods.isRightButtonDown()) {
                 return;
             }
             slider_.mouseDown(event);
         }
 
-        void mouseDrag(const juce::MouseEvent &event) override {
+        void mouseDrag(const juce::MouseEvent& event) override {
             if (event.mods.isRightButtonDown()) {
                 return;
             }
             slider_.mouseDrag(event);
         }
 
-        void mouseEnter(const juce::MouseEvent &event) override {
+        void mouseEnter(const juce::MouseEvent& event) override {
             slider_.mouseEnter(event);
-            if (UseName) {
+            if constexpr (kUseName) {
                 text_look_and_feel_.setAlpha(1.f);
                 name_look_and_feel_.setAlpha(0.f);
                 text_.repaint();
@@ -162,12 +173,12 @@ namespace zlgui::slider {
             }
         }
 
-        void mouseExit(const juce::MouseEvent &event) override {
+        void mouseExit(const juce::MouseEvent& event) override {
             slider_.mouseExit(event);
             if (text_.getCurrentTextEditor() != nullptr) {
                 return;
             }
-            if (UseName) {
+            if constexpr (kUseName) {
                 text_look_and_feel_.setAlpha(0.f);
                 name_look_and_feel_.setAlpha(1.f);
                 text_.repaint();
@@ -175,11 +186,11 @@ namespace zlgui::slider {
             }
         }
 
-        void mouseMove(const juce::MouseEvent &event) override {
+        void mouseMove(const juce::MouseEvent& event) override {
             slider_.mouseMove(event);
         }
 
-        void mouseDoubleClick(const juce::MouseEvent &event) override {
+        void mouseDoubleClick(const juce::MouseEvent& event) override {
             if (base_.getIsSliderDoubleClickOpenEditor() != event.mods.isCommandDown()) {
                 text_.showEditor();
             } else {
@@ -187,11 +198,11 @@ namespace zlgui::slider {
             }
         }
 
-        void mouseWheelMove(const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override {
+        void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override {
             slider_.mouseWheelMove(event, wheel);
         }
 
-        inline juce::Slider &getSlider() { return slider_; }
+        inline juce::Slider& getSlider() { return slider_; }
 
         inline void setEditable(const bool x) {
             setAlpha(x ? 1.f : .5f);
@@ -210,7 +221,7 @@ namespace zlgui::slider {
         }
 
         void setPrecision(const int x) {
-            precision = x;
+            precision_ = std::max(x, 2);
         }
 
         void setJustification(const juce::Justification justification) {
@@ -219,7 +230,7 @@ namespace zlgui::slider {
         }
 
     private:
-        UIBase &base_;
+        UIBase& base_;
         Background background_;
         Display display_;
 
@@ -230,39 +241,25 @@ namespace zlgui::slider {
 
         float font_scale_{1.5f};
 
-        int precision{2};
+        int precision_{4};
 
-        juce::String getDisplayValue(const juce::Slider &s) const {
-            bool append_k{false};
-            auto value = s.getValue();
-            if (value > 10000.0) {
-                value = value / 1000.0;
-                append_k = true;
-            }
-            const auto t_precision = value > 100.0 ? std::max(precision - 1, 0) : precision;
+        juce::String getDisplayValue(const juce::Slider& s) const {
+            const auto value = s.getValue();
+            const bool append_k = std::abs(value) > 10000.0;
+            const auto display_value = append_k ? value * 0.001f : value;
+            const auto actual_precision = append_k ? precision_ - 1 : precision_;
 
-            std::stringstream ss;
-            ss << std::fixed << std::setprecision(t_precision) << value;
-            std::string str = ss.str();
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "%.*g", actual_precision, display_value);
+            const std::string str{buffer};
 
-            // erase trailing zeros and redundant decimal point
-            if (str.find('.') != std::string::npos) {
-                str = str.substr(0, str.find_last_not_of('0') + 1);
-                if (str.back() == '.') {
-                    str.pop_back();
-                }
-            }
-            if (append_k) {
-                return juce::String(str + "K");
-            } else {
-                return juce::String(str);
-            }
+            return append_k ? juce::String{str + "K"} : juce::String{str};
         }
 
-        void labelTextChanged(juce::Label *) override {
+        void labelTextChanged(juce::Label*) override {
         }
 
-        void editorShown(juce::Label *, juce::TextEditor &editor) override {
+        void editorShown(juce::Label*, juce::TextEditor& editor) override {
             editor.setInterceptsMouseClicks(false, false);
             editor.setInputRestrictions(0, "-0123456789.kK");
             text_.addMouseListener(this, true);
@@ -274,7 +271,7 @@ namespace zlgui::slider {
             editor.applyColourToAllText(base_.getTextColor(), true);
         }
 
-        void editorHidden(juce::Label *, juce::TextEditor &editor) override {
+        void editorHidden(juce::Label*, juce::TextEditor& editor) override {
             text_.removeMouseListener(this);
             auto k = 1.0;
             const auto ctext = editor.getText();
@@ -284,7 +281,7 @@ namespace zlgui::slider {
             const auto actual_value = ctext.getDoubleValue() * k;
 
             slider_.setValue(actual_value, juce::sendNotificationAsync);
-            if (UseName) {
+            if constexpr (kUseName) {
                 text_look_and_feel_.setAlpha(0.f);
                 name_look_and_feel_.setAlpha(1.f);
                 text_.repaint();
@@ -292,7 +289,7 @@ namespace zlgui::slider {
             }
         }
 
-        void sliderValueChanged(juce::Slider *) override {
+        void sliderValueChanged(juce::Slider*) override {
             text_.setText(getDisplayValue(slider_), juce::dontSendNotification);
             display_.setSliderValue(
                 static_cast<float>(slider_.getNormalisableRange().convertTo0to1(slider_.getValue())));

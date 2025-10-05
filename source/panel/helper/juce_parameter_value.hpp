@@ -9,5 +9,17 @@
 
 #pragma once
 
-#include "compact_combobox/compact_combobox.hpp"
-#include "../attachment/combobox_attachment.hpp"
+#include <juce_audio_processors/juce_audio_processors.h>
+
+namespace zlpanel {
+    inline float getValue(const juce::AudioProcessorValueTreeState& tree,
+                          const std::string& ID) {
+        return tree.getRawParameterValue(ID)->load(std::memory_order::relaxed);
+    }
+
+    inline void updateValue(juce::RangedAudioParameter* para, const float value) {
+        para->beginChangeGesture();
+        para->setValueNotifyingHost(value);
+        para->endChangeGesture();
+    }
+}

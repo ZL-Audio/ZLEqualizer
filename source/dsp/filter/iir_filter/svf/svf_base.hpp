@@ -70,7 +70,7 @@ namespace zldsp::filter {
         }
 
     private:
-        FloatType g_, R2_, h_, chp_, cbp_, clp_;
+        FloatType g_{}, R2_{}, h_{}, chp_{}, cbp_{}, clp_{};
         std::vector<FloatType> s1_, s2_;
     };
 }

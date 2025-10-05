@@ -70,6 +70,10 @@ public:
 
     bool supportsDoublePrecisionProcessing() const override { return true; }
 
+    zlp::Controller& getController() {
+        return controller_;
+    }
+
 private:
     std::array<std::vector<double>, 2> main_buffer_, side_buffer_;
     std::array<double*, 2> main_pointers_{}, side_pointers_{};

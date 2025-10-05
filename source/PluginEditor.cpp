@@ -9,18 +9,21 @@
 
 #include "PluginEditor.hpp"
 
+#include "BinaryData.h"
+
 PluginEditor::PluginEditor(PluginProcessor& p)
     : AudioProcessorEditor(&p),
       p_ref_(p),
       property_(p.property_),
-      base_(p.state_) {
+      base_(p.state_),
+      main_panel_(p, base_) {
     // set font
     const auto font_face = juce::Typeface::createSystemTypefaceFor(
         BinaryData::MiSansLatinMedium_ttf, BinaryData::MiSansLatinMedium_ttfSize);
     juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(font_face);
 
     // add the main panel
-    // addAndMakeVisible(main_panel_);
+    addAndMakeVisible(main_panel_);
 
     // set size & size listener
     setResizeLimits(static_cast<int>(zlstate::PWindowW::kMinV),
@@ -39,10 +42,10 @@ PluginEditor::PluginEditor(PluginProcessor& p)
     last_ui_height_.referTo(p.state_.getParameterAsValue(zlstate::PWindowH::kID));
     setSize(last_ui_width_.getValue(), last_ui_height_.getValue());
 
-    startTimerHz(2);
+    startTimerHz(1);
     updateIsShowing();
 
-    // base_.setPanelProperty(zlgui::kUISettingChanged, true);
+    base_.setPanelProperty(zlgui::kUISettingChanged, true);
     base_.getPanelValueTree().addListener(this);
 }
 
@@ -50,6 +53,7 @@ PluginEditor::~PluginEditor() {
     base_.getPanelValueTree().removeListener(this);
     vblank_.reset();
     stopTimer();
+    p_ref_.getController().setEditorON(false);
 }
 
 void PluginEditor::paint(juce::Graphics& g) {
@@ -57,7 +61,7 @@ void PluginEditor::paint(juce::Graphics& g) {
 }
 
 void PluginEditor::resized() {
-    // main_panel_.setBounds(getLocalBounds());
+    main_panel_.setBounds(getLocalBounds());
     last_ui_width_ = getWidth();
     last_ui_height_ = getHeight();
     triggerAsyncUpdate();
@@ -75,14 +79,14 @@ void PluginEditor::minimisationStateChanged(bool) {
     updateIsShowing();
 }
 
-void PluginEditor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) {
-    // if (base_.isPanelIdentifier(zlgui::kUISettingChanged, property)) {
-    //     sendLookAndFeelChange();
-    //     auto &fft{p_ref_.getEqualizeController().getFFTAnalyzer()};
-    //     fft.setExtraTilt(base_.getFFTExtraTilt());
-    //     fft.setExtraSpeed(base_.getFFTExtraSpeed());
-    //     triggerAsyncUpdate();
-    // }
+void PluginEditor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
+    if (base_.isPanelIdentifier(zlgui::kUISettingChanged, property)) {
+        sendLookAndFeelChange();
+        auto& fft{p_ref_.getController().getFFTAnalyzer()};
+        fft.setExtraTilt(base_.getFFTExtraTilt());
+        fft.setExtraSpeed(base_.getFFTExtraSpeed());
+        triggerAsyncUpdate();
+    }
 }
 
 void PluginEditor::handleAsyncUpdate() {
@@ -94,16 +98,14 @@ void PluginEditor::timerCallback() {
 }
 
 void PluginEditor::updateIsShowing() {
-    // if (isShowing() != base_.getIsEditorShowing()) {
-    //     base_.setIsEditorShowing(isShowing());
-    //     p_ref_.getCompressController().setMagAnalyzerOn(base_.getIsEditorShowing());
-    //     p_ref_.getEqualizeController().setFFTAnalyzerON(
-    //         base_.getIsEditorShowing() && equalize_show_ref_.load(std::memory_order::relaxed) > .5f);
-    //     if (base_.getIsEditorShowing()) {
-    //         vblank_ = std::make_unique<juce::VBlankAttachment>(
-    //             &main_panel_, [this](const double x) { main_panel_.repaintCallBack(x); });
-    //     } else {
-    //         vblank_.reset();
-    //     }
-    // }
+    if (isShowing() != base_.getIsEditorShowing()) {
+        base_.setIsEditorShowing(isShowing());
+        p_ref_.getController().setEditorON(base_.getIsEditorShowing());
+        if (base_.getIsEditorShowing()) {
+            vblank_ = std::make_unique<juce::VBlankAttachment>(
+                &main_panel_, [this](const double x) { main_panel_.repaintCallBack(x); });
+        } else {
+            vblank_.reset();
+        }
+    }
 }

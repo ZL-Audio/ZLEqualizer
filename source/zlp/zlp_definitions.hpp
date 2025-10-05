@@ -412,7 +412,7 @@ namespace zlp {
         static constexpr auto kID = "side_filter_type";
         static constexpr auto kName = "Side Filter Type";
         inline static const auto kChoices = juce::StringArray{
-            "Band Pass", "Low Pass", "High Pass"
+            "BP", "LP", "HP"
         };
         static constexpr int kDefaultI = 0;
     };

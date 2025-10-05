@@ -12,15 +12,15 @@
 #include "component_updater.hpp"
 
 namespace zlgui::attachment {
-    template<bool UpdateFromAPVTS = true>
+    template <bool kUpdateFromAPVTS = true>
     class ButtonAttachment final : public ComponentAttachment,
                                    private juce::AudioProcessorValueTreeState::Listener,
                                    private juce::Button::Listener {
     public:
-        ButtonAttachment(juce::Button &button,
-                         juce::AudioProcessorValueTreeState &apvts,
-                         const juce::String &parameter_ID,
-                         ComponentUpdater &updater,
+        ButtonAttachment(juce::Button& button,
+                         juce::AudioProcessorValueTreeState& apvts,
+                         const juce::String& parameter_ID,
+                         ComponentUpdater& updater,
                          const juce::NotificationType notification_type = juce::NotificationType::sendNotificationSync)
             : button_(button), notification_type_(notification_type),
               apvts_(apvts), parameter_ref_(*apvts_.getParameter(parameter_ID)),
@@ -28,13 +28,13 @@ namespace zlgui::attachment {
             // add button listener
             button_.addListener(this);
             // add parameter listener
-            if constexpr (UpdateFromAPVTS) {
+            if constexpr (kUpdateFromAPVTS) {
                 apvts_.addParameterListener(parameter_ref_.getParameterID(), this);
             }
             parameterChanged(parameter_ref_.getParameterID(),
-                                 apvts_.getRawParameterValue(
-                                     parameter_ref_.getParameterID())->load(std::memory_order::relaxed));
-            if constexpr (UpdateFromAPVTS) {
+                             apvts_.getRawParameterValue(
+                                 parameter_ref_.getParameterID())->load(std::memory_order::relaxed));
+            if constexpr (kUpdateFromAPVTS) {
                 updater_ref_.addAttachment(*this);
             } else {
                 updateComponent();
@@ -42,7 +42,7 @@ namespace zlgui::attachment {
         }
 
         ~ButtonAttachment() override {
-            if constexpr (UpdateFromAPVTS) {
+            if constexpr (kUpdateFromAPVTS) {
                 updater_ref_.removeAttachment(*this);
                 apvts_.removeParameterListener(parameter_ref_.getParameterID(), this);
             }
@@ -57,25 +57,25 @@ namespace zlgui::attachment {
         }
 
     private:
-        juce::Button &button_;
+        juce::Button& button_;
         juce::NotificationType notification_type_{juce::NotificationType::sendNotificationSync};
-        juce::AudioProcessorValueTreeState &apvts_;
-        juce::RangedAudioParameter &parameter_ref_;
-        ComponentUpdater &updater_ref_;
+        juce::AudioProcessorValueTreeState& apvts_;
+        juce::RangedAudioParameter& parameter_ref_;
+        ComponentUpdater& updater_ref_;
         std::atomic<bool> atomic_flag_{false};
 
-        void parameterChanged(const juce::String &, const float new_value) override {
+        void parameterChanged(const juce::String&, const float new_value) override {
             atomic_flag_.store(new_value > .5f, std::memory_order::relaxed);
             updater_ref_.getFlag().store(true, std::memory_order::release);
         }
 
-        void buttonStateChanged(juce::Button *) override {
+        void buttonStateChanged(juce::Button*) override {
             parameter_ref_.beginChangeGesture();
             parameter_ref_.setValueNotifyingHost(static_cast<float>(button_.getToggleState()));
             parameter_ref_.endChangeGesture();
         }
 
-        void buttonClicked(juce::Button *) override {
+        void buttonClicked(juce::Button*) override {
         }
     };
 }

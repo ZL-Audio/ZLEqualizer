@@ -128,6 +128,14 @@ namespace zlp {
             return fft_analyzer_;
         }
 
+        double getLearnedThreshold(const size_t idx) const {
+            return learned_thresholds_[idx].load(std::memory_order::relaxed);
+        }
+
+        double getLearnedKnee(const size_t idx) const {
+            return learned_knees_[idx].load(std::memory_order::relaxed);
+        }
+
     private:
         juce::AudioProcessor& p_ref_;
         // filter structure

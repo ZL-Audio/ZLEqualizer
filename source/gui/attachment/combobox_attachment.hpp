@@ -12,30 +12,30 @@
 #include "component_updater.hpp"
 
 namespace zlgui::attachment {
-    template<bool UpdateFromAPVTS = true>
+    template <bool kUpdateFromAPVTS = true>
     class ComboBoxAttachment final : public ComponentAttachment,
                                      private juce::AudioProcessorValueTreeState::Listener,
                                      private juce::ComboBox::Listener {
     public:
-        ComboBoxAttachment(juce::ComboBox &box,
-                           juce::AudioProcessorValueTreeState &apvts,
-                           const juce::String &parameter_ID,
-                           ComponentUpdater &updater,
+        ComboBoxAttachment(juce::ComboBox& box,
+                           juce::AudioProcessorValueTreeState& apvts,
+                           const juce::String& parameter_ID,
+                           ComponentUpdater& updater,
                            const juce::NotificationType notification_type =
-                                   juce::NotificationType::sendNotificationSync)
+                               juce::NotificationType::sendNotificationSync)
             : box_(box), notification_type_(notification_type),
               apvts_(apvts), parameter_ref_(*apvts_.getParameter(parameter_ID)),
               updater_ref_(updater) {
             // add combobox listener
             box_.addListener(this);
             // add parameter listener
-            if constexpr (UpdateFromAPVTS) {
+            if constexpr (kUpdateFromAPVTS) {
                 apvts_.addParameterListener(parameter_ref_.getParameterID(), this);
             }
             parameterChanged(parameter_ref_.getParameterID(),
-                                 apvts_.getRawParameterValue(
-                                     parameter_ref_.getParameterID())->load(std::memory_order::relaxed));
-            if constexpr (UpdateFromAPVTS) {
+                             apvts_.getRawParameterValue(
+                                 parameter_ref_.getParameterID())->load(std::memory_order::relaxed));
+            if constexpr (kUpdateFromAPVTS) {
                 updater_ref_.addAttachment(*this);
             } else {
                 updateComponent();
@@ -43,7 +43,7 @@ namespace zlgui::attachment {
         }
 
         ~ComboBoxAttachment() override {
-            if constexpr (UpdateFromAPVTS) {
+            if constexpr (kUpdateFromAPVTS) {
                 updater_ref_.removeAttachment(*this);
                 apvts_.removeParameterListener(parameter_ref_.getParameterID(), this);
             }
@@ -58,19 +58,19 @@ namespace zlgui::attachment {
         }
 
     private:
-        juce::ComboBox &box_;
+        juce::ComboBox& box_;
         juce::NotificationType notification_type_{juce::NotificationType::sendNotificationSync};
-        juce::AudioProcessorValueTreeState &apvts_;
-        juce::RangedAudioParameter &parameter_ref_;
-        ComponentUpdater &updater_ref_;
+        juce::AudioProcessorValueTreeState& apvts_;
+        juce::RangedAudioParameter& parameter_ref_;
+        ComponentUpdater& updater_ref_;
         std::atomic<int> atomic_index_{0};
 
-        void parameterChanged(const juce::String &, const float new_value) override {
+        void parameterChanged(const juce::String&, const float new_value) override {
             atomic_index_.store(static_cast<int>(new_value), std::memory_order::relaxed);
             updater_ref_.getFlag().store(true, std::memory_order::release);
         }
 
-        void comboBoxChanged(juce::ComboBox *) override {
+        void comboBoxChanged(juce::ComboBox*) override {
             parameter_ref_.beginChangeGesture();
             parameter_ref_.setValueNotifyingHost(
                 parameter_ref_.convertTo0to1(static_cast<float>(box_.getSelectedItemIndex())));

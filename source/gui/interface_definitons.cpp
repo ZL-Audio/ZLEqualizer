@@ -12,17 +12,17 @@
 
 namespace zlgui {
     juce::Rectangle<float> UIBase::getRoundedShadowRectangleArea(juce::Rectangle<float> box_bounds, float corner_size,
-                                                                 const FillRoundedShadowRectangleArgs &margs) {
+                                                                 const FillRoundedShadowRectangleArgs& margs) {
         const auto radius = juce::jmax(juce::roundToInt(corner_size * margs.blur_radius * 1.5f), 1);
         return box_bounds.withSizeKeepingCentre(
             box_bounds.getWidth() - static_cast<float>(radius) - 1.42f * corner_size,
             box_bounds.getHeight() - static_cast<float>(radius) - 1.42f * corner_size);
     }
 
-    juce::Rectangle<float> UIBase::fillRoundedShadowRectangle(juce::Graphics &g,
+    juce::Rectangle<float> UIBase::fillRoundedShadowRectangle(juce::Graphics& g,
                                                               juce::Rectangle<float> box_bounds,
                                                               float corner_size,
-                                                              const FillRoundedShadowRectangleArgs &margs) const {
+                                                              const FillRoundedShadowRectangleArgs& margs) const {
         auto args = margs;
         if (!args.change_main)
             args.main_colour = getBackgroundColor().withAlpha(args.main_colour.getAlpha());
@@ -68,10 +68,10 @@ namespace zlgui {
         return box_bounds;
     }
 
-    juce::Rectangle<float> UIBase::fillRoundedInnerShadowRectangle(juce::Graphics &g,
+    juce::Rectangle<float> UIBase::fillRoundedInnerShadowRectangle(juce::Graphics& g,
                                                                    juce::Rectangle<float> box_bounds,
                                                                    float corner_size,
-                                                                   const FillRoundedShadowRectangleArgs &margs) const {
+                                                                   const FillRoundedShadowRectangleArgs& margs) const {
         auto args = margs;
         if (!args.change_main)
             args.main_colour = getBackgroundColor();
@@ -126,7 +126,7 @@ namespace zlgui {
     }
 
     juce::Rectangle<float> UIBase::getShadowEllipseArea(juce::Rectangle<float> box_bounds, float corner_size,
-                                                        const FillShadowEllipseArgs &margs) {
+                                                        const FillShadowEllipseArgs& margs) {
         auto radius = juce::jmax(juce::roundToInt(corner_size * 0.75f), 1);
         if (margs.fit) {
             box_bounds = box_bounds.withSizeKeepingCentre(
@@ -137,10 +137,10 @@ namespace zlgui {
     }
 
 
-    juce::Rectangle<float> UIBase::drawShadowEllipse(juce::Graphics &g,
+    juce::Rectangle<float> UIBase::drawShadowEllipse(juce::Graphics& g,
                                                      juce::Rectangle<float> box_bounds,
                                                      float corner_size,
-                                                     const FillShadowEllipseArgs &margs) const {
+                                                     const FillShadowEllipseArgs& margs) const {
         auto args = margs;
         if (!args.change_main)
             args.main_colour = getBackgroundColor();
@@ -195,7 +195,7 @@ namespace zlgui {
 
     juce::Rectangle<float> UIBase::getInnerShadowEllipseArea(juce::Rectangle<float> box_bounds,
                                                              const float corner_size,
-                                                             const FillShadowEllipseArgs &margs) {
+                                                             const FillShadowEllipseArgs& margs) {
         juce::ignoreUnused(margs);
         const auto radius = juce::jmax(juce::roundToInt(corner_size * 1.5f), 1);
         box_bounds = box_bounds.withSizeKeepingCentre(
@@ -204,10 +204,10 @@ namespace zlgui {
         return box_bounds;
     }
 
-    juce::Rectangle<float> UIBase::drawInnerShadowEllipse(juce::Graphics &g,
+    juce::Rectangle<float> UIBase::drawInnerShadowEllipse(juce::Graphics& g,
                                                           juce::Rectangle<float> box_bounds,
                                                           float corner_size,
-                                                          const FillShadowEllipseArgs &margs) const {
+                                                          const FillShadowEllipseArgs& margs) const {
         auto args = margs;
         if (!args.change_main)
             args.main_colour = getBackgroundColor();
@@ -252,9 +252,12 @@ namespace zlgui {
 
     void UIBase::loadFromAPVTS() {
         for (size_t i = 0; i < kColourNum; ++i) {
-            const auto r = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_r")->load());
-            const auto g = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_g")->load());
-            const auto b = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_b")->load());
+            const auto r = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_r")->
+                                                          load());
+            const auto g = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_g")->
+                                                          load());
+            const auto b = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_b")->
+                                                          load());
             const auto o = static_cast<float>(state.getRawParameterValue(std::string(kColourNames[i]) + "_o")->load());
             custom_colours_[i] = juce::Colour(r, g, b, o);
         }

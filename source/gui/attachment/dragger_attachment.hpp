@@ -13,15 +13,15 @@
 #include "../dragger/dragger.hpp"
 
 namespace zlgui::attachment {
-    template<bool UpdateFromAPVTS = true>
+    template <bool kUpdateFromAPVTS = true>
     class DraggerAttachment final : public ComponentAttachment,
                                     private juce::AudioProcessorValueTreeState::Listener,
                                     private dragger::Dragger::Listener {
     public:
-        DraggerAttachment(dragger::Dragger &dragger, juce::AudioProcessorValueTreeState &apvts,
-                          const juce::String &parameter_x_ID, juce::NormalisableRange<float> normalisable_range_x,
-                          const juce::String &parameter_y_ID, juce::NormalisableRange<float> normalisable_range_y,
-                          ComponentUpdater &updater)
+        DraggerAttachment(dragger::Dragger& dragger, juce::AudioProcessorValueTreeState& apvts,
+                          const juce::String& parameter_x_ID, juce::NormalisableRange<float> normalisable_range_x,
+                          const juce::String& parameter_y_ID, juce::NormalisableRange<float> normalisable_range_y,
+                          ComponentUpdater& updater)
             : dragger_(dragger), apvts_(apvts),
               parameter_x_ref_(*apvts.getParameter(parameter_x_ID)),
               parameter_y_ref_(*apvts.getParameter(parameter_y_ID)),
@@ -29,7 +29,7 @@ namespace zlgui::attachment {
               normalisable_range_y_(normalisable_range_y),
               updater_ref_(updater) {
             // add parameter listener
-            if constexpr (UpdateFromAPVTS) {
+            if constexpr (kUpdateFromAPVTS) {
                 apvts.addParameterListener(parameter_x_ref_.getParameterID(), this);
                 apvts.addParameterListener(parameter_y_ref_.getParameterID(), this);
             }
@@ -39,7 +39,7 @@ namespace zlgui::attachment {
             parameterChanged(parameter_y_ref_.getParameterID(),
                              apvts.getRawParameterValue(parameter_y_ref_.getParameterID())->load(
                                  std::memory_order::relaxed));
-            if constexpr (UpdateFromAPVTS) {
+            if constexpr (kUpdateFromAPVTS) {
                 updater_ref_.addAttachment(*this);
             } else {
                 updateComponent();
@@ -49,7 +49,7 @@ namespace zlgui::attachment {
         }
 
         ~DraggerAttachment() override {
-            if constexpr (UpdateFromAPVTS) {
+            if constexpr (kUpdateFromAPVTS) {
                 updater_ref_.removeAttachment(*this);
                 apvts_.removeParameterListener(parameter_x_ref_.getParameterID(), this);
                 apvts_.removeParameterListener(parameter_y_ref_.getParameterID(), this);
@@ -69,14 +69,14 @@ namespace zlgui::attachment {
         }
 
     private:
-        dragger::Dragger &dragger_;
-        juce::AudioProcessorValueTreeState &apvts_;
+        dragger::Dragger& dragger_;
+        juce::AudioProcessorValueTreeState& apvts_;
         juce::RangedAudioParameter &parameter_x_ref_, &parameter_y_ref_;
         juce::NormalisableRange<float> normalisable_range_x_, normalisable_range_y_;
-        ComponentUpdater &updater_ref_;
+        ComponentUpdater& updater_ref_;
         std::atomic<float> atomic_x_{0.f}, atomic_y_{0.f};
 
-        void parameterChanged(const juce::String &parameter_ID, float new_value) override {
+        void parameterChanged(const juce::String& parameter_ID, float new_value) override {
             if (parameter_ID == parameter_x_ref_.getParameterID()) {
                 atomic_x_.store(new_value, std::memory_order::relaxed);
             } else if (parameter_ID == parameter_y_ref_.getParameterID()) {
@@ -85,17 +85,17 @@ namespace zlgui::attachment {
             updater_ref_.getFlag().store(true, std::memory_order::release);
         }
 
-        void dragStarted(dragger::Dragger *) override {
+        void dragStarted(dragger::Dragger*) override {
             parameter_x_ref_.beginChangeGesture();
             parameter_y_ref_.beginChangeGesture();
         }
 
-        void dragEnded(dragger::Dragger *) override {
+        void dragEnded(dragger::Dragger*) override {
             parameter_x_ref_.endChangeGesture();
             parameter_y_ref_.endChangeGesture();
         }
 
-        void draggerValueChanged(dragger::Dragger *) override {
+        void draggerValueChanged(dragger::Dragger*) override {
             parameter_x_ref_.setValueNotifyingHost(
                 parameter_x_ref_.convertTo0to1(
                     normalisable_range_x_.convertFrom0to1(

@@ -9,5 +9,8 @@
 
 #pragma once
 
-#include "compact_combobox/compact_combobox.hpp"
-#include "../attachment/combobox_attachment.hpp"
+#include "path_minimizer.hpp"
+#include "atomic_bound.hpp"
+#include "panel_constants.hpp"
+#include "refresh_handler.hpp"
+#include "juce_parameter_value.hpp"
