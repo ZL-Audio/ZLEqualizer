@@ -52,6 +52,23 @@ namespace zlpanel {
     }
 
     void LeftControlPanel::repaintCallBackSlow() {
+        if (ftype_ptr_ != nullptr) {
+            const auto ftype = static_cast<int>(std::round(ftype_ptr_->load(std::memory_order::relaxed)));
+            if (ftype != c_ftype_) {
+                c_ftype_ = ftype;
+                const auto slope_6_disabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
+                    || (ftype == static_cast<int>(zldsp::filter::kBandPass))
+                    || (ftype == static_cast<int>(zldsp::filter::kNotch));
+                sub_left_control_panel_.enableSlope6(!slope_6_disabled);
+
+                const auto gain_enabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
+                    || (ftype == static_cast<int>(zldsp::filter::kLowShelf))
+                    || (ftype == static_cast<int>(zldsp::filter::kHighShelf))
+                    || (ftype == static_cast<int>(zldsp::filter::kTiltShelf));
+                gain_slider_.setEditable(gain_enabled);
+                sub_left_control_panel_.enableGain(gain_enabled);
+            }
+        }
         updater_.updateComponents();
         sub_left_control_panel_.repaintCallBackSlow();
     }
@@ -65,10 +82,12 @@ namespace zlpanel {
             target_gain_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 gain_slider_.getSlider2(), p_ref_.parameters_, zlp::PTargetGain::kID + band_s, updater_);
             gain_slider_.visibilityChanged();
+            ftype_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterType::kID + band_s);
         } else {
             freq_attachment_.reset();
             gain_attachment_.reset();
             target_gain_attachment_.reset();
+            ftype_ptr_ = nullptr;
         }
         sub_left_control_panel_.updateBand();
     }

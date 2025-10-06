@@ -28,7 +28,6 @@ namespace zlp {
         size_t idx_;
         zldsp::filter::Empty& empty_;
 
-        std::atomic<float>& dynamic_on_;
         std::atomic<float>& side_link_;
 
         juce_helper::ParaUpdater side_filter_type_updater_;

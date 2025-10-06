@@ -36,7 +36,10 @@ namespace zlpanel {
         right_button_(base, right_drawable_.get(), nullptr),
         ftype_box_(zlp::PFilterType::kChoices, base,
                    tooltip_helper.getToolTipText(multilingual::kBandType)),
-        slope_box_(zlp::POrder::kChoices, base,
+        slope_box_(juce::StringArray{
+                       "6 dB/oct  ", "12 dB/oct  ", "24 dB/oct  ", "36 dB/oct  ",
+                       "48 dB/oct  ", "72 dB/oct  ", "96 dB/oct  "
+                   }, base,
                    tooltip_helper.getToolTipText(multilingual::kBandSlope)),
         stereo_box_(zlp::PLRMode::kChoices, base,
                     tooltip_helper.getToolTipText(multilingual::kBandStereoMode)),
@@ -95,7 +98,11 @@ namespace zlpanel {
             base_.setSelectedBand(next_band);
         };
 
+        const auto popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
+            juce::PopupMenu::Options::PopupDirection::upwards);
+        slope_box_.getLAF().setItemJustification(juce::Justification::centredRight);
         for (auto& box : {&ftype_box_, &slope_box_, &stereo_box_}) {
+            box->getLAF().setOption(popup_option);
             box->setBufferedToImage(true);
             addAndMakeVisible(box);
         }
@@ -151,7 +158,7 @@ namespace zlpanel {
         close_button_.setBounds(top_bound.removeFromLeft(button_height));
 
         dynamic_button_.setBounds(bound.removeFromRight(band_label_width + 2 * (button_height / 2)).reduced(
-            juce::roundToInt(base_.getFontSize() * .6f)));
+            juce::roundToInt(base_.getFontSize() * .55f)));
         bound.removeFromRight(padding);
         q_slider_.setBounds(bound.removeFromRight(slider_width));
         bound.removeFromRight(2 * slider_width + 3 * padding);
@@ -198,6 +205,20 @@ namespace zlpanel {
             band_label_.setText("", juce::dontSendNotification);
             filter_status_ptr_ = nullptr;
         }
+    }
+
+    void SubLeftControlPanel::enableSlope6(const bool f) {
+        if (!f && slope_box_.getBox().getSelectedId() == 1) {
+            slope_box_.getBox().setSelectedId(2, juce::sendNotificationSync);
+        }
+        slope_box_.getBox().setItemEnabled(1, f);
+    }
+
+    void SubLeftControlPanel::enableGain(const bool f) {
+        if (!f && dynamic_button_.getToggleState()) {
+            dynamic_button_.getButton().setToggleState(false, juce::sendNotificationSync);
+        }
+        gain_label_.setAlpha(f ? 1.f : .5f);
     }
 
     template <bool is_right>
@@ -290,6 +311,9 @@ namespace zlpanel {
         const auto band = base_.getSelectedBand();
         const auto dynamic_on = dynamic_button_.getToggleState();
         const auto band_s = std::to_string(band);
+
+        updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicBypass::kID + band_s),
+                    dynamic_on ? 0.f : 1.f);
 
         updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicLearn::kID + band_s),
                     dynamic_on ? 1.f : 0.f);

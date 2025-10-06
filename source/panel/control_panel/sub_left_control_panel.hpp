@@ -31,6 +31,10 @@ namespace zlpanel {
 
         void updateBand();
 
+        void enableSlope6(bool f);
+
+        void enableGain(bool f);
+
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
@@ -68,7 +72,7 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox stereo_box_;
         std::unique_ptr<zlgui::attachment::ComboBoxAttachment<true>> stereo_attachment_;
 
-        zlgui::slider::TwoValueRotarySlider<true, false, false> q_slider_;
+        zlgui::slider::TwoValueRotarySlider<false, false, false> q_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> q_attachment_;
 
         const std::unique_ptr<juce::Drawable> dynamic_drawable_;

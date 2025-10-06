@@ -36,7 +36,10 @@ namespace zlpanel {
                                                            BinaryData::link_svgSize)),
         link_button_(base, link_drawable_.get(), link_drawable_.get()),
         ftype_box_(zlp::PSideFilterType::kChoices, base),
-        slope_box_(zlp::PSideOrder::kChoices, base),
+        slope_box_(juce::StringArray{
+                       "6 dB/oct  ", "12 dB/oct  ", "24 dB/oct  ", "36 dB/oct  ",
+                       "48 dB/oct  ", "72 dB/oct  ", "96 dB/oct  "
+                   }, base),
         th_slider_("Threshold", base,
                    tooltip_helper.getToolTipText(multilingual::kBandDynamicThreshold)),
         knee_slider_("Knee", base,
@@ -80,11 +83,14 @@ namespace zlpanel {
         link_button_.setBufferedToImage(true);
         addAndMakeVisible(link_button_);
 
-        ftype_box_.setBufferedToImage(true);
-        addAndMakeVisible(ftype_box_);
-
-        slope_box_.setBufferedToImage(true);
-        addAndMakeVisible(slope_box_);
+        const auto popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
+            juce::PopupMenu::Options::PopupDirection::upwards);
+        slope_box_.getLAF().setItemJustification(juce::Justification::centredRight);
+        for (auto& box : {&ftype_box_, &slope_box_}) {
+            box->getLAF().setOption(popup_option);
+            box->setBufferedToImage(true);
+            addAndMakeVisible(box);
+        }
 
         th_slider_.setBufferedToImage(true);
         addAndMakeVisible(th_slider_);
@@ -189,6 +195,18 @@ namespace zlpanel {
 
     void RightControlPanel::repaintCallBackSlow() {
         updater_.updateComponents();
+        if (c_side_ftype_ != ftype_box_.getBox().getSelectedItemIndex()) {
+            c_side_ftype_ = ftype_box_.getBox().getSelectedItemIndex();
+            if (c_side_ftype_ < 0) {
+                return;
+            }
+            if (c_side_ftype_ == 0 && slope_box_.getBox().getSelectedId() == 1) {
+                slope_box_.getBox().setSelectedId(2, juce::sendNotificationSync);
+            }
+            slope_box_.getBox().setItemEnabled(1, c_side_ftype_ != 0);
+            q_slider_.setEditable(c_side_ftype_ == 0);
+            q_label_.setAlpha(c_side_ftype_ == 0 ? 1.f : .5f);
+        }
     }
 
     void RightControlPanel::updateBand() {

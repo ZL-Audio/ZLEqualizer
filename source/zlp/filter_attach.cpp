@@ -17,7 +17,6 @@ namespace zlp {
         controller_(controller),
         idx_(idx),
         empty_(controller.getEmptyFilters()[idx]),
-        dynamic_on_(*parameters.getRawParameterValue(PDynamicON::kID + std::to_string(idx))),
         side_link_(*parameters.getRawParameterValue(PSideLink::kID + std::to_string(idx))),
         side_filter_type_updater_(parameters, PSideFilterType::kID + std::to_string(idx)),
         side_freq_updater_(parameters, PSideFreq::kID + std::to_string(idx)),
@@ -40,8 +39,7 @@ namespace zlp {
             controller_.setFilterStatus(idx_, static_cast<FilterStatus>(std::round(value)));
         } else if (parameter_ID.startsWith(PFilterType::kID)) {
             empty_.setFilterType(static_cast<zldsp::filter::FilterType>(std::round(value)));
-            if (dynamic_on_.load(std::memory_order::relaxed) > .5f &&
-                side_link_.load(std::memory_order::relaxed) > .5f) {
+            if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideFilterType();
             }
         } else if (parameter_ID.startsWith(POrder::kID)) {
@@ -50,16 +48,14 @@ namespace zlp {
             controller_.setLRMS(idx_, static_cast<FilterStereo>(std::round(value)));
         } else if (parameter_ID.startsWith(PFreq::kID)) {
             empty_.setFreq(value);
-            if (dynamic_on_.load(std::memory_order::relaxed) > .5f &&
-                side_link_.load(std::memory_order::relaxed) > .5f) {
+            if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideFreq();
             }
         } else if (parameter_ID.startsWith(PGain::kID)) {
             empty_.setGain(value);
         } else if (parameter_ID.startsWith(PQ::kID)) {
             empty_.setQ(value);
-            if (dynamic_on_.load(std::memory_order::relaxed) > .5f &&
-                side_link_.load(std::memory_order::relaxed) > .5f) {
+            if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideQ();
             }
         } else if (parameter_ID.startsWith(PSideLink::kID)) {

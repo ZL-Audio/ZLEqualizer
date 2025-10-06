@@ -84,12 +84,14 @@ namespace zlpanel {
         juce::Label freq_label_;
         juce::Label q_label_;
 
-        zlgui::slider::TwoValueRotarySlider<true, false, false> freq_slider_;
+        zlgui::slider::TwoValueRotarySlider<false, false, false> freq_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> freq_attachment_;
         double freq_max_{20000.0};
 
-        zlgui::slider::TwoValueRotarySlider<true, false, false> q_slider_;
+        zlgui::slider::TwoValueRotarySlider<false, false, false> q_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> q_attachment_;
+
+        int c_side_ftype_{-1};
 
         void turnOnOffAuto();
     };

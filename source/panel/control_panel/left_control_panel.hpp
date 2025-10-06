@@ -38,12 +38,15 @@ namespace zlpanel {
 
         SubLeftControlPanel sub_left_control_panel_;
 
-        zlgui::slider::TwoValueRotarySlider<true, false, false> freq_slider_;
+        zlgui::slider::TwoValueRotarySlider<false, false, false> freq_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> freq_attachment_;
         double freq_max_{20000.0};
 
-        zlgui::slider::TwoValueRotarySlider<true, true, false> gain_slider_;
+        zlgui::slider::TwoValueRotarySlider<false, true, false> gain_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> gain_attachment_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> target_gain_attachment_;
+
+        std::atomic<float>* ftype_ptr_{nullptr};
+        int c_ftype_{-1};
     };
 } // zlpanel

@@ -45,7 +45,11 @@ namespace zlp {
             parallel_filters_[i].prepare(sample_rate, 2, max_num_samples);
             parallel_filters_[i].getFilter().updateParas(filter_paras_[i]);
             side_filters_[i].prepare(sample_rate, 2, max_num_samples);
-            side_filters_[i].updateParas(side_emptys_[i].getParas());
+            auto side_para = side_emptys_[i].getParas();
+            if (side_para.filter_type == zldsp::filter::kLowPass || side_para.filter_type == zldsp::filter::kHighPass) {
+                side_para.q = std::sqrt(2.0) * .5;
+            }
+            side_filters_[i].updateParas(side_para);
             res_ideals_[i].prepare(sample_rate);
             res_tdfs_[i].prepare(sample_rate, 1, 0);
         }
@@ -330,10 +334,13 @@ namespace zlp {
                 continue;
             }
             if (side_emptys_[i].getToUpdatePara()) {
-                auto para = side_emptys_[i].getParas();
-                dynamic_side_handlers_[i].setTargetGain(para.gain);
-                para.gain = 0.0;
-                side_filters_[i].updateParas(para);
+                auto side_para = side_emptys_[i].getParas();
+                if (side_para.filter_type == zldsp::filter::kLowPass || side_para.filter_type == zldsp::filter::kHighPass) {
+                    side_para.q = std::sqrt(2.0) * .5;
+                }
+                dynamic_side_handlers_[i].setTargetGain(side_para.gain);
+                side_para.gain = 0.0;
+                side_filters_[i].updateParas(side_para);
             }
             if (dynamic_th_update_[i].exchange(false, std::memory_order::acquire)) {
                 if (c_dynamic_th_relative_[i] != dynamic_th_relative_[i].load(std::memory_order::relaxed)) {
