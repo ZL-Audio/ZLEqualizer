@@ -20,12 +20,12 @@ namespace zlpanel {
                                                              BinaryData::bypass_svgSize)),
         bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
                        tooltip_helper.getToolTipText(multilingual::kBandDynamicBypass)),
-        auto_drawable_(juce::Drawable::createFromImageData(BinaryData::auto_svg,
-                                                           BinaryData::auto_svgSize)),
+        auto_drawable_(juce::Drawable::createFromImageData(BinaryData::circle_a_svg,
+                                                           BinaryData::circle_a_svgSize)),
         auto_button_(base, auto_drawable_.get(), auto_drawable_.get(),
                      tooltip_helper.getToolTipText(multilingual::kBandDynamicAuto)),
-        relative_drawable_(juce::Drawable::createFromImageData(BinaryData::relative_svg,
-                                                               BinaryData::relative_svgSize)),
+        relative_drawable_(juce::Drawable::createFromImageData(BinaryData::circle_r_svg,
+                                                               BinaryData::circle_r_svgSize)),
         relative_button_(base, relative_drawable_.get(), relative_drawable_.get(),
                          tooltip_helper.getToolTipText(multilingual::kBandDynamicRelative)),
         swap_drawable_(juce::Drawable::createFromImageData(BinaryData::shuffle_svg,
@@ -52,9 +52,11 @@ namespace zlpanel {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
 
+        bypass_button_.setImageAlpha(1.f, 1.f, .5f, .75f);
         bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
 
+        auto_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         auto_button_.setBufferedToImage(true);
         addAndMakeVisible(auto_button_);
         auto_button_.getButton().onClick = [this]() {
@@ -63,9 +65,11 @@ namespace zlpanel {
             }
         };
 
+        relative_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         relative_button_.setBufferedToImage(true);
         addAndMakeVisible(relative_button_);
 
+        swap_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         swap_button_.setBufferedToImage(true);
         addAndMakeVisible(swap_button_);
 
@@ -131,14 +135,15 @@ namespace zlpanel {
         bound.reduce(padding + padding / 2, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
+        const auto w_padding = (2 * slider_width + padding - 4 * button_height) / 4;
         bypass_button_.setBounds(top_bound.removeFromLeft(button_height));
-        top_bound.removeFromLeft(padding);
+        top_bound.removeFromLeft(w_padding);
         auto_button_.setBounds(top_bound.removeFromLeft(button_height));
-        top_bound.removeFromLeft(padding);
+        top_bound.removeFromLeft(w_padding);
         relative_button_.setBounds(top_bound.removeFromLeft(button_height));
-        top_bound.removeFromLeft(padding);
+        top_bound.removeFromLeft(w_padding);
         swap_button_.setBounds(top_bound.removeFromLeft(button_height));
-        top_bound.removeFromLeft(padding);
+        top_bound.removeFromLeft(2 * slider_width + 2 * padding - 4 * button_height - 3 * w_padding);
         ftype_box_.setBounds(top_bound.removeFromLeft(button_height));
         top_bound.removeFromLeft(padding);
         slope_box_.setBounds(top_bound.removeFromLeft(top_bound.getWidth() - padding));

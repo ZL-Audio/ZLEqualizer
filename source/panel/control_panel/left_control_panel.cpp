@@ -45,7 +45,7 @@ namespace zlpanel {
 
         bound.reduce(padding, padding);
         bound.removeFromTop(button_height);
-        bound.removeFromLeft(padding + slider_width);
+        bound.removeFromLeft(slider_width);
         freq_slider_.setBounds(bound.removeFromLeft(slider_width));
         bound.removeFromLeft(padding);
         gain_slider_.setBounds(bound.removeFromLeft(slider_width));
@@ -80,6 +80,7 @@ namespace zlpanel {
                 zlp::PFreq::kID + std::to_string(base_.getSelectedBand()),
                 zlp::getLogMidRange(10.0, freq_max, 1000.0, 0.1),
                 updater_);
+            freq_slider_.visibilityChanged();
         } else {
             freq_attachment_.reset();
         }

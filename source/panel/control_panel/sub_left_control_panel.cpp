@@ -119,14 +119,16 @@ namespace zlpanel {
     int SubLeftControlPanel::getIdealWidth() const {
         const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
         const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
+        const auto band_label_width = juce::roundToInt(base_.getFontSize() * 1.5f);
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
-        return 6 * padding + 4 * slider_width + button_height + 2 * (button_height / 2);
+        return 6 * padding + 4 * slider_width + band_label_width + 2 * (button_height / 2);
     }
 
     void SubLeftControlPanel::resized() {
         const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
         const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
+        const auto band_label_width = juce::roundToInt(base_.getFontSize() * 2);
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
         auto bound = getLocalBounds();
@@ -135,7 +137,7 @@ namespace zlpanel {
 
         auto top_bound = bound.removeFromTop(button_height);
         right_button_.setBounds(top_bound.removeFromRight(button_height / 2));
-        band_label_.setBounds(top_bound.removeFromRight(button_height));
+        band_label_.setBounds(top_bound.removeFromRight(band_label_width));
         left_button_.setBounds(top_bound.removeFromRight(button_height / 2));
         top_bound.removeFromRight(padding);
         q_label_.setBounds(top_bound.removeFromRight(slider_width));
@@ -146,9 +148,10 @@ namespace zlpanel {
         top_bound.removeFromRight(padding);
         bypass_button_.setBounds(top_bound.removeFromRight(button_height));
         top_bound.removeFromRight(padding);
-        close_button_.setBounds(top_bound.removeFromRight(button_height));
+        // top_bound.removeFromLeft(padding / 2);
+        close_button_.setBounds(top_bound.removeFromLeft(button_height));
 
-        dynamic_button_.setBounds(bound.removeFromRight(button_height + 2 * (button_height / 2)));
+        dynamic_button_.setBounds(bound.removeFromRight(band_label_width + 2 * (button_height / 2)).reduced(padding));
         bound.removeFromRight(padding);
         q_slider_.setBounds(bound.removeFromRight(slider_width));
         bound.removeFromRight(2 * slider_width + 3 * padding);
