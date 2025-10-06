@@ -96,6 +96,7 @@ namespace zlpanel {
             addAndMakeVisible(l);
         }
 
+        freq_slider_.setPrecision(3);
         freq_slider_.setBufferedToImage(true);
         addAndMakeVisible(freq_slider_);
 
@@ -113,7 +114,7 @@ namespace zlpanel {
         const auto small_slider_width = juce::roundToInt(base_.getFontSize() * kSmallSliderScale);
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
-        return 5 * padding + 2 * slider_width + 2 * small_slider_width;
+        return 5 * padding + 2 * (padding / 2) + 2 * slider_width + 2 * small_slider_width;
     }
 
     void RightControlPanel::resized() {
@@ -127,7 +128,7 @@ namespace zlpanel {
         auto bound = getLocalBounds();
         control_background_.setBounds(bound);
 
-        bound.reduce(padding, padding);
+        bound.reduce(padding + padding / 2, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
         bypass_button_.setBounds(top_bound.removeFromLeft(button_height));
@@ -142,21 +143,20 @@ namespace zlpanel {
         top_bound.removeFromLeft(padding);
         slope_box_.setBounds(top_bound.removeFromLeft(top_bound.getWidth() - padding));
 
+        const auto h_padding = (bound.getHeight() - 2 * slider_height) / 4;
         {
             auto temp_bound = bound.removeFromLeft(slider_width);
-            const auto h_padding = (temp_bound.getHeight() - 2 * slider_height) / 3;
             temp_bound.removeFromBottom(h_padding);
             knee_slider_.setBounds(temp_bound.removeFromBottom(slider_height));
-            temp_bound.removeFromBottom(h_padding);
+            temp_bound.removeFromBottom(2 * h_padding);
             th_slider_.setBounds(temp_bound.removeFromBottom(slider_height));
         }
         bound.removeFromLeft(padding);
         {
             auto temp_bound = bound.removeFromLeft(slider_width);
-            const auto h_padding = (temp_bound.getHeight() - 2 * slider_height) / 3;
             temp_bound.removeFromBottom(h_padding);
             release_slider_.setBounds(temp_bound.removeFromBottom(slider_height));
-            temp_bound.removeFromBottom(h_padding);
+            temp_bound.removeFromBottom(2 * h_padding);
             attack_slider_.setBounds(temp_bound.removeFromBottom(slider_height));
         }
         bound.removeFromLeft(padding);
@@ -228,6 +228,7 @@ namespace zlpanel {
                 zlp::PSideFreq::kID + std::to_string(base_.getSelectedBand()),
                 zlp::getLogMidRange(10.0, freq_max, 1000.0, 0.1),
                 updater_);
+            freq_slider_.visibilityChanged();
         } else {
             freq_attachment_.reset();
         }
@@ -235,7 +236,7 @@ namespace zlpanel {
 
     void RightControlPanel::turnOnOffAuto() {
         const auto band = base_.getSelectedBand();
-        if (auto_button_.getButton().getToggleState()) {
+        if (!auto_button_.getButton().getToggleState()) {
             auto* th_para = p_ref_.parameters_.getParameter(zlp::PThreshold::kID + std::to_string(band));
             updateValue(th_para,
                         th_para->convertTo0to1(static_cast<float>(p_ref_.getController().getLearnedThreshold(band))));

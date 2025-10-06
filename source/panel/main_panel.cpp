@@ -10,14 +10,15 @@
 #include "main_panel.hpp"
 
 namespace zlpanel {
-    MainPanel::MainPanel(PluginProcessor& processor, zlgui::UIBase& base)
-        : p_ref_(processor), base_(base),
-          tooltip_helper_(
-              static_cast<multilingual::TooltipLanguage>(std::round(
-                  p_ref_.state_.getRawParameterValue(zlstate::PTooltipLang::kID)->load(std::memory_order::relaxed)))
-          ),
-          tooltip_laf_(base_), tooltip_window_(this),
-          refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]) {
+    MainPanel::MainPanel(PluginProcessor& p, zlgui::UIBase& base) :
+        p_ref_(p), base_(base),
+        tooltip_helper_(
+            static_cast<multilingual::TooltipLanguage>(std::round(
+                getValue(p_ref_.state_, zlstate::PTooltipLang::kID)))
+            ),
+        tooltip_laf_(base_), tooltip_window_(this),
+        refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]),
+        control_panel_(p, base, tooltip_helper_) {
         juce::ignoreUnused(base_);
 
         tooltip_window_.setLookAndFeel(&tooltip_laf_);
@@ -27,6 +28,8 @@ namespace zlpanel {
         base_.getPanelValueTree().addListener(this);
 
         startTimerHz(1);
+
+        addAndMakeVisible(control_panel_);
     }
 
     MainPanel::~MainPanel() {
@@ -50,12 +53,20 @@ namespace zlpanel {
 
         const auto font_size = static_cast<float>(bound.getWidth()) * 0.016f;
         base_.setFontSize(font_size);
+        // set control panel bound
+        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
+        auto control_bound = bound;
+        control_bound.removeFromBottom(2 * padding);
+        control_bound = control_bound.removeFromBottom(control_panel_.getIdealHeight());
+        control_bound = control_bound.withSizeKeepingCentre(control_panel_.getIdealWidth(), control_bound.getHeight());
+        control_panel_.setBounds(control_bound);
     }
 
     void MainPanel::repaintCallBack(const double time_stamp) {
         if (refresh_handler_.tick(time_stamp)) {
             if (time_stamp - previous_time_stamp_ > 0.1) {
                 previous_time_stamp_ = time_stamp;
+                repaintCallBackSlow();
             }
 
             const auto c_refresh_rate = refresh_handler_.getActualRefreshRate();
@@ -68,8 +79,8 @@ namespace zlpanel {
 
     void MainPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
         if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kUISettingPanel, property)) {
-            const auto ui_setting_visibility = static_cast<bool>(base_.getPanelProperty(
-                zlgui::PanelSettingIdx::kUISettingPanel));
+            const auto ui_setting_visibility = static_cast<bool>(
+                base_.getPanelProperty(zlgui::PanelSettingIdx::kUISettingPanel));
             juce::ignoreUnused(ui_setting_visibility);
         }
     }
@@ -81,5 +92,21 @@ namespace zlpanel {
             }
             stopTimer();
         }
+    }
+
+    void MainPanel::repaintCallBackSlow() {
+        // update selected band
+        if (c_band_ != base_.getSelectedBand()) {
+            c_band_ = base_.getSelectedBand();
+            control_panel_.updateBand();
+        }
+        // update sample rate
+        const auto sample_rate = p_ref_.getAtomicSampleRate();
+        if (std::abs(sample_rate - c_sample_rate_) > 1.0) {
+            c_sample_rate_ = sample_rate;
+            control_panel_.updateSampleRate(sample_rate);
+        }
+        // sub slow callbacks
+        control_panel_.repaintCallBackSlow();
     }
 }

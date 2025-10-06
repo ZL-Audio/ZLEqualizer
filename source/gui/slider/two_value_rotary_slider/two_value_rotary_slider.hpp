@@ -189,15 +189,14 @@ namespace zlgui::slider {
             }
 
             label1_.setText(getDisplayValue(slider1_), juce::dontSendNotification);
-            label_look_and_feel1_.setFontScale(kFontHuge);
+            label_look_and_feel1_.setFontScale(1.5f);
             label1_.setJustificationType(juce::Justification::centredBottom);
             label1_.setLookAndFeel(&label_look_and_feel1_);
 
             if constexpr (kUseSecondSlider) {
                 label2_.setText(getDisplayValue(slider2_), juce::dontSendNotification);
-                label_look_and_feel2_.setFontScale(kFontHuge);
                 label2_.setJustificationType(juce::Justification::centredTop);
-                label2_.setLookAndFeel(&label_look_and_feel2_);
+                label2_.setLookAndFeel(&label_look_and_feel1_);
             }
 
             for (auto& l : {&label_, &label1_, &label2_}) {
@@ -376,18 +375,19 @@ namespace zlgui::slider {
 
             const auto bound = getLocalBounds().toFloat();
 
-            auto labelBound = bound.withSizeKeepingCentre(bound.getWidth() * 0.6f,
+            auto label_bound = bound.withSizeKeepingCentre(bound.getWidth() * 0.6f,
                                                           bound.getHeight() * 0.5f);
             if (show_slider2_) {
-                const auto valueBound1 = labelBound.removeFromTop(labelBound.getHeight() * 0.5f);
-                const auto valueBound2 = labelBound;
+                const auto valueBound1 = label_bound.removeFromTop(label_bound.getHeight() * 0.5f);
+                const auto valueBound2 = label_bound;
                 label1_.setBounds(valueBound1.toNearestInt());
                 label1_.setJustificationType(juce::Justification::centredBottom);
+                label2_.setVisible(true);
                 label2_.setBounds(valueBound2.toNearestInt());
                 label2_.setJustificationType(juce::Justification::centredTop);
             } else {
-                labelBound = labelBound.withSizeKeepingCentre(labelBound.getWidth(), labelBound.getHeight() * .5f);
-                label1_.setBounds(labelBound.toNearestInt());
+                label_bound = label_bound.withSizeKeepingCentre(label_bound.getWidth(), label_bound.getHeight() * .5f);
+                label1_.setBounds(label_bound.toNearestInt());
                 label2_.setVisible(false);
                 label1_.setJustificationType(juce::Justification::centred);
             }
@@ -429,12 +429,16 @@ namespace zlgui::slider {
 
         juce::String getDisplayValue(const juce::Slider& s) const {
             const auto value = s.getValue();
-            const bool append_k = std::abs(value) > 10000.0;
+            const bool append_k = precision_ >= 4 ? std::abs(value) >= 10000.0 : std::abs(value) >= 1000.0;
             const auto display_value = append_k ? value * 0.001f : value;
             const auto actual_precision = append_k ? precision_ - 1 : precision_;
 
             char buffer[32];
-            snprintf(buffer, sizeof(buffer), "%.*g", actual_precision, display_value);
+            if (std::abs(value) < 1.0) {
+                snprintf(buffer, sizeof(buffer), "%.*f", actual_precision - 1, display_value);
+            } else {
+                snprintf(buffer, sizeof(buffer), "%.*g", actual_precision, display_value);
+            }
             const std::string str{buffer};
 
             return append_k ? juce::String{str + "K"} : juce::String{str};

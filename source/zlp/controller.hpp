@@ -38,14 +38,7 @@ namespace zlp {
 
     template <typename T, std::size_t N, typename... Args>
     constexpr std::array<T, N> make_array_of(Args&&... args) {
-        return make_array_of_impl<T, N>(std::make_index_sequence < N >
-        {
-        }
-        ,
-        std::forward<Args>(args)
-        ...
-        )
-        ;
+        return make_array_of_impl<T, N>(std::make_index_sequence<N>{}, std::forward<Args>(args)...);
     }
 
     class Controller final : private juce::AsyncUpdater {
@@ -167,72 +160,31 @@ namespace zlp {
         std::array<zldsp::filter::DynamicSideHandler<double>, kBandNum> dynamic_side_handlers_
             = make_array_of<zldsp::filter::DynamicSideHandler<double>, kBandNum>();
         // dynamic TDF filters
-        std::array<zldsp::filter::DynamicTDF < double, kFilterSize>
-        ,
-        kBandNum
-        >
-        tdf_filters_=
-        [&]
-        <
-        size_t
-        ...
-        Is
-        >
-        (std::index_sequence<Is...>) {
-            return std::array{
-                zldsp::filter::DynamicTDF < double, kFilterSize >{std::get<Is>(dynamic_side_handlers_)}...
-            };
-        }
-
-        (std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
+        std::array<zldsp::filter::DynamicTDF<double, kFilterSize>, kBandNum> tdf_filters_
+            = [&]<size_t... Is>(std::index_sequence<Is...>) {
+                return std::array{
+                    zldsp::filter::DynamicTDF<double, kFilterSize>{std::get<Is>(dynamic_side_handlers_)}...
+                };
+            }(std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
         // dynamic SVF filters
-        std::array<zldsp::filter::DynamicSVF < double, kFilterSize>
-        ,
-        kBandNum
-        >
-        svf_filters_=
-        [&]
-        <
-        size_t
-        ...
-        Is
-        >
-        (std::index_sequence<Is...>) {
-            return std::array{
-                zldsp::filter::DynamicSVF < double, kFilterSize >{std::get<Is>(dynamic_side_handlers_)}...
-            };
-        }
-
-        (std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
+        std::array<zldsp::filter::DynamicSVF<double, kFilterSize>, kBandNum> svf_filters_
+            = [&]<size_t... Is>(std::index_sequence<Is...>) {
+                return std::array{
+                    zldsp::filter::DynamicSVF<double, kFilterSize>{std::get<Is>(dynamic_side_handlers_)}...
+                };
+            }(std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
         // dynamic parallel filters
-        std::array<zldsp::filter::DynamicParallel < double, kFilterSize>
-        ,
-        kBandNum
-        >
-        parallel_filters_=
-        [&]
-        <
-        size_t
-        ...
-        Is
-        >
-        (std::index_sequence<Is...>) {
-            return std::array{
-                zldsp::filter::DynamicParallel < double, kFilterSize >{std::get<Is>(dynamic_side_handlers_)}...
-            };
-        }
-
-        (std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
+        std::array<zldsp::filter::DynamicParallel<double, kFilterSize>, kBandNum> parallel_filters_
+            = [&]<size_t... Is>(std::index_sequence<Is...>) {
+                return std::array{
+                    zldsp::filter::DynamicParallel<double, kFilterSize>{std::get<Is>(dynamic_side_handlers_)}...
+                };
+            }(std::make_index_sequence<std::tuple_size_v<decltype(dynamic_side_handlers_)>>());
         // side-buffer
         std::array<std::vector<double>, 2> side_buffers{};
         std::vector<double*> side_copy_pointers_{};
         // side-chain filters
-        std::array<zldsp::filter::TDF < double, kFilterSize / 2>
-        ,
-        kBandNum
-        >
-        side_filters_ {
-        };
+        std::array<zldsp::filter::TDF<double, kFilterSize / 2>, kBandNum> side_filters_{};
         // solo filter
         zldsp::filter::TDF<double, kFilterSize / 2> solo_filter_;
         // corrections
@@ -246,18 +198,8 @@ namespace zlp {
         std::vector<size_t> correction_on_total_{};
         std::array<std::vector<size_t>, 5> correction_on_indices_{};
         // filters for calculating prototype response and biquad response
-        std::array<zldsp::filter::Ideal < float, kFilterSize>
-        ,
-        kBandNum
-        >
-        res_ideals_ {
-        };
-        std::array<zldsp::filter::TDF < float, kFilterSize>
-        ,
-        kBandNum
-        >
-        res_tdfs_ {
-        };
+        std::array<zldsp::filter::Ideal<float, kFilterSize>, kBandNum> res_ideals_{};
+        std::array<zldsp::filter::TDF<float, kFilterSize>, kBandNum> res_tdfs_{};
         // match correction
         zldsp::fft::KFREngine<float> match_fft_;
         zldsp::filter::MatchCalculator<kBandNum, kFilterSize> match_calculator_;

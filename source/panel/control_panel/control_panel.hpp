@@ -30,7 +30,7 @@ namespace zlpanel {
 
         void updateBand();
 
-        void updateFreqMax(double freq_max);
+        void updateSampleRate(double sample_rate);
 
     private:
         PluginProcessor& p_ref_;

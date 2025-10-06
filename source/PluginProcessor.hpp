@@ -74,6 +74,10 @@ public:
         return controller_;
     }
 
+    double getAtomicSampleRate() const {
+        return sample_rate_.load(std::memory_order::relaxed);
+    }
+
 private:
     std::array<std::vector<double>, 2> main_buffer_, side_buffer_;
     std::array<double*, 2> main_pointers_{}, side_pointers_{};
@@ -93,11 +97,13 @@ private:
     std::atomic<float> &ext_side_, &bypass_;
     ChannelLayout channel_layout_{kInvalid};
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
+    std::atomic<double> sample_rate_{48000.0};
 
     template <bool bypass = false>
     void processBlockInternal(juce::AudioBuffer<float>& buffer);
 
     template <bool bypass = false>
     void processBlockInternal(juce::AudioBuffer<double>& buffer);
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };

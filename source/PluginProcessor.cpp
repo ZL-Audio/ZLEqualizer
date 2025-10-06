@@ -129,6 +129,7 @@ void PluginProcessor::prepareToPlay(const double sample_rate, const int samples_
         }
     }
     controller_.prepare(sample_rate, static_cast<size_t>(samples_per_block));
+    sample_rate_.store(sample_rate, std::memory_order::relaxed);
 }
 
 void PluginProcessor::releaseResources() {

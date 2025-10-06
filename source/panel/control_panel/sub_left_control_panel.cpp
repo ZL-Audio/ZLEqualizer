@@ -41,7 +41,7 @@ namespace zlpanel {
         stereo_box_(zlp::PLRMode::kChoices, base,
                     tooltip_helper.getToolTipText(multilingual::kBandStereoMode)),
         q_slider_("", base,
-                  tooltip_helper.getToolTipText(multilingual::kBandQ)),
+                  tooltip_helper.getToolTipText(multilingual::kBandQ), 1.25f),
         dynamic_drawable_(juce::Drawable::createFromImageData(BinaryData::dynamic_svg,
                                                               BinaryData::dynamic_svgSize)),
         dynamic_button_(base, dynamic_drawable_.get(), dynamic_drawable_.get(),
@@ -96,7 +96,6 @@ namespace zlpanel {
         };
 
         for (auto& box : {&ftype_box_, &slope_box_, &stereo_box_}) {
-            box->getLAF().setFontScale(1.125f);
             box->setBufferedToImage(true);
             addAndMakeVisible(box);
         }
@@ -150,13 +149,12 @@ namespace zlpanel {
         close_button_.setBounds(top_bound.removeFromRight(button_height));
 
         dynamic_button_.setBounds(bound.removeFromRight(button_height + 2 * (button_height / 2)));
-        bound.removeFromLeft(padding);
+        bound.removeFromRight(padding);
         q_slider_.setBounds(bound.removeFromRight(slider_width));
-        bound.removeFromRight((slider_width + padding) * 2);
+        bound.removeFromRight(2 * slider_width + 3 * padding);
 
         const auto box_height = juce::roundToInt(base_.getFontSize() * kBoxHeightScale);
-        const auto h_padding = (bound.getHeight() - 3 * box_height) / 4;
-        bound.removeFromBottom(h_padding);
+        const auto h_padding = (bound.getHeight() - 3 * box_height) / 3;
         stereo_box_.setBounds(bound.removeFromBottom(box_height));
         bound.removeFromBottom(h_padding);
         slope_box_.setBounds(bound.removeFromBottom(box_height));

@@ -9,20 +9,15 @@
 
 #pragma once
 
-#include <juce_gui_basics/juce_gui_basics.h>
-
-#include "../PluginProcessor.hpp"
-#include "../gui/gui.hpp"
 #include "../state/state_definitions.hpp"
-#include "helper/refresh_handler.hpp"
-#include "multilingual/tooltip_helper.hpp"
+#include "control_panel/control_panel.hpp"
 
 namespace zlpanel {
     class MainPanel final : public juce::Component,
                             private juce::ValueTree::Listener,
                             private juce::Timer {
     public:
-        explicit MainPanel(PluginProcessor& processor, zlgui::UIBase& base);
+        explicit MainPanel(PluginProcessor& p, zlgui::UIBase& base);
 
         ~MainPanel() override;
 
@@ -42,8 +37,15 @@ namespace zlpanel {
         double previous_time_stamp_{-1.0};
         double refresh_rate_{-1.0};
 
+        ControlPanel control_panel_;
+
+        size_t c_band_{zlp::kBandNum};
+        double c_sample_rate_{0.};
+
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
 
         void timerCallback() override;
+
+        void repaintCallBackSlow();
     };
 } // zlpanel

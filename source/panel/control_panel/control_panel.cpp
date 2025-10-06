@@ -33,7 +33,7 @@ namespace zlpanel {
         const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
-        return 3 * box_height + button_height + 4 * padding;
+        return 3 * box_height + button_height + 5 * padding;
     }
 
     void ControlPanel::resized() {
@@ -64,12 +64,25 @@ namespace zlpanel {
         if (base_.getSelectedBand() < zlp::kBandNum) {
             const auto band_s = std::to_string(base_.getSelectedBand());
             dynamic_on_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PDynamicON::kID + band_s);
+            turnOnOffDynamic(dynamic_on_ptr_->load(std::memory_order::relaxed) > .5f);
         } else {
             dynamic_on_ptr_ = nullptr;
         }
+        left_control_panel_.updateBand();
+        right_control_panel_.updateBand();
     }
 
-    void ControlPanel::updateFreqMax(const double freq_max) {
+    void ControlPanel::updateSampleRate(const double sample_rate) {
+        double freq_max;
+        if (sample_rate > 352000.0) {
+            freq_max = 160000.0;
+        } else if (sample_rate > 176000.0) {
+            freq_max = 80000.0;
+        } else if (sample_rate > 88000.0) {
+            freq_max = 40000.0;
+        } else {
+            freq_max = 20000.0;
+        }
         left_control_panel_.updateFreqMax(freq_max);
         right_control_panel_.updateFreqMax(freq_max);
     }

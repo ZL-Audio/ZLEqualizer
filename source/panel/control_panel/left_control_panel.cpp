@@ -16,9 +16,9 @@ namespace zlpanel {
         p_ref_(p), base_(base), updater_(),
         sub_left_control_panel_(p, base, tooltip_helper),
         freq_slider_("", base,
-                     tooltip_helper.getToolTipText(multilingual::kBandFreq)),
+                     tooltip_helper.getToolTipText(multilingual::kBandFreq), 1.25f),
         gain_slider_("", base,
-                     tooltip_helper.getToolTipText(multilingual::kBandGain)) {
+                     tooltip_helper.getToolTipText(multilingual::kBandGain), 1.25f) {
         sub_left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(sub_left_control_panel_);
 
