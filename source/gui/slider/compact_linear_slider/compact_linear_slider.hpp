@@ -22,7 +22,8 @@ namespace zlgui::slider {
     private:
         class Background final : public juce::Component {
         public:
-            explicit Background(UIBase& base) : base_(base) {
+            explicit Background(UIBase& base) :
+                base_(base) {
                 setInterceptsMouseClicks(false, false);
                 setBufferedToImage(true);
             }
@@ -38,7 +39,8 @@ namespace zlgui::slider {
 
         class Display final : public juce::Component {
         public:
-            explicit Display(UIBase& base) : base_(base) {
+            explicit Display(UIBase& base) :
+                base_(base) {
                 setInterceptsMouseClicks(false, false);
             }
 
@@ -71,10 +73,10 @@ namespace zlgui::slider {
 
     public:
         explicit CompactLinearSlider(const juce::String& label_text, UIBase& base,
-                                     const juce::String& tooltip_text = "")
-            : base_(base), background_(base_), display_(base_),
-              slider_(base_),
-              name_look_and_feel_(base_), text_look_and_feel_(base_) {
+                                     const juce::String& tooltip_text = "") :
+            base_(base), background_(base_), display_(base_),
+            slider_(base_),
+            name_look_and_feel_(base_), text_look_and_feel_(base_) {
             juce::ignoreUnused(base_);
 
             slider_.setSliderStyle(juce::Slider::LinearHorizontal);
@@ -246,8 +248,11 @@ namespace zlgui::slider {
         juce::String getDisplayValue(const juce::Slider& s) const {
             const auto value = s.getValue();
             const bool append_k = precision_ >= 4 ? std::abs(value) >= 10000.0 : std::abs(value) >= 1000.0;
-            const auto display_value = append_k ? value * 0.001f : value;
-            const auto actual_precision = append_k ? precision_ - 1 : precision_;
+            const auto display_value = append_k ? value * 0.001 : value;
+            auto actual_precision = append_k ? precision_ - 1 : precision_;
+            if (std::abs(display_value) >= 100.0) {
+                actual_precision = std::max(actual_precision, 3);
+            }
 
             char buffer[32];
             if (std::abs(value) < 1.0) {

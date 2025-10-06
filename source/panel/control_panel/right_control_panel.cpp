@@ -32,6 +32,9 @@ namespace zlpanel {
                                                            BinaryData::shuffle_svgSize)),
         swap_button_(base, swap_drawable_.get(), swap_drawable_.get(),
                      tooltip_helper.getToolTipText(multilingual::kBandSideSwap)),
+        link_drawable_(juce::Drawable::createFromImageData(BinaryData::link_svg,
+                                                           BinaryData::link_svgSize)),
+        link_button_(base, link_drawable_.get(), link_drawable_.get()),
         ftype_box_(zlp::PSideFilterType::kChoices, base),
         slope_box_(zlp::PSideOrder::kChoices, base),
         th_slider_("Threshold", base,
@@ -72,6 +75,10 @@ namespace zlpanel {
         swap_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         swap_button_.setBufferedToImage(true);
         addAndMakeVisible(swap_button_);
+
+        link_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
+        link_button_.setBufferedToImage(true);
+        addAndMakeVisible(link_button_);
 
         ftype_box_.setBufferedToImage(true);
         addAndMakeVisible(ftype_box_);
@@ -144,9 +151,11 @@ namespace zlpanel {
         top_bound.removeFromLeft(w_padding);
         swap_button_.setBounds(top_bound.removeFromLeft(button_height));
         top_bound.removeFromLeft(2 * slider_width + 2 * padding - 4 * button_height - 3 * w_padding);
-        ftype_box_.setBounds(top_bound.removeFromLeft(button_height));
+        link_button_.setBounds(top_bound.removeFromLeft(button_height));
         top_bound.removeFromLeft(padding);
-        slope_box_.setBounds(top_bound.removeFromLeft(top_bound.getWidth() - padding));
+        slope_box_.setBounds(top_bound.removeFromRight(slider_width));
+        top_bound.removeFromRight(padding);
+        ftype_box_.setBounds(top_bound);
 
         const auto h_padding = (bound.getHeight() - 2 * slider_height) / 4;
         {
@@ -194,6 +203,8 @@ namespace zlpanel {
                 relative_button_.getButton(), p_ref_.parameters_, zlp::PDynamicRelative::kID + band_s, updater_);
             swap_attachment_ = std::make_unique<zlgui::attachment::ButtonAttachment<true>>(
                 swap_button_.getButton(), p_ref_.parameters_, zlp::PSideSwap::kID + band_s, updater_);
+            link_attachment_ = std::make_unique<zlgui::attachment::ButtonAttachment<true>>(
+                link_button_.getButton(), p_ref_.parameters_, zlp::PSideLink::kID + band_s, updater_);
             ftype_attachment_ = std::make_unique<zlgui::attachment::ComboBoxAttachment<true>>(
                 ftype_box_.getBox(), p_ref_.parameters_, zlp::PSideFilterType::kID + band_s, updater_);
             slope_attachment_ = std::make_unique<zlgui::attachment::ComboBoxAttachment<true>>(

@@ -45,7 +45,7 @@ namespace zlpanel {
 
         bound.reduce(padding, padding);
         bound.removeFromTop(button_height);
-        bound.removeFromLeft(slider_width);
+        bound.removeFromLeft(slider_width + padding);
         freq_slider_.setBounds(bound.removeFromLeft(slider_width));
         bound.removeFromLeft(padding);
         gain_slider_.setBounds(bound.removeFromLeft(slider_width));

@@ -57,6 +57,10 @@ namespace zlpanel {
         zlgui::button::ClickButton swap_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> swap_attachment_;
 
+        const std::unique_ptr<juce::Drawable> link_drawable_;
+        zlgui::button::ClickButton link_button_;
+        std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> link_attachment_;
+
         zlgui::combobox::CompactCombobox ftype_box_;
         std::unique_ptr<zlgui::attachment::ComboBoxAttachment<true>> ftype_attachment_;
 

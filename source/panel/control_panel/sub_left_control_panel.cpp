@@ -128,7 +128,7 @@ namespace zlpanel {
     void SubLeftControlPanel::resized() {
         const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
         const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
-        const auto band_label_width = juce::roundToInt(base_.getFontSize() * 2);
+        const auto band_label_width = juce::roundToInt(base_.getFontSize() * 1.5f);
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
         auto bound = getLocalBounds();
@@ -148,10 +148,10 @@ namespace zlpanel {
         top_bound.removeFromRight(padding);
         bypass_button_.setBounds(top_bound.removeFromRight(button_height));
         top_bound.removeFromRight(padding);
-        // top_bound.removeFromLeft(padding / 2);
         close_button_.setBounds(top_bound.removeFromLeft(button_height));
 
-        dynamic_button_.setBounds(bound.removeFromRight(band_label_width + 2 * (button_height / 2)).reduced(padding));
+        dynamic_button_.setBounds(bound.removeFromRight(band_label_width + 2 * (button_height / 2)).reduced(
+            juce::roundToInt(base_.getFontSize() * .6f)));
         bound.removeFromRight(padding);
         q_slider_.setBounds(bound.removeFromRight(slider_width));
         bound.removeFromRight(2 * slider_width + 3 * padding);
@@ -163,9 +163,6 @@ namespace zlpanel {
         slope_box_.setBounds(bound.removeFromBottom(box_height));
         bound.removeFromBottom(h_padding);
         ftype_box_.setBounds(bound.removeFromBottom(box_height));
-
-        setInterceptsMouseClicks(false, true);
-        setBufferedToImage(true);
     }
 
     void SubLeftControlPanel::repaintCallBackSlow() {

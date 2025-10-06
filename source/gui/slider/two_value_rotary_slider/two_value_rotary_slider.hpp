@@ -430,8 +430,11 @@ namespace zlgui::slider {
         juce::String getDisplayValue(const juce::Slider& s) const {
             const auto value = s.getValue();
             const bool append_k = precision_ >= 4 ? std::abs(value) >= 10000.0 : std::abs(value) >= 1000.0;
-            const auto display_value = append_k ? value * 0.001f : value;
-            const auto actual_precision = append_k ? precision_ - 1 : precision_;
+            const auto display_value = append_k ? value * 0.001 : value;
+            auto actual_precision = append_k ? precision_ - 1 : precision_;
+            if (std::abs(display_value) >= 100.0) {
+                actual_precision = std::max(actual_precision, 3);
+            }
 
             char buffer[32];
             if (std::abs(value) < 1.0) {
