@@ -64,6 +64,7 @@ namespace zlpanel {
                 gain_slider_.getSlider1(), p_ref_.parameters_, zlp::PGain::kID + band_s, updater_);
             target_gain_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 gain_slider_.getSlider2(), p_ref_.parameters_, zlp::PTargetGain::kID + band_s, updater_);
+            gain_slider_.visibilityChanged();
         } else {
             freq_attachment_.reset();
             gain_attachment_.reset();

@@ -43,6 +43,7 @@ namespace zlpanel {
 
         const std::unique_ptr<juce::Drawable> bypass_drawable_;
         zlgui::button::ClickButton bypass_button_;
+        std::atomic<float>* filter_status_ptr_{nullptr};
 
         zlgui::label::NameLookAndFeel label_laf_;
 

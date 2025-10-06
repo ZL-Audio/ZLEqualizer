@@ -170,6 +170,10 @@ namespace zlpanel {
 
     void SubLeftControlPanel::repaintCallBackSlow() {
         updater_.updateComponents();
+        const auto filter_on = filter_status_ptr_->load(std::memory_order::relaxed) > 1.5f;
+        if (filter_on != bypass_button_.getToggleState()) {
+            bypass_button_.getButton().setToggleState(filter_on, juce::dontSendNotification);
+        }
     }
 
     void SubLeftControlPanel::updateBand() {
@@ -187,6 +191,7 @@ namespace zlpanel {
                 dynamic_button_.getButton(), p_ref_.parameters_, zlp::PDynamicON::kID + band_s, updater_,
                 juce::dontSendNotification);
             band_label_.setText(band_s, juce::dontSendNotification);
+            filter_status_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterStatus::kID + band_s);
         } else {
             ftype_attachment_.reset();
             slope_attachment_.reset();
@@ -194,6 +199,7 @@ namespace zlpanel {
             q_attachment_.reset();
             dynamic_attachment_.reset();
             band_label_.setText("", juce::dontSendNotification);
+            filter_status_ptr_ = nullptr;
         }
     }
 

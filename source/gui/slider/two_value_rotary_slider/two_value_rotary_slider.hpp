@@ -439,7 +439,18 @@ namespace zlgui::slider {
             } else {
                 snprintf(buffer, sizeof(buffer), "%.*g", actual_precision, display_value);
             }
-            const std::string str{buffer};
+            std::string str{buffer};
+            // remove trailing zeros and decimal point
+            const auto last_decimal = str.find_last_of('.');
+            if (last_decimal != std::string::npos) {
+                const auto last_not_zero = str.find_last_not_of('0');
+                if (last_not_zero != std::string::npos) {
+                    str.erase(last_not_zero + 1);
+                }
+                if (str.back() == '.') {
+                    str.pop_back();
+                }
+            }
 
             return append_k ? juce::String{str + "K"} : juce::String{str};
         }
