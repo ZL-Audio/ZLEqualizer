@@ -60,7 +60,7 @@ namespace zlpanel {
             }
         };
 
-        bypass_button_.setImageAlpha(.5f, .5f, 1.f, 1.f);
+        bypass_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
         bypass_button_.getButton().onClick = [this]() {
@@ -110,6 +110,7 @@ namespace zlpanel {
         q_slider_.setBufferedToImage(true);
         addAndMakeVisible(q_slider_);
 
+        dynamic_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         dynamic_button_.setBufferedToImage(true);
         addAndMakeVisible(dynamic_button_);
         dynamic_button_.getButton().onClick = [this]() {
@@ -126,10 +127,10 @@ namespace zlpanel {
     int SubLeftControlPanel::getIdealWidth() const {
         const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
         const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
-        const auto band_label_width = juce::roundToInt(base_.getFontSize() * 1.5f);
+        // const auto band_label_width = juce::roundToInt(base_.getFontSize() * 1.5f);
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
 
-        return 6 * padding + 4 * slider_width + band_label_width + 2 * (button_height / 2);
+        return 6 * padding + 4 * slider_width + button_height;
     }
 
     void SubLeftControlPanel::resized() {
@@ -143,9 +144,7 @@ namespace zlpanel {
         bound.reduce(padding, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
-        right_button_.setBounds(top_bound.removeFromRight(button_height / 2));
-        band_label_.setBounds(top_bound.removeFromRight(band_label_width));
-        left_button_.setBounds(top_bound.removeFromRight(button_height / 2));
+        close_button_.setBounds(top_bound.removeFromRight(button_height));
         top_bound.removeFromRight(padding);
         q_label_.setBounds(top_bound.removeFromRight(slider_width));
         top_bound.removeFromRight(padding);
@@ -153,12 +152,12 @@ namespace zlpanel {
         top_bound.removeFromRight(padding);
         freq_label_.setBounds(top_bound.removeFromRight(slider_width));
         top_bound.removeFromRight(padding);
-        bypass_button_.setBounds(top_bound.removeFromRight(button_height));
-        top_bound.removeFromRight(padding);
-        close_button_.setBounds(top_bound.removeFromLeft(button_height));
+        right_button_.setBounds(top_bound.removeFromRight(button_height / 2));
+        band_label_.setBounds(top_bound.removeFromRight(band_label_width));
+        left_button_.setBounds(top_bound.removeFromRight(button_height / 2));
+        bypass_button_.setBounds(top_bound.removeFromLeft(button_height));
 
-        dynamic_button_.setBounds(bound.removeFromRight(band_label_width + 2 * (button_height / 2)).reduced(
-            juce::roundToInt(base_.getFontSize() * .55f)));
+        dynamic_button_.setBounds(bound.removeFromRight(button_height));
         bound.removeFromRight(padding);
         q_slider_.setBounds(bound.removeFromRight(slider_width));
         bound.removeFromRight(2 * slider_width + 3 * padding);
@@ -312,6 +311,14 @@ namespace zlpanel {
         const auto dynamic_on = dynamic_button_.getToggleState();
         const auto band_s = std::to_string(band);
 
+        const auto eq_max_db_idx = getValue(p_ref_.parameters_NA_, zlstate::PEQMaxDB::kID);
+        const auto eq_max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_db_idx))];
+        const auto gain = getValue(p_ref_.parameters_, zlp::PGain::kID + band_s);
+        auto* target_gain_para = p_ref_.parameters_.getParameter(zlp::PTargetGain::kID + band_s);
+        updateValue(target_gain_para,
+                    target_gain_para->convertTo0to1(
+                        gain > 0.f ? gain - eq_max_db * .2f : gain + eq_max_db * .2f));
+
         updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicBypass::kID + band_s),
                     dynamic_on ? 0.f : 1.f);
 
@@ -324,7 +331,7 @@ namespace zlpanel {
         if (!dynamic_on) {
             for (const auto& ID : kDynamicResetIDs) {
                 auto* para = p_ref_.parameters_.getParameter(ID + band_s);
-                updateValue(p_ref_.parameters_.getParameter(ID + band_s), para->getDefaultValue());
+                updateValue(para, para->getDefaultValue());
             }
         }
     }

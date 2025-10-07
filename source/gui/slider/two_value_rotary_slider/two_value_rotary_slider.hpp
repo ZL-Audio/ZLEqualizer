@@ -141,7 +141,6 @@ namespace zlgui::slider {
             void setShowSlider2(const bool x) {
                 if constexpr (kUseSecondSlider) {
                     show_slider2_ = x;
-                    repaint();
                 }
             }
 
@@ -392,6 +391,7 @@ namespace zlgui::slider {
                 label1_.setJustificationType(juce::Justification::centred);
             }
             display_.setShowSlider2(show_slider2_);
+            sliderValueChanged(&slider2_);
         }
 
         inline void setEditable(const bool x) {
