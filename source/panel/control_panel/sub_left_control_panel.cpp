@@ -55,8 +55,10 @@ namespace zlpanel {
         close_button_.setBufferedToImage(true);
         addAndMakeVisible(close_button_);
         close_button_.getButton().onClick = [this]() {
-            if (base_.getSelectedBand() < zlp::kBandNum) {
-                closeBand();
+            if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
+                updateValue(p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(c_band)),
+                            0.f);
+                base_.setSelectedBand(band_helper::findClosestBand(p_ref_, c_band));
             }
         };
 
@@ -64,8 +66,9 @@ namespace zlpanel {
         bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
         bypass_button_.getButton().onClick = [this]() {
-            if (base_.getSelectedBand() < zlp::kBandNum) {
-                bypassBand();
+            if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
+                updateValue(p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(c_band)),
+                            bypass_button_.getToggleState() ? 1.f : .5f);
             }
         };
 
@@ -81,8 +84,13 @@ namespace zlpanel {
         left_button_.setBufferedToImage(true);
         addAndMakeVisible(left_button_);
         left_button_.getButton().onClick = [this]() {
-            const auto next_band = findClosestBand<false>();
-            base_.setSelectedBand(next_band);
+            const auto c_band = base_.getSelectedBand();
+            const auto next_band = band_helper::findClosestBand<false>(p_ref_, c_band);
+            if (next_band < zlp::kBandNum) {
+                base_.setSelectedBand(next_band);
+            } else {
+                base_.setSelectedBand((c_band + zlp::kBandNum - 1) % zlp::kBandNum);
+            }
         };
 
         band_label_.setLookAndFeel(&label_laf_);
@@ -94,8 +102,13 @@ namespace zlpanel {
         right_button_.setBufferedToImage(true);
         addAndMakeVisible(right_button_);
         right_button_.getButton().onClick = [this]() {
-            const auto next_band = findClosestBand<true>();
-            base_.setSelectedBand(next_band);
+            const auto c_band = base_.getSelectedBand();
+            const auto next_band = band_helper::findClosestBand<true>(p_ref_, c_band);
+            if (next_band < zlp::kBandNum) {
+                base_.setSelectedBand(next_band);
+            } else {
+                base_.setSelectedBand((c_band + 1) % zlp::kBandNum);
+            }
         };
 
         const auto popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
@@ -114,8 +127,8 @@ namespace zlpanel {
         dynamic_button_.setBufferedToImage(true);
         addAndMakeVisible(dynamic_button_);
         dynamic_button_.getButton().onClick = [this]() {
-            if (base_.getSelectedBand() < zlp::kBandNum) {
-                turnOnOffDynamic();
+            if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
+                band_helper::turnOnOffDynamic(p_ref_, c_band, dynamic_button_.getToggleState());
             }
         };
 
@@ -218,121 +231,5 @@ namespace zlpanel {
             dynamic_button_.getButton().setToggleState(false, juce::sendNotificationSync);
         }
         gain_label_.setAlpha(f ? 1.f : .5f);
-    }
-
-    template <bool is_right>
-    size_t SubLeftControlPanel::findClosestBand() const {
-        const auto c_band = base_.getSelectedBand();
-        if (c_band >= zlp::kBandNum) {
-            if constexpr (is_right) {
-                return 0;
-            } else {
-                return zlp::kBandNum - 1;
-            }
-        }
-
-        const auto c_freq = getValue(p_ref_.parameters_, zlp::PFreq::kID + std::to_string(c_band));
-
-        float around_freq = is_right ? zlp::PFreq::kRange.end + 1.f : 0.f;
-        std::optional<size_t> around_freq_index;
-        float closest_freq = is_right ? zlp::PFreq::kRange.end + 1.f : 0.f;
-        std::optional<size_t> closest_freq_index;
-
-        for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            // current band, ignore
-            if (band == c_band) {
-                continue;
-            }
-            // off band, ignore
-            if (getValue(p_ref_.parameters_, zlp::PFilterStatus::kID + std::to_string(band)) < .5f) {
-                continue;
-            }
-
-            const auto freq = getValue(p_ref_.parameters_, zlp::PFreq::kID + std::to_string(band));
-
-            if constexpr (is_right) {
-                if (freq <= c_freq) {
-                    // find minimum freq
-                    if (freq < around_freq) {
-                        around_freq = freq;
-                        around_freq_index = band;
-                    }
-                } else {
-                    // find closest higher freq
-                    if (freq < closest_freq) {
-                        closest_freq = freq;
-                        closest_freq_index = band;
-                    }
-                }
-            } else {
-                if (freq >= c_freq) {
-                    // find maximum freq
-                    if (freq > around_freq) {
-                        around_freq = freq;
-                        around_freq_index = band;
-                    }
-                } else {
-                    // find closest lower freq
-                    if (freq > closest_freq) {
-                        closest_freq = freq;
-                        closest_freq_index = band;
-                    }
-                }
-            }
-        }
-
-        if (closest_freq_index) {
-            return closest_freq_index.value();
-        } else if (around_freq_index) {
-            return around_freq_index.value();
-        } else {
-            if constexpr (is_right) {
-                return (c_band + 1) % zlp::kBandNum;
-            } else {
-                return (c_band + zlp::kBandNum - 1) % zlp::kBandNum;
-            }
-        }
-    }
-
-    void SubLeftControlPanel::closeBand() const {
-        const auto band = base_.getSelectedBand();
-        updateValue(p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(band)),
-                    0.f);
-    }
-
-    void SubLeftControlPanel::bypassBand() const {
-        const auto band = base_.getSelectedBand();
-        updateValue(p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(band)),
-                    bypass_button_.getToggleState() ? 1.f : .5f);
-    }
-
-    void SubLeftControlPanel::turnOnOffDynamic() const {
-        const auto band = base_.getSelectedBand();
-        const auto dynamic_on = dynamic_button_.getToggleState();
-        const auto band_s = std::to_string(band);
-
-        const auto eq_max_db_idx = getValue(p_ref_.parameters_NA_, zlstate::PEQMaxDB::kID);
-        const auto eq_max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_db_idx))];
-        const auto gain = getValue(p_ref_.parameters_, zlp::PGain::kID + band_s);
-        auto* target_gain_para = p_ref_.parameters_.getParameter(zlp::PTargetGain::kID + band_s);
-        updateValue(target_gain_para,
-                    target_gain_para->convertTo0to1(
-                        gain > 0.f ? gain - eq_max_db * .2f : gain + eq_max_db * .2f));
-
-        updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicBypass::kID + band_s),
-                    dynamic_on ? 0.f : 1.f);
-
-        updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicLearn::kID + band_s),
-                    dynamic_on ? 1.f : 0.f);
-
-        updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + band_s),
-                    dynamic_on ? 1.f : 0.f);
-
-        if (!dynamic_on) {
-            for (const auto& ID : kDynamicResetIDs) {
-                auto* para = p_ref_.parameters_.getParameter(ID + band_s);
-                updateValue(para, para->getDefaultValue());
-            }
-        }
     }
 }

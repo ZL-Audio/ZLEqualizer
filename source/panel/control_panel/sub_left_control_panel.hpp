@@ -78,18 +78,5 @@ namespace zlpanel {
         const std::unique_ptr<juce::Drawable> dynamic_drawable_;
         zlgui::button::ClickButton dynamic_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> dynamic_attachment_;
-
-        static constexpr std::array kDynamicResetIDs{
-            zlp::PThreshold::kID, zlp::PKneeW::kID, zlp::PAttack::kID, zlp::PRelease::kID
-        };
-
-        template <bool is_right = true>
-        size_t findClosestBand() const;
-
-        void closeBand() const;
-
-        void bypassBand() const;
-
-        void turnOnOffDynamic() const;
     };
 }

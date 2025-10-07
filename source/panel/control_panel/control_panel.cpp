@@ -65,11 +65,13 @@ namespace zlpanel {
             const auto band_s = std::to_string(base_.getSelectedBand());
             dynamic_on_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PDynamicON::kID + band_s);
             turnOnOffDynamic(dynamic_on_ptr_->load(std::memory_order::relaxed) > .5f);
+            setVisible(true);
+            left_control_panel_.updateBand();
+            right_control_panel_.updateBand();
         } else {
             dynamic_on_ptr_ = nullptr;
+            setVisible(false);
         }
-        left_control_panel_.updateBand();
-        right_control_panel_.updateBand();
     }
 
     void ControlPanel::updateSampleRate(const double sample_rate) {
