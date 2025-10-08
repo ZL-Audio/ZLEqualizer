@@ -9,18 +9,13 @@
 
 #pragma once
 
-#include "../../../PluginProcessor.hpp"
-#include "../../../gui/gui.hpp"
-#include "../../helper/helper.hpp"
-#include "../../multilingual/tooltip_helper.hpp"
+#include "scale_label_panel.hpp"
 
 namespace zlpanel {
     class ScalePanel final : public juce::Component {
     public:
         explicit ScalePanel(PluginProcessor& p, zlgui::UIBase& base,
                             const multilingual::TooltipHelper& tooltip_helper);
-
-        void paint(juce::Graphics& g) override;
 
         int getIdealWidth() const;
 
@@ -34,13 +29,13 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_;
 
+        ScaleLabelPanel scale_label_panel_;
+
         zlgui::combobox::CompactCombobox eq_max_box_;
         zlgui::attachment::ComboBoxAttachment<true> eq_max_attach_;
-        int c_eq_max_idx_{-1};
 
         zlgui::combobox::CompactCombobox fft_min_box_;
         zlgui::attachment::ComboBoxAttachment<true> fft_min_attach_;
-        int c_fft_min_idx_{-1};
 
         float getUnitHeight() const;
     };

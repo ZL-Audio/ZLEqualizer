@@ -15,3 +15,4 @@
 #include "refresh_handler.hpp"
 #include "juce_parameter_value.hpp"
 #include "band_helper.hpp"
+#include "freq_helper.hpp"

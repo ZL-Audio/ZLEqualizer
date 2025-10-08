@@ -7,23 +7,27 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "control_background.hpp"
+#pragma once
+
+#include "../../../PluginProcessor.hpp"
+#include "../../../gui/gui.hpp"
+#include "../../helper/helper.hpp"
+#include "../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
-    ControlBackground::ControlBackground(zlgui::UIBase& base) :
-        base_(base) {
-        setInterceptsMouseClicks(false, false);
-    }
+    class BackgroundPanel final : public juce::Component {
+    public:
+        explicit BackgroundPanel(PluginProcessor& p, zlgui::UIBase& base,
+                                 const multilingual::TooltipHelper& tooltip_helper);
 
-    void ControlBackground::paint(juce::Graphics& g) {
-        const auto padding = getPaddingSize(base_.getFontSize());
-        const auto bound = getLocalBounds().reduced(padding / 2);
-        juce::Path path;
-        path.addRoundedRectangle(bound.toFloat(), static_cast<float>(padding));
+        void paint(juce::Graphics& g) override;
 
-        const juce::DropShadow shadow{base_.getDarkShadowColor(), padding / 2, {0, 0}};
-        shadow.drawForPath(g, path);
-        g.setColour(base_.getBackgroundColor());
-        g.fillPath(path);
-    }
+        int getIdealWidth() const;
+
+        void resized() override;
+
+        void repaintCallBackSlow();
+
+    private:
+    };
 }

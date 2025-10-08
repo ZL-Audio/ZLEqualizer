@@ -7,23 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "control_background.hpp"
+#include "background_panel.hpp"
 
 namespace zlpanel {
-    ControlBackground::ControlBackground(zlgui::UIBase& base) :
-        base_(base) {
-        setInterceptsMouseClicks(false, false);
-    }
-
-    void ControlBackground::paint(juce::Graphics& g) {
-        const auto padding = getPaddingSize(base_.getFontSize());
-        const auto bound = getLocalBounds().reduced(padding / 2);
-        juce::Path path;
-        path.addRoundedRectangle(bound.toFloat(), static_cast<float>(padding));
-
-        const juce::DropShadow shadow{base_.getDarkShadowColor(), padding / 2, {0, 0}};
-        shadow.drawForPath(g, path);
-        g.setColour(base_.getBackgroundColor());
-        g.fillPath(path);
-    }
 }

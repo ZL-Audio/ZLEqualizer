@@ -127,20 +127,22 @@ namespace zlpanel {
     RightControlPanel::~RightControlPanel() = default;
 
     int RightControlPanel::getIdealWidth() const {
-        const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
-        const auto small_slider_width = juce::roundToInt(base_.getFontSize() * kSmallSliderScale);
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
+        const auto font_size = base_.getFontSize();
+        const auto slider_width = getSliderWidth(font_size);
+        const auto small_slider_width = getSmallSliderWidth(font_size);
+        const auto padding = getPaddingSize(font_size);
 
         return 5 * padding + 2 * (padding / 2) + 2 * slider_width + 2 * small_slider_width;
     }
 
     void RightControlPanel::resized() {
-        const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
-        const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
-        const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
-        const auto small_slider_width = juce::roundToInt(base_.getFontSize() * kSmallSliderScale);
+        const auto font_size = base_.getFontSize();
+        const auto slider_width = getSliderWidth(font_size);
+        const auto slider_height = getSliderHeight(font_size);
+        const auto button_height = getButtonSize(font_size);
+        const auto small_slider_width = getSmallSliderWidth(font_size);
         const auto label_height = juce::roundToInt(base_.getFontSize() * 1.5f) + 1;
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
+        const auto padding = getPaddingSize(font_size);
 
         auto bound = getLocalBounds();
         control_background_.setBounds(bound);

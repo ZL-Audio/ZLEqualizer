@@ -39,9 +39,10 @@ namespace zlpanel {
         auto bound = getLocalBounds();
         sub_left_control_panel_.setBounds(bound);
 
-        const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
-        const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
+        const auto font_size = base_.getFontSize();
+        const auto slider_width = getSliderWidth(font_size);
+        const auto button_height = getButtonSize(font_size);
+        const auto padding = getPaddingSize(font_size);
 
         bound.reduce(padding, padding);
         bound.removeFromTop(button_height);

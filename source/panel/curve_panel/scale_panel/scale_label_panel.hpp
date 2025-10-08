@@ -9,25 +9,29 @@
 
 #pragma once
 
-#include "scale_panel/scale_panel.hpp"
+#include "../../../PluginProcessor.hpp"
+#include "../../../gui/gui.hpp"
+#include "../../helper/helper.hpp"
+#include "../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
-    class CurvePanel final : public juce::Component {
+    class ScaleLabelPanel final : public juce::Component {
     public:
-        explicit CurvePanel(PluginProcessor& p, zlgui::UIBase& base,
-                            const multilingual::TooltipHelper& tooltip_helper);
+        explicit ScaleLabelPanel(PluginProcessor& p, zlgui::UIBase& base,
+                                 const multilingual::TooltipHelper& tooltip_helper);
 
-        void resized() override;
+        void paint(juce::Graphics& g) override;
 
-        void repaintCallBack();
+        void setMaxIdx(int eq_max_idx, int fft_min_idx);
 
-        void repaintCallBackSlow();
-
-        void updateBand();
-
-        void updateFreqMax(double sample_rate);
+        float getUnitHeight() const;
 
     private:
-        ScalePanel scale_panel_;
+        static constexpr float kFFTAlpha = .5f;
+
+        zlgui::UIBase& base_;
+
+        int c_eq_max_idx_{-1};
+        int c_fft_min_idx_{-1};
     };
 }

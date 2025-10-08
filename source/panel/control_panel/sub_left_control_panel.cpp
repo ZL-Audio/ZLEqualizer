@@ -138,19 +138,21 @@ namespace zlpanel {
     SubLeftControlPanel::~SubLeftControlPanel() = default;
 
     int SubLeftControlPanel::getIdealWidth() const {
-        const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
-        const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
-        // const auto band_label_width = juce::roundToInt(base_.getFontSize() * 1.5f);
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
+        const auto font_size = base_.getFontSize();
+        const auto slider_width = getSliderWidth(font_size);
+        const auto button_height = getButtonSize(font_size);
+        const auto padding = getPaddingSize(font_size);
 
         return 6 * padding + 4 * slider_width + button_height;
     }
 
     void SubLeftControlPanel::resized() {
-        const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderScale);
-        const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
-        const auto band_label_width = juce::roundToInt(base_.getFontSize() * 1.5f);
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
+        const auto font_size = base_.getFontSize();
+        const auto slider_width = getSliderWidth(font_size);
+        const auto button_height = getButtonSize(font_size);
+        const auto box_height = getBoxHeight(font_size);
+        const auto padding = getPaddingSize(font_size);
+        const auto band_label_width = static_cast<int>(std::round(base_.getFontSize() * 1.5f));
 
         auto bound = getLocalBounds();
         control_background_.setBounds(bound);
@@ -175,7 +177,6 @@ namespace zlpanel {
         q_slider_.setBounds(bound.removeFromRight(slider_width));
         bound.removeFromRight(2 * slider_width + 3 * padding);
 
-        const auto box_height = juce::roundToInt(base_.getFontSize() * kBoxHeightScale);
         const auto h_padding = (bound.getHeight() - 3 * box_height) / 3;
         stereo_box_.setBounds(bound.removeFromBottom(box_height));
         bound.removeFromBottom(h_padding);

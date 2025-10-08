@@ -29,9 +29,10 @@ namespace zlpanel {
     }
 
     int ControlPanel::getIdealHeight() const {
-        const auto box_height = juce::roundToInt(base_.getFontSize() * kBoxHeightScale);
-        const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
+        const auto font_size = base_.getFontSize();
+        const auto box_height = getBoxHeight(font_size);
+        const auto button_height = getButtonSize(font_size);
+        const auto padding = getPaddingSize(font_size);
 
         return 3 * box_height + button_height + 5 * padding;
     }
@@ -75,16 +76,7 @@ namespace zlpanel {
     }
 
     void ControlPanel::updateSampleRate(const double sample_rate) {
-        double freq_max;
-        if (sample_rate > 352000.0) {
-            freq_max = 160000.0;
-        } else if (sample_rate > 176000.0) {
-            freq_max = 80000.0;
-        } else if (sample_rate > 88000.0) {
-            freq_max = 40000.0;
-        } else {
-            freq_max = 20000.0;
-        }
+        const auto freq_max = freq_helper::getSliderMax(sample_rate);
         left_control_panel_.updateFreqMax(freq_max);
         right_control_panel_.updateFreqMax(freq_max);
     }
