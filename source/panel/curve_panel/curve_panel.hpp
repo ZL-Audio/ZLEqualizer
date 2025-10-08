@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "background_panel/background_panel.hpp"
 #include "scale_panel/scale_panel.hpp"
 
 namespace zlpanel {
@@ -25,9 +26,10 @@ namespace zlpanel {
 
         void updateBand();
 
-        void updateFreqMax(double sample_rate);
+        void updateSampleRate(double sample_rate);
 
     private:
+        BackgroundPanel background_panel_;
         ScalePanel scale_panel_;
     };
 }

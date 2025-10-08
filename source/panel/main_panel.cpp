@@ -114,6 +114,7 @@ namespace zlpanel {
         const auto sample_rate = p_ref_.getAtomicSampleRate();
         if (std::abs(sample_rate - c_sample_rate_) > 1.0) {
             c_sample_rate_ = sample_rate;
+            curve_panel_.updateSampleRate(sample_rate);
             control_panel_.updateSampleRate(sample_rate);
         }
         // sub slow callbacks

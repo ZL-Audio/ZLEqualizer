@@ -13,13 +13,20 @@ namespace zlpanel {
     CurvePanel::CurvePanel(PluginProcessor& p,
                            zlgui::UIBase& base,
                            const multilingual::TooltipHelper& tooltip_helper) :
+        background_panel_(p, base, tooltip_helper),
         scale_panel_(p, base, tooltip_helper) {
+        background_panel_.setBufferedToImage(true);
+        addAndMakeVisible(background_panel_);
+
         scale_panel_.setBufferedToImage(true);
         addAndMakeVisible(scale_panel_);
+
+        setInterceptsMouseClicks(false, true);
     }
 
     void CurvePanel::resized() {
         auto bound = getLocalBounds();
+        background_panel_.setBounds(bound);
         scale_panel_.setBounds(bound.removeFromRight(scale_panel_.getIdealWidth()));
     }
 
@@ -35,7 +42,7 @@ namespace zlpanel {
 
     }
 
-    void CurvePanel::updateFreqMax(double freq_max) {
-        juce::ignoreUnused(freq_max);
+    void CurvePanel::updateSampleRate(const double sample_rate) {
+        background_panel_.updateSampleRate(sample_rate);
     }
 }

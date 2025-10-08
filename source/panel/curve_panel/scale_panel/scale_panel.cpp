@@ -63,10 +63,10 @@ namespace zlpanel {
         const auto unit_height = getUnitHeight();
         eq_max_box_.setTransform(juce::AffineTransform::translation(
             .5f * bound.getWidth() - static_cast<float>(eq_box_bound.getWidth()),
-            .5f * base_.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
+            base_.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
         fft_min_box_.setTransform(juce::AffineTransform::translation(
             bound.getWidth() - static_cast<float>(fft_box_bound.getWidth()) - base_.getFontSize() * .1f,
-            6.f * unit_height + .5f * base_.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
+            6.f * unit_height + base_.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
     }
 
     void ScalePanel::repaintCallBackSlow() {

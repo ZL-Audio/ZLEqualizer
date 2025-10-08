@@ -22,11 +22,23 @@ namespace zlpanel {
         if (c_eq_max_idx_ < 0 || c_fft_min_idx_ < 0) {
             return;
         }
+        // draw colour gradient background
         const auto bound = getLocalBounds().toFloat();
+        juce::ColourGradient gradient;
+        gradient.point1 = juce::Point<float>(bound.getX(), bound.getY());
+        gradient.point2 = juce::Point<float>(bound.getRight(), bound.getY());
+        gradient.isRadial = false;
+        gradient.clearColours();
+        gradient.addColour(0.0,
+                           base_.getBackgroundColor().withAlpha(0.f));
+        gradient.addColour(1.0,
+                           base_.getBackgroundColor().withAlpha(1.f));
+        g.setGradientFill(gradient);
+        g.fillRect(getLocalBounds());
+        // calculate values
         const auto unit_height = getUnitHeight();
-
         const float label_height = base_.getFontSize() * 1.1f;
-        const float y0 = base_.getFontSize() * kDraggerScale * .5f - label_height * .5f;
+        const float y0 = base_.getFontSize() * kDraggerScale - label_height * .5f;
 
         const auto eq_unit = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(c_eq_max_idx_)] / 3.f;
         const auto fft_unit = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(c_fft_min_idx_)] / 6.f;
