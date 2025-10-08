@@ -18,7 +18,8 @@ namespace zlpanel {
             ),
         tooltip_laf_(base_), tooltip_window_(this),
         refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]),
-        control_panel_(p, base, tooltip_helper_) {
+        control_panel_(p, base, tooltip_helper_),
+        curve_panel_(p, base, tooltip_helper_) {
         juce::ignoreUnused(base_);
 
         tooltip_window_.setLookAndFeel(&tooltip_laf_);
@@ -29,12 +30,17 @@ namespace zlpanel {
 
         startTimerHz(1);
 
+        addAndMakeVisible(curve_panel_);
         addAndMakeVisible(control_panel_);
     }
 
     MainPanel::~MainPanel() {
         base_.getPanelValueTree().removeListener(this);
         stopTimer();
+    }
+
+    void MainPanel::paint(juce::Graphics& g) {
+        g.fillAll(base_.getBackgroundColor());
     }
 
     void MainPanel::resized() {
@@ -60,6 +66,10 @@ namespace zlpanel {
         control_bound = control_bound.removeFromBottom(control_panel_.getIdealHeight());
         control_bound = control_bound.withSizeKeepingCentre(control_panel_.getIdealWidth(), control_bound.getHeight());
         control_panel_.setBounds(control_bound);
+
+        const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
+        bound.removeFromTop(button_height);
+        curve_panel_.setBounds(bound);
     }
 
     void MainPanel::repaintCallBack(const double time_stamp) {
@@ -108,5 +118,6 @@ namespace zlpanel {
         }
         // sub slow callbacks
         control_panel_.repaintCallBackSlow();
+        curve_panel_.repaintCallBackSlow();
     }
 }

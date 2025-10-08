@@ -114,7 +114,7 @@ namespace zlstate {
         static constexpr auto kID = "eq_max_db";
         static constexpr auto kName = "";
         inline static const auto kChoices = juce::StringArray{
-            "6 dB", "12 dB", "30 dB"
+            "6", "12", "30"
         };
         static constexpr std::array kDBs = {6.f, 12.f, 30.f};
         static constexpr int kDefaultI = 1;
@@ -125,9 +125,9 @@ namespace zlstate {
         static constexpr auto kID = "fft_min_db";
         static constexpr auto kName = "";
         inline static const auto kChoices = juce::StringArray{
-            "-60", "-72", "-96", "-120"
+            "-60", "-72", "-96"
         };
-        static constexpr std::array kDBs = {-60.f, -72.f, -96.f, -120.f};
+        static constexpr std::array kDBs = {-60.f, -72.f, -96.f};
         static constexpr int kDefaultI = 1;
 
         static float getMinDBFromIndex(const float x) {

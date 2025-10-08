@@ -9,12 +9,25 @@
 
 #pragma once
 
+#include "scale_panel/scale_panel.hpp"
+
 namespace zlpanel {
-    static constexpr float kPaddingScale = .5f;
-    static constexpr float kSliderScale = 6.5f;
-    static constexpr float kButtonScale = 2.f;
-    static constexpr float kBoxHeightScale = 1.75f;
-    static constexpr float kSliderHeightScale = 2.8f;
-    static constexpr float kSmallSliderScale = 5.5f;
-    static constexpr float kDraggerScale = 1.f;
+    class CurvePanel final : public juce::Component {
+    public:
+        explicit CurvePanel(PluginProcessor& p, zlgui::UIBase& base,
+                            const multilingual::TooltipHelper& tooltip_helper);
+
+        void resized() override;
+
+        void repaintCallBack();
+
+        void repaintCallBackSlow();
+
+        void updateBand();
+
+        void updateFreqMax(double freq_max);
+
+    private:
+        ScalePanel scale_panel_;
+    };
 }

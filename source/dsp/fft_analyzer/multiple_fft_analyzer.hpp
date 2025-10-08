@@ -44,8 +44,10 @@ namespace zldsp::analyzer {
          * @param ys
          * @param height
          * @param min_db
+         * @param max_db
          */
-        void createPathYs(std::array<std::span<float>, kFFTNum> ys, const float height, const float min_db = -72.f) {
+        void createPathYs(std::array<std::span<float>, kFFTNum> ys, const float height,
+                          const float min_db = -72.f, const float max_db = 0.f) {
             std::vector<size_t> is_on_vector{};
             for (size_t i = 0; i < kFFTNum; ++i) {
                 if (this->is_on_[i].load(std::memory_order::relaxed)) {
@@ -57,7 +59,11 @@ namespace zldsp::analyzer {
                 if (!ys[i].empty()) {
                     auto db = kfr::make_univector(this->result_dbs_[i]);
                     auto y = kfr::make_univector(ys[i]);
-                    y = db * scale;
+                    if (std::abs(max_db) > 0.01f) {
+                        y = (db - max_db) * scale;
+                    } else {
+                        y = db * scale;
+                    }
                 }
             }
         }

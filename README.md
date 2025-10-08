@@ -50,7 +50,7 @@ Once you have set up the environment, you can clone the ZL Equalizer code, popul
 - the variable `KFR_ARCHS` as a list of SIMD instruction sets you want to dispatch
   - If you are on x86_64, set it as `"sse2;avx;avx2"`
   - If you are on arm64, set it as `"neon64"`
-  - If you know the SIMD instruction sets (fully) supported by your CPU, set it as the one with the largest register size. For example, if your CPU supports SSE2 & SSE41 & AVX, set it as `avx`
+  - If you know the SIMD instruction sets (fully) supported by your CPU, set it as the one with the largest register size. For example, if your CPU supports SSE2 & SSE41 & AVX, set it as `"avx"`
 ```console
 git clone https://github.com/ZL-Audio/ZLEqualizer
 cd ZLEqualizer

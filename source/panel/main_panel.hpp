@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "../state/state_definitions.hpp"
 #include "control_panel/control_panel.hpp"
+#include "curve_panel/curve_panel.hpp"
 
 namespace zlpanel {
     class MainPanel final : public juce::Component,
@@ -20,6 +20,8 @@ namespace zlpanel {
         explicit MainPanel(PluginProcessor& p, zlgui::UIBase& base);
 
         ~MainPanel() override;
+
+        void paint(juce::Graphics& g) override;
 
         void resized() override;
 
@@ -38,6 +40,8 @@ namespace zlpanel {
         double refresh_rate_{-1.0};
 
         ControlPanel control_panel_;
+
+        CurvePanel curve_panel_;
 
         size_t c_band_{zlp::kBandNum};
         double c_sample_rate_{0.};
