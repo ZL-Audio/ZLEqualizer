@@ -153,7 +153,7 @@ namespace zlstate {
     public:
         static constexpr auto kID = "fft_side_on";
         static constexpr auto kName = "";
-        static constexpr auto kDefaultV = true;
+        static constexpr auto kDefaultV = false;
     };
 
     class PFFTSpeed : public ChoiceParameters<PFFTSpeed> {
@@ -405,8 +405,9 @@ namespace zlstate {
     static constexpr std::array<std::string_view, 9> kColourNames{
         "text", "background",
         "shadow", "glow",
-        "pre", "post", "reduction",
-        "computer", "grid"
+        "grid"
+        "pre", "post", "side",
+        "collision"
     };
 
     struct ColourDefaultSetting {
@@ -416,15 +417,15 @@ namespace zlstate {
     };
 
     static constexpr std::array<ColourDefaultSetting, 9> kColourDefaults{
-        ColourDefaultSetting{255 - 8, 255 - 9, 255 - 11, true, 1.f},
-        ColourDefaultSetting{(255 - 214) / 2, (255 - 223) / 2, (255 - 236) / 2, true, 1.f},
+        ColourDefaultSetting{247, 246, 244, true, 1.f},
+        ColourDefaultSetting{20, 16, 9, true, 1.f},
         ColourDefaultSetting{0, 0, 0, true, 1.f},
         ColourDefaultSetting{70, 66, 62, true, 1.f},
-        ColourDefaultSetting{255 - 8, 255 - 9, 255 - 11, true, .25f},
-        ColourDefaultSetting{255 - 8, 255 - 9, 255 - 11, true, 1.f},
-        ColourDefaultSetting{252, 18, 197, true, 1.f},
-        ColourDefaultSetting{255, 165, 0, true, 1.f},
-        ColourDefaultSetting{255 - 8, 255 - 9, 255 - 11, true, .1f}
+        ColourDefaultSetting{247, 246, 244, true, .1f},
+        ColourDefaultSetting{112, 112, 112, true, .2f},
+        ColourDefaultSetting{112, 112, 112, true, .2f},
+        ColourDefaultSetting{252, 18, 197, true, .1f},
+        ColourDefaultSetting{255, 0, 0, true, 1.f},
     };
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {

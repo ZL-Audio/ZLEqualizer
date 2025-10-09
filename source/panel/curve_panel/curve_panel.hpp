@@ -10,6 +10,7 @@
 #pragma once
 
 #include "background_panel/background_panel.hpp"
+#include "fft_panel/fft_panel.hpp"
 #include "scale_panel/scale_panel.hpp"
 
 namespace zlpanel {
@@ -17,6 +18,8 @@ namespace zlpanel {
     public:
         explicit CurvePanel(PluginProcessor& p, zlgui::UIBase& base,
                             const multilingual::TooltipHelper& tooltip_helper);
+
+        void paintOverChildren(juce::Graphics& g) override;
 
         void resized() override;
 
@@ -28,8 +31,13 @@ namespace zlpanel {
 
         void updateSampleRate(double sample_rate);
 
+        void startThreads();
+
+        void stopThreads();
+
     private:
         BackgroundPanel background_panel_;
+        FFTPanel fft_panel_;
         ScalePanel scale_panel_;
     };
 }

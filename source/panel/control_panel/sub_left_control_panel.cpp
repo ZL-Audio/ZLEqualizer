@@ -152,7 +152,6 @@ namespace zlpanel {
         const auto button_height = getButtonSize(font_size);
         const auto box_height = getBoxHeight(font_size);
         const auto padding = getPaddingSize(font_size);
-        const auto band_label_width = static_cast<int>(std::round(base_.getFontSize() * 1.5f));
 
         auto bound = getLocalBounds();
         control_background_.setBounds(bound);
@@ -167,10 +166,13 @@ namespace zlpanel {
         top_bound.removeFromRight(padding);
         freq_label_.setBounds(top_bound.removeFromRight(slider_width));
         top_bound.removeFromRight(padding);
-        right_button_.setBounds(top_bound.removeFromRight(button_height / 2));
-        band_label_.setBounds(top_bound.removeFromRight(band_label_width));
-        left_button_.setBounds(top_bound.removeFromRight(button_height / 2));
         bypass_button_.setBounds(top_bound.removeFromLeft(button_height));
+
+        const auto band_label_width = static_cast<int>(std::round(base_.getFontSize() * 1.5f));
+        const auto arrow_width = (top_bound.getWidth() - padding - band_label_width) / 2;
+        right_button_.setBounds(top_bound.removeFromRight(arrow_width));
+        band_label_.setBounds(top_bound.removeFromRight(band_label_width));
+        left_button_.setBounds(top_bound.removeFromRight(arrow_width));
 
         dynamic_button_.setBounds(bound.removeFromRight(button_height));
         bound.removeFromRight(padding);

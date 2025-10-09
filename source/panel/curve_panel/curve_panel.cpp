@@ -14,9 +14,12 @@ namespace zlpanel {
                            zlgui::UIBase& base,
                            const multilingual::TooltipHelper& tooltip_helper) :
         background_panel_(p, base, tooltip_helper),
+        fft_panel_(p, base, tooltip_helper),
         scale_panel_(p, base, tooltip_helper) {
         background_panel_.setBufferedToImage(true);
         addAndMakeVisible(background_panel_);
+
+        addAndMakeVisible(fft_panel_);
 
         scale_panel_.setBufferedToImage(true);
         addAndMakeVisible(scale_panel_);
@@ -24,14 +27,21 @@ namespace zlpanel {
         setInterceptsMouseClicks(false, true);
     }
 
+    void CurvePanel::paintOverChildren(juce::Graphics&) {
+        if (fft_panel_.isThreadRunning()) {
+            fft_panel_.notify();
+        }
+    }
+
     void CurvePanel::resized() {
         auto bound = getLocalBounds();
         background_panel_.setBounds(bound);
+        fft_panel_.setBounds(bound);
         scale_panel_.setBounds(bound.removeFromRight(scale_panel_.getIdealWidth()));
     }
 
     void CurvePanel::repaintCallBack() {
-
+        fft_panel_.repaint();
     }
 
     void CurvePanel::repaintCallBackSlow() {
@@ -44,5 +54,16 @@ namespace zlpanel {
 
     void CurvePanel::updateSampleRate(const double sample_rate) {
         background_panel_.updateSampleRate(sample_rate);
+        fft_panel_.updateSampleRate(sample_rate);
+    }
+
+    void CurvePanel::startThreads() {
+        fft_panel_.startThread(juce::Thread::Priority::low);
+    }
+
+    void CurvePanel::stopThreads() {
+        if (fft_panel_.isThreadRunning()) {
+            fft_panel_.stopThread(-1);
+        }
     }
 }

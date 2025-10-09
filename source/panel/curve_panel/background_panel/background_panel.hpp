@@ -33,7 +33,7 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         double freq_max_{0.};
 
-        void drawFreqs(juce::Graphics& g);
+        void drawFreqs(juce::Graphics& g) const;
 
         void drawDBs(juce::Graphics& g) const;
     };

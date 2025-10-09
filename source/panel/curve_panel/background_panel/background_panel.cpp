@@ -34,7 +34,7 @@ namespace zlpanel {
         repaint();
     }
 
-    void BackgroundPanel::drawFreqs(juce::Graphics& g) {
+    void BackgroundPanel::drawFreqs(juce::Graphics& g) const {
         auto bound = getLocalBounds().toFloat();
         bound.removeFromRight(base_.getFontSize() * kDraggerScale);
         // draw freq grid
@@ -56,16 +56,14 @@ namespace zlpanel {
         gradient.point2 = juce::Point<float>(bound.getX(), bound.getBottom());
         gradient.isRadial = false;
         gradient.clearColours();
-        gradient.addColour(0.0,
-                           base_.getBackgroundColor().withAlpha(1.f));
+        gradient.addColour(0.0, base_.getBackgroundColor().withAlpha(1.f));
         gradient.addColour(base_.getFontSize() / bound.getHeight(),
                            base_.getBackgroundColor().withAlpha(0.f));
         gradient.addColour(1.f - 2.f * base_.getFontSize() / bound.getHeight(),
                            base_.getBackgroundColor().withAlpha(0.f));
         gradient.addColour(1.f - base_.getFontSize() / bound.getHeight(),
                            base_.getBackgroundColor().withAlpha(1.f));
-        gradient.addColour(1.0,
-                           base_.getBackgroundColor().withAlpha(1.f));
+        gradient.addColour(1.0, base_.getBackgroundColor().withAlpha(1.f));
         g.setGradientFill(gradient);
         g.fillRect(getLocalBounds());
         // draw freq labels

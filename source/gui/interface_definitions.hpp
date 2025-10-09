@@ -20,11 +20,11 @@ namespace zlgui {
         kBackgroundColour,
         kShadowColour,
         kGlowColour,
+        kGridColour,
         kPreColour,
         kPostColour,
-        kReductionColour,
-        kComputerColour,
-        kGridColour,
+        kSideColour,
+        kCollisionColour,
         kColourNum
     };
 

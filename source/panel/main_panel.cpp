@@ -78,7 +78,7 @@ namespace zlpanel {
                 previous_time_stamp_ = time_stamp;
                 repaintCallBackSlow();
             }
-
+            curve_panel_.repaintCallBack();
             const auto c_refresh_rate = refresh_handler_.getActualRefreshRate();
             if (std::abs(c_refresh_rate - refresh_rate_) > 0.1) {
                 refresh_rate_ = c_refresh_rate;
@@ -120,5 +120,13 @@ namespace zlpanel {
         // sub slow callbacks
         control_panel_.repaintCallBackSlow();
         curve_panel_.repaintCallBackSlow();
+    }
+
+    void MainPanel::startThreads() {
+        curve_panel_.startThreads();
+    }
+
+    void MainPanel::stopThreads() {
+        curve_panel_.stopThreads();
     }
 }

@@ -405,7 +405,7 @@ namespace zlp {
 
         if (c_editor_on_) {
             fft_analyzer_.process(
-                {std::span(main_pointers), std::span(pre_main_pointers_), std::span(side_pointers)},
+                {std::span(pre_main_pointers_), std::span(main_pointers), std::span(side_pointers)},
                 num_samples);
         }
 

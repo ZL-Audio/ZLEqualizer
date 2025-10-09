@@ -29,10 +29,10 @@ namespace zlpanel {
         gradient.point2 = juce::Point<float>(bound.getRight(), bound.getY());
         gradient.isRadial = false;
         gradient.clearColours();
-        gradient.addColour(0.0,
-                           base_.getBackgroundColor().withAlpha(0.f));
-        gradient.addColour(1.0,
-                           base_.getBackgroundColor().withAlpha(1.f));
+        gradient.addColour(0.0, base_.getBackgroundColor().withAlpha(0.f));
+        gradient.addColour(0.25, base_.getBackgroundColor().withAlpha(0.f));
+        gradient.addColour(0.75, base_.getBackgroundColor().withAlpha(1.f));
+        gradient.addColour(1.0, base_.getBackgroundColor().withAlpha(1.f));
         g.setGradientFill(gradient);
         g.fillRect(getLocalBounds());
         // calculate values

@@ -98,14 +98,17 @@ void PluginEditor::timerCallback() {
 }
 
 void PluginEditor::updateIsShowing() {
-    if (isShowing() != base_.getIsEditorShowing()) {
-        base_.setIsEditorShowing(isShowing());
-        p_ref_.getController().setEditorON(base_.getIsEditorShowing());
-        if (base_.getIsEditorShowing()) {
+    const auto is_showing = isShowing();
+    if (is_showing != base_.getIsEditorShowing()) {
+        base_.setIsEditorShowing(is_showing);
+        p_ref_.getController().setEditorON(is_showing);
+        if (is_showing) {
+            main_panel_.startThreads();
             vblank_ = std::make_unique<juce::VBlankAttachment>(
                 &main_panel_, [this](const double x) { main_panel_.repaintCallBack(x); });
         } else {
             vblank_.reset();
+            main_panel_.stopThreads();
         }
     }
 }
