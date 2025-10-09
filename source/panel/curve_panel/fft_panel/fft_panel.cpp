@@ -68,8 +68,6 @@ namespace zlpanel {
             return;
         }
         bound.removeFromRight(base_.getFontSize() * kDraggerScale);
-        bound_441_ = bound.withWidth(bound.getWidth() + bound.getWidth() * std::log(22050.0f / 22000.f));
-        bound_480_ = bound.withWidth(bound.getWidth() + bound.getWidth() * std::log(24000.0f / 22000.f));
         updateSampleRate(sample_rate_);
 
         const auto bottom_area_height = getBottomAreaHeight(base_.getFontSize());
@@ -89,11 +87,12 @@ namespace zlpanel {
             sample_rate_ = sample_rate;
             p_ref_.getController().getFFTAnalyzer().setMaxFreq(sample_rate * .5 - 0.1);
         }
-        if (std::abs(std::floor(sample_rate / 44000.0) - std::floor(sample_rate / 47900.0)) > 0.5) {
-            atomic_bound_.store(bound_441_);
-        } else {
-            atomic_bound_.store(bound_480_);
-        }
+        const auto fft_max = freq_helper::getFFTMax(sample_rate);
+        auto bound = getLocalBounds().toFloat();
+        bound.removeFromRight(base_.getFontSize() * kDraggerScale);
+        bound.setWidth(bound.getWidth() * static_cast<float>(
+            std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1)));
+        atomic_bound_.store(bound);
     }
 
     void FFTPanel::run() {

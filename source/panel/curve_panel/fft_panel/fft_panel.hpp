@@ -40,7 +40,6 @@ namespace zlpanel {
         std::atomic<float>& fft_min_db_ref_;
 
         double sample_rate_{0.};
-        juce::Rectangle<float> bound_441_{}, bound_480_{};
         AtomicBound<float> atomic_bound_{};
         float c_width_{0.f};
         std::atomic<float> min_ratio_{1.f}, max_ratio_{1.f};
@@ -51,8 +50,6 @@ namespace zlpanel {
         juce::Path post_path_, next_post_path_;
         juce::Path side_path_, next_side_path_;
         std::mutex mutex_;
-
-        bool internalRun();
 
         void updatePath(juce::Path &path, const juce::Rectangle<float>& bound, std::span<float> ys) const;
     };
