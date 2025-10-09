@@ -233,6 +233,7 @@ namespace zlpanel {
         if (!f && dynamic_button_.getToggleState()) {
             dynamic_button_.getButton().setToggleState(false, juce::sendNotificationSync);
         }
+        dynamic_button_.setInterceptsMouseClicks(false, f);
         gain_label_.setAlpha(f ? 1.f : .5f);
     }
 }
