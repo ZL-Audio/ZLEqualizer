@@ -36,17 +36,19 @@ namespace zlpanel {
 
     void BackgroundPanel::drawFreqs(juce::Graphics& g) const {
         auto bound = getLocalBounds().toFloat();
+        const auto full_width = bound.getWidth();
         bound.removeFromRight(base_.getFontSize() * kDraggerScale);
         // draw freq grid
         const auto thickness = base_.getFontSize() * 0.1f;
         juce::RectangleList<float> rect_list;
         for (const auto& freq : kFreqValues) {
             const auto p = std::log(static_cast<double>(freq) * .1) / std::log(freq_max_ * .1);
-            if (p > 0.95) {
+            const auto rect = juce::Rectangle(static_cast<float>(p) * bound.getWidth() - thickness * .5f, 0.f,
+                          thickness, bound.getHeight());
+            if (rect.getRight() > full_width) {
                 break;
             }
-            rect_list.add(static_cast<float>(p) * bound.getWidth() - thickness * .5f, 0.f,
-                          thickness, bound.getHeight());
+            rect_list.add(rect);
         }
         g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kGridColour));
         g.fillRectList(rect_list);
@@ -69,16 +71,17 @@ namespace zlpanel {
         // draw freq labels
         g.setColour(base_.getTextColor().withAlpha(.5f));
         g.setFont(base_.getFontSize() * 1.25f);
-        const auto label_y0 = bound.getBottom() - base_.getFontSize() * 1.2f;
-        const auto label_width = base_.getFontSize() * 4.f;
+        const auto label_y0 = bound.getBottom() - base_.getFontSize() * 1.15f;
         const auto label_height = base_.getFontSize() * 1.1f;
         for (const auto& freq : kFreqValues) {
+            const auto label = freq < 1000.f ? juce::String(freq) : juce::String(std::round(freq * 0.001f)) + "K";
+            const auto label_width = juce::GlyphArrangement::getStringWidth(g.getCurrentFont(), label) + 2.f;
             const auto p = std::log(static_cast<double>(freq) * .1) / std::log(freq_max_ * .1);
-            if (p > 0.95) {
-                break;
-            }
             const auto rect = juce::Rectangle(static_cast<float>(p) * bound.getWidth() - label_width * .5f, label_y0,
                                                      label_width, label_height);
+            if (rect.getRight() > full_width) {
+                break;
+            }
             g.drawText(freq < 1000.f ? juce::String(freq) : juce::String(std::round(freq * 0.001f)) + "K",
                        rect, juce::Justification::centredBottom, false);
         }

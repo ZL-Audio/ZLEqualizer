@@ -16,10 +16,10 @@ namespace zlpanel {
             static_cast<multilingual::TooltipLanguage>(std::round(
                 getValue(p_ref_.state_, zlstate::PTooltipLang::kID)))
             ),
-        tooltip_laf_(base_), tooltip_window_(this),
         refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]),
         control_panel_(p, base, tooltip_helper_),
-        curve_panel_(p, base, tooltip_helper_) {
+        curve_panel_(p, base, tooltip_helper_),
+        tooltip_laf_(base_), tooltip_window_(&curve_panel_) {
         juce::ignoreUnused(base_);
 
         tooltip_window_.setLookAndFeel(&tooltip_laf_);

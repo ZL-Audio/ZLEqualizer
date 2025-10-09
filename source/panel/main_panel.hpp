@@ -36,9 +36,6 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         multilingual::TooltipHelper tooltip_helper_;
 
-        zlgui::tooltip::TooltipLookAndFeel tooltip_laf_;
-        zlgui::tooltip::TooltipWindow tooltip_window_;
-
         RefreshHandler refresh_handler_;
         double previous_time_stamp_{-1.0};
         double refresh_rate_{-1.0};
@@ -46,6 +43,9 @@ namespace zlpanel {
         ControlPanel control_panel_;
 
         CurvePanel curve_panel_;
+
+        zlgui::tooltip::TooltipLookAndFeel tooltip_laf_;
+        zlgui::tooltip::TooltipWindow tooltip_window_;
 
         size_t c_band_{zlp::kBandNum};
         double c_sample_rate_{0.};

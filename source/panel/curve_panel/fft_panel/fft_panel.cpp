@@ -68,7 +68,9 @@ namespace zlpanel {
             return;
         }
         bound.removeFromRight(base_.getFontSize() * kDraggerScale);
-        atomic_bound_.store(bound);
+        bound_441_ = bound.withWidth(bound.getWidth() + bound.getWidth() * std::log(22050.0f / 22000.f));
+        bound_480_ = bound.withWidth(bound.getWidth() + bound.getWidth() * std::log(24000.0f / 22000.f));
+        updateSampleRate(sample_rate_);
 
         const auto bottom_area_height = getBottomAreaHeight(base_.getFontSize());
         const auto positive_height = base_.getFontSize() * kDraggerScale;
@@ -79,9 +81,19 @@ namespace zlpanel {
         max_ratio_.store(-positive_height / mid_height, std::memory_order::relaxed);
     }
 
-    void FFTPanel::updateSampleRate(const double sample_rate) const {
-        const auto fft_max = freq_helper::getFFTMax(sample_rate);
-        p_ref_.getController().getFFTAnalyzer().setMaxFreq(fft_max);
+    void FFTPanel::updateSampleRate(const double sample_rate) {
+        if (sample_rate < 1.0) {
+            return;
+        }
+        if (std::abs(sample_rate - sample_rate_) > 1.0) {
+            sample_rate_ = sample_rate;
+            p_ref_.getController().getFFTAnalyzer().setMaxFreq(sample_rate * .5 - 0.1);
+        }
+        if (std::abs(std::floor(sample_rate / 44000.0) - std::floor(sample_rate / 47900.0)) > 0.5) {
+            atomic_bound_.store(bound_441_);
+        } else {
+            atomic_bound_.store(bound_480_);
+        }
     }
 
     void FFTPanel::run() {
@@ -90,6 +102,10 @@ namespace zlpanel {
             juce::ignoreUnused(flag);
             if (threadShouldExit()) {
                 break;
+            }
+            const auto bound = atomic_bound_.load();
+            if (bound.getWidth() < .1f) {
+                continue;
             }
             auto& analyzer{p_ref_.getController().getFFTAnalyzer()};
             if (!analyzer.getLock().try_lock()) {
@@ -105,7 +121,6 @@ namespace zlpanel {
                 c_width_ = -1.f;
             }
 
-            const auto bound = atomic_bound_.load();
             if (std::abs(bound.getWidth() - c_width_) > 1e-3f) {
                 c_width_ = bound.getWidth();
                 analyzer.createPathXs(xs_, c_width_);
@@ -114,7 +129,6 @@ namespace zlpanel {
             const auto fft_min = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(std::round(fft_min_idx))];
             const auto max_db = max_ratio_.load(std::memory_order_relaxed) * fft_min;
             const auto min_db = min_ratio_.load(std::memory_order_relaxed) * fft_min;
-            std::cout << max_db << " " << min_db << std::endl;
             analyzer.createPathYs({std::span(pre_ys_), std::span(post_ys_), std::span(side_ys_)},
                                   bound.getHeight(), min_db, max_db);
             analyzer.getLock().unlock();
@@ -154,13 +168,13 @@ namespace zlpanel {
 
     void FFTPanel::updatePath(juce::Path& path, const juce::Rectangle<float>& bound, std::span<float> ys) const {
         path.clear();
-        path.startNewSubPath(xs_[0] - 1.f, bound.getBottom() + 10.f);
+        path.startNewSubPath(xs_[0] - .1f, bound.getBottom() + 10.f);
         for (size_t i = 0; i < xs_.size(); ++i) {
             if (std::isfinite(ys[i])) {
                 path.lineTo(xs_[i], ys[i]);
             }
         }
-        path.lineTo(bound.getRight() + 1.f, bound.getBottom() + 10.f);
+        path.lineTo(bound.getRight() + .1f, bound.getBottom() + 10.f);
         path.closeSubPath();
     }
 }

@@ -27,7 +27,7 @@ namespace zlpanel {
 
         void resized() override;
 
-        void updateSampleRate(double sample_rate) const;
+        void updateSampleRate(double sample_rate);
 
         void run() override;
 
@@ -39,6 +39,8 @@ namespace zlpanel {
         std::atomic<float>& side_ref_;
         std::atomic<float>& fft_min_db_ref_;
 
+        double sample_rate_{0.};
+        juce::Rectangle<float> bound_441_{}, bound_480_{};
         AtomicBound<float> atomic_bound_{};
         float c_width_{0.f};
         std::atomic<float> min_ratio_{1.f}, max_ratio_{1.f};

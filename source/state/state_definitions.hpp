@@ -128,7 +128,7 @@ namespace zlstate {
             "-60", "-72", "-96"
         };
         static constexpr std::array kDBs = {-60.f, -72.f, -96.f};
-        static constexpr int kDefaultI = 1;
+        static constexpr int kDefaultI = 0;
 
         static float getMinDBFromIndex(const float x) {
             return kDBs[static_cast<size_t>(std::round(x))];
