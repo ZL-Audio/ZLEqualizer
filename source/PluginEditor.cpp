@@ -26,10 +26,10 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
     addAndMakeVisible(main_panel_);
 
     // set size & size listener
-    setResizeLimits(static_cast<int>(zlstate::PWindowW::kMinV),
-                    static_cast<int>(zlstate::PWindowH::kMinV),
-                    static_cast<int>(zlstate::PWindowW::kMaxV),
-                    static_cast<int>(zlstate::PWindowH::kMaxV));
+    setResizeLimits(static_cast<int>(zlstate::PWindowW::kMinV - 1),
+                    static_cast<int>(zlstate::PWindowH::kMinV - 1),
+                    static_cast<int>(zlstate::PWindowW::kMaxV + 1),
+                    static_cast<int>(zlstate::PWindowH::kMaxV + 1));
     setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
 
     this->resizableCorner = std::make_unique<zlgui::ResizeCorner>(base_, this, getConstrainer(),
@@ -62,8 +62,12 @@ void PluginEditor::paint(juce::Graphics& g) {
 
 void PluginEditor::resized() {
     main_panel_.setBounds(getLocalBounds());
-    last_ui_width_ = getWidth();
-    last_ui_height_ = getHeight();
+    last_ui_width_ = std::clamp(getWidth(),
+                                static_cast<int>(zlstate::PWindowW::kMinV),
+                                static_cast<int>(zlstate::PWindowW::kMaxV));
+    last_ui_height_ = std::clamp(getHeight(),
+                                 static_cast<int>(zlstate::PWindowH::kMinV),
+                                 static_cast<int>(zlstate::PWindowH::kMaxV));
     triggerAsyncUpdate();
 }
 

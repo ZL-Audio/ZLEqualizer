@@ -48,10 +48,14 @@ namespace zlpanel {
         return font_size * kDraggerScale;
     }
 
+    inline int getBottomPadding(const float font_size) {
+        return static_cast<int>(std::round(font_size * 1.25f));
+    }
+
     inline int getBottomAreaHeight(const float font_size) {
         const auto box_height = getBoxHeight(font_size);
         const auto button_height = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
-        return 3 * box_height + button_height + 7 * padding;
+        return 3 * box_height + button_height + 5 * padding + getBottomPadding(font_size);
     }
 }

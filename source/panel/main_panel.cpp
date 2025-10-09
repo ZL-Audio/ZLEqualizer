@@ -60,15 +60,13 @@ namespace zlpanel {
         const auto font_size = static_cast<float>(bound.getWidth()) * 0.016f;
         base_.setFontSize(font_size);
         // set control panel bound
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale);
         auto control_bound = bound;
-        control_bound.removeFromBottom(2 * padding);
+        control_bound.removeFromBottom(getBottomPadding(base_.getFontSize()));
         control_bound = control_bound.removeFromBottom(control_panel_.getIdealHeight());
         control_bound = control_bound.withSizeKeepingCentre(control_panel_.getIdealWidth(), control_bound.getHeight());
         control_panel_.setBounds(control_bound);
 
-        const auto button_height = juce::roundToInt(base_.getFontSize() * kButtonScale);
-        bound.removeFromTop(button_height);
+        bound.removeFromTop(getButtonSize(base_.getFontSize()));
         curve_panel_.setBounds(bound);
     }
 
