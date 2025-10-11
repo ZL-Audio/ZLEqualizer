@@ -10,6 +10,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include <span>
 
 namespace zlpanel {
     class PathMinimizer {
@@ -45,6 +46,24 @@ namespace zlpanel {
 
         void finish() const {
             path_ref_.lineTo(current_x_, current_y_);
+        }
+
+        template <bool start = true, bool reverse = false>
+        void drawPath(std::span<float> xs, std::span<float> ys) {
+            if constexpr (reverse) {
+                startNewSubPath<start>(xs[0], ys[0]);
+                for (size_t i = 1; i < xs.size(); ++i) {
+                    lineTo(xs[i], ys[i]);
+                }
+                finish();
+            } else {
+                startNewSubPath<start>(xs.back(), ys.back());
+                const auto shift = xs.size() - 1;
+                for (size_t i = 1; i < xs.size(); ++i) {
+                    lineTo(xs[shift - i], ys[shift - i]);
+                }
+                finish();
+            }
         }
 
     private:

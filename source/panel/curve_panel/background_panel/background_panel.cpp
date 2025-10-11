@@ -44,7 +44,7 @@ namespace zlpanel {
         for (const auto& freq : kFreqValues) {
             const auto p = std::log(static_cast<double>(freq) * .1) / std::log(freq_max_ * .1);
             const auto rect = juce::Rectangle(static_cast<float>(p) * bound.getWidth() - thickness * .5f, 0.f,
-                          thickness, bound.getHeight());
+                                              thickness, bound.getHeight());
             if (rect.getRight() > full_width) {
                 break;
             }
@@ -75,10 +75,12 @@ namespace zlpanel {
         const auto label_height = base_.getFontSize() * 1.1f;
         for (const auto& freq : kFreqValues) {
             const auto label = freq < 1000.f ? juce::String(freq) : juce::String(std::round(freq * 0.001f)) + "K";
-            const auto label_width = juce::GlyphArrangement::getStringWidth(g.getCurrentFont(), label) + 2.f;
+            const auto label_width = freq < 20000.f
+                ? base_.getFontSize() * 3.f
+                : juce::GlyphArrangement::getStringWidth(g.getCurrentFont(), label) * 1.1f;
             const auto p = std::log(static_cast<double>(freq) * .1) / std::log(freq_max_ * .1);
             const auto rect = juce::Rectangle(static_cast<float>(p) * bound.getWidth() - label_width * .5f, label_y0,
-                                                     label_width, label_height);
+                                              label_width, label_height);
             if (rect.getRight() > full_width) {
                 break;
             }

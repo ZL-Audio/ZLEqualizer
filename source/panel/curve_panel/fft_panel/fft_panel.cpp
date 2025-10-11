@@ -167,13 +167,13 @@ namespace zlpanel {
 
     void FFTPanel::updatePath(juce::Path& path, const juce::Rectangle<float>& bound, std::span<float> ys) const {
         path.clear();
-        path.startNewSubPath(xs_[0] - .1f, bound.getBottom() + 10.f);
+        path.startNewSubPath(xs_[0] - bound.getWidth() * 0.05f, bound.getHeight() * 1.05f);
         for (size_t i = 0; i < xs_.size(); ++i) {
             if (std::isfinite(ys[i])) {
                 path.lineTo(xs_[i], ys[i]);
             }
         }
-        path.lineTo(bound.getRight() + .1f, bound.getBottom() + 10.f);
+        path.lineTo(xs_.back(), bound.getBottom() + bound.getHeight() * 1.05f);
         path.closeSubPath();
     }
 }
