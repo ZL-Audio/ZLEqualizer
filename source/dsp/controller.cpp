@@ -429,11 +429,13 @@ namespace zlp {
         // add parallel filters first
         processParallelPostLRMS<IsBypassed>(0, true, sub_main_buffer, sub_side_buffer);
         if (use_lr_) {
+            lr_main_splitter_.split(sub_main_buffer);
             processParallelPostLRMS<IsBypassed>(1, true, lr_main_splitter_.getLBuffer(), lr_side_splitter_.getLBuffer());
             processParallelPostLRMS<IsBypassed>(2, true, lr_main_splitter_.getRBuffer(), lr_side_splitter_.getRBuffer());
             lr_main_splitter_.combine(sub_main_buffer);
         }
         if (use_ms_) {
+            ms_main_splitter_.split(sub_main_buffer);
             processParallelPostLRMS<IsBypassed>(3, true, ms_main_splitter_.getMBuffer(), ms_side_splitter_.getMBuffer());
             processParallelPostLRMS<IsBypassed>(4, true, ms_main_splitter_.getSBuffer(), ms_side_splitter_.getSBuffer());
             ms_main_splitter_.combine(sub_main_buffer);
