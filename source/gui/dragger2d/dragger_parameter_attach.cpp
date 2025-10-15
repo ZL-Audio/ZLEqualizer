@@ -17,8 +17,8 @@ namespace zlgui {
                                                    Dragger &dragger_c,
                                                    juce::UndoManager *undo_manager)
         : dragger_(dragger_c),
-          attachment_x_(parameter_x, [this](const float f) { setX(f); }, undo_manager),
-          attachment_y_(parameter_y, [this](const float f) { setY(f); }, undo_manager),
+          attachment_x_(parameter_x, [](const float) { }, undo_manager),
+          attachment_y_(parameter_y, [](const float) { }, undo_manager),
           range_x_(std::move(n_range_x)), range_y_(std::move(n_range_y)) {
         dragger_.addListener(this);
     }
