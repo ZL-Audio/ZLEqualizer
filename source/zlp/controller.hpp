@@ -136,6 +136,18 @@ namespace zlp {
             return learned_knees_[idx].load(std::memory_order::relaxed);
         }
 
+        std::array<std::atomic<bool>, kBandNum>& getEmptyUpdateFlags() {
+            return empty_update_flags_;
+        }
+
+        std::array<std::atomic<bool>, kBandNum>& getSideEmptyUpdateFlags() {
+            return side_empty_update_flags_;
+        }
+
+        double getCurrentGain(const size_t idx) const {
+            return current_gains_[idx].load(std::memory_order::relaxed);
+        }
+
     private:
         juce::AudioProcessor& p_ref_;
         // filter structure
@@ -154,7 +166,9 @@ namespace zlp {
         std::array<std::vector<size_t>, 5> not_off_indices_{};
         // empty filters for holding atomic parameters
         std::array<zldsp::filter::Empty, kBandNum> emptys_{};
+        std::array<std::atomic<bool>, kBandNum> empty_update_flags_{};
         std::array<zldsp::filter::Empty, kBandNum> side_emptys_{};
+        std::array<std::atomic<bool>, kBandNum> side_empty_update_flags_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> filter_paras_{};
         // dynamic handlers
         std::array<zldsp::filter::DynamicSideHandler<double>, kBandNum> dynamic_side_handlers_
@@ -224,7 +238,7 @@ namespace zlp {
         // filter dynamic swap flags
         std::array<std::atomic<bool>, kBandNum> dynamic_swap_{};
         // dynamic related parameters
-        std::array<std::atomic<double>, kBandNum> target_gains_{};
+        std::array<std::atomic<double>, kBandNum> current_gains_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_update_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_relative_{};
         std::array<bool, kBandNum> c_dynamic_th_relative_{};

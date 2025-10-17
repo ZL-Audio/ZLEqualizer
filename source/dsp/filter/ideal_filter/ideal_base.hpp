@@ -14,17 +14,27 @@
 #include <complex>
 
 namespace zldsp::filter {
-    template <typename SampleType>
     class IdealBase {
     public:
-        static void updateMagnitude(
+        template <typename SampleType>
+        static void updateMagnitudeSquareInplace(
             const std::array<double, 6>& coeff,
             const std::span<const SampleType> ws, std::span<SampleType> gains) {
             for (size_t idx = 0; idx < ws.size(); ++idx) {
-                gains[idx] *= getMagnitude(coeff, ws[idx]);
+                gains[idx] = getMagnitudeSquare(coeff, ws[idx]);
             }
         }
 
+        template <typename SampleType>
+        static void updateMagnitudeSquare(
+            const std::array<double, 6>& coeff,
+            const std::span<const SampleType> ws, std::span<SampleType> gains) {
+            for (size_t idx = 0; idx < ws.size(); ++idx) {
+                gains[idx] *= getMagnitudeSquare(coeff, ws[idx]);
+            }
+        }
+
+        template <typename SampleType>
         static void updateResponse(
             const std::array<double, 6>& coeff,
             const std::span<const std::complex<SampleType>> wis, std::span<std::complex<SampleType>> response) {
@@ -33,15 +43,17 @@ namespace zldsp::filter {
             }
         }
 
-        static SampleType getMagnitude(const std::array<double, 6>& coeff, const SampleType w) {
+        template <typename SampleType>
+        static SampleType getMagnitudeSquare(const std::array<double, 6>& coeff, const SampleType w) {
             const auto w_2 = w * w;
             const auto t1 = coeff[2] - coeff[0] * w_2;
             const auto denominator = coeff[1] * coeff[1] * w_2 + t1 * t1;
             const auto t2 = coeff[5] - coeff[3] * w_2;
             const auto numerator = coeff[4] * coeff[4] * w_2 + t2 * t2;
-            return static_cast<SampleType>(std::sqrt(numerator / denominator));
+            return static_cast<SampleType>(numerator / denominator);
         }
 
+        template <typename SampleType>
         static std::complex<SampleType> getResponse(const std::array<double, 6>& coeff,
                                                     const std::complex<SampleType>& wi) {
             const auto wi2 = wi * wi;

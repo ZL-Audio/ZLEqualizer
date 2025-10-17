@@ -56,7 +56,7 @@ namespace zldsp::filter::FilterDesign {
                 coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
             }
             if constexpr (filter_type == kHighShelf) {
-                const auto coeff = Coeff::get1LowShelf(w0, g0);
+                const auto coeff = Coeff::get1HighShelf(w0, g0);
                 coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
             }
             if constexpr (filter_type == kTiltShelf) {

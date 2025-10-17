@@ -11,14 +11,11 @@
 
 namespace zlpanel::freq_helper {
     inline double getSliderMax(const double sample_rate) {
-        if (sample_rate > 352000.0) {
-            return 160000.0;
-        } else if (sample_rate > 176000.0) {
-            return 80000.0;
-        } else if (sample_rate > 88000.0) {
-            return 40000.0;
+        const double ratio441 = sample_rate / 44100.0;
+        if (std::fabs(ratio441 - std::round(ratio441)) < 1e-3) {
+            return std::round(sample_rate * (200.0 / 441.0));
         } else {
-            return 20000.0;
+            return std::floor(sample_rate * (200.0 / 441.0));
         }
     }
 

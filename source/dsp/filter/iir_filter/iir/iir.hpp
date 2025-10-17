@@ -164,22 +164,12 @@ namespace zldsp::filter {
             return current_filter_num_;
         }
 
-        std::array<std::array < double, 6>
-        ,
-        kFilterSize
-        >
-        &
-        getCoeff() {
+        std::array<std::array<double, 6>, kFilterSize>& getCoeff() {
             return coeffs_;
         }
 
     protected:
-        std::array<std::array < double, 6>
-        ,
-        kFilterSize
-        >
-        coeffs_ {
-        };
+        std::array<std::array<double, 6>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
         double freq_max_{20000.0};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kLin> c_gain_{0.0};
@@ -192,7 +182,7 @@ namespace zldsp::filter {
 
         static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array < double, 6>, kFilterSize> &coeffs) {
+                                      std::array<std::array<double, 6>, kFilterSize>& coeffs) {
             return FilterDesign::updateCoeffs<MartinCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
         }
     };

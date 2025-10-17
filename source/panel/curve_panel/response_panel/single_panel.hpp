@@ -29,14 +29,19 @@ namespace zlpanel {
                                 bool is_dynamic_on,
                                 bool is_same_stereo);
 
-        void run(std::span<size_t> to_update_indices,
+        bool run(const juce::Thread& thread,
+                 const std::array<zlp::FilterStatus, zlp::kBandNum>& filter_status,
+                 std::array<bool, zlp::kBandNum>& to_update_base_flags,
+                 std::array<bool, zlp::kBandNum>& to_update_target_flags,
                  std::span<float> xs,
-                 std::array<std::span<float>, zlp::kBandNum> base_yss,
-                 std::array<std::span<float>, zlp::kBandNum> target_yss);
+                 float k, float b,
+                 std::array<kfr::univector<float>, zlp::kBandNum>& base_mags,
+                 std::array<kfr::univector<float>, zlp::kBandNum>& target_mags);
 
     private:
+        static constexpr size_t kNumPoints = 400;
         static constexpr float kFillingAlpha = .125f;
-        static constexpr float kDynamicFillingAlpha = .175f;
+        static constexpr float kDynamicFillingAlpha = .33333f;
         static constexpr float kNotSelectedAlphaMultiplier = .75f;
         static constexpr float kBypassAlphaMultiplier = .75f;
         static constexpr float kDiffStereoAlphaMultiplier = .75f;
@@ -45,7 +50,7 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         std::vector<size_t>& not_off_indices_;
 
-        AtomicBound<float> bound_;
+        std::atomic<float> center_y_{0.f};
 
         std::array<juce::Path, zlp::kBandNum> base_paths_{};
         std::array<juce::Path, zlp::kBandNum> next_base_paths_{};
@@ -53,20 +58,18 @@ namespace zlpanel {
         std::array<juce::Path, zlp::kBandNum> base_fills_{};
         std::array<juce::Path, zlp::kBandNum> next_base_fills_{};
 
-        std::array<juce::Path, zlp::kBandNum> target_paths_{};
-        std::array<juce::Path, zlp::kBandNum> next_target_paths_{};
-
         std::array<juce::Path, zlp::kBandNum> target_fills_{};
         std::array<juce::Path, zlp::kBandNum> next_target_fills_{};
 
         std::mutex mutex_;
 
+        std::array<float, zlp::kBandNum> base_stroke_alpha_{};
         std::array<float, zlp::kBandNum> base_fill_alpha_{};
         std::array<float, zlp::kBandNum> target_fill_alpha_{};
-        std::array<float, zlp::kBandNum> base_stroke_alpha_{};
-        std::array<float, zlp::kBandNum> target_stroke_alpha_{};
 
         float curve_thickness_{0.f};
+
+        kfr::univector<float> temp_db_{};
 
         void drawBand(juce::Graphics& g, size_t band) const;
 

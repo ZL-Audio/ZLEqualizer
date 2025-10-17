@@ -146,6 +146,10 @@ namespace zldsp::compressor {
             }
         }
 
+        FloatType getCurrentSample() const {
+            return y_;
+        }
+
     private:
         FloatType y_{}, state_{}, slope_{};
         FloatType attack_{}, release_{};

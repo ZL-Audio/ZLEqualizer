@@ -17,6 +17,7 @@ namespace zlp {
         controller_(controller),
         idx_(idx),
         empty_(controller.getEmptyFilters()[idx]),
+        update_flag_(controller.getEmptyUpdateFlags()[idx]),
         side_link_(*parameters.getRawParameterValue(PSideLink::kID + std::to_string(idx))),
         side_filter_type_updater_(parameters, PSideFilterType::kID + std::to_string(idx)),
         side_freq_updater_(parameters, PSideFreq::kID + std::to_string(idx)),
@@ -39,22 +40,27 @@ namespace zlp {
             controller_.setFilterStatus(idx_, static_cast<FilterStatus>(std::round(value)));
         } else if (parameter_ID.startsWith(PFilterType::kID)) {
             empty_.setFilterType(static_cast<zldsp::filter::FilterType>(std::round(value)));
+            update_flag_.store(true, std::memory_order::release);
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideFilterType();
             }
         } else if (parameter_ID.startsWith(POrder::kID)) {
             empty_.setOrder(POrder::kOrderArray[static_cast<size_t>(std::round(value))]);
+            update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PLRMode::kID)) {
             controller_.setLRMS(idx_, static_cast<FilterStereo>(std::round(value)));
         } else if (parameter_ID.startsWith(PFreq::kID)) {
             empty_.setFreq(value);
+            update_flag_.store(true, std::memory_order::release);
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideFreq();
             }
         } else if (parameter_ID.startsWith(PGain::kID)) {
             empty_.setGain(value);
+            update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PQ::kID)) {
             empty_.setQ(value);
+            update_flag_.store(true, std::memory_order::release);
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideQ();
             }

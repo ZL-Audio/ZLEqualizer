@@ -53,7 +53,7 @@ namespace zldsp::filter {
                     // update proto response
                     const auto proto_coeff = ideal.getCoeff()[idx];
                     for (size_t w_idx = 1; w_idx < w_prototype_.size(); ++w_idx) {
-                        proto_res_[w_idx] = IdealBase<float>::getResponse(proto_coeff, w_prototype_[w_idx]);
+                        proto_res_[w_idx] = IdealBase::getResponse(proto_coeff, w_prototype_[w_idx]);
                     }
                     // update biquad response
                     const auto biquad_coeff = tdf.getCoeff()[idx];

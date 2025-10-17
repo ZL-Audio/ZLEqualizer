@@ -21,19 +21,8 @@ namespace zldsp::filter {
     public:
         Empty() = default;
 
-        void setToUpdatePara() {
-            to_update_para_.store(true, std::memory_order::release);
-        }
-
-        bool getToUpdatePara() {
-            return to_update_para_.exchange(false, std::memory_order::acquire);
-        }
-
-        std::atomic<bool>& getUpdateParaFlag() { return to_update_para_; }
-
         void setFreq(const double x) {
             freq_.store(x, std::memory_order::relaxed);
-            to_update_para_.store(true, std::memory_order::release);
         }
 
         [[nodiscard]] double getFreq() const {
@@ -42,7 +31,6 @@ namespace zldsp::filter {
 
         void setGain(const double x) {
             gain_.store(x, std::memory_order::relaxed);
-            to_update_para_.store(true, std::memory_order::release);
         }
 
         [[nodiscard]] double getGain() const {
@@ -51,7 +39,6 @@ namespace zldsp::filter {
 
         void setQ(const double x) {
             q_.store(x, std::memory_order::relaxed);
-            to_update_para_.store(true, std::memory_order::release);
         }
 
         [[nodiscard]] double getQ() const {
@@ -60,7 +47,6 @@ namespace zldsp::filter {
 
         void setFilterType(const FilterType x) {
             filter_type_.store(x, std::memory_order::relaxed);
-            to_update_para_.store(true, std::memory_order::release);
         }
 
         [[nodiscard]] FilterType getFilterType() const {
@@ -69,7 +55,6 @@ namespace zldsp::filter {
 
         void setOrder(const size_t x) {
             order_.store(x, std::memory_order::relaxed);
-            to_update_para_.store(true, std::memory_order::release);
         }
 
         [[nodiscard]] size_t getOrder() const {
@@ -84,7 +69,5 @@ namespace zldsp::filter {
         std::atomic<double> freq_{1000.0}, gain_{0.0}, q_{0.707};
         std::atomic<size_t> order_{2};
         std::atomic<FilterType> filter_type_{FilterType::kPeak};
-
-        std::atomic<bool> to_update_para_{true};
     };
 }

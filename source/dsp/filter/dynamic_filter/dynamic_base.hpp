@@ -81,9 +81,9 @@ namespace zldsp::filter {
                 // dynamic processing
                 for (size_t i = 0; i < num_samples; ++i) {
                     if constexpr (dynamic_bypass) {
-                        handler_.getCurrentGain(side_p[i]);
+                        handler_.getNextGain(side_p[i]);
                     } else {
-                        filter_.template setGain<true>(handler_.getCurrentGain(side_p[i]));
+                        filter_.template setGain<true>(handler_.getNextGain(side_p[i]));
                         filter_.updateGain();
                     }
                     for (size_t chan = 0; chan < main_buffer.size(); ++chan) {

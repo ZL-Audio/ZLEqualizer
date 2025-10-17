@@ -12,11 +12,12 @@
 namespace zlp {
     FilterSideAttach::FilterSideAttach(juce::AudioProcessor&,
                                        juce::AudioProcessorValueTreeState& parameters,
-                                       Controller& controller, const size_t idx)
-        : parameters_(parameters),
-          controller_(controller),
-          idx_(idx),
-          side_empty_(controller.getSideEmptyFilters()[idx]) {
+                                       Controller& controller, const size_t idx) :
+        parameters_(parameters),
+        controller_(controller),
+        idx_(idx),
+        side_empty_(controller.getSideEmptyFilters()[idx]),
+        update_flag_(controller.getSideEmptyUpdateFlags()[idx]) {
         juce::ignoreUnused(controller_);
         for (size_t i = 0; i < kIDs.size(); ++i) {
             const auto ID = kIDs[i] + std::to_string(idx_);
@@ -40,14 +41,19 @@ namespace zlp {
             } else {
                 side_empty_.setFilterType(zldsp::filter::kHighPass);
             }
+            update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PSideOrder::kID)) {
             side_empty_.setOrder(PSideOrder::kOrderArray[static_cast<size_t>(std::round(value))]);
+            update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PSideFreq::kID)) {
             side_empty_.setFreq(value);
+            update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PSideQ::kID)) {
             side_empty_.setQ(value);
+            update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PTargetGain::kID)) {
             side_empty_.setGain(value);
+            update_flag_.store(true, std::memory_order::release);
         }
     }
 }

@@ -12,6 +12,7 @@
 #include <cmath>
 
 namespace zlpanel {
+    static constexpr float kFontSizeOverWidth = 0.016f;
     static constexpr float kPaddingScale = .5f;
     static constexpr float kSliderWidthScale = 6.5f;
     static constexpr float kSliderHeightScale = 2.8f;

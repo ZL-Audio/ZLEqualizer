@@ -50,7 +50,7 @@ namespace zlpanel {
 
         template <bool start = true, bool reverse = false>
         void drawPath(std::span<float> xs, std::span<float> ys) {
-            if constexpr (reverse) {
+            if constexpr (!reverse) {
                 startNewSubPath<start>(xs[0], ys[0]);
                 for (size_t i = 1; i < xs.size(); ++i) {
                     lineTo(xs[i], ys[i]);

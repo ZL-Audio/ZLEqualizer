@@ -89,31 +89,31 @@ namespace zldsp::filter {
         FloatType getDB(FloatType w) const {
             double g0 = 1.0;
             for (size_t i = 0; i < current_filter_num_; ++i) {
-                g0 *= IdealBase<FloatType>::getMagnitude(coeffs_[i], w);
+                g0 *= IdealBase::getMagnitudeSquare<FloatType>(coeffs_[i], w);
             }
-            return static_cast<FloatType>(chore::gainToDecibels(g0));
+            return static_cast<FloatType>(chore::squareGainToDecibels(g0));
+        }
+
+        void updateMagnitudeSquare(std::span<FloatType> ws, std::span<FloatType> gains) {
+            if (current_filter_num_ == 0) {
+                return;
+            }
+            IdealBase::updateMagnitudeSquareInplace<FloatType>(coeffs_[0], ws, gains);
+            for (size_t i = 1; i < current_filter_num_; ++i) {
+                IdealBase::updateMagnitudeSquare<FloatType>(coeffs_[i], ws, gains);
+            }
         }
 
         [[nodiscard]] size_t getFilterNum() const {
             return current_filter_num_;
         }
 
-        std::array<std::array < double, 6>
-        ,
-        kFilterSize
-        >
-        &
-        getCoeff() {
+        std::array<std::array<double, 6>, kFilterSize>& getCoeff() {
             return coeffs_;
         }
 
     protected:
-        std::array<std::array < double, 6>
-        ,
-        kFilterSize
-        >
-        coeffs_ {
-        };
+        std::array<std::array<double, 6>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
         double freq_max_{20000.0};
         double c_gain_{0.0}, c_q_{0.707}, c_freq_{1000.0};
@@ -124,7 +124,7 @@ namespace zldsp::filter {
 
         static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array < double, 6>, kFilterSize> &coeffs) {
+                                      std::array<std::array<double, 6>, kFilterSize>& coeffs) {
             return FilterDesign::updateCoeffs<IdealCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
         }
     };

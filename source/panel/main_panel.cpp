@@ -57,7 +57,7 @@ namespace zlpanel {
             }
         }
 
-        const auto font_size = static_cast<float>(bound.getWidth()) * 0.016f;
+        const auto font_size = static_cast<float>(bound.getWidth()) * kFontSizeOverWidth;
         base_.setFontSize(font_size);
         // set control panel bound
         auto control_bound = bound;
@@ -107,6 +107,7 @@ namespace zlpanel {
         if (c_band_ != base_.getSelectedBand()) {
             c_band_ = base_.getSelectedBand();
             control_panel_.updateBand();
+            curve_panel_.updateBand();
         }
         // update sample rate
         const auto sample_rate = p_ref_.getAtomicSampleRate();

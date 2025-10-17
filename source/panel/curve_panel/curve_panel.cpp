@@ -15,11 +15,14 @@ namespace zlpanel {
                            const multilingual::TooltipHelper& tooltip_helper) :
         background_panel_(p, base, tooltip_helper),
         fft_panel_(p, base, tooltip_helper),
+        response_panel_(p, base, tooltip_helper),
         scale_panel_(p, base, tooltip_helper) {
         background_panel_.setBufferedToImage(true);
         addAndMakeVisible(background_panel_);
 
         addAndMakeVisible(fft_panel_);
+
+        addAndMakeVisible(response_panel_);
 
         scale_panel_.setBufferedToImage(true);
         addAndMakeVisible(scale_panel_);
@@ -31,12 +34,16 @@ namespace zlpanel {
         if (fft_panel_.isThreadRunning()) {
             fft_panel_.notify();
         }
+        if (response_panel_.isThreadRunning()) {
+            response_panel_.notify();
+        }
     }
 
     void CurvePanel::resized() {
         auto bound = getLocalBounds();
         background_panel_.setBounds(bound);
         fft_panel_.setBounds(bound);
+        response_panel_.setBounds(bound);
         scale_panel_.setBounds(bound.removeFromRight(scale_panel_.getIdealWidth()));
     }
 
@@ -45,25 +52,31 @@ namespace zlpanel {
     }
 
     void CurvePanel::repaintCallBackSlow() {
+        response_panel_.repaintCallBackSlow();
         scale_panel_.repaintCallBackSlow();
     }
 
     void CurvePanel::updateBand() {
-
+        response_panel_.updateBand();
     }
 
     void CurvePanel::updateSampleRate(const double sample_rate) {
         background_panel_.updateSampleRate(sample_rate);
         fft_panel_.updateSampleRate(sample_rate);
+        response_panel_.updateSampleRate(sample_rate);
     }
 
     void CurvePanel::startThreads() {
         fft_panel_.startThread(juce::Thread::Priority::low);
+        response_panel_.startThread(juce::Thread::Priority::low);
     }
 
     void CurvePanel::stopThreads() {
         if (fft_panel_.isThreadRunning()) {
             fft_panel_.stopThread(-1);
+        }
+        if (response_panel_.isThreadRunning()) {
+            response_panel_.stopThread(-1);
         }
     }
 }

@@ -11,6 +11,7 @@
 
 #include "background_panel/background_panel.hpp"
 #include "fft_panel/fft_panel.hpp"
+#include "response_panel/response_panel.hpp"
 #include "scale_panel/scale_panel.hpp"
 
 namespace zlpanel {
@@ -38,6 +39,7 @@ namespace zlpanel {
     private:
         BackgroundPanel background_panel_;
         FFTPanel fft_panel_;
+        ResponsePanel response_panel_;
         ScalePanel scale_panel_;
     };
 }

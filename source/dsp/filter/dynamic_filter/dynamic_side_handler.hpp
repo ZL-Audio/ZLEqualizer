@@ -102,7 +102,11 @@ namespace zldsp::filter {
             return base_gain_;
         }
 
-        double getCurrentGain(const double p) {
+        double getCurrentGain() {
+            return base_gain_ + follower_.getCurrentSample() * gain_diff_;
+        }
+
+        double getNextGain(const double p) {
             return base_gain_ + follower_.processSample(p) * gain_diff_;
         }
 
