@@ -29,20 +29,22 @@ namespace zlpanel {
                                 bool is_dynamic_on,
                                 bool is_same_stereo);
 
-        bool run(const juce::Thread& thread,
-                 const std::array<zlp::FilterStatus, zlp::kBandNum>& filter_status,
-                 std::array<bool, zlp::kBandNum>& to_update_base_flags,
-                 std::array<bool, zlp::kBandNum>& to_update_target_flags,
-                 std::span<float> xs,
-                 float k, float b,
-                 std::array<kfr::univector<float>, zlp::kBandNum>& base_mags,
-                 std::array<kfr::univector<float>, zlp::kBandNum>& target_mags);
+        void run(size_t band,
+                 zlp::FilterStatus filter_status,
+                 bool to_update_base, bool to_update_target,
+                 std::span<float> xs, float k, float b,
+                 kfr::univector<float>& base_mag, kfr::univector<float>& target_mag,
+                 zldsp::filter::FilterType filter_type,
+                 float center_x, float center_mag);
+
+        void runUpdate(std::array<bool, zlp::kBandNum>& to_update_base_flags,
+                       std::array<bool, zlp::kBandNum>& to_update_target_flags);
 
     private:
         static constexpr size_t kNumPoints = 400;
         static constexpr float kFillingAlpha = .125f;
         static constexpr float kDynamicFillingAlpha = .33333f;
-        static constexpr float kNotSelectedAlphaMultiplier = .75f;
+        static constexpr float kNotSelectedAlphaMultiplier = .85f;
         static constexpr float kBypassAlphaMultiplier = .75f;
         static constexpr float kDiffStereoAlphaMultiplier = .75f;
 
@@ -61,11 +63,16 @@ namespace zlpanel {
         std::array<juce::Path, zlp::kBandNum> target_fills_{};
         std::array<juce::Path, zlp::kBandNum> next_target_fills_{};
 
+        std::array<juce::Line<float>, zlp::kBandNum> button_lines_{};
+        std::array<juce::Line<float>, zlp::kBandNum> next_button_lines_{};
+
         std::mutex mutex_;
 
         std::array<float, zlp::kBandNum> base_stroke_alpha_{};
         std::array<float, zlp::kBandNum> base_fill_alpha_{};
         std::array<float, zlp::kBandNum> target_fill_alpha_{};
+        std::array<juce::Colour, zlp::kBandNum> base_stroke_colour_{};
+        std::array<bool, zlp::kBandNum> is_same_stereo_{};
 
         float curve_thickness_{0.f};
 

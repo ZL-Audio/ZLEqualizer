@@ -86,16 +86,17 @@ namespace zldsp::filter {
                                                   coeffs_);
         }
 
-        FloatType getDB(FloatType w) const {
-            double g0 = 1.0;
+        FloatType getCenterMagnitudeSquare(FloatType w) const {
+            FloatType g0 = static_cast<FloatType>(1.0);
             for (size_t i = 0; i < current_filter_num_; ++i) {
                 g0 *= IdealBase::getMagnitudeSquare<FloatType>(coeffs_[i], w);
             }
-            return static_cast<FloatType>(chore::squareGainToDecibels(g0));
+            return g0;
         }
 
         void updateMagnitudeSquare(std::span<FloatType> ws, std::span<FloatType> gains) {
             if (current_filter_num_ == 0) {
+                std::fill(gains.begin(), gains.end(), static_cast<FloatType>(1.0));
                 return;
             }
             IdealBase::updateMagnitudeSquareInplace<FloatType>(coeffs_[0], ws, gains);

@@ -84,7 +84,8 @@ namespace zlpanel {
                 const auto dynamic_on = dynamic_ons_[band].load(std::memory_order::relaxed);
                 if (selected_band < zlp::kBandNum) {
                     single_panel_.updateDrawingParas(band, filter_status, dynamic_on,
-                        lr_modes_[band].load(std::memory_order::relaxed) == selected_lr_mode);
+                                                     lr_modes_[band].load(std::memory_order::relaxed) ==
+                                                     selected_lr_mode);
                 } else {
                     single_panel_.updateDrawingParas(band, filter_status, dynamic_on, true);
                 }
@@ -116,13 +117,19 @@ namespace zlpanel {
             if (!updateCurveMags()) {
                 break;
             }
-            single_panel_.run(*this,
-                              c_filter_status_,
-                              to_update_base_y_flags_,
-                              to_update_target_y_flags_,
-                              xs_,
-                              c_k_, c_b_,
-                              base_mags_, target_mags_);
+            for (size_t band = 0; band < zlp::kBandNum; ++band) {
+                single_panel_.run(band, c_filter_status_[band],
+                                  to_update_base_y_flags_[band], to_update_target_y_flags_[band],
+                                  xs_, c_k_, c_b_,
+                                  base_mags_[band], target_mags_[band],
+                                  ideal_[band].getFilterType(),
+                                  points_[band][0].load(std::memory_order::relaxed),
+                                  points_[band][1].load(std::memory_order::relaxed));
+                if (threadShouldExit()) {
+                    break;
+                }
+            }
+            single_panel_.runUpdate(to_update_base_y_flags_, to_update_target_y_flags_);
             if (threadShouldExit()) {
                 break;
             }
@@ -205,8 +212,8 @@ namespace zlpanel {
             if (sample_rate < 40000.0) {
                 return;
             }
-            const auto fft_max = freq_helper::getFFTMax(sample_rate);
-            const auto max_log_value = std::log(fft_max * 0.1) / static_cast<double>(
+            fft_max_ = freq_helper::getFFTMax(sample_rate);
+            const auto max_log_value = std::log(fft_max_ * 0.1) / static_cast<double>(
                 1.f - kFontSizeOverWidth * kDraggerScale);
             const auto interval_log_value = max_log_value / static_cast<double>(kNumPoints - 1);
             for (size_t i = 0; i < kNumPoints; ++i) {
@@ -258,6 +265,30 @@ namespace zlpanel {
                     ideal_[band].forceUpdate(para);
                     ideal_[band].updateMagnitudeSquare(ws_, base_mags_[band]);
                     base_mags_[band] = kfr::log10(kfr::max(base_mags_[band], 1e-24f));
+
+                    const auto freq_to_x_scale = 1.0 / std::log(
+                        fft_max_ * 0.1) * static_cast<double>(c_width_) * static_cast<double>(
+                        1.f - kFontSizeOverWidth * kDraggerScale);
+                    const auto center_w = para.freq * (2.0 * std::numbers::pi / 480000.0);
+                    float center_square_magnitude;
+                    if (para.filter_type != zldsp::filter::kTiltShelf) {
+                        center_square_magnitude = std::log10(std::max(
+                            ideal_[band].getCenterMagnitudeSquare(static_cast<float>(center_w)), 1e-24f));
+                    } else {
+                        center_square_magnitude = static_cast<float>(0.05 * para.gain);
+                    }
+                    const auto center_x = std::log(para.freq / 10.0) * freq_to_x_scale;
+                    const auto bandwidth = para.freq / para.q;
+                    const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * para.q * para.q + 1.0) - 1.0);
+                    const auto left_x = std::log(left_f / 10.0) * freq_to_x_scale;
+                    const auto right_f = left_f + bandwidth;
+                    const auto right_x = std::log(right_f / 10.0) * freq_to_x_scale;
+
+                    points_[band][0].store(static_cast<float>(center_x), std::memory_order::relaxed);
+                    points_[band][1].store(center_square_magnitude, std::memory_order::relaxed);
+                    points_[band][2].store(static_cast<float>(left_x), std::memory_order::relaxed);
+                    points_[band][3].store(static_cast<float>(right_x), std::memory_order::relaxed);
+
                     if (threadShouldExit()) {
                         return false;
                     }

@@ -60,8 +60,9 @@ namespace zlpanel {
         float c_eq_max_db_idx_{-1.f};
         float c_k_{}, c_b_{};
 
-        std::atomic<double> sample_rate_{0.f};
-        double c_sample_rate_{0.f};
+        std::atomic<double> sample_rate_{0.};
+        double c_sample_rate_{0.};
+        double fft_max_{0.};
 
         std::vector<float> ws_;
         std::vector<float> xs_;
