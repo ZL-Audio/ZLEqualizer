@@ -10,6 +10,7 @@
 #pragma once
 
 #include "single_panel.hpp"
+#include "sum_panel.hpp"
 
 namespace zlpanel {
     class ResponsePanel final : public juce::Component,
@@ -52,6 +53,8 @@ namespace zlpanel {
 
         SinglePanel single_panel_;
 
+        SumPanel sum_panel_;
+
         std::atomic<float> width_{0.f}, height_{0.f};
         float c_width_{0.f}, c_height_{0.f};
         std::atomic<bool> to_update_bound_{};
@@ -91,6 +94,11 @@ namespace zlpanel {
         std::atomic<bool> to_update_filter_status_{};
 
         std::array<std::atomic<int>, zlp::kBandNum> lr_modes_{};
+        std::array<int, zlp::kBandNum> c_lr_modes_{};
+        std::atomic<bool> to_update_lr_modes_{};
+        std::array<std::vector<size_t>, 5> on_lr_indices_{};
+        std::array<bool, 5> to_update_lr_flags_{};
+        std::array<bool, 5> is_lr_not_off_flags_{};
 
         std::array<bool, zlp::kBandNum> to_update_base_y_flags_{};
         std::array<bool, zlp::kBandNum> to_update_target_y_flags_{};

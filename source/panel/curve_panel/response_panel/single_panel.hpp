@@ -52,6 +52,8 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         std::vector<size_t>& not_off_indices_;
 
+        int skip_next_paint_{0};
+
         std::atomic<float> center_y_{0.f};
 
         std::array<juce::Path, zlp::kBandNum> base_paths_{};

@@ -16,6 +16,7 @@ namespace zlpanel {
         Thread("response"),
         p_ref_(p), base_(base),
         single_panel_(p, base, message_not_off_indices_),
+        sum_panel_(p, base),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
         juce::ignoreUnused(base_, tooltip_helper);
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
@@ -37,6 +38,7 @@ namespace zlpanel {
         }
         for (size_t i = 0; i < 5; ++i) {
             sum_mags_[i].resize(kNumPoints);
+            on_lr_indices_[i].reserve(zlp::kBandNum);
         }
         for (auto& f : ideal_) {
             f.prepare(480000.0);
@@ -45,6 +47,7 @@ namespace zlpanel {
             f.prepare(480000.0);
         }
         addAndMakeVisible(single_panel_);
+        addAndMakeVisible(sum_panel_);
     }
 
     ResponsePanel::~ResponsePanel() {
@@ -59,25 +62,22 @@ namespace zlpanel {
     void ResponsePanel::resized() {
         const auto bound = getLocalBounds();
         single_panel_.setBounds(bound);
+        sum_panel_.setBounds(bound);
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
         height_.store(static_cast<float>(bound.getHeight()), std::memory_order::relaxed);
         to_update_bound_.store(true, std::memory_order::release);
     }
 
     void ResponsePanel::repaintCallBack() {
-
-    }
-
-    void ResponsePanel::repaintCallBackSlow() {
         if (!message_to_update_panels_.exchange(false, std::memory_order::acquire)) {
             return;
         }
         message_not_off_indices_.clear();
+        const auto selected_band = base_.getSelectedBand();
+        const auto selected_lr_mode = selected_band < zlp::kBandNum
+            ? lr_modes_[selected_band].load(std::memory_order::relaxed)
+            : 0;
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            const auto selected_band = base_.getSelectedBand();
-            const auto selected_lr_mode = selected_band < zlp::kBandNum
-                ? lr_modes_[selected_band].load(std::memory_order::relaxed)
-                : 0;
             const auto filter_status = filter_status_[band].load(std::memory_order::relaxed);
             if (filter_status != zlp::FilterStatus::kOff) {
                 message_not_off_indices_.emplace_back(band);
@@ -93,6 +93,16 @@ namespace zlpanel {
                 single_panel_.updateDrawingParas(band, zlp::FilterStatus::kOff, false, false);
             }
         }
+        for (int lr = 0; lr < 5; ++lr) {
+            if (selected_band < zlp::kBandNum) {
+                sum_panel_.updateDrawingParas(lr, lr == selected_lr_mode);
+            } else {
+                sum_panel_.updateDrawingParas(lr, true);
+            }
+        }
+    }
+
+    void ResponsePanel::repaintCallBackSlow() {
     }
 
     void ResponsePanel::updateBand() {
@@ -133,6 +143,19 @@ namespace zlpanel {
             if (threadShouldExit()) {
                 break;
             }
+            for (size_t lr = 0; lr < 5; ++lr) {
+                sum_panel_.run(lr, to_update_lr_flags_[lr], is_lr_not_off_flags_[lr],
+                               on_lr_indices_[lr],
+                               xs_, c_k_, c_b_,
+                               dynamic_mags_);
+                if (threadShouldExit()) {
+                    break;
+                }
+            }
+            sum_panel_.runUpdate(to_update_lr_flags_);
+            if (threadShouldExit()) {
+                break;
+            }
         }
     }
 
@@ -143,7 +166,7 @@ namespace zlpanel {
             to_update_filter_status_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(zlp::PLRMode::kID)) {
             lr_modes_[band].store(static_cast<int>(std::round(value)), std::memory_order::relaxed);
-            message_to_update_panels_.store(true, std::memory_order::release);
+            to_update_lr_modes_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(zlp::PFilterType::kID)) {
             empty_[band].setFilterType(static_cast<zldsp::filter::FilterType>(std::round(value)));
             to_update_empty_flags_[band].store(true, std::memory_order::release);
@@ -187,13 +210,6 @@ namespace zlpanel {
     }
 
     void ResponsePanel::updateCurveParas() {
-        // update dynamic ons
-        if (to_update_dynamic_ons_.exchange(false, std::memory_order::acquire)) {
-            for (size_t band = 0; band < zlp::kBandNum; ++band) {
-                c_dynamic_ons_[band] = dynamic_ons_[band].load(std::memory_order::relaxed);
-            }
-            message_to_update_panels_.store(true, std::memory_order::release);
-        }
         // update filter status
         if (to_update_filter_status_.exchange(false, std::memory_order::acquire)) {
             for (size_t band = 0; band < zlp::kBandNum; ++band) {
@@ -201,6 +217,36 @@ namespace zlpanel {
                 if (c_filter_status_[band] != new_filter_status) {
                     c_filter_status_[band] = new_filter_status;
                     to_update_base_y_flags_[band] = true;
+                    to_update_lr_flags_[static_cast<size_t>(c_lr_modes_[band])] = true;
+                }
+            }
+            to_update_lr_modes_.store(true, std::memory_order::release);
+        }
+        // update dynamic ons
+        if (to_update_dynamic_ons_.exchange(false, std::memory_order::acquire)) {
+            for (size_t band = 0; band < zlp::kBandNum; ++band) {
+                c_dynamic_ons_[band] = dynamic_ons_[band].load(std::memory_order::relaxed);
+            }
+            message_to_update_panels_.store(true, std::memory_order::release);
+        }
+        // update lr modes for summing
+        if (to_update_lr_modes_.exchange(false, std::memory_order::acquire)) {
+            for (auto& indices : on_lr_indices_) {
+                indices.clear();
+            }
+            std::fill(is_lr_not_off_flags_.begin(), is_lr_not_off_flags_.end(), false);
+            for (size_t band = 0; band < zlp::kBandNum; ++band) {
+                const auto lr_mode = lr_modes_[band].load(std::memory_order::relaxed);
+                if (lr_mode != c_lr_modes_[band]) {
+                    to_update_lr_flags_[static_cast<size_t>(c_lr_modes_[band])] = true;
+                    to_update_lr_flags_[static_cast<size_t>(lr_mode)] = true;
+                    c_lr_modes_[band] = lr_mode;
+                }
+                if (c_filter_status_[band] != zlp::FilterStatus::kOff) {
+                    if (c_filter_status_[band] == zlp::FilterStatus::kOn) {
+                        on_lr_indices_[static_cast<size_t>(lr_mode)].emplace_back(band);
+                    }
+                    is_lr_not_off_flags_[static_cast<size_t>(lr_mode)] = true;
                 }
             }
             message_to_update_panels_.store(true, std::memory_order::release);
@@ -254,6 +300,9 @@ namespace zlpanel {
                 || to_update_empty_flags_[band].exchange(false, std::memory_order::acquire));
             to_update_target_y_flags_[band] = (to_update_base_y_flags_[band]
                 || to_update_target_gain_flags_[band].exchange(false, std::memory_order::acquire));
+            const auto lr = c_lr_modes_[band];
+            to_update_lr_flags_[static_cast<size_t>(lr)] = to_update_lr_flags_[static_cast<size_t>(lr)]
+                || to_update_base_y_flags_[band] || c_dynamic_ons_[band];
         }
     }
 
@@ -265,6 +314,9 @@ namespace zlpanel {
                     ideal_[band].forceUpdate(para);
                     ideal_[band].updateMagnitudeSquare(ws_, base_mags_[band]);
                     base_mags_[band] = kfr::log10(kfr::max(base_mags_[band], 1e-24f));
+                    if (!c_dynamic_ons_[band]) {
+                        dynamic_mags_[band] = base_mags_[band];
+                    }
 
                     const auto freq_to_x_scale = 1.0 / std::log(
                         fft_max_ * 0.1) * static_cast<double>(c_width_) * static_cast<double>(

@@ -49,6 +49,7 @@ namespace zlpanel {
 
     void CurvePanel::repaintCallBack() {
         fft_panel_.repaint();
+        response_panel_.repaintCallBack();
     }
 
     void CurvePanel::repaintCallBackSlow() {

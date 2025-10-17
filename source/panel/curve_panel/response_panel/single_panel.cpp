@@ -21,6 +21,10 @@ namespace zlpanel {
     }
 
     void SinglePanel::paint(juce::Graphics& g) {
+        if (skip_next_paint_ < 2) {
+            skip_next_paint_ += 1;
+            return;
+        }
         const std::unique_lock<std::mutex> lock{mutex_, std::try_to_lock};
         if (!lock.owns_lock()) {
             return;
@@ -50,6 +54,7 @@ namespace zlpanel {
         bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
         center_y_.store(bound.getHeight() * .5f, std::memory_order::relaxed);
         lookAndFeelChanged();
+        skip_next_paint_ = 0;
     }
 
     void SinglePanel::updateDrawingParas(const size_t band, const zlp::FilterStatus filter_status,
@@ -108,24 +113,19 @@ namespace zlpanel {
             if (filter_status != zlp::FilterStatus::kOff) {
                 temp_db_ = k * base_mag + b;
                 // draw base path
-                if (filter_type == zldsp::filter::kPeak || filter_type == zldsp::filter::kNotch) {
-                    const auto it = std::upper_bound(xs.begin(), xs.end(), center_x);
-                    if (it != xs.begin() && it != xs.end()) {
-                        const auto index = static_cast<size_t>(std::distance(xs.begin(), it));
-                        PathMinimizer minimizer{next_base_paths_[band]};
-                        minimizer.startNewSubPath(xs[0], temp_db_[0]);
-                        for (size_t i = 1; i < index; ++i) {
-                            minimizer.lineTo(xs[i], temp_db_[i]);
-                        }
-                        minimizer.lineTo(center_x, k * center_mag + b);
-                        for (size_t i = index; i < xs.size(); ++i) {
-                            minimizer.lineTo(xs[i], temp_db_[i]);
-                        }
-                        minimizer.finish();
-                    } else {
-                        PathMinimizer minimizer{next_base_paths_[band]};
-                        minimizer.drawPath<true, false>(xs, std::span(temp_db_));
+                const auto it = std::upper_bound(xs.begin(), xs.end(), center_x);
+                if (it != xs.begin() && it != xs.end()) {
+                    const auto index = static_cast<size_t>(std::distance(xs.begin(), it));
+                    PathMinimizer minimizer{next_base_paths_[band]};
+                    minimizer.startNewSubPath(xs[0], temp_db_[0]);
+                    for (size_t i = 1; i < index; ++i) {
+                        minimizer.lineTo(xs[i], temp_db_[i]);
                     }
+                    minimizer.lineTo(center_x, k * center_mag + b);
+                    for (size_t i = index; i < xs.size(); ++i) {
+                        minimizer.lineTo(xs[i], temp_db_[i]);
+                    }
+                    minimizer.finish();
                 } else {
                     PathMinimizer minimizer{next_base_paths_[band]};
                     minimizer.drawPath<true, false>(xs, std::span(temp_db_));
