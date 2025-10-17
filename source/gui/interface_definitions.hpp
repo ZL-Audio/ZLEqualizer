@@ -385,7 +385,7 @@ namespace zlgui {
         size_t colour_map1_idx_{zlstate::PColourMapIdx::kDefaultDark};
         size_t colour_map2_idx_{zlstate::PColourMapIdx::kSeabornBrightDark};
 
-        size_t selected_band_{0};
+        size_t selected_band_{zlstate::kBandNum};
 
         float loadPara(const std::string& id) const {
             return state.getRawParameterValue(id)->load();

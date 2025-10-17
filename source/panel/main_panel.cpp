@@ -31,7 +31,7 @@ namespace zlpanel {
         startTimerHz(1);
 
         addAndMakeVisible(curve_panel_);
-        addAndMakeVisible(control_panel_);
+        addChildComponent(control_panel_);
     }
 
     MainPanel::~MainPanel() {

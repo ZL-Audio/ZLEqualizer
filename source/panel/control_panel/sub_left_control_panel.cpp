@@ -188,10 +188,12 @@ namespace zlpanel {
     }
 
     void SubLeftControlPanel::repaintCallBackSlow() {
-        updater_.updateComponents();
-        const auto filter_on = filter_status_ptr_->load(std::memory_order::relaxed) > 1.5f;
-        if (filter_on != bypass_button_.getToggleState()) {
-            bypass_button_.getButton().setToggleState(filter_on, juce::dontSendNotification);
+        if (filter_status_ptr_ != nullptr) {
+            updater_.updateComponents();
+            const auto filter_on = filter_status_ptr_->load(std::memory_order::relaxed) > 1.5f;
+            if (filter_on != bypass_button_.getToggleState()) {
+                bypass_button_.getButton().setToggleState(filter_on, juce::dontSendNotification);
+            }
         }
     }
 

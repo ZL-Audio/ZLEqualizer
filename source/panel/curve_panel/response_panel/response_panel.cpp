@@ -17,6 +17,7 @@ namespace zlpanel {
         p_ref_(p), base_(base),
         single_panel_(p, base, message_not_off_indices_),
         sum_panel_(p, base),
+        button_panel_(p, base, tooltip_helper),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
         juce::ignoreUnused(base_, tooltip_helper);
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
@@ -48,6 +49,9 @@ namespace zlpanel {
         }
         addAndMakeVisible(single_panel_);
         addAndMakeVisible(sum_panel_);
+        addAndMakeVisible(button_panel_);
+
+        setInterceptsMouseClicks(false, true);
     }
 
     ResponsePanel::~ResponsePanel() {
@@ -63,6 +67,7 @@ namespace zlpanel {
         const auto bound = getLocalBounds();
         single_panel_.setBounds(bound);
         sum_panel_.setBounds(bound);
+        button_panel_.setBounds(bound);
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
         height_.store(static_cast<float>(bound.getHeight()), std::memory_order::relaxed);
         to_update_bound_.store(true, std::memory_order::release);
@@ -107,10 +112,12 @@ namespace zlpanel {
 
     void ResponsePanel::updateBand() {
         message_to_update_panels_.store(true, std::memory_order::relaxed);
+        button_panel_.updateBand();
     }
 
     void ResponsePanel::updateSampleRate(const double sample_rate) {
         sample_rate_.store(sample_rate, std::memory_order::relaxed);
+        button_panel_.updateSampleRate(sample_rate);
     }
 
     void ResponsePanel::run() {

@@ -11,6 +11,7 @@
 
 #include "single_panel.hpp"
 #include "sum_panel.hpp"
+#include "button_panel/button_panel.hpp"
 
 namespace zlpanel {
     class ResponsePanel final : public juce::Component,
@@ -54,6 +55,8 @@ namespace zlpanel {
         SinglePanel single_panel_;
 
         SumPanel sum_panel_;
+
+        ButtonPanel button_panel_;
 
         std::atomic<float> width_{0.f}, height_{0.f};
         float c_width_{0.f}, c_height_{0.f};
