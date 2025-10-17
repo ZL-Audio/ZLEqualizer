@@ -30,7 +30,7 @@ namespace zlpanel {
         gradient.isRadial = false;
         gradient.clearColours();
         gradient.addColour(0.0, base_.getBackgroundColor().withAlpha(0.f));
-        gradient.addColour(1.0, base_.getBackgroundColor().withAlpha(.5f));
+        gradient.addColour(1.0, base_.getBackgroundColor().withAlpha(1.f));
         g.setGradientFill(gradient);
         g.fillRect(getLocalBounds());
         // calculate values
