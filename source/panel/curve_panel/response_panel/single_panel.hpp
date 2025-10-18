@@ -34,8 +34,7 @@ namespace zlpanel {
                  bool to_update_base, bool to_update_target,
                  std::span<float> xs, float k, float b,
                  kfr::univector<float>& base_mag, kfr::univector<float>& target_mag,
-                 zldsp::filter::FilterType filter_type,
-                 float center_x, float center_mag);
+                 float center_x, float center_mag, float button_mag);
 
         void runUpdate(std::array<bool, zlp::kBandNum>& to_update_base_flags,
                        std::array<bool, zlp::kBandNum>& to_update_target_flags);
@@ -80,6 +79,7 @@ namespace zlpanel {
 
         kfr::univector<float> temp_db_{};
 
+        template <bool thick = false>
         void drawBand(juce::Graphics& g, size_t band) const;
 
         void lookAndFeelChanged() override;

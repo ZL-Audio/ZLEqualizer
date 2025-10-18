@@ -9,7 +9,10 @@
 
 #pragma once
 
-#include "dragger_panel.hpp"
+#include "../../../../PluginProcessor.hpp"
+#include "../../../../gui/gui.hpp"
+#include "../../../helper/helper.hpp"
+#include "../../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
     class ButtonPanel final : public juce::Component {

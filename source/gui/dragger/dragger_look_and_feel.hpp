@@ -31,10 +31,10 @@ namespace zlgui::dragger {
                               bool should_draw_button_as_highlighted,
                               bool should_draw_button_as_down) override {
             if (should_draw_button_as_down || button.getToggleState()) {
-                g.setColour(base_.getTextColor());
+                g.setColour(base_.getTextColour());
                 g.fillPath(outline_path_);
             } else if (should_draw_button_as_highlighted || is_selected_) {
-                g.setColour(base_.getTextColor().withMultipliedAlpha(0.5f));
+                g.setColour(base_.getTextColour().withAlpha(0.5f));
                 g.fillPath(outline_path_);
             }
 

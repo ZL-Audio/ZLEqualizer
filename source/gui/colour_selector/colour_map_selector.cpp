@@ -22,7 +22,7 @@ namespace zlgui::colour_selector {
         auto bound = getLocalBounds().toFloat();
 
         bound.removeFromLeft(bound.getWidth() * map_box_width_p_ + base_.getFontSize());
-        g.setColour(base_.getTextColor().withAlpha(.875f));
+        g.setColour(base_.getTextColour().withAlpha(.875f));
         g.fillRect(bound);
         bound = bound.withSizeKeepingCentre(bound.getWidth() - base_.getFontSize() * .375f,
                                             bound.getHeight() - base_.getFontSize() * .375f);

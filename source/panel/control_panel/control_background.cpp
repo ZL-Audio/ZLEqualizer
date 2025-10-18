@@ -21,9 +21,9 @@ namespace zlpanel {
         juce::Path path;
         path.addRoundedRectangle(bound.toFloat(), static_cast<float>(padding));
 
-        const juce::DropShadow shadow{base_.getDarkShadowColor(), padding / 2, {0, 0}};
+        const juce::DropShadow shadow{base_.getDarkShadowColour(), padding / 2, {0, 0}};
         shadow.drawForPath(g, path);
-        g.setColour(base_.getBackgroundColor());
+        g.setColour(base_.getBackgroundColour());
         g.fillPath(path);
     }
 }

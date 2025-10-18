@@ -56,16 +56,16 @@ namespace zlgui {
 
     inline std::array kColourMaps = {
         std::vector<juce::Colour>{
-            juce::Colour(31, 119, 180),
-            juce::Colour(255, 127, 14),
+            juce::Colour(31, 118, 179),
+            juce::Colour(254, 127, 14),
             juce::Colour(44, 160, 44),
-            juce::Colour(214, 39, 40),
-            juce::Colour(148, 103, 189),
-            juce::Colour(140, 86, 75),
-            juce::Colour(227, 119, 194),
+            juce::Colour(214, 39, 39),
+            juce::Colour(147, 102, 189),
+            juce::Colour(140, 86, 74),
+            juce::Colour(219, 81, 177),
             juce::Colour(127, 127, 127),
-            juce::Colour(188, 189, 34),
-            juce::Colour(23, 190, 207)
+            juce::Colour(188, 189, 33),
+            juce::Colour(23, 189, 206)
         },
         std::vector<juce::Colour>{
             juce::Colour(224, 136, 75),
@@ -165,8 +165,8 @@ namespace zlgui {
 
     class UIBase {
     public:
-        explicit UIBase(juce::AudioProcessorValueTreeState& apvts)
-            : state(apvts) {
+        explicit UIBase(juce::AudioProcessorValueTreeState& apvts) :
+            state(apvts) {
             loadFromAPVTS();
         }
 
@@ -174,35 +174,35 @@ namespace zlgui {
 
         float getFontSize() const { return font_size_; }
 
-        juce::Colour getTextColor() const {
+        juce::Colour getTextColour() const {
             return custom_colours_[static_cast<size_t>(kTextColour)];
         }
 
-        juce::Colour getTextInactiveColor() const { return getTextColor().withAlpha(0.5f); }
+        juce::Colour getTextInactiveColour() const { return getTextColour().withAlpha(0.5f); }
 
-        juce::Colour getTextHideColor() const { return getTextColor().withAlpha(0.25f); }
+        juce::Colour getTextHideColour() const { return getTextColour().withAlpha(0.25f); }
 
-        juce::Colour getBackgroundColor() const {
+        juce::Colour getBackgroundColour() const {
             return custom_colours_[static_cast<size_t>(kBackgroundColour)];
         }
 
-        juce::Colour getBackgroundInactiveColor() const { return getBackgroundColor().withAlpha(0.8f); }
+        juce::Colour getBackgroundInactiveColour() const { return getBackgroundColour().withAlpha(0.8f); }
 
-        juce::Colour getBackgroundHideColor() const { return getBackgroundColor().withAlpha(0.5f); }
+        juce::Colour getBackgroundHideColour() const { return getBackgroundColour().withAlpha(0.5f); }
 
-        juce::Colour getDarkShadowColor() const {
+        juce::Colour getDarkShadowColour() const {
             return custom_colours_[static_cast<size_t>(kShadowColour)];
         }
 
-        juce::Colour getBrightShadowColor() const {
+        juce::Colour getBrightShadowColour() const {
             return custom_colours_[static_cast<size_t>(kGlowColour)];
         }
 
-        juce::Colour getColorMap1(const size_t idx) const {
+        juce::Colour getColourMap1(const size_t idx) const {
             return kColourMaps[colour_map1_idx_][idx % kColourMaps[colour_map1_idx_].size()];
         }
 
-        juce::Colour getColorMap2(const size_t idx) const {
+        juce::Colour getColourMap2(const size_t idx) const {
             return kColourMaps[colour_map2_idx_][idx % kColourMaps[colour_map2_idx_].size()];
         }
 

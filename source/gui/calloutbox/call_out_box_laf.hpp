@@ -22,7 +22,7 @@ namespace zlgui {
         void drawCallOutBoxBackground(juce::CallOutBox& box, juce::Graphics& g,
                                       const juce::Path&,
                                       juce::Image&) override {
-            g.setColour(base_.getBackgroundColor());
+            g.setColour(base_.getBackgroundColour());
             g.fillRoundedRectangle(box.getLocalBounds().toFloat(), base_.getFontSize() * .5f);
         }
 

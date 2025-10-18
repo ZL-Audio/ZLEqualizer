@@ -29,8 +29,8 @@ namespace zlpanel {
         for (size_t lr = 0; lr < 5; ++lr) {
             if (!paths_[lr].isEmpty()) {
                 g.setColour(is_same_stereo_[lr]
-                    ? base_.getColorMap2(lr)
-                    : base_.getColorMap2(lr).withAlpha(kDiffStereoAlphaMultiplier));
+                    ? base_.getColourMap2(lr)
+                    : base_.getColourMap2(lr).withAlpha(kDiffStereoAlphaMultiplier));
                 g.strokePath(paths_[lr], juce::PathStrokeType(curve_thickness_,
                                                               juce::PathStrokeType::curved,
                                                               juce::PathStrokeType::butt));

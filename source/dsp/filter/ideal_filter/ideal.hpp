@@ -113,6 +113,10 @@ namespace zldsp::filter {
             return coeffs_;
         }
 
+        [[nodiscard]] FilterParameters getParas() const {
+            return FilterParameters{getFilterType(), getOrder(), getFreq(), getGain(), getQ()};
+        }
+
     protected:
         std::array<std::array<double, 6>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};

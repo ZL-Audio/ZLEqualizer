@@ -49,7 +49,7 @@ namespace zlgui::slider {
                 bound = bound.withWidth(value_ * bound.getWidth());
                 g.saveState();
                 g.reduceClipRegion(mask_);
-                g.setColour(base_.getTextHideColor());
+                g.setColour(base_.getTextHideColour());
                 g.fillRect(bound);
                 g.restoreState();
             }
@@ -285,10 +285,10 @@ namespace zlgui::slider {
             text_.addMouseListener(this, true);
 
             editor.setJustification(juce::Justification::centred);
-            editor.setColour(juce::TextEditor::outlineColourId, base_.getTextColor());
-            editor.setColour(juce::TextEditor::highlightedTextColourId, base_.getTextColor());
+            editor.setColour(juce::TextEditor::outlineColourId, base_.getTextColour());
+            editor.setColour(juce::TextEditor::highlightedTextColourId, base_.getTextColour());
             editor.applyFontToAllText(juce::FontOptions{base_.getFontSize() * font_scale_});
-            editor.applyColourToAllText(base_.getTextColor(), true);
+            editor.applyColourToAllText(base_.getTextColour(), true);
         }
 
         void editorHidden(juce::Label*, juce::TextEditor& editor) override {

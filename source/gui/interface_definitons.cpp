@@ -25,11 +25,11 @@ namespace zlgui {
                                                               const FillRoundedShadowRectangleArgs& margs) const {
         auto args = margs;
         if (!args.change_main)
-            args.main_colour = getBackgroundColor().withAlpha(args.main_colour.getAlpha());
+            args.main_colour = getBackgroundColour().withAlpha(args.main_colour.getAlpha());
         if (!args.change_dark)
-            args.dark_shadow_color = getDarkShadowColor();
+            args.dark_shadow_color = getDarkShadowColour();
         if (!args.change_bright)
-            args.bright_shadow_color = getBrightShadowColor();
+            args.bright_shadow_color = getBrightShadowColour();
 
         juce::Path path;
         const auto radius = juce::jmax(juce::roundToInt(corner_size * args.blur_radius * 1.5f), 1);
@@ -74,11 +74,11 @@ namespace zlgui {
                                                                    const FillRoundedShadowRectangleArgs& margs) const {
         auto args = margs;
         if (!args.change_main)
-            args.main_colour = getBackgroundColor();
+            args.main_colour = getBackgroundColour();
         if (!args.change_dark)
-            args.dark_shadow_color = getDarkShadowColor();
+            args.dark_shadow_color = getDarkShadowColour();
         if (!args.change_bright)
-            args.bright_shadow_color = getBrightShadowColor();
+            args.bright_shadow_color = getBrightShadowColour();
 
         juce::Path mask;
         mask.addRoundedRectangle(box_bounds.getX(), box_bounds.getY(),
@@ -143,11 +143,11 @@ namespace zlgui {
                                                      const FillShadowEllipseArgs& margs) const {
         auto args = margs;
         if (!args.change_main)
-            args.main_colour = getBackgroundColor();
+            args.main_colour = getBackgroundColour();
         if (!args.change_dark)
-            args.dark_shadow_color = getDarkShadowColor();
+            args.dark_shadow_color = getDarkShadowColour();
         if (!args.change_bright)
-            args.bright_shadow_color = getBrightShadowColor();
+            args.bright_shadow_color = getBrightShadowColour();
 
         juce::Path path;
         auto radius = juce::jmax(juce::roundToInt(corner_size * 0.75f), 1);
@@ -210,11 +210,11 @@ namespace zlgui {
                                                           const FillShadowEllipseArgs& margs) const {
         auto args = margs;
         if (!args.change_main)
-            args.main_colour = getBackgroundColor();
+            args.main_colour = getBackgroundColour();
         if (!args.change_dark)
-            args.dark_shadow_color = getDarkShadowColor();
+            args.dark_shadow_color = getDarkShadowColour();
         if (!args.change_bright)
-            args.bright_shadow_color = getBrightShadowColor();
+            args.bright_shadow_color = getBrightShadowColour();
 
         juce::Path mask;
         mask.addEllipse(box_bounds);

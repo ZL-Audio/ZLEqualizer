@@ -139,9 +139,9 @@ namespace zlpanel {
                                   to_update_base_y_flags_[band], to_update_target_y_flags_[band],
                                   xs_, c_k_, c_b_,
                                   base_mags_[band], target_mags_[band],
-                                  ideal_[band].getFilterType(),
                                   points_[band][0].load(std::memory_order::relaxed),
-                                  points_[band][1].load(std::memory_order::relaxed));
+                                  points_[band][3].load(std::memory_order::relaxed),
+                                  points_[band][4].load(std::memory_order::relaxed));
                 if (threadShouldExit()) {
                     break;
                 }
@@ -329,13 +329,8 @@ namespace zlpanel {
                         fft_max_ * 0.1) * static_cast<double>(c_width_) * static_cast<double>(
                         1.f - kFontSizeOverWidth * kDraggerScale);
                     const auto center_w = para.freq * (2.0 * std::numbers::pi / 480000.0);
-                    float center_square_magnitude;
-                    if (para.filter_type != zldsp::filter::kTiltShelf) {
-                        center_square_magnitude = std::log10(std::max(
+                    const float center_square_magnitude = std::log10(std::max(
                             ideal_[band].getCenterMagnitudeSquare(static_cast<float>(center_w)), 1e-24f));
-                    } else {
-                        center_square_magnitude = static_cast<float>(0.05 * para.gain);
-                    }
                     const auto center_x = std::log(para.freq / 10.0) * freq_to_x_scale;
                     const auto bandwidth = para.freq / para.q;
                     const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * para.q * para.q + 1.0) - 1.0);
@@ -344,19 +339,24 @@ namespace zlpanel {
                     const auto right_x = std::log(right_f / 10.0) * freq_to_x_scale;
 
                     points_[band][0].store(static_cast<float>(center_x), std::memory_order::relaxed);
-                    points_[band][1].store(center_square_magnitude, std::memory_order::relaxed);
-                    points_[band][2].store(static_cast<float>(left_x), std::memory_order::relaxed);
-                    points_[band][3].store(static_cast<float>(right_x), std::memory_order::relaxed);
+                    points_[band][1].store(static_cast<float>(left_x), std::memory_order::relaxed);
+                    points_[band][2].store(static_cast<float>(right_x), std::memory_order::relaxed);
+                    points_[band][3].store(center_square_magnitude, std::memory_order::relaxed);
+                    points_[band][4].store(getButtonMag(para), std::memory_order::relaxed);
 
                     if (threadShouldExit()) {
                         return false;
                     }
                 }
                 if (to_update_target_y_flags_[band]) {
-                    ideal_[band].setGain(target_gains_[band].load(std::memory_order::relaxed));
+                    const auto target_gain = target_gains_[band].load(std::memory_order::relaxed);
+                    ideal_[band].setGain(target_gain);
                     ideal_[band].updateCoeffs();
                     ideal_[band].updateMagnitudeSquare(ws_, target_mags_[band]);
                     target_mags_[band] = kfr::log10(kfr::max(target_mags_[band], 1e-24f));
+
+                    points_[band][5].store(getButtonMag(ideal_[band].getParas()), std::memory_order::relaxed);
+
                     if (threadShouldExit()) {
                         return false;
                     }
@@ -373,5 +373,17 @@ namespace zlpanel {
             }
         }
         return true;
+    }
+
+    float ResponsePanel::getButtonMag(const zldsp::filter::FilterParameters& para) {
+        if (para.filter_type == zldsp::filter::kPeak) {
+            return static_cast<float>(0.1 * para.gain);
+        } else if (para.filter_type == zldsp::filter::kLowShelf
+            || para.filter_type == zldsp::filter::kHighShelf
+            || para.filter_type == zldsp::filter::kTiltShelf) {
+            return static_cast<float>(0.05 * para.gain);
+        } else {
+            return 0.f;
+        }
     }
 }

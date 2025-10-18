@@ -106,9 +106,9 @@ namespace zlpanel {
         std::array<bool, zlp::kBandNum> to_update_base_y_flags_{};
         std::array<bool, zlp::kBandNum> to_update_target_y_flags_{};
 
-        // x, y, left x, right x
-        std::array<std::array<std::atomic<float>, 4>, zlp::kBandNum> points_;
-        // left x, right x
+        // center x, left x, right x, center y, base button y, target button y
+        std::array<std::array<std::atomic<float>, 6>, zlp::kBandNum> points_;
+        // side left x, side right x
         std::array<std::array<std::atomic<float>, 2>, zlp::kBandNum> side_points_;
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
@@ -116,5 +116,7 @@ namespace zlpanel {
         void updateCurveParas();
 
         bool updateCurveMags();
+
+        static float getButtonMag(const zldsp::filter::FilterParameters& para);
     };
 }

@@ -17,7 +17,7 @@
 namespace zlgui::dragger {
     class Dragger final : public juce::Component {
     public:
-        std::function<juce::Point<float>(juce::Point<float> currentC, juce::Point<float> nextC)> check_center_;
+        std::function<juce::Point<float>(juce::Point<float> current, juce::Point<float> next)> check_center_;
 
         explicit Dragger(UIBase& base);
 
@@ -74,14 +74,14 @@ namespace zlgui::dragger {
 
         void setXYEnabled(const bool x, const bool y) {
             if (x && !y) {
-                check_center_ = [](const juce::Point<float> currentC,
-                                   const juce::Point<float> nextC) {
-                    return juce::Point<float>(nextC.x, currentC.y);
+                check_center_ = [](const juce::Point<float> current,
+                                   const juce::Point<float> next) {
+                    return juce::Point<float>(next.x, current.y);
                 };
             } else if (!x && y) {
-                check_center_ = [](const juce::Point<float> currentC,
-                                   const juce::Point<float> nextC) {
-                    return juce::Point<float>(currentC.x, nextC.y);
+                check_center_ = [](const juce::Point<float> current,
+                                   const juce::Point<float> next) {
+                    return juce::Point<float>(current.x, next.y);
                 };
             } else {
                 check_center_ = nullptr;
@@ -101,4 +101,4 @@ namespace zlgui::dragger {
 
         juce::ListenerList<Listener> listeners_;
     };
-} // zlgui
+}
