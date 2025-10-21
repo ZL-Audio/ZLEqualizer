@@ -17,6 +17,10 @@ namespace zlpanel {
         juce::ignoreUnused(tooltip_helper);
     }
 
+    void ButtonPanel::mouseDown(const juce::MouseEvent&) {
+        base_.setSelectedBand(zlp::kBandNum);
+    }
+
     void ButtonPanel::mouseDoubleClick(const juce::MouseEvent& event) {
         // find an off band
         size_t band_idx = zlp::kBandNum;

@@ -29,8 +29,8 @@ namespace zlpanel {
         gradient.point2 = juce::Point<float>(bound.getRight(), bound.getY());
         gradient.isRadial = false;
         gradient.clearColours();
-        gradient.addColour(0.0, base_.getBackgroundColor().withAlpha(0.f));
-        gradient.addColour(1.0, base_.getBackgroundColor().withAlpha(1.f));
+        gradient.addColour(0.0, base_.getBackgroundColour().withAlpha(0.f));
+        gradient.addColour(1.0, base_.getBackgroundColour().withAlpha(1.f));
         g.setGradientFill(gradient);
         g.fillRect(getLocalBounds());
         // calculate values
@@ -44,22 +44,22 @@ namespace zlpanel {
 
         const auto db_label_bound = juce::Rectangle<float>(bound.getWidth() * .5f + base_.getFontSize() * .2f, y0,
                                                            bound.getWidth(), label_height);
-        g.setColour(base_.getTextColor());
+        g.setColour(base_.getTextColour());
         g.drawText("dB", db_label_bound, juce::Justification::centredLeft);
         // draw eq labels and fft labels
         for (int i = 1; i < 7; ++i) {
             auto fft_label_bound = juce::Rectangle<float>(
                 0.f, y0 + static_cast<float>(i) * unit_height, bound.getWidth(), label_height);
             fft_label_bound.removeFromRight(base_.getFontSize() * .1f);
-            auto eq_label_bound = fft_label_bound.removeFromLeft(fft_label_bound.getWidth() * .5f);
+            const auto eq_label_bound = fft_label_bound.withWidth(fft_label_bound.getWidth() * .5f);
             if (i != 6) {
                 const auto fft_value = std::round(static_cast<float>(i) * fft_unit);
-                g.setColour(base_.getTextColor().withAlpha(kFFTAlpha));
-                g.drawText(juce::String(fft_value), fft_label_bound, juce::Justification::centredRight);
+                g.setColour(base_.getTextColour().withAlpha(kFFTAlpha));
+                g.drawText(juce::String(fft_value), fft_label_bound, juce::Justification::centredRight, false);
             }
             const auto eq_value = std::round((3.f - static_cast<float>(i)) * eq_unit);
-            g.setColour(base_.getTextColor());
-            g.drawText(juce::String(eq_value), eq_label_bound, juce::Justification::centredRight);
+            g.setColour(base_.getTextColour());
+            g.drawText(juce::String(eq_value), eq_label_bound, juce::Justification::centredRight, false);
         }
         // draw the remaining fft labels
         for (int i = 7; i < 12; ++i) {
@@ -70,7 +70,7 @@ namespace zlpanel {
             }
             fft_label_bound.removeFromRight(base_.getFontSize() * .1f);
             const auto fft_value = std::round(static_cast<float>(i) * fft_unit);
-            g.setColour(base_.getTextColor().withAlpha(kFFTAlpha));
+            g.setColour(base_.getTextColour().withAlpha(kFFTAlpha));
             g.drawText(juce::String(fft_value), fft_label_bound, juce::Justification::centredRight);
         }
     }

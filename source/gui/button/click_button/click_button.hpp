@@ -48,14 +48,14 @@ namespace zlgui::button {
             if (normal_ != nullptr) {
                 normal_img_ = normal_->createCopy();
                 over_img_ = normal_->createCopy();
-                normal_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColor().withAlpha(alpha_));
-                over_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColor().withAlpha(over_alpha_));
+                normal_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour().withAlpha(alpha_));
+                over_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour().withAlpha(over_alpha_));
             }
             if (normal_on_ != nullptr) {
                 normal_on_img_ = normal_on_->createCopy();
                 over_on_img_ = normal_on_->createCopy();
-                normal_on_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColor().withAlpha(on_alpha_));
-                over_on_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColor().withAlpha(on_over_alpha_));
+                normal_on_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour().withAlpha(on_alpha_));
+                over_on_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour().withAlpha(on_over_alpha_));
             }
             button_.setImages(normal_img_.get(), over_img_.get(), nullptr, nullptr,
                               normal_on_img_.get(), over_on_img_.get(), nullptr, nullptr);

@@ -405,7 +405,7 @@ namespace zlstate {
     static constexpr std::array<std::string_view, 9> kColourNames{
         "text", "background",
         "shadow", "glow",
-        "grid"
+        "grid",
         "pre", "post", "side",
         "collision"
     };
@@ -421,7 +421,7 @@ namespace zlstate {
         ColourDefaultSetting{20, 16, 9, true, 1.f},
         ColourDefaultSetting{0, 0, 0, true, 1.f},
         ColourDefaultSetting{70, 66, 62, true, 1.f},
-        ColourDefaultSetting{247, 246, 244, true, .1f},
+        ColourDefaultSetting{112, 112, 112, true, .25f},
         ColourDefaultSetting{112, 112, 112, true, .2f},
         ColourDefaultSetting{112, 112, 112, true, .2f},
         ColourDefaultSetting{252, 18, 197, true, .1f},

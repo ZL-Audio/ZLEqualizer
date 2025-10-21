@@ -17,7 +17,7 @@ namespace zlgui::colour_selector {
                         juce::roundToInt(base.getFontSize() * 0.5f),
                         juce::roundToInt(base.getFontSize() * 0.33f)),
               base_(base) {
-            selector_.setColour(juce::ColourSelector::ColourIds::backgroundColourId, base_.getBackgroundColor());
+            selector_.setColour(juce::ColourSelector::ColourIds::backgroundColourId, base_.getBackgroundColour());
             addAndMakeVisible(selector_);
         }
 
@@ -47,11 +47,11 @@ namespace zlgui::colour_selector {
     }
 
     void ColourSelector::paint(juce::Graphics& g) {
-        g.fillAll(base_.getTextColor().withAlpha(.875f));
+        g.fillAll(base_.getTextColour().withAlpha(.875f));
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth() - base_.getFontSize() * .375f,
                                             bound.getHeight() - base_.getFontSize() * .375f);
-        g.setColour(base_.getBackgroundColor());
+        g.setColour(base_.getBackgroundColour());
         g.fillRect(bound);
         g.setColour(colour_);
         g.fillRect(bound);

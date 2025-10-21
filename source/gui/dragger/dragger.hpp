@@ -10,3 +10,4 @@
 #pragma once
 
 #include "dragger_component.hpp"
+#include "dragger_attachment.hpp"

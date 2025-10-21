@@ -21,15 +21,15 @@ namespace zlgui {
 
         void drawButtonBackground(juce::Graphics& g, juce::Button&,
                                   const juce::Colour&, bool, bool) override {
-            g.fillAll(base_.getBackgroundColor());
+            g.fillAll(base_.getBackgroundColour());
         }
 
         void drawButtonText(juce::Graphics& g, juce::TextButton& button,
                             const bool highlight, const bool down) override {
             if (highlight || down) {
-                g.setColour(base_.getTextColor());
+                g.setColour(base_.getTextColour());
             } else {
-                g.setColour(base_.getTextInactiveColor());
+                g.setColour(base_.getTextInactiveColour());
             }
             g.setFont(base_.getFontSize() * font_scale_);
             g.drawText(button.getButtonText(), button.getBounds(), justification_);

@@ -31,10 +31,10 @@ namespace zlgui::dragger {
                               bool should_draw_button_as_highlighted,
                               bool should_draw_button_as_down) override {
             if (should_draw_button_as_down || button.getToggleState()) {
-                g.setColour(base_.getTextColor());
+                g.setColour(base_.getTextColour());
                 g.fillPath(outline_path_);
             } else if (should_draw_button_as_highlighted || is_selected_) {
-                g.setColour(base_.getTextColor().withMultipliedAlpha(0.5f));
+                g.setColour(base_.getTextColour().withAlpha(0.5f));
                 g.fillPath(outline_path_);
             }
 
@@ -59,7 +59,7 @@ namespace zlgui::dragger {
 
         void setIsSelected(const bool f) { is_selected_ = f; }
 
-        bool getIsSelected() const { return is_selected_; }
+        [[nodiscard]] bool getIsSelected() const { return is_selected_; }
 
         void setDraggerShape(const DraggerShape s) { dragger_shape_ = s; }
 
@@ -114,7 +114,7 @@ namespace zlgui::dragger {
                 path.closeSubPath();
             };
             updateOnePath(outline_path_, bound);
-            bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight() * .75f);
+            bound = bound.withSizeKeepingCentre(bound.getWidth() * .625f, bound.getHeight() * .625f);
             updateOnePath(inner_path_, bound);
         }
 

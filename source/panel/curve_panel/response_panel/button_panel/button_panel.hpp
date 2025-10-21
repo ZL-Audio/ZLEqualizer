@@ -9,13 +9,18 @@
 
 #pragma once
 
-#include "dragger_panel.hpp"
+#include "../../../../PluginProcessor.hpp"
+#include "../../../../gui/gui.hpp"
+#include "../../../helper/helper.hpp"
+#include "../../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
     class ButtonPanel final : public juce::Component {
     public:
         explicit ButtonPanel(PluginProcessor& p, zlgui::UIBase& base,
                              const multilingual::TooltipHelper& tooltip_helper);
+
+        void mouseDown(const juce::MouseEvent& event) override;
 
         void mouseDoubleClick(const juce::MouseEvent& event) override;
 

@@ -12,6 +12,7 @@
 #include "single_panel.hpp"
 #include "sum_panel.hpp"
 #include "button_panel/button_panel.hpp"
+#include "button_panel/dragger_panel.hpp"
 
 namespace zlpanel {
     class ResponsePanel final : public juce::Component,
@@ -52,12 +53,20 @@ namespace zlpanel {
         std::vector<size_t> message_not_off_indices_;
         std::atomic<bool> message_to_update_panels_{};
 
+        std::array<std::atomic<bool>, zlp::kBandNum> message_to_update_draggers_{};
+        std::atomic<bool> message_to_update_draggers_total_{};
+        std::atomic<bool> message_to_update_target_dragger_{};
+        std::atomic<bool> message_to_update_side_dragger_{};
+
         SinglePanel single_panel_;
 
         SumPanel sum_panel_;
 
         ButtonPanel button_panel_;
 
+        DraggerPanel dragger_panel_;
+
+        float side_y_{0.f};
         std::atomic<float> width_{0.f}, height_{0.f};
         float c_width_{0.f}, c_height_{0.f};
         std::atomic<bool> to_update_bound_{};
@@ -74,7 +83,7 @@ namespace zlpanel {
         std::vector<float> xs_;
 
         std::array<zldsp::filter::Ideal<float, zlp::Controller::kFilterSize>, zlp::kBandNum> ideal_{};
-        std::array<zldsp::filter::Ideal<float, zlp::Controller::kFilterSize>, zlp::kBandNum> side_ideal_{};
+        std::array<zldsp::filter::Ideal<float, zlp::Controller::kFilterSize / 2>, zlp::kBandNum> side_ideal_{};
 
         std::array<kfr::univector<float>, zlp::kBandNum> base_mags_;
         std::array<kfr::univector<float>, zlp::kBandNum> target_mags_;
@@ -105,16 +114,29 @@ namespace zlpanel {
 
         std::array<bool, zlp::kBandNum> to_update_base_y_flags_{};
         std::array<bool, zlp::kBandNum> to_update_target_y_flags_{};
+        std::array<bool, zlp::kBandNum> to_update_side_y_flags_{};
 
-        // x, y, left x, right x
-        std::array<std::array<std::atomic<float>, 4>, zlp::kBandNum> points_;
-        // left x, right x
-        std::array<std::array<std::atomic<float>, 2>, zlp::kBandNum> side_points_;
+        // center x, left x, right x, center y, base button y, target button y
+        std::array<std::array<std::atomic<float>, 6>, zlp::kBandNum> points_;
+        // side button x, side left x, side right x
+        std::array<std::array<std::atomic<float>, 3>, zlp::kBandNum> side_points_;
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
 
         void updateCurveParas();
 
         bool updateCurveMags();
+
+        static float getButtonMag(const zldsp::filter::FilterParameters& para);
+
+        void updateDraggerPositions();
+
+        void updateDrawingParas();
+
+        void updateTargetPosition();
+
+        void updateSidePosition();
+
+        std::tuple<float, float, float> getLeftCenterRightX(const zldsp::filter::FilterParameters& para) const;
     };
 }

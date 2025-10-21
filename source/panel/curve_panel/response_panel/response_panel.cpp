@@ -18,6 +18,7 @@ namespace zlpanel {
         single_panel_(p, base, message_not_off_indices_),
         sum_panel_(p, base),
         button_panel_(p, base, tooltip_helper),
+        dragger_panel_(p, base, tooltip_helper),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
         juce::ignoreUnused(base_, tooltip_helper);
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
@@ -50,6 +51,7 @@ namespace zlpanel {
         addAndMakeVisible(single_panel_);
         addAndMakeVisible(sum_panel_);
         addAndMakeVisible(button_panel_);
+        addAndMakeVisible(dragger_panel_);
 
         setInterceptsMouseClicks(false, true);
     }
@@ -68,12 +70,52 @@ namespace zlpanel {
         single_panel_.setBounds(bound);
         sum_panel_.setBounds(bound);
         button_panel_.setBounds(bound);
+        dragger_panel_.setBounds(bound);
+        side_y_ = static_cast<float>(bound.getHeight() - getBottomAreaHeight(base_.getFontSize()))
+            - base_.getFontSize() * kDraggerScale * .5f;
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
         height_.store(static_cast<float>(bound.getHeight()), std::memory_order::relaxed);
         to_update_bound_.store(true, std::memory_order::release);
     }
 
     void ResponsePanel::repaintCallBack() {
+        updateDraggerPositions();
+        updateDrawingParas();
+    }
+
+    void ResponsePanel::updateDraggerPositions() {
+        if (!message_to_update_draggers_total_.exchange(false, std::memory_order::acquire)) {
+            return;
+        }
+        for (size_t band = 0; band < zlp::kBandNum; ++band) {
+            if (message_to_update_draggers_[band].exchange(false, std::memory_order::acquire)) {
+                dragger_panel_.updateFilterType(band, empty_[band].getFilterType());
+                dragger_panel_.getDragger(band).updateButton(
+                {points_[band][0].load(std::memory_order::relaxed),
+                 points_[band][4].load(std::memory_order::relaxed)});
+            }
+        }
+        updateTargetPosition();
+        updateSidePosition();
+    }
+
+    void ResponsePanel::updateTargetPosition() {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            dragger_panel_.getTargetDragger().updateButton(
+            {points_[band][0].load(std::memory_order::relaxed),
+             points_[band][5].load(std::memory_order::relaxed)});
+        }
+    }
+
+    void ResponsePanel::updateSidePosition() {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            dragger_panel_.getSideDragger().updateButton(
+            {side_points_[band][0].load(std::memory_order::relaxed),
+             side_y_});
+        }
+    }
+
+    void ResponsePanel::updateDrawingParas() {
         if (!message_to_update_panels_.exchange(false, std::memory_order::acquire)) {
             return;
         }
@@ -87,17 +129,17 @@ namespace zlpanel {
             if (filter_status != zlp::FilterStatus::kOff) {
                 message_not_off_indices_.emplace_back(band);
                 const auto dynamic_on = dynamic_ons_[band].load(std::memory_order::relaxed);
-                if (selected_band < zlp::kBandNum) {
-                    single_panel_.updateDrawingParas(band, filter_status, dynamic_on,
-                                                     lr_modes_[band].load(std::memory_order::relaxed) ==
-                                                     selected_lr_mode);
-                } else {
-                    single_panel_.updateDrawingParas(band, filter_status, dynamic_on, true);
-                }
+                const auto lr_mode = lr_modes_[band].load(std::memory_order::relaxed);
+                const auto is_same_stereo = selected_band < zlp::kBandNum ? lr_mode == selected_lr_mode : true;
+                single_panel_.updateDrawingParas(band, filter_status, dynamic_on, is_same_stereo);
+                dragger_panel_.updateDrawingParas(band, filter_status, dynamic_on, is_same_stereo, lr_mode);
             } else {
                 single_panel_.updateDrawingParas(band, zlp::FilterStatus::kOff, false, false);
+                dragger_panel_.updateDrawingParas(band, zlp::FilterStatus::kOff, false, false, 0);
             }
         }
+        updateTargetPosition();
+        updateSidePosition();
         for (int lr = 0; lr < 5; ++lr) {
             if (selected_band < zlp::kBandNum) {
                 sum_panel_.updateDrawingParas(lr, lr == selected_lr_mode);
@@ -108,16 +150,21 @@ namespace zlpanel {
     }
 
     void ResponsePanel::repaintCallBackSlow() {
+        dragger_panel_.repaintCallBackSlow();
     }
 
     void ResponsePanel::updateBand() {
         message_to_update_panels_.store(true, std::memory_order::relaxed);
         button_panel_.updateBand();
+        dragger_panel_.updateBand();
+        updateTargetPosition();
+        updateSidePosition();
     }
 
     void ResponsePanel::updateSampleRate(const double sample_rate) {
         sample_rate_.store(sample_rate, std::memory_order::relaxed);
         button_panel_.updateSampleRate(sample_rate);
+        dragger_panel_.updateSampleRate(sample_rate);
     }
 
     void ResponsePanel::run() {
@@ -139,9 +186,9 @@ namespace zlpanel {
                                   to_update_base_y_flags_[band], to_update_target_y_flags_[band],
                                   xs_, c_k_, c_b_,
                                   base_mags_[band], target_mags_[band],
-                                  ideal_[band].getFilterType(),
                                   points_[band][0].load(std::memory_order::relaxed),
-                                  points_[band][1].load(std::memory_order::relaxed));
+                                  points_[band][3].load(std::memory_order::relaxed),
+                                  points_[band][4].load(std::memory_order::relaxed));
                 if (threadShouldExit()) {
                     break;
                 }
@@ -307,6 +354,8 @@ namespace zlpanel {
                 || to_update_empty_flags_[band].exchange(false, std::memory_order::acquire));
             to_update_target_y_flags_[band] = (to_update_base_y_flags_[band]
                 || to_update_target_gain_flags_[band].exchange(false, std::memory_order::acquire));
+            to_update_side_y_flags_[band] = (to_update_base_y_flags_[band])
+                || to_update_side_empty_flags_[band].exchange(false, std::memory_order::acquire);
             const auto lr = c_lr_modes_[band];
             to_update_lr_flags_[static_cast<size_t>(lr)] = to_update_lr_flags_[static_cast<size_t>(lr)]
                 || to_update_base_y_flags_[band] || c_dynamic_ons_[band];
@@ -324,42 +373,47 @@ namespace zlpanel {
                     if (!c_dynamic_ons_[band]) {
                         dynamic_mags_[band] = base_mags_[band];
                     }
-
-                    const auto freq_to_x_scale = 1.0 / std::log(
-                        fft_max_ * 0.1) * static_cast<double>(c_width_) * static_cast<double>(
-                        1.f - kFontSizeOverWidth * kDraggerScale);
                     const auto center_w = para.freq * (2.0 * std::numbers::pi / 480000.0);
-                    float center_square_magnitude;
-                    if (para.filter_type != zldsp::filter::kTiltShelf) {
-                        center_square_magnitude = std::log10(std::max(
-                            ideal_[band].getCenterMagnitudeSquare(static_cast<float>(center_w)), 1e-24f));
-                    } else {
-                        center_square_magnitude = static_cast<float>(0.05 * para.gain);
-                    }
-                    const auto center_x = std::log(para.freq / 10.0) * freq_to_x_scale;
-                    const auto bandwidth = para.freq / para.q;
-                    const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * para.q * para.q + 1.0) - 1.0);
-                    const auto left_x = std::log(left_f / 10.0) * freq_to_x_scale;
-                    const auto right_f = left_f + bandwidth;
-                    const auto right_x = std::log(right_f / 10.0) * freq_to_x_scale;
+                    const float center_square_magnitude = std::log10(std::max(
+                        ideal_[band].getCenterMagnitudeSquare(static_cast<float>(center_w)), 1e-24f));
+                    const auto [left_x, center_x, right_x] = getLeftCenterRightX(para);
 
                     points_[band][0].store(static_cast<float>(center_x), std::memory_order::relaxed);
-                    points_[band][1].store(center_square_magnitude, std::memory_order::relaxed);
-                    points_[band][2].store(static_cast<float>(left_x), std::memory_order::relaxed);
-                    points_[band][3].store(static_cast<float>(right_x), std::memory_order::relaxed);
+                    points_[band][1].store(static_cast<float>(left_x), std::memory_order::relaxed);
+                    points_[band][2].store(static_cast<float>(right_x), std::memory_order::relaxed);
+                    points_[band][3].store(c_k_ * center_square_magnitude + c_b_, std::memory_order::relaxed);
+                    points_[band][4].store(c_k_ * getButtonMag(para) + c_b_, std::memory_order::relaxed);
 
                     if (threadShouldExit()) {
                         return false;
                     }
+                    message_to_update_draggers_[band].store(true, std::memory_order::release);
+                    message_to_update_draggers_total_.store(true, std::memory_order::release);
                 }
                 if (to_update_target_y_flags_[band]) {
-                    ideal_[band].setGain(target_gains_[band].load(std::memory_order::relaxed));
+                    const auto target_gain = target_gains_[band].load(std::memory_order::relaxed);
+                    ideal_[band].setGain(target_gain);
                     ideal_[band].updateCoeffs();
                     ideal_[band].updateMagnitudeSquare(ws_, target_mags_[band]);
                     target_mags_[band] = kfr::log10(kfr::max(target_mags_[band], 1e-24f));
+
+                    points_[band][5].store(c_k_ * getButtonMag(ideal_[band].getParas()) + c_b_,
+                                           std::memory_order::relaxed);
+
                     if (threadShouldExit()) {
                         return false;
                     }
+                    message_to_update_target_dragger_.store(true, std::memory_order::release);
+                    message_to_update_draggers_total_.store(true, std::memory_order::release);
+                }
+                if (to_update_side_y_flags_[band]) {
+                    const auto para = side_empty_[band].getParas();
+                    const auto [left_x, center_x, right_x] = getLeftCenterRightX(para);
+                    side_points_[band][0].store(center_x, std::memory_order::relaxed);
+                    side_points_[band][1].store(left_x, std::memory_order::relaxed);
+                    side_points_[band][2].store(right_x, std::memory_order::relaxed);
+                    message_to_update_side_dragger_.store(true, std::memory_order::release);
+                    message_to_update_draggers_total_.store(true, std::memory_order::release);
                 }
                 if (c_dynamic_ons_[band]) {
                     ideal_[band].setGain(p_ref_.getController().getCurrentGain(band));
@@ -373,5 +427,50 @@ namespace zlpanel {
             }
         }
         return true;
+    }
+
+    float ResponsePanel::getButtonMag(const zldsp::filter::FilterParameters& para) {
+        if (para.filter_type == zldsp::filter::kPeak) {
+            return static_cast<float>(0.1 * para.gain);
+        } else if (para.filter_type == zldsp::filter::kLowShelf
+            || para.filter_type == zldsp::filter::kHighShelf
+            || para.filter_type == zldsp::filter::kTiltShelf) {
+            return static_cast<float>(0.05 * para.gain);
+        } else {
+            return 0.f;
+        }
+    }
+
+    std::tuple<float, float, float> ResponsePanel::getLeftCenterRightX(
+        const zldsp::filter::FilterParameters& para) const {
+        const auto freq_to_x_scale = 1.0 / std::log(
+            fft_max_ * 0.1) * static_cast<double>(c_width_) * static_cast<double>(
+            1.f - kFontSizeOverWidth * kDraggerScale);
+        const auto center_x = std::log(para.freq / 10.0) * freq_to_x_scale;
+        const auto bandwidth = para.freq / para.q;
+        switch (para.filter_type) {
+        case zldsp::filter::kPeak:
+        case zldsp::filter::kBandPass:
+        case zldsp::filter::kNotch:
+        case zldsp::filter::kTiltShelf:
+        case zldsp::filter::kBandShelf:
+        default: {
+            const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * para.q * para.q + 1.0) - 1.0);
+            const auto left_x = std::log(left_f / 10.0) * freq_to_x_scale;
+            const auto right_f = left_f + bandwidth;
+            const auto right_x = std::log(right_f / 10.0) * freq_to_x_scale;
+            return std::make_tuple(static_cast<float>(left_x),
+                                   static_cast<float>(center_x),
+                                   static_cast<float>(right_x));
+        }
+        case zldsp::filter::kLowShelf:
+        case zldsp::filter::kHighPass: {
+            return std::make_tuple(0.f, static_cast<float>(center_x), static_cast<float>(center_x));
+        }
+        case zldsp::filter::kHighShelf:
+        case zldsp::filter::kLowPass: {
+            return std::make_tuple(static_cast<float>(center_x), static_cast<float>(center_x), 0.f);
+        }
+        }
     }
 }

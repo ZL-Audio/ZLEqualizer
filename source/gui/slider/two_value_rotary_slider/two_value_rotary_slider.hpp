@@ -39,7 +39,7 @@ namespace zlgui::slider {
 
             void paint(juce::Graphics& g) override {
                 if constexpr (kOpaque) {
-                    g.fillAll(base_.getBackgroundColor());
+                    g.fillAll(base_.getBackgroundColour());
                 }
                 auto bounds = getLocalBounds().toFloat();
                 const auto diameter = juce::jmin(bounds.getWidth(), bounds.getHeight());
@@ -55,7 +55,7 @@ namespace zlgui::slider {
                 shadow.addPieSegment(bounds,
                                      kEndAngle - juce::MathConstants<float>::pi * 1.5f,
                                      kStartAngle + juce::MathConstants<float>::pi * .5f, 0);
-                g.setColour(base_.getBackgroundColor());
+                g.setColour(base_.getBackgroundColour());
                 g.fillPath(shadow);
             }
 
@@ -74,15 +74,15 @@ namespace zlgui::slider {
             void paint(juce::Graphics& g) override {
                 g.saveState();
                 g.reduceClipRegion(mask_);
-                g.setColour(base_.getTextHideColor());
+                g.setColour(base_.getTextHideColour());
                 g.fillPath(filling1_);
                 // fill the pie segment between two values
                 if constexpr (kUseSecondSlider) {
                     if (show_slider2_) {
                         if (value1_ > value2_) {
-                            g.setColour(base_.getColorMap2(0).withAlpha(.75f));
+                            g.setColour(base_.getColourMap2(0).withAlpha(.75f));
                         } else {
-                            g.setColour(base_.getColorMap2(2).withAlpha(.75f));
+                            g.setColour(base_.getColourMap2(2).withAlpha(.75f));
                         }
                         g.fillPath(filling2_);
                     }
@@ -477,10 +477,10 @@ namespace zlgui::slider {
             }
 
             editor.setJustification(juce::Justification::centred);
-            editor.setColour(juce::TextEditor::outlineColourId, base_.getTextColor());
-            editor.setColour(juce::TextEditor::highlightedTextColourId, base_.getTextColor());
+            editor.setColour(juce::TextEditor::outlineColourId, base_.getTextColour());
+            editor.setColour(juce::TextEditor::highlightedTextColourId, base_.getTextColour());
             editor.applyFontToAllText(juce::FontOptions{base_.getFontSize() * kFontHuge});
-            editor.applyColourToAllText(base_.getTextColor(), true);
+            editor.applyColourToAllText(base_.getTextColour(), true);
         }
 
         void editorHidden(juce::Label* l, juce::TextEditor& editor) override {

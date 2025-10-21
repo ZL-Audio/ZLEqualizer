@@ -29,16 +29,16 @@ namespace zlgui {
                                                       {.flip = true});
             } else {
                 bounds = base_.getShadowEllipseArea(bounds, base_.getFontSize() * 0.3f * shrink_scale_, {});
-                g.setColour(base_.getBackgroundColor());
+                g.setColour(base_.getBackgroundColour());
                 g.fillEllipse(bounds);
             }
             if (is_pressed) {
                 if (with_shadow_) {
                     const auto innerBound = base_.getShadowEllipseArea(bounds, base_.getFontSize() * 0.1f, {});
                     base_.drawInnerShadowEllipse(g, innerBound, base_.getFontSize() * 0.375f, {
-                                                     .dark_shadow_color = base_.getDarkShadowColor().
+                                                     .dark_shadow_color = base_.getDarkShadowColour().
                                                      withMultipliedAlpha(button_depth_),
-                                                     .bright_shadow_color = base_.getBrightShadowColor().
+                                                     .bright_shadow_color = base_.getBrightShadowColour().
                                                      withMultipliedAlpha(button_depth_),
                                                      .change_dark = true,
                                                      .change_bright = true
@@ -48,9 +48,9 @@ namespace zlgui {
             if (drawable_ == nullptr) {
                 const auto textBound = button.getLocalBounds().toFloat();
                 if (is_pressed) {
-                    g.setColour(base_.getTextColor().withAlpha(1.f));
+                    g.setColour(base_.getTextColour().withAlpha(1.f));
                 } else {
-                    g.setColour(base_.getTextColor().withAlpha(0.5f));
+                    g.setColour(base_.getTextColour().withAlpha(0.5f));
                 }
                 g.setFont(base_.getFontSize() * scale_);
                 g.drawText(button.getButtonText(), textBound.toNearestInt(), juce::Justification::centred);
@@ -85,7 +85,7 @@ namespace zlgui {
         void updateImages() {
             if (drawable_ != nullptr) {
                 internal_img_ = drawable_->createCopy();
-                internal_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColor());
+                internal_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour());
             }
         }
 

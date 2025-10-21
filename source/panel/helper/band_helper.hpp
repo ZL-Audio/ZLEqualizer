@@ -86,7 +86,7 @@ namespace zlpanel::band_helper {
         auto* target_gain_para = p.parameters_.getParameter(zlp::PTargetGain::kID + band_s);
         updateValue(target_gain_para,
                     target_gain_para->convertTo0to1(
-                        gain > 0.f ? gain - eq_max_db * .2f : gain + eq_max_db * .2f));
+                        gain > 0.f ? gain - eq_max_db * .33f : gain + eq_max_db * .33f));
 
         updateValue(p.parameters_.getParameter(zlp::PDynamicBypass::kID + band_s),
                     dynamic_on ? 0.f : 1.f);

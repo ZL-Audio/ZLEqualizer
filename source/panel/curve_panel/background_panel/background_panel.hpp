@@ -33,8 +33,12 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         double freq_max_{0.};
 
+        juce::Colour grid_colour_;
+
         void drawFreqs(juce::Graphics& g) const;
 
         void drawDBs(juce::Graphics& g) const;
+
+        void lookAndFeelChanged() override;
     };
 }

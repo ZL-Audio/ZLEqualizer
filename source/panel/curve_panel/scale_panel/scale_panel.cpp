@@ -43,7 +43,7 @@ namespace zlpanel {
     }
 
     int ScalePanel::getIdealWidth() const {
-        return juce::roundToInt(base_.getFontSize() * 3.5f);
+        return juce::roundToInt(base_.getFontSize() * 4.f);
     }
 
     void ScalePanel::resized() {

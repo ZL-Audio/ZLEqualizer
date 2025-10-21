@@ -47,14 +47,14 @@ namespace zlgui {
                 bound.getWidth(), bound.getHeight() * kDefaultRectScale
             };
 
-            g.setColour(base_.getBackgroundColor());
+            g.setColour(base_.getBackgroundColour());
             g.fillRect(rect1);
             g.fillRect(rect2);
 
             rect1.reduce(bound.getWidth() * 0.05f, bound.getHeight() * 0.05f);
             rect2.reduce(bound.getWidth() * 0.05f, bound.getHeight() * 0.05f);
 
-            g.setColour(base_.getTextColor());
+            g.setColour(base_.getTextColour());
             g.fillRect(rect1);
             g.fillRect(rect2);
         }

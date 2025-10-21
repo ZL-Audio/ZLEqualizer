@@ -19,7 +19,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
     main_panel_(p, base_) {
     // set font
     const auto font_face = juce::Typeface::createSystemTypefaceFor(
-        BinaryData::MiSansLatinMedium_ttf, BinaryData::MiSansLatinMedium_ttfSize);
+        BinaryData::InterSubsetMedium_ttf, BinaryData::InterSubsetMedium_ttfSize);
     juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(font_face);
 
     // add the main panel

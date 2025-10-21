@@ -45,7 +45,7 @@ namespace zlgui::tooltip {
         void drawTooltip(juce::Graphics& g, const juce::String& text, const int width, const int height) override {
             juce::Rectangle<float> bound{static_cast<float>(width), static_cast<float>(height)};
 
-            g.setColour(base_.getBackgroundColor().withAlpha(.875f));
+            g.setColour(base_.getBackgroundColour().withAlpha(.875f));
             g.fillRect(bound);
 
             const auto padding = std::round(base_.getFontSize() * kPaddingScale);
@@ -63,7 +63,7 @@ namespace zlgui::tooltip {
                                                         const float w, const float h) const {
             juce::AttributedString s;
             s.setJustification(juce::Justification::centredLeft);
-            s.append(text, juce::FontOptions(base_.getFontSize() * 1.5f), base_.getTextColor());
+            s.append(text, juce::FontOptions(base_.getFontSize() * 1.5f), base_.getTextColour());
             juce::TextLayout tl;
             tl.createLayout(s, w, h);
             return tl;

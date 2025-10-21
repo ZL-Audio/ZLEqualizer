@@ -40,7 +40,7 @@ namespace zlpanel {
     }
 
     void MainPanel::paint(juce::Graphics& g) {
-        g.fillAll(base_.getBackgroundColor());
+        g.fillAll(base_.getBackgroundColour());
     }
 
     void MainPanel::resized() {
@@ -76,6 +76,12 @@ namespace zlpanel {
                 previous_time_stamp_ = time_stamp;
                 repaintCallBackSlow();
             }
+            // update selected band
+            if (c_band_ != base_.getSelectedBand()) {
+                c_band_ = base_.getSelectedBand();
+                control_panel_.updateBand();
+                curve_panel_.updateBand();
+            }
             curve_panel_.repaintCallBack();
             const auto c_refresh_rate = refresh_handler_.getActualRefreshRate();
             if (std::abs(c_refresh_rate - refresh_rate_) > 0.1) {
@@ -103,12 +109,7 @@ namespace zlpanel {
     }
 
     void MainPanel::repaintCallBackSlow() {
-        // update selected band
-        if (c_band_ != base_.getSelectedBand()) {
-            c_band_ = base_.getSelectedBand();
-            control_panel_.updateBand();
-            curve_panel_.updateBand();
-        }
+
         // update sample rate
         const auto sample_rate = p_ref_.getAtomicSampleRate();
         if (std::abs(sample_rate - c_sample_rate_) > 1.0) {

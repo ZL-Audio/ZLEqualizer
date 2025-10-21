@@ -17,7 +17,7 @@ namespace zlgui::combobox {
     class CompactComboboxLookAndFeel : public juce::LookAndFeel_V4 {
     public:
         explicit CompactComboboxLookAndFeel(UIBase& base) : base_(base) {
-            setColour(juce::PopupMenu::backgroundColourId, base_.getBackgroundInactiveColor());
+            setColour(juce::PopupMenu::backgroundColourId, base_.getBackgroundInactiveColour());
         }
 
         void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown, int, int, int, int,
@@ -28,18 +28,18 @@ namespace zlgui::combobox {
                                                           static_cast<float>(height));
             const auto cornerSize = base_.getFontSize() * 0.375f;
             if (isButtonDown || box.isPopupActive()) {
-                g.setColour(base_.getTextInactiveColor());
+                g.setColour(base_.getTextInactiveColour());
                 g.fillRoundedRectangle(boxBounds, cornerSize);
             } else if (box_alpha_ > 1e-3f) {
                 base_.fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize,
                                                       {
                                                           .blur_radius = 0.45f, .flip = true,
-                                                          .main_colour = base_.getBackgroundColor().
+                                                          .main_colour = base_.getBackgroundColour().
                                                                                withMultipliedAlpha(
                                                                                    juce::jlimit(.25f, .5f, box_alpha_)),
-                                                          .dark_shadow_color = base_.getDarkShadowColor().
+                                                          .dark_shadow_color = base_.getDarkShadowColour().
                                                           withMultipliedAlpha(box_alpha_),
-                                                          .bright_shadow_color = base_.getBrightShadowColor().
+                                                          .bright_shadow_color = base_.getBrightShadowColour().
                                                           withMultipliedAlpha(box_alpha_),
                                                           .change_main = true, .change_dark = true,
                                                           .change_bright = true
@@ -52,16 +52,17 @@ namespace zlgui::combobox {
         }
 
         void drawLabel(juce::Graphics& g, juce::Label& label) override {
-            g.setColour(base_.getTextColor());
+            g.setColour(base_.getTextColour());
             g.setFont(base_.getFontSize() * font_scale_);
             g.drawText(label.getText(), label.getLocalBounds(), label_justification_);
         }
 
-        void drawPopupMenuBackground(juce::Graphics& g, int width, int height) override {
-            const auto cornerSize = base_.getFontSize() * 0.375f;
-            const auto boxBounds = juce::Rectangle<float>(0, 0, static_cast<float>(width),
+        void drawPopupMenuBackground(juce::Graphics& g, const int width, const int height) override {
+            const auto corner_size = base_.getFontSize() * 0.375f;
+            const auto box_bound = juce::Rectangle<float>(0, 0, static_cast<float>(width),
                                                           static_cast<float>(height));
-            base_.fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize, {.blur_radius = 0.45f, .flip = true});
+            g.fillRoundedRectangle(box_bound, corner_size);
+            // base_.fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize, {.blur_radius = 0.45f, .flip = true});
         }
 
         void getIdealPopupMenuItemSize(const juce::String& text, const bool isSeparator, int standardMenuItemHeight,
@@ -79,11 +80,11 @@ namespace zlgui::combobox {
                                const juce::Colour* const textColourToUse) override {
             juce::ignoreUnused(isSeparator, hasSubMenu, shortcutKeyText, icon, textColourToUse);
             if ((isHighlighted || isTicked) && isActive) {
-                g.setColour(base_.getTextColor());
+                g.setColour(base_.getTextColour());
             } else if (!isActive) {
-                g.setColour(base_.getTextInactiveColor().withMultipliedAlpha(.25f));
+                g.setColour(base_.getTextInactiveColour().withMultipliedAlpha(.25f));
             } else {
-                g.setColour(base_.getTextInactiveColor());
+                g.setColour(base_.getTextInactiveColour());
             }
             g.setFont(base_.getFontSize() * font_scale_);
             g.drawText(text, area, item_justification_);

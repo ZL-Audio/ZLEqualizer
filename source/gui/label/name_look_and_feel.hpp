@@ -23,7 +23,7 @@ namespace zlgui::label {
             if (label.isBeingEdited()) {
                 return;
             }
-            g.setColour(base_.getTextColor().withMultipliedAlpha(alpha_));
+            g.setColour(base_.getTextColour().withMultipliedAlpha(alpha_));
             g.setFont(base_.getFontSize() * font_scale_);
             g.drawText(label.getText(), label.getLocalBounds().toFloat(), label.getJustificationType());
         }

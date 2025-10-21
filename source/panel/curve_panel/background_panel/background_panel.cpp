@@ -16,6 +16,7 @@ namespace zlpanel {
         base_(base) {
         juce::ignoreUnused(p, tooltip_helper);
         setInterceptsMouseClicks(false, false);
+        lookAndFeelChanged();
     }
 
     void BackgroundPanel::paint(juce::Graphics& g) {
@@ -50,7 +51,7 @@ namespace zlpanel {
             }
             rect_list.add(rect);
         }
-        g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kGridColour));
+        g.setColour(grid_colour_);
         g.fillRectList(rect_list);
         // draw top and bottom gradient
         juce::ColourGradient gradient;
@@ -58,18 +59,18 @@ namespace zlpanel {
         gradient.point2 = juce::Point<float>(bound.getX(), bound.getBottom());
         gradient.isRadial = false;
         gradient.clearColours();
-        gradient.addColour(0.0, base_.getBackgroundColor().withAlpha(1.f));
+        gradient.addColour(0.0, base_.getBackgroundColour().withAlpha(1.f));
         gradient.addColour(base_.getFontSize() / bound.getHeight(),
-                           base_.getBackgroundColor().withAlpha(0.f));
+                           base_.getBackgroundColour().withAlpha(0.f));
         gradient.addColour(1.f - 2.f * base_.getFontSize() / bound.getHeight(),
-                           base_.getBackgroundColor().withAlpha(0.f));
+                           base_.getBackgroundColour().withAlpha(0.f));
         gradient.addColour(1.f - base_.getFontSize() / bound.getHeight(),
-                           base_.getBackgroundColor().withAlpha(1.f));
-        gradient.addColour(1.0, base_.getBackgroundColor().withAlpha(1.f));
+                           base_.getBackgroundColour().withAlpha(1.f));
+        gradient.addColour(1.0, base_.getBackgroundColour().withAlpha(1.f));
         g.setGradientFill(gradient);
         g.fillRect(getLocalBounds());
         // draw freq labels
-        g.setColour(base_.getTextColor().withAlpha(.5f));
+        g.setColour(base_.getTextColour().withAlpha(.5f));
         g.setFont(base_.getFontSize() * 1.25f);
         const auto label_y0 = bound.getBottom() - base_.getFontSize() * 1.15f;
         const auto label_height = base_.getFontSize() * 1.1f;
@@ -101,7 +102,18 @@ namespace zlpanel {
             rect_list.add(0.f, y0, bound.getWidth(), thickness);
             y0 += unit_height;
         }
-        g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kGridColour));
+        g.setColour(grid_colour_);
         g.fillRectList(rect_list);
+    }
+
+    void BackgroundPanel::lookAndFeelChanged() {
+        const auto grid_colour = base_.getColourByIdx(zlgui::ColourIdx::kGridColour);
+        const auto background_colour = base_.getBackgroundColour();
+        const auto alpha = grid_colour.getFloatAlpha();
+        grid_colour_ = juce::Colour::fromFloatRGBA(
+            grid_colour.getFloatRed() * alpha + background_colour.getFloatRed() * (1.f - alpha),
+            grid_colour.getFloatGreen() * alpha + background_colour.getFloatGreen() * (1.f - alpha),
+            grid_colour.getFloatBlue() * alpha + background_colour.getFloatBlue() * (1.f - alpha),
+            1.f);
     }
 }

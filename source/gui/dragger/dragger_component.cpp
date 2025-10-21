@@ -13,11 +13,12 @@ namespace zlgui::dragger {
     Dragger::Dragger(UIBase& base)
         : base_(base), dragger_laf_(base) {
         button_.addMouseListener(this, false);
-        dragger_laf_.setColour(base_.getColorMap1(1));
+        dragger_laf_.setColour(base_.getColourMap1(1));
         button_.setClickingTogglesState(false);
-        setInterceptsMouseClicks(false, true);
         button_.setLookAndFeel(&dragger_laf_);
         addAndMakeVisible(button_);
+
+        setInterceptsMouseClicks(false, true);
     }
 
     Dragger::~Dragger() {
@@ -97,13 +98,9 @@ namespace zlgui::dragger {
 
         const auto radius = static_cast<int>(std::round(base_.getFontSize() * scale_ * .5f));
         button_.setBounds(juce::Rectangle<int>(-radius, -radius, radius * 2, radius * 2));
-        updateButton({-99999.f, -99999.f});
 
         auto laf_bound = button_.getBounds().toFloat().withPosition(0.f, 0.f);
         dragger_laf_.updatePaths(laf_bound);
-
-        setXPortion(x_portion_);
-        setYPortion(y_portion_);
     }
 
     void Dragger::addListener(Listener* listener) {

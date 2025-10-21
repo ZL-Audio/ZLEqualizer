@@ -33,18 +33,18 @@ namespace zlpanel {
         if (selected_band < zlp::kBandNum) {
             for (const auto& band : not_off_indices_) {
                 if (band != selected_band && !is_same_stereo_[band]) {
-                    drawBand(g, band);
+                    drawBand<false>(g, band);
                 }
             }
             for (const auto& band : not_off_indices_) {
                 if (band != selected_band && is_same_stereo_[band]) {
-                    drawBand(g, band);
+                    drawBand<false>(g, band);
                 }
             }
-            drawBand(g, selected_band);
+            drawBand<true>(g, selected_band);
         } else {
             for (const auto& band : not_off_indices_) {
-                drawBand(g, band);
+                drawBand<false>(g, band);
             }
         }
     }
@@ -88,8 +88,8 @@ namespace zlpanel {
         }
         base_stroke_alpha_[band] = multiplier;
 
-        const auto band_colour = base_.getColorMap1(band);
-        const auto background_color = base_.getBackgroundColor();
+        const auto band_colour = base_.getColourMap1(band);
+        const auto background_color = base_.getBackgroundColour();
         base_stroke_colour_[band] = juce::Colour::fromFloatRGBA(
             multiplier * band_colour.getFloatRed() + (1 - multiplier) * background_color.getFloatRed(),
             multiplier * band_colour.getFloatGreen() + (1 - multiplier) * background_color.getFloatGreen(),
@@ -104,8 +104,7 @@ namespace zlpanel {
                           const bool to_update_base, const bool to_update_target,
                           std::span<float> xs, const float k, const float b,
                           kfr::univector<float>& base_mag, kfr::univector<float>& target_mag,
-                          const zldsp::filter::FilterType filter_type,
-                          const float center_x, const float center_mag) {
+                          const float center_x, const float center_mag, const float button_mag) {
         const auto center_y = center_y_.load(std::memory_order_relaxed);
         if (to_update_base) {
             next_base_paths_[band].clear();
@@ -113,41 +112,23 @@ namespace zlpanel {
             if (filter_status != zlp::FilterStatus::kOff) {
                 temp_db_ = k * base_mag + b;
                 // draw base path
-                const auto it = std::upper_bound(xs.begin(), xs.end(), center_x);
-                if (it != xs.begin() && it != xs.end()) {
-                    const auto index = static_cast<size_t>(std::distance(xs.begin(), it));
-                    PathMinimizer minimizer{next_base_paths_[band]};
-                    minimizer.startNewSubPath(xs[0], temp_db_[0]);
-                    for (size_t i = 1; i < index; ++i) {
-                        minimizer.lineTo(xs[i], temp_db_[i]);
-                    }
-                    minimizer.lineTo(center_x, k * center_mag + b);
-                    for (size_t i = index; i < xs.size(); ++i) {
-                        minimizer.lineTo(xs[i], temp_db_[i]);
-                    }
-                    minimizer.finish();
-                } else {
-                    PathMinimizer minimizer{next_base_paths_[band]};
-                    minimizer.drawPath<true, false>(xs, std::span(temp_db_));
-                }
+                PathMinimizer minimizer{next_base_paths_[band]};
+                minimizer.drawPath<true, false>(xs, std::span(temp_db_));
                 // draw base fill
                 next_base_fills_[band] = next_base_paths_[band];
                 next_base_fills_[band].lineTo(xs.back(), center_y);
                 next_base_fills_[band].lineTo(xs[0], center_y);
                 next_base_fills_[band].closeSubPath();
                 // draw button line
-                if (filter_type == zldsp::filter::kLowPass
-                    || filter_type == zldsp::filter::kHighPass
-                    || filter_type == zldsp::filter::kNotch
-                    || filter_type == zldsp::filter::kTiltShelf) {
-                    next_button_lines_[band].setStart(center_x, k * center_mag + b);
-                    next_button_lines_[band].setEnd(center_x, center_y);
+                if (std::abs(center_mag - button_mag) > 1e-6f) {
+                    next_button_lines_[band].setStart(center_x, center_mag);
+                    next_button_lines_[band].setEnd(center_x, button_mag);
                 } else {
                     next_button_lines_[band].setEnd(-100.f, -100.f);
                 }
             }
         }
-        if (to_update_target) {
+        if (to_update_base || to_update_target) {
             next_target_fills_[band].clear();
             if (filter_status != zlp::FilterStatus::kOff) {
                 temp_db_ = k * target_mag + b;
@@ -175,8 +156,9 @@ namespace zlpanel {
         }
     }
 
+    template <bool thick>
     void SinglePanel::drawBand(juce::Graphics& g, const size_t band) const {
-        const auto colour = base_.getColorMap1(band);
+        const auto colour = base_.getColourMap1(band);
         if (base_fill_alpha_[band] > 0.01f) {
             g.setColour(colour.withAlpha(base_fill_alpha_[band]));
             g.fillPath(base_fills_[band]);
@@ -185,18 +167,20 @@ namespace zlpanel {
             g.setColour(colour.withAlpha(target_fill_alpha_[band]));
             g.fillPath(target_fills_[band]);
         }
+        const auto curve_thickness = thick ? curve_thickness_ * 1.5f : curve_thickness_;
         if (base_stroke_alpha_[band] > 0.01f) {
             g.setColour(base_stroke_colour_[band]);
-            g.strokePath(base_paths_[band], juce::PathStrokeType(curve_thickness_,
+            g.strokePath(base_paths_[band], juce::PathStrokeType(curve_thickness,
                                                                  juce::PathStrokeType::curved,
-                                                                 juce::PathStrokeType::butt));
-            if (button_lines_[band].getEndY() > 0.f) {
-                g.drawLine(button_lines_[band], curve_thickness_ * .75f);
+                                                                 juce::PathStrokeType::square));
+            if (const auto line = button_lines_[band]; line.getEndX() > 0.f) {
+                g.fillRect(line.getStartX() - curve_thickness * .35f, line.getStartY(),
+                           curve_thickness * .7f, line.getEndY() - line.getStartY());
             }
         }
     }
 
     void SinglePanel::lookAndFeelChanged() {
-        curve_thickness_ = base_.getFontSize() * .2f * base_.getEQCurveThickness();
+        curve_thickness_ = base_.getFontSize() * .15f * base_.getEQCurveThickness();
     }
 }
