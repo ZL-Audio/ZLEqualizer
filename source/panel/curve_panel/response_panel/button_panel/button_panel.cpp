@@ -50,9 +50,9 @@ namespace zlpanel {
 
         if (event.position.y > height - padding) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kNotch);
-        } else if (freq < 20.f) {
+        } else if (freq < 20.f && std::abs(y_portion) < .125f) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kHighPass);
-        } else if (freq > 12500.f) {
+        } else if (freq > 10000.f && std::abs(y_portion) < .125f) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kLowPass);
         } else if (freq < 40.f) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kLowShelf);

@@ -183,17 +183,21 @@ namespace zlpanel {
             }
             for (size_t band = 0; band < zlp::kBandNum; ++band) {
                 single_panel_.run(band, c_filter_status_[band],
-                                  to_update_base_y_flags_[band], to_update_target_y_flags_[band],
+                                  to_update_base_y_flags_[band],
+                                  to_update_target_y_flags_[band],
                                   xs_, c_k_, c_b_,
                                   base_mags_[band], target_mags_[band],
                                   points_[band][0].load(std::memory_order::relaxed),
                                   points_[band][3].load(std::memory_order::relaxed),
-                                  points_[band][4].load(std::memory_order::relaxed));
+                                  points_[band][4].load(std::memory_order::relaxed),
+                                  to_update_side_y_flags_[band],
+                                  side_points_[band][1].load(std::memory_order::relaxed),
+                                  side_points_[band][2].load(std::memory_order::relaxed));
                 if (threadShouldExit()) {
                     break;
                 }
             }
-            single_panel_.runUpdate(to_update_base_y_flags_, to_update_target_y_flags_);
+            single_panel_.runUpdate(to_update_base_y_flags_, to_update_target_y_flags_, to_update_side_y_flags_);
             if (threadShouldExit()) {
                 break;
             }
@@ -279,7 +283,13 @@ namespace zlpanel {
         // update dynamic ons
         if (to_update_dynamic_ons_.exchange(false, std::memory_order::acquire)) {
             for (size_t band = 0; band < zlp::kBandNum; ++band) {
-                c_dynamic_ons_[band] = dynamic_ons_[band].load(std::memory_order::relaxed);
+                const auto dynamic_on = dynamic_ons_[band].load(std::memory_order::relaxed);
+                if (c_dynamic_ons_[band] != dynamic_on) {
+                    c_dynamic_ons_[band] = dynamic_ons_[band].load(std::memory_order::relaxed);
+                    if (!dynamic_on) {
+                        dynamic_mags_[band] = base_mags_[band];
+                    }
+                }
             }
             message_to_update_panels_.store(true, std::memory_order::release);
         }
@@ -320,7 +330,6 @@ namespace zlpanel {
                 ws_[i] = static_cast<float>(std::exp(interval_log_value * static_cast<double>(i)) * kFreqScaleConst);
             }
             std::fill(to_update_base_y_flags_.begin(), to_update_base_y_flags_.end(), true);
-            std::fill(to_update_target_y_flags_.begin(), to_update_target_y_flags_.end(), true);
         }
         // update width & xs
         if (to_update_bound_.exchange(false, std::memory_order::acquire)) {
@@ -350,11 +359,11 @@ namespace zlpanel {
         }
         // update db update flags
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            to_update_base_y_flags_[band] = (to_update_base_y_flags_[band]
-                || to_update_empty_flags_[band].exchange(false, std::memory_order::acquire));
-            to_update_target_y_flags_[band] = (to_update_base_y_flags_[band]
-                || to_update_target_gain_flags_[band].exchange(false, std::memory_order::acquire));
-            to_update_side_y_flags_[band] = (to_update_base_y_flags_[band])
+            to_update_base_y_flags_[band] = to_update_base_y_flags_[band]
+                || to_update_empty_flags_[band].exchange(false, std::memory_order::acquire);
+            to_update_target_y_flags_[band] = to_update_base_y_flags_[band]
+                || to_update_target_gain_flags_[band].exchange(false, std::memory_order::acquire);
+            to_update_side_y_flags_[band] = to_update_base_y_flags_[band]
                 || to_update_side_empty_flags_[band].exchange(false, std::memory_order::acquire);
             const auto lr = c_lr_modes_[band];
             to_update_lr_flags_[static_cast<size_t>(lr)] = to_update_lr_flags_[static_cast<size_t>(lr)]
@@ -410,8 +419,16 @@ namespace zlpanel {
                     const auto para = side_empty_[band].getParas();
                     const auto [left_x, center_x, right_x] = getLeftCenterRightX(para);
                     side_points_[band][0].store(center_x, std::memory_order::relaxed);
-                    side_points_[band][1].store(left_x, std::memory_order::relaxed);
-                    side_points_[band][2].store(right_x, std::memory_order::relaxed);
+                    if (para.filter_type == zldsp::filter::kLowPass) {
+                        side_points_[band][1].store(0.f, std::memory_order::relaxed);
+                        side_points_[band][2].store(center_x, std::memory_order::relaxed);
+                    } else if (para.filter_type == zldsp::filter::kHighPass) {
+                        side_points_[band][1].store(center_x, std::memory_order::relaxed);
+                        side_points_[band][2].store(c_width_, std::memory_order::relaxed);
+                    } else {
+                        side_points_[band][1].store(left_x, std::memory_order::relaxed);
+                        side_points_[band][2].store(right_x, std::memory_order::relaxed);
+                    }
                     message_to_update_side_dragger_.store(true, std::memory_order::release);
                     message_to_update_draggers_total_.store(true, std::memory_order::release);
                 }
@@ -465,11 +482,12 @@ namespace zlpanel {
         }
         case zldsp::filter::kLowShelf:
         case zldsp::filter::kHighPass: {
-            return std::make_tuple(0.f, static_cast<float>(center_x), static_cast<float>(center_x));
+            return std::make_tuple(0.f, static_cast<float>(center_x), c_width_);
+
         }
         case zldsp::filter::kHighShelf:
         case zldsp::filter::kLowPass: {
-            return std::make_tuple(static_cast<float>(center_x), static_cast<float>(center_x), 0.f);
+            return std::make_tuple(0.f, static_cast<float>(center_x), c_width_);
         }
         }
     }

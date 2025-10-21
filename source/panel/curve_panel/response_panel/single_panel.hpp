@@ -34,10 +34,13 @@ namespace zlpanel {
                  bool to_update_base, bool to_update_target,
                  std::span<float> xs, float k, float b,
                  kfr::univector<float>& base_mag, kfr::univector<float>& target_mag,
-                 float center_x, float center_mag, float button_mag);
+                 float center_x, float center_mag, float button_mag,
+                 bool to_update_side,
+                 float left_x, float right_x);
 
         void runUpdate(std::array<bool, zlp::kBandNum>& to_update_base_flags,
-                       std::array<bool, zlp::kBandNum>& to_update_target_flags);
+                       std::array<bool, zlp::kBandNum>& to_update_target_flags,
+                       std::array<bool, zlp::kBandNum>& to_update_side_flags);
 
     private:
         static constexpr size_t kNumPoints = 400;
@@ -54,6 +57,7 @@ namespace zlpanel {
         int skip_next_paint_{0};
 
         std::atomic<float> center_y_{0.f};
+        float side_y_{0.f};
 
         std::array<juce::Path, zlp::kBandNum> base_paths_{};
         std::array<juce::Path, zlp::kBandNum> next_base_paths_{};
@@ -66,6 +70,9 @@ namespace zlpanel {
 
         std::array<juce::Line<float>, zlp::kBandNum> button_lines_{};
         std::array<juce::Line<float>, zlp::kBandNum> next_button_lines_{};
+
+        std::array<juce::Line<float>, zlp::kBandNum> side_lines_{};
+        std::array<juce::Line<float>, zlp::kBandNum> next_side_lines_{};
 
         std::mutex mutex_;
 

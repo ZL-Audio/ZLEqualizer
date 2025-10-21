@@ -42,6 +42,12 @@ namespace zlpanel {
                 }
             }
             drawBand<true>(g, selected_band);
+            if (target_fill_alpha_[selected_band] > 0.01f) {
+                g.setColour(base_stroke_colour_[selected_band]);
+                const auto line = side_lines_[selected_band];
+                g.fillRect(line.getStartX(), side_y_ - curve_thickness_ * .35f,
+                               line.getEndX() - line.getStartX(), curve_thickness_ * .7f);
+            }
         } else {
             for (const auto& band : not_off_indices_) {
                 drawBand<false>(g, band);
@@ -53,6 +59,7 @@ namespace zlpanel {
         auto bound = getLocalBounds().toFloat();
         bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
         center_y_.store(bound.getHeight() * .5f, std::memory_order::relaxed);
+        side_y_ = bound.getHeight() - base_.getFontSize() * kDraggerScale * .5f;
         lookAndFeelChanged();
         skip_next_paint_ = 0;
     }
@@ -104,7 +111,8 @@ namespace zlpanel {
                           const bool to_update_base, const bool to_update_target,
                           std::span<float> xs, const float k, const float b,
                           kfr::univector<float>& base_mag, kfr::univector<float>& target_mag,
-                          const float center_x, const float center_mag, const float button_mag) {
+                          const float center_x, const float center_mag, const float button_mag,
+                          const bool to_update_side, const float left_x, const float right_x) {
         const auto center_y = center_y_.load(std::memory_order_relaxed);
         if (to_update_base) {
             next_base_paths_[band].clear();
@@ -128,7 +136,7 @@ namespace zlpanel {
                 }
             }
         }
-        if (to_update_base || to_update_target) {
+        if (to_update_target) {
             next_target_fills_[band].clear();
             if (filter_status != zlp::FilterStatus::kOff) {
                 temp_db_ = k * target_mag + b;
@@ -139,19 +147,27 @@ namespace zlpanel {
                 next_target_fills_[band].closeSubPath();
             }
         }
+        if (to_update_side) {
+            next_side_lines_[band].setStart(left_x, 0.f);
+            next_side_lines_[band].setEnd(right_x, 0.f);
+        }
     }
 
     void SinglePanel::runUpdate(std::array<bool, zlp::kBandNum>& to_update_base_flags,
-                                std::array<bool, zlp::kBandNum>& to_update_target_flags) {
+                                std::array<bool, zlp::kBandNum>& to_update_target_flags,
+                                std::array<bool, zlp::kBandNum>& to_update_side_flags) {
         std::lock_guard<std::mutex> lock{mutex_};
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             if (std::exchange(to_update_base_flags[band], false)) {
-                base_paths_[band].swapWithPath(next_base_paths_[band]);
+                base_paths_[band] = next_base_paths_[band];
                 base_fills_[band].swapWithPath(next_base_fills_[band]);
                 button_lines_[band] = next_button_lines_[band];
             }
             if (std::exchange(to_update_target_flags[band], false)) {
                 target_fills_[band].swapWithPath(next_target_fills_[band]);
+            }
+            if (std::exchange(to_update_side_flags[band], false)) {
+                side_lines_[band] = next_side_lines_[band];
             }
         }
     }
