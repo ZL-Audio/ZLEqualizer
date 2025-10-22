@@ -17,21 +17,24 @@ namespace zlpanel {
         setInterceptsMouseClicks(false, false);
     }
 
-    void SumPanel::paint(juce::Graphics& g) {
-        if (skip_next_paint_ < 2) {
-            skip_next_paint_ += 1;
-            return;
-        }
-        const std::unique_lock<std::mutex> lock{mutex_, std::try_to_lock};
-        if (!lock.owns_lock()) {
-            return;
-        }
+    void SumPanel::paintSameStereo(juce::Graphics& g) const {
         for (size_t lr = 0; lr < 5; ++lr) {
-            if (!paths_[lr].isEmpty()) {
-                g.setColour(is_same_stereo_[lr]
-                    ? base_.getColourMap2(lr)
-                    : base_.getColourMap2(lr).withAlpha(kDiffStereoAlphaMultiplier));
-                g.strokePath(paths_[lr], juce::PathStrokeType(curve_thickness_,
+            const auto i = static_cast<size_t>(4) - lr;
+            if (!paths_[i].isEmpty() && is_same_stereo_[i]) {
+                g.setColour(base_.getColourMap2(i));
+                g.strokePath(paths_[i], juce::PathStrokeType(curve_thickness_,
+                                                              juce::PathStrokeType::curved,
+                                                              juce::PathStrokeType::butt));
+            }
+        }
+    }
+
+    void SumPanel::paintDifferentStereo(juce::Graphics& g) const {
+        for (size_t lr = 0; lr < 5; ++lr) {
+            const auto i = static_cast<size_t>(4) - lr;
+            if (!paths_[i].isEmpty() && !is_same_stereo_[i]) {
+                g.setColour(base_.getColourMap2(i).withAlpha(kDiffStereoAlphaMultiplier));
+                g.strokePath(paths_[i], juce::PathStrokeType(curve_thickness_,
                                                               juce::PathStrokeType::curved,
                                                               juce::PathStrokeType::butt));
             }
@@ -40,7 +43,6 @@ namespace zlpanel {
 
     void SumPanel::resized() {
         lookAndFeelChanged();
-        skip_next_paint_ = 0;
     }
 
     void SumPanel::run(const size_t lr, const bool to_update, const bool is_not_off,
@@ -73,7 +75,6 @@ namespace zlpanel {
     }
 
     void SumPanel::runUpdate(std::array<bool, 5>& to_update_flags_) {
-        std::lock_guard<std::mutex> lock{mutex_};
         for (size_t lr = 0; lr < 5; ++lr) {
             if (std::exchange(to_update_flags_[lr], false)) {
                 paths_[lr] = next_paths_[lr];

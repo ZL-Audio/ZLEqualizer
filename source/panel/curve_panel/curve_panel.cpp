@@ -15,18 +15,11 @@ namespace zlpanel {
                            const multilingual::TooltipHelper& tooltip_helper) :
         background_panel_(p, base, tooltip_helper),
         fft_panel_(p, base, tooltip_helper),
-        response_panel_(p, base, tooltip_helper),
-        scale_panel_(p, base, tooltip_helper) {
+        response_panel_(p, base, tooltip_helper){
         background_panel_.setBufferedToImage(true);
         addAndMakeVisible(background_panel_);
-
         addAndMakeVisible(fft_panel_);
-
         addAndMakeVisible(response_panel_);
-
-        scale_panel_.setBufferedToImage(true);
-        addAndMakeVisible(scale_panel_);
-
         setInterceptsMouseClicks(false, true);
     }
 
@@ -44,7 +37,7 @@ namespace zlpanel {
         background_panel_.setBounds(bound);
         fft_panel_.setBounds(bound);
         response_panel_.setBounds(bound);
-        scale_panel_.setBounds(bound.removeFromRight(scale_panel_.getIdealWidth()));
+
     }
 
     void CurvePanel::repaintCallBack() {
@@ -54,7 +47,6 @@ namespace zlpanel {
 
     void CurvePanel::repaintCallBackSlow() {
         response_panel_.repaintCallBackSlow();
-        scale_panel_.repaintCallBackSlow();
     }
 
     void CurvePanel::updateBand() {

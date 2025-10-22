@@ -46,10 +46,14 @@ namespace zlpanel {
             return side_dragger_;
         }
 
+        void mouseDown(const juce::MouseEvent& event) override;
+
+        void mouseDoubleClick(const juce::MouseEvent& event) override;
+
     private:
         static constexpr float kBypassAlphaMultiplier = .75f;
-        static constexpr float kDiffStereoAlphaMultiplier = .75f;
-        static constexpr float kDraggerSizeMultiplier = 1.33f;
+        static constexpr float kDiffStereoAlphaMultiplier = .5f;
+        static constexpr float kDraggerSizeMultiplier = 1.4f;
 
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;

@@ -15,23 +15,37 @@
 #include "../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
-    class ScaleLabelPanel final : public juce::Component {
+    class MouseEventPanel final : public juce::Component,
+                                  private juce::MultiTimer {
     public:
-        explicit ScaleLabelPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit MouseEventPanel(PluginProcessor& p, zlgui::UIBase& base,
                                  const multilingual::TooltipHelper& tooltip_helper);
 
-        void paint(juce::Graphics& g) override;
+        ~MouseEventPanel() override;
 
-        void setMaxIdx(int eq_max_idx, int fft_min_idx);
+        void mouseDown(const juce::MouseEvent& event) override;
 
-        float getUnitHeight() const;
+        void mouseDoubleClick(const juce::MouseEvent& event) override;
+
+        void updateBand();
+
+        void updateSampleRate(double sample_rate);
 
     private:
-        static constexpr float kFFTAlpha = .5f;
+        static constexpr std::array kInitIDs{
+            zlp::PFilterStatus::kID, zlp::PFilterType::kID, zlp::PLRMode::kID,
+            zlp::POrder::kID,
+            zlp::PFreq::kID, zlp::PGain::kID, zlp::PQ::kID,
+            zlp::PDynamicON::kID
+        };
 
+        PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
+        size_t previous_band_{zlp::kBandNum};
 
-        int c_eq_max_idx_{-1};
-        int c_fft_min_idx_{-1};
+        float fft_max_{0.f};
+        float slider_max_{0.f};
+
+        void timerCallback(int timer_ID) override;
     };
 }

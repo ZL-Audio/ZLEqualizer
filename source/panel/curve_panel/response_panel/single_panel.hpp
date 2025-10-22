@@ -20,7 +20,9 @@ namespace zlpanel {
         explicit SinglePanel(PluginProcessor& p, zlgui::UIBase& base,
                              std::vector<size_t>& not_off_indices);
 
-        void paint(juce::Graphics& g) override;
+        void paintSameStereo(juce::Graphics& g) const;
+
+        void paintDifferentStereo(juce::Graphics& g) const;
 
         void resized() override;
 
@@ -48,13 +50,12 @@ namespace zlpanel {
         static constexpr float kDynamicFillingAlpha = .33333f;
         static constexpr float kNotSelectedAlphaMultiplier = .85f;
         static constexpr float kBypassAlphaMultiplier = .75f;
-        static constexpr float kDiffStereoAlphaMultiplier = .75f;
+        static constexpr float kDiffStereoAlphaMultiplier = .33333f;
+        static constexpr float kNoBandSelectedAlphaMultiplier = .75f;
 
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         std::vector<size_t>& not_off_indices_;
-
-        int skip_next_paint_{0};
 
         std::atomic<float> center_y_{0.f};
         float side_y_{0.f};
@@ -73,8 +74,6 @@ namespace zlpanel {
 
         std::array<juce::Line<float>, zlp::kBandNum> side_lines_{};
         std::array<juce::Line<float>, zlp::kBandNum> next_side_lines_{};
-
-        std::mutex mutex_;
 
         std::array<float, zlp::kBandNum> base_stroke_alpha_{};
         std::array<float, zlp::kBandNum> base_fill_alpha_{};

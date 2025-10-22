@@ -190,6 +190,15 @@ namespace zlgui {
 
         juce::Colour getBackgroundHideColour() const { return getBackgroundColour().withAlpha(0.5f); }
 
+        juce::Colour getColourBlendedWithBackground(const juce::Colour colour, const float alpha) const {
+            const auto background_color = getBackgroundColour();
+            return juce::Colour::fromFloatRGBA(
+                alpha * colour.getFloatRed() + (1.f - alpha) * background_color.getFloatRed(),
+                alpha * colour.getFloatGreen() + (1.f - alpha) * background_color.getFloatGreen(),
+                alpha * colour.getFloatBlue() + (1.f - alpha) * background_color.getFloatBlue(),
+            1.f);
+        }
+
         juce::Colour getDarkShadowColour() const {
             return custom_colours_[static_cast<size_t>(kShadowColour)];
         }

@@ -109,7 +109,6 @@ namespace zlpanel {
     }
 
     void MainPanel::repaintCallBackSlow() {
-
         // update sample rate
         const auto sample_rate = p_ref_.getAtomicSampleRate();
         if (std::abs(sample_rate - c_sample_rate_) > 1.0) {

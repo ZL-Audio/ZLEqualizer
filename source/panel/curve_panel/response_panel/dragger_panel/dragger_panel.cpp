@@ -18,13 +18,10 @@ namespace zlpanel {
         target_dragger_(base),
         side_dragger_(base),
         max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
+
         side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
         side_dragger_.getButton().setToggleState(true, juce::sendNotificationSync);
-        side_dragger_.getButton().onStateChange = [this]() {
-            if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
-                updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
-            }
-        };
+        side_dragger_.getButton().addMouseListener(this, false);
         side_dragger_.setXYEnabled(true, false);
         side_dragger_.getLAF().setDraggerShape(zlgui::dragger::DraggerLookAndFeel::kRectangle);
         addChildComponent(side_dragger_);
@@ -37,6 +34,7 @@ namespace zlpanel {
 
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             draggers_[band].setBroughtToFrontOnMouseClick(true);
+            draggers_[band].getButton().addMouseListener(this, false);
             draggers_[band].getButton().onClick = [this, band]() {
                 if (draggers_[band].getButton().getToggleState()) {
                     base_.setSelectedBand(band);
@@ -147,7 +145,7 @@ namespace zlpanel {
         if (!is_same_stereo) {
             alpha *= kDiffStereoAlphaMultiplier;
         }
-        draggers_[band].getButton().setAlpha(alpha);
+        draggers_[band].getLAF().setAlpha(alpha);
         if (lr_mode == 0) {
             draggers_[band].getLAF().setLabel("");
         } else if (lr_mode == 1) {
@@ -231,5 +229,27 @@ namespace zlpanel {
         side_dragger_attachment_ = std::make_unique<zlgui::attachment::DraggerAttachment<false, true>>(
             side_dragger_, p_ref_.parameters_,
             zlp::PSideFreq::kID + std::to_string(band), freq_range_, updater_);
+    }
+
+    void DraggerPanel::mouseDown(const juce::MouseEvent& event) {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            if (event.originalComponent == &(side_dragger_.getButton())) {
+                updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
+            }
+        }
+    }
+
+    void DraggerPanel::mouseDoubleClick(const juce::MouseEvent& event) {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            if (event.originalComponent == &(draggers_[band].getButton())) {
+                if (event.mods.isCommandDown()) {
+                    const auto dynamic_on = getValue(p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) >
+                        .5f;
+                    updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
+                                dynamic_on ? 0.f : 1.f);
+                    band_helper::turnOnOffDynamic(p_ref_, band, dynamic_on);
+                }
+            }
+        }
     }
 }

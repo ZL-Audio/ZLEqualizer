@@ -15,31 +15,23 @@
 #include "../../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
-    class ButtonPanel final : public juce::Component {
+    class ScaleLabelPanel final : public juce::Component {
     public:
-        explicit ButtonPanel(PluginProcessor& p, zlgui::UIBase& base,
-                             const multilingual::TooltipHelper& tooltip_helper);
+        explicit ScaleLabelPanel(PluginProcessor& p, zlgui::UIBase& base,
+                                 const multilingual::TooltipHelper& tooltip_helper);
 
-        void mouseDown(const juce::MouseEvent& event) override;
+        void paint(juce::Graphics& g) override;
 
-        void mouseDoubleClick(const juce::MouseEvent& event) override;
+        void setMaxIdx(int eq_max_idx, int fft_min_idx);
 
-        void updateBand();
-
-        void updateSampleRate(double sample_rate);
+        float getUnitHeight() const;
 
     private:
-        static constexpr std::array kInitIDs{
-            zlp::PFilterStatus::kID, zlp::PFilterType::kID,
-            zlp::POrder::kID,
-            zlp::PFreq::kID, zlp::PGain::kID, zlp::PQ::kID,
-            zlp::PDynamicON::kID
-        };
+        static constexpr float kFFTAlpha = .5f;
 
-        PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
 
-        float fft_max_{0.f};
-        float slider_max_{0.f};
+        int c_eq_max_idx_{-1};
+        int c_fft_min_idx_{-1};
     };
 }

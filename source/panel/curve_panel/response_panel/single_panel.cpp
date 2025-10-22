@@ -20,22 +20,9 @@ namespace zlpanel {
         setInterceptsMouseClicks(false, false);
     }
 
-    void SinglePanel::paint(juce::Graphics& g) {
-        if (skip_next_paint_ < 2) {
-            skip_next_paint_ += 1;
-            return;
-        }
-        const std::unique_lock<std::mutex> lock{mutex_, std::try_to_lock};
-        if (!lock.owns_lock()) {
-            return;
-        }
+    void SinglePanel::paintSameStereo(juce::Graphics& g) const {
         const auto selected_band = base_.getSelectedBand();
         if (selected_band < zlp::kBandNum) {
-            for (const auto& band : not_off_indices_) {
-                if (band != selected_band && !is_same_stereo_[band]) {
-                    drawBand<false>(g, band);
-                }
-            }
             for (const auto& band : not_off_indices_) {
                 if (band != selected_band && is_same_stereo_[band]) {
                     drawBand<false>(g, band);
@@ -47,6 +34,17 @@ namespace zlpanel {
                 const auto line = side_lines_[selected_band];
                 g.fillRect(line.getStartX(), side_y_ - curve_thickness_ * .35f,
                                line.getEndX() - line.getStartX(), curve_thickness_ * .7f);
+            }
+        }
+    }
+
+    void SinglePanel::paintDifferentStereo(juce::Graphics& g) const {
+        const auto selected_band = base_.getSelectedBand();
+        if (selected_band < zlp::kBandNum) {
+            for (const auto& band : not_off_indices_) {
+                if (band != selected_band && !is_same_stereo_[band]) {
+                    drawBand<false>(g, band);
+                }
             }
         } else {
             for (const auto& band : not_off_indices_) {
@@ -61,7 +59,6 @@ namespace zlpanel {
         center_y_.store(bound.getHeight() * .5f, std::memory_order::relaxed);
         side_y_ = bound.getHeight() - base_.getFontSize() * kDraggerScale * .5f;
         lookAndFeelChanged();
-        skip_next_paint_ = 0;
     }
 
     void SinglePanel::updateDrawingParas(const size_t band, const zlp::FilterStatus filter_status,
@@ -73,7 +70,8 @@ namespace zlpanel {
             return;
         }
         float multiplier = 1.f;
-        const auto is_selected = (band == base_.getSelectedBand());
+        const auto selected_band = base_.getSelectedBand();
+        const auto is_selected = (band == selected_band);
         if (filter_status == zlp::FilterStatus::kBypass) {
             multiplier *= kBypassAlphaMultiplier;
         }
@@ -82,6 +80,8 @@ namespace zlpanel {
         }
         if (!is_same_stereo) {
             multiplier *= kDiffStereoAlphaMultiplier;
+        } else if (selected_band == zlp::kBandNum) {
+            multiplier *= kNoBandSelectedAlphaMultiplier;
         }
         if (!is_selected) {
             multiplier *= kNotSelectedAlphaMultiplier;
@@ -96,12 +96,7 @@ namespace zlpanel {
         base_stroke_alpha_[band] = multiplier;
 
         const auto band_colour = base_.getColourMap1(band);
-        const auto background_color = base_.getBackgroundColour();
-        base_stroke_colour_[band] = juce::Colour::fromFloatRGBA(
-            multiplier * band_colour.getFloatRed() + (1 - multiplier) * background_color.getFloatRed(),
-            multiplier * band_colour.getFloatGreen() + (1 - multiplier) * background_color.getFloatGreen(),
-            multiplier * band_colour.getFloatBlue() + (1 - multiplier) * background_color.getFloatBlue(),
-            1.f);
+        base_stroke_colour_[band] = base_.getColourBlendedWithBackground(band_colour, multiplier);
 
         is_same_stereo_[band] = is_same_stereo;
     }
@@ -156,7 +151,6 @@ namespace zlpanel {
     void SinglePanel::runUpdate(std::array<bool, zlp::kBandNum>& to_update_base_flags,
                                 std::array<bool, zlp::kBandNum>& to_update_target_flags,
                                 std::array<bool, zlp::kBandNum>& to_update_side_flags) {
-        std::lock_guard<std::mutex> lock{mutex_};
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             if (std::exchange(to_update_base_flags[band], false)) {
                 base_paths_[band] = next_base_paths_[band];
@@ -197,6 +191,6 @@ namespace zlpanel {
     }
 
     void SinglePanel::lookAndFeelChanged() {
-        curve_thickness_ = base_.getFontSize() * .15f * base_.getEQCurveThickness();
+        curve_thickness_ = base_.getFontSize() * .185f * base_.getEQCurveThickness();
     }
 }

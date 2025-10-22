@@ -17,7 +17,8 @@ namespace zlpanel {
         p_ref_(p), base_(base),
         single_panel_(p, base, message_not_off_indices_),
         sum_panel_(p, base),
-        button_panel_(p, base, tooltip_helper),
+        scale_panel_(p, base, tooltip_helper),
+        mouse_event_panel_(p, base, tooltip_helper),
         dragger_panel_(p, base, tooltip_helper),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
         juce::ignoreUnused(base_, tooltip_helper);
@@ -50,9 +51,10 @@ namespace zlpanel {
         }
         addAndMakeVisible(single_panel_);
         addAndMakeVisible(sum_panel_);
-        addAndMakeVisible(button_panel_);
+        addAndMakeVisible(mouse_event_panel_);
+        scale_panel_.setBufferedToImage(true);
+        addAndMakeVisible(scale_panel_);
         addAndMakeVisible(dragger_panel_);
-
         setInterceptsMouseClicks(false, true);
     }
 
@@ -65,12 +67,24 @@ namespace zlpanel {
         }
     }
 
+    void ResponsePanel::paint(juce::Graphics& g) {
+        const std::unique_lock<std::mutex> lock{paint_mutex_, std::try_to_lock};
+        if (!lock.owns_lock()) {
+            return;
+        }
+        single_panel_.paintDifferentStereo(g);
+        sum_panel_.paintDifferentStereo(g);
+        single_panel_.paintSameStereo(g);
+        sum_panel_.paintSameStereo(g);
+    }
+
     void ResponsePanel::resized() {
         const auto bound = getLocalBounds();
         single_panel_.setBounds(bound);
         sum_panel_.setBounds(bound);
-        button_panel_.setBounds(bound);
+        mouse_event_panel_.setBounds(bound);
         dragger_panel_.setBounds(bound);
+        scale_panel_.setBounds(bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
         side_y_ = static_cast<float>(bound.getHeight() - getBottomAreaHeight(base_.getFontSize()))
             - base_.getFontSize() * kDraggerScale * .5f;
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
@@ -150,12 +164,13 @@ namespace zlpanel {
     }
 
     void ResponsePanel::repaintCallBackSlow() {
+        scale_panel_.repaintCallBackSlow();
         dragger_panel_.repaintCallBackSlow();
     }
 
     void ResponsePanel::updateBand() {
         message_to_update_panels_.store(true, std::memory_order::relaxed);
-        button_panel_.updateBand();
+        mouse_event_panel_.updateBand();
         dragger_panel_.updateBand();
         updateTargetPosition();
         updateSidePosition();
@@ -163,7 +178,7 @@ namespace zlpanel {
 
     void ResponsePanel::updateSampleRate(const double sample_rate) {
         sample_rate_.store(sample_rate, std::memory_order::relaxed);
-        button_panel_.updateSampleRate(sample_rate);
+        mouse_event_panel_.updateSampleRate(sample_rate);
         dragger_panel_.updateSampleRate(sample_rate);
     }
 
@@ -197,7 +212,10 @@ namespace zlpanel {
                     break;
                 }
             }
-            single_panel_.runUpdate(to_update_base_y_flags_, to_update_target_y_flags_, to_update_side_y_flags_);
+            {
+                std::lock_guard<std::mutex> lock{paint_mutex_};
+                single_panel_.runUpdate(to_update_base_y_flags_, to_update_target_y_flags_, to_update_side_y_flags_);
+            }
             if (threadShouldExit()) {
                 break;
             }
@@ -210,7 +228,10 @@ namespace zlpanel {
                     break;
                 }
             }
-            sum_panel_.runUpdate(to_update_lr_flags_);
+            {
+                std::lock_guard<std::mutex> lock{paint_mutex_};
+                sum_panel_.runUpdate(to_update_lr_flags_);
+            }
             if (threadShouldExit()) {
                 break;
             }
@@ -481,10 +502,7 @@ namespace zlpanel {
                                    static_cast<float>(right_x));
         }
         case zldsp::filter::kLowShelf:
-        case zldsp::filter::kHighPass: {
-            return std::make_tuple(0.f, static_cast<float>(center_x), c_width_);
-
-        }
+        case zldsp::filter::kHighPass:
         case zldsp::filter::kHighShelf:
         case zldsp::filter::kLowPass: {
             return std::make_tuple(0.f, static_cast<float>(center_x), c_width_);

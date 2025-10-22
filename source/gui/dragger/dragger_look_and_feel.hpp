@@ -38,15 +38,11 @@ namespace zlgui::dragger {
                 g.fillPath(outline_path_);
             }
 
-            g.setColour(colour_);
+            g.setColour(filling_colour_);
             g.fillPath(inner_path_);
 
             if (label_.length() > 0) {
-                if (colour_.getPerceivedBrightness() <= .5f) {
-                    g.setColour(juce::Colours::white);
-                } else {
-                    g.setColour(juce::Colours::black);
-                }
+                g.setColour(colour_.contrasting().withAlpha(alpha_));
                 g.setFont(base_.getFontSize() * label_scale_);
                 auto bound = button.getLocalBounds().toFloat();
                 const auto radius = std::min(bound.getHeight(), bound.getWidth());
@@ -55,7 +51,10 @@ namespace zlgui::dragger {
             }
         }
 
-        inline void setColour(const juce::Colour c) { colour_ = c; }
+        inline void setColour(const juce::Colour c) {
+            colour_ = c;
+            filling_colour_ = base_.getColourBlendedWithBackground(c, alpha_);
+        }
 
         void setIsSelected(const bool f) { is_selected_ = f; }
 
@@ -148,13 +147,19 @@ namespace zlgui::dragger {
 
         void setLabelScale(const float x) { label_scale_ = x; }
 
+        void setAlpha(const float a) {
+            alpha_ = a;
+            filling_colour_ = base_.getColourBlendedWithBackground(colour_, alpha_);
+        }
+
     private:
-        juce::Colour colour_;
+        juce::Colour colour_, filling_colour_;
         juce::Path outline_path_, inner_path_;
         bool is_selected_{false};
         DraggerShape dragger_shape_{DraggerShape::kRound};
         juce::String label_;
         float label_scale_ = 1.f;
+        float alpha_ = 1.f;
         UIBase& base_;
     };
 }

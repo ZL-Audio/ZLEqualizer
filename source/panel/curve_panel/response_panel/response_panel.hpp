@@ -11,8 +11,9 @@
 
 #include "single_panel.hpp"
 #include "sum_panel.hpp"
-#include "button_panel/button_panel.hpp"
-#include "button_panel/dragger_panel.hpp"
+#include "scale_panel/scale_panel.hpp"
+#include "mouse_event_panel.hpp"
+#include "dragger_panel/dragger_panel.hpp"
 
 namespace zlpanel {
     class ResponsePanel final : public juce::Component,
@@ -23,6 +24,8 @@ namespace zlpanel {
                                const multilingual::TooltipHelper& tooltip_helper);
 
         ~ResponsePanel() override;
+
+        void paint(juce::Graphics& g) override;
 
         void resized() override;
 
@@ -59,11 +62,9 @@ namespace zlpanel {
         std::atomic<bool> message_to_update_side_dragger_{};
 
         SinglePanel single_panel_;
-
         SumPanel sum_panel_;
-
-        ButtonPanel button_panel_;
-
+        ScalePanel scale_panel_;
+        MouseEventPanel mouse_event_panel_;
         DraggerPanel dragger_panel_;
 
         float side_y_{0.f};
@@ -120,6 +121,8 @@ namespace zlpanel {
         std::array<std::array<std::atomic<float>, 6>, zlp::kBandNum> points_;
         // side button x, side left x, side right x
         std::array<std::array<std::atomic<float>, 3>, zlp::kBandNum> side_points_;
+
+        std::mutex paint_mutex_;
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
 
