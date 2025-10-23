@@ -27,6 +27,12 @@ namespace zlpanel {
 
         void mouseDoubleClick(const juce::MouseEvent& event) override;
 
+        void mouseEnter(const juce::MouseEvent& event) override;
+
+        void mouseMove(const juce::MouseEvent& event) override;
+
+        void mouseExit(const juce::MouseEvent& event) override;
+
         void updateBand();
 
         void updateSampleRate(double sample_rate);

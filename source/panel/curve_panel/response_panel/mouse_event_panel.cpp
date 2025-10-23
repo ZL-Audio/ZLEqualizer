@@ -19,6 +19,23 @@ namespace zlpanel {
 
     MouseEventPanel::~MouseEventPanel() {
         stopTimer(0);
+        stopTimer(1);
+    }
+
+    void MouseEventPanel::mouseEnter(const juce::MouseEvent&) {
+        startTimer(1, 2000);
+    }
+
+    void MouseEventPanel::mouseMove(const juce::MouseEvent&) {
+        stopTimer(1);
+        for (size_t i = 0; i < 3; ++i) {
+            p_ref_.getController().getFFTAnalyzer().setFrozen(i, false);
+        }
+        startTimer(1, 2000);
+    }
+
+    void MouseEventPanel::mouseExit(const juce::MouseEvent&) {
+        stopTimer(1);
     }
 
     void MouseEventPanel::mouseDown(const juce::MouseEvent&) {
@@ -103,6 +120,11 @@ namespace zlpanel {
         if (timer_ID == 0) {
             base_.setSelectedBand(zlp::kBandNum);
             stopTimer(0);
+        } else if (timer_ID == 1) {
+            for (size_t i = 0; i < 3; ++i) {
+                p_ref_.getController().getFFTAnalyzer().setFrozen(i, true);
+            }
+            stopTimer(1);
         }
     }
 }
