@@ -91,6 +91,9 @@ namespace zlpanel {
             updateDraggerAttachment(band);
             updateTargetAttachment(band);
             updateSideAttachment(band);
+        } else {
+            target_dragger_.setVisible(false);
+            side_dragger_.setVisible(false);
         }
     }
 

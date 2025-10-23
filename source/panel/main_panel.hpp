@@ -11,6 +11,7 @@
 
 #include "control_panel/control_panel.hpp"
 #include "curve_panel/curve_panel.hpp"
+#include "top_panel/top_panel.hpp"
 
 namespace zlpanel {
     class MainPanel final : public juce::Component,
@@ -43,6 +44,8 @@ namespace zlpanel {
         ControlPanel control_panel_;
 
         CurvePanel curve_panel_;
+
+        TopPanel top_panel_;
 
         zlgui::tooltip::TooltipLookAndFeel tooltip_laf_;
         zlgui::tooltip::TooltipWindow tooltip_window_;

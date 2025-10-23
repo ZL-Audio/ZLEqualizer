@@ -75,23 +75,18 @@ namespace zlpanel {
         if (filter_status == zlp::FilterStatus::kBypass) {
             multiplier *= kBypassAlphaMultiplier;
         }
-        if (!is_selected) {
-            multiplier *= kNotSelectedAlphaMultiplier;
-        }
         if (!is_same_stereo) {
             multiplier *= kDiffStereoAlphaMultiplier;
         } else if (selected_band == zlp::kBandNum) {
             multiplier *= kNoBandSelectedAlphaMultiplier;
         }
-        if (!is_selected) {
-            multiplier *= kNotSelectedAlphaMultiplier;
-        }
         if (is_selected) {
             base_fill_alpha_[band] = (is_dynamic_on ? 0.f : kFillingAlpha) * multiplier;
             target_fill_alpha_[band] = (is_dynamic_on ? kDynamicFillingAlpha : 0.f) * multiplier;
         } else {
+            target_fill_alpha_[band] = (is_dynamic_on ? kDynamicFillingAlpha * .9f : 0.f) * multiplier;
+            multiplier *= kNotSelectedAlphaMultiplier;
             base_fill_alpha_[band] = 0.f;
-            target_fill_alpha_[band] = (is_dynamic_on ? kFillingAlpha : 0.f) * multiplier;
         }
         base_stroke_alpha_[band] = multiplier;
 
@@ -112,6 +107,7 @@ namespace zlpanel {
         if (to_update_base) {
             next_base_paths_[band].clear();
             next_base_fills_[band].clear();
+            next_button_lines_[band].setEnd(-100.f, -100.f);
             if (filter_status != zlp::FilterStatus::kOff) {
                 temp_db_ = k * base_mag + b;
                 // draw base path
@@ -126,8 +122,6 @@ namespace zlpanel {
                 if (std::abs(center_mag - button_mag) > 1e-6f) {
                     next_button_lines_[band].setStart(center_x, center_mag);
                     next_button_lines_[band].setEnd(center_x, button_mag);
-                } else {
-                    next_button_lines_[band].setEnd(-100.f, -100.f);
                 }
             }
         }
@@ -177,7 +171,7 @@ namespace zlpanel {
             g.setColour(colour.withAlpha(target_fill_alpha_[band]));
             g.fillPath(target_fills_[band]);
         }
-        const auto curve_thickness = thick ? curve_thickness_ * 1.5f : curve_thickness_;
+        const auto curve_thickness = thick ? curve_thickness_ * kThickMultiplier : curve_thickness_;
         if (base_stroke_alpha_[band] > 0.01f) {
             g.setColour(base_stroke_colour_[band]);
             g.strokePath(base_paths_[band], juce::PathStrokeType(curve_thickness,
@@ -191,6 +185,6 @@ namespace zlpanel {
     }
 
     void SinglePanel::lookAndFeelChanged() {
-        curve_thickness_ = base_.getFontSize() * .185f * base_.getEQCurveThickness();
+        curve_thickness_ = base_.getFontSize() * .175f * base_.getEQCurveThickness();
     }
 }

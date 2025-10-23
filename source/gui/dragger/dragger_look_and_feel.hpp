@@ -42,7 +42,7 @@ namespace zlgui::dragger {
             g.fillPath(inner_path_);
 
             if (label_.length() > 0) {
-                g.setColour(colour_.contrasting().withAlpha(alpha_));
+                g.setColour(base_.getTextColour().withAlpha(alpha_));
                 g.setFont(base_.getFontSize() * label_scale_);
                 auto bound = button.getLocalBounds().toFloat();
                 const auto radius = std::min(bound.getHeight(), bound.getWidth());

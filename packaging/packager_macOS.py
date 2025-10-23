@@ -98,12 +98,12 @@ def main():
 
     subprocess.run(["productbuild"] + command_list)
 
-    if os.path.exists("packaging/icon.icns"):
+    if os.path.exists("packaging/installer.icns"):
         print("")
         print("Attach icns")
-        subprocess.run(["mv", "packaging/icon.icns", "."])
+        subprocess.run(["mv", "packaging/installer.icns", "."])
         with open("tmpIcon.rsrc", "w") as outfile:
-            subprocess.run(["echo", "read 'icns' (-16455) \"icon.icns\";"], stdout=outfile)
+            subprocess.run(["echo", "read 'icns' (-16455) \"installer.icns\";"], stdout=outfile)
         print(subprocess.run(["Rez -append tmpIcon.rsrc -o \"{}_unsigned.pkg\"".format(artifact_name)], shell=True))
         print(subprocess.run(["SetFile -a C \"{}_unsigned.pkg\"".format(artifact_name)], shell=True))
     print("")

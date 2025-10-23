@@ -68,16 +68,16 @@ namespace zlgui {
             juce::Colour(23, 189, 206)
         },
         std::vector<juce::Colour>{
-            juce::Colour(224, 136, 75),
-            juce::Colour(0, 128, 241),
+            juce::Colour(214, 126, 65),
+            juce::Colour(6, 134, 247),
             juce::Colour(211, 95, 211),
-            juce::Colour(41, 216, 215),
+            juce::Colour(23, 198, 197),
             juce::Colour(107, 152, 66),
-            juce::Colour(115, 169, 180),
-            juce::Colour(28, 136, 61),
+            juce::Colour(107, 161, 172),
+            juce::Colour(40, 148, 73),
             juce::Colour(128, 128, 128),
-            juce::Colour(67, 66, 221),
-            juce::Colour(232, 65, 48),
+            juce::Colour(91, 90, 245),
+            juce::Colour(232, 65, 48)
         },
         std::vector<juce::Colour>{
             juce::Colour(76, 114, 176),
@@ -104,12 +104,12 @@ namespace zlgui {
             juce::Colour(0, 215, 255),
         },
         std::vector<juce::Colour>{
-            juce::Colour(255, 192, 0),
-            juce::Colour(252, 18, 197),
-            juce::Colour(23, 255, 244),
-            juce::Colour(117, 212, 29),
-            juce::Colour(0, 59, 255),
-            juce::Colour(255, 40, 0),
+            juce::Colour(225, 162, 0),
+            juce::Colour(253, 19, 198),
+            juce::Colour(0, 231, 220),
+            juce::Colour(114, 209, 26),
+            juce::Colour(46, 105, 255),
+            juce::Colour(255, 49, 9)
         }
     };
 

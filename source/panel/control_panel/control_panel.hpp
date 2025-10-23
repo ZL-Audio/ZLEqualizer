@@ -45,6 +45,6 @@ namespace zlpanel {
         juce::Rectangle<int> left_bound{};
         juce::Rectangle<int> center_bound{};
 
-        void turnOnOffDynamic(bool dynamic_on);
+        void changeLeftRightBound(bool dynamic_on);
     };
 }

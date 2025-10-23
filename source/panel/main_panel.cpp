@@ -19,6 +19,7 @@ namespace zlpanel {
         refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]),
         control_panel_(p, base, tooltip_helper_),
         curve_panel_(p, base, tooltip_helper_),
+        top_panel_(p, base, tooltip_helper_),
         tooltip_laf_(base_), tooltip_window_(&curve_panel_) {
         juce::ignoreUnused(base_);
 
@@ -32,6 +33,7 @@ namespace zlpanel {
 
         addAndMakeVisible(curve_panel_);
         addChildComponent(control_panel_);
+        addAndMakeVisible(top_panel_);
     }
 
     MainPanel::~MainPanel() {
@@ -66,7 +68,7 @@ namespace zlpanel {
         control_bound = control_bound.withSizeKeepingCentre(control_panel_.getIdealWidth(), control_bound.getHeight());
         control_panel_.setBounds(control_bound);
 
-        bound.removeFromTop(getButtonSize(base_.getFontSize()));
+        top_panel_.setBounds(bound.removeFromTop(getButtonSize(base_.getFontSize())));
         curve_panel_.setBounds(bound);
     }
 

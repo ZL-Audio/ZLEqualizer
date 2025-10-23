@@ -49,8 +49,8 @@ DisableDirPage=yes
 CreateAppDir=no
 ''')
 
-    if os.path.isfile("/packaging/icon.ico"):
-        outfile.write(r'SetupIconFile=..\packaging\icon.ico')
+    if os.path.isfile("/packaging/installer.ico"):
+        outfile.write(r'SetupIconFile=..\packaging\installer.ico')
     outfile.write("UninstallDisplayIcon={uninstallexe}")
     if os.path.isfile("/packaging/EULA"):
         outfile.write(r'LicenseFile="EULA"')

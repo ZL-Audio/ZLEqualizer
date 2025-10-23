@@ -44,7 +44,7 @@ namespace zlpanel {
         left_bound = bound.removeFromLeft(left_width);
         right_control_panel_.setBounds(bound);
         if (dynamic_on_ptr_ != nullptr) {
-            turnOnOffDynamic(c_dynamic_on_);
+            changeLeftRightBound(c_dynamic_on_);
         }
     }
 
@@ -53,7 +53,7 @@ namespace zlpanel {
             const auto dynamic_on = dynamic_on_ptr_->load(std::memory_order::relaxed) > .5f;
             if (dynamic_on != c_dynamic_on_) {
                 c_dynamic_on_ = dynamic_on;
-                turnOnOffDynamic(c_dynamic_on_);
+                changeLeftRightBound(c_dynamic_on_);
                 left_control_panel_.turnOnOffDynamic(c_dynamic_on_);
             }
         }
@@ -65,14 +65,15 @@ namespace zlpanel {
         if (base_.getSelectedBand() < zlp::kBandNum) {
             const auto band_s = std::to_string(base_.getSelectedBand());
             dynamic_on_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PDynamicON::kID + band_s);
-            turnOnOffDynamic(dynamic_on_ptr_->load(std::memory_order::relaxed) > .5f);
-            setVisible(true);
+            changeLeftRightBound(dynamic_on_ptr_->load(std::memory_order::relaxed) > .5f);
             left_control_panel_.updateBand();
             right_control_panel_.updateBand();
+            setVisible(true);
         } else {
             dynamic_on_ptr_ = nullptr;
             setVisible(false);
         }
+        repaintCallBackSlow();
     }
 
     void ControlPanel::updateSampleRate(const double sample_rate) {
@@ -81,7 +82,7 @@ namespace zlpanel {
         right_control_panel_.updateFreqMax(freq_max);
     }
 
-    void ControlPanel::turnOnOffDynamic(const bool dynamic_on) {
+    void ControlPanel::changeLeftRightBound(const bool dynamic_on) {
         left_control_panel_.setBounds(dynamic_on ? left_bound : center_bound);
         right_control_panel_.setVisible(dynamic_on);
     }
