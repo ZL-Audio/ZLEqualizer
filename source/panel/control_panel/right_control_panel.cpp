@@ -37,8 +37,8 @@ namespace zlpanel {
         link_button_(base, link_drawable_.get(), link_drawable_.get()),
         ftype_box_(zlp::PSideFilterType::kChoices, base),
         slope_box_(juce::StringArray{
-                       "6 dB/oct ", "12 dB/oct ", "24 dB/oct ", "36 dB/oct ",
-                       "48 dB/oct ", "72 dB/oct ", "96 dB/oct "
+                       "6 dB/oct", "12 dB/oct", "24 dB/oct", "36 dB/oct",
+                       "48 dB/oct", "72 dB/oct", "96 dB/oct"
                    }, base),
         th_slider_("Threshold", base,
                    tooltip_helper.getToolTipText(multilingual::kBandDynamicThreshold)),

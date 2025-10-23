@@ -15,6 +15,8 @@ namespace zlpanel {
         p_ref_(p), base_(base),
         left_control_panel_(p, base, tooltip_helper),
         right_control_panel_(p, base, tooltip_helper) {
+        addAndMakeVisible(mouse_event_eater_);
+
         left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(left_control_panel_);
 
@@ -39,9 +41,12 @@ namespace zlpanel {
 
     void ControlPanel::resized() {
         auto bound = getLocalBounds();
+        const auto padding = getPaddingSize(base_.getFontSize());
         const auto left_width = left_control_panel_.getIdealWidth();
-        center_bound = bound.withSizeKeepingCentre(left_width, bound.getHeight());
-        left_bound = bound.removeFromLeft(left_width);
+        center_bound_ = bound.withSizeKeepingCentre(left_width, bound.getHeight());
+        mouse_center_bound_ = center_bound_.reduced(padding);
+        mouse_full_bound_ = bound.reduced(padding);
+        left_bound_ = bound.removeFromLeft(left_width);
         right_control_panel_.setBounds(bound);
         if (dynamic_on_ptr_ != nullptr) {
             changeLeftRightBound(c_dynamic_on_);
@@ -83,7 +88,8 @@ namespace zlpanel {
     }
 
     void ControlPanel::changeLeftRightBound(const bool dynamic_on) {
-        left_control_panel_.setBounds(dynamic_on ? left_bound : center_bound);
+        mouse_event_eater_.setBounds(dynamic_on ? mouse_full_bound_ : mouse_center_bound_);
+        left_control_panel_.setBounds(dynamic_on ? left_bound_ : center_bound_);
         right_control_panel_.setVisible(dynamic_on);
     }
 }

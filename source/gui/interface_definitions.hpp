@@ -165,6 +165,8 @@ namespace zlgui {
 
     class UIBase {
     public:
+        juce::ReferenceCountedObjectPtr<juce::Typeface> font_;
+
         explicit UIBase(juce::AudioProcessorValueTreeState& apvts) :
             state(apvts) {
             loadFromAPVTS();

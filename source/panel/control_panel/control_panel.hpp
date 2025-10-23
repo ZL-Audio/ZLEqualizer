@@ -36,14 +36,17 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
 
+        juce::Component mouse_event_eater_;
         LeftControlPanel left_control_panel_;
         RightControlPanel right_control_panel_;
 
         std::atomic<float>* dynamic_on_ptr_{nullptr};
         bool c_dynamic_on_{false};
 
-        juce::Rectangle<int> left_bound{};
-        juce::Rectangle<int> center_bound{};
+        juce::Rectangle<int> mouse_center_bound_{};
+        juce::Rectangle<int> mouse_full_bound_{};
+        juce::Rectangle<int> left_bound_{};
+        juce::Rectangle<int> center_bound_{};
 
         void changeLeftRightBound(bool dynamic_on);
     };

@@ -16,7 +16,8 @@
 namespace zlgui::combobox {
     class CompactComboboxLookAndFeel : public juce::LookAndFeel_V4 {
     public:
-        explicit CompactComboboxLookAndFeel(UIBase& base) : base_(base) {
+        explicit CompactComboboxLookAndFeel(UIBase& base) :
+            base_(base) {
             setColour(juce::PopupMenu::backgroundColourId, base_.getBackgroundInactiveColour());
         }
 
@@ -62,7 +63,6 @@ namespace zlgui::combobox {
             const auto box_bound = juce::Rectangle<float>(0, 0, static_cast<float>(width),
                                                           static_cast<float>(height));
             g.fillRoundedRectangle(box_bound, corner_size);
-            // base_.fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize, {.blur_radius = 0.45f, .flip = true});
         }
 
         void getIdealPopupMenuItemSize(const juce::String& text, const bool isSeparator, int standardMenuItemHeight,
@@ -87,7 +87,9 @@ namespace zlgui::combobox {
                 g.setColour(base_.getTextInactiveColour());
             }
             g.setFont(base_.getFontSize() * font_scale_);
-            g.drawText(text, area, item_justification_);
+
+            const auto bound = area.toFloat().reduced(padding_, 0.f);
+            g.drawText(text, bound, item_justification_);
         }
 
         int getMenuWindowFlags() override {
@@ -100,9 +102,9 @@ namespace zlgui::combobox {
 
         inline void setFontScale(const float x) { font_scale_ = x; }
 
-        void setOption(const juce::PopupMenu::Options& x) {
-            option_ = x;
-        }
+        float getFontScale() const { return font_scale_; }
+
+        void setOption(const juce::PopupMenu::Options& x) { option_ = x; }
 
         juce::PopupMenu::Options getOptionsForComboBoxPopupMenu(juce::ComboBox& box, juce::Label& label) override {
             auto option = option_;
@@ -127,8 +129,11 @@ namespace zlgui::combobox {
 
         void setItemJustification(const juce::Justification j) { item_justification_ = j; }
 
+        void setPadding(const float padding) { padding_ = padding; }
+
     private:
         float font_scale_{1.5f}, box_alpha_{0.f};
+        float padding_{0.f};
         juce::Justification label_justification_{juce::Justification::centred};
         juce::Justification item_justification_{juce::Justification::centred};
         juce::PopupMenu::Options option_{};

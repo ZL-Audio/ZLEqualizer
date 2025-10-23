@@ -43,16 +43,24 @@ namespace zlgui::combobox {
         }
     }
 
-
     CompactCombobox::~CompactCombobox() {
         combo_box_.setLookAndFeel(nullptr);
     }
 
+    void CompactCombobox::paint(juce::Graphics& g) {
+        g.setFont(box_laf_.getFontScale() * base_.getFontSize());
+        float max_text_width = 0.f;
+        for (int i = 0; i < combo_box_.getNumItems(); ++i) {
+            const auto text = combo_box_.getItemText(i);
+            const auto text_width = juce::GlyphArrangement::getStringWidth(g.getCurrentFont(), text);
+            max_text_width = std::max(max_text_width, text_width);
+        }
+        const auto padding = (static_cast<float>(getLocalBounds().getWidth()) - max_text_width) * .5f;
+        box_laf_.setPadding(padding * .975f);
+    }
+
     void CompactCombobox::resized() {
-        auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth(),
-                                            juce::jmin(bound.getHeight(), base_.getFontSize() * 2.f));
-        combo_box_.setBounds(bound.toNearestInt());
+        combo_box_.setBounds(getLocalBounds());
     }
 
     void CompactCombobox::mouseUp(const juce::MouseEvent& event) {
