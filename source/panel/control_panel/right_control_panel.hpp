@@ -94,5 +94,11 @@ namespace zlpanel {
         int c_side_ftype_{-1};
 
         void turnOnOffAuto();
+
+        void mouseDown(const juce::MouseEvent& event) override;
+
+        void mouseDrag(const juce::MouseEvent& event) override;
+
+        void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override;
     };
 }

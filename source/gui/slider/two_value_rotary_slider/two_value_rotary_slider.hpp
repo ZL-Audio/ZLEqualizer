@@ -10,7 +10,6 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-#include <cstdio>
 
 #include "../../interface_definitions.hpp"
 #include "../../label/name_look_and_feel.hpp"
@@ -30,8 +29,8 @@ namespace zlgui::slider {
     private:
         class Background final : public juce::Component {
         public:
-            explicit Background(UIBase& base, const float thick_scale)
-                : base_(base), thick_scale_(thick_scale) {
+            explicit Background(UIBase& base, const float thick_scale) :
+                base_(base), thick_scale_(thick_scale) {
                 setOpaque(kOpaque);
                 setInterceptsMouseClicks(false, false);
                 setBufferedToImage(true);
@@ -66,8 +65,8 @@ namespace zlgui::slider {
 
         class Display final : public juce::Component {
         public:
-            explicit Display(UIBase& base, const float thick_scale)
-                : base_(base), thick_scale_(thick_scale) {
+            explicit Display(UIBase& base, const float thick_scale) :
+                base_(base), thick_scale_(thick_scale) {
                 setInterceptsMouseClicks(false, false);
             }
 
@@ -159,11 +158,11 @@ namespace zlgui::slider {
     public:
         explicit TwoValueRotarySlider(const juce::String& label_text, UIBase& base,
                                       const juce::String& tooltip_text = "",
-                                      float thick_scale = 1.f)
-            : base_(base), background_(base_, thick_scale), display_(base, thick_scale),
-              slider1_(base, label_text), slider2_(base, label_text),
-              label_look_and_feel_(base), label_look_and_feel1_(base), label_look_and_feel2_(base),
-              text_box_laf_(base) {
+                                      float thick_scale = 1.f) :
+            base_(base), background_(base_, thick_scale), display_(base, thick_scale),
+            slider1_(base, label_text), slider2_(base, label_text),
+            label_look_and_feel_(base), label_look_and_feel1_(base), label_look_and_feel2_(base),
+            text_box_laf_(base) {
             addAndMakeVisible(background_);
             for (auto const s : {&slider1_, &slider2_}) {
                 s->setSliderStyle(base_.getRotaryStyle());
@@ -291,9 +290,11 @@ namespace zlgui::slider {
                 label_.setVisible(false);
                 label1_.setVisible(true);
                 label1_.setText(getDisplayValue(slider1_), juce::dontSendNotification);
-                if (show_slider2_) {
-                    label2_.setVisible(true);
-                    label2_.setText(getDisplayValue(slider2_), juce::dontSendNotification);
+                if constexpr (kUseSecondSlider) {
+                    if (show_slider2_) {
+                        label2_.setVisible(true);
+                        label2_.setText(getDisplayValue(slider2_), juce::dontSendNotification);
+                    }
                 }
             }
         }
@@ -308,8 +309,10 @@ namespace zlgui::slider {
 
                 label_.setVisible(true);
                 label1_.setVisible(false);
-                if (show_slider2_) {
-                    label2_.setVisible(false);
+                if constexpr (kUseSecondSlider) {
+                    if (show_slider2_) {
+                        label2_.setVisible(false);
+                    }
                 }
             }
         }
@@ -375,7 +378,7 @@ namespace zlgui::slider {
             const auto bound = getLocalBounds().toFloat();
 
             auto label_bound = bound.withSizeKeepingCentre(bound.getWidth() * 0.6f,
-                                                          bound.getHeight() * 0.5f);
+                                                           bound.getHeight() * 0.5f);
             if (show_slider2_) {
                 const auto valueBound1 = label_bound.removeFromTop(label_bound.getHeight() * 0.5f);
                 const auto valueBound2 = label_bound;
@@ -469,10 +472,10 @@ namespace zlgui::slider {
             if constexpr (kUseName) {
                 label_.setVisible(false);
                 label1_.setVisible(true);
-            }
-            if constexpr (kUseSecondSlider) {
-                if (show_slider2_) {
-                    label2_.setVisible(true);
+                if constexpr (kUseSecondSlider) {
+                    if (show_slider2_) {
+                        label2_.setVisible(true);
+                    }
                 }
             }
 
@@ -504,10 +507,10 @@ namespace zlgui::slider {
             if constexpr (kUseName) {
                 label_.setVisible(true);
                 label1_.setVisible(false);
-            }
-            if constexpr (kUseSecondSlider) {
-                if (show_slider2_) {
-                    label2_.setVisible(false);
+                if constexpr (kUseSecondSlider) {
+                    if (show_slider2_) {
+                        label2_.setVisible(false);
+                    }
                 }
             }
         }

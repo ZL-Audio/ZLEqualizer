@@ -121,6 +121,9 @@ namespace zlpanel {
         q_slider_.setBufferedToImage(true);
         addAndMakeVisible(q_slider_);
 
+        ftype_box_.addMouseListener(this, false);
+        freq_slider_.addMouseListener(this, false);
+        q_slider_.addMouseListener(this, false);
         setInterceptsMouseClicks(false, true);
     }
 
@@ -205,6 +208,10 @@ namespace zlpanel {
             if (c_side_ftype_ == 0 && slope_box_.getBox().getSelectedId() == 1) {
                 slope_box_.getBox().setSelectedId(2, juce::sendNotificationSync);
             }
+            if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum && c_side_ftype_ != 0) {
+                auto *para = p_ref_.parameters_.getParameter(zlp::PSideQ::kID + std::to_string(band));
+                updateValue(para, para->getDefaultValue());
+            }
             slope_box_.getBox().setItemEnabled(1, c_side_ftype_ != 0);
             q_slider_.setEditable(c_side_ftype_ == 0);
             q_label_.setAlpha(c_side_ftype_ == 0 ? 1.f : .5f);
@@ -282,6 +289,28 @@ namespace zlpanel {
         } else {
             auto* th_para = p_ref_.parameters_.getParameter(zlp::PThreshold::kID + std::to_string(band));
             updateValue(th_para, th_para->getDefaultValue());
+        }
+    }
+
+    void RightControlPanel::mouseDown(const juce::MouseEvent&) {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
+        }
+    }
+
+    void RightControlPanel::mouseDrag(const juce::MouseEvent& event) {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            if (event.originalComponent == &freq_slider_ || event.originalComponent == &q_slider_) {
+                updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
+            }
+        }
+    }
+
+    void RightControlPanel::mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails&) {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            if (event.originalComponent == &freq_slider_ || event.originalComponent == &q_slider_) {
+                updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
+            }
         }
     }
 }
