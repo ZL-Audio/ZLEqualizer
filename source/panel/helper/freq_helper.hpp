@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <cmath>
+
 namespace zlpanel::freq_helper {
     inline double getSliderMax(const double sample_rate) {
         const double ratio441 = sample_rate / 44100.0;

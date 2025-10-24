@@ -12,11 +12,12 @@
 namespace zlpanel {
     DraggerPanel::DraggerPanel(PluginProcessor& p,
                                zlgui::UIBase& base,
-                               const multilingual::TooltipHelper&) :
+                               const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
         draggers_(make_dragger_array(base, std::make_index_sequence<zlp::kBandNum>())),
         target_dragger_(base),
         side_dragger_(base),
+        float_pop_panel_(p, base, tooltip_helper),
         max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
 
         side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
@@ -47,6 +48,9 @@ namespace zlpanel {
             addChildComponent(draggers_[band]);
         }
 
+        float_pop_panel_.setBufferedToImage(true);
+        addChildComponent(float_pop_panel_);
+
         lookAndFeelChanged();
         setInterceptsMouseClicks(false, true);
     }
@@ -59,6 +63,13 @@ namespace zlpanel {
             draggers_[band].setBounds(getLocalBounds());
             updateDraggerBound(band);
         }
+        const auto float_width = float_pop_panel_.getIdealWidth();
+        const auto float_height = float_pop_panel_.getIdealHeight();
+        float_pop_panel_.setBounds({0, 0, float_width, float_height});
+
+        auto bound = getLocalBounds().toFloat();
+        bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
+        float_pop_panel_.updateFloatingBound(bound);
     }
 
     void DraggerPanel::repaintCallBackSlow() {
@@ -72,6 +83,7 @@ namespace zlpanel {
                 updateTargetAttachment(band);
             }
         }
+        float_pop_panel_.repaintCallBackSlow();
     }
 
     void DraggerPanel::updateBand() {
@@ -95,6 +107,7 @@ namespace zlpanel {
             target_dragger_.setVisible(false);
             side_dragger_.setVisible(false);
         }
+        float_pop_panel_.updateBand();
     }
 
     void DraggerPanel::updateSampleRate(const double sample_rate) {
@@ -141,14 +154,8 @@ namespace zlpanel {
             side_dragger_.setVisible(is_dynamic_on);
         }
         is_dynamic_on_[band] = is_dynamic_on;
-        float alpha = 1.f;
-        if (filter_status == zlp::FilterStatus::kBypass) {
-            alpha *= kBypassAlphaMultiplier;
-        }
-        if (!is_same_stereo) {
-            alpha *= kDiffStereoAlphaMultiplier;
-        }
-        draggers_[band].getLAF().setAlpha(alpha);
+        draggers_[band].setAlpha(filter_status == zlp::FilterStatus::kBypass ? kBypassAlphaMultiplier : 1.f);
+        draggers_[band].getLAF().setAlpha(is_same_stereo ? 1.f : kDiffStereoAlphaMultiplier);
         if (lr_mode == 0) {
             draggers_[band].getLAF().setLabel("");
         } else if (lr_mode == 1) {

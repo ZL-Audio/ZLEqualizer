@@ -9,10 +9,7 @@
 
 #pragma once
 
-#include "../../../../PluginProcessor.hpp"
-#include "../../../../gui/gui.hpp"
-#include "../../../helper/helper.hpp"
-#include "../../../multilingual/tooltip_helper.hpp"
+#include "float_pop_panel.hpp"
 
 namespace zlpanel {
     class DraggerPanel final : public juce::Component {
@@ -46,6 +43,10 @@ namespace zlpanel {
             return side_dragger_;
         }
 
+        FloatPopPanel& getFloatPopPanel() {
+            return float_pop_panel_;
+        }
+
         void mouseDown(const juce::MouseEvent& event) override;
 
         void mouseDoubleClick(const juce::MouseEvent& event) override;
@@ -62,6 +63,8 @@ namespace zlpanel {
         std::array<zlgui::dragger::Dragger, zlp::kBandNum> draggers_;
         zlgui::dragger::Dragger target_dragger_;
         zlgui::dragger::Dragger side_dragger_;
+
+        FloatPopPanel float_pop_panel_;
 
         std::unique_ptr<zlgui::attachment::DraggerAttachment<false, true>> dragger_freq_attachment_;
         std::unique_ptr<zlgui::attachment::DraggerAttachment<false, false>> dragger_gain_attachment_;

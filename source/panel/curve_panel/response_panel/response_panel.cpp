@@ -72,10 +72,17 @@ namespace zlpanel {
         if (!lock.owns_lock()) {
             return;
         }
+        const auto should_alpha = static_cast<float>(base_.getPanelProperty(zlgui::kCurveShouldTransparent)) > .5f;
+        if (should_alpha) {
+            g.beginTransparencyLayer(.5f);
+        }
         single_panel_.paintDifferentStereo(g);
         sum_panel_.paintDifferentStereo(g);
         single_panel_.paintSameStereo(g);
         sum_panel_.paintSameStereo(g);
+        if (should_alpha) {
+            g.endTransparencyLayer();
+        }
     }
 
     void ResponsePanel::resized() {
@@ -109,6 +116,7 @@ namespace zlpanel {
                  points_[band][4].load(std::memory_order::relaxed)});
             }
         }
+        updateFloatingPosition();
         updateTargetPosition();
         updateSidePosition();
     }
@@ -126,6 +134,14 @@ namespace zlpanel {
             dragger_panel_.getSideDragger().updateButton(
             {side_points_[band][0].load(std::memory_order::relaxed),
              side_y_});
+        }
+    }
+
+    void ResponsePanel::updateFloatingPosition() {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            dragger_panel_.getFloatPopPanel().updatePosition(
+            {points_[band][0].load(std::memory_order::relaxed),
+             points_[band][4].load(std::memory_order::relaxed)});
         }
     }
 
@@ -152,6 +168,7 @@ namespace zlpanel {
                 dragger_panel_.updateDrawingParas(band, zlp::FilterStatus::kOff, false, false, 0);
             }
         }
+        updateFloatingPosition();
         updateTargetPosition();
         updateSidePosition();
         for (int lr = 0; lr < 5; ++lr) {
@@ -172,6 +189,7 @@ namespace zlpanel {
         message_to_update_panels_.store(true, std::memory_order::relaxed);
         mouse_event_panel_.updateBand();
         dragger_panel_.updateBand();
+        updateFloatingPosition();
         updateTargetPosition();
         updateSidePosition();
     }
@@ -462,6 +480,8 @@ namespace zlpanel {
                         return false;
                     }
                 }
+            } else {
+                points_[band][4].store(-10000.f, std::memory_order::relaxed);
             }
         }
         return true;

@@ -12,9 +12,9 @@
 namespace zlgui::combobox {
     CompactCombobox::CompactCombobox(const juce::StringArray& choices,
                                      UIBase& base, const juce::String& tooltip_text,
-                                     const std::vector<juce::String>& item_labels)
-        : base_(base),
-          box_laf_(base) {
+                                     const std::vector<juce::String>& item_labels) :
+        base_(base),
+        box_laf_(base) {
         if (item_labels.size() < static_cast<size_t>(choices.size())) {
             combo_box_.addItemList(choices, 1);
         } else {
@@ -29,6 +29,41 @@ namespace zlgui::combobox {
                 menu->addItem(item);
             }
         }
+
+        combo_box_.setScrollWheelEnabled(false);
+        combo_box_.setInterceptsMouseClicks(false, false);
+        combo_box_.setLookAndFeel(&box_laf_);
+        combo_box_.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(combo_box_);
+
+        setEditable(true);
+
+        if (tooltip_text.length() > 0) {
+            SettableTooltipClient::setTooltip(tooltip_text);
+        }
+    }
+
+    CompactCombobox::CompactCombobox(const std::vector<std::unique_ptr<juce::Drawable>>& icons,
+                                     UIBase& base,
+                                     const juce::String& tooltip_text,
+                                     const std::vector<juce::String>& item_labels) :
+        base_(base),
+        box_laf_(base) {
+        const auto menu = combo_box_.getRootMenu();
+        for (size_t i = 0; i < icons.size(); ++i) {
+            juce::PopupMenu::Item item;
+            item.itemID = static_cast<int>(i + 1);
+            item.text = "";
+            if (i < item_labels.size()) {
+                item.tooltipText = item_labels[i];
+            }
+            item.isEnabled = true;
+            item.isTicked = false;
+            item.image = icons[i]->createCopy();
+            menu->addItem(item);
+        }
+
+        box_laf_.setIcons(icons);
 
         combo_box_.setScrollWheelEnabled(false);
         combo_box_.setInterceptsMouseClicks(false, false);

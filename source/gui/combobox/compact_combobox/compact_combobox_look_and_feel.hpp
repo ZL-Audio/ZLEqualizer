@@ -24,15 +24,15 @@ namespace zlgui::combobox {
         void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown, int, int, int, int,
                           juce::ComboBox& box) override {
             juce::ignoreUnused(width, height);
-            const auto boxBounds = juce::Rectangle<float>(0, 0,
+            const auto box_bound = juce::Rectangle<float>(0, 0,
                                                           static_cast<float>(width),
                                                           static_cast<float>(height));
-            const auto cornerSize = base_.getFontSize() * 0.375f;
+            const auto corner_size = base_.getFontSize() * 0.375f;
             if (isButtonDown || box.isPopupActive()) {
                 g.setColour(base_.getTextInactiveColour());
-                g.fillRoundedRectangle(boxBounds, cornerSize);
+                g.fillRoundedRectangle(box_bound, corner_size);
             } else if (box_alpha_ > 1e-3f) {
-                base_.fillRoundedInnerShadowRectangle(g, boxBounds, cornerSize,
+                base_.fillRoundedInnerShadowRectangle(g, box_bound, corner_size,
                                                       {
                                                           .blur_radius = 0.45f, .flip = true,
                                                           .main_colour = base_.getBackgroundColour().
@@ -45,6 +45,12 @@ namespace zlgui::combobox {
                                                           .change_main = true, .change_dark = true,
                                                           .change_bright = true
                                                       });
+            }
+            if (!icons_.empty() && box.getSelectedItemIndex() >= 0) {
+                const auto fig = icons_[static_cast<size_t>(box.getSelectedItemIndex())]->createCopy();
+                fig->replaceColour(juce::Colours::black, base_.getTextColour());
+                const auto area = box.getLocalBounds().toFloat().reduced(base_.getFontSize() * .1f);
+                fig->drawWithin(g, area, juce::RectanglePlacement::centred, 1.f);
             }
         }
 
@@ -78,18 +84,25 @@ namespace zlgui::combobox {
                                const juce::String& text,
                                const juce::String& shortcutKeyText, const juce::Drawable* icon,
                                const juce::Colour* const textColourToUse) override {
-            juce::ignoreUnused(isSeparator, hasSubMenu, shortcutKeyText, icon, textColourToUse);
+            juce::ignoreUnused(isSeparator, hasSubMenu, shortcutKeyText, textColourToUse);
+            float alpha;
             if ((isHighlighted || isTicked) && isActive) {
-                g.setColour(base_.getTextColour());
+                alpha = 1.0;
             } else if (!isActive) {
-                g.setColour(base_.getTextInactiveColour().withMultipliedAlpha(.25f));
+                alpha = .125f;
             } else {
-                g.setColour(base_.getTextInactiveColour());
+                alpha = .5f;
             }
-            g.setFont(base_.getFontSize() * font_scale_);
-
-            const auto bound = area.toFloat().reduced(padding_, 0.f);
-            g.drawText(text, bound, item_justification_);
+            if (icon == nullptr) {
+                g.setColour(base_.getTextColour().withAlpha(alpha));
+                g.setFont(base_.getFontSize() * font_scale_);
+                const auto bound = area.toFloat().reduced(padding_, 0.f);
+                g.drawText(text, bound, item_justification_);
+            } else {
+                const auto fig = icon->createCopy();
+                fig->replaceColour(juce::Colours::black, base_.getTextColour());
+                fig->drawWithin(g, area.toFloat(), juce::RectanglePlacement::centred, alpha);
+            }
         }
 
         int getMenuWindowFlags() override {
@@ -131,6 +144,12 @@ namespace zlgui::combobox {
 
         void setPadding(const float padding) { padding_ = padding; }
 
+        void setIcons(const std::vector<std::unique_ptr<juce::Drawable>>& icons) {
+            for (size_t i = 0; i < icons.size(); ++i) {
+                icons_.emplace_back(icons[i]->createCopy());
+            }
+        }
+
     private:
         float font_scale_{1.5f}, box_alpha_{0.f};
         float padding_{0.f};
@@ -139,5 +158,7 @@ namespace zlgui::combobox {
         juce::PopupMenu::Options option_{};
 
         UIBase& base_;
+
+        std::vector<std::unique_ptr<juce::Drawable>> icons_;
     };
 }

@@ -39,6 +39,7 @@ namespace zlgui::button {
         ~ClickButton() override = default;
 
         void resized() override {
+            button_.setEdgeIndent(static_cast<int>(std::round(base_.getFontSize() * .315f)));
             button_.setBounds(getLocalBounds());
         }
 

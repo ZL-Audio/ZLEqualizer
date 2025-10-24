@@ -140,6 +140,8 @@ namespace zlpanel {
 
         void updateSidePosition();
 
+        void updateFloatingPosition();
+
         std::tuple<float, float, float> getLeftCenterRightX(const zldsp::filter::FilterParameters& para) const;
     };
 }

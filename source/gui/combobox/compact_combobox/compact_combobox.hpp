@@ -19,6 +19,10 @@ namespace zlgui::combobox {
                         const juce::String& tooltip_text = "",
                         const std::vector<juce::String>& item_labels = {});
 
+        CompactCombobox(const std::vector<std::unique_ptr<juce::Drawable>>& icons, UIBase& base,
+                        const juce::String& tooltip_text = "",
+                        const std::vector<juce::String>& item_labels = {});
+
         ~CompactCombobox() override;
 
         void paint(juce::Graphics& g) override;

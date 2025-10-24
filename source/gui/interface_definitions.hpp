@@ -39,9 +39,9 @@ namespace zlgui {
     static constexpr std::array<std::string_view, kColourNum> kColourNames = zlstate::kColourNames;
 
     enum PanelSettingIdx {
-        kLUFSLearnButton,
         kUISettingPanel,
         kUISettingChanged,
+        kCurveShouldTransparent,
         kPanelSettingNum
     };
 
