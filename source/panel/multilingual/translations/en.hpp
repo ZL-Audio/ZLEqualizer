@@ -75,7 +75,7 @@ namespace zlpanel::multilingual::en {
         "Peak/Shelf filters are placed parallely. Filter response is different from the displayed curve. Suitable for modulation.",
         "Minimum Phase structure with additional corrections. Filter response is almost identical to analog prototype. NOT suitable for modulation.",
         "Minimum Phase structure with additional corrections. Filter has analog prototype magnitude response and less phase shift at high-end. NOT suitable for modulation.",
-        "Filter has analog prototype magnitude response and zero phase response. NOT suitable for modulation. Dynamic effect does not work.",
+        "Minimum Phase structure with additional corrections. Filter has analog prototype magnitude response and zero phase response. NOT suitable for modulation.",
         "Double Click: open UI Settings."
     };
 }

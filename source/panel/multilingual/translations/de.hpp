@@ -75,7 +75,7 @@ namespace zlpanel::multilingual::de {
         "Peak/Shelf-Filter werden parallel geschaltet. Die Filterantwort weicht von der angezeigten Kurve ab. Geeignet für Modulation.",
         "Minimum-Phase-Struktur mit zusätzlichen Korrekturen. Die Filterantwort ist nahezu identisch mit dem analogen Prototyp. NICHT geeignet für Modulation.",
         "Minimum-Phase-Struktur mit zusätzlichen Korrekturen. Der Filter weist eine amplitudentreue Antwort des analogen Prototyps auf und verursacht weniger Phasenverschiebung im Hochfrequenzbereich. NICHT geeignet für Modulation.",
-        "Der Filter hat eine amplitudentreue Antwort des analogen Prototyps und eine Null-Phasen-Antwort. NICHT geeignet für Modulation. Dynamische Effekte funktionieren nicht.",
+        "Minimum-Phase-Struktur mit zusätzlichen Korrekturen. Der Filter hat eine amplitudentreue Antwort des analogen Prototyps und eine Null-Phasen-Antwort. NICHT geeignet für Modulation.",
         "Doppelklick: Öffnen Sie die UI-Einstellungen."
     };
 }

@@ -75,7 +75,7 @@ namespace zlpanel::multilingual::es {
         "Los filtros Peak/Shelf están dispuestos en paralelo. La respuesta del filtro es diferente a la curva mostrada. Adecuado para modulación.",
         "Estructura de fase mínima con correcciones adicionales. La respuesta del filtro es casi idéntica al prototipo analógico. NO es adecuado para modulación.",
         "Estructura de fase mínima con correcciones adicionales. El filtro tiene una respuesta en magnitud similar al prototipo analógico y menor cambio de fase en altas frecuencias. NO es adecuado para modulación.",
-        "El filtro tiene una respuesta en magnitud similar al prototipo analógico y una respuesta de fase cero. NO es adecuado para modulación. El efecto dinámico no funciona.",
+        "Estructura de fase mínima con correcciones adicionales. El filtro tiene una respuesta en magnitud similar al prototipo analógico y una respuesta de fase cero. NO es adecuado para modulación.",
         "Doble clic: abre la Configuración de la Interfaz de Usuario (UI Settings)."
     };
 }

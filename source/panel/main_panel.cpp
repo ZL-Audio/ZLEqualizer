@@ -121,6 +121,7 @@ namespace zlpanel {
         // sub slow callbacks
         control_panel_.repaintCallBackSlow();
         curve_panel_.repaintCallBackSlow();
+        top_panel_.repaintCallbackSlow();
     }
 
     void MainPanel::startThreads() {

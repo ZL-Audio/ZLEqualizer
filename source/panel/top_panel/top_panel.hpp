@@ -19,7 +19,14 @@ namespace zlpanel {
 
         void resized() override;
 
+        void repaintCallbackSlow();
+
     private:
+        zlgui::UIBase &base_;
+        zlgui::attachment::ComponentUpdater updater_;
         LogoPanel logo_panel_;
+
+        zlgui::combobox::CompactCombobox fstruct_box_;
+        zlgui::attachment::ComboBoxAttachment<true> fstruct_attach_;
     };
 }

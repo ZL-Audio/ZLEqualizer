@@ -12,15 +12,34 @@
 namespace zlpanel {
     TopPanel::TopPanel(PluginProcessor& p, zlgui::UIBase& base,
                        multilingual::TooltipHelper& tooltip_helper) :
-        logo_panel_(p, base, tooltip_helper) {
+        base_(base), updater_(),
+        logo_panel_(p, base, tooltip_helper),
+        fstruct_box_(zlp::PFilterStructure::kChoices, base,
+                     tooltip_helper.getToolTipText(multilingual::kFilterStructure),
+                     {tooltip_helper.getToolTipText(multilingual::kMinimumPhase),
+                      tooltip_helper.getToolTipText(multilingual::kStateVariable),
+                      tooltip_helper.getToolTipText(multilingual::kParallelPhase),
+                      tooltip_helper.getToolTipText(multilingual::kMatchedPhase),
+                      tooltip_helper.getToolTipText(multilingual::kMixedPhase),
+                      tooltip_helper.getToolTipText(multilingual::kLinearPhase)}),
+        fstruct_attach_(fstruct_box_.getBox(), p.parameters_, zlp::PFilterStructure::kID, updater_) {
         logo_panel_.setBufferedToImage(true);
         addAndMakeVisible(logo_panel_);
+
+        fstruct_box_.setBufferedToImage(true);
+        addAndMakeVisible(fstruct_box_);
 
         setInterceptsMouseClicks(false, true);
     }
 
     void TopPanel::resized() {
+        const auto slider_width = getSliderWidth(base_.getFontSize());
         auto bound = getLocalBounds();
         logo_panel_.setBounds(bound.removeFromLeft(bound.getHeight() * 2));
+        fstruct_box_.setBounds(bound.removeFromLeft(slider_width * 2));
+    }
+
+    void TopPanel::repaintCallbackSlow() {
+        updater_.updateComponents();
     }
 }
