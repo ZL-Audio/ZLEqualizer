@@ -154,7 +154,7 @@ jobs:
 
       - name: Upload DMG (macOS)
         if: ${{ runner.os == 'macOS' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.name }}
           path: "${{ env.ARTIFACT_NAME }}.dmg"
@@ -175,7 +175,7 @@ jobs:
 
       - name: Upload Exe (Windows)
         if: ${{ runner.os == 'Windows' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
@@ -187,7 +187,7 @@ jobs:
 
       - name: Upload Zip (Linux)
         if: ${{ runner.os == 'Linux' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
@@ -202,7 +202,7 @@ jobs:
 
     steps:
     - name: Get Artifacts
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         path: "current_release"
 
