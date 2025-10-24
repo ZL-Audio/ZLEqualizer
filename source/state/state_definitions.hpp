@@ -200,7 +200,7 @@ namespace zlstate {
     public:
         static constexpr auto kID = "window_h";
         static constexpr auto kName = "";
-        static constexpr auto kMinV = 282.f;
+        static constexpr auto kMinV = 345.f;
         static constexpr auto kMaxV = 6000.f;
         static constexpr auto kDefaultV = 371.f;
         inline static const auto kRange = juce::NormalisableRange<float>(kMinV, kMaxV, 1.f);

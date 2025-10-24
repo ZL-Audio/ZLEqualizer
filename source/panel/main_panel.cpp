@@ -52,10 +52,10 @@ namespace zlpanel {
         {
             const auto height = static_cast<float>(bound.getHeight());
             const auto width = static_cast<float>(bound.getWidth());
-            if (height < width * 0.47f) {
-                bound.setHeight(juce::roundToInt(width * .47f));
+            if (height < width * 0.575f) {
+                bound.setHeight(static_cast<int>(std::ceil(width * .575f)));
             } else if (height > width * 1.f) {
-                bound.setWidth(juce::roundToInt(height * 1.f));
+                bound.setWidth(static_cast<int>(std::ceil(height * 1.f)));
             }
         }
 

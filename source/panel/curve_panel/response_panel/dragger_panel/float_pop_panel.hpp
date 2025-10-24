@@ -12,15 +12,15 @@
 #include "../../../../PluginProcessor.hpp"
 #include "../../../../gui/gui.hpp"
 #include "../../../helper/helper.hpp"
+#include "../../../helper/freq_note.hpp"
 #include "../../../multilingual/tooltip_helper.hpp"
+#include "../../../control_panel/control_background.hpp"
 
 namespace zlpanel {
     class FloatPopPanel final : public juce::Component {
     public:
         explicit FloatPopPanel(PluginProcessor& p, zlgui::UIBase& base,
                                const multilingual::TooltipHelper& tooltip_helper);
-
-        void paint(juce::Graphics& g) override;
 
         void resized() override;
 
@@ -41,6 +41,8 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_{};
 
+        ControlBackground control_background_;
+
         juce::Point<float> target_position_{};
         juce::Point<float> upper_center_{};
         juce::Point<float> lower_center_{};
@@ -52,6 +54,9 @@ namespace zlpanel {
         zlgui::button::ClickButton bypass_button_;
         std::atomic<float>* filter_status_ptr_{nullptr};
 
+        const std::unique_ptr<juce::Drawable> solo_drawable_;
+        zlgui::button::ClickButton solo_button_;
+
         const std::unique_ptr<juce::Drawable> close_drawable_;
         zlgui::button::ClickButton close_button_;
 
@@ -60,6 +65,9 @@ namespace zlpanel {
 
         zlgui::combobox::CompactCombobox lr_box_;
         std::unique_ptr<zlgui::attachment::ComboBoxAttachment<true>> lr_attachment_;
+
+        zlgui::slider::CompactLinearSlider<false, false, false> freq_slider_;
+        std::unique_ptr<zlgui::attachment::SliderAttachment<true>> freq_attachment_;
 
         void updateTransformation();
     };

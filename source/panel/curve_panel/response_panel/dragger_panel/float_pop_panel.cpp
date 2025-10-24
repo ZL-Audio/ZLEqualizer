@@ -14,10 +14,14 @@ namespace zlpanel {
     FloatPopPanel::FloatPopPanel(PluginProcessor& p, zlgui::UIBase& base,
                                  const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
+        control_background_(base),
         bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
                                                              BinaryData::bypass_svgSize)),
         bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
                        tooltip_helper.getToolTipText(multilingual::kBandBypass)),
+        solo_drawable_(juce::Drawable::createFromImageData(BinaryData::solo_svg, BinaryData::solo_svgSize)),
+        solo_button_(base, solo_drawable_.get(), solo_drawable_.get(),
+                     tooltip_helper.getToolTipText(multilingual::kBandSolo)),
         close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
                                                             BinaryData::close_svgSize)),
         close_button_(base, close_drawable_.get(), nullptr),
@@ -54,7 +58,10 @@ namespace zlpanel {
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::side_svg, BinaryData::side_svgSize));
             return icons;
-        }(), base, "", {}) {
+        }(), base, "", {}),
+        freq_slider_("", base) {
+        control_background_.setBufferedToImage(true);
+        addAndMakeVisible(control_background_);
 
         close_button_.setBufferedToImage(true);
         addAndMakeVisible(close_button_);
@@ -65,6 +72,10 @@ namespace zlpanel {
                 base_.setSelectedBand(band_helper::findClosestBand(p_ref_, c_band));
             }
         };
+
+        solo_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
+        solo_button_.setBufferedToImage(true);
+        addAndMakeVisible(solo_button_);
 
         bypass_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         bypass_button_.setBufferedToImage(true);
@@ -77,47 +88,54 @@ namespace zlpanel {
         };
 
         const auto popup_option1 = juce::PopupMenu::Options().withPreferredPopupDirection(
-            juce::PopupMenu::Options::PopupDirection::downwards).withMinimumNumColumns(8);
+            juce::PopupMenu::Options::PopupDirection::upwards).withMinimumNumColumns(8);
         ftype_box_.getLAF().setOption(popup_option1);
         ftype_box_.setBufferedToImage(true);
         addAndMakeVisible(ftype_box_);
 
         const auto popup_option2 = juce::PopupMenu::Options().withPreferredPopupDirection(
-            juce::PopupMenu::Options::PopupDirection::downwards).withMinimumNumColumns(5);
+            juce::PopupMenu::Options::PopupDirection::upwards).withMinimumNumColumns(5);
         lr_box_.getLAF().setOption(popup_option2);
         lr_box_.setBufferedToImage(true);
         addAndMakeVisible(lr_box_);
 
+        freq_slider_.setFontScale(1.25f);
+        freq_slider_.getSlider().setSliderSnapsToMousePosition(false);
+        freq_slider_.permitted_characters_ = "-.0123456789#ABCDEFG";
+        freq_slider_.value_formatter_ = freq_note::getNoteFromFrequency;
+        freq_slider_.string_formatter_ = freq_note::getFrequencyFromNote;
+        freq_slider_.setBufferedToImage(true);
+        addAndMakeVisible(freq_slider_);
+
         setAlwaysOnTop(true);
     }
 
-    void FloatPopPanel::paint(juce::Graphics& g) {
-        const auto padding = getPaddingSize(base_.getFontSize());
-        const auto bound = getLocalBounds().reduced(padding / 2);
-        juce::Path path;
-        path.addRoundedRectangle(bound.toFloat(), static_cast<float>(padding));
-
-        const juce::DropShadow shadow{base_.getDarkShadowColour().withAlpha(.5f),
-                                      padding / 2, {0, 0}};
-        shadow.drawForPath(g, path);
-        g.setColour(base_.getBackgroundColour().withAlpha(.75f));
-        g.fillPath(path);
-    }
-
     void FloatPopPanel::resized() {
+        control_background_.setBounds(getLocalBounds());
+
         const auto padding = getPaddingSize(base_.getFontSize());
         const auto button_size = getButtonSize(base_.getFontSize());
         auto bound = getLocalBounds().reduced(padding);
 
         auto top_bound = bound.removeFromTop(button_size);
         bypass_button_.setBounds(top_bound.removeFromLeft(button_size));
+        top_bound.removeFromLeft(padding);
+        {
+            auto t_bound = top_bound.removeFromLeft(button_size);
+            t_bound = t_bound.reduced(solo_button_.getButton().getEdgeIndent() / 2);
+            ftype_box_.setBounds(t_bound);
+        }
+        top_bound.removeFromLeft(padding);
+        {
+            auto t_bound = top_bound.removeFromLeft(button_size);
+            t_bound = t_bound.reduced(solo_button_.getButton().getEdgeIndent() / 2);
+            lr_box_.setBounds(t_bound);
+        }
 
         auto bottom_bound = bound.removeFromBottom(button_size);
-        ftype_box_.setBounds(bottom_bound.removeFromLeft(button_size));
-        bottom_bound.removeFromLeft(padding);
-        lr_box_.setBounds(bottom_bound.removeFromLeft(button_size));
-        bottom_bound.removeFromLeft(padding);
-        close_button_.setBounds(bottom_bound);
+        solo_button_.setBounds(bottom_bound.removeFromLeft(button_size));
+        close_button_.setBounds(bottom_bound.removeFromRight(button_size));
+        freq_slider_.setBounds(bottom_bound);
     }
 
     void FloatPopPanel::updateBand() {
@@ -127,11 +145,14 @@ namespace zlpanel {
                 ftype_box_.getBox(), p_ref_.parameters_, zlp::PFilterType::kID + band_s, updater_);
             lr_attachment_ = std::make_unique<zlgui::attachment::ComboBoxAttachment<true>>(
                 lr_box_.getBox(), p_ref_.parameters_, zlp::PLRMode::kID + band_s, updater_);
+            freq_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
+                freq_slider_.getSlider(), p_ref_.parameters_, zlp::PFreq::kID + band_s, updater_);
             filter_status_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterStatus::kID + band_s);
             repaintCallBackSlow();
         } else {
             ftype_attachment_.reset();
             lr_attachment_.reset();
+            freq_attachment_.reset();
             filter_status_ptr_ = nullptr;
         }
         setVisible(base_.getSelectedBand() < zlp::kBandNum);

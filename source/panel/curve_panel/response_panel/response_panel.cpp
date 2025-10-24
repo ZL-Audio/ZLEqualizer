@@ -325,6 +325,7 @@ namespace zlpanel {
                 const auto dynamic_on = dynamic_ons_[band].load(std::memory_order::relaxed);
                 if (c_dynamic_ons_[band] != dynamic_on) {
                     c_dynamic_ons_[band] = dynamic_ons_[band].load(std::memory_order::relaxed);
+                    to_update_lr_flags_[static_cast<size_t>(c_lr_modes_[band])] = true;
                     if (!dynamic_on) {
                         dynamic_mags_[band] = base_mags_[band];
                     }

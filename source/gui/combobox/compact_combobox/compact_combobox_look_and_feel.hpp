@@ -49,8 +49,7 @@ namespace zlgui::combobox {
             if (!icons_.empty() && box.getSelectedItemIndex() >= 0) {
                 const auto fig = icons_[static_cast<size_t>(box.getSelectedItemIndex())]->createCopy();
                 fig->replaceColour(juce::Colours::black, base_.getTextColour());
-                const auto area = box.getLocalBounds().toFloat().reduced(base_.getFontSize() * .1f);
-                fig->drawWithin(g, area, juce::RectanglePlacement::centred, 1.f);
+                fig->drawWithin(g, box.getLocalBounds().toFloat(), juce::RectanglePlacement::centred, 1.f);
             }
         }
 
@@ -72,10 +71,10 @@ namespace zlgui::combobox {
         }
 
         void getIdealPopupMenuItemSize(const juce::String& text, const bool isSeparator, int standardMenuItemHeight,
-                                       int& idealWidth, int& idealHeight) override {
+                                       int& ideal_width, int& ideal_height) override {
             juce::ignoreUnused(text, isSeparator, standardMenuItemHeight);
-            idealWidth = static_cast<int>(0);
-            idealHeight = static_cast<int>(base_.getFontSize() * font_scale_ * 1.2f);
+            ideal_width = item_width_;
+            ideal_height = item_height_;
         }
 
         void drawPopupMenuItem(juce::Graphics& g, const juce::Rectangle<int>& area,
@@ -136,6 +135,28 @@ namespace zlgui::combobox {
                          .withStandardItemHeight(label.getHeight());
         }
 
+        void drawPopupMenuColumnSeparatorWithOptions(juce::Graphics& g, const juce::Rectangle<int>& bounds,
+            const juce::PopupMenu::Options&) override {
+            auto bound = bounds.toFloat();
+            bound = bound.withSizeKeepingCentre(bound.getWidth() * .5f, bound.getHeight());
+
+            juce::ColourGradient gradient;
+            gradient.point1 = bound.getTopLeft();
+            gradient.point2 = bound.getBottomLeft();
+            gradient.isRadial = false;
+            const auto colour1 = base_.getColourBlendedWithBackground(base_.getTextColour(), .1f);
+            const auto colour2 = base_.getColourBlendedWithBackground(base_.getTextColour(), .25f);
+            gradient.addColour(0.f, colour1);
+            gradient.addColour(.5f, colour2);
+            gradient.addColour(1.f, colour1);
+            g.setGradientFill(gradient);
+            g.fillRect(bound);
+        }
+
+        int getPopupMenuColumnSeparatorWidthWithOptions(const juce::PopupMenu::Options&) override {
+            return static_cast<int>(base_.getFontSize() * .4f);
+        }
+
         void setBoxAlpha(const float x) { box_alpha_ = x; }
 
         void setLabelJustification(const juce::Justification j) { label_justification_ = j; }
@@ -150,7 +171,13 @@ namespace zlgui::combobox {
             }
         }
 
+        void setItemSize(const int width, const int height) {
+            item_width_ = width;
+            item_height_ = height;
+        }
+
     private:
+        int item_width_{0}, item_height_{0};
         float font_scale_{1.5f}, box_alpha_{0.f};
         float padding_{0.f};
         juce::Justification label_justification_{juce::Justification::centred};

@@ -175,7 +175,7 @@ namespace zlpanel {
         left_button_.setBounds(top_bound.removeFromRight(arrow_width));
 
         dynamic_button_.setBounds(bound.removeFromRight(button_height));
-        dynamic_button_.getButton().setEdgeIndent(0);
+        dynamic_button_.getButton().setEdgeIndent(static_cast<int>(std::round(base_.getFontSize() * .165f)));
         bound.removeFromRight(padding);
         q_slider_.setBounds(bound.removeFromRight(slider_width));
         bound.removeFromRight(2 * slider_width + 3 * padding);

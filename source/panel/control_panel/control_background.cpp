@@ -17,11 +17,11 @@ namespace zlpanel {
 
     void ControlBackground::paint(juce::Graphics& g) {
         const auto padding = getPaddingSize(base_.getFontSize());
-        const auto bound = getLocalBounds().reduced(padding / 2);
+        const auto bound = getLocalBounds().reduced(padding);
         juce::Path path;
         path.addRoundedRectangle(bound.toFloat(), static_cast<float>(padding));
 
-        const juce::DropShadow shadow{base_.getDarkShadowColour(), padding / 2, {0, 0}};
+        const juce::DropShadow shadow{base_.getBrightShadowColour(), padding, {0, 0}};
         shadow.drawForPath(g, path);
         g.setColour(base_.getBackgroundColour());
         g.fillPath(path);

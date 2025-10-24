@@ -72,6 +72,10 @@ namespace zlgui::slider {
         };
 
     public:
+        std::string permitted_characters_ = "-0123456789.kK";
+        std::function<std::string(double)> value_formatter_;
+        std::function<std::optional<double>(const std::string&)> string_formatter_;
+
         explicit CompactLinearSlider(const juce::String& label_text, UIBase& base,
                                      const juce::String& tooltip_text = "") :
             base_(base), background_(base_), display_(base_),
@@ -247,6 +251,9 @@ namespace zlgui::slider {
 
         juce::String getDisplayValue(const juce::Slider& s) const {
             const auto value = s.getValue();
+            if (value_formatter_) {
+                return value_formatter_(value);
+            }
             const bool append_k = precision_ >= 4 ? std::abs(value) >= 10000.0 : std::abs(value) >= 1000.0;
             const auto display_value = append_k ? value * 0.001 : value;
             auto actual_precision = append_k ? precision_ - 1 : precision_;
@@ -281,7 +288,7 @@ namespace zlgui::slider {
 
         void editorShown(juce::Label*, juce::TextEditor& editor) override {
             editor.setInterceptsMouseClicks(false, false);
-            editor.setInputRestrictions(0, "-0123456789.kK");
+            editor.setInputRestrictions(0, permitted_characters_);
             text_.addMouseListener(this, true);
 
             editor.setJustification(juce::Justification::centred);
@@ -293,12 +300,18 @@ namespace zlgui::slider {
 
         void editorHidden(juce::Label*, juce::TextEditor& editor) override {
             text_.removeMouseListener(this);
-            auto k = 1.0;
             const auto ctext = editor.getText();
-            if (ctext.contains("k") || ctext.contains("K")) {
-                k = 1000.0;
+            std::optional<double> format_result{std::nullopt};
+            if (string_formatter_) {
+                format_result = string_formatter_(ctext.toStdString());
             }
-            const auto actual_value = ctext.getDoubleValue() * k;
+            double actual_value;
+            if (format_result != std::nullopt) {
+                actual_value = format_result.value();
+            } else {
+                const auto k = ctext.contains("k") || ctext.contains("K") ? 1000.0 : 1.0;
+                actual_value = ctext.getDoubleValue() * k;
+            }
 
             slider_.setValue(actual_value, juce::sendNotificationAsync);
             if constexpr (kUseName) {

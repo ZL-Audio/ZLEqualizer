@@ -95,6 +95,8 @@ namespace zlgui::combobox {
     }
 
     void CompactCombobox::resized() {
+        auto bound = getLocalBounds();
+        box_laf_.setItemSize(bound.getWidth(), bound.getHeight());
         combo_box_.setBounds(getLocalBounds());
     }
 
