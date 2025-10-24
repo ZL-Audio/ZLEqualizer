@@ -114,6 +114,8 @@ namespace zlpanel {
         }
 
         freq_slider_.setPrecision(3);
+        freq_slider_.permitted_characters_ = "-0123456789.kK#ABCDEFG";
+        freq_slider_.string_formatter_ = freq_note::getFrequencyFromNote;
         freq_slider_.setBufferedToImage(true);
         addAndMakeVisible(freq_slider_);
 
@@ -209,7 +211,7 @@ namespace zlpanel {
                 slope_box_.getBox().setSelectedId(2, juce::sendNotificationSync);
             }
             if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum && c_side_ftype_ != 0) {
-                auto *para = p_ref_.parameters_.getParameter(zlp::PSideQ::kID + std::to_string(band));
+                auto* para = p_ref_.parameters_.getParameter(zlp::PSideQ::kID + std::to_string(band));
                 updateValue(para, para->getDefaultValue());
             }
             slope_box_.getBox().setItemEnabled(1, c_side_ftype_ != 0);

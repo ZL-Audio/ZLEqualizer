@@ -19,6 +19,11 @@ namespace zlgui::slider {
                                       private juce::Label::Listener,
                                       private juce::Slider::Listener,
                                       public juce::SettableTooltipClient {
+    public:
+        std::string permitted_characters_ = "-0123456789.kK";
+        std::function<std::string(double)> value_formatter_;
+        std::function<std::optional<double>(const std::string&)> string_formatter_;
+
     private:
         class Background final : public juce::Component {
         public:
@@ -72,10 +77,6 @@ namespace zlgui::slider {
         };
 
     public:
-        std::string permitted_characters_ = "-0123456789.kK";
-        std::function<std::string(double)> value_formatter_;
-        std::function<std::optional<double>(const std::string&)> string_formatter_;
-
         explicit CompactLinearSlider(const juce::String& label_text, UIBase& base,
                                      const juce::String& tooltip_text = "") :
             base_(base), background_(base_), display_(base_),

@@ -12,6 +12,7 @@
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
+#include "../helper/freq_note.hpp"
 #include "../multilingual/tooltip_helper.hpp"
 
 #include "control_background.hpp"

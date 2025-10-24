@@ -22,6 +22,8 @@ namespace zlpanel {
         sub_left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(sub_left_control_panel_);
 
+        freq_slider_.permitted_characters_ = "-0123456789.kK#ABCDEFG";
+        freq_slider_.string_formatter_ = freq_note::getFrequencyFromNote;
         addAndMakeVisible(freq_slider_);
         gain_slider_.setShowSlider2(false);
         addAndMakeVisible(gain_slider_);

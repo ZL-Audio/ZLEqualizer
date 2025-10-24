@@ -359,6 +359,7 @@ namespace zlpanel {
         if (const auto sample_rate = sample_rate_.load(std::memory_order::relaxed);
             std::abs(sample_rate - c_sample_rate_) > 1.0) {
             c_sample_rate_ = sample_rate;
+            c_slider_max_ = freq_helper::getSliderMax(sample_rate);
             if (sample_rate < 40000.0) {
                 return;
             }
@@ -415,7 +416,8 @@ namespace zlpanel {
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             if (c_filter_status_[band] != zlp::FilterStatus::kOff) {
                 if (to_update_base_y_flags_[band]) {
-                    const auto para = empty_[band].getParas();
+                    auto para = empty_[band].getParas();
+                    para.freq = std::min(para.freq, c_slider_max_);
                     ideal_[band].forceUpdate(para);
                     ideal_[band].updateMagnitudeSquare(ws_, base_mags_[band]);
                     base_mags_[band] = kfr::log10(kfr::max(base_mags_[band], 1e-24f));
@@ -456,7 +458,8 @@ namespace zlpanel {
                     message_to_update_draggers_total_.store(true, std::memory_order::release);
                 }
                 if (to_update_side_y_flags_[band]) {
-                    const auto para = side_empty_[band].getParas();
+                    auto para = side_empty_[band].getParas();
+                    para.freq = std::min(para.freq, c_slider_max_);
                     const auto [left_x, center_x, right_x] = getLeftCenterRightX(para);
                     side_points_[band][0].store(center_x, std::memory_order::relaxed);
                     if (para.filter_type == zldsp::filter::kLowPass) {

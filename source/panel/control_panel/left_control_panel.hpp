@@ -10,6 +10,7 @@
 #pragma once
 
 #include "sub_left_control_panel.hpp"
+#include "../helper/freq_note.hpp"
 
 namespace zlpanel {
     class LeftControlPanel final : public juce::Component {

@@ -77,7 +77,7 @@ namespace zlpanel {
         float c_k_{}, c_b_{};
 
         std::atomic<double> sample_rate_{0.};
-        double c_sample_rate_{0.};
+        double c_sample_rate_{0.}, c_slider_max_{0.};
         double fft_max_{0.};
 
         std::vector<float> ws_;
