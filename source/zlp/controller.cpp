@@ -566,6 +566,14 @@ namespace zlp {
                 histograms_[i].getPercentiles(hist_percentiles_, hist_target_temp_, hist_results_);
                 dynamic_side_handlers_[i].setKnee<false>(
                     std::max(0.5 * (hist_results_[2] - hist_results_[0]), 5.0));
+            } else if (c_editor_on_) {
+                double side_current_loudness = 0.0;
+                for (size_t chan = 0; chan < side_pointers.size(); ++chan) {
+                    auto side_v = kfr::make_univector(side_copy_pointers_[chan], num_samples);
+                    side_current_loudness += kfr::sumsqr(side_v) / static_cast<double>(num_samples);
+                }
+                side_current_loudness = zldsp::chore::squareGainToDecibels(side_current_loudness);
+                dynamic_side_loudness_display_[i].store(side_current_loudness, std::memory_order::relaxed);
             }
             // update actual threshold if required
             if (c_dynamic_th_relative_[i] || c_dynamic_th_learn_[i]) {

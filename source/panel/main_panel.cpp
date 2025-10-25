@@ -85,6 +85,7 @@ namespace zlpanel {
                 curve_panel_.updateBand();
             }
             curve_panel_.repaintCallBack();
+            control_panel_.repaintCallBack();
             const auto c_refresh_rate = refresh_handler_.getActualRefreshRate();
             if (std::abs(c_refresh_rate - refresh_rate_) > 0.1) {
                 refresh_rate_ = c_refresh_rate;

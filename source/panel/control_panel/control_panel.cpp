@@ -14,14 +14,17 @@ namespace zlpanel {
                                const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
         left_control_panel_(p, base, tooltip_helper),
-        right_control_panel_(p, base, tooltip_helper) {
+        right_control_panel_(p, base, tooltip_helper),
+        side_loudness_display_panel_(p, base) {
         addAndMakeVisible(mouse_event_eater_);
 
         left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(left_control_panel_);
 
         right_control_panel_.setBufferedToImage(true);
-        addAndMakeVisible(right_control_panel_);
+        addChildComponent(right_control_panel_);
+
+        addChildComponent(side_loudness_display_panel_);
 
         setInterceptsMouseClicks(false, true);
     }
@@ -40,17 +43,33 @@ namespace zlpanel {
     }
 
     void ControlPanel::resized() {
+        const auto font_size = base_.getFontSize();
         auto bound = getLocalBounds();
-        const auto padding = getPaddingSize(base_.getFontSize());
+        const auto padding = getPaddingSize(font_size);
         const auto left_width = left_control_panel_.getIdealWidth();
         center_bound_ = bound.withSizeKeepingCentre(left_width, bound.getHeight());
         mouse_center_bound_ = center_bound_.reduced(padding);
         mouse_full_bound_ = bound.reduced(padding);
         left_bound_ = bound.removeFromLeft(left_width);
         right_control_panel_.setBounds(bound);
+
+        const auto button_height = getButtonSize(font_size);
+        const auto slider_height = getSliderHeight(font_size);
+        const auto slider_width = getSliderWidth(font_size);
+        bound.reduce(padding + padding / 2, padding);
+        bound.removeFromTop(button_height);
+        const auto h_padding = (bound.getHeight() - 2 * slider_height) / 4;
+        bound = bound.removeFromLeft(slider_width);
+        bound.removeFromBottom(3 * h_padding + slider_height);
+        side_loudness_display_panel_.setBounds(bound.removeFromBottom(slider_height / 4));
+
         if (dynamic_on_ptr_ != nullptr) {
             changeLeftRightBound(c_dynamic_on_);
         }
+    }
+
+    void ControlPanel::repaintCallBack() {
+        side_loudness_display_panel_.repaintCallBack();
     }
 
     void ControlPanel::repaintCallBackSlow() {
@@ -61,9 +80,10 @@ namespace zlpanel {
                 changeLeftRightBound(c_dynamic_on_);
                 left_control_panel_.turnOnOffDynamic(c_dynamic_on_);
             }
+            left_control_panel_.repaintCallBackSlow();
+            right_control_panel_.repaintCallBackSlow();
+            side_loudness_display_panel_.repaintCallBackSlow();
         }
-        left_control_panel_.repaintCallBackSlow();
-        right_control_panel_.repaintCallBackSlow();
     }
 
     void ControlPanel::updateBand() {
@@ -73,6 +93,7 @@ namespace zlpanel {
             changeLeftRightBound(dynamic_on_ptr_->load(std::memory_order::relaxed) > .5f);
             left_control_panel_.updateBand();
             right_control_panel_.updateBand();
+            side_loudness_display_panel_.updateBand();
             setVisible(true);
         } else {
             dynamic_on_ptr_ = nullptr;

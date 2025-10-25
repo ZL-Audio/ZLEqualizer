@@ -11,6 +11,7 @@
 
 #include "left_control_panel.hpp"
 #include "right_control_panel.hpp"
+#include "side_loudness_display_panel.hpp"
 
 namespace zlpanel {
     class ControlPanel final : public juce::Component {
@@ -26,6 +27,8 @@ namespace zlpanel {
 
         void resized() override;
 
+        void repaintCallBack();
+
         void repaintCallBackSlow();
 
         void updateBand();
@@ -39,6 +42,7 @@ namespace zlpanel {
         juce::Component mouse_event_eater_;
         LeftControlPanel left_control_panel_;
         RightControlPanel right_control_panel_;
+        SideLoudnessDisplayPanel side_loudness_display_panel_;
 
         std::atomic<float>* dynamic_on_ptr_{nullptr};
         bool c_dynamic_on_{false};

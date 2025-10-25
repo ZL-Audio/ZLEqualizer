@@ -148,6 +148,10 @@ namespace zlp {
             return current_gains_[idx].load(std::memory_order::relaxed);
         }
 
+        double getSideLoudness(const size_t idx) const {
+            return dynamic_side_loudness_display_[idx].load(std::memory_order::relaxed);
+        }
+
     private:
         juce::AudioProcessor& p_ref_;
         // filter structure
@@ -238,7 +242,6 @@ namespace zlp {
         // filter dynamic swap flags
         std::array<std::atomic<bool>, kBandNum> dynamic_swap_{};
         // dynamic related parameters
-        std::array<std::atomic<double>, kBandNum> current_gains_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_update_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_relative_{};
         std::array<bool, kBandNum> c_dynamic_th_relative_{};
@@ -262,7 +265,8 @@ namespace zlp {
         std::array<std::atomic<double>, kBandNum> learned_thresholds_{};
         std::array<std::atomic<double>, kBandNum> learned_knees_{};
         // array to hold dynamic gains
-        std::array<std::atomic<double>, kBandNum> dynamic_gain_display_{};
+        std::array<std::atomic<double>, kBandNum> current_gains_{};
+        std::array<std::atomic<double>, kBandNum> dynamic_side_loudness_display_{};
 
         std::array<std::vector<double>, 2> pre_main_buffers_{};
         std::array<double*, 2> pre_main_pointers_{};
