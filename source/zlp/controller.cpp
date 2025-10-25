@@ -197,8 +197,9 @@ namespace zlp {
             v.clear();
         }
         for (const size_t& i : not_off_total_) {
-            const auto lr = static_cast<size_t>(lrms_[i].load(std::memory_order::relaxed));
-            not_off_indices_[lr].emplace_back(i);
+            const auto lr = lrms_[i].load(std::memory_order::relaxed);
+            c_lrms_[i] = lr;
+            not_off_indices_[static_cast<size_t>(lr)].emplace_back(i);
         }
         is_lr_on_ = !not_off_indices_[1].empty() || !not_off_indices_[2].empty();
         is_ms_on_ = !not_off_indices_[3].empty() || !not_off_indices_[4].empty();
@@ -426,12 +427,57 @@ namespace zlp {
         }
         // copy solo buffer
         if (c_solo_on_) {
-            if (c_solo_side_) {
-                zldsp::vector::copy(solo_pointers_[0], side_pointers[0], num_samples);
-                zldsp::vector::copy(solo_pointers_[1], side_pointers[1], num_samples);
-            } else {
-                zldsp::vector::copy(solo_pointers_[0], main_pointers[0], num_samples);
-                zldsp::vector::copy(solo_pointers_[1], main_pointers[1], num_samples);
+            if (c_solo_side_ || !c_dynamic_on_[c_solo_idx_]) {
+                std::memset(solo_pointers_[0], 0, num_samples * sizeof(double));
+                std::memset(solo_pointers_[1], 0, num_samples * sizeof(double));
+            }
+            switch (c_lrms_[c_solo_idx_]) {
+            case FilterStereo::kStereo: {
+                if (!c_solo_side_) {
+                    zldsp::vector::copy(solo_pointers_[0], main_pointers[0], num_samples);
+                    zldsp::vector::copy(solo_pointers_[1], main_pointers[1], num_samples);
+                    solo_filter_.process(solo_pointers_, num_samples);
+                }
+                break;
+            }
+            case FilterStereo::kLeft: {
+                std::memset(solo_pointers_[1], 0, num_samples * sizeof(double));
+                if (!c_solo_side_) {
+                    zldsp::vector::copy(solo_pointers_[0], main_pointers[0], num_samples);
+                    solo_filter_.process({&solo_pointers_[0], 1}, num_samples);
+                }
+                break;
+            }
+            case FilterStereo::kRight: {
+                std::memset(solo_pointers_[0], 0, num_samples * sizeof(double));
+                if (!c_solo_side_) {
+                    zldsp::vector::copy(solo_pointers_[1], main_pointers[1], num_samples);
+                    solo_filter_.process({&solo_pointers_[1], 1}, num_samples);
+                }
+                break;
+            }
+            case FilterStereo::kMid: {
+                if (!c_solo_side_) {
+                    zldsp::vector::copy(solo_pointers_[0], main_pointers[0], num_samples);
+                    zldsp::vector::copy(solo_pointers_[1], main_pointers[1], num_samples);
+                    zldsp::splitter::InplaceMSSplitter<double>::split(
+                        solo_pointers_[0], solo_pointers_[1], num_samples);
+                    solo_filter_.process({&solo_pointers_[0], 1}, num_samples);
+                }
+                std::memset(solo_pointers_[1], 0, num_samples * sizeof(double));
+                break;
+            }
+            case FilterStereo::kSide: {
+                if (!c_solo_side_) {
+                    zldsp::vector::copy(solo_pointers_[0], main_pointers[0], num_samples);
+                    zldsp::vector::copy(solo_pointers_[1], main_pointers[1], num_samples);
+                    zldsp::splitter::InplaceMSSplitter<double>::split(
+                        solo_pointers_[0], solo_pointers_[1], num_samples);
+                    solo_filter_.process({&solo_pointers_[1], 1}, num_samples);
+                }
+                std::memset(solo_pointers_[0], 0, num_samples * sizeof(double));
+                break;
+            }
             }
         }
         switch (c_filter_structure_) {
@@ -468,9 +514,21 @@ namespace zlp {
                 num_samples);
         }
 
-        if constexpr (!bypass) {
-            if (c_solo_on_) {
-                solo_filter_.process(solo_pointers_, num_samples);
+        if (c_solo_on_) {
+            switch (c_lrms_[c_solo_idx_]) {
+            case FilterStereo::kStereo:
+            case FilterStereo::kLeft:
+            case FilterStereo::kRight: {
+                break;
+            }
+            case FilterStereo::kMid:
+            case FilterStereo::kSide: {
+                zldsp::splitter::InplaceMSSplitter<double>::combine(
+                    solo_pointers_[0], solo_pointers_[1], num_samples);
+                break;
+            }
+            }
+            if constexpr (!bypass) {
                 zldsp::vector::copy(main_pointers[0], solo_pointers_[0], num_samples);
                 zldsp::vector::copy(main_pointers[1], solo_pointers_[1], num_samples);
             }
@@ -523,25 +581,23 @@ namespace zlp {
         processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
             dynamic_filters, 0, main_pointers, side_pointers, side_pointers, num_samples);
         if (is_lr_on_) {
-            std::array<std::array<double*, 1>, 2> main_lr_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
-            std::array<std::array<double*, 1>, 2> side_lr_pointers{{{side_pointers[0]}, {side_pointers[1]}}};
-
             processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
-                dynamic_filters, 1, main_lr_pointers[0], side_lr_pointers[0], side_lr_pointers[1], num_samples);
+                dynamic_filters, 1, {&main_pointers[0], 1}, {&side_pointers[0], 1}, {&side_pointers[1], 1},
+                num_samples);
             processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
-                dynamic_filters, 2, main_lr_pointers[1], side_lr_pointers[1], side_lr_pointers[0], num_samples);
+                dynamic_filters, 2, {&main_pointers[1], 1}, {&side_pointers[1], 1}, {&side_pointers[0], 1},
+                num_samples);
         }
         if (is_ms_on_) {
-            std::array<std::array<double*, 1>, 2> main_ms_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
-            std::array<std::array<double*, 1>, 2> side_ms_pointers{{{side_pointers[0]}, {side_pointers[1]}}};
-
             zldsp::splitter::InplaceMSSplitter<double>::split(main_pointers[0], main_pointers[1], num_samples);
             zldsp::splitter::InplaceMSSplitter<double>::split(side_pointers[0], side_pointers[1], num_samples);
 
             processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
-                dynamic_filters, 3, main_ms_pointers[0], side_ms_pointers[0], side_ms_pointers[1], num_samples);
+                dynamic_filters, 3, {&main_pointers[0], 1}, {&side_pointers[0], 1}, {&side_pointers[1], 1},
+                num_samples);
             processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
-                dynamic_filters, 4, main_ms_pointers[1], side_ms_pointers[1], side_ms_pointers[0], num_samples);
+                dynamic_filters, 4, {&main_pointers[1], 1}, {&side_pointers[1], 1}, {&side_pointers[0], 1},
+                num_samples);
 
             zldsp::splitter::InplaceMSSplitter<double>::combine(main_pointers[0], main_pointers[1], num_samples);
             zldsp::splitter::InplaceMSSplitter<double>::combine(side_pointers[0], side_pointers[1], num_samples);
@@ -614,6 +670,26 @@ namespace zlp {
             }
             // process side filter
             side_filters_[i].process(side_copy_pointers_, num_samples);
+            // copy side buffer to solo buffer if needed
+            if (c_solo_on_ && c_solo_side_ && c_solo_idx_ == i) {
+                switch (c_lrms_[i]) {
+                case FilterStereo::kStereo: {
+                    zldsp::vector::copy(solo_pointers_[0], side_copy_pointers_[0], num_samples);
+                    zldsp::vector::copy(solo_pointers_[1], side_copy_pointers_[1], num_samples);
+                    break;
+                }
+                case FilterStereo::kLeft:
+                case FilterStereo::kMid: {
+                    zldsp::vector::copy(solo_pointers_[0], side_copy_pointers_[0], num_samples);
+                    break;
+                }
+                case FilterStereo::kRight:
+                case FilterStereo::kSide: {
+                    zldsp::vector::copy(solo_pointers_[1], side_copy_pointers_[0], num_samples);
+                    break;
+                }
+                }
+            }
             // calculate side histogram loudness if dynamic learn is on
             if (c_dynamic_th_learn_[i]) {
                 double side_current_loudness = 0.0;

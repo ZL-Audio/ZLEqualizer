@@ -130,6 +130,9 @@ namespace zlpanel {
             if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
                 band_helper::turnOnOffDynamic(p_ref_, c_band, dynamic_button_.getToggleState());
             }
+            if (!dynamic_button_.getToggleState() && base_.getSoloWholeIdx() < 2 * zlp::kBandNum) {
+                base_.setSoloWholeIdx(2 * zlp::kBandNum);
+            }
         };
 
         setInterceptsMouseClicks(false, true);

@@ -169,6 +169,7 @@ namespace zlp {
         std::atomic<bool> to_update_status_{false};
         // filter l/r/m/s
         std::array<std::atomic<FilterStereo>, kBandNum> lrms_{};
+        std::array<FilterStereo, kBandNum> c_lrms_{};
         std::atomic<bool> to_update_lrms_{false};
         bool is_lr_on_{false}, is_ms_on_{false};
         // not off indices for stereo/l/r/m/s
