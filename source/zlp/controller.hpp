@@ -152,6 +152,11 @@ namespace zlp {
             return dynamic_side_loudness_display_[idx].load(std::memory_order::relaxed);
         }
 
+        void setSoloWholeIdx(const size_t idx) {
+            solo_whole_idx_.store(idx, std::memory_order::relaxed);
+            to_update_solo_.store(true, std::memory_order::release);
+        }
+
     private:
         juce::AudioProcessor& p_ref_;
         // filter structure
@@ -174,6 +179,7 @@ namespace zlp {
         std::array<zldsp::filter::Empty, kBandNum> side_emptys_{};
         std::array<std::atomic<bool>, kBandNum> side_empty_update_flags_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> filter_paras_{};
+        std::array<zldsp::filter::FilterParameters, kBandNum> side_filter_paras_{};
         // dynamic handlers
         std::array<zldsp::filter::DynamicSideHandler<double>, kBandNum> dynamic_side_handlers_
             = make_array_of<zldsp::filter::DynamicSideHandler<double>, kBandNum>();
@@ -274,6 +280,14 @@ namespace zlp {
         bool c_editor_on_{false};
         zldsp::analyzer::MultipleFFTAnalyzer<double, 3, 251> fft_analyzer_;
 
+        std::array<std::vector<double>, 2> solo_buffers_{};
+        std::array<double*, 2> solo_pointers_{};
+        std::atomic<bool> to_update_solo_{false};
+        std::atomic<size_t> solo_whole_idx_{2 * kBandNum};
+        bool c_solo_on_{false};
+        bool c_solo_side_{false};
+        size_t c_solo_idx_{0};
+
         void prepareBuffer();
 
         void prepareStatus();
@@ -325,6 +339,9 @@ namespace zlp {
         template <bool bypass, typename CorrectionArrayType>
         void processCorrections(CorrectionArrayType& corrections, std::span<double*> main_pointers,
                                 size_t num_samples);
+
+        template <bool force>
+        void updateSoloFilter(zldsp::filter::FilterParameters paras);
     };
 
     extern template void Controller::process<true>(std::array<double*, 2>, std::array<double*, 2>, size_t);

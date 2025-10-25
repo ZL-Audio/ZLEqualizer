@@ -34,6 +34,7 @@ namespace zlp {
 
         for (size_t i = 0; i < kBandNum; ++i) {
             filter_paras_[i] = emptys_[i].getParas();
+            side_filter_paras_[i] = side_emptys_[i].getParas();
         }
 
         for (size_t i = 0; i < kBandNum; ++i) {
@@ -45,11 +46,7 @@ namespace zlp {
             parallel_filters_[i].prepare(sample_rate, 2, max_num_samples);
             parallel_filters_[i].getFilter().updateParas(filter_paras_[i]);
             side_filters_[i].prepare(sample_rate, 2, max_num_samples);
-            auto side_para = side_emptys_[i].getParas();
-            if (side_para.filter_type == zldsp::filter::kLowPass || side_para.filter_type == zldsp::filter::kHighPass) {
-                side_para.q = std::sqrt(2.0) * .5;
-            }
-            side_filters_[i].updateParas(side_para);
+            side_filters_[i].updateParas(side_filter_paras_[i]);
             res_ideals_[i].prepare(sample_rate);
             res_tdfs_[i].prepare(sample_rate, 1, 0);
         }
@@ -70,6 +67,17 @@ namespace zlp {
             pre_main_pointers_[chan] = pre_main_buffers_[chan].data();
         }
         fft_analyzer_.prepare(sample_rate, {2, 2, 2});
+
+        for (size_t chan = 0; chan < 2; ++chan) {
+            solo_buffers_[chan].resize(max_num_samples);
+            solo_pointers_[chan] = solo_buffers_[chan].data();
+        }
+        solo_filter_.prepare(sample_rate, 2, max_num_samples);
+        if (c_solo_side_) {
+            updateSoloFilter<true>(side_filter_paras_[c_solo_idx_]);
+        } else {
+            updateSoloFilter<true>(filter_paras_[c_solo_idx_]);
+        }
     }
 
     void Controller::prepareBuffer() {
@@ -133,6 +141,25 @@ namespace zlp {
             }
             to_update_lrms_.store(true, std::memory_order::release);
         }
+        if (to_update_solo_.exchange(false, std::memory_order::acquire)) {
+            // update solo status
+            const auto solo_whole_idx = solo_whole_idx_.load(std::memory_order::relaxed);
+            if (solo_whole_idx == 2 * kBandNum) {
+                c_solo_on_ = false;
+            } else {
+                c_solo_on_ = true;
+                solo_filter_.reset();
+                if (solo_whole_idx < kBandNum) {
+                    c_solo_idx_ = solo_whole_idx;
+                    c_solo_side_ = false;
+                    updateSoloFilter<true>(filter_paras_[c_solo_idx_]);
+                } else {
+                    c_solo_idx_ = solo_whole_idx - kBandNum;
+                    c_solo_side_ = true;
+                    updateSoloFilter<true>(side_filter_paras_[c_solo_idx_]);
+                }
+            }
+        }
     }
 
     void Controller::prepareFilters() {
@@ -141,6 +168,9 @@ namespace zlp {
             if (empty_update_flags_[i].exchange(false, std::memory_order::acquire)) {
                 const auto filter_type = filter_paras_[i].filter_type;
                 filter_paras_[i] = emptys_[i].getParas();
+                if (c_solo_on_ && !c_solo_side_ && c_solo_idx_ == i) {
+                    updateSoloFilter<false>(filter_paras_[i]);
+                }
                 // if the filter type changes, check whether dynamic should be on
                 if (filter_type != filter_paras_[i].filter_type) {
                     prepareOneBandDynamics(i);
@@ -339,9 +369,13 @@ namespace zlp {
             }
             if (side_empty_update_flags_[i].exchange(false, std::memory_order::acquire)) {
                 auto side_para = side_emptys_[i].getParas();
-                if (side_para.filter_type == zldsp::filter::kLowPass || side_para.filter_type ==
-                    zldsp::filter::kHighPass) {
+                if (side_para.filter_type == zldsp::filter::kLowPass
+                    || side_para.filter_type == zldsp::filter::kHighPass) {
                     side_para.q = std::sqrt(2.0) * .5;
+                }
+                side_filter_paras_[i] = side_para;
+                if (c_solo_on_ && c_solo_side_ && c_solo_idx_ == i) {
+                    updateSoloFilter<false>(side_para);
                 }
                 dynamic_side_handlers_[i].setTargetGain(side_para.gain);
                 side_para.gain = 0.0;
@@ -385,9 +419,20 @@ namespace zlp {
                              const size_t num_samples) {
         prepareBuffer();
         c_editor_on_ = editor_on_.load(std::memory_order::relaxed);
-        if (c_editor_on_) {
+        // copy pre buffer for FFT processing
+        if (bypass || c_editor_on_) {
             zldsp::vector::copy(pre_main_pointers_[0], main_pointers[0], num_samples);
             zldsp::vector::copy(pre_main_pointers_[1], main_pointers[1], num_samples);
+        }
+        // copy solo buffer
+        if (c_solo_on_) {
+            if (c_solo_side_) {
+                zldsp::vector::copy(solo_pointers_[0], side_pointers[0], num_samples);
+                zldsp::vector::copy(solo_pointers_[1], side_pointers[1], num_samples);
+            } else {
+                zldsp::vector::copy(solo_pointers_[0], main_pointers[0], num_samples);
+                zldsp::vector::copy(solo_pointers_[1], main_pointers[1], num_samples);
+            }
         }
         switch (c_filter_structure_) {
         case kMinimum:
@@ -412,10 +457,23 @@ namespace zlp {
         }
         }
 
+        if constexpr (bypass) {
+            zldsp::vector::copy(main_pointers[0], pre_main_pointers_[0], num_samples);
+            zldsp::vector::copy(main_pointers[1], pre_main_pointers_[1], num_samples);
+        }
+
         if (c_editor_on_) {
             fft_analyzer_.process(
                 {std::span(pre_main_pointers_), std::span(main_pointers), std::span(side_pointers)},
                 num_samples);
+        }
+
+        if constexpr (!bypass) {
+            if (c_solo_on_) {
+                solo_filter_.process(solo_pointers_, num_samples);
+                zldsp::vector::copy(main_pointers[0], solo_pointers_[0], num_samples);
+                zldsp::vector::copy(main_pointers[1], solo_pointers_[1], num_samples);
+            }
         }
 
         switch (c_filter_structure_) {
@@ -425,15 +483,27 @@ namespace zlp {
             break;
         }
         case kMatched: {
-            processCorrections<bypass>(match_corrections_, main_pointers, num_samples);
+            if (c_solo_on_) {
+                processCorrections<true>(match_corrections_, main_pointers, num_samples);
+            } else {
+                processCorrections<bypass>(match_corrections_, main_pointers, num_samples);
+            }
             break;
         }
         case kMixed: {
-            processCorrections<bypass>(mixed_corrections_, main_pointers, num_samples);
+            if (c_solo_on_) {
+                processCorrections<true>(mixed_corrections_, main_pointers, num_samples);
+            } else {
+                processCorrections<bypass>(mixed_corrections_, main_pointers, num_samples);
+            }
             break;
         }
         case kZero: {
-            processCorrections<bypass>(zero_corrections_, main_pointers, num_samples);
+            if (c_solo_on_) {
+                processCorrections<true>(zero_corrections_, main_pointers, num_samples);
+            } else {
+                processCorrections<bypass>(zero_corrections_, main_pointers, num_samples);
+            }
             break;
         }
         }
@@ -451,7 +521,7 @@ namespace zlp {
     void Controller::processDynamic(DynamicFilterArrayType& dynamic_filters, std::array<double*, 2> main_pointers,
                                     std::array<double*, 2> side_pointers, const size_t num_samples) {
         processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
-         dynamic_filters, 0, main_pointers, side_pointers, side_pointers, num_samples);
+            dynamic_filters, 0, main_pointers, side_pointers, side_pointers, num_samples);
         if (is_lr_on_) {
             std::array<std::array<double*, 1>, 2> main_lr_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
             std::array<std::array<double*, 1>, 2> side_lr_pointers{{{side_pointers[0]}, {side_pointers[1]}}};
@@ -586,7 +656,11 @@ namespace zlp {
             main_pointers, side_copy_pointers_,
             num_samples);
         if constexpr (dynamic_on) {
-            current_gains_[i].store(dynamic_side_handlers_[i].getCurrentGain(), std::memory_order::relaxed);
+            if constexpr (dynamic_bypass) {
+                current_gains_[i].store(dynamic_side_handlers_[i].getBaseGain(), std::memory_order::relaxed);
+            } else {
+                current_gains_[i].store(dynamic_side_handlers_[i].getCurrentGain(), std::memory_order::relaxed);
+            }
         }
     }
 
@@ -649,6 +723,37 @@ namespace zlp {
             corrections[3].template process<bypass>(main_ms_pointers[1], num_samples);
 
             zldsp::splitter::InplaceMSSplitter<double>::combine(main_pointers[0], main_pointers[1], num_samples);
+        }
+    }
+
+    template <bool force>
+    void Controller::updateSoloFilter(zldsp::filter::FilterParameters paras) {
+        switch (paras.filter_type) {
+        case zldsp::filter::kPeak:
+        case zldsp::filter::kNotch:
+        case zldsp::filter::kBandPass:
+        case zldsp::filter::kTiltShelf:
+        case zldsp::filter::kBandShelf: {
+            paras.filter_type = zldsp::filter::kBandPass;
+            break;
+        }
+        case zldsp::filter::kLowShelf:
+        case zldsp::filter::kHighPass: {
+            paras.q = std::sqrt(2.0) * 0.5;
+            paras.filter_type = c_solo_side_ ? zldsp::filter::kHighPass : zldsp::filter::kLowPass;
+            break;
+        }
+        case zldsp::filter::kHighShelf:
+        case zldsp::filter::kLowPass: {
+            paras.q = std::sqrt(2.0) * 0.5;
+            paras.filter_type = c_solo_side_ ? zldsp::filter::kLowPass : zldsp::filter::kHighPass;
+            break;
+        }
+        }
+        if constexpr (force) {
+            solo_filter_.forceUpdate(paras);
+        } else {
+            solo_filter_.updateParas(paras);
         }
     }
 } // namespace zlp

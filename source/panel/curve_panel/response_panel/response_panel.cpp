@@ -20,6 +20,7 @@ namespace zlpanel {
         scale_panel_(p, base, tooltip_helper),
         mouse_event_panel_(p, base, tooltip_helper),
         dragger_panel_(p, base, tooltip_helper),
+        solo_panel_(p, base),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
         juce::ignoreUnused(base_, tooltip_helper);
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
@@ -55,6 +56,7 @@ namespace zlpanel {
         scale_panel_.setBufferedToImage(true);
         addAndMakeVisible(scale_panel_);
         addAndMakeVisible(dragger_panel_);
+        addChildComponent(solo_panel_);
         setInterceptsMouseClicks(false, true);
     }
 
@@ -91,6 +93,7 @@ namespace zlpanel {
         sum_panel_.setBounds(bound);
         mouse_event_panel_.setBounds(bound);
         dragger_panel_.setBounds(bound);
+        solo_panel_.setBounds(bound);
         scale_panel_.setBounds(bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
         side_y_ = static_cast<float>(bound.getHeight() - getBottomAreaHeight(base_.getFontSize()))
             - base_.getFontSize() * kDraggerScale * .5f;
@@ -105,6 +108,7 @@ namespace zlpanel {
     }
 
     void ResponsePanel::updateDraggerPositions() {
+        updateSoloPosition();
         if (!message_to_update_draggers_total_.exchange(false, std::memory_order::acquire)) {
             return;
         }
@@ -119,6 +123,21 @@ namespace zlpanel {
         updateFloatingPosition();
         updateTargetPosition();
         updateSidePosition();
+    }
+
+    void ResponsePanel::updateSoloPosition() {
+        if (!solo_panel_.isVisible()) {
+            return;
+        }
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            if (solo_panel_.isSoloSide()) {
+                solo_panel_.updateX(side_points_[band][1].load(std::memory_order::relaxed),
+                        side_points_[band][2].load(std::memory_order::relaxed));
+            } else {
+                solo_panel_.updateX(points_[band][1].load(std::memory_order::relaxed),
+                    points_[band][2].load(std::memory_order::relaxed));
+            }
+        }
     }
 
     void ResponsePanel::updateTargetPosition() {
@@ -189,6 +208,7 @@ namespace zlpanel {
         message_to_update_panels_.store(true, std::memory_order::relaxed);
         mouse_event_panel_.updateBand();
         dragger_panel_.updateBand();
+        solo_panel_.updateBand();
         updateFloatingPosition();
         updateTargetPosition();
         updateSidePosition();
@@ -526,10 +546,12 @@ namespace zlpanel {
                                    static_cast<float>(right_x));
         }
         case zldsp::filter::kLowShelf:
-        case zldsp::filter::kHighPass:
+        case zldsp::filter::kHighPass: {
+            return std::make_tuple(0.f, static_cast<float>(center_x), static_cast<float>(center_x));
+        }
         case zldsp::filter::kHighShelf:
         case zldsp::filter::kLowPass: {
-            return std::make_tuple(0.f, static_cast<float>(center_x), c_width_);
+            return std::make_tuple(static_cast<float>(center_x), static_cast<float>(center_x), c_width_);
         }
         }
     }

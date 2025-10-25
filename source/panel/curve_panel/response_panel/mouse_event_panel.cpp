@@ -20,7 +20,7 @@ namespace zlpanel {
     MouseEventPanel::~MouseEventPanel() {
         stopTimer(0);
         stopTimer(1);
-        for (size_t i = 0; i < 3; ++i) {
+        for (size_t i = 1; i < 3; ++i) {
             p_ref_.getController().getFFTAnalyzer().setFrozen(i, false);
         }
         base_.setPanelProperty(zlgui::kCurveShouldTransparent, 0.f);
@@ -32,7 +32,7 @@ namespace zlpanel {
 
     void MouseEventPanel::mouseMove(const juce::MouseEvent&) {
         stopTimer(1);
-        for (size_t i = 0; i < 3; ++i) {
+        for (size_t i = 1; i < 3; ++i) {
             p_ref_.getController().getFFTAnalyzer().setFrozen(i, false);
         }
         base_.setPanelProperty(zlgui::kCurveShouldTransparent, 0.f);
@@ -127,7 +127,7 @@ namespace zlpanel {
             base_.setSelectedBand(zlp::kBandNum);
             stopTimer(0);
         } else if (timer_ID == 1) {
-            for (size_t i = 0; i < 3; ++i) {
+            for (size_t i = 1; i < 3; ++i) {
                 p_ref_.getController().getFFTAnalyzer().setFrozen(i, true);
             }
             base_.setPanelProperty(zlgui::kCurveShouldTransparent, 1.f);

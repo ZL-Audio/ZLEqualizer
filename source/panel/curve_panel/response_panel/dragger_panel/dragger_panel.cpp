@@ -253,11 +253,21 @@ namespace zlpanel {
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
             if (event.originalComponent == &(draggers_[band].getButton())) {
                 if (event.mods.isCommandDown()) {
-                    const auto dynamic_on = getValue(p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) >
-                        .5f;
-                    updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
-                                dynamic_on ? 0.f : 1.f);
-                    band_helper::turnOnOffDynamic(p_ref_, band, dynamic_on);
+                    if (event.mods.isLeftButtonDown()) {
+                        const auto dynamic_on = getValue(p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) >
+                            .5f;
+                        updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
+                                    dynamic_on ? 0.f : 1.f);
+                        band_helper::turnOnOffDynamic(p_ref_, band, dynamic_on);
+                    } else {
+                        base_.setSoloWholeIdx(band);
+                    }
+                }
+            } else if (event.originalComponent == &(side_dragger_.getButton())) {
+                if (base_.getSoloWholeIdx() == 2 * zlp::kBandNum) {
+                    base_.setSoloWholeIdx(zlp::kBandNum + band);
+                } else {
+                    base_.setSoloWholeIdx(2 * zlp::kBandNum);
                 }
             }
         }

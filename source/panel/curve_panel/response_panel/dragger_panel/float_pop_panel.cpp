@@ -76,6 +76,15 @@ namespace zlpanel {
         solo_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         solo_button_.setBufferedToImage(true);
         addAndMakeVisible(solo_button_);
+        solo_button_.getButton().onClick = [this]() {
+            if (solo_button_.getButton().getToggleState()) {
+                if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
+                    base_.setSoloWholeIdx(c_band);
+                }
+            } else {
+                base_.setSoloWholeIdx(2 * zlp::kBandNum);
+            }
+        };
 
         bypass_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         bypass_button_.setBufferedToImage(true);
@@ -108,6 +117,12 @@ namespace zlpanel {
         addAndMakeVisible(freq_slider_);
 
         setAlwaysOnTop(true);
+
+        base_.getSoloWholeIdxTree().addListener(this);
+    }
+
+    FloatPopPanel::~FloatPopPanel() {
+        base_.getSoloWholeIdxTree().removeListener(this);
     }
 
     void FloatPopPanel::resized() {
@@ -213,5 +228,10 @@ namespace zlpanel {
         } else {
             setTransform(juce::AffineTransform::translation(target_position - lower_center_));
         }
+    }
+
+    void FloatPopPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) {
+        const auto solo_whole_idx = base_.getSoloWholeIdx();
+        solo_button_.getButton().setToggleState(solo_whole_idx < zlp::kBandNum, juce::dontSendNotification);
     }
 }

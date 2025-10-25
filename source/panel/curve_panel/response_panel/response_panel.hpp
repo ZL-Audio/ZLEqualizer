@@ -14,6 +14,7 @@
 #include "scale_panel/scale_panel.hpp"
 #include "mouse_event_panel.hpp"
 #include "dragger_panel/dragger_panel.hpp"
+#include "solo_panel.hpp"
 
 namespace zlpanel {
     class ResponsePanel final : public juce::Component,
@@ -66,6 +67,7 @@ namespace zlpanel {
         ScalePanel scale_panel_;
         MouseEventPanel mouse_event_panel_;
         DraggerPanel dragger_panel_;
+        SoloPanel solo_panel_;
 
         float side_y_{0.f};
         std::atomic<float> width_{0.f}, height_{0.f};
@@ -133,6 +135,8 @@ namespace zlpanel {
         static float getButtonMag(const zldsp::filter::FilterParameters& para);
 
         void updateDraggerPositions();
+
+        void updateSoloPosition();
 
         void updateDrawingParas();
 

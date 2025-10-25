@@ -12,8 +12,8 @@
 namespace zlgui::dragger {
     Dragger::Dragger(UIBase& base)
         : base_(base), dragger_laf_(base) {
-        button_.addMouseListener(this, false);
         dragger_laf_.setColour(base_.getColourMap1(1));
+        button_.addMouseListener(this, false);
         button_.setClickingTogglesState(false);
         button_.setLookAndFeel(&dragger_laf_);
         addAndMakeVisible(button_);

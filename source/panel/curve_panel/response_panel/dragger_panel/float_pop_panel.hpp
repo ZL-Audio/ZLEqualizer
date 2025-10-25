@@ -17,10 +17,13 @@
 #include "../../../control_panel/control_background.hpp"
 
 namespace zlpanel {
-    class FloatPopPanel final : public juce::Component {
+    class FloatPopPanel final : public juce::Component,
+                                private juce::ValueTree::Listener {
     public:
         explicit FloatPopPanel(PluginProcessor& p, zlgui::UIBase& base,
                                const multilingual::TooltipHelper& tooltip_helper);
+
+        ~FloatPopPanel() override;
 
         void resized() override;
 
@@ -70,5 +73,7 @@ namespace zlpanel {
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> freq_attachment_;
 
         void updateTransformation();
+
+        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
     };
 }

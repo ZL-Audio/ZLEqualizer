@@ -46,10 +46,12 @@ namespace zlgui {
     };
 
     inline std::array kPanelSettingIdentifiers{
-        juce::Identifier("lufs_learn_button"),
         juce::Identifier("ui_setting_panel"),
-        juce::Identifier("ui_setting_changed")
+        juce::Identifier("ui_setting_changed"),
+        juce::Identifier("curve_should_transparent")
     };
+
+    inline juce::Identifier kSoloIdentifier("solo_whole_idx");
 
     static constexpr size_t kColorMap1Size = 10;
     static constexpr size_t kColorMap2Size = 6;
@@ -371,13 +373,24 @@ namespace zlgui {
             panel_value_tree_.setProperty(kPanelSettingIdentifiers[idx], v, nullptr);
         }
 
+        juce::ValueTree& getSoloWholeIdxTree() {return solo_whole_idx_tree_;}
+
+        size_t getSoloWholeIdx() const {
+            return static_cast<size_t>(static_cast<int>(solo_whole_idx_tree_.getProperty(kSoloIdentifier)));
+        }
+
+        void setSoloWholeIdx(const size_t idx) {
+            solo_whole_idx_tree_.setProperty(kSoloIdentifier, static_cast<int>(idx), nullptr);
+        }
+
         size_t getSelectedBand() const { return selected_band_; }
 
         void setSelectedBand(const size_t x) { selected_band_ = x; }
 
     private:
         juce::AudioProcessorValueTreeState& state;
-        juce::ValueTree panel_value_tree_{"panel_setting"};
+        juce::ValueTree panel_value_tree_{"panel_setting_tree"};
+        juce::ValueTree solo_whole_idx_tree_{"solo_whole_idx_tree"};
 
         float font_size_{0.f};
         std::array<juce::Colour, kColourNum> custom_colours_;
