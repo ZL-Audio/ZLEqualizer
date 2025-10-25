@@ -25,6 +25,18 @@ namespace zldsp::filter {
             : DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>(handler) {
         }
 
+        template <bool bypass = false>
+        void processPre(std::span<FloatType*> main_buffer, const size_t num_samples) {
+            if constexpr (!bypass) {
+                if (this->filter_.getShouldBeParallel()) {
+                    const auto parallel_buffer = this->filter_.getParallelBuffer();
+                    for (size_t chan = 0; chan < main_buffer.size(); chan++) {
+                        zldsp::vector::copy(parallel_buffer[chan], main_buffer[chan], num_samples);
+                    }
+                }
+            }
+        }
+
         /**
          * process the incoming audio buffer
          * @param main_buffer
@@ -35,9 +47,38 @@ namespace zldsp::filter {
         void processDynamic(std::span<FloatType*> main_buffer, std::span<FloatType*> side_buffer,
                             const size_t num_samples) {
             if (this->filter_.getShouldBeParallel()) {
-                zldsp::vector::copy(this->filter_.getParallelBuffer(), main_buffer, num_samples);
-                DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>::template process<
-                    bypass, dynamic_on, dynamic_bypass>(this->filter_.getParallelBuffer(), side_buffer, num_samples);
+                const auto parallel_buffer = this->filter_.getParallelBuffer();
+                if constexpr (dynamic_on) {
+                    if constexpr (dynamic_bypass) {
+                        this->filter_.template setGain<true>(this->handler_.getBaseGain());
+                        this->filter_.updateGain();
+                    }
+                    // make sure that freq & q are update to date
+                    this->filter_.skipSmooth();
+                    // calculate portion using SIMD
+                    this->handler_.process(side_buffer, num_samples);
+                    const auto side_p = side_buffer[0];
+                    // dynamic processing
+                    for (size_t i = 0; i < num_samples; ++i) {
+                        if constexpr (dynamic_bypass) {
+                            this->handler_.getNextGain(side_p[i]);
+                        } else {
+                            this->filter_.template setGain<true>(this->handler_.getNextGain(side_p[i]));
+                            this->filter_.updateGain();
+                        }
+                        const auto multiplier = this->filter_.getMultiplier();
+                        for (size_t chan = 0; chan < parallel_buffer.size(); ++chan) {
+                            if constexpr (bypass) {
+                                this->filter_.processSample(chan, parallel_buffer[chan][i]);
+                            } else {
+                                parallel_buffer[chan][i] = this->filter_.processSample(
+                                    chan, parallel_buffer[chan][i]) * multiplier;
+                            }
+                        }
+                    }
+                } else {
+                    this->filter_.template process<bypass>(parallel_buffer, num_samples);
+                }
             } else {
                 DynamicBase<Parallel<FloatType, kFilterSize>, FloatType>::template process<
                     bypass, dynamic_on, dynamic_bypass>(main_buffer, side_buffer, num_samples);
@@ -52,6 +93,10 @@ namespace zldsp::filter {
         template <bool bypass = false>
         void processPost(std::span<FloatType*> main_buffer, const size_t num_samples) {
             this->filter_.template processPost<bypass>(main_buffer, num_samples);
+        }
+
+        bool getShouldBeParallel() const {
+            return this->filter_.getShouldBeParallel();
         }
     };
 }

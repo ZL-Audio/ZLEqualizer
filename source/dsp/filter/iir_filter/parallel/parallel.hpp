@@ -55,30 +55,20 @@ namespace zldsp::filter {
         void process(std::span<FloatType*> buffer, const size_t num_samples) {
             if (this->c_freq_.isSmoothing() || this->c_gain_.isSmoothing() || this->c_q_.isSmoothing()) {
                 if (should_be_parallel_) {
-                    parallel_buffers_pointers_.clear();
-                    for (size_t chan = 0; chan < buffer.size(); ++chan) {
-                        parallel_buffers_pointers_.emplace_back(parallel_buffers_[chan].data());
-                        zldsp::vector::copy(parallel_buffers_[chan].data(), buffer[chan], num_samples);
-                    }
-                    processParallel<bypass, true>(parallel_buffers_pointers_, num_samples);
+                    processParallel<bypass, true, true>(buffer, num_samples);
                 } else {
-                    processParallel<bypass, true>(buffer, num_samples);
+                    processParallel<bypass, true, false>(buffer, num_samples);
                 }
             } else {
                 if (should_be_parallel_) {
-                    parallel_buffers_pointers_.clear();
-                    for (size_t chan = 0; chan < buffer.size(); ++chan) {
-                        parallel_buffers_pointers_.emplace_back(parallel_buffers_[chan].data());
-                        zldsp::vector::copy(parallel_buffers_[chan].data(), buffer[chan], num_samples);
-                    }
-                    processParallel<bypass, false>(parallel_buffers_pointers_, num_samples);
+                    processParallel<bypass, false, true>(buffer, num_samples);
                 } else {
-                    processParallel<bypass, false>(buffer, num_samples);
+                    processParallel<bypass, false, false>(buffer, num_samples);
                 }
             }
         }
 
-        template <bool bypass = false, bool smooth = false>
+        template <bool bypass = false, bool smooth = false, bool is_parallel = false>
         void processParallel(std::span<FloatType*> buffer, const size_t num_samples) {
             for (size_t i = 0; i < num_samples; ++i) {
                 if constexpr (smooth) {
@@ -91,7 +81,11 @@ namespace zldsp::filter {
                     if constexpr (bypass) {
                         processSample(channel, buffer[channel][i]);
                     } else {
-                        buffer[channel][i] = processSample(channel, buffer[channel][i]);
+                        if constexpr (is_parallel) {
+                            buffer[channel][i] = processSample(channel, buffer[channel][i]) * parallel_multiplier_;
+                        } else {
+                            buffer[channel][i] = processSample(channel, buffer[channel][i]);
+                        }
                     }
                 }
             }
@@ -116,7 +110,7 @@ namespace zldsp::filter {
                     for (size_t i = 0; i < buffer.size(); ++i) {
                         auto v1 = kfr::make_univector(buffer[i], num_samples);
                         auto v2 = kfr::make_univector(parallel_buffers_pointers_[i], num_samples);
-                        v1 = v1 + v2 * parallel_multiplier_;
+                        v1 = v1 + v2;
                     }
                 }
             }
@@ -184,6 +178,10 @@ namespace zldsp::filter {
 
         std::span<FloatType*> getParallelBuffer() {
             return parallel_buffers_pointers_;
+        }
+
+        FloatType getMultiplier() const {
+            return parallel_multiplier_;
         }
 
     private:

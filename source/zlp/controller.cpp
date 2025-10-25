@@ -402,8 +402,12 @@ namespace zlp {
             break;
         }
         case kParallel: {
-            processDynamic(parallel_filters_, main_pointers, side_pointers, num_samples);
-            processParallelPost(main_pointers, num_samples);
+            processParallelPrePost<true>(main_pointers, num_samples);
+            processDynamic<std::array<zldsp::filter::DynamicParallel<double, kFilterSize>, kBandNum>, true, true>(
+                parallel_filters_, main_pointers, side_pointers, num_samples);
+            processParallelPrePost<false>(main_pointers, num_samples);
+            processDynamic<std::array<zldsp::filter::DynamicParallel<double, kFilterSize>, kBandNum>, true, false>(
+                parallel_filters_, main_pointers, side_pointers, num_samples);
             break;
         }
         }
@@ -443,18 +447,19 @@ namespace zlp {
         p_ref_.setLatencySamples(latency.load(std::memory_order::relaxed));
     }
 
-    template <typename DynamicFilterArrayType>
+    template <typename DynamicFilterArrayType, bool should_check_parallel, bool should_be_parallel>
     void Controller::processDynamic(DynamicFilterArrayType& dynamic_filters, std::array<double*, 2> main_pointers,
                                     std::array<double*, 2> side_pointers, const size_t num_samples) {
-        processOneChannelDynamic(dynamic_filters, 0, main_pointers, side_pointers, side_pointers, num_samples);
+        processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
+         dynamic_filters, 0, main_pointers, side_pointers, side_pointers, num_samples);
         if (is_lr_on_) {
             std::array<std::array<double*, 1>, 2> main_lr_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
             std::array<std::array<double*, 1>, 2> side_lr_pointers{{{side_pointers[0]}, {side_pointers[1]}}};
 
-            processOneChannelDynamic(dynamic_filters, 1, main_lr_pointers[0], side_lr_pointers[0], side_lr_pointers[1],
-                                     num_samples);
-            processOneChannelDynamic(dynamic_filters, 2, main_lr_pointers[1], side_lr_pointers[1], side_lr_pointers[0],
-                                     num_samples);
+            processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
+                dynamic_filters, 1, main_lr_pointers[0], side_lr_pointers[0], side_lr_pointers[1], num_samples);
+            processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
+                dynamic_filters, 2, main_lr_pointers[1], side_lr_pointers[1], side_lr_pointers[0], num_samples);
         }
         if (is_ms_on_) {
             std::array<std::array<double*, 1>, 2> main_ms_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
@@ -463,22 +468,27 @@ namespace zlp {
             zldsp::splitter::InplaceMSSplitter<double>::split(main_pointers[0], main_pointers[1], num_samples);
             zldsp::splitter::InplaceMSSplitter<double>::split(side_pointers[0], side_pointers[1], num_samples);
 
-            processOneChannelDynamic(dynamic_filters, 3, main_ms_pointers[0], side_ms_pointers[0], side_ms_pointers[1],
-                                     num_samples);
-            processOneChannelDynamic(dynamic_filters, 4, main_ms_pointers[1], side_ms_pointers[1], side_ms_pointers[0],
-                                     num_samples);
+            processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
+                dynamic_filters, 3, main_ms_pointers[0], side_ms_pointers[0], side_ms_pointers[1], num_samples);
+            processOneChannelDynamic<DynamicFilterArrayType, should_check_parallel, should_be_parallel>(
+                dynamic_filters, 4, main_ms_pointers[1], side_ms_pointers[1], side_ms_pointers[0], num_samples);
 
             zldsp::splitter::InplaceMSSplitter<double>::combine(main_pointers[0], main_pointers[1], num_samples);
             zldsp::splitter::InplaceMSSplitter<double>::combine(side_pointers[0], side_pointers[1], num_samples);
         }
     }
 
-    template <typename DynamicFilterArrayType>
+    template <typename DynamicFilterArrayType, bool should_check_parallel, bool should_be_parallel>
     void Controller::processOneChannelDynamic(DynamicFilterArrayType& dynamic_filters, const size_t lrms_idx,
                                               const std::span<double*> main_pointers,
                                               const std::span<double*> side_pointers1,
                                               const std::span<double*> side_pointers2, const size_t num_samples) {
         for (const size_t& i : not_off_indices_[lrms_idx]) {
+            if constexpr (should_check_parallel) {
+                if (dynamic_filters[i].getShouldBeParallel() != should_be_parallel) {
+                    continue;
+                }
+            }
             if (c_filter_status_[i] == kBypass) {
                 if (c_dynamic_on_[i]) {
                     const auto swap = dynamic_swap_[i].load(std::memory_order::relaxed);
@@ -572,45 +582,44 @@ namespace zlp {
         }
     }
 
-    void Controller::processParallelPost(std::span<double*> main_pointers, size_t num_samples) {
+    template <bool is_pre>
+    void Controller::processParallelPrePost(std::span<double*> main_pointers, const size_t num_samples) {
         for (const size_t& i : not_off_indices_[0]) {
-            if (c_filter_status_[i] == kOn) {
-                parallel_filters_[i].processPost<false>(main_pointers, num_samples);
-            }
+            processParallelOneBandPrePost<is_pre>(i, main_pointers, num_samples);
         }
         if (is_lr_on_) {
             std::array<std::array<double*, 1>, 2> main_lr_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
-
             for (const size_t& i : not_off_indices_[1]) {
-                if (c_filter_status_[i] == kOn) {
-                    parallel_filters_[i].processPost<false>(main_lr_pointers[0], num_samples);
-                }
+                processParallelOneBandPrePost<is_pre>(i, main_lr_pointers[0], num_samples);
             }
-
             for (const size_t& i : not_off_indices_[2]) {
-                if (c_filter_status_[i] == kOn) {
-                    parallel_filters_[i].processPost<false>(main_lr_pointers[1], num_samples);
-                }
+                processParallelOneBandPrePost<is_pre>(i, main_lr_pointers[1], num_samples);
             }
         }
         if (is_ms_on_) {
             std::array<std::array<double*, 1>, 2> main_ms_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
-
             zldsp::splitter::InplaceMSSplitter<double>::split(main_pointers[0], main_pointers[1], num_samples);
-
             for (const size_t& i : not_off_indices_[3]) {
-                if (c_filter_status_[i] == kOn) {
-                    parallel_filters_[i].processPost<false>(main_ms_pointers[0], num_samples);
-                }
+                processParallelOneBandPrePost<is_pre>(i, main_ms_pointers[0], num_samples);
             }
-
             for (const size_t& i : not_off_indices_[4]) {
-                if (c_filter_status_[i] == kOn) {
-                    parallel_filters_[i].processPost<false>(main_ms_pointers[1], num_samples);
-                }
+                processParallelOneBandPrePost<is_pre>(i, main_ms_pointers[1], num_samples);
             }
-
             zldsp::splitter::InplaceMSSplitter<double>::combine(main_pointers[0], main_pointers[1], num_samples);
+        }
+    }
+
+    template <bool is_pre>
+    void Controller::processParallelOneBandPrePost(const size_t i,
+                                                   std::span<double*> main_pointers, const size_t num_samples) {
+        if constexpr (is_pre) {
+            if (c_filter_status_[i] == kOn) {
+                parallel_filters_[i].processPre<false>(main_pointers, num_samples);
+            } else {
+                parallel_filters_[i].processPre<true>(main_pointers, num_samples);
+            }
+        } else {
+            parallel_filters_[i].processPost<false>(main_pointers, num_samples);
         }
     }
 

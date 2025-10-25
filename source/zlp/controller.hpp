@@ -290,13 +290,13 @@ namespace zlp {
 
         void handleAsyncUpdate() override;
 
-        template <typename DynamicFilterArrayType>
+        template <typename DynamicFilterArrayType, bool should_check_parallel = false, bool should_be_parallel = false>
         void processDynamic(DynamicFilterArrayType& dynamic_filters,
                             std::array<double*, 2> main_pointers,
                             std::array<double*, 2> side_pointers,
                             size_t num_samples);
 
-        template <typename DynamicFilterArrayType>
+        template <typename DynamicFilterArrayType, bool should_check_parallel, bool should_be_parallel>
         void processOneChannelDynamic(DynamicFilterArrayType& dynamic_filters,
                                       size_t lrms_idx,
                                       std::span<double*> main_pointers,
@@ -312,7 +312,11 @@ namespace zlp {
                                    std::span<double*> side_pointers,
                                    size_t num_samples);
 
-        void processParallelPost(std::span<double*> main_pointers, size_t num_samples);
+        template <bool is_pre>
+        void processParallelPrePost(std::span<double*> main_pointers, size_t num_samples);
+
+        template <bool is_pre>
+        void processParallelOneBandPrePost(size_t i, std::span<double*> main_pointers, size_t num_samples);
 
         template <bool bypass, typename CorrectionArrayType>
         void processCorrections(CorrectionArrayType& corrections, std::span<double*> main_pointers,
