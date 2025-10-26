@@ -164,6 +164,8 @@ namespace zlpanel {
                 lr_box_.getBox(), p_ref_.parameters_, zlp::PLRMode::kID + band_s, updater_);
             freq_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 freq_slider_.getSlider(), p_ref_.parameters_, zlp::PFreq::kID + band_s, updater_);
+            freq_attachment_->updateComponent();
+            freq_slider_.updateDisplayValue();
             filter_status_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterStatus::kID + band_s);
             repaintCallBackSlow();
         } else {
