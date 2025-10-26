@@ -39,6 +39,8 @@ namespace zlpanel {
 
         void updateSampleRate(double sample_rate);
 
+        void repaintCallbackSlow();
+
     private:
         static constexpr std::array kInitIDs{
             zlp::PFilterStatus::kID, zlp::PFilterType::kID, zlp::PLRMode::kID,
@@ -58,6 +60,13 @@ namespace zlpanel {
         zlgui::slider::SnappingSlider q_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> q_attachment_;
 
+        std::atomic<float>* ftype_idx_ref_{};
+        float c_ftype_idx_{-1.f};
+        zlgui::slider::SnappingSlider slope_slider_;
+        std::unique_ptr<zlgui::attachment::SliderAttachment<true>> slope_attachment_;
+
         void timerCallback(int timer_ID) override;
+
+        void updateSlopeAttachment();
     };
 }

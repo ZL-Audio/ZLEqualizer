@@ -19,7 +19,7 @@ namespace zlpanel {
         side_dragger_(base),
         float_pop_panel_(p, base, tooltip_helper),
         max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
-        q_slider_(base) {
+        q_slider_(base), slope_slider_(base) {
 
         side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
         side_dragger_.getButton().setToggleState(true, juce::sendNotificationSync);
@@ -83,6 +83,20 @@ namespace zlpanel {
             if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
                 updateDraggerAttachment(band);
                 updateTargetAttachment(band);
+            }
+        }
+        if (ftype_idx_ref_ && !is_slope_attach_side_) {
+            const auto ftype_idx = ftype_idx_ref_->load(std::memory_order::relaxed);
+            if (std::abs(ftype_idx - c_ftype_idx_) > .1f) {
+                c_ftype_idx_ = ftype_idx;
+                updateSlopeAttachment();
+            }
+        }
+        if (side_ftype_idx_ref_ && is_slope_attach_side_) {
+            const auto side_ftype_idx = side_ftype_idx_ref_->load(std::memory_order::relaxed);
+            if (std::abs(side_ftype_idx - c_side_ftype_idx_) > .1f) {
+                c_side_ftype_idx_ = side_ftype_idx;
+                updateSlopeAttachment();
             }
         }
         float_pop_panel_.repaintCallBackSlow();
@@ -244,6 +258,33 @@ namespace zlpanel {
             zlp::PSideFreq::kID + std::to_string(band), freq_range_, updater_);
     }
 
+    void DraggerPanel::updateSlopeAttachment() {
+        if (slope_attach_band_ == zlp::kBandNum) {
+            slope_attachment_.reset();
+            return;
+        }
+        const auto band_s = std::to_string(slope_attach_band_);
+        ftype_idx_ref_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterType::kID + band_s);
+        side_ftype_idx_ref_ = p_ref_.parameters_.getRawParameterValue(zlp::PSideFilterType::kID + band_s);
+        if (!is_slope_attach_side_) {
+            const auto ftype = static_cast<int>(c_ftype_idx_);
+            const auto slope_6_disabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
+                || (ftype == static_cast<int>(zldsp::filter::kBandPass))
+                || (ftype == static_cast<int>(zldsp::filter::kNotch));
+            slope_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
+                slope_slider_, p_ref_.parameters_, zlp::POrder::kID + band_s,
+                juce::NormalisableRange<double>(slope_6_disabled ? 1.0 : 0.0, 6.0, 1.0),
+                updater_);
+        } else {
+            const auto slope_6_disabled = c_side_ftype_idx_ < .5f;
+            slope_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
+                slope_slider_, p_ref_.parameters_, zlp::PSideOrder::kID + band_s,
+                juce::NormalisableRange<double>(slope_6_disabled ? 1.0 : 0.0, 6.0, 1.0),
+                updater_);
+        }
+        slope_attachment_->updateComponent();
+    }
+
     void DraggerPanel::mouseDown(const juce::MouseEvent& event) {
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
             if (event.originalComponent == &(side_dragger_.getButton())) {
@@ -296,12 +337,18 @@ namespace zlpanel {
                 q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                     q_slider_, p_ref_.parameters_, zlp::PQ::kID + std::to_string(band), updater_);
                 q_attachment_->updateComponent();
+                slope_attach_band_ = band;
+                is_slope_attach_side_ = false;
+                updateSlopeAttachment();
                 return;
             }
             if (event.originalComponent == &(side_dragger_.getButton())) {
                 q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                     q_slider_, p_ref_.parameters_, zlp::PSideQ::kID + std::to_string(band), updater_);
                 q_attachment_->updateComponent();
+                slope_attach_band_ = band;
+                is_slope_attach_side_ = true;
+                updateSlopeAttachment();
                 return;
             }
         }
@@ -310,12 +357,19 @@ namespace zlpanel {
                 q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                     q_slider_, p_ref_.parameters_, zlp::PQ::kID + std::to_string(band), updater_);
                 q_attachment_->updateComponent();
+                slope_attach_band_ = band;
+                is_slope_attach_side_ = false;
+                updateSlopeAttachment();
                 return;
             }
         }
     }
 
     void DraggerPanel::mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) {
-        q_slider_.mouseWheelMove(event, wheel);
+        if (event.mods.isCommandDown()) {
+            slope_slider_.mouseWheelMove(event, wheel);
+        } else {
+            q_slider_.mouseWheelMove(event, wheel);
+        }
     }
 }

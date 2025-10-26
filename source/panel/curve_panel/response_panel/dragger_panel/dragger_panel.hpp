@@ -93,6 +93,15 @@ namespace zlpanel {
         zlgui::slider::SnappingSlider q_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> q_attachment_;
 
+        size_t slope_attach_band_{zlp::kBandNum};
+        bool is_slope_attach_side_{false};
+        std::atomic<float>* ftype_idx_ref_{};
+        float c_ftype_idx_{-1.f};
+        std::atomic<float>* side_ftype_idx_ref_{};
+        float c_side_ftype_idx_{-1.f};
+        zlgui::slider::SnappingSlider slope_slider_;
+        std::unique_ptr<zlgui::attachment::SliderAttachment<true>> slope_attachment_;
+
         void lookAndFeelChanged() override;
 
         void updateDraggerBound(size_t band);
@@ -102,5 +111,7 @@ namespace zlpanel {
         void updateTargetAttachment(size_t band);
 
         void updateSideAttachment(size_t band);
+
+        void updateSlopeAttachment();
     };
 }

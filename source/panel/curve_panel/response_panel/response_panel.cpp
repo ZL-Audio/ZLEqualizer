@@ -201,6 +201,7 @@ namespace zlpanel {
 
     void ResponsePanel::repaintCallBackSlow() {
         scale_panel_.repaintCallBackSlow();
+        mouse_event_panel_.repaintCallbackSlow();
         dragger_panel_.repaintCallBackSlow();
     }
 

@@ -51,6 +51,7 @@ namespace zlgui::slider {
             if (std::abs(delta) > getInterval() * 0.9) {
                 cumulative_x_ = 0.f;
                 cumulative_y_ = 0.f;
+                juce::Slider::ScopedDragNotification drag_notification{*this};
                 setValue(snapValue(current_value + delta, notDragging), juce::sendNotificationSync);
             }
         }
