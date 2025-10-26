@@ -52,6 +52,10 @@ namespace zlpanel {
         freq_slider_.setBounds(bound.removeFromLeft(slider_width));
         bound.removeFromLeft(padding);
         gain_slider_.setBounds(bound.removeFromLeft(slider_width));
+
+        const auto dragging_distance = getSliderDraggingDistance(font_size);
+        freq_slider_.setMouseDragSensitivity(dragging_distance);
+        gain_slider_.setMouseDragSensitivity(dragging_distance);
     }
 
     void LeftControlPanel::repaintCallBackSlow() {

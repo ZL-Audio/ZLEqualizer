@@ -20,6 +20,7 @@ namespace zlpanel {
     static constexpr float kButtonScale = 2.f;
     static constexpr float kBoxHeightScale = 1.75f;
     static constexpr float kDraggerScale = 1.f;
+    static constexpr float kSliderDraggingDistanceScale = 6.5f;
 
     inline int getPaddingSize(const float font_size) {
         return static_cast<int>(std::round(font_size * kPaddingScale));
@@ -31,6 +32,10 @@ namespace zlpanel {
 
     inline int getSliderHeight(const float font_size) {
         return static_cast<int>(std::round(font_size * kSliderHeightScale));
+    }
+
+    inline int getSliderDraggingDistance(const float font_size) {
+        return static_cast<int>(std::round(font_size * kSliderDraggingDistanceScale));
     }
 
     inline int getButtonSize(const float font_size) {

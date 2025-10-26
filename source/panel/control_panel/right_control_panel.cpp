@@ -198,6 +198,14 @@ namespace zlpanel {
             q_label_.setBounds(temp_bound.removeFromTop(label_height));
             q_slider_.setBounds(temp_bound);
         }
+
+        const auto dragging_distance = getSliderDraggingDistance(font_size);
+        th_slider_.setMouseDragSensitivity(dragging_distance);
+        knee_slider_.setMouseDragSensitivity(dragging_distance);
+        attack_slider_.setMouseDragSensitivity(dragging_distance);
+        release_slider_.setMouseDragSensitivity(dragging_distance);
+        freq_slider_.setMouseDragSensitivity(dragging_distance);
+        q_slider_.setMouseDragSensitivity(dragging_distance);
     }
 
     void RightControlPanel::repaintCallBackSlow() {

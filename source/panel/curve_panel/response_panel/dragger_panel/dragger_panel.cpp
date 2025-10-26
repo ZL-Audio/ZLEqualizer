@@ -29,6 +29,7 @@ namespace zlpanel {
 
         target_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
         target_dragger_.getButton().setToggleState(true, juce::sendNotificationSync);
+        target_dragger_.getButton().addMouseListener(this, false);
         target_dragger_.setXYEnabled(false, true);
         target_dragger_.getLAF().setDraggerShape(zlgui::dragger::DraggerLookAndFeel::kUpDownArrow);
         addChildComponent(target_dragger_);
@@ -246,6 +247,13 @@ namespace zlpanel {
             if (event.originalComponent == &(side_dragger_.getButton())) {
                 updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
             }
+            if (event.originalComponent == &(draggers_[band].getButton())
+                || event.originalComponent == &(target_dragger_.getButton())) {
+                const auto solo_whole_idx = base_.getSoloWholeIdx();
+                if (solo_whole_idx > zlp::kBandNum && solo_whole_idx < 2 * zlp::kBandNum) {
+                    base_.setSoloWholeIdx(2 * zlp::kBandNum);
+                }
+            }
         }
     }
 
@@ -254,13 +262,19 @@ namespace zlpanel {
             if (event.originalComponent == &(draggers_[band].getButton())) {
                 if (event.mods.isCommandDown()) {
                     if (event.mods.isLeftButtonDown()) {
-                        const auto dynamic_on = getValue(p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) >
-                            .5f;
+                        const auto dynamic_on = getValue(
+                            p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
                         updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
                                     dynamic_on ? 0.f : 1.f);
                         band_helper::turnOnOffDynamic(p_ref_, band, dynamic_on);
-                    } else {
-                        base_.setSoloWholeIdx(band);
+                    }
+                } else {
+                    if (event.mods.isLeftButtonDown()) {
+                        if (base_.getSoloWholeIdx() < zlp::kBandNum) {
+                            base_.setSoloWholeIdx(2 * zlp::kBandNum);
+                        } else {
+                            base_.setSoloWholeIdx(band);
+                        }
                     }
                 }
             } else if (event.originalComponent == &(side_dragger_.getButton())) {

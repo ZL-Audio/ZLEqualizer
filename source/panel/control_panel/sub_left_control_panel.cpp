@@ -189,6 +189,9 @@ namespace zlpanel {
         slope_box_.setBounds(bound.removeFromBottom(box_height));
         bound.removeFromBottom(h_padding);
         ftype_box_.setBounds(bound.removeFromBottom(box_height));
+
+        const auto dragging_distance = getSliderDraggingDistance(font_size);
+        q_slider_.setMouseDragSensitivity(dragging_distance);
     }
 
     void SubLeftControlPanel::repaintCallBackSlow() {

@@ -11,7 +11,6 @@
 
 #include "../../label/name_look_and_feel.hpp"
 #include "../extra_slider/snapping_slider.h"
-#include <cstdio>
 
 namespace zlgui::slider {
     template <bool kUseBackground = true, bool kUseDisplay = true, bool kUseName = true>
@@ -84,9 +83,10 @@ namespace zlgui::slider {
             name_look_and_feel_(base_), text_look_and_feel_(base_) {
             juce::ignoreUnused(base_);
 
-            slider_.setSliderStyle(juce::Slider::LinearHorizontal);
+            slider_.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
             slider_.setTextBoxIsEditable(false);
             slider_.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+            slider_.setSliderSnapsToMousePosition(false);
             slider_.setDoubleClickReturnValue(true, 0.0);
             slider_.setScrollWheelEnabled(true);
             slider_.setInterceptsMouseClicks(false, false);
@@ -161,6 +161,11 @@ namespace zlgui::slider {
                 return;
             }
             slider_.mouseDown(event);
+            const auto currentShiftPressed = event.mods.isShiftDown();
+            if (currentShiftPressed != is_shift_pressed_) {
+                is_shift_pressed_ = currentShiftPressed;
+                updateDragDistance();
+            }
         }
 
         void mouseDrag(const juce::MouseEvent& event) override {
@@ -227,6 +232,11 @@ namespace zlgui::slider {
             name_look_and_feel_.setFontScale(font_scale_);
         }
 
+        void setMouseDragSensitivity(const int x) {
+            drag_distance_ = x;
+            updateDragDistance();
+        }
+
         void setPrecision(const int x) {
             precision_ = std::max(x, 2);
         }
@@ -249,6 +259,9 @@ namespace zlgui::slider {
         float font_scale_{1.5f};
 
         int precision_{4};
+
+        int drag_distance_{10};
+        bool is_shift_pressed_{false};
 
         juce::String getDisplayValue(const juce::Slider& s) const {
             const auto value = s.getValue();
@@ -327,6 +340,19 @@ namespace zlgui::slider {
             text_.setText(getDisplayValue(slider_), juce::dontSendNotification);
             display_.setSliderValue(
                 static_cast<float>(slider_.getNormalisableRange().convertTo0to1(slider_.getValue())));
+        }
+
+        void updateDragDistance() {
+            int actual_drag_distance;
+            if (is_shift_pressed_) {
+                actual_drag_distance = juce::roundToInt(
+                    static_cast<float>(drag_distance_) / base_.getSensitivity(SensitivityIdx::kMouseDragFine));
+            } else {
+                actual_drag_distance = juce::roundToInt(
+                    static_cast<float>(drag_distance_) / base_.getSensitivity(SensitivityIdx::kMouseDrag));
+            }
+            actual_drag_distance = std::max(actual_drag_distance, 1);
+            slider_.setMouseDragSensitivity(actual_drag_distance);
         }
     };
 }
