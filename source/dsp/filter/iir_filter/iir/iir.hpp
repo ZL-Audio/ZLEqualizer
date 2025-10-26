@@ -120,6 +120,10 @@ namespace zldsp::filter {
             return c_q_.getTarget();
         }
 
+        bool isFreqQSmoothing() const {
+            return this->c_freq_.isSmoothing() || this->c_q_.isSmoothing();
+        }
+
         void skipSmooth() {
             c_freq_.setCurrentAndTarget(c_freq_.getTarget());
             c_gain_.setCurrentAndTarget(c_gain_.getTarget());

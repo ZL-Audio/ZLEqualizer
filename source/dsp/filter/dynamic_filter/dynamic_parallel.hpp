@@ -54,7 +54,10 @@ namespace zldsp::filter {
                         this->filter_.updateGain();
                     }
                     // make sure that freq & q are update to date
-                    this->filter_.skipSmooth();
+                    if (this->filter_.isFreqQSmoothing()) {
+                        this->filter_.skipSmooth();
+                        this->filter_.updateCoeffs();
+                    }
                     // calculate portion using SIMD
                     this->handler_.process(side_buffer, num_samples);
                     const auto side_p = side_buffer[0];
