@@ -13,7 +13,7 @@ namespace zlpanel {
     MouseEventPanel::MouseEventPanel(PluginProcessor& p,
                              zlgui::UIBase& base,
                              const multilingual::TooltipHelper& tooltip_helper) :
-        p_ref_(p), base_(base) {
+        p_ref_(p), base_(base), q_slider_(base) {
         juce::ignoreUnused(tooltip_helper);
     }
 
@@ -28,6 +28,9 @@ namespace zlpanel {
 
     void MouseEventPanel::mouseEnter(const juce::MouseEvent&) {
         startTimer(1, 2000);
+        if (q_attachment_) {
+            q_attachment_->updateComponent();
+        }
     }
 
     void MouseEventPanel::mouseMove(const juce::MouseEvent&) {
@@ -111,9 +114,18 @@ namespace zlpanel {
         base_.setSelectedBand(band_idx);
     }
 
+    void MouseEventPanel::mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) {
+        q_slider_.mouseWheelMove(event, wheel);
+    }
+
     void MouseEventPanel::updateBand() {
-        if (base_.getSelectedBand() < zlp::kBandNum) {
-            previous_band_ = base_.getSelectedBand();
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            previous_band_ = band;
+            q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
+                    q_slider_, p_ref_.parameters_, zlp::PQ::kID + std::to_string(band), updater_);
+            q_attachment_->updateComponent();
+        } else {
+            q_attachment_.reset();
         }
     }
 

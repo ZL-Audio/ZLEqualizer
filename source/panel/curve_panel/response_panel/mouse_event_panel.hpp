@@ -33,6 +33,8 @@ namespace zlpanel {
 
         void mouseExit(const juce::MouseEvent& event) override;
 
+        void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override;
+
         void updateBand();
 
         void updateSampleRate(double sample_rate);
@@ -47,10 +49,14 @@ namespace zlpanel {
 
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
+        zlgui::attachment::ComponentUpdater updater_{};
         size_t previous_band_{zlp::kBandNum};
 
         float fft_max_{0.f};
         float slider_max_{0.f};
+
+        zlgui::slider::SnappingSlider q_slider_;
+        std::unique_ptr<zlgui::attachment::SliderAttachment<true>> q_attachment_;
 
         void timerCallback(int timer_ID) override;
     };

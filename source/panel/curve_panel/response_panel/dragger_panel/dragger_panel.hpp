@@ -51,6 +51,10 @@ namespace zlpanel {
 
         void mouseDoubleClick(const juce::MouseEvent& event) override;
 
+        void mouseEnter(const juce::MouseEvent& event) override;
+
+        void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override;
+
     private:
         static constexpr float kBypassAlphaMultiplier = .75f;
         static constexpr float kDiffStereoAlphaMultiplier = .5f;
@@ -85,6 +89,9 @@ namespace zlpanel {
         float sample_rate_{0.f};
         std::atomic<float>& max_db_id_ref_;
         float c_max_db_id_{-1.f};
+
+        zlgui::slider::SnappingSlider q_slider_;
+        std::unique_ptr<zlgui::attachment::SliderAttachment<true>> q_attachment_;
 
         void lookAndFeelChanged() override;
 

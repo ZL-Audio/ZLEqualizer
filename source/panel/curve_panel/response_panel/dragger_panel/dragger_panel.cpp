@@ -18,7 +18,8 @@ namespace zlpanel {
         target_dragger_(base),
         side_dragger_(base),
         float_pop_panel_(p, base, tooltip_helper),
-        max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
+        max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
+        q_slider_(base) {
 
         side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
         side_dragger_.getButton().setToggleState(true, juce::sendNotificationSync);
@@ -85,6 +86,7 @@ namespace zlpanel {
             }
         }
         float_pop_panel_.repaintCallBackSlow();
+        updater_.updateComponents();
     }
 
     void DraggerPanel::updateBand() {
@@ -285,5 +287,35 @@ namespace zlpanel {
                 }
             }
         }
+    }
+
+    void DraggerPanel::mouseEnter(const juce::MouseEvent& event) {
+        if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            if (event.originalComponent == &(draggers_[band].getButton())
+                || event.originalComponent == &(target_dragger_.getButton())) {
+                q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
+                    q_slider_, p_ref_.parameters_, zlp::PQ::kID + std::to_string(band), updater_);
+                q_attachment_->updateComponent();
+                return;
+            }
+            if (event.originalComponent == &(side_dragger_.getButton())) {
+                q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
+                    q_slider_, p_ref_.parameters_, zlp::PSideQ::kID + std::to_string(band), updater_);
+                q_attachment_->updateComponent();
+                return;
+            }
+        }
+        for (size_t band = 0; band < zlp::kBandNum; ++band) {
+            if (event.originalComponent == &(draggers_[band].getButton())) {
+                q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
+                    q_slider_, p_ref_.parameters_, zlp::PQ::kID + std::to_string(band), updater_);
+                q_attachment_->updateComponent();
+                return;
+            }
+        }
+    }
+
+    void DraggerPanel::mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) {
+        q_slider_.mouseWheelMove(event, wheel);
     }
 }

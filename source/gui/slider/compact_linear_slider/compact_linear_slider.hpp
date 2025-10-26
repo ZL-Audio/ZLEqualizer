@@ -214,7 +214,7 @@ namespace zlgui::slider {
             slider_.mouseWheelMove(event, wheel);
         }
 
-        inline juce::Slider& getSlider() { return slider_; }
+        inline SnappingSlider& getSlider() { return slider_; }
 
         inline void setEditable(const bool x) {
             setAlpha(x ? 1.f : .5f);
