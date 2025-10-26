@@ -118,8 +118,6 @@ namespace zlpanel {
         freq_slider_.setBufferedToImage(true);
         addAndMakeVisible(freq_slider_);
 
-        setAlwaysOnTop(true);
-
         base_.getSoloWholeIdxTree().addListener(this);
     }
 

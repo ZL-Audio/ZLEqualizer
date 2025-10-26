@@ -117,6 +117,10 @@ juce_add_plugin("${PROJECT_NAME}"
         FORMATS "${FORMATS}"
         LV2URI "${LV2URI}"
 
+        IS_SYNTH FALSE
+        NEEDS_MIDI_INPUT FALSE
+        NEEDS_MIDI_OUTPUT FALSE
+
         AU_MAIN_TYPE kAudioUnitType_Effect
         VST3_CATEGORIES EQ
         AAX_CATEGORY AAX_ePlugInCategory_EQ
@@ -126,10 +130,6 @@ juce_add_plugin("${PROJECT_NAME}"
         HARDENED_RUNTIME_ENABLED TRUE
         HARDENED_RUNTIME_OPTIONS com.apple.security.device.audio-input
 
-        # The name of your final executable
-        # This is how it's listed in the DAW
-        # This can be different from PROJECT_NAME and can have spaces!
-        # You might want to use v${MAJOR_VERSION} here once you go to v2...
         PRODUCT_NAME "${PRODUCT_NAME}"
         ZL_EQ_BAND_NUM "${ZL_EQ_BAND_NUM}"
 )

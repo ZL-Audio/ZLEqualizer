@@ -56,7 +56,10 @@ namespace zlpanel {
         scale_panel_.setBufferedToImage(true);
         addAndMakeVisible(scale_panel_);
         addAndMakeVisible(dragger_panel_);
-        addChildComponent(solo_panel_);
+        dragger_panel_.addChildComponent(solo_panel_);
+        solo_panel_.setAlwaysOnTop(true);
+        dragger_panel_.getFloatPopPanel().setAlwaysOnTop(true);
+        dragger_panel_.getFloatPopPanel().toFront(true);
         setInterceptsMouseClicks(false, true);
     }
 
