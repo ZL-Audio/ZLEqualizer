@@ -20,6 +20,7 @@ namespace zlpanel {
     }
 
     void BackgroundPanel::paint(juce::Graphics& g) {
+        g.fillAll(base_.getBackgroundColour());
         if (freq_max_ < 10000.0) {
             return;
         }

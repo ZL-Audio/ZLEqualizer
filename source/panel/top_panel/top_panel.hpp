@@ -17,6 +17,8 @@ namespace zlpanel {
         explicit TopPanel(PluginProcessor& p, zlgui::UIBase& base,
                           multilingual::TooltipHelper& tooltip_helper);
 
+        void paint(juce::Graphics& g) override;
+
         void resized() override;
 
         void repaintCallbackSlow();
@@ -28,5 +30,13 @@ namespace zlpanel {
 
         zlgui::combobox::CompactCombobox fstruct_box_;
         zlgui::attachment::ComboBoxAttachment<true> fstruct_attach_;
+
+        const std::unique_ptr<juce::Drawable> bypass_drawable_;
+        zlgui::button::ClickButton bypass_button_;
+        zlgui::attachment::ButtonAttachment<true> bypass_attach_;
+
+        const std::unique_ptr<juce::Drawable> ext_drawable_;
+        zlgui::button::ClickButton ext_button_;
+        zlgui::attachment::ButtonAttachment<true> ext_attach_;
     };
 }

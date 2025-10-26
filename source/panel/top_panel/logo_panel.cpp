@@ -26,17 +26,15 @@ namespace zlpanel {
         temp_logo->replaceColour(juce::Colours::black, base_.getTextColour());
         temp_logo->replaceColour(juce::Colours::black.withAlpha(.5f), base_.getTextColour().withMultipliedAlpha(.5f));
 
-        const auto padding = base_.getFontSize() * kPaddingScale * .5f;
+        const auto padding = getPaddingSize(base_.getFontSize());
 
-        auto bound = getLocalBounds().toFloat();
-        bound.removeFromTop(padding);
-        bound.removeFromLeft(padding);
+        auto bound = getLocalBounds();
 
-        const auto bound1 = bound.removeFromLeft(bound.getHeight());
+        const auto bound1 = bound.removeFromLeft(bound.getHeight()).toFloat();
         temp_brand->drawWithin(g, bound1, juce::RectanglePlacement::centred, 1.f);
 
         bound.removeFromLeft(padding);
-        const auto bound2 = bound.removeFromLeft(bound.getHeight());
+        const auto bound2 = bound.removeFromLeft(bound.getHeight()).toFloat();
         temp_logo->drawWithin(g, bound2, juce::RectanglePlacement::centred, 1.f);
     }
 

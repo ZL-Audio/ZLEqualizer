@@ -22,8 +22,6 @@ namespace zlpanel {
 
         ~MainPanel() override;
 
-        void paint(juce::Graphics& g) override;
-
         void resized() override;
 
         void repaintCallBack(double time_stamp);
