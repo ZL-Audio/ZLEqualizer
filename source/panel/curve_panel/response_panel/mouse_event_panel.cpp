@@ -111,7 +111,7 @@ namespace zlpanel {
             auto* para = p_ref_.parameters_.getParameter(kInitIDs[i] + std::to_string(band_idx));
             updateValue(para, para->convertTo0to1(init_values[i]));
         }
-        band_helper::turnOnOffDynamic(p_ref_, band_idx, init_values[6] > .5f);
+        band_helper::turnOnOffDynamic(p_ref_, band_idx, init_values[7] > .5f);
         base_.setSelectedBand(band_idx);
     }
 

@@ -309,7 +309,7 @@ namespace zlpanel {
                             p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
                         updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
                                     dynamic_on ? 0.f : 1.f);
-                        band_helper::turnOnOffDynamic(p_ref_, band, dynamic_on);
+                        band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on);
                     }
                 } else {
                     if (event.mods.isLeftButtonDown()) {
