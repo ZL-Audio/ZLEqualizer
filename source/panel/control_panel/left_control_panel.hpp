@@ -39,6 +39,9 @@ namespace zlpanel {
 
         SubLeftControlPanel sub_left_control_panel_;
 
+        std::atomic<float>& max_db_idx_ref_;
+        float c_max_db_idx_{-1.f};
+
         zlgui::slider::TwoValueRotarySlider<false, false, false> freq_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> freq_attachment_;
         double freq_max_{20000.0};
@@ -49,5 +52,7 @@ namespace zlpanel {
 
         std::atomic<float>* ftype_ptr_{nullptr};
         int c_ftype_{-1};
+
+        void updateGainSliderDraggingDistance();
     };
 } // zlpanel

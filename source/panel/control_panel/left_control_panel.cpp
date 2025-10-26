@@ -15,6 +15,7 @@ namespace zlpanel {
                                        const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         sub_left_control_panel_(p, base, tooltip_helper),
+        max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
         freq_slider_("", base,
                      tooltip_helper.getToolTipText(multilingual::kBandFreq), 1.25f),
         gain_slider_("", base,
@@ -55,7 +56,7 @@ namespace zlpanel {
 
         const auto dragging_distance = getSliderDraggingDistance(font_size);
         freq_slider_.setMouseDragSensitivity(dragging_distance);
-        gain_slider_.setMouseDragSensitivity(dragging_distance);
+        updateGainSliderDraggingDistance();
     }
 
     void LeftControlPanel::repaintCallBackSlow() {
@@ -75,6 +76,11 @@ namespace zlpanel {
                 gain_slider_.setEditable(gain_enabled);
                 sub_left_control_panel_.enableGain(gain_enabled);
             }
+        }
+        const auto max_db_idx = max_db_idx_ref_.load(std::memory_order::relaxed);
+        if (std::abs(max_db_idx - c_max_db_idx_) > .1f) {
+            c_max_db_idx_ = max_db_idx;
+            updateGainSliderDraggingDistance();
         }
         updater_.updateComponents();
         sub_left_control_panel_.repaintCallBackSlow();
@@ -115,5 +121,19 @@ namespace zlpanel {
 
     void LeftControlPanel::turnOnOffDynamic(const bool dynamic_on) {
         gain_slider_.setShowSlider2(dynamic_on);
+    }
+
+    void LeftControlPanel::updateGainSliderDraggingDistance() {
+        const auto font_size = base_.getFontSize();
+        if (c_max_db_idx_ < .5f) {
+            gain_slider_.setMouseDragSensitivity(
+                static_cast<int>(std::round(5.f * font_size * kSliderDraggingDistanceScale)));
+        } else if (c_max_db_idx_ < 1.5f) {
+            gain_slider_.setMouseDragSensitivity(
+                static_cast<int>(std::round(2.5f * font_size * kSliderDraggingDistanceScale)));
+        } else {
+            gain_slider_.setMouseDragSensitivity(
+                static_cast<int>(std::round(font_size * kSliderDraggingDistanceScale)));
+        }
     }
 }

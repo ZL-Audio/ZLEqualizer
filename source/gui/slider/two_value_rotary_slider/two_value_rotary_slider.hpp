@@ -324,8 +324,7 @@ namespace zlgui::slider {
 
         void mouseDoubleClick(const juce::MouseEvent& event) override {
             if (base_.getIsSliderDoubleClickOpenEditor() != event.mods.isCommandDown()) {
-                const auto portion = static_cast<float>(event.getPosition().getY()
-                ) / static_cast<float>(getLocalBounds().getHeight());
+                const auto portion = event.position.y / static_cast<float>(getLocalBounds().getHeight());
                 if (portion < .5f || !show_slider2_) {
                     label1_.showEditor();
                     return;
@@ -378,7 +377,7 @@ namespace zlgui::slider {
 
             const auto bound = getLocalBounds().toFloat();
 
-            auto label_bound = bound.withSizeKeepingCentre(bound.getWidth() * 0.6f,
+            auto label_bound = bound.withSizeKeepingCentre(bound.getWidth() * 0.7f,
                                                            bound.getHeight() * 0.5f);
             if (show_slider2_) {
                 const auto valueBound1 = label_bound.removeFromTop(label_bound.getHeight() * 0.5f);
