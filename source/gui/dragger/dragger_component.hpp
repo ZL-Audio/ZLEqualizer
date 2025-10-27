@@ -73,19 +73,8 @@ namespace zlgui::dragger {
         DraggerLookAndFeel& getLAF() { return dragger_laf_; }
 
         void setXYEnabled(const bool x, const bool y) {
-            if (x && !y) {
-                check_center_ = [](const juce::Point<float> current,
-                                   const juce::Point<float> next) {
-                    return juce::Point<float>(next.x, current.y);
-                };
-            } else if (!x && y) {
-                check_center_ = [](const juce::Point<float> current,
-                                   const juce::Point<float> next) {
-                    return juce::Point<float>(current.x, next.y);
-                };
-            } else {
-                check_center_ = nullptr;
-            }
+            x_enabled_ = x;
+            y_enabled_ = y;
         }
 
     private:
@@ -94,6 +83,8 @@ namespace zlgui::dragger {
         juce::ToggleButton button_;
         float x_portion_{0.f}, y_portion_{0.f};
         float scale_{1.f};
+
+        bool x_enabled_{true}, y_enabled_{true};
 
         juce::Point<float> global_pos_{}, current_pos_{};
         juce::Rectangle<float> button_area_{};

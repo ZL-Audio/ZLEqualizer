@@ -12,10 +12,13 @@
 #include "float_pop_panel.hpp"
 
 namespace zlpanel {
-    class DraggerPanel final : public juce::Component {
+    class DraggerPanel final : public juce::Component,
+                               private juce::ValueTree::Listener {
     public:
         explicit DraggerPanel(PluginProcessor& p, zlgui::UIBase& base,
                               const multilingual::TooltipHelper& tooltip_helper);
+
+        ~DraggerPanel() override;
 
         void resized() override;
 
@@ -68,6 +71,9 @@ namespace zlpanel {
         zlgui::dragger::Dragger target_dragger_;
         zlgui::dragger::Dragger side_dragger_;
 
+        size_t previous_solo_whole_idx_{2 * zlp::kBandNum};
+        std::array<bool, zlp::kBandNum> dragger_y_enabled_{};
+
         FloatPopPanel float_pop_panel_;
 
         std::unique_ptr<zlgui::attachment::DraggerAttachment<false, true>> dragger_freq_attachment_;
@@ -113,5 +119,7 @@ namespace zlpanel {
         void updateSideAttachment(size_t band);
 
         void updateSlopeAttachment();
+
+        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
     };
 }

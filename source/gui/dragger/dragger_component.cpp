@@ -69,6 +69,12 @@ namespace zlgui::dragger {
                 shift.setY(0.f);
             }
         }
+        if (!x_enabled_) {
+            shift.setX(0.f);
+        }
+        if (!y_enabled_) {
+            shift.setY(0.f);
+        }
         // update current position
         const auto old_current_pos = current_pos_;
         if (check_center_) {

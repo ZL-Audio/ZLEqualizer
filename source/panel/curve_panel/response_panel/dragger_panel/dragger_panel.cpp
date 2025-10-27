@@ -53,8 +53,14 @@ namespace zlpanel {
         float_pop_panel_.setBufferedToImage(true);
         addChildComponent(float_pop_panel_);
 
+        base_.getSoloWholeIdxTree().addListener(this);
+
         lookAndFeelChanged();
         setInterceptsMouseClicks(false, true);
+    }
+
+    DraggerPanel::~DraggerPanel() {
+        base_.getSoloWholeIdxTree().removeListener(this);
     }
 
     void DraggerPanel::resized() {
@@ -208,12 +214,14 @@ namespace zlpanel {
         case zldsp::filter::kPeak:
         case zldsp::filter::kBandShelf: {
             draggers_[band].setXYEnabled(true, true);
+            dragger_y_enabled_[band] = true;
             break;
         }
         case zldsp::filter::kLowShelf:
         case zldsp::filter::kHighShelf:
         case zldsp::filter::kTiltShelf: {
             draggers_[band].setXYEnabled(true, true);
+            dragger_y_enabled_[band] = true;
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() * .5f);
             break;
         }
@@ -223,6 +231,7 @@ namespace zlpanel {
         case zldsp::filter::kNotch:
         default: {
             draggers_[band].setXYEnabled(true, false);
+            dragger_y_enabled_[band] = false;
             break;
         }
         }
@@ -371,5 +380,17 @@ namespace zlpanel {
         } else {
             q_slider_.mouseWheelMove(event, wheel);
         }
+    }
+
+    void DraggerPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) {
+        const auto solo_whole_idx = base_.getSoloWholeIdx();
+        if (previous_solo_whole_idx_ < zlp::kBandNum) {
+            draggers_[previous_solo_whole_idx_].setXYEnabled(
+                true, dragger_y_enabled_[previous_solo_whole_idx_]);
+        }
+        if (solo_whole_idx < zlp::kBandNum) {
+            draggers_[solo_whole_idx].setXYEnabled(true, false);
+        }
+        previous_solo_whole_idx_ = solo_whole_idx;
     }
 }
