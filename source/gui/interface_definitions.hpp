@@ -42,13 +42,15 @@ namespace zlgui {
         kUISettingPanel,
         kUISettingChanged,
         kCurveShouldTransparent,
+        kOutputPanel,
         kPanelSettingNum
     };
 
     inline std::array kPanelSettingIdentifiers{
         juce::Identifier("ui_setting_panel"),
         juce::Identifier("ui_setting_changed"),
-        juce::Identifier("curve_should_transparent")
+        juce::Identifier("curve_should_transparent"),
+        juce::Identifier("output_panel")
     };
 
     inline juce::Identifier kSoloIdentifier("solo_whole_idx");

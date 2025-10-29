@@ -82,6 +82,7 @@ namespace zlp {
         loudness_matcher_.prepare(sample_rate, 2);
         sgc_gain_.prepare(sample_rate, max_num_samples, 0.5);
         output_gain_.prepare(sample_rate, max_num_samples, 0.5);
+        delay_.prepare(sample_rate, max_num_samples, 2, 0.021);
 
         to_update_.store(true, std::memory_order_release);
     }
@@ -608,6 +609,11 @@ namespace zlp {
             fft_analyzer_.process(
                 {std::span(pre_main_pointers_), std::span(main_pointers), std::span(side_pointers)},
                 num_samples);
+            if (c_sgc_on_) {
+                displayed_gain_.store(sgc_gain_.getCurrentGainLinear() * output_gain_.getCurrentGainLinear());
+            } else {
+                displayed_gain_.store(output_gain_.getCurrentGainLinear());
+            }
         }
 
         if (c_solo_on_) {

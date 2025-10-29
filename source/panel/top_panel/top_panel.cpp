@@ -15,6 +15,7 @@ namespace zlpanel {
                        multilingual::TooltipHelper& tooltip_helper) :
         base_(base), updater_(),
         logo_panel_(p, base, tooltip_helper),
+        output_label_(p, base),
         fstruct_box_(zlp::PFilterStructure::kChoices, base,
                      tooltip_helper.getToolTipText(multilingual::kFilterStructure),
                      {tooltip_helper.getToolTipText(multilingual::kMinimumPhase),
@@ -36,6 +37,9 @@ namespace zlpanel {
         ext_attach_(ext_button_.getButton(), p.parameters_, zlp::PExtSide::kID, updater_) {
         logo_panel_.setBufferedToImage(true);
         addAndMakeVisible(logo_panel_);
+
+        output_label_.setBufferedToImage(true);
+        addAndMakeVisible(output_label_);
 
         fstruct_box_.setBufferedToImage(true);
         addAndMakeVisible(fstruct_box_);
@@ -73,6 +77,8 @@ namespace zlpanel {
         bypass_button_.setBounds(bound.removeFromRight(bound.getHeight()));
         bound.removeFromRight(padding);
         ext_button_.setBounds(bound.removeFromRight(bound.getHeight()));
+        bound.removeFromRight(padding);
+        output_label_.setBounds(bound.removeFromRight(2 * slider_width - 2 * bound.getHeight()).withTop(0));
     }
 
     void TopPanel::repaintCallbackSlow() {

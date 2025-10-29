@@ -10,6 +10,7 @@
 #pragma once
 
 #include "logo_panel.hpp"
+#include "output_label.hpp"
 
 namespace zlpanel {
     class TopPanel final : public juce::Component {
@@ -27,6 +28,7 @@ namespace zlpanel {
         zlgui::UIBase &base_;
         zlgui::attachment::ComponentUpdater updater_;
         LogoPanel logo_panel_;
+        OutputLabel output_label_;
 
         zlgui::combobox::CompactCombobox fstruct_box_;
         zlgui::attachment::ComboBoxAttachment<true> fstruct_attach_;

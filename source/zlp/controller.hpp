@@ -222,6 +222,10 @@ namespace zlp {
             to_update_.store(true, std::memory_order::release);
         }
 
+        double getDisplayedGain() const {
+            return displayed_gain_.load(std::memory_order::relaxed);
+        }
+
     private:
         juce::AudioProcessor& p_ref_;
         std::atomic<bool> to_update_{false};
@@ -374,6 +378,7 @@ namespace zlp {
         std::atomic<double> makeup_gain_linear_{};
         double c_makeup_gain_linear_{};
         zldsp::gain::Gain<double> output_gain_{};
+        std::atomic<double> displayed_gain_{0.};
         // phase flip
         std::atomic<bool> phase_flip_on_{false};
         bool c_phase_flip_on_{false};
