@@ -17,19 +17,24 @@ namespace zlp {
         controller_(controller),
         idx_(idx),
         side_empty_(controller.getSideEmptyFilters()[idx]),
-        update_flag_(controller.getSideEmptyUpdateFlags()[idx]) {
+        scale_(*parameters.getRawParameterValue(PGainScale::kID)),
+        update_flag_(controller.getSideEmptyUpdateFlags()[idx]),
+        whole_update_flag_(controller.getUpdateFlag()) {
         juce::ignoreUnused(controller_);
         for (size_t i = 0; i < kIDs.size(); ++i) {
             const auto ID = kIDs[i] + std::to_string(idx_);
             parameters_.addParameterListener(ID, this);
             parameterChanged(ID, parameters.getRawParameterValue(ID)->load(std::memory_order::relaxed));
         }
+        parameters_.addParameterListener(PGainScale::kID, this);
+        parameterChanged(PGainScale::kID, scale_.load(std::memory_order::relaxed));
     }
 
     FilterSideAttach::~FilterSideAttach() {
         for (size_t i = 0; i < kIDs.size(); ++i) {
             parameters_.removeParameterListener(kIDs[i] + std::to_string(idx_), this);
         }
+        parameters_.removeParameterListener(PGainScale::kID, this);
     }
 
     void FilterSideAttach::parameterChanged(const juce::String& parameter_ID, const float value) {
@@ -42,18 +47,27 @@ namespace zlp {
                 side_empty_.setFilterType(zldsp::filter::kHighPass);
             }
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PSideOrder::kID)) {
             side_empty_.setOrder(PSideOrder::kOrderArray[static_cast<size_t>(std::round(value))]);
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PSideFreq::kID)) {
             side_empty_.setFreq(value);
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PSideQ::kID)) {
             side_empty_.setQ(value);
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PTargetGain::kID)) {
-            side_empty_.setGain(value);
+            side_empty_.setGain(std::clamp(value * (scale_.load(std::memory_order::relaxed) / 100.f), -30.f, 30.f));
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
+        } else if (parameter_ID.startsWith(PGainScale::kID)) {
+            side_empty_.setGain(std::clamp(static_cast<float>(side_empty_.getGain()) * (value / 100.f), -30.f, 30.f));
+            update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
         }
     }
 }

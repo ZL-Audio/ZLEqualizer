@@ -12,15 +12,15 @@
 #include <cmath>
 
 namespace zlpanel {
-    static constexpr float kFontSizeOverWidth = 0.016f;
-    static constexpr float kPaddingScale = .5f;
-    static constexpr float kSliderWidthScale = 6.5f;
-    static constexpr float kSliderHeightScale = 2.8f;
-    static constexpr float kSmallSliderWidthScale = 5.5f;
-    static constexpr float kButtonScale = 2.f;
-    static constexpr float kBoxHeightScale = 1.75f;
-    static constexpr float kDraggerScale = 1.f;
-    static constexpr float kSliderDraggingDistanceScale = 6.5f;
+    inline constexpr float kFontSizeOverWidth = 0.016f;
+    inline constexpr float kPaddingScale = .5f;
+    inline constexpr float kSliderWidthScale = 6.5f;
+    inline constexpr float kSliderHeightScale = 2.8f;
+    inline constexpr float kSmallSliderWidthScale = 5.5f;
+    inline constexpr float kButtonScale = 2.f;
+    inline constexpr float kBoxHeightScale = 1.75f;
+    inline constexpr float kDraggerScale = 1.f;
+    inline constexpr float kSliderDraggingDistanceScale = 6.5f;
 
     inline int getPaddingSize(const float font_size) {
         return static_cast<int>(std::round(font_size * kPaddingScale));

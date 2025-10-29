@@ -78,9 +78,18 @@ namespace zlp {
         } else {
             updateSoloFilter<true>(filter_paras_[c_solo_idx_]);
         }
+
+        loudness_matcher_.prepare(sample_rate, 2);
+        sgc_gain_.prepare(sample_rate, max_num_samples, 0.5);
+        output_gain_.prepare(sample_rate, max_num_samples, 0.5);
+
+        to_update_.store(true, std::memory_order_release);
     }
 
     void Controller::prepareBuffer() {
+        if (!to_update_.exchange(false, std::memory_order::acquire)) {
+            return;
+        }
         prepareStatus();
         if (to_update_dynamic_.exchange(false, std::memory_order::acquire)) {
             prepareDynamics();
@@ -88,6 +97,9 @@ namespace zlp {
         if (to_update_lrms_.exchange(false, std::memory_order::acquire)) {
             prepareLRMS();
             to_update_correction_indices_ = true;
+            if (c_sgc_on_) {
+                updateSGC();
+            }
         }
         prepareFilters();
         if (c_correction_enabled_) {
@@ -97,6 +109,9 @@ namespace zlp {
             prepareCorrection();
         }
         prepareDynamicParameters();
+        if (to_update_output_.exchange(false, std::memory_order::acquire)) {
+            prepareOutput();
+        }
     }
 
     void Controller::prepareStatus() {
@@ -109,7 +124,7 @@ namespace zlp {
                 // not zero latency, calculate latency later with LRMS info
                 to_update_correction_indices_ = true;
                 std::fill(res_update_flags_.begin(), res_update_flags_.end(), true);
-            } else if (latency.exchange(0, std::memory_order::relaxed) != 0) {
+            } else if (correction_latency_.exchange(0, std::memory_order::relaxed) != 0) {
                 // is zero latency, update latency
                 triggerAsyncUpdate();
             }
@@ -164,8 +179,10 @@ namespace zlp {
 
     void Controller::prepareFilters() {
         // update not-off filters
+        bool to_update_sgc{false};
         for (const size_t& i : not_off_total_) {
             if (empty_update_flags_[i].exchange(false, std::memory_order::acquire)) {
+                to_update_sgc = true;
                 const auto filter_type = filter_paras_[i].filter_type;
                 filter_paras_[i] = emptys_[i].getParas();
                 if (c_solo_on_ && !c_solo_side_ && c_solo_idx_ == i) {
@@ -188,6 +205,9 @@ namespace zlp {
                 }
                 res_update_flags_[i] = true;
             }
+        }
+        if (c_sgc_on_ && to_update_sgc) {
+            updateSGC();
         }
     }
 
@@ -288,7 +308,7 @@ namespace zlp {
         } else if (is_ms_on_) {
             new_latency += unit_latency;
         }
-        if (latency.exchange(new_latency, std::memory_order::relaxed) != new_latency) {
+        if (correction_latency_.exchange(new_latency, std::memory_order::relaxed) != new_latency) {
             triggerAsyncUpdate();
         }
         std::fill(to_update_correction_.begin(), to_update_correction_.end(), true);
@@ -415,11 +435,51 @@ namespace zlp {
         }
     }
 
+    void Controller::prepareOutput() {
+        const auto sgc_on = sgc_on_.load(std::memory_order::relaxed);
+        if (c_sgc_on_ != sgc_on) {
+            c_sgc_on_ = sgc_on;
+            if (c_sgc_on_) {
+                for (const size_t& band : not_off_total_) {
+                    if (c_filter_status_[band] == kOn) {
+                        sgc_values_[band] = zldsp::filter::getGainCompensation(filter_paras_[band]);
+                    } else {
+                        sgc_values_[band] = 0.0;
+                    }
+                }
+                updateSGC();
+            }
+        }
+        const auto loudness_matcher_on = loudness_matcher_on_.load(std::memory_order_relaxed);
+        if (loudness_matcher_on != c_loudness_matcher_on_) {
+            c_loudness_matcher_on_ = loudness_matcher_on;
+            if (c_loudness_matcher_on_) {
+                loudness_matcher_.reset();
+            }
+        }
+        c_agc_on_ = agc_on_.load(std::memory_order_relaxed);
+        c_phase_flip_on_ = phase_flip_on_.load(std::memory_order_relaxed);
+        if (to_update_makeup_.exchange(false, std::memory_order::acquire)) {
+            c_makeup_gain_linear_ = makeup_gain_linear_.load(std::memory_order::relaxed);
+            updateOutputGain();
+        }
+        if (to_update_delay_.exchange(false, std::memory_order::acquire)) {
+            const auto delay_second = delay_second_.load(std::memory_order::relaxed);
+            c_delay_on_ = std::abs(delay_second) > 1e-6;
+            delay_.setDelay(c_delay_on_ ? delay_second : 0.);
+            delay_latency_.store(delay_.getDelayInSamples(), std::memory_order::relaxed);
+            triggerAsyncUpdate();
+        }
+    }
+
     template <bool bypass>
     void Controller::process(std::array<double*, 2> main_pointers, std::array<double*, 2> side_pointers,
                              const size_t num_samples) {
         prepareBuffer();
         c_editor_on_ = editor_on_.load(std::memory_order::relaxed);
+        if (c_delay_on_) {
+            delay_.process(main_pointers, num_samples);
+        }
         // copy pre buffer for FFT processing
         if (bypass || c_editor_on_) {
             zldsp::vector::copy(pre_main_pointers_[0], main_pointers[0], num_samples);
@@ -480,6 +540,17 @@ namespace zlp {
             }
             }
         }
+        if (c_loudness_matcher_on_) {
+            loudness_matcher_.processPre(main_pointers, num_samples);
+        }
+        if (c_agc_on_) {
+            pre_square_sum_ = 0.0;
+            for (size_t chan = 0; chan < 2; chan++) {
+                auto v = kfr::make_univector(main_pointers[chan], num_samples);
+                pre_square_sum_ += kfr::sumsqr(v);
+            }
+            pre_square_sum_ = std::clamp(pre_square_sum_ / static_cast<double>(num_samples), 1e-3, 1e3);
+        }
         switch (c_filter_structure_) {
         case kMinimum:
         case kMatched:
@@ -501,6 +572,31 @@ namespace zlp {
                 parallel_filters_, main_pointers, side_pointers, num_samples);
             break;
         }
+        }
+        if (c_sgc_on_) {
+            sgc_gain_.process(main_pointers, num_samples);
+        }
+        if (c_loudness_matcher_on_) {
+            loudness_matcher_.processPost(main_pointers, num_samples);
+        }
+        if (c_agc_on_) {
+            double post_square_sum{0.0};
+            for (size_t chan = 0; chan < 2; chan++) {
+                auto v = kfr::make_univector(main_pointers[chan], num_samples);
+                post_square_sum += kfr::sumsqr(v);
+            }
+            post_square_sum = std::clamp(post_square_sum / static_cast<double>(num_samples), 1e-3, 1e3);
+            c_agc_gain_linear_ = std::sqrt(pre_square_sum_ / post_square_sum) / c_makeup_gain_linear_;
+            updateOutputGain();
+        }
+
+        output_gain_.process(main_pointers, num_samples);
+
+        if (c_agc_on_) {
+            for (size_t chan = 0; chan < 2; chan++) {
+                auto v = kfr::make_univector(main_pointers[chan], num_samples);
+                v = kfr::clamp(v, -1.0, 1.0);
+            }
         }
 
         if constexpr (bypass) {
@@ -565,6 +661,12 @@ namespace zlp {
             break;
         }
         }
+        if (c_phase_flip_on_) {
+            for (size_t chan = 0; chan < 2; chan++) {
+                auto v = kfr::make_univector(main_pointers[chan], num_samples);
+                v = -v;
+            }
+        }
     }
 
     template void Controller::process<true>(std::array<double*, 2>, std::array<double*, 2>, size_t);
@@ -572,7 +674,8 @@ namespace zlp {
     template void Controller::process<false>(std::array<double*, 2>, std::array<double*, 2>, size_t);
 
     void Controller::handleAsyncUpdate() {
-        p_ref_.setLatencySamples(latency.load(std::memory_order::relaxed));
+        p_ref_.setLatencySamples(correction_latency_.load(std::memory_order::relaxed)
+            + delay_latency_.load(std::memory_order::relaxed));
     }
 
     template <typename DynamicFilterArrayType, bool should_check_parallel, bool should_be_parallel>
@@ -832,4 +935,38 @@ namespace zlp {
             solo_filter_.updateParas(paras);
         }
     }
-} // namespace zlp
+
+    void Controller::updateSGC() {
+        double sgc_gain_db{0.0};
+        for (const size_t& band : not_off_total_) {
+            if (c_filter_status_[band] == kOn) {
+                switch (c_lrms_[band]) {
+                case kStereo: {
+                    sgc_gain_db += sgc_values_[band];
+                    break;
+                }
+                case kLeft:
+                case kRight: {
+                    sgc_gain_db += 0.5 * sgc_values_[band];
+                }
+                case kMid: {
+                    sgc_gain_db += 0.9 * sgc_values_[band];
+                }
+                case kSide: {
+                    sgc_gain_db += 0.1 * sgc_values_[band];
+                }
+                }
+            }
+        }
+        c_sgc_gain_linear_ = zldsp::chore::decibelsToGain(sgc_gain_db);
+        sgc_gain_.setGainLinear(c_sgc_gain_linear_);
+    }
+
+    void Controller::updateOutputGain() {
+        double total = c_makeup_gain_linear_;
+        if (c_agc_on_) {
+            total *= c_agc_gain_linear_;
+        }
+        output_gain_.setGainLinear(std::clamp(total, 1e-3, 1e3));
+    }
+}

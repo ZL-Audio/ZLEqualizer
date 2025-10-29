@@ -14,14 +14,12 @@
 #include <cmath>
 
 namespace zlpanel::freq_note {
-    static constexpr std::array kNoteNames = {
+    inline constexpr std::array kNoteNames = {
         "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
     };
-    static constexpr int kNotesInOctave = 12;
-
-    static constexpr double kA4Frequency = 440.0;
-
-    static constexpr int kA4SemitoneIndexFromC0 = 57;
+    inline constexpr int kNotesInOctave = 12;
+    inline constexpr double kA4Frequency = 440.0;
+    inline constexpr int kA4SemitoneIndexFromC0 = 57;
 
     inline std::string getNoteFromFrequency(const double frequency) {
         const double semitones_from_a4 = 12.0 * (std::log(frequency / kA4Frequency) / std::log(2.0));

@@ -12,12 +12,12 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 namespace zlstate {
-    inline static constexpr int kVersionHint = 1;
+    inline constexpr int kVersionHint = 1;
 
 #ifdef ZL_EQ_BAND_NUM
-    inline static constexpr size_t kBandNum = ZL_EQ_BAND_NUM;
+    inline constexpr size_t kBandNum = ZL_EQ_BAND_NUM;
 #else
-    inline static constexpr size_t kBandNum = 24;
+    inline constexpr size_t kBandNum = 24;
 #endif
 
     // float
@@ -402,7 +402,7 @@ namespace zlstate {
         }
     }
 
-    static constexpr std::array<std::string_view, 9> kColourNames{
+    inline constexpr std::array<std::string_view, 9> kColourNames{
         "text", "background",
         "shadow", "glow",
         "grid",
@@ -416,7 +416,7 @@ namespace zlstate {
         float opacity;
     };
 
-    static constexpr std::array<ColourDefaultSetting, 9> kColourDefaults{
+    inline constexpr std::array<ColourDefaultSetting, 9> kColourDefaults{
         ColourDefaultSetting{247, 246, 244, true, 1.f},
         ColourDefaultSetting{20, 16, 9, true, 1.f},
         ColourDefaultSetting{0, 0, 0, true, 1.f},

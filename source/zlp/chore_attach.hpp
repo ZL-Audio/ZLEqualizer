@@ -10,6 +10,7 @@
 #pragma once
 
 #include "controller.hpp"
+#include "juce_helper/para_updater.hpp"
 
 namespace zlp {
     class ChoreAttach final : private juce::AudioProcessorValueTreeState::Listener {
@@ -24,8 +25,13 @@ namespace zlp {
         juce::AudioProcessorValueTreeState& parameters_;
         Controller& controller_;
 
+        juce_helper::ParaUpdater output_gain_updater_;
+        juce_helper::ParaUpdater agc_updater_;
+
         static constexpr std::array kIDs{
-            PFilterStructure::kID
+            PFilterStructure::kID, POutputGain::kID,
+            PStaticGain::kID, PMakeupLearn::kID, PAutoGain::kID,
+            PPhaseFlip::kID, PLookahead::kID
         };
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;

@@ -18,6 +18,7 @@
 #include "../dsp/filter/dynamic_filter/dynamic_tdf.hpp"
 #include "../dsp/filter/dynamic_filter/dynamic_svf.hpp"
 #include "../dsp/filter/dynamic_filter/dynamic_parallel.hpp"
+#include "../dsp/filter/gain_compensation/gain_compensation.hpp"
 
 #include "../dsp/filter/fir_filter/match_correction/match_correction.hpp"
 #include "../dsp/filter/fir_filter/match_correction/match_calculator.hpp"
@@ -29,6 +30,11 @@
 #include "../dsp/fft_analyzer/multiple_fft_analyzer.hpp"
 #include "../dsp/splitter/inplace_ms_splitter.hpp"
 #include "../dsp/histogram/histogram.hpp"
+
+#include "../dsp/loudness/lufs_matcher.hpp"
+#include "../dsp/gain/gain.hpp"
+
+#include "../dsp/delay/integer_delay.hpp"
 
 namespace zlp {
     template <typename T, std::size_t N, typename... Args, std::size_t... I>
@@ -57,59 +63,71 @@ namespace zlp {
 
         void setFilterStructure(const FilterStructure filter_structure) {
             filter_structure_.store(filter_structure, std::memory_order::relaxed);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setFilterStatus(const size_t idx, const FilterStatus filter_status) {
             filter_status_[idx].store(filter_status, std::memory_order::relaxed);
             to_update_status_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setLRMS(const size_t idx, const FilterStereo filter_stereo) {
             lrms_[idx].store(filter_stereo, std::memory_order::relaxed);
             to_update_lrms_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicON(const size_t idx, const bool dynamic_on) {
             dynamic_on_[idx].store(dynamic_on, std::memory_order::relaxed);
             to_update_dynamic_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicBypass(const size_t idx, const bool dynamic_bypass) {
             dynamic_bypass_[idx].store(dynamic_bypass, std::memory_order::relaxed);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicRelative(const size_t idx, const bool is_relative) {
             dynamic_th_relative_[idx].store(is_relative, std::memory_order::relaxed);
             dynamic_th_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicSwap(const size_t idx, const bool is_swap) {
             dynamic_swap_[idx].store(is_swap, std::memory_order::relaxed);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicLearn(const size_t idx, const bool is_learn) {
             dynamic_th_learn_[idx].store(is_learn, std::memory_order::relaxed);
             dynamic_th_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicThreshold(const size_t idx, const double threshold) {
             dynamic_threshold_[idx].store(threshold, std::memory_order::relaxed);
             dynamic_th_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicKnee(const size_t idx, const double knee) {
             dynamic_knee_[idx].store(knee, std::memory_order::relaxed);
             dynamic_th_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicAttack(const size_t idx, const double attack) {
             dynamic_attack_[idx].store(attack, std::memory_order::relaxed);
             dynamic_ar_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         void setDynamicRelease(const size_t idx, const double release) {
             dynamic_release_[idx].store(release, std::memory_order::relaxed);
             dynamic_ar_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
         std::array<zldsp::filter::Empty, kBandNum>& getEmptyFilters() {
@@ -144,6 +162,10 @@ namespace zlp {
             return side_empty_update_flags_;
         }
 
+        std::atomic<bool>& getUpdateFlag() {
+            return to_update_;
+        }
+
         double getCurrentGain(const size_t idx) const {
             return current_gains_[idx].load(std::memory_order::relaxed);
         }
@@ -155,10 +177,54 @@ namespace zlp {
         void setSoloWholeIdx(const size_t idx) {
             solo_whole_idx_.store(idx, std::memory_order::relaxed);
             to_update_solo_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
+        void setMakeupGain(const double gain) {
+            makeup_gain_linear_.store(zldsp::chore::decibelsToGain(gain), std::memory_order::relaxed);
+            to_update_makeup_.store(true, std::memory_order::release);
+            to_update_output_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
+        void setSGCON(const bool f) {
+            sgc_on_.store(f, std::memory_order::relaxed);
+            to_update_output_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
+        void setLoudnessMatchON(const bool f) {
+            loudness_matcher_on_.store(f, std::memory_order::relaxed);
+            to_update_output_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
+        double getLUFSMatcherDiff() const {
+            return loudness_matcher_.getDiff();
+        }
+
+        void setAGCON(const bool f) {
+            agc_on_.store(f, std::memory_order::relaxed);
+            to_update_output_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
+        void setPhaseFlipON(const bool f) {
+            phase_flip_on_.store(f, std::memory_order::relaxed);
+            to_update_output_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
+        void setDelay(const double delay_second) {
+            delay_second_.store(delay_second, std::memory_order::relaxed);
+            to_update_delay_.store(true, std::memory_order::release);
+            to_update_output_.store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
         }
 
     private:
         juce::AudioProcessor& p_ref_;
+        std::atomic<bool> to_update_{false};
         // filter structure
         std::atomic<FilterStructure> filter_structure_{};
         FilterStructure c_filter_structure_{zlp::FilterStructure::kMinimum};
@@ -210,15 +276,13 @@ namespace zlp {
         std::vector<double*> side_copy_pointers_{};
         // side-chain filters
         std::array<zldsp::filter::TDF<double, kFilterSize / 2>, kBandNum> side_filters_{};
-        // solo filter
-        zldsp::filter::TDF<double, kFilterSize / 2> solo_filter_;
         // corrections
         bool c_correction_enabled_{false};
         std::array<bool, 4> to_update_correction_{};
         // update indices
         std::array<bool, kBandNum> res_update_flags_{};
         // correction on indices for stereo/l/r/m/s (might duplicate)
-        std::atomic<int> latency{0};
+        std::atomic<int> correction_latency_{0};
         bool to_update_correction_indices_{false};
         std::vector<size_t> correction_on_total_{};
         std::array<std::vector<size_t>, 5> correction_on_indices_{};
@@ -280,7 +344,8 @@ namespace zlp {
         std::atomic<bool> editor_on_{false};
         bool c_editor_on_{false};
         zldsp::analyzer::MultipleFFTAnalyzer<double, 3, 251> fft_analyzer_;
-
+        // solo related
+        zldsp::filter::TDF<double, kFilterSize / 2> solo_filter_;
         std::array<std::vector<double>, 2> solo_buffers_{};
         std::array<double*, 2> solo_pointers_{};
         std::atomic<bool> to_update_solo_{false};
@@ -288,6 +353,36 @@ namespace zlp {
         bool c_solo_on_{false};
         bool c_solo_side_{false};
         size_t c_solo_idx_{0};
+        // static gain compensation
+        std::atomic<bool> to_update_output_{false};
+        std::atomic<bool> sgc_on_{false};
+        bool c_sgc_on_{false};
+        std::array<double, kBandNum> sgc_values_{};
+        double c_sgc_gain_linear_{1.};
+        zldsp::gain::Gain<double> sgc_gain_{};
+        // auto gain compensation
+        std::atomic<bool> agc_on_{false};
+        bool c_agc_on_{false};
+        double pre_square_sum_{1.};
+        double c_agc_gain_linear_{1.};
+        // loudness matcher
+        std::atomic<bool> loudness_matcher_on_{false};
+        bool c_loudness_matcher_on_{false};
+        zldsp::loudness::LUFSMatcher<double, true> loudness_matcher_;
+        // makeup gain
+        std::atomic<bool> to_update_makeup_{false};
+        std::atomic<double> makeup_gain_linear_{};
+        double c_makeup_gain_linear_{};
+        zldsp::gain::Gain<double> output_gain_{};
+        // phase flip
+        std::atomic<bool> phase_flip_on_{false};
+        bool c_phase_flip_on_{false};
+        // lookahead
+        std::atomic<double> delay_second_{0.};
+        std::atomic<bool> to_update_delay_{false};
+        std::atomic<int> delay_latency_{0};
+        bool c_delay_on_{false};
+        zldsp::delay::IntegerDelay<double> delay_{};
 
         void prepareBuffer();
 
@@ -304,6 +399,8 @@ namespace zlp {
         void prepareCorrectionIndices();
 
         void prepareCorrection();
+
+        void prepareOutput();
 
         void prepareDynamicParameters();
 
@@ -343,6 +440,10 @@ namespace zlp {
 
         template <bool force>
         void updateSoloFilter(zldsp::filter::FilterParameters paras);
+
+        void updateSGC();
+
+        void updateOutputGain();
     };
 
     extern template void Controller::process<true>(std::array<double*, 2>, std::array<double*, 2>, size_t);

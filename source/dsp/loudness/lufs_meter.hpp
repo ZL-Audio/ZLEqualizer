@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "../vector/kfr_import.hpp"
 #include "k_weighting_filter.hpp"
 
 namespace zldsp::loudness {
@@ -59,13 +60,9 @@ namespace zldsp::loudness {
                 // now we get a full 100 ms small block
                 const auto remaining_num = max_idx_ - current_idx_;
                 for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                    auto input_v = kfr::make_univector(
-                        buffer[channel] + static_cast<size_t>(start_idx),
-                        static_cast<size_t>(remaining_num));
-                    auto sub_v = kfr::make_univector(
-                        small_buffer_[channel].data() + static_cast<size_t>(current_idx_),
-                        static_cast<size_t>(remaining_num));
-                    sub_v = input_v;
+                    zldsp::vector::copy(small_buffer_[channel].data() + static_cast<size_t>(current_idx_),
+                                        buffer[channel] + static_cast<size_t>(start_idx),
+                                        static_cast<size_t>(remaining_num));
                 }
                 start_idx += remaining_num;
                 current_idx_ = 0;
@@ -74,13 +71,9 @@ namespace zldsp::loudness {
             if (num_total - start_idx > 0) {
                 const auto remaining_num = num_total - start_idx;
                 for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                    auto input_v = kfr::make_univector(
-                        buffer[channel] + static_cast<size_t>(start_idx),
-                        static_cast<size_t>(remaining_num));
-                    auto sub_v = kfr::make_univector(
-                        small_buffer_[channel].data() + static_cast<size_t>(current_idx_),
-                        static_cast<size_t>(remaining_num));
-                    sub_v = input_v;
+                    zldsp::vector::copy(small_buffer_[channel].data() + static_cast<size_t>(current_idx_),
+                                        buffer[channel] + static_cast<size_t>(start_idx),
+                                        static_cast<size_t>(remaining_num));
                 }
                 current_idx_ += remaining_num;
             }
@@ -142,8 +135,8 @@ namespace zldsp::loudness {
                 return;
             }
             // calculate the mean square
-            const auto mean_square = (sum_squares_[0] + sum_squares_[1] + sum_squares_[2] + sum_squares_[3]) *
-                mean_mul_;
+            const auto mean_square = (
+                sum_squares_[0] + sum_squares_[1] + sum_squares_[2] + sum_squares_[3]) * mean_mul_;
             // update histogram
             if (mean_square >= FloatType(1.1724653045822963e-7)) {
                 // if greater than -70 LKFS

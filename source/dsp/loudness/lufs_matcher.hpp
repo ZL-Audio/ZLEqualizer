@@ -14,7 +14,7 @@
 
 namespace zldsp::loudness {
     /**
-     * a integrated matcher which matches the loudness of pre and post
+     * an integrated matcher which matches the loudness of pre and post
      * @tparam FloatType the float type of input audio buffer
      * @tparam kUseLowPass whether to use an extra lowpass filter at 22,000 Hz
      */

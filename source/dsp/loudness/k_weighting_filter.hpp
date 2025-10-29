@@ -10,7 +10,7 @@
 #pragma once
 
 #include <numbers>
-#include "../filter/filter.hpp"
+#include "../filter/iir_filter/tdf/tdf.hpp"
 
 namespace zldsp::loudness {
     /**
@@ -59,12 +59,8 @@ namespace zldsp::loudness {
                     if constexpr (kUseLowPass) {
                         sample = low_pass_.processSample(channel, sample);
                     }
-                    samples[i] = sample;
+                    samples[i] = sample * kBias;
                 }
-            }
-            for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                auto v = kfr::make_univector(buffer[channel], num_samples);
-                v = v * kBias;
             }
         }
 

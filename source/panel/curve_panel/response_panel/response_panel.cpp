@@ -92,14 +92,15 @@ namespace zlpanel {
 
     void ResponsePanel::resized() {
         const auto bound = getLocalBounds();
+        const auto font_size = base_.getFontSize();
+        const auto bottom_height = getBottomAreaHeight(font_size);
         single_panel_.setBounds(bound);
         sum_panel_.setBounds(bound);
         mouse_event_panel_.setBounds(bound);
         dragger_panel_.setBounds(bound);
         solo_panel_.setBounds(bound);
         scale_panel_.setBounds(bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
-        side_y_ = static_cast<float>(bound.getHeight() - getBottomAreaHeight(base_.getFontSize()))
-            - base_.getFontSize() * kDraggerScale * .5f;
+        side_y_ = static_cast<float>(bound.getHeight() - bottom_height) - font_size * kDraggerScale * .5f;
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
         height_.store(static_cast<float>(bound.getHeight()), std::memory_order::relaxed);
         to_update_bound_.store(true, std::memory_order::release);

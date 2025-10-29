@@ -26,7 +26,9 @@ namespace zlp {
         Controller& controller_;
         size_t idx_;
         zldsp::filter::Empty& side_empty_;
+        std::atomic<float>& scale_;
         std::atomic<bool>& update_flag_;
+        std::atomic<bool>& whole_update_flag_;
 
         static constexpr std::array kIDs{
             PSideFilterType::kID, PSideOrder::kID, PSideFreq::kID, PSideQ::kID, PTargetGain::kID

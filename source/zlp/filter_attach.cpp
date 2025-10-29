@@ -17,7 +17,9 @@ namespace zlp {
         controller_(controller),
         idx_(idx),
         empty_(controller.getEmptyFilters()[idx]),
+        scale_(*parameters.getRawParameterValue(PGainScale::kID)),
         update_flag_(controller.getEmptyUpdateFlags()[idx]),
+        whole_update_flag_(controller.getUpdateFlag()),
         side_link_(*parameters.getRawParameterValue(PSideLink::kID + std::to_string(idx))),
         side_filter_type_updater_(parameters, PSideFilterType::kID + std::to_string(idx)),
         side_freq_updater_(parameters, PSideFreq::kID + std::to_string(idx)),
@@ -27,12 +29,15 @@ namespace zlp {
             parameters_.addParameterListener(ID, this);
             parameterChanged(ID, parameters.getRawParameterValue(ID)->load(std::memory_order::relaxed));
         }
+        parameters_.addParameterListener(PGainScale::kID, this);
+        parameterChanged(PGainScale::kID, scale_.load(std::memory_order::relaxed));
     }
 
     FilterAttach::~FilterAttach() {
         for (size_t i = 0; i < kIDs.size(); ++i) {
             parameters_.removeParameterListener(kIDs[i] + std::to_string(idx_), this);
         }
+        parameters_.removeParameterListener(PGainScale::kID, this);
     }
 
     void FilterAttach::parameterChanged(const juce::String& parameter_ID, const float value) {
@@ -41,26 +46,31 @@ namespace zlp {
         } else if (parameter_ID.startsWith(PFilterType::kID)) {
             empty_.setFilterType(static_cast<zldsp::filter::FilterType>(std::round(value)));
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideFilterType();
             }
         } else if (parameter_ID.startsWith(POrder::kID)) {
             empty_.setOrder(POrder::kOrderArray[static_cast<size_t>(std::round(value))]);
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PLRMode::kID)) {
             controller_.setLRMS(idx_, static_cast<FilterStereo>(std::round(value)));
         } else if (parameter_ID.startsWith(PFreq::kID)) {
             empty_.setFreq(value);
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideFreq();
             }
         } else if (parameter_ID.startsWith(PGain::kID)) {
-            empty_.setGain(value);
+            empty_.setGain(std::clamp(value * (scale_.load(std::memory_order::relaxed) / 100.f), -30.f, 30.f));
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(PQ::kID)) {
             empty_.setQ(value);
             update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideQ();
             }
@@ -70,6 +80,10 @@ namespace zlp {
                 updateSideFreq();
                 updateSideQ();
             }
+        } else if (parameter_ID.startsWith(PGainScale::kID)) {
+            empty_.setGain(std::clamp(static_cast<float>(empty_.getGain()) * (value / 100.f), -30.f, 30.f));
+            update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.store(true, std::memory_order::release);
         }
     }
 
@@ -78,9 +92,9 @@ namespace zlp {
         if (filter_type == zldsp::filter::kPeak) {
             side_filter_type_updater_.update(0.f);
         } else if (filter_type == zldsp::filter::kLowShelf) {
-            side_filter_type_updater_.update(0.5f);
-        } else if (filter_type == zldsp::filter::kHighShelf) {
             side_filter_type_updater_.update(1.f);
+        } else if (filter_type == zldsp::filter::kHighShelf) {
+            side_filter_type_updater_.update(2.f);
         }
     }
 
@@ -90,14 +104,14 @@ namespace zlp {
             || filter_type == zldsp::filter::kLowShelf
             || filter_type == zldsp::filter::kHighShelf) {
             const auto freq = static_cast<float>(empty_.getFreq());
-            side_freq_updater_.update(PSideFreq::kRange.convertTo0to1(freq));
+            side_freq_updater_.update(freq);
         }
     }
 
     void FilterAttach::updateSideQ() {
         if (empty_.getFilterType() == zldsp::filter::kPeak) {
             const auto q = static_cast<float>(empty_.getQ());
-            side_Q_updater_.update(PSideQ::kRange.convertTo0to1(q));
+            side_Q_updater_.update(q);
         }
     }
 }

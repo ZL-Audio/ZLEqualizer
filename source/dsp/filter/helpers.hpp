@@ -17,8 +17,8 @@
 #include "../chore/decibels.hpp"
 
 namespace zldsp::filter {
-    constexpr static double pi = std::numbers::pi;
-    constexpr static double ppi = 2 * std::numbers::pi;
+    inline constexpr double pi = std::numbers::pi;
+    inline constexpr double ppi = 2 * std::numbers::pi;
 
     enum FilterType {
         kPeak, kLowShelf, kLowPass, kHighShelf, kHighPass,

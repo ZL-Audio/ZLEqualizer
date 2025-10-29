@@ -14,7 +14,7 @@
 
 namespace zldsp::vector {
     template <typename FloatType>
-    inline void copy(FloatType* out, const FloatType* in, const size_t size) {
+    inline void copy(FloatType* __restrict__ out, const FloatType* __restrict__ in, const size_t size) {
         std::memcpy(out, in, sizeof(FloatType) * size);
     }
 
@@ -26,7 +26,7 @@ namespace zldsp::vector {
     }
 
     template <typename FloatType1, typename FloatType2>
-    inline void copy(FloatType1* out, const FloatType2* in, const size_t size) {
+    inline void copy(FloatType1* __restrict__ out, const FloatType2* __restrict__ in, const size_t size) {
         for (size_t i = 0; i < size; ++i) {
             out[i] = static_cast<FloatType1>(in[i]);
         }

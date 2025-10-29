@@ -13,7 +13,9 @@ namespace zlp {
     ChoreAttach::ChoreAttach(juce::AudioProcessor&,
                              juce::AudioProcessorValueTreeState& parameters,
                              Controller& controller) :
-        parameters_(parameters), controller_(controller) {
+        parameters_(parameters), controller_(controller),
+        output_gain_updater_(parameters, POutputGain::kID),
+        agc_updater_(parameters, PAutoGain::kID) {
         for (size_t i = 0; i < kIDs.size(); ++i) {
             parameters_.addParameterListener(kIDs[i], this);
             parameterChanged(kIDs[i],
@@ -30,6 +32,25 @@ namespace zlp {
     void ChoreAttach::parameterChanged(const juce::String& parameter_ID, const float value) {
         if (parameter_ID == PFilterStructure::kID) {
             controller_.setFilterStructure(static_cast<FilterStructure>(std::round(value)));
+        } else if (parameter_ID == POutputGain::kID) {
+            controller_.setMakeupGain(value);
+        } else if (parameter_ID == PStaticGain::kID) {
+            controller_.setSGCON(value > .5f);
+        } else if (parameter_ID == PMakeupLearn::kID) {
+            if (value > .5f) {
+                controller_.setLoudnessMatchON(true);
+            } else {
+                controller_.setLoudnessMatchON(false);
+                const auto c_diff = controller_.getLUFSMatcherDiff();
+                output_gain_updater_.update(-static_cast<float>(c_diff));
+                agc_updater_.update(0.f);
+            }
+        } else if (parameter_ID == PAutoGain::kID) {
+            controller_.setAGCON(value > .5f);
+        } else if (parameter_ID == PPhaseFlip::kID) {
+            controller_.setPhaseFlipON(value > .5f);
+        } else if (parameter_ID == PLookahead::kID) {
+            controller_.setDelay(static_cast<double>(value) * 0.001);
         }
     }
 }

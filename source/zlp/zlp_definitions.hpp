@@ -10,12 +10,12 @@
 #pragma once
 
 namespace zlp {
-    inline static constexpr int kVersionHint = 1;
+    inline constexpr int kVersionHint = 1;
 
 #ifdef ZL_EQ_BAND_NUM
-    inline static constexpr size_t kBandNum = ZL_EQ_BAND_NUM;
+    inline constexpr size_t kBandNum = ZL_EQ_BAND_NUM;
 #else
-    inline static constexpr size_t kBandNum = 24;
+    inline constexpr size_t kBandNum = 24;
 #endif
 
     enum FilterStatus {
@@ -113,13 +113,13 @@ namespace zlp {
             x_min, x_max,
             [=](FloatType, FloatType, const FloatType v) {
                 return v < FloatType(.5)
-                           ? FloatType(2) * v * (x_mid - x_min) + x_min
-                           : FloatType(2) * (v - FloatType(0.5)) * (x_max - x_mid) + x_mid;
+                    ? FloatType(2) * v * (x_mid - x_min) + x_min
+                    : FloatType(2) * (v - FloatType(0.5)) * (x_max - x_mid) + x_mid;
             },
             [=](FloatType, FloatType, const FloatType v) {
                 return v < x_mid
-                           ? FloatType(.5) * (v - x_min) / (x_mid - x_min)
-                           : FloatType(.5) + FloatType(.5) * (v - x_mid) / (x_max - x_mid);
+                    ? FloatType(.5) * (v - x_min) / (x_mid - x_min)
+                    : FloatType(.5) + FloatType(.5) * (v - x_mid) / (x_max - x_mid);
             },
             [=](FloatType, FloatType, const FloatType v) {
                 const FloatType x = x_min + x_interval * std::round((v - x_min) / x_interval);
@@ -247,6 +247,72 @@ namespace zlp {
         static constexpr int kDefaultI = 0;
     };
 
+    class POutputGain : public FloatParameters<POutputGain> {
+    public:
+        static constexpr auto kID = "output_gain";
+        static constexpr auto kName = "Output Gain";
+        inline static const auto kRange = juce::NormalisableRange<float>(-30.f, 30.f, .01f);
+        static constexpr auto kDefaultV = 0.f;
+    };
+
+    class PGainScale : public FloatParameters<PGainScale> {
+    public:
+        static constexpr auto kID = "gain_scale";
+        static constexpr auto kName = "Gain Scale";
+        inline static const auto kRange = juce::NormalisableRange<float>(-100.f, 200.f, .1f);
+        static constexpr auto kDefaultV = 100.f;
+    };
+
+    class PAutoGain : public ChoiceParameters<PAutoGain> {
+    public:
+        static constexpr auto kID = "auto_gain";
+        static constexpr auto kName = "Auto Gain";
+        inline static const auto kChoices = juce::StringArray{
+            "OFF", "ON"
+        };
+        static constexpr int kDefaultI = 0;
+    };
+
+    class PStaticGain : public ChoiceParameters<PStaticGain> {
+    public:
+        static constexpr auto kID = "static_gain";
+        static constexpr auto kName = "Static Gain";
+        inline static const auto kChoices = juce::StringArray{
+            "OFF", "ON"
+        };
+        static constexpr int kDefaultI = 0;
+    };
+
+    class PMakeupLearn : public ChoiceParameters<PMakeupLearn> {
+    public:
+        static constexpr auto kID = "makeup_learn";
+        static constexpr auto kName = "Makeup Learn";
+        inline static const auto kChoices = juce::StringArray{
+            "OFF", "ON"
+        };
+        static constexpr int kDefaultI = 0;
+    };
+
+    class PPhaseFlip : public ChoiceParameters<PPhaseFlip> {
+    public:
+        static constexpr auto kID = "phase_flip";
+        static constexpr auto kName = "phase_flip";
+        inline static const auto kChoices = juce::StringArray{
+            "OFF", "ON"
+        };
+        static constexpr int kDefaultI = 0;
+    };
+
+    class PLookahead : public FloatParameters<PLookahead> {
+    public:
+        static constexpr auto kID = "lookahead";
+        static constexpr auto kName = "Lookahead";
+        inline static const auto kRange = getLogMidRangeShift(2.f, 22.f, 7.f, 0.01f, -2.f);
+        static constexpr auto kDefaultV = 0.f;
+    };
+
+    // band parameters
+
     class PFilterStatus : public ChoiceParameters<PFilterStatus> {
     public:
         static constexpr auto kID = "filter_status";
@@ -281,14 +347,22 @@ namespace zlp {
 
         static size_t convertToIdx(const size_t order) {
             switch (order) {
-            case 1: return 0;
-            case 2: return 1;
-            case 4: return 2;
-            case 6: return 3;
-            case 8: return 4;
-            case 12: return 5;
-            case 16: return 6;
-            default: return 0;
+            case 1:
+                return 0;
+            case 2:
+                return 1;
+            case 4:
+                return 2;
+            case 6:
+                return 3;
+            case 8:
+                return 4;
+            case 12:
+                return 5;
+            case 16:
+                return 6;
+            default:
+                return 0;
             }
         }
     };
@@ -446,7 +520,10 @@ namespace zlp {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(PFilterStructure::get(), PExtSide::get(), PBypass::get());
+        layout.add(PFilterStructure::get(), PExtSide::get(), PBypass::get(),
+                   POutputGain::get(), PGainScale::get(),
+                   PAutoGain::get(), PStaticGain::get(), PMakeupLearn::get(), PPhaseFlip::get(),
+                   PLookahead::get());
         for (size_t i = 0; i < kBandNum; ++i) {
             const auto suffix = std::to_string(i);
             layout.add(PFilterStatus::get(suffix),

@@ -54,7 +54,12 @@ namespace zldsp::gain {
         template <bool bypass = false>
         void process(std::span<FloatType*> buffer, const size_t num_samples) {
             if (!gain_.isSmoothing()) {
-                if constexpr (bypass) return;
+                if constexpr (bypass) {
+                    return;
+                }
+                if (std::abs(gain_.getCurrent() - FloatType(1)) < FloatType(1e-6)) {
+                    return;
+                }
                 for (size_t chan = 0; chan < buffer.size(); ++chan) {
                     zldsp::vector::multiply(buffer[chan], gain_.getCurrent(), num_samples);
                 }
@@ -70,7 +75,7 @@ namespace zldsp::gain {
         }
 
     private:
-        zldsp::chore::SmoothedValue<FloatType, zldsp::chore::SmoothedTypes::kFixLin> gain_{FloatType(1)};
+        zldsp::chore::SmoothedValue<FloatType, zldsp::chore::SmoothedTypes::kFixMul> gain_{FloatType(1)};
         kfr::univector<FloatType> gain_vs_;
     };
 }

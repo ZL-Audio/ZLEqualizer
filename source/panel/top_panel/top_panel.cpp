@@ -58,17 +58,20 @@ namespace zlpanel {
     void TopPanel::resized() {
         const auto font_size = base_.getFontSize();
         const auto padding = getPaddingSize(font_size);
+        const auto slider_width = getSliderWidth(font_size);
         const auto small_slider_width = getSmallSliderWidth(font_size);
         auto bound = getLocalBounds();
         bound.removeFromTop(padding);
         bound.removeFromLeft(padding);
         bound.removeFromRight(padding / 2);
+        const auto spacing = (slider_width - 2 * bound.getHeight()) / 2;
+
         logo_panel_.setBounds(bound.removeFromLeft(bound.getHeight() * 2 + padding));
-        bound.removeFromLeft(padding);
+        bound.removeFromLeft(spacing);
         fstruct_box_.setBounds(bound.removeFromLeft(small_slider_width * 2));
 
         bypass_button_.setBounds(bound.removeFromRight(bound.getHeight()));
-        bound.removeFromLeft(padding);
+        bound.removeFromRight(padding);
         ext_button_.setBounds(bound.removeFromRight(bound.getHeight()));
     }
 

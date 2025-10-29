@@ -27,7 +27,9 @@ namespace zlp {
         Controller& controller_;
         size_t idx_;
         zldsp::filter::Empty& empty_;
+        std::atomic<float>& scale_;
         std::atomic<bool>& update_flag_;
+        std::atomic<bool>& whole_update_flag_;
 
         std::atomic<float>& side_link_;
 
