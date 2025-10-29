@@ -27,6 +27,7 @@ namespace zlp {
         size_t idx_;
         zldsp::filter::Empty& side_empty_;
         std::atomic<float>& scale_;
+        std::atomic<float>& target_gain_;
         std::atomic<bool>& update_flag_;
         std::atomic<bool>& whole_update_flag_;
 

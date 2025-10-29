@@ -54,6 +54,11 @@ namespace zlpanel {
 
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
+
+        std::array<std::atomic<float>, zlp::kBandNum> original_base_gains_{};
+        std::array<std::atomic<float>, zlp::kBandNum> original_target_gains_{};
+        std::atomic<float>& gain_scale_;
+
         std::vector<size_t> message_not_off_indices_;
         std::atomic<bool> message_to_update_panels_{};
 

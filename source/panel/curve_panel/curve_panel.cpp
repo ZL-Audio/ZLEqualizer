@@ -13,13 +13,16 @@ namespace zlpanel {
     CurvePanel::CurvePanel(PluginProcessor& p,
                            zlgui::UIBase& base,
                            const multilingual::TooltipHelper& tooltip_helper) :
+        base_(base),
         background_panel_(p, base, tooltip_helper),
         fft_panel_(p, base, tooltip_helper),
-        response_panel_(p, base, tooltip_helper){
+        response_panel_(p, base, tooltip_helper),
+        output_panel_(p, base, tooltip_helper) {
         background_panel_.setBufferedToImage(true);
         addAndMakeVisible(background_panel_);
         addAndMakeVisible(fft_panel_);
         addAndMakeVisible(response_panel_);
+        addChildComponent(output_panel_);
         setInterceptsMouseClicks(false, true);
     }
 
@@ -33,11 +36,16 @@ namespace zlpanel {
     }
 
     void CurvePanel::resized() {
-        auto bound = getLocalBounds();
+        const auto bound = getLocalBounds();
         background_panel_.setBounds(bound);
         fft_panel_.setBounds(bound);
         response_panel_.setBounds(bound);
 
+        const auto font_size = base_.getFontSize();
+        const auto padding = getPaddingSize(font_size);
+        const auto output_width = output_panel_.getIdealWidth();
+        const auto output_height = output_panel_.getIdealHeight();
+        output_panel_.setBounds(bound.getWidth() - output_width - 2 * padding, 0, output_width, output_height);
     }
 
     void CurvePanel::repaintCallBack() {
@@ -47,6 +55,7 @@ namespace zlpanel {
 
     void CurvePanel::repaintCallBackSlow() {
         response_panel_.repaintCallBackSlow();
+        output_panel_.repaintCallBackSlow();
     }
 
     void CurvePanel::updateBand() {

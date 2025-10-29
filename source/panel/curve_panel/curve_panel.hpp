@@ -12,6 +12,7 @@
 #include "background_panel/background_panel.hpp"
 #include "fft_panel/fft_panel.hpp"
 #include "response_panel/response_panel.hpp"
+#include "output_panel/output_panel.hpp"
 
 namespace zlpanel {
     class CurvePanel final : public juce::Component {
@@ -36,8 +37,10 @@ namespace zlpanel {
         void stopThreads();
 
     private:
+        zlgui::UIBase& base_;
         BackgroundPanel background_panel_;
         FFTPanel fft_panel_;
         ResponsePanel response_panel_;
+        OutputPanel output_panel_;
     };
 }

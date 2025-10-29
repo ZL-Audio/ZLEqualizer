@@ -37,9 +37,9 @@ namespace zlpanel {
 
         void checkUpdate();
 
-        static std::string floatToStringSnprintf(const float value) {
+        static std::string floatToStringSnprintf(const float value, const int precision = 1) {
             char buffer[32];
-            snprintf(buffer, sizeof(buffer), "%.1f", value);
+            snprintf(buffer, sizeof(buffer), "%.*f", precision, value);
             return std::string(buffer);
         }
     };

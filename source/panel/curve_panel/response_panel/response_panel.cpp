@@ -15,6 +15,7 @@ namespace zlpanel {
                                  const multilingual::TooltipHelper& tooltip_helper) :
         Thread("response"),
         p_ref_(p), base_(base),
+        gain_scale_(*p.parameters_.getRawParameterValue(zlp::PGainScale::kID)),
         single_panel_(p, base, message_not_off_indices_),
         sum_panel_(p, base),
         scale_panel_(p, base, tooltip_helper),
@@ -32,6 +33,7 @@ namespace zlpanel {
                                  p_ref_.parameters_.getRawParameterValue(band_ID)->load(std::memory_order::relaxed));
             }
         }
+        p_ref_.parameters_.addParameterListener(zlp::PGainScale::kID, this);
 
         xs_.resize(kNumPoints);
         ws_.resize(kNumPoints);
@@ -70,6 +72,7 @@ namespace zlpanel {
                 p_ref_.parameters_.removeParameterListener(ID + band_str, this);
             }
         }
+        p_ref_.parameters_.removeParameterListener(zlp::PGainScale::kID, this);
     }
 
     void ResponsePanel::paint(juce::Graphics& g) {
@@ -136,10 +139,10 @@ namespace zlpanel {
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
             if (solo_panel_.isSoloSide()) {
                 solo_panel_.updateX(side_points_[band][1].load(std::memory_order::relaxed),
-                        side_points_[band][2].load(std::memory_order::relaxed));
+                                    side_points_[band][2].load(std::memory_order::relaxed));
             } else {
                 solo_panel_.updateX(points_[band][1].load(std::memory_order::relaxed),
-                    points_[band][2].load(std::memory_order::relaxed));
+                                    points_[band][2].load(std::memory_order::relaxed));
             }
         }
     }
@@ -282,6 +285,20 @@ namespace zlpanel {
     }
 
     void ResponsePanel::parameterChanged(const juce::String& parameter_ID, const float value) {
+        if (parameter_ID.startsWith(zlp::PGainScale::kID)) {
+            for (size_t band = 0; band < zlp::kBandNum; ++band) {
+                empty_[band].setGain(
+                    std::clamp(
+                        original_base_gains_[band].load(std::memory_order::relaxed) * value / 100.f, -30.f, 30.f));
+                to_update_empty_flags_[band].store(true, std::memory_order::release);
+                target_gains_[band].store(
+                    std::clamp(
+                        original_target_gains_[band].load(std::memory_order::relaxed) * value / 100.f, -30.f, 30.f),
+                    std::memory_order::relaxed);
+                to_update_target_gain_flags_[band].store(true, std::memory_order::release);
+            }
+            return;
+        }
         const auto band = static_cast<size_t>(parameter_ID.getTrailingIntValue());
         if (parameter_ID.startsWith(zlp::PFilterStatus::kID)) {
             filter_status_[band].store(static_cast<zlp::FilterStatus>(std::round(value)), std::memory_order::relaxed);
@@ -299,7 +316,9 @@ namespace zlpanel {
             empty_[band].setFreq(value);
             to_update_empty_flags_[band].store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(zlp::PGain::kID)) {
-            empty_[band].setGain(value);
+            original_base_gains_[band].store(value, std::memory_order::relaxed);
+            empty_[band].setGain(
+                std::clamp(value * gain_scale_.load(std::memory_order::relaxed) / 100.f, -30.f, 30.f));
             to_update_empty_flags_[band].store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(zlp::PQ::kID)) {
             empty_[band].setQ(value);
@@ -308,7 +327,10 @@ namespace zlpanel {
             dynamic_ons_[band].store(value > .5f, std::memory_order::relaxed);
             to_update_dynamic_ons_.store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(zlp::PTargetGain::kID)) {
-            target_gains_[band].store(value, std::memory_order::relaxed);
+            original_target_gains_[band].store(value, std::memory_order::relaxed);
+            target_gains_[band].store(
+                std::clamp(value * gain_scale_.load(std::memory_order::relaxed) / 100.f, -30.f, 30.f),
+                std::memory_order::relaxed);
             to_update_target_gain_flags_[band].store(true, std::memory_order::release);
         } else if (parameter_ID.startsWith(zlp::PSideFilterType::kID)) {
             if (value < .5f) {
@@ -458,6 +480,7 @@ namespace zlpanel {
                     points_[band][1].store(static_cast<float>(left_x), std::memory_order::relaxed);
                     points_[band][2].store(static_cast<float>(right_x), std::memory_order::relaxed);
                     points_[band][3].store(c_k_ * center_square_magnitude + c_b_, std::memory_order::relaxed);
+                    para.gain = original_base_gains_[band].load(std::memory_order::relaxed);
                     points_[band][4].store(c_k_ * getButtonMag(para) + c_b_, std::memory_order::relaxed);
 
                     if (threadShouldExit()) {
@@ -472,9 +495,9 @@ namespace zlpanel {
                     ideal_[band].updateCoeffs();
                     ideal_[band].updateMagnitudeSquare(ws_, target_mags_[band]);
                     target_mags_[band] = kfr::log10(kfr::max(target_mags_[band], 1e-24f));
-
-                    points_[band][5].store(c_k_ * getButtonMag(ideal_[band].getParas()) + c_b_,
-                                           std::memory_order::relaxed);
+                    auto para = ideal_[band].getParas();
+                    para.gain = original_target_gains_[band].load(std::memory_order::relaxed);
+                    points_[band][5].store(c_k_ * getButtonMag(para) + c_b_, std::memory_order::relaxed);
 
                     if (threadShouldExit()) {
                         return false;

@@ -59,29 +59,37 @@ namespace zlpanel {
         g.fillAll(base_.getBackgroundColour());
     }
 
+    int TopPanel::getIdealHeight() const {
+        const auto font_size = base_.getFontSize();
+        return 2 * (getPaddingSize(font_size) / 2) + getButtonSize(font_size);
+    }
+
     void TopPanel::resized() {
         const auto font_size = base_.getFontSize();
         const auto padding = getPaddingSize(font_size);
         const auto slider_width = getSliderWidth(font_size);
         const auto small_slider_width = getSmallSliderWidth(font_size);
         auto bound = getLocalBounds();
-        bound.removeFromTop(padding);
-        bound.removeFromLeft(padding);
-        bound.removeFromRight(padding / 2);
-        const auto spacing = (slider_width - 2 * bound.getHeight()) / 2;
+        bound.reduce(padding / 2, padding / 2);
 
         logo_panel_.setBounds(bound.removeFromLeft(bound.getHeight() * 2 + padding));
-        bound.removeFromLeft(spacing);
+        bound.removeFromLeft(padding);
         fstruct_box_.setBounds(bound.removeFromLeft(small_slider_width * 2));
 
         bypass_button_.setBounds(bound.removeFromRight(bound.getHeight()));
         bound.removeFromRight(padding);
         ext_button_.setBounds(bound.removeFromRight(bound.getHeight()));
-        bound.removeFromRight(padding);
-        output_label_.setBounds(bound.removeFromRight(2 * slider_width - 2 * bound.getHeight()).withTop(0));
+        {
+            const auto right_pad = getWidth() - bound.getRight();
+            const auto t_width = 3 * padding + 2 * slider_width - right_pad + 4 * padding;
+            output_label_.setBounds({bound.getRight() - t_width, 0,
+                                     t_width, getHeight()});
+            bound.removeFromRight(t_width);
+        }
     }
 
     void TopPanel::repaintCallbackSlow() {
+        output_label_.repaintCallbackSlow();
         updater_.updateComponents();
     }
 }

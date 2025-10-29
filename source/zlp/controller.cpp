@@ -82,8 +82,10 @@ namespace zlp {
         loudness_matcher_.prepare(sample_rate, 2);
         sgc_gain_.prepare(sample_rate, max_num_samples, 0.5);
         output_gain_.prepare(sample_rate, max_num_samples, 0.5);
-        delay_.prepare(sample_rate, max_num_samples, 2, 0.021);
 
+        delay_.prepare(sample_rate, max_num_samples, 2, 0.021);
+        to_update_delay_.store(true, std::memory_order::release);
+        to_update_output_.store(true, std::memory_order::release);
         to_update_.store(true, std::memory_order_release);
     }
 
@@ -183,9 +185,12 @@ namespace zlp {
         bool to_update_sgc{false};
         for (const size_t& i : not_off_total_) {
             if (empty_update_flags_[i].exchange(false, std::memory_order::acquire)) {
-                to_update_sgc = true;
                 const auto filter_type = filter_paras_[i].filter_type;
                 filter_paras_[i] = emptys_[i].getParas();
+                if (c_sgc_on_) {
+                    to_update_sgc = true;
+                    sgc_values_[i] = zldsp::filter::getGainCompensation(filter_paras_[i]);
+                }
                 if (c_solo_on_ && !c_solo_side_ && c_solo_idx_ == i) {
                     updateSoloFilter<false>(filter_paras_[i]);
                 }
@@ -207,7 +212,7 @@ namespace zlp {
                 res_update_flags_[i] = true;
             }
         }
-        if (c_sgc_on_ && to_update_sgc) {
+        if (to_update_sgc) {
             updateSGC();
         }
     }

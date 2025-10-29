@@ -25,12 +25,9 @@ namespace zlp {
         juce::AudioProcessorValueTreeState& parameters_;
         Controller& controller_;
 
-        juce_helper::ParaUpdater output_gain_updater_;
-        juce_helper::ParaUpdater agc_updater_;
-
         static constexpr std::array kIDs{
             PFilterStructure::kID, POutputGain::kID,
-            PStaticGain::kID, PMakeupLearn::kID, PAutoGain::kID,
+            PStaticGain::kID, PAutoGain::kID,
             PPhaseFlip::kID, PLookahead::kID
         };
 

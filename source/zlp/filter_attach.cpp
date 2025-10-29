@@ -18,6 +18,7 @@ namespace zlp {
         idx_(idx),
         empty_(controller.getEmptyFilters()[idx]),
         scale_(*parameters.getRawParameterValue(PGainScale::kID)),
+        gain_(*parameters.getRawParameterValue(PGain::kID + std::to_string(idx))),
         update_flag_(controller.getEmptyUpdateFlags()[idx]),
         whole_update_flag_(controller.getUpdateFlag()),
         side_link_(*parameters.getRawParameterValue(PSideLink::kID + std::to_string(idx))),
@@ -30,7 +31,6 @@ namespace zlp {
             parameterChanged(ID, parameters.getRawParameterValue(ID)->load(std::memory_order::relaxed));
         }
         parameters_.addParameterListener(PGainScale::kID, this);
-        parameterChanged(PGainScale::kID, scale_.load(std::memory_order::relaxed));
     }
 
     FilterAttach::~FilterAttach() {
@@ -81,7 +81,7 @@ namespace zlp {
                 updateSideQ();
             }
         } else if (parameter_ID.startsWith(PGainScale::kID)) {
-            empty_.setGain(std::clamp(static_cast<float>(empty_.getGain()) * (value / 100.f), -30.f, 30.f));
+            empty_.setGain(std::clamp(gain_.load(std::memory_order::relaxed) * (value / 100.f), -30.f, 30.f));
             update_flag_.store(true, std::memory_order::release);
             whole_update_flag_.store(true, std::memory_order::release);
         }

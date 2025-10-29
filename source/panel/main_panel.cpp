@@ -64,7 +64,7 @@ namespace zlpanel {
         control_bound = control_bound.withSizeKeepingCentre(control_panel_.getIdealWidth(), control_bound.getHeight());
         control_panel_.setBounds(control_bound);
 
-        top_panel_.setBounds(bound.removeFromTop(getButtonSize(font_size) + getPaddingSize(font_size)));
+        top_panel_.setBounds(bound.removeFromTop(top_panel_.getIdealHeight()));
         curve_panel_.setBounds(bound);
     }
 

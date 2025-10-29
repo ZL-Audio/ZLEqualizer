@@ -23,19 +23,16 @@ namespace zlgui::label {
             if (label.isBeingEdited()) {
                 return;
             }
-            g.setColour(base_.getTextColour().withMultipliedAlpha(alpha_));
+            g.setColour(base_.getTextColour());
             g.setFont(base_.getFontSize() * font_scale_);
             g.drawText(label.getText(), label.getLocalBounds().toFloat(), label.getJustificationType());
         }
-
-        inline void setAlpha(const float x) { alpha_ = x; }
 
         inline void setFontScale(const float x) { font_scale_ = x; }
 
     private:
         UIBase& base_;
 
-        float alpha_{1.f};
         float font_scale_{kFontNormal};
     };
 }

@@ -109,7 +109,7 @@ namespace zlgui::slider {
 
             // setup label
             if constexpr (kUseName) {
-                text_look_and_feel_.setAlpha(0.f);
+                text_.setVisible(false);
                 label_.setText(label_text, juce::dontSendNotification);
                 label_.setJustificationType(juce::Justification::centred);
                 label_.setLookAndFeel(&name_look_and_feel_);
@@ -178,10 +178,8 @@ namespace zlgui::slider {
         void mouseEnter(const juce::MouseEvent& event) override {
             slider_.mouseEnter(event);
             if constexpr (kUseName) {
-                text_look_and_feel_.setAlpha(1.f);
-                name_look_and_feel_.setAlpha(0.f);
-                text_.repaint();
-                label_.repaint();
+                text_.setVisible(true);
+                label_.setVisible(false);
             }
         }
 
@@ -191,10 +189,8 @@ namespace zlgui::slider {
                 return;
             }
             if constexpr (kUseName) {
-                text_look_and_feel_.setAlpha(0.f);
-                name_look_and_feel_.setAlpha(1.f);
-                text_.repaint();
-                label_.repaint();
+                text_.setVisible(false);
+                label_.setVisible(true);
             }
         }
 
@@ -329,10 +325,10 @@ namespace zlgui::slider {
 
             slider_.setValue(actual_value, juce::sendNotificationAsync);
             if constexpr (kUseName) {
-                text_look_and_feel_.setAlpha(0.f);
-                name_look_and_feel_.setAlpha(1.f);
-                text_.repaint();
-                label_.repaint();
+                if (!isMouseOver(true)) {
+                    text_.setVisible(false);
+                    label_.setVisible(true);
+                }
             }
         }
 

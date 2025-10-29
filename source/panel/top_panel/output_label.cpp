@@ -17,24 +17,32 @@ namespace zlpanel {
     }
 
     void OutputLabel::paint(juce::Graphics& g) {
-        const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel));
-        if (f > .5) {
-            g.fillAll(base_.getDarkShadowColour());
+        const auto padding = getPaddingSize(base_.getFontSize());
+
+        if (static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel)) > .5) {
+            const auto bound = getLocalBounds().reduced(padding, padding / 2).toFloat();
+            juce::Path path;
+            path.addRoundedRectangle(bound, static_cast<float>(padding));
+            const juce::DropShadow shadow{base_.getBrightShadowColour(), padding, {0, 0}};
+            shadow.drawForPath(g, path);
+            g.setColour(base_.getBackgroundColour());
+            g.fillPath(path);
         }
+
         auto bound = getLocalBounds().toFloat();
         g.setColour(base_.getTextColour());
-        g.setFont(1.25f * base_.getFontSize());
-        g.drawText(" " + floatToStringSnprintf(c_scale_) + "%",
+        g.setFont(1.5f * base_.getFontSize());
+        g.drawText(floatToStringSnprintf(c_scale_, 0) + "%",
                    bound.removeFromLeft(bound.getWidth() * .5f),
-                   juce::Justification::centredLeft);
-        g.drawText(floatToStringSnprintf(static_cast<float>(c_gain_db_)) + "dB ",
+                   juce::Justification::centred);
+        g.drawText(floatToStringSnprintf(static_cast<float>(c_gain_db_), 1) + "dB",
                    bound,
-                   juce::Justification::centredRight);
+                   juce::Justification::centred);
     }
 
     void OutputLabel::repaintCallbackSlow() {
         repaint_count_ += 1;
-        if (repaint_count_ >= 10) {
+        if (repaint_count_ >= 4) {
             repaint_count_ = 0;
             checkUpdate();
         }

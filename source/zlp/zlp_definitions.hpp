@@ -221,7 +221,7 @@ namespace zlp {
 
     class PFilterStructure : public ChoiceParameters<PFilterStructure> {
     public:
-        static constexpr auto kID = "filter_structure";
+        static constexpr auto kID = "total_filter_structure";
         static constexpr auto kName = "Filter Structure";
         inline static const auto kChoices = juce::StringArray{
             "Minimum Phase", "State Variable", "Parallel",
@@ -232,14 +232,14 @@ namespace zlp {
 
     class PExtSide : public BoolParameters<PExtSide> {
     public:
-        static constexpr auto kID = "external_side";
+        static constexpr auto kID = "total_external_side";
         static constexpr auto kName = "External Side";
         static constexpr auto kDefaultV = false;
     };
 
     class PBypass : public ChoiceParameters<PBypass> {
     public:
-        static constexpr auto kID = "bypass";
+        static constexpr auto kID = "total_bypass";
         static constexpr auto kName = "Bypass";
         inline static const auto kChoices = juce::StringArray{
             "ON", "Bypass"
@@ -249,7 +249,7 @@ namespace zlp {
 
     class POutputGain : public FloatParameters<POutputGain> {
     public:
-        static constexpr auto kID = "output_gain";
+        static constexpr auto kID = "total_output_gain";
         static constexpr auto kName = "Output Gain";
         inline static const auto kRange = juce::NormalisableRange<float>(-30.f, 30.f, .01f);
         static constexpr auto kDefaultV = 0.f;
@@ -257,7 +257,7 @@ namespace zlp {
 
     class PGainScale : public FloatParameters<PGainScale> {
     public:
-        static constexpr auto kID = "gain_scale";
+        static constexpr auto kID = "total_gain_scale";
         static constexpr auto kName = "Gain Scale";
         inline static const auto kRange = juce::NormalisableRange<float>(-100.f, 200.f, .1f);
         static constexpr auto kDefaultV = 100.f;
@@ -265,7 +265,7 @@ namespace zlp {
 
     class PAutoGain : public ChoiceParameters<PAutoGain> {
     public:
-        static constexpr auto kID = "auto_gain";
+        static constexpr auto kID = "total_auto_gain";
         static constexpr auto kName = "Auto Gain";
         inline static const auto kChoices = juce::StringArray{
             "OFF", "ON"
@@ -275,18 +275,8 @@ namespace zlp {
 
     class PStaticGain : public ChoiceParameters<PStaticGain> {
     public:
-        static constexpr auto kID = "static_gain";
+        static constexpr auto kID = "total_static_gain";
         static constexpr auto kName = "Static Gain";
-        inline static const auto kChoices = juce::StringArray{
-            "OFF", "ON"
-        };
-        static constexpr int kDefaultI = 0;
-    };
-
-    class PMakeupLearn : public ChoiceParameters<PMakeupLearn> {
-    public:
-        static constexpr auto kID = "makeup_learn";
-        static constexpr auto kName = "Makeup Learn";
         inline static const auto kChoices = juce::StringArray{
             "OFF", "ON"
         };
@@ -295,7 +285,7 @@ namespace zlp {
 
     class PPhaseFlip : public ChoiceParameters<PPhaseFlip> {
     public:
-        static constexpr auto kID = "phase_flip";
+        static constexpr auto kID = "total_phase_flip";
         static constexpr auto kName = "phase_flip";
         inline static const auto kChoices = juce::StringArray{
             "OFF", "ON"
@@ -305,7 +295,7 @@ namespace zlp {
 
     class PLookahead : public FloatParameters<PLookahead> {
     public:
-        static constexpr auto kID = "lookahead";
+        static constexpr auto kID = "total_lookahead";
         static constexpr auto kName = "Lookahead";
         inline static const auto kRange = getLogMidRangeShift(2.f, 22.f, 7.f, 0.01f, -2.f);
         static constexpr auto kDefaultV = 0.f;
@@ -522,7 +512,7 @@ namespace zlp {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(PFilterStructure::get(), PExtSide::get(), PBypass::get(),
                    POutputGain::get(), PGainScale::get(),
-                   PAutoGain::get(), PStaticGain::get(), PMakeupLearn::get(), PPhaseFlip::get(),
+                   PAutoGain::get(), PStaticGain::get(), PPhaseFlip::get(),
                    PLookahead::get());
         for (size_t i = 0; i < kBandNum; ++i) {
             const auto suffix = std::to_string(i);
