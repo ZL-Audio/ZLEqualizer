@@ -55,6 +55,14 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox slope_box_;
         zlgui::attachment::ComboBoxAttachment<true> slope_attach_;
 
+        const std::unique_ptr<juce::Drawable> freeze_drawable_;
+        zlgui::button::ClickButton freeze_button_;
+        zlgui::attachment::ButtonAttachment<true> freeze_attach_;
+
+        const std::unique_ptr<juce::Drawable> collision_drawable_;
+        zlgui::button::ClickButton collision_button_;
+        zlgui::attachment::ButtonAttachment<true> collision_attach_;
+
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };
 }

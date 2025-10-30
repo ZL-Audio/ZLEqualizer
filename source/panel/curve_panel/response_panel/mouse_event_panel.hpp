@@ -54,6 +54,9 @@ namespace zlpanel {
         zlgui::attachment::ComponentUpdater updater_{};
         size_t previous_band_{zlp::kBandNum};
 
+        std::atomic<float>& fft_freeze_ref_;
+        bool c_fft_freeze_{false};
+
         float fft_max_{0.f};
         float slider_max_{0.f};
 
@@ -66,6 +69,8 @@ namespace zlpanel {
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> slope_attachment_;
 
         void timerCallback(int timer_ID) override;
+
+        void turnOffFFTFreeze();
 
         void updateSlopeAttachment();
     };

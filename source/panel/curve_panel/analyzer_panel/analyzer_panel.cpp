@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "analyzer_panel.hpp"
+#include "BinaryData.h"
 
 namespace zlpanel {
     AnalyzerPanel::AnalyzerPanel(PluginProcessor& p, zlgui::UIBase& base,
@@ -33,7 +34,17 @@ namespace zlpanel {
         slope_box_(zlstate::PFFTTilt::kChoices, base,
                    tooltip_helper.getToolTipText(multilingual::kFFTSlope)),
         slope_attach_(slope_box_.getBox(), p.parameters_NA_,
-                      zlstate::PFFTTilt::kID, updater_) {
+                      zlstate::PFFTTilt::kID, updater_),
+        freeze_drawable_(juce::Drawable::createFromImageData(BinaryData::freeze_svg,
+                                                             BinaryData::freeze_svgSize)),
+        freeze_button_(base, freeze_drawable_.get(), freeze_drawable_.get()),
+        freeze_attach_(freeze_button_.getButton(), p.parameters_NA_,
+                       zlstate::PFFTFreezeON::kID, updater_),
+        collision_drawable_(juce::Drawable::createFromImageData(BinaryData::collision_svg,
+                                                                BinaryData::collision_svgSize)),
+        collision_button_(base, collision_drawable_.get(), collision_drawable_.get()),
+        collision_attach_(collision_button_.getButton(), p.parameters_NA_,
+                          zlstate::PCollisionON::kID, updater_) {
 
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
@@ -47,9 +58,15 @@ namespace zlpanel {
             addAndMakeVisible(b);
         }
 
-        for (auto& c: {&speed_box_, &slope_box_}) {
+        for (auto& c : {&speed_box_, &slope_box_}) {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
+        }
+
+        for (auto& b : {&freeze_button_, &collision_button_}) {
+            b->setImageAlpha(.5f, .5f, 1.f, 1.f);
+            b->setBufferedToImage(true);
+            addAndMakeVisible(b);
         }
 
         base_.setPanelProperty(zlgui::PanelSettingIdx::kAnalyzerPanel, 0.);
@@ -73,7 +90,7 @@ namespace zlpanel {
         const auto padding = getPaddingSize(font_size);
         const auto button_height = getButtonSize(font_size);
 
-        return 5 * padding + 4 * button_height;
+        return 6 * padding + 5 * button_height;
     }
 
     void AnalyzerPanel::resized() {
@@ -97,6 +114,16 @@ namespace zlpanel {
 
         bound.removeFromTop(padding);
         slope_box_.setBounds(bound.removeFromTop(button_height));
+
+        bound.removeFromTop(padding);
+        {
+            auto t_bound = bound.removeFromTop(button_height);
+            const auto h_padding = (t_bound.getWidth() - button_height * 2) / 2;
+            t_bound.removeFromLeft(h_padding / 2);
+            freeze_button_.setBounds(t_bound.removeFromLeft(button_height));
+            t_bound.removeFromRight(h_padding / 2);
+            collision_button_.setBounds(t_bound.removeFromRight(button_height));
+        }
     }
 
     void AnalyzerPanel::repaintCallBackSlow() {

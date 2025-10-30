@@ -14,6 +14,7 @@ namespace zlpanel {
                                      zlgui::UIBase& base,
                                      const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
+        fft_freeze_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTFreezeON::kID)),
         q_slider_(base), slope_slider_(base) {
         juce::ignoreUnused(tooltip_helper);
     }
@@ -28,24 +29,23 @@ namespace zlpanel {
     }
 
     void MouseEventPanel::mouseEnter(const juce::MouseEvent&) {
-        startTimer(1, 2000);
+        if (c_fft_freeze_) {
+            startTimer(1, 2000);
+        }
         if (q_attachment_) {
             q_attachment_->updateComponent();
         }
     }
 
     void MouseEventPanel::mouseMove(const juce::MouseEvent&) {
-        stopTimer(1);
-        for (size_t i = 1; i < 3; ++i) {
-            p_ref_.getController().getFFTAnalyzer().setFrozen(i, false);
+        turnOffFFTFreeze();
+        if (c_fft_freeze_) {
+            startTimer(1, 2000);
         }
-        base_.setPanelProperty(zlgui::kCurveShouldTransparent, 0.f);
-        startTimer(1, 2000);
     }
 
     void MouseEventPanel::mouseExit(const juce::MouseEvent&) {
-        stopTimer(1);
-        base_.setPanelProperty(zlgui::kCurveShouldTransparent, 0.f);
+        turnOffFFTFreeze();
     }
 
     void MouseEventPanel::mouseDown(const juce::MouseEvent&) {
@@ -131,6 +131,13 @@ namespace zlpanel {
                 updateSlopeAttachment();
             }
         }
+        const auto fft_freeze = fft_freeze_ref_.load(std::memory_order::relaxed);
+        if ((fft_freeze > .5f) != c_fft_freeze_) {
+            c_fft_freeze_ = fft_freeze > .5f;
+            if (!c_fft_freeze_) {
+                turnOffFFTFreeze();
+            }
+        }
         updater_.updateComponents();
     }
 
@@ -178,6 +185,16 @@ namespace zlpanel {
                 updater_);
         } else {
             slope_attachment_.reset();
+        }
+    }
+
+    void MouseEventPanel::turnOffFFTFreeze() {
+        stopTimer(1);
+        for (size_t i = 1; i < 3; ++i) {
+            p_ref_.getController().getFFTAnalyzer().setFrozen(i, false);
+        }
+        if (static_cast<float>(base_.getPanelProperty(zlgui::kCurveShouldTransparent)) > .5f) {
+            base_.setPanelProperty(zlgui::kCurveShouldTransparent, 0.f);
         }
     }
 }

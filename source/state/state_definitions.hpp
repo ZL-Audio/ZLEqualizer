@@ -178,11 +178,26 @@ namespace zlstate {
         static constexpr int kDefaultI = 3;
     };
 
+    class PFFTFreezeON : public BoolParameters<PFFTFreezeON> {
+    public:
+        static constexpr auto kID = "fft_freeze_on";
+        static constexpr auto kName = "";
+        static constexpr auto kDefaultV = false;
+    };
+
+    class PCollisionON : public BoolParameters<PCollisionON> {
+    public:
+        static constexpr auto kID = "collision_on";
+        static constexpr auto kName = "";
+        static constexpr auto kDefaultV = false;
+    };
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(PEQMaxDB::get(), PFFTMinDB::get(),
                    PFFTPreON::get(), PFFTPostON::get(), PFFTSideON::get(),
-                   PFFTSpeed::get(), PFFTTilt::get());
+                   PFFTSpeed::get(), PFFTTilt::get(),
+                   PFFTFreezeON::get(), PCollisionON::get());
         return layout;
     }
 
