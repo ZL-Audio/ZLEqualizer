@@ -13,7 +13,7 @@
 namespace zlpanel {
     AnalyzerPanel::AnalyzerPanel(PluginProcessor& p, zlgui::UIBase& base,
                                  const multilingual::TooltipHelper& tooltip_helper) :
-        p_ref_(p), base_(base),
+        base_(base),
         control_background_(base),
         pre_button_(base, "Pre",
                     tooltip_helper.getToolTipText(multilingual::kFFTPre)),
@@ -44,7 +44,13 @@ namespace zlpanel {
                                                                 BinaryData::collision_svgSize)),
         collision_button_(base, collision_drawable_.get(), collision_drawable_.get()),
         collision_attach_(collision_button_.getButton(), p.parameters_NA_,
-                          zlstate::PCollisionON::kID, updater_) {
+                          zlstate::PCollisionON::kID, updater_),
+        label_laf_(base),
+        strength_label_("", "Strength"),
+        strength_slider_("", base,
+                         tooltip_helper.getToolTipText(multilingual::kCollisionStrength)),
+        strength_attach_(strength_slider_.getSlider(), p.parameters_NA_,
+                         zlstate::PCollisionStrength::kID, updater_) {
 
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
@@ -68,6 +74,15 @@ namespace zlpanel {
             b->setBufferedToImage(true);
             addAndMakeVisible(b);
         }
+
+        label_laf_.setFontScale(1.5f);
+        strength_label_.setLookAndFeel(&label_laf_);
+        strength_label_.setBufferedToImage(true);
+        addAndMakeVisible(strength_label_);
+
+        strength_slider_.getSlider().setSliderSnapsToMousePosition(false);
+        strength_slider_.setBufferedToImage(true);
+        addAndMakeVisible(strength_slider_);
 
         base_.setPanelProperty(zlgui::PanelSettingIdx::kAnalyzerPanel, 0.);
         base_.getPanelValueTree().addListener(this);
@@ -123,6 +138,12 @@ namespace zlpanel {
             freeze_button_.setBounds(t_bound.removeFromLeft(button_height));
             t_bound.removeFromRight(h_padding / 2);
             collision_button_.setBounds(t_bound.removeFromRight(button_height));
+        }
+        bound.removeFromTop(padding);
+        {
+            auto t_bound = bound.removeFromTop(button_height);
+            strength_slider_.setBounds(t_bound.removeFromRight(t_bound.getWidth() / 3));
+            strength_label_.setBounds(t_bound);
         }
     }
 

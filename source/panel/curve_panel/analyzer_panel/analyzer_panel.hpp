@@ -34,7 +34,6 @@ namespace zlpanel {
         void repaintCallBackSlow();
 
     private:
-        PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_;
 
@@ -62,6 +61,11 @@ namespace zlpanel {
         const std::unique_ptr<juce::Drawable> collision_drawable_;
         zlgui::button::ClickButton collision_button_;
         zlgui::attachment::ButtonAttachment<true> collision_attach_;
+
+        zlgui::label::NameLookAndFeel label_laf_;
+        juce::Label strength_label_;
+        zlgui::slider::CompactLinearSlider<false, false, false> strength_slider_;
+        zlgui::attachment::SliderAttachment<true> strength_attach_;
 
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };

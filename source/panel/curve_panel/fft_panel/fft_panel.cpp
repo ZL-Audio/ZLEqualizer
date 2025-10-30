@@ -18,10 +18,14 @@ namespace zlpanel {
         pre_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPreON::kID)),
         post_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPostON::kID)),
         side_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSideON::kID)),
-        fft_min_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)) {
+        fft_min_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
+        collision_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionON::kID)),
+        collision_strength_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionStrength::kID)) {
         juce::ignoreUnused(tooltip_helper);
         p_ref_.getController().getFFTAnalyzer().setMinFreq(10.0);
 
+        gradient_.isRadial = true;
+        next_gradient_.isRadial = true;
         setInterceptsMouseClicks(false, false);
     }
 
@@ -38,6 +42,7 @@ namespace zlpanel {
         const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
         const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
         const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
+        const auto collision_on = collision_ref_.load(std::memory_order::relaxed) > .5f;
 
         if (pre_on) {
             g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPreColour));
@@ -59,6 +64,14 @@ namespace zlpanel {
             g.fillPath(side_path_);
         } else {
             side_path_.clear();
+        }
+        if (collision_on) {
+            if (!gradient_.isRadial) {
+                g.setGradientFill(gradient_);
+                g.fillRect(getLocalBounds());
+            }
+        } else {
+            gradient_.isRadial = true;
         }
     }
 
@@ -117,9 +130,14 @@ namespace zlpanel {
                 pre_ys_.resize(n);
                 post_ys_.resize(n);
                 side_ys_.resize(n);
+                current_ps_.resize(n);
+                collision_ps_.resize(n);
                 c_width_ = -1.f;
             }
-
+            const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
+            const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
+            const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
+            const auto collision_on = collision_ref_.load(std::memory_order::relaxed) > .5f;
             if (std::abs(bound.getWidth() - c_width_) > 1e-3f) {
                 c_width_ = bound.getWidth();
                 analyzer.createPathXs(xs_, c_width_);
@@ -130,6 +148,19 @@ namespace zlpanel {
             const auto min_db = min_ratio_.load(std::memory_order_relaxed) * fft_min;
             analyzer.createPathYs({std::span(pre_ys_), std::span(post_ys_), std::span(side_ys_)},
                                   bound.getHeight(), min_db, max_db);
+            // update collision p
+            if (collision_on) {
+                const auto strength = collision_strength_ref_.load(std::memory_order::relaxed) * .3f + .3f;
+                if (!side_on) {
+                    zldsp::analyzer::FFTCollisionAnalyzer<float>::createGradientPs(
+                        analyzer.getResultDBs()[1], analyzer.getResultDBs()[0],
+                        current_ps_, collision_ps_, strength);
+                } else {
+                    zldsp::analyzer::FFTCollisionAnalyzer<float>::createGradientPs(
+                        analyzer.getResultDBs()[1], analyzer.getResultDBs()[2],
+                        current_ps_, collision_ps_, strength);
+                }
+            }
             analyzer.getLock().unlock();
             if (xs_.empty()) {
                 continue;
@@ -137,9 +168,6 @@ namespace zlpanel {
             if (threadShouldExit()) {
                 break;
             }
-            const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
-            const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
-            const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
             // update pre path
             if (pre_on) {
                 updatePath(next_pre_path_, bound, pre_ys_);
@@ -152,6 +180,10 @@ namespace zlpanel {
             if (side_on) {
                 updatePath(next_side_path_, bound, side_ys_);
             }
+            // update collision gradient
+            if (collision_on) {
+                updateCollision();
+            }
             std::lock_guard<std::mutex> lock{mutex_};
             if (pre_on) {
                 pre_path_.swapWithPath(next_pre_path_);
@@ -161,6 +193,9 @@ namespace zlpanel {
             }
             if (side_on) {
                 side_path_.swapWithPath(next_side_path_);
+            }
+            if (collision_on) {
+                gradient_ = next_gradient_;
             }
         }
     }
@@ -175,5 +210,25 @@ namespace zlpanel {
         }
         path.lineTo(xs_.back(), bound.getBottom() + bound.getHeight() * 1.05f);
         path.closeSubPath();
+    }
+
+    void FFTPanel::updateCollision() {
+        next_gradient_.isRadial = true;
+        if (xs_.size() < 3) {
+            return;
+        }
+        next_gradient_.point1 = {0.f, 0.f};
+        next_gradient_.point2 = {c_width_, 0.f};
+        next_gradient_.isRadial = false;
+
+        const auto colour = juce::Colours::red;
+        next_gradient_.clearColours();
+        next_gradient_.addColour(xs_.front() / c_width_, colour.withAlpha(collision_ps_.front()));
+        for (size_t i = 1; i < collision_ps_.size() - 1; ++i) {
+            if (collision_ps_[i - 1] > .01f || collision_ps_[i] > .01f || collision_ps_[i + 1] > 0.01f) {
+                next_gradient_.addColour(xs_[i] / c_width_, colour.withAlpha(collision_ps_[i]));
+            }
+        }
+        next_gradient_.addColour(xs_.back() / c_width_, colour.withAlpha(collision_ps_.back()));
     }
 }

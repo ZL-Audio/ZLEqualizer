@@ -192,12 +192,20 @@ namespace zlstate {
         static constexpr auto kDefaultV = false;
     };
 
+    class PCollisionStrength : public FloatParameters<PCollisionStrength> {
+    public:
+        static constexpr auto kID = "collision_strength";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        static constexpr auto kDefaultV = .5f;
+    };
+
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(PEQMaxDB::get(), PFFTMinDB::get(),
                    PFFTPreON::get(), PFFTPostON::get(), PFFTSideON::get(),
                    PFFTSpeed::get(), PFFTTilt::get(),
-                   PFFTFreezeON::get(), PCollisionON::get());
+                   PFFTFreezeON::get(), PCollisionON::get(), PCollisionStrength::get());
         return layout;
     }
 

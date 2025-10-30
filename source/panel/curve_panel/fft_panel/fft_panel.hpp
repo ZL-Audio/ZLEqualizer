@@ -13,6 +13,7 @@
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
 #include "../../multilingual/tooltip_helper.hpp"
+#include "../../../dsp/fft_analyzer/fft_collision_analyzer.hpp"
 
 namespace zlpanel {
     class FFTPanel final : public juce::Component,
@@ -38,6 +39,8 @@ namespace zlpanel {
         std::atomic<float>& post_ref_;
         std::atomic<float>& side_ref_;
         std::atomic<float>& fft_min_db_ref_;
+        std::atomic<float>& collision_ref_;
+        std::atomic<float>& collision_strength_ref_;
 
         double sample_rate_{0.};
         AtomicBound<float> atomic_bound_{};
@@ -46,11 +49,15 @@ namespace zlpanel {
 
         std::vector<float> xs_{};
         std::vector<float> pre_ys_{}, post_ys_{}, side_ys_{};
+        std::vector<float> current_ps_{}, collision_ps_{};
         juce::Path pre_path_, next_pre_path_;
         juce::Path post_path_, next_post_path_;
         juce::Path side_path_, next_side_path_;
+        juce::ColourGradient gradient_, next_gradient_;
         std::mutex mutex_;
 
         void updatePath(juce::Path &path, const juce::Rectangle<float>& bound, std::span<float> ys) const;
+
+        void updateCollision();
     };
 }

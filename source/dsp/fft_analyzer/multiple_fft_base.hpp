@@ -271,6 +271,10 @@ namespace zldsp::analyzer {
 
         zldsp::lock::SpinLock& getLock() { return lock_; }
 
+        std::array<std::vector<float>, kFFTNum>& getResultDBs() {
+            return result_dbs_;
+        }
+
     protected:
         size_t default_fft_order_ = 12;
         zldsp::lock::SpinLock lock_;
@@ -408,6 +412,7 @@ namespace zldsp::analyzer {
                 for (size_t i = 0; i < kFFTNum; ++i) {
                     interplot_dbs_[i].resize(interplot_freqs_.size());
                     result_dbs_[i].resize(interplot_freqs_.size());
+                    std::fill(result_dbs_[i].begin(), result_dbs_[i].end(), kMinDB);
                 }
                 tilt_shift_.resize(interplot_freqs_.size());
             }
