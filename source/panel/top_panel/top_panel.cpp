@@ -85,13 +85,13 @@ namespace zlpanel {
         bound.removeFromLeft(padding);
         {
             const auto left_pad = bound.getX();
-            const auto t_width = 4 * padding + 3 * (slider_width / 2) - left_pad + 2 * padding;
+            const auto t_width = 6 * padding + 3 * (slider_width / 2) - left_pad;
             analyzer_label_.setBounds(bound.getX(), 0, t_width, getHeight());
             bound.removeFromLeft(t_width);
         }
         {
             const auto right_pad = getWidth() - bound.getRight();
-            const auto t_width = 3 * padding + 2 * slider_width - right_pad + 4 * padding;
+            const auto t_width = 5 * padding + 2 * slider_width - right_pad + 2 * padding;
             output_label_.setBounds(bound.getRight() - t_width, 0, t_width, getHeight());
             bound.removeFromRight(t_width);
         }

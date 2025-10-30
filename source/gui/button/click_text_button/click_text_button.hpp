@@ -7,10 +7,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-//
-// Created by Zishu Liu on 7/24/25.
-//
-
 #pragma once
 
 #include "click_text_button_laf.hpp"
@@ -20,8 +16,8 @@ namespace zlgui::button {
     public:
         explicit ClickTextButton(UIBase& base,
                                  const juce::String& text = "",
-                                 const juce::String& tooltip_text = "")
-            : look_and_feel_(base) {
+                                 const juce::String& tooltip_text = "") :
+            look_and_feel_(base) {
             button_.setButtonText(text);
             button_.setLookAndFeel(&look_and_feel_);
 

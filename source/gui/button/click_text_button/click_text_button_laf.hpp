@@ -19,17 +19,19 @@ namespace zlgui {
         explicit ClickTextButtonLookAndFeel(UIBase& base) : base_(base) {
         }
 
-        void drawButtonBackground(juce::Graphics& g, juce::Button&,
+        void drawButtonBackground(juce::Graphics&, juce::Button&,
                                   const juce::Colour&, bool, bool) override {
-            g.fillAll(base_.getBackgroundColour());
+            // g.fillAll(base_.getBackgroundColour());
         }
 
         void drawButtonText(juce::Graphics& g, juce::TextButton& button,
                             const bool highlight, const bool down) override {
-            if (highlight || down) {
+            if (down || button.getToggleState()) {
                 g.setColour(base_.getTextColour());
+            } else if (highlight) {
+                g.setColour(base_.getTextColour().withAlpha(.75f));
             } else {
-                g.setColour(base_.getTextInactiveColour());
+                g.setColour(base_.getTextColour().withAlpha(.5f));
             }
             g.setFont(base_.getFontSize() * font_scale_);
             g.drawText(button.getButtonText(), button.getBounds(), justification_);

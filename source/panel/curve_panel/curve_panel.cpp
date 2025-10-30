@@ -17,13 +17,15 @@ namespace zlpanel {
         background_panel_(p, base, tooltip_helper),
         fft_panel_(p, base, tooltip_helper),
         response_panel_(p, base, tooltip_helper),
-        output_panel_(p, base, tooltip_helper) {
+        output_panel_(p, base, tooltip_helper),
+        analyzer_panel_(p, base, tooltip_helper) {
         background_panel_.setBufferedToImage(true);
         addAndMakeVisible(background_panel_);
         addAndMakeVisible(fft_panel_);
         addAndMakeVisible(response_panel_);
         response_panel_.addMouseListener(this, true);
         addChildComponent(output_panel_);
+        addChildComponent(analyzer_panel_);
         setInterceptsMouseClicks(false, true);
     }
 
@@ -47,6 +49,10 @@ namespace zlpanel {
         const auto output_width = output_panel_.getIdealWidth();
         const auto output_height = output_panel_.getIdealHeight();
         output_panel_.setBounds(bound.getWidth() - output_width - 2 * padding, 0, output_width, output_height);
+
+        const auto analyzer_width = analyzer_panel_.getIdealWidth();
+        const auto analyzer_height = analyzer_panel_.getIdealHeight();
+        analyzer_panel_.setBounds(0, 0, analyzer_width, analyzer_height);
     }
 
     void CurvePanel::mouseDown(const juce::MouseEvent&) {
@@ -62,6 +68,7 @@ namespace zlpanel {
     void CurvePanel::repaintCallBackSlow() {
         response_panel_.repaintCallBackSlow();
         output_panel_.repaintCallBackSlow();
+        analyzer_panel_.repaintCallBackSlow();
     }
 
     void CurvePanel::updateBand() {
