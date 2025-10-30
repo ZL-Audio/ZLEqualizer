@@ -19,11 +19,12 @@
 namespace zlpanel {
     class ControlBackground final : public juce::Component {
     public:
-        explicit ControlBackground(zlgui::UIBase& base);
+        explicit ControlBackground(zlgui::UIBase& base, float alpha = .5f);
 
         void paint(juce::Graphics& g) override;
 
     private:
         zlgui::UIBase& base_;
+        const float alpha_;
     };
 }

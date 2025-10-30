@@ -24,6 +24,8 @@ namespace zlpanel {
 
         void resized() override;
 
+        void mouseDown(const juce::MouseEvent&) override;
+
         void repaintCallBack();
 
         void repaintCallBackSlow();

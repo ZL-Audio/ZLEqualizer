@@ -22,6 +22,7 @@ namespace zlpanel {
         addAndMakeVisible(background_panel_);
         addAndMakeVisible(fft_panel_);
         addAndMakeVisible(response_panel_);
+        response_panel_.addMouseListener(this, true);
         addChildComponent(output_panel_);
         setInterceptsMouseClicks(false, true);
     }
@@ -46,6 +47,11 @@ namespace zlpanel {
         const auto output_width = output_panel_.getIdealWidth();
         const auto output_height = output_panel_.getIdealHeight();
         output_panel_.setBounds(bound.getWidth() - output_width - 2 * padding, 0, output_width, output_height);
+    }
+
+    void CurvePanel::mouseDown(const juce::MouseEvent&) {
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, 0.f);
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kAnalyzerPanel, 0.f);
     }
 
     void CurvePanel::repaintCallBack() {

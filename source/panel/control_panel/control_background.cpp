@@ -10,9 +10,10 @@
 #include "control_background.hpp"
 
 namespace zlpanel {
-    ControlBackground::ControlBackground(zlgui::UIBase& base) :
-        base_(base) {
+    ControlBackground::ControlBackground(zlgui::UIBase& base, const float alpha) :
+        base_(base), alpha_(alpha) {
         setInterceptsMouseClicks(false, false);
+        setAlpha(.9f);
     }
 
     void ControlBackground::paint(juce::Graphics& g) {
@@ -21,7 +22,7 @@ namespace zlpanel {
         juce::Path path;
         path.addRoundedRectangle(bound.toFloat(), static_cast<float>(padding));
 
-        const juce::DropShadow shadow{base_.getBrightShadowColour(), padding, {0, 0}};
+        const juce::DropShadow shadow{base_.getTextColour().withAlpha(alpha_), padding, {0, 0}};
         shadow.drawForPath(g, path);
         g.setColour(base_.getBackgroundColour());
         g.fillPath(path);

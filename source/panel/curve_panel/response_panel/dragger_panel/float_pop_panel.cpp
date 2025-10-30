@@ -14,7 +14,7 @@ namespace zlpanel {
     FloatPopPanel::FloatPopPanel(PluginProcessor& p, zlgui::UIBase& base,
                                  const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
-        control_background_(base),
+        control_background_(base, .25f),
         bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
                                                              BinaryData::bypass_svgSize)),
         bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),

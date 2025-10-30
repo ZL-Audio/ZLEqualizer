@@ -43,6 +43,8 @@ namespace zlgui {
         kUISettingChanged,
         kCurveShouldTransparent,
         kOutputPanel,
+        kAnalyzerPanel,
+        kMatchPanel,
         kPanelSettingNum
     };
 
@@ -50,7 +52,9 @@ namespace zlgui {
         juce::Identifier("ui_setting_panel"),
         juce::Identifier("ui_setting_changed"),
         juce::Identifier("curve_should_transparent"),
-        juce::Identifier("output_panel")
+        juce::Identifier("output_panel"),
+        juce::Identifier("analyzer_panel"),
+        juce::Identifier("match_panel")
     };
 
     inline juce::Identifier kSoloIdentifier("solo_whole_idx");

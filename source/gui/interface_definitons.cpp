@@ -152,9 +152,7 @@ namespace zlgui {
         juce::Path path;
         auto radius = juce::jmax(juce::roundToInt(corner_size * 0.75f), 1);
         if (args.fit) {
-            box_bounds = box_bounds.withSizeKeepingCentre(
-                box_bounds.getWidth() - static_cast<float>(radius) - 1.5f * corner_size,
-                box_bounds.getHeight() - static_cast<float>(radius) - 1.5f * corner_size);
+            box_bounds = box_bounds.reduced((static_cast<float>(radius) + 1.5f * corner_size) * .5f);
         }
         path.addEllipse(box_bounds);
         auto offset = static_cast<int>(corner_size * args.blur_radius);
@@ -188,8 +186,6 @@ namespace zlgui {
             }
         }
         g.restoreState();
-        g.setColour(args.main_colour);
-        g.fillPath(path);
         return box_bounds;
     }
 
@@ -198,9 +194,7 @@ namespace zlgui {
                                                              const FillShadowEllipseArgs& margs) {
         juce::ignoreUnused(margs);
         const auto radius = juce::jmax(juce::roundToInt(corner_size * 1.5f), 1);
-        box_bounds = box_bounds.withSizeKeepingCentre(
-            box_bounds.getWidth() - 0.75f * static_cast<float>(radius),
-            box_bounds.getHeight() - 0.75f * static_cast<float>(radius));
+        box_bounds = box_bounds.reduced(0.375f * static_cast<float>(radius));
         return box_bounds;
     }
 
@@ -216,13 +210,16 @@ namespace zlgui {
         if (!args.change_bright)
             args.bright_shadow_color = getBrightShadowColour();
 
-        juce::Path mask;
-        mask.addEllipse(box_bounds);
-        g.saveState();
-        g.reduceClipRegion(mask);
-        g.fillAll(args.main_colour);
         auto radius = juce::jmax(juce::roundToInt(corner_size * 1.5f), 1);
         auto offset = static_cast<int>(corner_size * args.blur_radius) * 2;
+
+        juce::Path mask;
+        mask.addEllipse(box_bounds);
+        mask.setUsingNonZeroWinding(false);
+        mask.addEllipse(box_bounds.reduced(0.375f * static_cast<float>(radius)));
+        g.saveState();
+        g.reduceClipRegion(mask);
+
         if (!args.flip) {
             juce::DropShadow dark_shadow(args.dark_shadow_color.withMultipliedAlpha(0.75f), radius,
                                          {-offset, -offset});
@@ -238,9 +235,7 @@ namespace zlgui {
                                          {-offset, -offset});
             dark_shadow.drawForPath(g, mask);
         }
-        box_bounds = box_bounds.withSizeKeepingCentre(
-            box_bounds.getWidth() - 0.75f * static_cast<float>(radius),
-            box_bounds.getHeight() - 0.75f * static_cast<float>(radius));
+        box_bounds = box_bounds.reduced(0.375f * static_cast<float>(radius));
         juce::Path path;
         path.addEllipse(box_bounds);
 

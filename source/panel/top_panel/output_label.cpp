@@ -12,32 +12,42 @@
 namespace zlpanel {
     OutputLabel::OutputLabel(PluginProcessor& p, zlgui::UIBase& base) :
         p_ref_(p), base_(base),
+        control_background_(base),
+        label_laf_(base),
         scale_ref_(*p.parameters_.getRawParameterValue(zlp::PGainScale::kID)) {
         base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, 0.);
-    }
 
-    void OutputLabel::paint(juce::Graphics& g) {
-        const auto padding = getPaddingSize(base_.getFontSize());
+        control_background_.setInterceptsMouseClicks(false, false);
+        control_background_.setBufferedToImage(true);
+        addChildComponent(control_background_);
 
-        if (static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel)) > .5) {
-            const auto bound = getLocalBounds().reduced(padding, padding / 2).toFloat();
-            juce::Path path;
-            path.addRoundedRectangle(bound, static_cast<float>(padding));
-            const juce::DropShadow shadow{base_.getBrightShadowColour(), padding, {0, 0}};
-            shadow.drawForPath(g, path);
-            g.setColour(base_.getBackgroundColour());
-            g.fillPath(path);
+        label_laf_.setFontScale(1.5f);
+
+        scale_label_.setJustificationType(juce::Justification::centred);
+        gain_label_.setJustificationType(juce::Justification::centredLeft);
+        for (auto& l:{&gain_label_, &scale_label_}) {
+            l->setInterceptsMouseClicks(false, false);
+            l->setLookAndFeel(&label_laf_);
+            l->setBufferedToImage(true);
+            addAndMakeVisible(l);
         }
 
-        auto bound = getLocalBounds().toFloat();
-        g.setColour(base_.getTextColour());
-        g.setFont(1.5f * base_.getFontSize());
-        g.drawText(floatToStringSnprintf(c_scale_, 0) + "%",
-                   bound.removeFromLeft(bound.getWidth() * .5f),
-                   juce::Justification::centred);
-        g.drawText(floatToStringSnprintf(static_cast<float>(c_gain_db_), 1) + "dB",
-                   bound,
-                   juce::Justification::centred);
+        setAlpha(.5f);
+        setInterceptsMouseClicks(true, false);
+
+        base_.getPanelValueTree().addListener(this);
+    }
+
+    OutputLabel::~OutputLabel() {
+        base_.getPanelValueTree().removeListener(this);
+    }
+
+    void OutputLabel::resized() {
+        const auto padding = 2 * getPaddingSize(base_.getFontSize());
+        auto bound = getLocalBounds();
+        control_background_.setBounds(0, -padding, bound.getWidth(), bound.getHeight() + padding + padding / 4);
+        scale_label_.setBounds(bound.removeFromLeft(bound.getWidth() / 2));
+        gain_label_.setBounds(bound);
     }
 
     void OutputLabel::repaintCallbackSlow() {
@@ -50,17 +60,31 @@ namespace zlpanel {
 
     void OutputLabel::mouseDown(const juce::MouseEvent&) {
         const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel));
-        base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, f > .5 ? 0. : 1.);
-        repaint();
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, f < .5 ? 1. : 0.);
     }
 
     void OutputLabel::checkUpdate() {
         const auto scale = scale_ref_.load(std::memory_order_relaxed);
         const auto gain_db = zldsp::chore::gainToDecibels(p_ref_.getController().getDisplayedGain());
-        if (std::abs(scale - c_scale_) > 1e-3 || std::abs(gain_db - c_gain_db_) > 1e-3) {
+        if (std::abs(scale - c_scale_) > 1e-3) {
             c_scale_ = scale;
+            scale_label_.setText(floatToStringSnprintf(c_scale_, 0) + "%",
+                                 juce::dontSendNotification);
+            scale_label_.repaint();
+        }
+        if (std::abs(gain_db - c_gain_db_) > 1e-3) {
             c_gain_db_ = gain_db;
-            repaint();
+            gain_label_.setText(floatToStringSnprintf(static_cast<float>(c_gain_db_), 1) + "dB",
+                                juce::dontSendNotification);
+            gain_label_.repaint();
+        }
+    }
+
+    void OutputLabel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
+        if (base_.isPanelIdentifier(zlgui::kOutputPanel, property)) {
+            const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel));
+            control_background_.setVisible(f > .5);
+            setAlpha(f > .5 ? 1.f : .5f);
         }
     }
 }

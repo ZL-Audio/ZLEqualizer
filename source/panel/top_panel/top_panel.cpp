@@ -16,6 +16,7 @@ namespace zlpanel {
         base_(base), updater_(),
         logo_panel_(p, base, tooltip_helper),
         output_label_(p, base),
+        analyzer_label_(p, base),
         fstruct_box_(zlp::PFilterStructure::kChoices, base,
                      tooltip_helper.getToolTipText(multilingual::kFilterStructure),
                      {tooltip_helper.getToolTipText(multilingual::kMinimumPhase),
@@ -41,6 +42,10 @@ namespace zlpanel {
         output_label_.setBufferedToImage(true);
         addAndMakeVisible(output_label_);
 
+        analyzer_label_.setBufferedToImage(true);
+        addAndMakeVisible(analyzer_label_);
+
+        fstruct_box_.setAlpha(.5f);
         fstruct_box_.setBufferedToImage(true);
         addAndMakeVisible(fstruct_box_);
 
@@ -73,19 +78,24 @@ namespace zlpanel {
         bound.reduce(padding / 2, padding / 2);
 
         logo_panel_.setBounds(bound.removeFromLeft(bound.getHeight() * 2 + padding));
-        bound.removeFromLeft(padding);
-        fstruct_box_.setBounds(bound.removeFromLeft(small_slider_width * 2));
 
         bypass_button_.setBounds(bound.removeFromRight(bound.getHeight()));
         bound.removeFromRight(padding);
         ext_button_.setBounds(bound.removeFromRight(bound.getHeight()));
+        bound.removeFromLeft(padding);
+        {
+            const auto left_pad = bound.getX();
+            const auto t_width = 4 * padding + 3 * (slider_width / 2) - left_pad + 2 * padding;
+            analyzer_label_.setBounds(bound.getX(), 0, t_width, getHeight());
+            bound.removeFromLeft(t_width);
+        }
         {
             const auto right_pad = getWidth() - bound.getRight();
             const auto t_width = 3 * padding + 2 * slider_width - right_pad + 4 * padding;
-            output_label_.setBounds({bound.getRight() - t_width, 0,
-                                     t_width, getHeight()});
+            output_label_.setBounds(bound.getRight() - t_width, 0, t_width, getHeight());
             bound.removeFromRight(t_width);
         }
+        fstruct_box_.setBounds(bound.withSizeKeepingCentre(small_slider_width * 2, bound.getHeight()));
     }
 
     void TopPanel::repaintCallbackSlow() {

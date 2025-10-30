@@ -95,7 +95,7 @@ namespace zlpanel {
         }
 
         lookahead_label_.setLookAndFeel(&name_laf_);
-        lookahead_label_.setJustificationType(juce::Justification::centred);
+        lookahead_label_.setJustificationType(juce::Justification::centredRight);
         lookahead_label_.setBufferedToImage(true);
         addAndMakeVisible(lookahead_label_);
 
@@ -164,6 +164,7 @@ namespace zlpanel {
         {
             auto t_bound = bound.removeFromTop(button_height);
             lookahead_slider_.setBounds(t_bound.removeFromRight(t_bound.getWidth() / 3));
+            t_bound.removeFromRight(padding);
             lookahead_label_.setBounds(t_bound);
 
             const auto dragging_distance = getSliderDraggingDistance(font_size);

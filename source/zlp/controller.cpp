@@ -463,7 +463,11 @@ namespace zlp {
                 loudness_matcher_.reset();
             }
         }
-        c_agc_on_ = agc_on_.load(std::memory_order_relaxed);
+        const auto agc_on = agc_on_.load(std::memory_order::relaxed);
+        if (c_agc_on_ != agc_on) {
+            c_agc_on_ = agc_on;
+            updateOutputGain();
+        }
         c_phase_flip_on_ = phase_flip_on_.load(std::memory_order_relaxed);
         if (to_update_makeup_.exchange(false, std::memory_order::acquire)) {
             c_makeup_gain_linear_ = makeup_gain_linear_.load(std::memory_order::relaxed);

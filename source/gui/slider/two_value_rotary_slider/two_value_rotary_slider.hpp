@@ -40,23 +40,26 @@ namespace zlgui::slider {
             void paint(juce::Graphics& g) override {
                 if constexpr (kOpaque) {
                     g.fillAll(base_.getBackgroundColour());
+                } else {
+                    g.setColour(base_.getBackgroundColour());
+                    g.fillEllipse(getLocalBounds().toFloat());
                 }
                 auto bounds = getLocalBounds().toFloat();
                 const auto diameter = juce::jmin(bounds.getWidth(), bounds.getHeight());
                 bounds = bounds.withSizeKeepingCentre(diameter, diameter);
+                juce::Path mask;
+                mask.addPieSegment(bounds, kStartAngle - juce::MathConstants<float>::pi * 1.5f,
+                                     kEndAngle - juce::MathConstants<float>::pi * 1.5f,
+                                     0);
+                g.saveState();
+                g.reduceClipRegion(mask);
                 // draw knob background
                 const auto old_bounds = base_.drawInnerShadowEllipse(
                     g, bounds, base_.getFontSize() * 0.5f * thick_scale_, {});
                 const auto new_bounds = base_.drawShadowEllipse(g, old_bounds,
                                                                 base_.getFontSize() * 0.5f * thick_scale_, {});
                 base_.drawInnerShadowEllipse(g, new_bounds, base_.getFontSize() * 0.15f, {.flip = true});
-                // draw pie segment
-                juce::Path shadow;
-                shadow.addPieSegment(bounds,
-                                     kEndAngle - juce::MathConstants<float>::pi * 1.5f,
-                                     kStartAngle + juce::MathConstants<float>::pi * .5f, 0);
-                g.setColour(base_.getBackgroundColour());
-                g.fillPath(shadow);
+                g.restoreState();
             }
 
         private:

@@ -17,42 +17,24 @@
 #include "../control_panel/control_background.hpp"
 
 namespace zlpanel {
-    class OutputLabel final : public juce::Component,
+    class AnalyzerLabel final : public juce::Component,
                               private juce::ValueTree::Listener {
     public:
-        explicit OutputLabel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit AnalyzerLabel(PluginProcessor&, zlgui::UIBase& base);
 
-        ~OutputLabel() override;
+        ~AnalyzerLabel() override;
 
         void resized() override;
-
-        void repaintCallbackSlow();
 
         void mouseDown(const juce::MouseEvent&) override;
 
     private:
-        PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
 
         ControlBackground control_background_;
 
         zlgui::label::NameLookAndFeel label_laf_;
-        juce::Label gain_label_;
-        juce::Label scale_label_;
-
-        int repaint_count_{10};
-        std::atomic<float>& scale_ref_;
-        float c_scale_{1000.0};
-
-        double c_gain_db_{1000.0};
-
-        void checkUpdate();
-
-        static std::string floatToStringSnprintf(const float value, const int precision = 1) {
-            char buffer[32];
-            snprintf(buffer, sizeof(buffer), "%.*f", precision, value);
-            return std::string(buffer);
-        }
+        juce::Label analyzer_label_;
 
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };
