@@ -113,6 +113,7 @@ namespace zlpanel {
     void ResponsePanel::repaintCallBack() {
         updateDraggerPositions();
         updateDrawingParas();
+        dragger_panel_.repaintCallBack();
     }
 
     void ResponsePanel::updateDraggerPositions() {
@@ -190,9 +191,13 @@ namespace zlpanel {
                 const auto is_same_stereo = selected_band < zlp::kBandNum ? lr_mode == selected_lr_mode : true;
                 single_panel_.updateDrawingParas(band, filter_status, dynamic_on, is_same_stereo);
                 dragger_panel_.updateDrawingParas(band, filter_status, dynamic_on, is_same_stereo, lr_mode);
+                dragger_panel_.getDragger(band).updateButton(
+                {points_[band][0].load(std::memory_order::relaxed),
+                 points_[band][4].load(std::memory_order::relaxed)});
             } else {
                 single_panel_.updateDrawingParas(band, zlp::FilterStatus::kOff, false, false);
                 dragger_panel_.updateDrawingParas(band, zlp::FilterStatus::kOff, false, false, 0);
+                dragger_panel_.getDragger(band).updateButton({-1000.f, -1000.f});
             }
         }
         updateFloatingPosition();

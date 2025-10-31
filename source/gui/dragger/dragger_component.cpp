@@ -26,10 +26,12 @@ namespace zlgui::dragger {
     }
 
     bool Dragger::updateButton(const juce::Point<float>& center) {
-        if (std::abs(button_pos_.x - center.x) > 0.1f || std::abs(button_pos_.y - center.y) > 0.1f) {
-            button_pos_ = center;
-            button_.setTransform(juce::AffineTransform::translation(button_pos_.x, button_pos_.y));
-            return true;
+        if (std::isfinite(center.x) && std::isfinite(center.y)) {
+            if (std::abs(button_pos_.x - center.x) > 0.1f || std::abs(button_pos_.y - center.y) > 0.1f) {
+                button_pos_ = center;
+                button_.setTransform(juce::AffineTransform::translation(button_pos_.x, button_pos_.y));
+                return true;
+            }
         }
         return false;
     }
@@ -134,8 +136,4 @@ namespace zlgui::dragger {
     float Dragger::getYPortion() const {
         return y_portion_;
     }
-
-    void Dragger::visibilityChanged() {
-        updateButton({-100000.f, -100000.f});
-    }
-} // zlgui
+}

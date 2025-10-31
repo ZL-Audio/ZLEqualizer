@@ -38,6 +38,8 @@ namespace zlpanel {
 
         void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override;
 
+        void mouseDrag(const juce::MouseEvent&) override;
+
         void updateBand();
 
         void updateSampleRate(double sample_rate);

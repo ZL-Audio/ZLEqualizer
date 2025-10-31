@@ -60,6 +60,10 @@ namespace zlpanel {
         }
     }
 
+    void MouseEventPanel::mouseDrag(const juce::MouseEvent&) {
+        stopTimer(0);
+    }
+
     void MouseEventPanel::mouseDoubleClick(const juce::MouseEvent& event) {
         stopTimer(0);
         // find an off band

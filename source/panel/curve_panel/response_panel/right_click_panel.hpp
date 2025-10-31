@@ -31,18 +31,6 @@ namespace zlpanel {
         void setPosition(juce::Point<float> pos);
 
     private:
-        PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
-        juce::SelectedItemSet<size_t> &items_set_;
-        ControlBackground control_background_;
-
-        juce::Component mouse_event_eater_;
-        zlgui::button::ClickTextButton invert_button_;
-        zlgui::button::ClickTextButton lr_split_button_;
-        zlgui::button::ClickTextButton ms_split_button_;
-        zlgui::button::ClickTextButton copy_button_;
-        zlgui::button::ClickTextButton paste_button_;
-
         static constexpr std::array kIDs{
             zlp::PFilterStatus::kID,
             zlp::PFilterType::kID,
@@ -50,7 +38,6 @@ namespace zlpanel {
             zlp::PFreq::kID,
             zlp::PGain::kID, zlp::PTargetGain::kID,
             zlp::PQ::kID,
-            zlp::PDynamicON::kID,
             zlp::PDynamicON::kID, zlp::PDynamicLearn::kID,
             zlp::PDynamicBypass::kID, zlp::PDynamicRelative::kID,
             zlp::PSideSwap::kID,
@@ -59,6 +46,18 @@ namespace zlpanel {
             zlp::PSideFilterType::kID, zlp::PSideOrder::kID,
             zlp::PSideFreq::kID, zlp::PSideQ::kID
         };
+
+        PluginProcessor& p_ref_;
+        zlgui::UIBase& base_;
+        juce::SelectedItemSet<size_t>& items_set_;
+        ControlBackground control_background_;
+
+        juce::Component mouse_event_eater_;
+        zlgui::button::ClickTextButton invert_button_;
+        zlgui::button::ClickTextButton lr_split_button_;
+        zlgui::button::ClickTextButton ms_split_button_;
+        zlgui::button::ClickTextButton copy_button_;
+        zlgui::button::ClickTextButton paste_button_;
 
         void visibilityChanged() override;
 

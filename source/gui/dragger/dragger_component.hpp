@@ -51,8 +51,6 @@ namespace zlgui::dragger {
 
         void setScale(const float x) { scale_ = x; }
 
-        void visibilityChanged() override;
-
         class Listener {
         public:
             virtual ~Listener() = default;

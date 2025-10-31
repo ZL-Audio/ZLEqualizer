@@ -16,6 +16,7 @@ namespace zlpanel {
                                RightClickPanel& right_click_panel) :
         p_ref_(p), base_(base),
         mouse_event_panel_(p, base, tooltip_helper, right_click_panel),
+        lasso_band_updater_(p, base),
         right_click_panel_(right_click_panel),
         items_set_(base.getSelectedBandSet()),
         draggers_(make_dragger_array(base, std::make_index_sequence<zlp::kBandNum>())),
@@ -24,6 +25,7 @@ namespace zlpanel {
         float_pop_panel_(p, base, tooltip_helper),
         max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
         q_slider_(base), slope_slider_(base) {
+        mouse_event_panel_.addMouseListener(this, false);
         addAndMakeVisible(mouse_event_panel_);
 
         side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
@@ -58,6 +60,9 @@ namespace zlpanel {
         float_pop_panel_.setBufferedToImage(true);
         addChildComponent(float_pop_panel_);
 
+        addChildComponent(lasso_component_);
+        items_set_.addChangeListener(this);
+
         base_.getSoloWholeIdxTree().addListener(this);
 
         lookAndFeelChanged();
@@ -84,6 +89,10 @@ namespace zlpanel {
         auto bound = getLocalBounds().toFloat();
         bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
         float_pop_panel_.updateFloatingBound(bound);
+    }
+
+    void DraggerPanel::repaintCallBack() {
+        lasso_band_updater_.repaintCallBack();
     }
 
     void DraggerPanel::repaintCallBackSlow() {
@@ -118,6 +127,7 @@ namespace zlpanel {
 
     void DraggerPanel::updateBand() {
         mouse_event_panel_.updateBand();
+        lasso_band_updater_.updateBand();
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             if (band != base_.getSelectedBand()) {
                 draggers_[band].getButton().setToggleState(false, juce::sendNotificationSync);
@@ -211,6 +221,10 @@ namespace zlpanel {
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             draggers_[band].getLAF().setColour(base_.getColourMap1(band));
         }
+        lasso_component_.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
+                                   base_.getTextColour().withMultipliedAlpha(.125f));
+        lasso_component_.setColour(juce::LassoComponent<size_t>::lassoOutlineColourId,
+                                   base_.getTextColour().withMultipliedAlpha(.15f));
     }
 
     void DraggerPanel::updateDraggerBound(const size_t band) {
@@ -309,6 +323,12 @@ namespace zlpanel {
     }
 
     void DraggerPanel::mouseDown(const juce::MouseEvent& event) {
+        if (event.originalComponent == &mouse_event_panel_) {
+            items_set_.deselectAll();
+            lasso_component_.setVisible(true);
+            lasso_component_.beginLasso(event, this);
+            return;
+        }
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
             if (event.originalComponent == &(side_dragger_.getButton())) {
                 updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
@@ -329,6 +349,20 @@ namespace zlpanel {
             }
         }
         right_click_panel_.setVisible(false);
+    }
+
+    void DraggerPanel::mouseUp(const juce::MouseEvent& event) {
+        if (event.originalComponent == &mouse_event_panel_) {
+            lasso_component_.endLasso();
+            lasso_component_.setVisible(false);
+            lasso_band_updater_.loadParas();
+        }
+    }
+
+    void DraggerPanel::mouseDrag(const juce::MouseEvent& event) {
+        if (event.originalComponent == &mouse_event_panel_) {
+            lasso_component_.dragLasso(event);
+        }
     }
 
     void DraggerPanel::mouseDoubleClick(const juce::MouseEvent& event) {
@@ -414,5 +448,33 @@ namespace zlpanel {
             draggers_[solo_whole_idx].setXYEnabled(true, false);
         }
         previous_solo_whole_idx_ = solo_whole_idx;
+    }
+
+    void DraggerPanel::findLassoItemsInArea(juce::Array<size_t>& items_found, const juce::Rectangle<int>& area) {
+        const auto float_area = area.toFloat();
+        for (size_t band = 0; band < zlp::kBandNum; ++band) {
+            if (draggers_[band].isVisible()) {
+                if (float_area.contains(draggers_[band].getButtonPos())) {
+                    items_found.add(band);
+                }
+            }
+        }
+    }
+
+    juce::SelectedItemSet<size_t>& DraggerPanel::getLassoSelection() {
+        return items_set_;
+    }
+
+    void DraggerPanel::changeListenerCallback(juce::ChangeBroadcaster*) {
+        if (items_set_.getNumSelected() == 1) {
+            base_.setSelectedBand(items_set_.getSelectedItem(0));
+        }
+        for (size_t band = 0; band < zlp::kBandNum; ++band) {
+            const auto f1 = items_set_.isSelected(band);
+            if (f1 != draggers_[band].getLAF().getIsSelected()) {
+                draggers_[band].getLAF().setIsSelected(f1);
+                draggers_[band].getButton().repaint();
+            }
+        }
     }
 }

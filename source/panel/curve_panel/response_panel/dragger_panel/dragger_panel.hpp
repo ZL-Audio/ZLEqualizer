@@ -11,11 +11,14 @@
 
 #include "mouse_event_panel.hpp"
 #include "float_pop_panel.hpp"
+#include "lasso_band_updater.hpp"
 #include "../right_click_panel.hpp"
 
 namespace zlpanel {
     class DraggerPanel final : public juce::Component,
-                               private juce::ValueTree::Listener {
+                               private juce::ValueTree::Listener,
+                               private juce::LassoSource<size_t>,
+                               private juce::ChangeListener {
     public:
         explicit DraggerPanel(PluginProcessor& p, zlgui::UIBase& base,
                               const multilingual::TooltipHelper& tooltip_helper,
@@ -24,6 +27,8 @@ namespace zlpanel {
         ~DraggerPanel() override;
 
         void resized() override;
+
+        void repaintCallBack();
 
         void repaintCallBackSlow();
 
@@ -55,6 +60,10 @@ namespace zlpanel {
 
         void mouseDown(const juce::MouseEvent& event) override;
 
+        void mouseUp(const juce::MouseEvent& event) override;
+
+        void mouseDrag(const juce::MouseEvent& event) override;
+
         void mouseDoubleClick(const juce::MouseEvent& event) override;
 
         void mouseEnter(const juce::MouseEvent& event) override;
@@ -70,6 +79,7 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_{};
         MouseEventPanel mouse_event_panel_;
+        LassoBandUpdater lasso_band_updater_;
         RightClickPanel& right_click_panel_;
         juce::SelectedItemSet<size_t>& items_set_;
 
@@ -114,6 +124,8 @@ namespace zlpanel {
         zlgui::slider::SnappingSlider slope_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> slope_attachment_;
 
+        juce::LassoComponent<size_t> lasso_component_;
+
         void lookAndFeelChanged() override;
 
         void updateDraggerBound(size_t band);
@@ -127,5 +139,11 @@ namespace zlpanel {
         void updateSlopeAttachment();
 
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
+
+        void findLassoItemsInArea(juce::Array<size_t>& items_found, const juce::Rectangle<int>& area) override;
+
+        juce::SelectedItemSet<size_t>& getLassoSelection() override;
+
+        void changeListenerCallback(juce::ChangeBroadcaster* source) override;
     };
 }

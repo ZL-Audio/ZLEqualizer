@@ -67,8 +67,7 @@ namespace zlpanel {
         addAndMakeVisible(close_button_);
         close_button_.getButton().onClick = [this]() {
             if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
-                updateValue(p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(c_band)),
-                            0.f);
+                band_helper::turnOffBand(p_ref_, c_band, base_.getSelectedBandSet());
                 base_.setSelectedBand(band_helper::findClosestBand(p_ref_, c_band));
             }
         };

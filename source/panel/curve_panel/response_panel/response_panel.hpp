@@ -125,9 +125,9 @@ namespace zlpanel {
         std::array<bool, zlp::kBandNum> to_update_side_y_flags_{};
 
         // center x, left x, right x, center y, base button y, target button y
-        std::array<std::array<std::atomic<float>, 6>, zlp::kBandNum> points_;
+        std::array<std::array<std::atomic<float>, 6>, zlp::kBandNum> points_{};
         // side button x, side left x, side right x
-        std::array<std::array<std::atomic<float>, 3>, zlp::kBandNum> side_points_;
+        std::array<std::array<std::atomic<float>, 3>, zlp::kBandNum> side_points_{};
 
         std::mutex paint_mutex_;
 
