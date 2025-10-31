@@ -393,6 +393,8 @@ namespace zlgui {
 
         void setSelectedBand(const size_t x) { selected_band_ = x; }
 
+        juce::SelectedItemSet<size_t> &getSelectedBandSet() { return selected_band_set_; }
+
     private:
         juce::AudioProcessorValueTreeState& state;
         juce::ValueTree panel_value_tree_{"panel_setting_tree"};
@@ -416,6 +418,7 @@ namespace zlgui {
         size_t colour_map2_idx_{zlstate::PColourMapIdx::kSeabornBrightDark};
 
         size_t selected_band_{zlstate::kBandNum};
+        juce::SelectedItemSet<size_t> selected_band_set_;
 
         float loadPara(const std::string& id) const {
             return state.getRawParameterValue(id)->load();

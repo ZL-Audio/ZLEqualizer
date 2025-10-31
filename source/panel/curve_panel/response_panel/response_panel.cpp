@@ -19,8 +19,9 @@ namespace zlpanel {
         single_panel_(p, base, message_not_off_indices_),
         sum_panel_(p, base),
         scale_panel_(p, base, tooltip_helper),
-        mouse_event_panel_(p, base, tooltip_helper),
-        dragger_panel_(p, base, tooltip_helper),
+        right_click_panel_(p, base, tooltip_helper),
+        mouse_event_panel_(p, base, tooltip_helper, right_click_panel_),
+        dragger_panel_(p, base, tooltip_helper, right_click_panel_),
         solo_panel_(p, base),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
         juce::ignoreUnused(base_, tooltip_helper);
@@ -62,6 +63,8 @@ namespace zlpanel {
         solo_panel_.setAlwaysOnTop(true);
         dragger_panel_.getFloatPopPanel().setAlwaysOnTop(true);
         dragger_panel_.getFloatPopPanel().toFront(true);
+        right_click_panel_.setBufferedToImage(true);
+        addChildComponent(right_click_panel_);
         setInterceptsMouseClicks(false, true);
     }
 
@@ -103,6 +106,7 @@ namespace zlpanel {
         dragger_panel_.setBounds(bound);
         solo_panel_.setBounds(bound);
         scale_panel_.setBounds(bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
+        right_click_panel_.setBounds(0, 0, right_click_panel_.getIdealWidth(), right_click_panel_.getIdealHeight());
         side_y_ = static_cast<float>(bound.getHeight() - bottom_height) - font_size * kDraggerScale * .5f;
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
         height_.store(static_cast<float>(bound.getHeight()), std::memory_order::relaxed);

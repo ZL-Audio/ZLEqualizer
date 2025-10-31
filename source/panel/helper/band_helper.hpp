@@ -13,6 +13,15 @@
 #include "juce_parameter_value.hpp"
 
 namespace zlpanel::band_helper {
+    inline size_t findOffBand(PluginProcessor& p) {
+        for (size_t band = 0; band < zlp::kBandNum; ++band) {
+            if (getValue(p.parameters_, zlp::PFilterStatus::kID + std::to_string(band)) < .1f) {
+                return band;
+            }
+        }
+        return zlp::kBandNum;
+    }
+
     template <bool is_right = true>
     inline size_t findClosestBand(PluginProcessor& p, const size_t c_band) {
         if (c_band >= zlp::kBandNum) {

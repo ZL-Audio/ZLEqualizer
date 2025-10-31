@@ -76,6 +76,7 @@ namespace zlpanel {
         }
 
         label_laf_.setFontScale(1.5f);
+        strength_label_.setJustificationType(juce::Justification::centredRight);
         strength_label_.setLookAndFeel(&label_laf_);
         strength_label_.setBufferedToImage(true);
         addAndMakeVisible(strength_label_);
@@ -143,8 +144,11 @@ namespace zlpanel {
         {
             auto t_bound = bound.removeFromTop(button_height);
             strength_slider_.setBounds(t_bound.removeFromRight(t_bound.getWidth() / 3));
+            t_bound.removeFromRight(padding);
             strength_label_.setBounds(t_bound);
         }
+        const auto dragging_distance = getSliderDraggingDistance(font_size);
+        strength_slider_.setMouseDragSensitivity(dragging_distance);
     }
 
     void AnalyzerPanel::repaintCallBackSlow() {

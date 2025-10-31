@@ -12,8 +12,9 @@
 namespace zlpanel {
     MouseEventPanel::MouseEventPanel(PluginProcessor& p,
                                      zlgui::UIBase& base,
-                                     const multilingual::TooltipHelper& tooltip_helper) :
-        p_ref_(p), base_(base),
+                                     const multilingual::TooltipHelper& tooltip_helper,
+                                     RightClickPanel &right_click_panel) :
+        p_ref_(p), base_(base), right_click_panel_(right_click_panel),
         fft_freeze_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTFreezeON::kID)),
         q_slider_(base), slope_slider_(base) {
         juce::ignoreUnused(tooltip_helper);
@@ -48,20 +49,21 @@ namespace zlpanel {
         turnOffFFTFreeze();
     }
 
-    void MouseEventPanel::mouseDown(const juce::MouseEvent&) {
-        startTimer(0, 200);
+    void MouseEventPanel::mouseDown(const juce::MouseEvent& event) {
+        if (event.mods.isLeftButtonDown()) {
+            right_click_panel_.setVisible(false);
+            startTimer(0, 200);
+        } else {
+            base_.setSelectedBand(zlp::kBandNum);
+            right_click_panel_.setPosition(event.position);
+            right_click_panel_.setVisible(true);
+        }
     }
 
     void MouseEventPanel::mouseDoubleClick(const juce::MouseEvent& event) {
         stopTimer(0);
         // find an off band
-        size_t band_idx = zlp::kBandNum;
-        for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            if (getValue(p_ref_.parameters_, zlp::PFilterStatus::kID + std::to_string(band)) < .1f) {
-                band_idx = band;
-                break;
-            }
-        }
+        const size_t band_idx = band_helper::findOffBand(p_ref_);
         if (band_idx == zlp::kBandNum) {
             return;
         }
@@ -87,9 +89,9 @@ namespace zlpanel {
 
         if (event.position.y > height - padding) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kNotch);
-        } else if (freq < 20.f && std::abs(y_portion) < .125f) {
+        } else if (freq < 20.f && std::abs(y_portion) < .2f) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kHighPass);
-        } else if (freq > 10000.f && std::abs(y_portion) < .125f) {
+        } else if (freq > 10000.f && std::abs(y_portion) < .2f) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kLowPass);
         } else if (freq < 40.f) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kLowShelf);

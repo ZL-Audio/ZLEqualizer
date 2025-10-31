@@ -12,8 +12,10 @@
 namespace zlpanel {
     DraggerPanel::DraggerPanel(PluginProcessor& p,
                                zlgui::UIBase& base,
-                               const multilingual::TooltipHelper& tooltip_helper) :
+                               const multilingual::TooltipHelper& tooltip_helper,
+                               RightClickPanel& right_click_panel) :
         p_ref_(p), base_(base),
+        right_click_panel_(right_click_panel),
         draggers_(make_dragger_array(base, std::make_index_sequence<zlp::kBandNum>())),
         target_dragger_(base),
         side_dragger_(base),
@@ -306,7 +308,15 @@ namespace zlpanel {
                     base_.setSoloWholeIdx(2 * zlp::kBandNum);
                 }
             }
+            if (event.originalComponent == &(draggers_[band].getButton())) {
+                if (event.mods.isRightButtonDown() && !event.mods.isCommandDown()) {
+                    right_click_panel_.setPosition(draggers_[band].getButtonPos());
+                    right_click_panel_.setVisible(true);
+                    return;
+                }
+            }
         }
+        right_click_panel_.setVisible(false);
     }
 
     void DraggerPanel::mouseDoubleClick(const juce::MouseEvent& event) {

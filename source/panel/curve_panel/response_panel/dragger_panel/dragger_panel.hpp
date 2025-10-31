@@ -10,13 +10,15 @@
 #pragma once
 
 #include "float_pop_panel.hpp"
+#include "../right_click_panel.hpp"
 
 namespace zlpanel {
     class DraggerPanel final : public juce::Component,
                                private juce::ValueTree::Listener {
     public:
         explicit DraggerPanel(PluginProcessor& p, zlgui::UIBase& base,
-                              const multilingual::TooltipHelper& tooltip_helper);
+                              const multilingual::TooltipHelper& tooltip_helper,
+                              RightClickPanel& right_click_panel);
 
         ~DraggerPanel() override;
 
@@ -66,6 +68,7 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_{};
+        RightClickPanel& right_click_panel_;
 
         std::array<zlgui::dragger::Dragger, zlp::kBandNum> draggers_;
         zlgui::dragger::Dragger target_dragger_;

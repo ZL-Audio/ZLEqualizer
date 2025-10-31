@@ -14,12 +14,15 @@
 #include "../../helper/helper.hpp"
 #include "../../multilingual/tooltip_helper.hpp"
 
+#include "right_click_panel.hpp"
+
 namespace zlpanel {
     class MouseEventPanel final : public juce::Component,
                                   private juce::MultiTimer {
     public:
         explicit MouseEventPanel(PluginProcessor& p, zlgui::UIBase& base,
-                                 const multilingual::TooltipHelper& tooltip_helper);
+                                 const multilingual::TooltipHelper& tooltip_helper,
+                                 RightClickPanel &right_click_panel);
 
         ~MouseEventPanel() override;
 
@@ -52,6 +55,8 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_{};
+        RightClickPanel &right_click_panel_;
+
         size_t previous_band_{zlp::kBandNum};
 
         std::atomic<float>& fft_freeze_ref_;
