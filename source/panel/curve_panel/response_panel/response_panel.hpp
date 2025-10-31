@@ -12,7 +12,6 @@
 #include "single_panel.hpp"
 #include "sum_panel.hpp"
 #include "scale_panel/scale_panel.hpp"
-#include "mouse_event_panel.hpp"
 #include "dragger_panel/dragger_panel.hpp"
 #include "solo_panel.hpp"
 #include "right_click_panel.hpp"
@@ -72,7 +71,6 @@ namespace zlpanel {
         SumPanel sum_panel_;
         ScalePanel scale_panel_;
         RightClickPanel right_click_panel_;
-        MouseEventPanel mouse_event_panel_;
         DraggerPanel dragger_panel_;
         SoloPanel solo_panel_;
 

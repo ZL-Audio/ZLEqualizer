@@ -9,12 +9,12 @@
 
 #pragma once
 
-#include "../../../PluginProcessor.hpp"
-#include "../../../gui/gui.hpp"
-#include "../../helper/helper.hpp"
-#include "../../multilingual/tooltip_helper.hpp"
+#include "../../../../PluginProcessor.hpp"
+#include "../../../../gui/gui.hpp"
+#include "../../../helper/helper.hpp"
+#include "../../../multilingual/tooltip_helper.hpp"
 
-#include "right_click_panel.hpp"
+#include "../right_click_panel.hpp"
 
 namespace zlpanel {
     class MouseEventPanel final : public juce::Component,

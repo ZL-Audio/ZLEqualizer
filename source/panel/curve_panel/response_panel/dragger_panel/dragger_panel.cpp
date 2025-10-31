@@ -15,13 +15,16 @@ namespace zlpanel {
                                const multilingual::TooltipHelper& tooltip_helper,
                                RightClickPanel& right_click_panel) :
         p_ref_(p), base_(base),
+        mouse_event_panel_(p, base, tooltip_helper, right_click_panel),
         right_click_panel_(right_click_panel),
+        items_set_(base.getSelectedBandSet()),
         draggers_(make_dragger_array(base, std::make_index_sequence<zlp::kBandNum>())),
         target_dragger_(base),
         side_dragger_(base),
         float_pop_panel_(p, base, tooltip_helper),
         max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
         q_slider_(base), slope_slider_(base) {
+        addAndMakeVisible(mouse_event_panel_);
 
         side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
         side_dragger_.getButton().setToggleState(true, juce::sendNotificationSync);
@@ -67,6 +70,7 @@ namespace zlpanel {
 
     void DraggerPanel::resized() {
         bound_ = getLocalBounds().toFloat();
+        mouse_event_panel_.setBounds(getLocalBounds());
         target_dragger_.setBounds(getLocalBounds());
         side_dragger_.setBounds(getLocalBounds());
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
@@ -83,6 +87,7 @@ namespace zlpanel {
     }
 
     void DraggerPanel::repaintCallBackSlow() {
+        mouse_event_panel_.repaintCallbackSlow();
         const auto max_db_id = max_db_id_ref_.load(std::memory_order::relaxed);
         if (std::abs(max_db_id - c_max_db_id_) > .1f) {
             c_max_db_id_ = max_db_id;
@@ -112,12 +117,14 @@ namespace zlpanel {
     }
 
     void DraggerPanel::updateBand() {
+        mouse_event_panel_.updateBand();
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             if (band != base_.getSelectedBand()) {
                 draggers_[band].getButton().setToggleState(false, juce::sendNotificationSync);
             }
         }
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            draggers_[band].toFront(true);
             target_dragger_.setVisible(is_dynamic_on_[band]);
             side_dragger_.setVisible(is_dynamic_on_[band]);
 
@@ -128,6 +135,10 @@ namespace zlpanel {
             updateDraggerAttachment(band);
             updateTargetAttachment(band);
             updateSideAttachment(band);
+
+            if (!items_set_.isSelected(band)) {
+                items_set_.deselectAll();
+            }
         } else {
             target_dragger_.setVisible(false);
             side_dragger_.setVisible(false);
@@ -136,6 +147,7 @@ namespace zlpanel {
     }
 
     void DraggerPanel::updateSampleRate(const double sample_rate) {
+        mouse_event_panel_.updateSampleRate(sample_rate);
         sample_rate_ = static_cast<float>(sample_rate);
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             updateDraggerBound(band);

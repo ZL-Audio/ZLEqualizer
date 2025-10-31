@@ -141,10 +141,16 @@ namespace zlpanel {
             }
         }
         auto* para1 = p_ref_.parameters_.getParameter(zlp::PLRMode::kID + band1_s);
-        updateValue(para1, para1->convertTo0to1(static_cast<float>(stereo1)));
         auto* para2 = p_ref_.parameters_.getParameter(zlp::PLRMode::kID + band2_s);
-        updateValue(para2, para2->convertTo0to1(static_cast<float>(stereo2)));
-
+        if (std::abs(para1->convertFrom0to1(para1->getValue()) - static_cast<float>(stereo1)) < .1f) {
+            updateValue(para2, para2->convertTo0to1(static_cast<float>(stereo2)));
+        } else if (std::abs(para1->convertFrom0to1(para1->getValue()) - static_cast<float>(stereo2)) < .1f) {
+            updateValue(para2, para2->convertTo0to1(static_cast<float>(stereo1)));
+        } else {
+            updateValue(para1, para1->convertTo0to1(static_cast<float>(stereo1)));
+            updateValue(para2, para2->convertTo0to1(static_cast<float>(stereo2)));
+        }
+        base_.setSelectedBand(band2);
         setVisible(false);
     }
 

@@ -20,7 +20,6 @@ namespace zlpanel {
         sum_panel_(p, base),
         scale_panel_(p, base, tooltip_helper),
         right_click_panel_(p, base, tooltip_helper),
-        mouse_event_panel_(p, base, tooltip_helper, right_click_panel_),
         dragger_panel_(p, base, tooltip_helper, right_click_panel_),
         solo_panel_(p, base),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
@@ -55,7 +54,6 @@ namespace zlpanel {
         }
         addAndMakeVisible(single_panel_);
         addAndMakeVisible(sum_panel_);
-        addAndMakeVisible(mouse_event_panel_);
         scale_panel_.setBufferedToImage(true);
         addAndMakeVisible(scale_panel_);
         addAndMakeVisible(dragger_panel_);
@@ -102,7 +100,6 @@ namespace zlpanel {
         const auto bottom_height = getBottomAreaHeight(font_size);
         single_panel_.setBounds(bound);
         sum_panel_.setBounds(bound);
-        mouse_event_panel_.setBounds(bound);
         dragger_panel_.setBounds(bound);
         solo_panel_.setBounds(bound);
         scale_panel_.setBounds(bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
@@ -212,13 +209,11 @@ namespace zlpanel {
 
     void ResponsePanel::repaintCallBackSlow() {
         scale_panel_.repaintCallBackSlow();
-        mouse_event_panel_.repaintCallbackSlow();
         dragger_panel_.repaintCallBackSlow();
     }
 
     void ResponsePanel::updateBand() {
         message_to_update_panels_.store(true, std::memory_order::relaxed);
-        mouse_event_panel_.updateBand();
         dragger_panel_.updateBand();
         solo_panel_.updateBand();
         updateFloatingPosition();
@@ -228,7 +223,6 @@ namespace zlpanel {
 
     void ResponsePanel::updateSampleRate(const double sample_rate) {
         sample_rate_.store(sample_rate, std::memory_order::relaxed);
-        mouse_event_panel_.updateSampleRate(sample_rate);
         dragger_panel_.updateSampleRate(sample_rate);
     }
 

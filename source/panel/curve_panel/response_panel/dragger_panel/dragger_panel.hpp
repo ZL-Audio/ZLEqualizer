@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "mouse_event_panel.hpp"
 #include "float_pop_panel.hpp"
 #include "../right_click_panel.hpp"
 
@@ -68,7 +69,9 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_{};
+        MouseEventPanel mouse_event_panel_;
         RightClickPanel& right_click_panel_;
+        juce::SelectedItemSet<size_t>& items_set_;
 
         std::array<zlgui::dragger::Dragger, zlp::kBandNum> draggers_;
         zlgui::dragger::Dragger target_dragger_;
