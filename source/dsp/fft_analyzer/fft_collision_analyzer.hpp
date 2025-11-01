@@ -24,16 +24,18 @@ namespace zldsp::analyzer {
             auto p_v = kfr::make_univector(ps);
             auto final_p_v = kfr::make_univector(final_ps);
 
-            const auto db0_avg = kfr::mean(db0_v);
-            const auto db1_avg = kfr::mean(db1_v);
+            std::array<FloatType, 2> db_avgs{};
+            db_avgs[0] = calculateSoftmaxAvg(db0, FloatType(0.1));
+            db_avgs[1] = calculateSoftmaxAvg(db1, FloatType(0.1));
 
-            if (!std::isfinite(db0_avg) || !std::isfinite(db1_avg)
-                || db0_avg < static_cast<FloatType>(-120) || db1_avg < static_cast<FloatType>(-120)) {
+            if (!std::isfinite(db_avgs[0]) || !std::isfinite(db_avgs[1])
+                || db_avgs[0] < static_cast<FloatType>(-120) || db_avgs[1] < static_cast<FloatType>(-120)) {
                 final_p_v = final_p_v * static_cast<FloatType>(0.95);
                 return;
             }
 
-            const auto threshold = std::min(static_cast<FloatType>(0), strength * (db0_avg + db1_avg));
+            const auto db_avg = FloatType(2) * calculateSoftmaxAvg(db_avgs, FloatType(0.1));
+            const auto threshold = std::min(static_cast<FloatType>(0), strength * db_avg);
             const auto scale = static_cast<FloatType>(1) / (static_cast<FloatType>(0.1) - threshold);
 
             p_v = (kfr::min(db0_v, db1_v) - threshold) * scale;
@@ -56,7 +58,22 @@ namespace zldsp::analyzer {
             final_p_v = kfr::max(final_p_v * static_cast<FloatType>(0.95), p_v);
         }
 
-        static FloatType calculateGM(const FloatType *data, size_t n) {
+        static FloatType calculateSoftmaxAvg(std::span<FloatType> data, const FloatType k) {
+            FloatType sum{};
+            FloatType weight_sum{};
+            for (size_t i = 0; i < data.size();++i) {
+                const auto x = data[i];
+                const auto weight = std::exp(x * k);
+                sum += weight * x;
+                weight_sum += weight;
+            }
+            if (weight_sum < FloatType(1e-10)) {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+            return sum / weight_sum;
+        }
+
+        static FloatType calculateGM(const FloatType *data, const size_t n) {
             FloatType sum{};
             for (size_t k = 0; k < n; ++k) {
                 if (data[k] < FloatType(0.01)) {

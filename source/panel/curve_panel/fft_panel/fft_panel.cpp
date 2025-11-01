@@ -150,7 +150,7 @@ namespace zlpanel {
                                   bound.getHeight(), min_db, max_db);
             // update collision p
             if (collision_on) {
-                const auto strength = collision_strength_ref_.load(std::memory_order::relaxed) * .3f + .3f;
+                const auto strength = collision_strength_ref_.load(std::memory_order::relaxed) * .3f + .425f;
                 if (!side_on) {
                     zldsp::analyzer::FFTCollisionAnalyzer<float>::createGradientPs(
                         analyzer.getResultDBs()[1], analyzer.getResultDBs()[0],
