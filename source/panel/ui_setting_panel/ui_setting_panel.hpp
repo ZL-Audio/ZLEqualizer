@@ -15,6 +15,7 @@
 #include "colour_setting_panel.hpp"
 #include "control_setting_panel.hpp"
 #include "other_ui_setting_panel.hpp"
+#include "credit_panel.hpp"
 
 namespace zlpanel {
     class UISettingPanel final : public juce::Component {
@@ -39,12 +40,13 @@ namespace zlpanel {
         ColourSettingPanel colour_panel_;
         ControlSettingPanel control_panel_;
         OtherUISettingPanel other_panel_;
+        CreditPanel credit_panel_;
 
         const std::unique_ptr<juce::Drawable> save_drawable_, close_drawable_, reset_drawable_;
         zlgui::button::ClickButton save_button_, close_button_, reset_button_;
 
         zlgui::label::NameLookAndFeel panel_name_laf_;
-        std::array<juce::Label, 3> panel_labels_;
+        std::array<juce::Label, 4> panel_labels_;
 
         zlgui::label::NameLookAndFeel label_laf_;
         juce::Label version_label_;
@@ -52,7 +54,8 @@ namespace zlpanel {
         enum PanelIdx {
             kColourP,
             kControlP,
-            kOtherP
+            kOtherP,
+            kCreditP
         };
 
         PanelIdx current_panel_idx_ = kColourP;

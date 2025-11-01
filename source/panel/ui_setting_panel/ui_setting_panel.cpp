@@ -11,20 +11,21 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    UISettingPanel::UISettingPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : p_ref_(p), base_(base),
-          colour_panel_(p, base),
-          control_panel_(p, base),
-          other_panel_(p, base),
-          save_drawable_(juce::Drawable::createFromImageData(BinaryData::save_svg, BinaryData::save_svgSize)),
-          close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg, BinaryData::close_svgSize)),
-          reset_drawable_(
-              juce::Drawable::createFromImageData(BinaryData::reset_settings_svg, BinaryData::reset_settings_svgSize)),
-          save_button_(base_, save_drawable_.get()),
-          close_button_(base_, close_drawable_.get()),
-          reset_button_(base_, reset_drawable_.get()),
-          panel_name_laf_(base_),
-          label_laf_(base_) {
+    UISettingPanel::UISettingPanel(PluginProcessor& p, zlgui::UIBase& base) :
+        p_ref_(p), base_(base),
+        colour_panel_(p, base),
+        control_panel_(p, base),
+        other_panel_(p, base),
+        credit_panel_(base),
+        save_drawable_(juce::Drawable::createFromImageData(BinaryData::save_svg, BinaryData::save_svgSize)),
+        close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg, BinaryData::close_svgSize)),
+        reset_drawable_(
+            juce::Drawable::createFromImageData(BinaryData::reset_settings_svg, BinaryData::reset_settings_svgSize)),
+        save_button_(base_, save_drawable_.get()),
+        close_button_(base_, close_drawable_.get()),
+        reset_button_(base_, reset_drawable_.get()),
+        panel_name_laf_(base_),
+        label_laf_(base_) {
         juce::ignoreUnused(p_ref_);
         setOpaque(true);
         base_.setPanelProperty(zlgui::PanelSettingIdx::kUISettingPanel, false);
@@ -37,36 +38,42 @@ namespace zlpanel {
         addAndMakeVisible(view_port_);
         save_button_.getButton().onClick = [this]() {
             switch (current_panel_idx_) {
-                case kColourP: {
-                    colour_panel_.saveSetting();
-                    break;
-                }
-                case kControlP: {
-                    control_panel_.saveSetting();
-                    break;
-                }
-                case kOtherP: {
-                    other_panel_.saveSetting();
-                    break;
-                }
+            case kColourP: {
+                colour_panel_.saveSetting();
+                break;
+            }
+            case kControlP: {
+                control_panel_.saveSetting();
+                break;
+            }
+            case kOtherP: {
+                other_panel_.saveSetting();
+                break;
+            }
+            case kCreditP: {
+                break;
+            }
             }
             base_.setPanelProperty(zlgui::kUISettingChanged,
-                !static_cast<bool>(base_.getPanelProperty(zlgui::kUISettingChanged)));
+                                   !static_cast<bool>(base_.getPanelProperty(zlgui::kUISettingChanged)));
         };
         reset_button_.getButton().onClick = [this]() {
             switch (current_panel_idx_) {
-                case kColourP: {
-                    colour_panel_.resetSetting();
-                    break;
-                }
-                case kControlP: {
-                    control_panel_.resetSetting();
-                    break;
-                }
-                case kOtherP: {
-                    other_panel_.resetSetting();
-                    break;
-                }
+            case kColourP: {
+                colour_panel_.resetSetting();
+                break;
+            }
+            case kControlP: {
+                control_panel_.resetSetting();
+                break;
+            }
+            case kOtherP: {
+                other_panel_.resetSetting();
+                break;
+            }
+            case kCreditP: {
+                break;
+            }
             }
         };
         close_button_.getButton().onClick = [this]() {
@@ -77,7 +84,8 @@ namespace zlpanel {
         panel_labels_[0].setText("Colour", juce::dontSendNotification);
         panel_labels_[1].setText("Control", juce::dontSendNotification);
         panel_labels_[2].setText("Other", juce::dontSendNotification);
-        for (auto &pL: panel_labels_) {
+        panel_labels_[3].setText("Credit", juce::dontSendNotification);
+        for (auto& pL : panel_labels_) {
             pL.setInterceptsMouseClicks(true, false);
             pL.addMouseListener(this, false);
             pL.setJustificationType(juce::Justification::centred);
@@ -97,7 +105,7 @@ namespace zlpanel {
 
     UISettingPanel::~UISettingPanel() = default;
 
-    void UISettingPanel::paint(juce::Graphics &g) {
+    void UISettingPanel::paint(juce::Graphics& g) {
         g.fillAll(base_.getBackgroundColour());
         auto bound = getLocalBounds().toFloat();
         bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight() * 1.25f);
@@ -106,10 +114,11 @@ namespace zlpanel {
 
     void UISettingPanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight()); {
+        bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight());
+        {
             auto label_bound = bound.removeFromTop(base_.getFontSize() * 3.f);
             const auto label_width = label_bound.getWidth() / static_cast<float>(panel_labels_.size());
-            for (auto &panel_label: panel_labels_) {
+            for (auto& panel_label : panel_labels_) {
                 panel_label.setBounds(label_bound.removeFromLeft(label_width).toNearestInt());
             }
         }
@@ -123,6 +132,9 @@ namespace zlpanel {
         other_panel_.setBounds(0, 0,
                                juce::roundToInt(bound.getWidth()),
                                other_panel_.getIdealHeight());
+        credit_panel_.setBounds(0, 0,
+                               juce::roundToInt(bound.getWidth()),
+                               credit_panel_.getIdeatlHeight());
         other_panel_.setParentWidth(getWidth());
 
         view_port_.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
@@ -153,7 +165,7 @@ namespace zlpanel {
         other_panel_.loadSetting();
     }
 
-    void UISettingPanel::mouseDown(const juce::MouseEvent &event) {
+    void UISettingPanel::mouseDown(const juce::MouseEvent& event) {
         for (size_t i = 0; i < panel_labels_.size(); ++i) {
             if (event.originalComponent == &panel_labels_[i]) {
                 current_panel_idx_ = static_cast<PanelIdx>(i);
@@ -165,18 +177,22 @@ namespace zlpanel {
 
     void UISettingPanel::changeDisplayPanel() {
         switch (current_panel_idx_) {
-            case kColourP: {
-                view_port_.setViewedComponent(&colour_panel_, false);
-                break;
-            }
-            case kControlP: {
-                view_port_.setViewedComponent(&control_panel_, false);
-                break;
-            }
-            case kOtherP: {
-                view_port_.setViewedComponent(&other_panel_, false);
-                break;
-            }
+        case kColourP: {
+            view_port_.setViewedComponent(&colour_panel_, false);
+            break;
+        }
+        case kControlP: {
+            view_port_.setViewedComponent(&control_panel_, false);
+            break;
+        }
+        case kOtherP: {
+            view_port_.setViewedComponent(&other_panel_, false);
+            break;
+        }
+        case kCreditP: {
+            view_port_.setViewedComponent(&credit_panel_, false);
+            break;
+        }
         }
     }
 
