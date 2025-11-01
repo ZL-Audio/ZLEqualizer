@@ -332,19 +332,19 @@ namespace zlstate {
         static constexpr auto kDefaultV = 1.f;
     };
 
-    class PMagCurveThickness : public FloatParameters<PMagCurveThickness> {
+    class PSingleEQCurveThickness : public FloatParameters<PSingleEQCurveThickness> {
     public:
-        static constexpr auto kID = "mag_curve_thickness";
+        static constexpr auto kID = "single_eq_curve_thickness";
         static constexpr auto kName = "";
-        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 4.f, .01f);
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 2.f, .01f);
         static constexpr auto kDefaultV = 1.f;
     };
 
-    class PEQCurveThickness : public FloatParameters<PEQCurveThickness> {
+    class PSumEQCurveThickness : public FloatParameters<PSumEQCurveThickness> {
     public:
-        static constexpr auto kID = "eq_curve_thickness";
+        static constexpr auto kID = "sum_eq_curve_thickness";
         static constexpr auto kName = "";
-        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 4.f, .01f);
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 2.f, .01f);
         static constexpr auto kDefaultV = 1.f;
     };
 
@@ -460,7 +460,7 @@ namespace zlstate {
                    PSliderDoubleClickFunc::get(),
                    PTargetRefreshSpeed::get(),
                    PFFTExtraTilt::get(), PFFTExtraSpeed::get(),
-                   PMagCurveThickness::get(), PEQCurveThickness::get(),
+                   PSingleEQCurveThickness::get(), PSumEQCurveThickness::get(),
                    PTooltipLang::get());
 
         for (size_t i = 0; i < kColourNames.size(); ++i) {

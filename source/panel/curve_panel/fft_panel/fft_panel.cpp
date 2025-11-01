@@ -221,7 +221,7 @@ namespace zlpanel {
         next_gradient_.point2 = {c_width_, 0.f};
         next_gradient_.isRadial = false;
 
-        const auto colour = juce::Colours::red;
+        const auto colour = base_.getColourByIdx(zlgui::kCollisionColour);
         next_gradient_.clearColours();
         next_gradient_.addColour(xs_.front() / c_width_, colour.withAlpha(collision_ps_.front()));
         for (size_t i = 1; i < collision_ps_.size() - 1; ++i) {

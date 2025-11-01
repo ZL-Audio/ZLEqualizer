@@ -247,41 +247,36 @@ namespace zlgui {
 
     void UIBase::loadFromAPVTS() {
         for (size_t i = 0; i < kColourNum; ++i) {
-            const auto r = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_r")->
-                                                          load());
-            const auto g = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_g")->
-                                                          load());
-            const auto b = static_cast<juce::uint8>(state.getRawParameterValue(std::string(kColourNames[i]) + "_b")->
-                                                          load());
-            const auto o = static_cast<float>(state.getRawParameterValue(std::string(kColourNames[i]) + "_o")->load());
+            const auto r = static_cast<juce::uint8>(std::round(loadPara(std::string(kColourNames[i]) + "_r")));
+            const auto g = static_cast<juce::uint8>(std::round(loadPara(std::string(kColourNames[i]) + "_g")));
+            const auto b = static_cast<juce::uint8>(std::round(loadPara(std::string(kColourNames[i]) + "_b")));
+            const auto o = loadPara(std::string(kColourNames[i]) + "_o");
             custom_colours_[i] = juce::Colour(r, g, b, o);
         }
-        wheel_sensitivity_[0] = state.getRawParameterValue(zlstate::PWheelSensitivity::kID)->load();
-        wheel_sensitivity_[1] = state.getRawParameterValue(zlstate::PWheelFineSensitivity::kID)->load();
-        wheel_sensitivity_[2] = state.getRawParameterValue(zlstate::PDragSensitivity::kID)->load();
-        wheel_sensitivity_[3] = state.getRawParameterValue(zlstate::PDragFineSensitivity::kID)->load();
-        is_mouse_wheel_shift_reverse_.store(state.getRawParameterValue(zlstate::PWheelShiftReverse::kID)->load() > .5f);
-        rotary_style_id_ = static_cast<size_t>(state.getRawParameterValue(zlstate::PRotaryStyle::kID)->load());
-        rotary_drag_sensitivity_ = state.getRawParameterValue(zlstate::PRotaryDragSensitivity::kID)->load();
+        wheel_sensitivity_[0] = loadPara(zlstate::PWheelSensitivity::kID);
+        wheel_sensitivity_[1] = loadPara(zlstate::PWheelFineSensitivity::kID);
+        wheel_sensitivity_[2] = loadPara(zlstate::PDragSensitivity::kID);
+        wheel_sensitivity_[3] = loadPara(zlstate::PDragFineSensitivity::kID);
+        is_mouse_wheel_shift_reverse_.store(loadPara(zlstate::PWheelShiftReverse::kID) > .5f);
+        rotary_style_id_ = static_cast<size_t>(std::round(loadPara(zlstate::PRotaryStyle::kID)));
+        rotary_drag_sensitivity_ = loadPara(zlstate::PRotaryDragSensitivity::kID);
         is_slider_double_click_open_editor_.store(loadPara(zlstate::PSliderDoubleClickFunc::kID) > .5f);
-        refresh_rate_id_.store(
-            static_cast<size_t>(std::round(state.getRawParameterValue(zlstate::PTargetRefreshSpeed::kID)->load())));
+        refresh_rate_id_.store(static_cast<size_t>(std::round(loadPara(zlstate::PTargetRefreshSpeed::kID))));
         fft_extra_tilt_.store(loadPara(zlstate::PFFTExtraTilt::kID));
         fft_extra_speed_.store(loadPara(zlstate::PFFTExtraSpeed::kID));
-        mag_curve_thickness_.store(loadPara(zlstate::PMagCurveThickness::kID));
-        eq_curve_thickness_.store(loadPara(zlstate::PEQCurveThickness::kID));
-        tooltip_lang_id_.store(
-            static_cast<size_t>(std::round(state.getRawParameterValue(zlstate::PTooltipLang::kID)->load())));
-        colour_map1_idx_ = static_cast<size_t>(loadPara(zlstate::PColourMap1Idx::kID));
-        colour_map2_idx_ = static_cast<size_t>(loadPara(zlstate::PColourMap2Idx::kID));
+        single_eq_curve_thickness_.store(loadPara(zlstate::PSingleEQCurveThickness::kID));
+        sum_eq_curve_thickness_.store(loadPara(zlstate::PSumEQCurveThickness::kID));
+        tooltip_lang_id_ = static_cast<size_t>(std::round(loadPara(zlstate::PTooltipLang::kID)));
+        colour_map1_idx_ = static_cast<size_t>(std::round(loadPara(zlstate::PColourMap1Idx::kID)));
+        colour_map2_idx_ = static_cast<size_t>(std::round(loadPara(zlstate::PColourMap2Idx::kID)));
     }
 
     void UIBase::saveToAPVTS() const {
         for (size_t i = 0; i < kColourNum; ++i) {
             const std::array<float, 4> rgbo = {
-                custom_colours_[i].getFloatRed(),
-                custom_colours_[i].getFloatGreen(),
-                custom_colours_[i].getFloatBlue(),
+                static_cast<float>(custom_colours_[i].getRed()),
+                static_cast<float>(custom_colours_[i].getGreen()),
+                static_cast<float>(custom_colours_[i].getBlue()),
                 custom_colours_[i].getFloatAlpha()
             };
             const std::array<std::string, 4> ID{
@@ -294,32 +289,23 @@ namespace zlgui {
                 savePara(ID[j], rgbo[j]);
             }
         }
-        savePara(zlstate::PWheelSensitivity::kID,
-                 zlstate::PWheelSensitivity::convertTo01(wheel_sensitivity_[0]));
-        savePara(zlstate::PWheelFineSensitivity::kID,
-                 zlstate::PWheelFineSensitivity::convertTo01(wheel_sensitivity_[1]));
-        savePara(zlstate::PDragSensitivity::kID,
-                 zlstate::PDragSensitivity::convertTo01(wheel_sensitivity_[2]));
-        savePara(zlstate::PDragFineSensitivity::kID,
-                 zlstate::PDragFineSensitivity::convertTo01(wheel_sensitivity_[3]));
+        savePara(zlstate::PWheelSensitivity::kID, wheel_sensitivity_[0]);
+        savePara(zlstate::PWheelFineSensitivity::kID, wheel_sensitivity_[1]);
+        savePara(zlstate::PDragSensitivity::kID, wheel_sensitivity_[2]);
+        savePara(zlstate::PDragFineSensitivity::kID, wheel_sensitivity_[3]);
         savePara(zlstate::PWheelShiftReverse::kID,
-                 zlstate::PWheelShiftReverse::convertTo01(static_cast<int>(is_mouse_wheel_shift_reverse_.load())));
-        savePara(zlstate::PRotaryStyle::kID,
-                 zlstate::PRotaryStyle::convertTo01(static_cast<int>(rotary_style_id_)));
-        savePara(zlstate::PRotaryDragSensitivity::kID,
-                 zlstate::PRotaryDragSensitivity::convertTo01(rotary_drag_sensitivity_));
-        savePara(zlstate::PSliderDoubleClickFunc::kID, static_cast<float>(is_slider_double_click_open_editor_.load()));
-        savePara(zlstate::PTargetRefreshSpeed::kID,
-                 zlstate::PTargetRefreshSpeed::convertTo01(static_cast<int>(refresh_rate_id_.load())));
-        savePara(zlstate::PFFTExtraTilt::kID, zlstate::PFFTExtraTilt::convertTo01(fft_extra_tilt_.load()));
-        savePara(zlstate::PFFTExtraSpeed::kID, zlstate::PFFTExtraSpeed::convertTo01(fft_extra_speed_.load()));
-        savePara(zlstate::PMagCurveThickness::kID,
-                 zlstate::PMagCurveThickness::convertTo01(mag_curve_thickness_.load()));
-        savePara(zlstate::PEQCurveThickness::kID,
-                 zlstate::PEQCurveThickness::convertTo01(eq_curve_thickness_.load()));
-        savePara(zlstate::PTooltipLang::kID,
-                 zlstate::PTooltipLang::convertTo01(static_cast<int>(tooltip_lang_id_.load())));
-        savePara(zlstate::PColourMap1Idx::kID, zlstate::PColourMapIdx::convertTo01(static_cast<int>(colour_map1_idx_)));
-        savePara(zlstate::PColourMap2Idx::kID, zlstate::PColourMapIdx::convertTo01(static_cast<int>(colour_map2_idx_)));
+            static_cast<float>(is_mouse_wheel_shift_reverse_.load(std::memory_order::relaxed)));
+        savePara(zlstate::PRotaryStyle::kID, static_cast<float>(rotary_style_id_));
+        savePara(zlstate::PRotaryDragSensitivity::kID, rotary_drag_sensitivity_);
+        savePara(zlstate::PSliderDoubleClickFunc::kID,
+            static_cast<float>(is_slider_double_click_open_editor_.load(std::memory_order::relaxed)));
+        savePara(zlstate::PTargetRefreshSpeed::kID, static_cast<float>(refresh_rate_id_.load(std::memory_order::relaxed)));
+        savePara(zlstate::PFFTExtraTilt::kID, fft_extra_tilt_.load(std::memory_order::relaxed));
+        savePara(zlstate::PFFTExtraSpeed::kID, fft_extra_speed_.load(std::memory_order::relaxed));
+        savePara(zlstate::PSingleEQCurveThickness::kID, single_eq_curve_thickness_.load(std::memory_order::relaxed));
+        savePara(zlstate::PSumEQCurveThickness::kID, sum_eq_curve_thickness_.load(std::memory_order::relaxed));
+        savePara(zlstate::PTooltipLang::kID, static_cast<float>(tooltip_lang_id_));
+        savePara(zlstate::PColourMap1Idx::kID, static_cast<float>(colour_map1_idx_));
+        savePara(zlstate::PColourMap2Idx::kID, static_cast<float>(colour_map2_idx_));
     }
 }

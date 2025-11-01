@@ -20,6 +20,7 @@ namespace zlpanel {
         control_panel_(p, base, tooltip_helper_),
         curve_panel_(p, base, tooltip_helper_),
         top_panel_(p, base, tooltip_helper_),
+        ui_setting_panel_(p, base_),
         tooltip_laf_(base_), tooltip_window_(&curve_panel_) {
         juce::ignoreUnused(base_);
 
@@ -34,6 +35,7 @@ namespace zlpanel {
         addAndMakeVisible(curve_panel_);
         addChildComponent(control_panel_);
         addAndMakeVisible(top_panel_);
+        addChildComponent(ui_setting_panel_);
     }
 
     MainPanel::~MainPanel() {
@@ -64,6 +66,7 @@ namespace zlpanel {
         control_bound = control_bound.withSizeKeepingCentre(control_panel_.getIdealWidth(), control_bound.getHeight());
         control_panel_.setBounds(control_bound);
 
+        ui_setting_panel_.setBounds(bound);
         top_panel_.setBounds(bound.removeFromTop(top_panel_.getIdealHeight()));
         curve_panel_.setBounds(bound);
     }
@@ -94,7 +97,8 @@ namespace zlpanel {
         if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kUISettingPanel, property)) {
             const auto ui_setting_visibility = static_cast<bool>(
                 base_.getPanelProperty(zlgui::PanelSettingIdx::kUISettingPanel));
-            juce::ignoreUnused(ui_setting_visibility);
+            curve_panel_.setVisible(!ui_setting_visibility);
+            ui_setting_panel_.setVisible(ui_setting_visibility);
         }
     }
 

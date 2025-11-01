@@ -87,6 +87,6 @@ namespace zlpanel {
     }
 
     void SumPanel::lookAndFeelChanged() {
-        curve_thickness_ = base_.getFontSize() * .275f * base_.getEQCurveThickness();
+        curve_thickness_ = base_.getFontSize() * .275f * base_.getSumEQCurveThickness();
     }
 }

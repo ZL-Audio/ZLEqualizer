@@ -317,28 +317,28 @@ namespace zlgui {
             fft_extra_speed_.store(x, std::memory_order::relaxed);
         }
 
-        float getMagCurveThickness() const {
-            return mag_curve_thickness_.load(std::memory_order::relaxed);
+        float getSingleEQCurveThickness() const {
+            return single_eq_curve_thickness_.load(std::memory_order::relaxed);
         }
 
-        void setMagCurveThickness(const float x) {
-            mag_curve_thickness_.store(x, std::memory_order::relaxed);
+        void setSingleEQCurveThickness(const float x) {
+            single_eq_curve_thickness_.store(x, std::memory_order::relaxed);
         }
 
-        float getEQCurveThickness() const {
-            return eq_curve_thickness_.load(std::memory_order::relaxed);
+        float getSumEQCurveThickness() const {
+            return single_eq_curve_thickness_.load(std::memory_order::relaxed);
         }
 
-        void setEQCurveThickness(const float x) {
-            eq_curve_thickness_.store(x, std::memory_order::relaxed);
+        void setSumEQCurveThickness(const float x) {
+            single_eq_curve_thickness_.store(x, std::memory_order::relaxed);
         }
 
         size_t getTooltipLangID() const {
-            return tooltip_lang_id_.load(std::memory_order::relaxed);
+            return tooltip_lang_id_;
         }
 
         void setTooltipLandID(const size_t x) {
-            tooltip_lang_id_.store(x, std::memory_order::relaxed);
+            tooltip_lang_id_ = x;
         }
 
         void loadFromAPVTS();
@@ -407,8 +407,8 @@ namespace zlgui {
         std::atomic<size_t> refresh_rate_id_{2};
         float rotary_drag_sensitivity_{1.f};
         std::atomic<float> fft_extra_tilt_{0.f}, fft_extra_speed_{1.f};
-        std::atomic<float> mag_curve_thickness_{1.f}, eq_curve_thickness_{1.f};
-        std::atomic<size_t> tooltip_lang_id_{1};
+        std::atomic<float> single_eq_curve_thickness_{1.f}, sum_eq_curve_thickness_{1.f};
+        size_t tooltip_lang_id_{1};
 
         std::atomic<bool> is_mouse_wheel_shift_reverse_{false};
         std::atomic<bool> is_slider_double_click_open_editor_{false};
@@ -421,13 +421,13 @@ namespace zlgui {
         juce::SelectedItemSet<size_t> selected_band_set_;
 
         float loadPara(const std::string& id) const {
-            return state.getRawParameterValue(id)->load();
+            return state.getRawParameterValue(id)->load(std::memory_order::relaxed);
         }
 
         void savePara(const std::string& id, const float x) const {
             const auto para = state.getParameter(id);
             para->beginChangeGesture();
-            para->setValueNotifyingHost(x);
+            para->setValueNotifyingHost(para->convertTo0to1(x));
             para->endChangeGesture();
         }
     };

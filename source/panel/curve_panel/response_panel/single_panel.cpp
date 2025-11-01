@@ -185,6 +185,6 @@ namespace zlpanel {
     }
 
     void SinglePanel::lookAndFeelChanged() {
-        curve_thickness_ = base_.getFontSize() * .175f * base_.getEQCurveThickness();
+        curve_thickness_ = base_.getFontSize() * .175f * base_.getSingleEQCurveThickness();
     }
 }
