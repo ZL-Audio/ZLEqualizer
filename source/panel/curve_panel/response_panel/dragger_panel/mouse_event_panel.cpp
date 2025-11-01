@@ -74,7 +74,7 @@ namespace zlpanel {
 
         const auto padding = base_.getFontSize() * kDraggerScale;
         const auto width = static_cast<float>(getLocalBounds().getWidth());
-        const auto x_portion = event.position.x / (width - padding);
+        const auto x_portion = event.position.x / (width * kFFTSizeOverWidth);
         const auto freq = std::clamp(std::exp(x_portion * std::log(fft_max_ * 0.1f)) * 10.f, 10.f, slider_max_);
 
         const auto height = static_cast<float>(getLocalBounds().getHeight() - getBottomAreaHeight(base_.getFontSize()));

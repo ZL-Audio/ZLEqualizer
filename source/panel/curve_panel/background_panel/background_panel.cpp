@@ -39,7 +39,7 @@ namespace zlpanel {
     void BackgroundPanel::drawFreqs(juce::Graphics& g) const {
         auto bound = getLocalBounds().toFloat();
         const auto full_width = bound.getWidth();
-        bound.removeFromRight(base_.getFontSize() * kDraggerScale);
+        bound.setWidth(bound.getWidth() * kFFTSizeOverWidth);
         // draw freq grid
         const auto thickness = base_.getFontSize() * 0.1f;
         juce::RectangleList<float> rect_list;

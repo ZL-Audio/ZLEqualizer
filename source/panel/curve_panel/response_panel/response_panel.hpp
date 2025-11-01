@@ -73,8 +73,8 @@ namespace zlpanel {
         SoloPanel solo_panel_;
 
         float side_y_{0.f};
-        std::atomic<float> width_{0.f}, height_{0.f};
-        float c_width_{0.f}, c_height_{0.f};
+        std::atomic<float> width_{0.f}, height_{0.f}, font_size_{1.f};
+        float c_width_{0.f}, c_height_{0.f}, c_font_size_{1.f};
         std::atomic<bool> to_update_bound_{};
 
         std::atomic<float>& eq_max_db_idx_ref_;

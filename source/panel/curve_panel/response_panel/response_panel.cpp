@@ -105,6 +105,7 @@ namespace zlpanel {
         side_y_ = static_cast<float>(bound.getHeight() - bottom_height) - font_size * kDraggerScale * .5f;
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
         height_.store(static_cast<float>(bound.getHeight()), std::memory_order::relaxed);
+        font_size_.store(base_.getFontSize(), std::memory_order::relaxed);
         to_update_bound_.store(true, std::memory_order::release);
     }
 
@@ -412,8 +413,7 @@ namespace zlpanel {
                 return;
             }
             fft_max_ = freq_helper::getFFTMax(sample_rate);
-            const auto max_log_value = std::log(fft_max_ * 0.1) / static_cast<double>(
-                1.f - kFontSizeOverWidth * kDraggerScale);
+            const auto max_log_value = std::log(fft_max_ * 0.1) / static_cast<double>(kFFTSizeOverWidth);
             const auto interval_log_value = max_log_value / static_cast<double>(kNumPoints - 1);
             for (size_t i = 0; i < kNumPoints; ++i) {
                 ws_[i] = static_cast<float>(std::exp(interval_log_value * static_cast<double>(i)) * kFreqScaleConst);
@@ -424,6 +424,7 @@ namespace zlpanel {
         if (to_update_bound_.exchange(false, std::memory_order::acquire)) {
             c_width_ = width_.load(std::memory_order::relaxed);
             c_height_ = height_.load(std::memory_order::relaxed);
+            c_font_size_ = font_size_.load(std::memory_order::relaxed);
             if (c_width_ < 1.f || c_height_ < 1.f) {
                 return;
             }
@@ -438,8 +439,8 @@ namespace zlpanel {
             std::abs(eq_max_db_idx - c_eq_max_db_idx_) > .1f) {
             c_eq_max_db_idx_ = eq_max_db_idx;
             const auto z = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_db_idx))];
-            const auto h = c_height_ - static_cast<float>(getBottomAreaHeight(c_width_ * kFontSizeOverWidth));
-            const auto padding = c_width_ * kFontSizeOverWidth * kDraggerScale;
+            const auto h = c_height_ - static_cast<float>(getBottomAreaHeight(c_font_size_));
+            const auto padding = c_font_size_ * kDraggerScale;
             const auto h1 = h * .5f;
             const auto h2 = h - padding;
             c_k_ = 10.f * (h1 - h2) / z;
@@ -556,7 +557,7 @@ namespace zlpanel {
         const zldsp::filter::FilterParameters& para) const {
         const auto freq_to_x_scale = 1.0 / std::log(
             fft_max_ * 0.1) * static_cast<double>(c_width_) * static_cast<double>(
-            1.f - kFontSizeOverWidth * kDraggerScale);
+            kFFTSizeOverWidth);
         const auto center_x = std::log(para.freq / 10.0) * freq_to_x_scale;
         const auto bandwidth = para.freq / para.q;
         switch (para.filter_type) {

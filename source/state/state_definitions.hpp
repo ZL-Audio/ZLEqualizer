@@ -229,6 +229,14 @@ namespace zlstate {
         inline static const auto kRange = juce::NormalisableRange<float>(kMinV, kMaxV, 1.f);
     };
 
+    class PFontScale : public FloatParameters<PFontScale> {
+    public:
+        static constexpr auto kID = "font_scale";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(.5f, 1.f, .01f);
+        static constexpr auto kDefaultV = .9f;
+    };
+
     class PWheelSensitivity : public FloatParameters<PWheelSensitivity> {
     public:
         static constexpr auto kID = "wheel_sensitivity";
@@ -453,7 +461,7 @@ namespace zlstate {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(PWindowW::get(), PWindowH::get(),
+        layout.add(PWindowW::get(), PWindowH::get(), PFontScale::get(),
                    PWheelSensitivity::get(), PWheelFineSensitivity::get(), PWheelShiftReverse::get(),
                    PDragSensitivity::get(), PDragFineSensitivity::get(),
                    PRotaryStyle::get(), PRotaryDragSensitivity::get(),

@@ -180,17 +180,33 @@ namespace zlgui {
             loadFromAPVTS();
         }
 
-        void setFontSize(const float fSize) { font_size_ = fSize; }
+        void setFontScale(const float font_scale) {
+            font_scale_ = font_scale;
+        }
 
-        float getFontSize() const { return font_size_; }
+        float getFontScale() const {
+            return font_scale_;
+        }
+
+        void setFontSize(const float font_size) {
+            font_size_ = font_size;
+        }
+
+        float getFontSize() const {
+            return font_size_;
+        }
 
         juce::Colour getTextColour() const {
             return custom_colours_[static_cast<size_t>(kTextColour)];
         }
 
-        juce::Colour getTextInactiveColour() const { return getTextColour().withAlpha(0.5f); }
+        juce::Colour getTextInactiveColour() const {
+            return getTextColour().withAlpha(0.5f);
+        }
 
-        juce::Colour getTextHideColour() const { return getTextColour().withAlpha(0.25f); }
+        juce::Colour getTextHideColour() const {
+            return getTextColour().withAlpha(0.25f);
+        }
 
         juce::Colour getBackgroundColour() const {
             return custom_colours_[static_cast<size_t>(kBackgroundColour)];
@@ -400,6 +416,7 @@ namespace zlgui {
         juce::ValueTree panel_value_tree_{"panel_setting_tree"};
         juce::ValueTree solo_whole_idx_tree_{"solo_whole_idx_tree"};
 
+        float font_scale_{9.f};
         float font_size_{0.f};
         std::array<juce::Colour, kColourNum> custom_colours_;
         std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, 0.12f, 1.f, .25f};

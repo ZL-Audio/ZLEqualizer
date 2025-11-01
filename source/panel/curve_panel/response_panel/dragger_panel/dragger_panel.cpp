@@ -230,9 +230,8 @@ namespace zlpanel {
     void DraggerPanel::updateDraggerBound(const size_t band) {
         const auto fft_max = freq_helper::getFFTMax(sample_rate_);
         const auto slider_max = freq_helper::getSliderMax(sample_rate_);
-        const auto width_p = (1.f - kFontSizeOverWidth * kDraggerScale) *
-            static_cast<float>(std::log(slider_max * .1) / std::log(fft_max * .1));
         auto bound = getLocalBounds().toFloat();
+        const auto width_p = kFFTSizeOverWidth * static_cast<float>(std::log(slider_max * .1) / std::log(fft_max * .1));
         bound.removeFromTop(base_.getFontSize() * kDraggerScale);
         bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
         bound.setWidth(bound.getWidth() * width_p);

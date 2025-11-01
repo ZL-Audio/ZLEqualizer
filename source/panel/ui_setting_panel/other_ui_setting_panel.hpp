@@ -41,5 +41,7 @@ namespace zlpanel {
         zlgui::slider::CompactLinearSlider<true, true, true> single_curve_slider_, sum_curve_slider_;
         juce::Label tooltip_label_;
         zlgui::combobox::CompactCombobox tooltip_box_;
+        juce::Label font_scale_label_;
+        zlgui::slider::CompactLinearSlider<true, true, true> font_scale_slider_;
     };
 }

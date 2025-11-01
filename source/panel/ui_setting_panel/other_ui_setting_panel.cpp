@@ -10,15 +10,16 @@
 #include "other_ui_setting_panel.hpp"
 
 namespace zlpanel {
-    OtherUISettingPanel::OtherUISettingPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : p_ref_(p),
-          base_(base), name_laf_(base),
-          refresh_rate_box_(zlstate::PTargetRefreshSpeed::kChoices, base),
-          fft_tilt_slider_("Tilt", base),
-          fft_speed_slider_("Speed", base),
-          single_curve_slider_("Single", base),
-          sum_curve_slider_("Sum", base),
-          tooltip_box_(zlstate::PTooltipLang::kChoices, base) {
+    OtherUISettingPanel::OtherUISettingPanel(PluginProcessor& p, zlgui::UIBase& base) :
+        p_ref_(p),
+        base_(base), name_laf_(base),
+        refresh_rate_box_(zlstate::PTargetRefreshSpeed::kChoices, base),
+        fft_tilt_slider_("Tilt", base),
+        fft_speed_slider_("Speed", base),
+        single_curve_slider_("Single", base),
+        sum_curve_slider_("Sum", base),
+        tooltip_box_(zlstate::PTooltipLang::kChoices, base),
+        font_scale_slider_("Font", base) {
         juce::ignoreUnused(p_ref_);
         name_laf_.setFontScale(zlgui::kFontHuge);
 
@@ -55,6 +56,14 @@ namespace zlpanel {
         tooltip_label_.setLookAndFeel(&name_laf_);
         addAndMakeVisible(tooltip_label_);
         addAndMakeVisible(tooltip_box_);
+
+        font_scale_label_.setText("FFT", juce::dontSendNotification);
+        font_scale_label_.setJustificationType(juce::Justification::centredRight);
+        font_scale_label_.setLookAndFeel(&name_laf_);
+        addAndMakeVisible(font_scale_label_);
+        font_scale_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(0.5, 1.0, .01));
+        font_scale_slider_.getSlider().setDoubleClickReturnValue(true, 0.9);
+        addAndMakeVisible(font_scale_slider_);
     }
 
     void OtherUISettingPanel::loadSetting() {
@@ -64,6 +73,7 @@ namespace zlpanel {
         single_curve_slider_.getSlider().setValue(base_.getSingleEQCurveThickness());
         sum_curve_slider_.getSlider().setValue(base_.getSumEQCurveThickness());
         tooltip_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getTooltipLangID()));
+        font_scale_slider_.getSlider().setValue(static_cast<double>(base_.getFontScale()));
     }
 
     void OtherUISettingPanel::saveSetting() {
@@ -73,6 +83,7 @@ namespace zlpanel {
         base_.setSingleEQCurveThickness(static_cast<float>(single_curve_slider_.getSlider().getValue()));
         base_.setSumEQCurveThickness(static_cast<float>(sum_curve_slider_.getSlider().getValue()));
         base_.setTooltipLandID(static_cast<size_t>(tooltip_box_.getBox().getSelectedItemIndex()));
+        base_.setFontScale(static_cast<float>(font_scale_slider_.getSlider().getValue()));
         base_.saveToAPVTS();
     }
 
@@ -83,7 +94,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale * 3.f);
         const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
 
-        return padding * 5 + slider_height * 4;
+        return 6 * padding + 5 * slider_height;
     }
 
     void OtherUISettingPanel::resized() {
@@ -91,13 +102,15 @@ namespace zlpanel {
         const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderWidthScale);
         const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
 
-        auto bound = getLocalBounds(); {
+        auto bound = getLocalBounds();
+        {
             bound.removeFromTop(padding);
             auto local_bound = bound.removeFromTop(slider_height);
             refresh_rate_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
             local_bound.removeFromLeft(padding);
             refresh_rate_box_.setBounds(local_bound.removeFromLeft(slider_width).reduced(0, padding / 3));
-        } {
+        }
+        {
             bound.removeFromTop(padding);
             auto local_bound = bound.removeFromTop(slider_height);
             fft_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
@@ -105,7 +118,8 @@ namespace zlpanel {
             fft_tilt_slider_.setBounds(local_bound.removeFromLeft(slider_width));
             local_bound.removeFromLeft(padding);
             fft_speed_slider_.setBounds(local_bound.removeFromLeft(slider_width));
-        } {
+        }
+        {
             bound.removeFromTop(padding);
             auto local_bound = bound.removeFromTop(slider_height);
             curve_thick_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
@@ -113,12 +127,20 @@ namespace zlpanel {
             single_curve_slider_.setBounds(local_bound.removeFromLeft(slider_width));
             local_bound.removeFromLeft(padding);
             sum_curve_slider_.setBounds(local_bound.removeFromLeft(slider_width));
-        } {
+        }
+        {
             bound.removeFromTop(padding);
             auto local_bound = bound.removeFromTop(slider_height);
             tooltip_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
             local_bound.removeFromLeft(padding);
             tooltip_box_.setBounds(local_bound.removeFromLeft(slider_width).reduced(0, padding / 3));
+        }
+        {
+            bound.removeFromTop(padding);
+            auto local_bound = bound.removeFromTop(slider_height);
+            font_scale_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
+            local_bound.removeFromLeft(padding);
+            font_scale_slider_.setBounds(local_bound.removeFromLeft(slider_width));
         }
     }
 }

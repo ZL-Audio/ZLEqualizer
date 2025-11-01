@@ -38,7 +38,7 @@ namespace zlpanel {
             addAndMakeVisible(selector_labels_[i]);
 
             selectors_[i] = std::make_unique<zlgui::colour_selector::ColourOpacitySelector>(
-                base, *this, i > 3,
+                base, *this, i > 1,
                 12.f, 10.f, kSliderWidthScale, kSliderWidthScale);
             addAndMakeVisible(*selectors_[i]);
         }

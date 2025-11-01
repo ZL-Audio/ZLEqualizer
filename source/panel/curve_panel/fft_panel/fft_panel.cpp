@@ -80,7 +80,7 @@ namespace zlpanel {
         if (bound.getHeight() < 1.f) {
             return;
         }
-        bound.removeFromRight(base_.getFontSize() * kDraggerScale);
+        bound.setWidth(bound.getWidth() * kFFTSizeOverWidth);
         updateSampleRate(sample_rate_);
 
         const auto bottom_area_height = getBottomAreaHeight(base_.getFontSize());
@@ -102,7 +102,7 @@ namespace zlpanel {
         }
         const auto fft_max = freq_helper::getFFTMax(sample_rate);
         auto bound = getLocalBounds().toFloat();
-        bound.removeFromRight(base_.getFontSize() * kDraggerScale);
+        bound.setWidth(bound.getWidth() * kFFTSizeOverWidth);
         bound.setWidth(bound.getWidth() * static_cast<float>(
             std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1)));
         atomic_bound_.store(bound);

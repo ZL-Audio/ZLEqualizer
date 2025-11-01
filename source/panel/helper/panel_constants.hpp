@@ -21,6 +21,7 @@ namespace zlpanel {
     inline constexpr float kBoxHeightScale = 1.75f;
     inline constexpr float kDraggerScale = 1.f;
     inline constexpr float kSliderDraggingDistanceScale = 6.5f;
+    inline constexpr float kFFTSizeOverWidth = 0.984f;
 
     inline int getPaddingSize(const float font_size) {
         return static_cast<int>(std::round(font_size * kPaddingScale));
