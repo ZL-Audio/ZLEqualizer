@@ -14,7 +14,7 @@
 #include "../../../helper/helper.hpp"
 #include "../../../multilingual/tooltip_helper.hpp"
 
-#include "../right_click_panel.hpp"
+#include "right_click_panel.hpp"
 
 namespace zlpanel {
     class MouseEventPanel final : public juce::Component,

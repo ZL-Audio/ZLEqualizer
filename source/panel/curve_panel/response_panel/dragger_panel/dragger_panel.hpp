@@ -12,7 +12,7 @@
 #include "mouse_event_panel.hpp"
 #include "float_pop_panel.hpp"
 #include "lasso_band_updater.hpp"
-#include "../right_click_panel.hpp"
+#include "right_click_panel.hpp"
 
 namespace zlpanel {
     class DraggerPanel final : public juce::Component,
@@ -21,8 +21,7 @@ namespace zlpanel {
                                private juce::ChangeListener {
     public:
         explicit DraggerPanel(PluginProcessor& p, zlgui::UIBase& base,
-                              const multilingual::TooltipHelper& tooltip_helper,
-                              RightClickPanel& right_click_panel);
+                              const multilingual::TooltipHelper& tooltip_helper);
 
         ~DraggerPanel() override;
 
@@ -58,6 +57,10 @@ namespace zlpanel {
             return float_pop_panel_;
         }
 
+        RightClickPanel& getRightClickPanel() {
+            return right_click_panel_;
+        }
+
         void mouseDown(const juce::MouseEvent& event) override;
 
         void mouseUp(const juce::MouseEvent& event) override;
@@ -78,9 +81,10 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_{};
+
+        RightClickPanel right_click_panel_;
         MouseEventPanel mouse_event_panel_;
         LassoBandUpdater lasso_band_updater_;
-        RightClickPanel& right_click_panel_;
         juce::SelectedItemSet<size_t>& items_set_;
 
         std::array<zlgui::dragger::Dragger, zlp::kBandNum> draggers_;

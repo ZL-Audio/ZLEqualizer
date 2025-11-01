@@ -14,7 +14,6 @@
 #include "scale_panel/scale_panel.hpp"
 #include "dragger_panel/dragger_panel.hpp"
 #include "solo_panel.hpp"
-#include "right_click_panel.hpp"
 
 namespace zlpanel {
     class ResponsePanel final : public juce::Component,
@@ -70,7 +69,6 @@ namespace zlpanel {
         SinglePanel single_panel_;
         SumPanel sum_panel_;
         ScalePanel scale_panel_;
-        RightClickPanel right_click_panel_;
         DraggerPanel dragger_panel_;
         SoloPanel solo_panel_;
 

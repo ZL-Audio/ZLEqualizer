@@ -9,12 +9,12 @@
 
 #pragma once
 
-#include "../../../PluginProcessor.hpp"
-#include "../../../gui/gui.hpp"
-#include "../../helper/helper.hpp"
-#include "../../multilingual/tooltip_helper.hpp"
+#include "../../../../PluginProcessor.hpp"
+#include "../../../../gui/gui.hpp"
+#include "../../../helper/helper.hpp"
+#include "../../../multilingual/tooltip_helper.hpp"
 
-#include "../../control_panel/control_background.hpp"
+#include "../../../control_panel/control_background.hpp"
 
 namespace zlpanel {
     class RightClickPanel final : public juce::Component {
@@ -29,6 +29,8 @@ namespace zlpanel {
         void resized() override;
 
         void setPosition(juce::Point<float> pos);
+
+        void setSafeArea(juce::Rectangle<float> area);
 
     private:
         static constexpr std::array kIDs{
@@ -51,6 +53,8 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         juce::SelectedItemSet<size_t>& items_set_;
         ControlBackground control_background_;
+
+        juce::Rectangle<float> safe_area_{};
 
         juce::Component mouse_event_eater_;
         zlgui::button::ClickTextButton invert_button_;

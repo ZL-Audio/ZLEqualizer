@@ -12,12 +12,11 @@
 namespace zlpanel {
     DraggerPanel::DraggerPanel(PluginProcessor& p,
                                zlgui::UIBase& base,
-                               const multilingual::TooltipHelper& tooltip_helper,
-                               RightClickPanel& right_click_panel) :
+                               const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
-        mouse_event_panel_(p, base, tooltip_helper, right_click_panel),
+        right_click_panel_(p, base, tooltip_helper),
+        mouse_event_panel_(p, base, tooltip_helper, right_click_panel_),
         lasso_band_updater_(p, base),
-        right_click_panel_(right_click_panel),
         items_set_(base.getSelectedBandSet()),
         draggers_(make_dragger_array(base, std::make_index_sequence<zlp::kBandNum>())),
         target_dragger_(base),
@@ -45,11 +44,6 @@ namespace zlpanel {
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             draggers_[band].setBroughtToFrontOnMouseClick(true);
             draggers_[band].getButton().addMouseListener(this, false);
-            // draggers_[band].getButton().onClick = [this, band]() {
-            //     if (draggers_[band].getButton().getToggleState()) {
-            //         base_.setSelectedBand(band);
-            //     }
-            // };
             draggers_[band].setScale(kDraggerScale * kDraggerSizeMultiplier);
             draggers_[band].getButton().setBufferedToImage(true);
             draggers_[band].getLAF().setColour(base_.getColourMap1(band));
@@ -63,6 +57,9 @@ namespace zlpanel {
         addChildComponent(lasso_component_);
         items_set_.addChangeListener(this);
 
+        right_click_panel_.setBufferedToImage(true);
+        addChildComponent(right_click_panel_);
+
         base_.getSoloWholeIdxTree().addListener(this);
 
         lookAndFeelChanged();
@@ -75,6 +72,8 @@ namespace zlpanel {
 
     void DraggerPanel::resized() {
         bound_ = getLocalBounds().toFloat();
+
+        right_click_panel_.setBounds(0, 0, right_click_panel_.getIdealWidth(), right_click_panel_.getIdealHeight());
         mouse_event_panel_.setBounds(getLocalBounds());
         target_dragger_.setBounds(getLocalBounds());
         side_dragger_.setBounds(getLocalBounds());
@@ -89,6 +88,7 @@ namespace zlpanel {
         auto bound = getLocalBounds().toFloat();
         bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
         float_pop_panel_.updateFloatingBound(bound);
+        right_click_panel_.setSafeArea(bound);
     }
 
     void DraggerPanel::repaintCallBack() {

@@ -87,8 +87,8 @@ namespace zlpanel {
     }
 
     void RightClickPanel::setPosition(juce::Point<float> pos) {
-        const auto parent_width = static_cast<float>(getParentWidth());
-        const auto parent_height = static_cast<float>(getParentHeight());
+        const auto parent_width = safe_area_.getWidth();
+        const auto parent_height = safe_area_.getHeight();
 
         const auto width = static_cast<float>(getWidth());
         const auto height = static_cast<float>(getHeight());
@@ -98,6 +98,10 @@ namespace zlpanel {
         } else {
             setTransform(juce::AffineTransform::translation(pos.x, pos.y));
         }
+    }
+
+    void RightClickPanel::setSafeArea(juce::Rectangle<float> area) {
+        safe_area_ = area;
     }
 
     void RightClickPanel::visibilityChanged() {
