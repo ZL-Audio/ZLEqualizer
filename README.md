@@ -12,9 +12,9 @@ ZL Equalizer is an equalizer plugin.
 
 For ZL Equalizer version 1, please refer to the branch "v1".
 
-<!-- A short intro video is available at [here](https://www.youtube.com/watch?v=bC-mBDumzvU).
+<img src="https://drive.google.com/uc?export=view&id=1xnUGRs3NvWL-2MZ2i8rg0g0bUnG6MSO2" style="width:750px; max-width: 100%; height: auto" />
 
-<img src="https://drive.google.com/uc?export=view&id=1-hmRNQ351Uqc7sCrt_4JRD1LU_MlrZbg" style="width:750px; max-width: 100%; height: auto" />
+<!-- A short intro video is available at [here](https://www.youtube.com/watch?v=bC-mBDumzvU).
 
 ## Usage
 
