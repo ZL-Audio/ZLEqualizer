@@ -54,5 +54,7 @@ private:
 
     void updateIsShowing();
 
+    static zlstate::Property& initProperty(PluginProcessor& p);
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };

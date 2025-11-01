@@ -14,7 +14,7 @@
 PluginEditor::PluginEditor(PluginProcessor& p) :
     AudioProcessorEditor(&p),
     p_ref_(p),
-    property_(p.property_),
+    property_(initProperty(p)),
     base_(p.state_),
     main_panel_(p, base_) {
     // set font
@@ -115,4 +115,9 @@ void PluginEditor::updateIsShowing() {
             main_panel_.stopThreads();
         }
     }
+}
+
+zlstate::Property& PluginEditor::initProperty(PluginProcessor& p) {
+    p.property_.loadAPVTS(p.state_);
+    return p.property_;
 }
