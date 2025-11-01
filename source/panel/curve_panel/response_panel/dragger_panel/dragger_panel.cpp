@@ -45,11 +45,11 @@ namespace zlpanel {
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             draggers_[band].setBroughtToFrontOnMouseClick(true);
             draggers_[band].getButton().addMouseListener(this, false);
-            draggers_[band].getButton().onClick = [this, band]() {
-                if (draggers_[band].getButton().getToggleState()) {
-                    base_.setSelectedBand(band);
-                }
-            };
+            // draggers_[band].getButton().onClick = [this, band]() {
+            //     if (draggers_[band].getButton().getToggleState()) {
+            //         base_.setSelectedBand(band);
+            //     }
+            // };
             draggers_[band].setScale(kDraggerScale * kDraggerSizeMultiplier);
             draggers_[band].getButton().setBufferedToImage(true);
             draggers_[band].getLAF().setColour(base_.getColourMap1(band));
@@ -329,6 +329,16 @@ namespace zlpanel {
             lasso_component_.beginLasso(event, this);
             return;
         }
+        for (size_t band = 0; band < zlp::kBandNum; ++band) {
+            if (event.originalComponent == &(draggers_[band].getButton())) {
+                if (event.mods.isCommandDown() && base_.getSelectedBand() < zlp::kBandNum) {
+                    items_set_.addToSelection(band);
+                    items_set_.addToSelection(base_.getSelectedBand());
+                }
+                base_.setSelectedBand(band);
+                break;
+            }
+        }
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
             if (event.originalComponent == &(side_dragger_.getButton())) {
                 updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
@@ -355,7 +365,9 @@ namespace zlpanel {
         if (event.originalComponent == &mouse_event_panel_) {
             lasso_component_.endLasso();
             lasso_component_.setVisible(false);
-            lasso_band_updater_.loadParas();
+            if (items_set_.getNumSelected() == 0) {
+                base_.setSelectedBand(zlp::kBandNum);
+            }
         }
     }
 
@@ -469,6 +481,7 @@ namespace zlpanel {
         if (items_set_.getNumSelected() == 1) {
             base_.setSelectedBand(items_set_.getSelectedItem(0));
         }
+        lasso_band_updater_.loadParas();
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             const auto f1 = items_set_.isSelected(band);
             if (f1 != draggers_[band].getLAF().getIsSelected()) {
