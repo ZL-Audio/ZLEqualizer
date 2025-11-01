@@ -123,6 +123,7 @@ namespace zlpanel {
         other_panel_.setBounds(0, 0,
                                juce::roundToInt(bound.getWidth()),
                                other_panel_.getIdealHeight());
+        other_panel_.setParentWidth(getWidth());
 
         view_port_.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
 

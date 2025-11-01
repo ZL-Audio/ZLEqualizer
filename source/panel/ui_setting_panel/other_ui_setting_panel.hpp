@@ -28,6 +28,8 @@ namespace zlpanel {
 
         void resized() override;
 
+        void setParentWidth(int width);
+
     private:
         PluginProcessor &p_ref_;
         zlgui::UIBase &base_;
@@ -41,7 +43,10 @@ namespace zlpanel {
         zlgui::slider::CompactLinearSlider<true, true, true> single_curve_slider_, sum_curve_slider_;
         juce::Label tooltip_label_;
         zlgui::combobox::CompactCombobox tooltip_box_;
-        juce::Label font_scale_label_;
+        juce::Label font_label_;
+        zlgui::combobox::CompactCombobox font_mode_box_;
         zlgui::slider::CompactLinearSlider<true, true, true> font_scale_slider_;
+        zlgui::slider::CompactLinearSlider<true, true, true> static_font_size_slider_;
+        int parent_width_{0};
     };
 }

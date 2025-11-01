@@ -229,11 +229,29 @@ namespace zlstate {
         inline static const auto kRange = juce::NormalisableRange<float>(kMinV, kMaxV, 1.f);
     };
 
+    class PFontMode : public ChoiceParameters<PFontMode> {
+    public:
+        static constexpr auto kID = "font_mode";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "Scale", "Static"
+        };
+        static constexpr int kDefaultI = 0;
+    };
+
     class PFontScale : public FloatParameters<PFontScale> {
     public:
         static constexpr auto kID = "font_scale";
         static constexpr auto kName = "";
         inline static const auto kRange = juce::NormalisableRange<float>(.5f, 1.f, .01f);
+        static constexpr auto kDefaultV = .9f;
+    };
+
+    class PStaticFontSize : public FloatParameters<PStaticFontSize> {
+    public:
+        static constexpr auto kID = "static_font_size";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(.1f, 600.f, .01f);
         static constexpr auto kDefaultV = .9f;
     };
 
@@ -461,7 +479,8 @@ namespace zlstate {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(PWindowW::get(), PWindowH::get(), PFontScale::get(),
+        layout.add(PWindowW::get(), PWindowH::get(),
+                   PFontMode::get(), PFontScale::get(), PStaticFontSize::get(),
                    PWheelSensitivity::get(), PWheelFineSensitivity::get(), PWheelShiftReverse::get(),
                    PDragSensitivity::get(), PDragFineSensitivity::get(),
                    PRotaryStyle::get(), PRotaryDragSensitivity::get(),

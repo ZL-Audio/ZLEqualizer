@@ -253,7 +253,9 @@ namespace zlgui {
             const auto o = loadPara(std::string(kColourNames[i]) + "_o");
             custom_colours_[i] = juce::Colour(r, g, b, o);
         }
+        font_mode_ = static_cast<size_t>(std::round(loadPara(zlstate::PFontMode::kID)));
         font_scale_ = loadPara(zlstate::PFontScale::kID);
+        static_font_size_ = loadPara(zlstate::PStaticFontSize::kID);
         wheel_sensitivity_[0] = loadPara(zlstate::PWheelSensitivity::kID);
         wheel_sensitivity_[1] = loadPara(zlstate::PWheelFineSensitivity::kID);
         wheel_sensitivity_[2] = loadPara(zlstate::PDragSensitivity::kID);
@@ -290,7 +292,9 @@ namespace zlgui {
                 savePara(ID[j], rgbo[j]);
             }
         }
+        savePara(zlstate::PFontMode::kID, static_cast<float>(font_mode_));
         savePara(zlstate::PFontScale::kID, font_scale_);
+        savePara(zlstate::PStaticFontSize::kID, static_font_size_);
         savePara(zlstate::PWheelSensitivity::kID, wheel_sensitivity_[0]);
         savePara(zlstate::PWheelFineSensitivity::kID, wheel_sensitivity_[1]);
         savePara(zlstate::PDragSensitivity::kID, wheel_sensitivity_[2]);

@@ -180,12 +180,28 @@ namespace zlgui {
             loadFromAPVTS();
         }
 
+        void setFontMode(const size_t font_mode) {
+            font_mode_ = font_mode;
+        }
+
+        size_t getFontMode() const {
+            return font_mode_;
+        }
+
         void setFontScale(const float font_scale) {
             font_scale_ = font_scale;
         }
 
         float getFontScale() const {
             return font_scale_;
+        }
+
+        void setStaticFontSize(const float static_font_size) {
+            static_font_size_ = static_font_size;
+        }
+
+        float getStaticFontSize() const {
+            return static_font_size_;
         }
 
         void setFontSize(const float font_size) {
@@ -416,8 +432,10 @@ namespace zlgui {
         juce::ValueTree panel_value_tree_{"panel_setting_tree"};
         juce::ValueTree solo_whole_idx_tree_{"solo_whole_idx_tree"};
 
-        float font_scale_{9.f};
         float font_size_{0.f};
+        size_t font_mode_{0};
+        float font_scale_{9.f};
+        float static_font_size_{0.f};
         std::array<juce::Colour, kColourNum> custom_colours_;
         std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, 0.12f, 1.f, .25f};
         size_t rotary_style_id_{0};
