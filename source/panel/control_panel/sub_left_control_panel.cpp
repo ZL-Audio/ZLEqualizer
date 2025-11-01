@@ -145,7 +145,7 @@ namespace zlpanel {
         const auto button_height = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
 
-        return 6 * padding + 4 * slider_width + button_height;
+        return 6 * padding + 2 * (padding / 2) + 4 * slider_width + button_height;
     }
 
     void SubLeftControlPanel::resized() {
@@ -157,7 +157,7 @@ namespace zlpanel {
 
         auto bound = getLocalBounds();
         control_background_.setBounds(bound);
-        bound.reduce(padding, padding);
+        bound.reduce(padding + padding / 2, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
         close_button_.setBounds(top_bound.removeFromRight(button_height));

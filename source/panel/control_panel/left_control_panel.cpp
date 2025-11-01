@@ -47,7 +47,7 @@ namespace zlpanel {
         const auto button_height = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
 
-        bound.reduce(padding, padding);
+        bound.reduce(padding + padding / 2, padding);
         bound.removeFromTop(button_height);
         bound.removeFromLeft(slider_width + padding);
         freq_slider_.setBounds(bound.removeFromLeft(slider_width));
