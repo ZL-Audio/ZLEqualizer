@@ -10,8 +10,6 @@
 
 ZL Equalizer is an equalizer plugin.
 
-For ZL Equalizer version 1, please refer to the branch "v1".
-
 <img src="https://drive.google.com/uc?export=view&id=1xnUGRs3NvWL-2MZ2i8rg0g0bUnG6MSO2" style="width:750px; max-width: 100%; height: auto" />
 
 <!-- A short intro video is available at [here](https://www.youtube.com/watch?v=bC-mBDumzvU).
@@ -46,11 +44,18 @@ sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-de
 
 Once you have set up the environment, you can clone the ZL Equalizer code, populate all submodules, then configure & build the code. Please set:
 - the variable `ZL_JUCE_FORMATS` as a list of formats that you want, e.g., `"VST3;LV2"`.
+  - AAX plug-ins need to be digitally signed using PACE Anti-Piracy's signing tools before they will run in commercially available versions of Pro Tools.
 - the variable `ZL_EQ_BAND_NUM` as the number of bands, default 24 bands
+  - The plugins built with different `ZL_EQ_BAND_NUM` may NOT be compatible with each other.
 - the variable `KFR_ARCHS` as a list of SIMD instruction sets you want to dispatch
-  - If you are on x86_64, set it as `"sse2;avx;avx2"`
-  - If you are on arm64, set it as `"neon64"`
-  - If you know the SIMD instruction sets (fully) supported by your CPU, set it as the one with the largest register size. For example, if your CPU supports SSE2 & SSE41 & AVX, set it as `"avx"`
+  - If you are on x86_64, set it as `"sse2;avx;avx2"`.
+  - If you are on arm64, set it as `"neon64"`.
+  - If you know the SIMD instruction sets (fully) supported by your CPU, set it as the one with the largest register size. For example, if your CPU supports SSE2 & SSE41 & AVX, set it as `"avx"`.
+  - I would suggest excluding `avx512` even if it is supported by your CPU.
+- If there are multiple compilers on your OS, you may need to pass extra flags to maker sure that cmake uses `LLVM/Clang`.
+  - On Linux, you may pass `-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++`.
+  - On Windows, you may pass `-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl`.
+
 ```console
 git clone https://github.com/ZL-Audio/ZLEqualizer
 cd ZLEqualizer
@@ -59,10 +64,6 @@ cmake -B Builds -G Ninja -DCMAKE_BUILD_TYPE=Release -DKFR_ENABLE_MULTIARCH=ON -D
 cmake --build Builds --config Release
 ```
 After building, the plugins should have been copied to the corresponding folders. If you want to disable the copy process, you can pass `-DZL_JUCE_COPY_PLUGIN=FALSE`, find the binary folders under `Builds/ZLEqualizer_artefacts/Release` and copy them manually.
-
-> If there are multiple compilers on your OS, you may need to pass extra flags to maker sure that cmake uses `LLVM/Clang`. On Linux, you may pass `-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++`. On Windows, you may pass `-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl`.
-
-> AAX plug-ins need to be digitally signed using PACE Anti-Piracy's signing tools before they will run in commercially available versions of Pro Tools.
 
 ## License
 
