@@ -169,12 +169,14 @@ namespace zlpanel {
         freq_label_.setBounds(top_bound.removeFromRight(slider_width));
         top_bound.removeFromRight(padding);
         bypass_button_.setBounds(top_bound.removeFromLeft(button_height));
+        top_bound.removeFromLeft(padding);
 
-        const auto band_label_width = static_cast<int>(std::round(base_.getFontSize() * 1.5f));
-        const auto arrow_width = (top_bound.getWidth() - padding - band_label_width) / 2;
+        const auto arrow_width = top_bound.getHeight() / 2;
+        band_label_.setBounds(top_bound);
         right_button_.setBounds(top_bound.removeFromRight(arrow_width));
-        band_label_.setBounds(top_bound.removeFromRight(band_label_width));
-        left_button_.setBounds(top_bound.removeFromRight(arrow_width));
+        right_button_.getButton().setEdgeIndent(static_cast<int>(std::round(base_.getFontSize() * .165f)));
+        left_button_.setBounds(top_bound.removeFromLeft(arrow_width));
+        left_button_.getButton().setEdgeIndent(static_cast<int>(std::round(base_.getFontSize() * .165f)));
 
         dynamic_button_.setBounds(bound.removeFromRight(button_height));
         dynamic_button_.getButton().setEdgeIndent(static_cast<int>(std::round(base_.getFontSize() * .165f)));
