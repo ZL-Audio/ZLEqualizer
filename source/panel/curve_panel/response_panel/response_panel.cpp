@@ -18,7 +18,6 @@ namespace zlpanel {
         gain_scale_(*p.parameters_.getRawParameterValue(zlp::PGainScale::kID)),
         single_panel_(p, base, message_not_off_indices_),
         sum_panel_(p, base),
-        scale_panel_(p, base, tooltip_helper),
         dragger_panel_(p, base, tooltip_helper),
         solo_panel_(p, base),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
@@ -53,8 +52,6 @@ namespace zlpanel {
         }
         addAndMakeVisible(single_panel_);
         addAndMakeVisible(sum_panel_);
-        scale_panel_.setBufferedToImage(true);
-        addAndMakeVisible(scale_panel_);
         addAndMakeVisible(dragger_panel_);
         dragger_panel_.addChildComponent(solo_panel_);
         solo_panel_.setAlwaysOnTop(true);
@@ -66,6 +63,7 @@ namespace zlpanel {
     }
 
     ResponsePanel::~ResponsePanel() {
+        dragger_panel_.removeChildComponent(&solo_panel_);
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             const auto band_str = std::to_string(band);
             for (const auto& ID : kIDs) {
@@ -101,7 +99,6 @@ namespace zlpanel {
         sum_panel_.setBounds(bound);
         dragger_panel_.setBounds(bound);
         solo_panel_.setBounds(bound);
-        scale_panel_.setBounds(bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
         side_y_ = static_cast<float>(bound.getHeight() - bottom_height) - font_size * kDraggerScale * .5f;
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
         height_.store(static_cast<float>(bound.getHeight()), std::memory_order::relaxed);
@@ -212,7 +209,6 @@ namespace zlpanel {
     }
 
     void ResponsePanel::repaintCallBackSlow() {
-        scale_panel_.repaintCallBackSlow();
         dragger_panel_.repaintCallBackSlow();
     }
 

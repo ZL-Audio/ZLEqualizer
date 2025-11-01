@@ -16,6 +16,7 @@ namespace zlpanel {
         p_ref_(p), base_(base),
         right_click_panel_(p, base, tooltip_helper),
         mouse_event_panel_(p, base, tooltip_helper, right_click_panel_),
+        scale_panel_(p, base, tooltip_helper),
         lasso_band_updater_(p, base),
         items_set_(base.getSelectedBandSet()),
         draggers_(make_dragger_array(base, std::make_index_sequence<zlp::kBandNum>())),
@@ -26,6 +27,9 @@ namespace zlpanel {
         q_slider_(base), slope_slider_(base) {
         mouse_event_panel_.addMouseListener(this, false);
         addAndMakeVisible(mouse_event_panel_);
+
+        scale_panel_.setBufferedToImage(true);
+        addAndMakeVisible(scale_panel_);
 
         side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
         side_dragger_.getButton().setToggleState(true, juce::sendNotificationSync);
@@ -72,23 +76,28 @@ namespace zlpanel {
 
     void DraggerPanel::resized() {
         bound_ = getLocalBounds().toFloat();
-
-        right_click_panel_.setBounds(0, 0, right_click_panel_.getIdealWidth(), right_click_panel_.getIdealHeight());
-        mouse_event_panel_.setBounds(getLocalBounds());
-        target_dragger_.setBounds(getLocalBounds());
-        side_dragger_.setBounds(getLocalBounds());
-        for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            draggers_[band].setBounds(getLocalBounds());
-            updateDraggerBound(band);
+        {
+            const auto bound = getLocalBounds();
+            scale_panel_.setBounds(bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
+            right_click_panel_.setBounds(0, 0, right_click_panel_.getIdealWidth(), right_click_panel_.getIdealHeight());
+            mouse_event_panel_.setBounds(bound);
+            target_dragger_.setBounds(bound);
+            side_dragger_.setBounds(bound);
+            for (size_t band = 0; band < zlp::kBandNum; ++band) {
+                draggers_[band].setBounds(bound);
+                updateDraggerBound(band);
+            }
         }
-        const auto float_width = float_pop_panel_.getIdealWidth();
-        const auto float_height = float_pop_panel_.getIdealHeight();
-        float_pop_panel_.setBounds({0, 0, float_width, float_height});
+        {
+            const auto float_width = float_pop_panel_.getIdealWidth();
+            const auto float_height = float_pop_panel_.getIdealHeight();
+            float_pop_panel_.setBounds({0, 0, float_width, float_height});
 
-        auto bound = getLocalBounds().toFloat();
-        bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
-        float_pop_panel_.updateFloatingBound(bound);
-        right_click_panel_.setSafeArea(bound);
+            auto bound = getLocalBounds().toFloat();
+            bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
+            float_pop_panel_.updateFloatingBound(bound);
+            right_click_panel_.setSafeArea(bound);
+        }
     }
 
     void DraggerPanel::repaintCallBack() {
@@ -97,6 +106,7 @@ namespace zlpanel {
 
     void DraggerPanel::repaintCallBackSlow() {
         mouse_event_panel_.repaintCallbackSlow();
+        scale_panel_.repaintCallBackSlow();
         const auto max_db_id = max_db_id_ref_.load(std::memory_order::relaxed);
         if (std::abs(max_db_id - c_max_db_id_) > .1f) {
             c_max_db_id_ = max_db_id;

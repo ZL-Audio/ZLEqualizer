@@ -11,7 +11,6 @@
 
 #include "single_panel.hpp"
 #include "sum_panel.hpp"
-#include "scale_panel/scale_panel.hpp"
 #include "dragger_panel/dragger_panel.hpp"
 #include "solo_panel.hpp"
 
@@ -68,7 +67,6 @@ namespace zlpanel {
 
         SinglePanel single_panel_;
         SumPanel sum_panel_;
-        ScalePanel scale_panel_;
         DraggerPanel dragger_panel_;
         SoloPanel solo_panel_;
 

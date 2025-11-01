@@ -10,6 +10,7 @@
 #pragma once
 
 #include "mouse_event_panel.hpp"
+#include "../scale_panel/scale_panel.hpp"
 #include "float_pop_panel.hpp"
 #include "lasso_band_updater.hpp"
 #include "right_click_panel.hpp"
@@ -84,6 +85,7 @@ namespace zlpanel {
 
         RightClickPanel right_click_panel_;
         MouseEventPanel mouse_event_panel_;
+        ScalePanel scale_panel_;
         LassoBandUpdater lasso_band_updater_;
         juce::SelectedItemSet<size_t>& items_set_;
 
