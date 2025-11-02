@@ -154,6 +154,11 @@ namespace zlpanel {
             local_bound.removeFromLeft(padding);
             static_font_size_slider_.setBounds(local_bound.removeFromLeft(slider_width));
 
+            if (parent_width_ < 2) {
+                static_font_size_slider_.setVisible(false);
+                return;
+            }
+            static_font_size_slider_.setVisible(true);
             const auto max_font_size = std::floor(static_cast<float>(parent_width_) * kFontSizeOverWidth);
             const auto min_font_size = std::ceil(static_cast<float>(parent_width_) * kFontSizeOverWidth * .25f);
             static_font_size_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
