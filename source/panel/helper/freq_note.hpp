@@ -22,6 +22,9 @@ namespace zlpanel::freq_note {
     inline constexpr int kA4SemitoneIndexFromC0 = 57;
 
     inline std::string getNoteFromFrequency(const double frequency) {
+        if (frequency < 1.0) {
+            return "NaN";
+        }
         const double semitones_from_a4 = 12.0 * (std::log(frequency / kA4Frequency) / std::log(2.0));
         const int rounded_semitones_from_a4 = static_cast<int>(std::round(semitones_from_a4));
         const int total_semitones_from_c0 = rounded_semitones_from_a4 + kA4SemitoneIndexFromC0;
