@@ -216,7 +216,7 @@ namespace zlgui {
         juce::Path mask;
         mask.addEllipse(box_bounds);
         mask.setUsingNonZeroWinding(false);
-        mask.addEllipse(box_bounds.reduced(0.375f * static_cast<float>(radius)));
+        mask.addEllipse(box_bounds.reduced(static_cast<float>(radius + offset)));
         g.saveState();
         g.reduceClipRegion(mask);
 
