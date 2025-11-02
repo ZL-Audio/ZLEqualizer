@@ -57,7 +57,15 @@ namespace zlpanel {
         close_button_.getButton().onClick = [this]() {
             if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
                 band_helper::turnOffBand(p_ref_, c_band, base_.getSelectedBandSet());
-                base_.setSelectedBand(band_helper::findClosestBand(p_ref_, c_band));
+                const auto band1 = band_helper::findClosestBand<true>(p_ref_, c_band);
+                const auto band2 = band_helper::findClosestBand<false>(p_ref_, c_band);
+                if (band1 < zlp::kBandNum) {
+                    base_.setSelectedBand(band1);
+                } else if (band2 < zlp::kBandNum) {
+                    base_.setSelectedBand(band2);
+                } else {
+                    base_.setSelectedBand(zlp::kBandNum);
+                }
             }
         };
 
@@ -87,8 +95,6 @@ namespace zlpanel {
             const auto next_band = band_helper::findClosestBand<false>(p_ref_, c_band);
             if (next_band < zlp::kBandNum) {
                 base_.setSelectedBand(next_band);
-            } else {
-                base_.setSelectedBand((c_band + zlp::kBandNum - 1) % zlp::kBandNum);
             }
         };
 
@@ -105,8 +111,6 @@ namespace zlpanel {
             const auto next_band = band_helper::findClosestBand<true>(p_ref_, c_band);
             if (next_band < zlp::kBandNum) {
                 base_.setSelectedBand(next_band);
-            } else {
-                base_.setSelectedBand((c_band + 1) % zlp::kBandNum);
             }
         };
 

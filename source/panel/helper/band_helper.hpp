@@ -30,9 +30,7 @@ namespace zlpanel::band_helper {
 
         const auto c_freq = getValue(p.parameters_, zlp::PFreq::kID + std::to_string(c_band));
 
-        float around_freq = is_right ? zlp::PFreq::kRange.end + 1.f : 0.f;
-        std::optional<size_t> around_freq_index;
-        float closest_freq = is_right ? zlp::PFreq::kRange.end + 1.f : 0.f;
+        float closest_freq = is_right ? zlp::PFreq::kRange.end + 1.f : zlp::PFreq::kRange.start - 1.f;
         std::optional<size_t> closest_freq_index;
 
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
@@ -47,13 +45,7 @@ namespace zlpanel::band_helper {
 
             const auto freq = getValue(p.parameters_, zlp::PFreq::kID + std::to_string(band));
             if constexpr (is_right) {
-                if (freq <= c_freq) {
-                    // find minimum freq
-                    if (freq < around_freq) {
-                        around_freq = freq;
-                        around_freq_index = band;
-                    }
-                } else {
+                if (freq >= c_freq) {
                     // find closest higher freq
                     if (freq < closest_freq) {
                         closest_freq = freq;
@@ -61,13 +53,7 @@ namespace zlpanel::band_helper {
                     }
                 }
             } else {
-                if (freq >= c_freq) {
-                    // find maximum freq
-                    if (freq > around_freq) {
-                        around_freq = freq;
-                        around_freq_index = band;
-                    }
-                } else {
+                if (freq <= c_freq) {
                     // find closest lower freq
                     if (freq > closest_freq) {
                         closest_freq = freq;
@@ -79,8 +65,6 @@ namespace zlpanel::band_helper {
 
         if (closest_freq_index) {
             return closest_freq_index.value();
-        } else if (around_freq_index) {
-            return around_freq_index.value();
         } else {
             return zlp::kBandNum;
         }
