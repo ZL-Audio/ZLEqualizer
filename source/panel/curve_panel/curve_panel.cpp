@@ -29,6 +29,10 @@ namespace zlpanel {
         setInterceptsMouseClicks(false, true);
     }
 
+    CurvePanel::~CurvePanel() {
+        stopThreads();
+    }
+
     void CurvePanel::paintOverChildren(juce::Graphics&) {
         if (fft_panel_.isThreadRunning()) {
             fft_panel_.notify();

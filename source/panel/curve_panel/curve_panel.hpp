@@ -21,6 +21,8 @@ namespace zlpanel {
         explicit CurvePanel(PluginProcessor& p, zlgui::UIBase& base,
                             const multilingual::TooltipHelper& tooltip_helper);
 
+        ~CurvePanel() override;
+
         void paintOverChildren(juce::Graphics& g) override;
 
         void resized() override;
