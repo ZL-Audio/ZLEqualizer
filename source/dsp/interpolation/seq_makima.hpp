@@ -53,7 +53,7 @@ namespace zldsp::interpolation {
             for (size_t i = 2; i < n - 2; ++i) {
                 derivatives_[i] = calculateD(deltas_[i - 2], deltas_[i - 1], deltas_[i], deltas_[i + 1]);
             }
-            derivatives_[n - 2] = calculateD(deltas_[n - 3], deltas_[n - 2], deltas_[n - 1], right_delta);
+            derivatives_[n - 2] = calculateD(deltas_[n - 4], deltas_[n - 3], deltas_[n - 2], right_delta);
         }
 
         /**
