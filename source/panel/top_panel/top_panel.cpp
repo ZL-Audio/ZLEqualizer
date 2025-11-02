@@ -13,7 +13,7 @@
 namespace zlpanel {
     TopPanel::TopPanel(PluginProcessor& p, zlgui::UIBase& base,
                        multilingual::TooltipHelper& tooltip_helper) :
-        base_(base), updater_(),
+        p_ref_(p), base_(base), updater_(),
         logo_panel_(p, base, tooltip_helper),
         output_label_(p, base),
         analyzer_label_(p, base),
@@ -56,6 +56,12 @@ namespace zlpanel {
         bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
 
+        ext_button_.getButton().onClick = [this]() {
+            if (ext_button_.getToggleState()) {
+                auto* para = p_ref_.parameters_NA_.getParameter(zlstate::PFFTSideON::kID);
+                updateValue(para, 1.f);
+            }
+        };
         ext_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         ext_button_.setBufferedToImage(true);
         addAndMakeVisible(ext_button_);

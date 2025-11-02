@@ -28,6 +28,7 @@ namespace zlpanel {
         void repaintCallbackSlow();
 
     private:
+        PluginProcessor& p_ref_;
         zlgui::UIBase &base_;
         zlgui::attachment::ComponentUpdater updater_;
         LogoPanel logo_panel_;
@@ -43,7 +44,7 @@ namespace zlpanel {
 
         const std::unique_ptr<juce::Drawable> ext_drawable_;
         zlgui::button::ClickButton ext_button_;
-        zlgui::attachment::ButtonAttachment<true> ext_attach_;
+        zlgui::attachment::ButtonAttachment<false> ext_attach_;
 
         const std::unique_ptr<juce::Drawable> match_drawable_;
         zlgui::button::ClickButton match_button_;
