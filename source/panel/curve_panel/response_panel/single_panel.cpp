@@ -178,8 +178,13 @@ namespace zlpanel {
                                                                  juce::PathStrokeType::curved,
                                                                  juce::PathStrokeType::square));
             if (const auto line = button_lines_[band]; line.getEndX() > 0.f) {
-                g.fillRect(line.getStartX() - curve_thickness * .35f, line.getStartY(),
-                           curve_thickness * .7f, line.getEndY() - line.getStartY());
+                if (line.getEndY() > line.getStartY()) {
+                    g.fillRect(line.getStartX() - curve_thickness * .35f, line.getStartY(),
+                               curve_thickness * .7f, line.getEndY() - line.getStartY());
+                } else {
+                    g.fillRect(line.getStartX() - curve_thickness * .35f, line.getEndY(),
+                               curve_thickness * .7f, line.getStartY() - line.getEndY());
+                }
             }
         }
     }
