@@ -37,7 +37,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
     setResizable(true, p.wrapperType != PluginProcessor::wrapperType_AudioUnitv3);
 
     this->resizableCorner = std::make_unique<zlgui::ResizeCorner>(base_, this, getConstrainer(),
-                                                                  zlgui::ResizeCorner::kScaleWithWidth, 0.025f);
+                                                                  zlgui::ResizeCorner::kScaleWithFontSize, 1.25f);
     addChildComponent(this->resizableCorner.get());
     this->resizableCorner->setAlwaysOnTop(true);
     this->resizableCorner->resized();

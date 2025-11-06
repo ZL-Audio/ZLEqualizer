@@ -10,7 +10,6 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-
 #include "../interface_definitions.hpp"
 
 namespace zlgui {
@@ -20,7 +19,8 @@ namespace zlgui {
 
         enum ScaleType {
             kScaleWithWidth,
-            kScaleWithHeight
+            kScaleWithHeight,
+            kScaleWithFontSize
         };
 
         ResizeCorner(UIBase& base,
@@ -93,6 +93,14 @@ namespace zlgui {
                 case kScaleWithHeight: {
                     corner_size = parent_bound.getHeight();
                     break;
+                }
+                case kScaleWithFontSize: {
+                    const auto max_font_size = static_cast<float>(parent_bound.getWidth()) * 0.016f;
+                    const auto min_font_size = max_font_size * .25f;
+                    const auto font_size = base_.getFontMode() == 0
+                        ? max_font_size * base_.getFontScale()
+                        : std::clamp(base_.getStaticFontSize(), min_font_size, max_font_size);
+                    corner_size = static_cast<int>(std::round(font_size));
                 }
                 }
                 corner_size = std::max(1, static_cast<int>(
