@@ -18,10 +18,14 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
     base_(p.state_),
     main_panel_(p, base_) {
     // set font
+#if defined(JUCE_WINDOWS)
+    base_.font_ = juce::Typeface::createSystemTypefaceFor(
+        BinaryData::InterSubsetMediumNoHinting_ttf, BinaryData::InterSubsetMediumNoHinting_ttfSize);
+#else
     base_.font_ = juce::Typeface::createSystemTypefaceFor(
         BinaryData::InterSubsetMedium_ttf, BinaryData::InterSubsetMedium_ttfSize);
+#endif
     juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(base_.font_);
-
     // add the main panel
     addAndMakeVisible(main_panel_);
 
