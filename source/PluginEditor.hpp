@@ -16,10 +16,10 @@
 #include "state/state.hpp"
 
 //==============================================================================
-class PluginEditor : public juce::AudioProcessorEditor,
-                     private juce::Timer,
-                     private juce::ValueTree::Listener,
-                     private juce::AsyncUpdater {
+class PluginEditor final : public juce::AudioProcessorEditor,
+                           private juce::Timer,
+                           private juce::ValueTree::Listener,
+                           private juce::AsyncUpdater {
 public:
     explicit PluginEditor(PluginProcessor&);
 

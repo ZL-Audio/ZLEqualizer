@@ -59,14 +59,16 @@ namespace zlpanel {
         addAndMakeVisible(tooltip_label_);
         addAndMakeVisible(tooltip_box_);
 
-        font_label_.setText("Font", juce::dontSendNotification);
+        font_label_.setText("UI Scaling", juce::dontSendNotification);
         font_label_.setJustificationType(juce::Justification::centredRight);
         font_label_.setLookAndFeel(&name_laf_);
         addAndMakeVisible(font_label_);
+        font_mode_box_.getBox().addListener(this);
         addAndMakeVisible(font_mode_box_);
         font_scale_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(0.5, 1.0, .01));
         font_scale_slider_.getSlider().setDoubleClickReturnValue(true, 0.9);
         addAndMakeVisible(font_scale_slider_);
+        static_font_size_slider_.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(static_font_size_slider_);
     }
 
@@ -77,9 +79,10 @@ namespace zlpanel {
         single_curve_slider_.getSlider().setValue(base_.getSingleEQCurveThickness());
         sum_curve_slider_.getSlider().setValue(base_.getSumEQCurveThickness());
         tooltip_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getTooltipLangID()));
-        font_mode_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getFontMode()));
+        font_mode_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getFontMode()), juce::sendNotificationSync);
         font_scale_slider_.getSlider().setValue(static_cast<double>(base_.getFontScale()));
         static_font_size_slider_.getSlider().setValue(static_cast<double>(base_.getFontSize()));
+        comboBoxChanged(&font_mode_box_.getBox());
     }
 
     void OtherUISettingPanel::saveSetting() {
@@ -170,5 +173,19 @@ namespace zlpanel {
 
     void OtherUISettingPanel::setParentWidth(const int width) {
         parent_width_ = width;
+    }
+
+    void OtherUISettingPanel::comboBoxChanged(juce::ComboBox*) {
+        if (font_mode_box_.getBox().getSelectedItemIndex() == 0) {
+            font_scale_slider_.setInterceptsMouseClicks(true, true);
+            font_scale_slider_.setAlpha(1.f);
+            static_font_size_slider_.setInterceptsMouseClicks(false, false);
+            static_font_size_slider_.setAlpha(.5f);
+        } else {
+            font_scale_slider_.setInterceptsMouseClicks(false, false);
+            font_scale_slider_.setAlpha(.5f);
+            static_font_size_slider_.setInterceptsMouseClicks(true, true);
+            static_font_size_slider_.setAlpha(1.f);
+        }
     }
 }

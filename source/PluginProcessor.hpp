@@ -14,7 +14,7 @@
 #include "zlp/zlp.hpp"
 #include "state/state.hpp"
 
-class PluginProcessor : public juce::AudioProcessor {
+class PluginProcessor final : public juce::AudioProcessor {
 public:
     zlstate::DummyProcessor dummy_processor_;
     juce::AudioProcessorValueTreeState parameters_;
