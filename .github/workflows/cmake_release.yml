@@ -99,16 +99,16 @@ jobs:
           cat .env # show us the config
           cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
 
-      - name: Set up custom git config
-        run: git config --global http.postBuffer 1048576000
+      # - name: Set up custom git config
+      #   run: git config --global http.postBuffer 1048576000
 
-      - name: Download AAX pre-release repo
-        if: (matrix.name == 'macOS-x86') || (matrix.name == 'macOS-arm') || (matrix.name == 'Windows-x86')
-        uses: actions/checkout@v5
-        with:
-          repository: "ZL-Audio/ZLEqualizerAAX"
-          path: "aax_releases"
-          ssh-key: ${{ secrets.AAX_RELEASE_DEPLOY_KEY }}
+      # - name: Download AAX pre-release repo
+      #   if: (matrix.name == 'macOS-x86') || (matrix.name == 'macOS-arm') || (matrix.name == 'Windows-x86')
+      #   uses: actions/checkout@v5
+      #   with:
+      #     repository: "ZL-Audio/ZLEqualizerAAX"
+      #     path: "aax_releases"
+      #     ssh-key: ${{ secrets.AAX_RELEASE_DEPLOY_KEY }}
 
       - name: Set additional env vars for next steps
         shell: bash
