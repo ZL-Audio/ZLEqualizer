@@ -12,7 +12,7 @@
 namespace zlpanel {
     FFTPanel::FFTPanel(PluginProcessor& p,
                        zlgui::UIBase& base,
-                       const multilingual::TooltipHelper& tooltip_helper) :
+                       const multilingual::TooltipHelper&) :
         Thread("fft_panel"),
         p_ref_(p), base_(base),
         pre_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPreON::kID)),
@@ -21,7 +21,6 @@ namespace zlpanel {
         fft_min_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
         collision_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionON::kID)),
         collision_strength_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionStrength::kID)) {
-        juce::ignoreUnused(tooltip_helper);
         p_ref_.getController().getFFTAnalyzer().setMinFreq(10.0);
 
         gradient_.isRadial = true;
@@ -38,7 +37,6 @@ namespace zlpanel {
         if (!lock.owns_lock()) {
             return;
         }
-        // return;
         const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
         const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
         const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
@@ -86,7 +84,7 @@ namespace zlpanel {
         const auto bottom_area_height = getBottomAreaHeight(base_.getFontSize());
         const auto positive_height = base_.getFontSize() * kDraggerScale;
         const auto negative_height = bound.getHeight() - positive_height;
-        const auto mid_height = negative_height - positive_height * 2.f - static_cast<float>(bottom_area_height);
+        const auto mid_height = negative_height - positive_height - static_cast<float>(bottom_area_height);
 
         min_ratio_.store(negative_height / mid_height, std::memory_order::relaxed);
         max_ratio_.store(-positive_height / mid_height, std::memory_order::relaxed);
@@ -208,7 +206,7 @@ namespace zlpanel {
                 path.lineTo(xs_[i], ys[i]);
             }
         }
-        path.lineTo(xs_.back(), bound.getBottom() + bound.getHeight() * 1.05f);
+        path.lineTo(xs_.back(), bound.getHeight() * 1.05f);
         path.closeSubPath();
     }
 

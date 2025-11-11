@@ -28,6 +28,7 @@
 #include "../dsp/filter/fir_filter/zero_correction/zero_calculator.hpp"
 
 #include "../dsp/fft_analyzer/multiple_fft_analyzer.hpp"
+#include "../dsp/eq_match/eq_match_analyzer.hpp"
 #include "../dsp/splitter/inplace_ms_splitter.hpp"
 #include "../dsp/histogram/histogram.hpp"
 
@@ -142,7 +143,7 @@ namespace zlp {
             editor_on_.store(editor_on, std::memory_order::relaxed);
         }
 
-        zldsp::analyzer::MultipleFFTAnalyzer<double, 3, 251>& getFFTAnalyzer() {
+        zldsp::analyzer::MultipleFFTAnalyzer<double, 3, kAnalyzerPointNum>& getFFTAnalyzer() {
             return fft_analyzer_;
         }
 
@@ -224,6 +225,14 @@ namespace zlp {
 
         double getDisplayedGain() const {
             return displayed_gain_.load(std::memory_order::relaxed);
+        }
+
+        void setEQMatchAnalyzerON(const bool f) {
+            eq_match_analyzer_on_.store(f, std::memory_order::relaxed);
+        }
+
+        zldsp::eq_match::EqMatchAnalyzer<double, kAnalyzerPointNum>& getEQMatchAnalyzer() {
+            return eq_match_analyzer_;
         }
 
     private:
@@ -347,7 +356,7 @@ namespace zlp {
         std::array<double*, 2> pre_main_pointers_{};
         std::atomic<bool> editor_on_{false};
         bool c_editor_on_{false};
-        zldsp::analyzer::MultipleFFTAnalyzer<double, 3, 251> fft_analyzer_;
+        zldsp::analyzer::MultipleFFTAnalyzer<double, 3, kAnalyzerPointNum> fft_analyzer_;
         // solo related
         zldsp::filter::TDF<double, kFilterSize / 2> solo_filter_;
         std::array<std::vector<double>, 2> solo_buffers_{};
@@ -388,6 +397,9 @@ namespace zlp {
         std::atomic<int> delay_latency_{0};
         bool c_delay_on_{false};
         zldsp::delay::IntegerDelay<double> delay_{};
+        // eq match analyzer
+        std::atomic<bool> eq_match_analyzer_on_{false};
+        zldsp::eq_match::EqMatchAnalyzer<double, kAnalyzerPointNum> eq_match_analyzer_;
 
         void prepareBuffer();
 

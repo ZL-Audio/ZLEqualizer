@@ -15,6 +15,7 @@
 #include "../container/container.hpp"
 #include "../interpolation/interpolation.hpp"
 #include "../fft/fft.hpp"
+#include "../vector/vector.hpp"
 #include "../chore/decibels.hpp"
 #include "../lock/spin_lock.hpp"
 
@@ -35,14 +36,6 @@ namespace zldsp::analyzer {
             default_fft_order_ = fft_order;
 
             reset();
-
-            for (auto& d : decay_rates_) {
-                d.store(0.95f);
-            }
-            for (auto& d : actual_decay_rates_) {
-                d.store(0.95f);
-            }
-            updateActualDecayRate();
         }
 
         ~MultipleAvgFFTBase() = default;
@@ -183,7 +176,6 @@ namespace zldsp::analyzer {
                     auto v = kfr::make_univector(ms_fft_buffer_[i].data() + start_idx, range_length);
                     float mean_square = kfr::sum(v);
                     mean_square = mean_square / static_cast<float>(range_length);
-
                     input_dbs[j] = chore::squareGainToDecibels(mean_square * avg_scale);
                 }
                 // interpolate

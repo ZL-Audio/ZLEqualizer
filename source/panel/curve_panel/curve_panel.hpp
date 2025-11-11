@@ -11,12 +11,14 @@
 
 #include "background_panel/background_panel.hpp"
 #include "fft_panel/fft_panel.hpp"
+#include "fft_panel/match_fft_panel.hpp"
 #include "response_panel/response_panel.hpp"
 #include "output_panel/output_panel.hpp"
 #include "analyzer_panel/analyzer_panel.hpp"
 
 namespace zlpanel {
-    class CurvePanel final : public juce::Component {
+    class CurvePanel final : public juce::Component,
+                             private juce::ValueTree::Listener {
     public:
         explicit CurvePanel(PluginProcessor& p, zlgui::UIBase& base,
                             const multilingual::TooltipHelper& tooltip_helper);
@@ -46,7 +48,11 @@ namespace zlpanel {
         BackgroundPanel background_panel_;
         FFTPanel fft_panel_;
         ResponsePanel response_panel_;
+        MatchFFTPanel match_fft_panel_;
+        ScalePanel scale_panel_;
         OutputPanel output_panel_;
         AnalyzerPanel analyzer_panel_;
+
+        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };
 }

@@ -581,4 +581,8 @@ namespace zlpanel {
         }
         }
     }
+
+    void ResponsePanel::turnMatchON(const bool match_on) {
+        dragger_panel_.setVisible(!match_on);
+    }
 }

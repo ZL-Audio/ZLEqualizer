@@ -38,6 +38,8 @@ namespace zlpanel {
 
         void run() override;
 
+        void turnMatchON(bool match_on);
+
     private:
         static constexpr std::array kIDs{
             zlp::PFilterStatus::kID, zlp::PLRMode::kID,
