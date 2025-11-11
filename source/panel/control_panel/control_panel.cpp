@@ -15,7 +15,8 @@ namespace zlpanel {
         p_ref_(p), base_(base),
         left_control_panel_(p, base, tooltip_helper),
         right_control_panel_(p, base, tooltip_helper),
-        side_loudness_display_panel_(p, base) {
+        side_loudness_display_panel_(p, base),
+        match_control_panel_(p, base, tooltip_helper) {
         addAndMakeVisible(mouse_event_eater_);
 
         left_control_panel_.setBufferedToImage(true);
@@ -26,7 +27,16 @@ namespace zlpanel {
 
         addChildComponent(side_loudness_display_panel_);
 
+        match_control_panel_.setBufferedToImage(true);
+        addChildComponent(match_control_panel_);
+
         setInterceptsMouseClicks(false, true);
+
+        base_.getPanelValueTree().addListener(this);
+    }
+
+    ControlPanel::~ControlPanel() {
+        base_.getPanelValueTree().removeListener(this);
     }
 
     int ControlPanel::getIdealWidth() const {
@@ -46,6 +56,10 @@ namespace zlpanel {
         const auto font_size = base_.getFontSize();
         auto bound = getLocalBounds();
         const auto padding = getPaddingSize(font_size);
+
+        match_control_panel_.setBounds(bound.withSizeKeepingCentre(
+            match_control_panel_.getIdealWidth(), match_control_panel_.getIdealHeight()));
+
         const auto left_width = left_control_panel_.getIdealWidth();
         center_bound_ = bound.withSizeKeepingCentre(left_width, bound.getHeight());
         mouse_center_bound_ = center_bound_.reduced(padding);
@@ -94,10 +108,12 @@ namespace zlpanel {
             left_control_panel_.updateBand();
             right_control_panel_.updateBand();
             side_loudness_display_panel_.updateBand();
-            setVisible(true);
+            left_control_panel_.setVisible(true);
         } else {
             dynamic_on_ptr_ = nullptr;
-            setVisible(false);
+            left_control_panel_.setVisible(false);
+            right_control_panel_.setVisible(false);
+            side_loudness_display_panel_.setVisible(false);
         }
         repaintCallBackSlow();
     }
@@ -112,5 +128,14 @@ namespace zlpanel {
         mouse_event_eater_.setBounds(dynamic_on ? mouse_full_bound_ : mouse_center_bound_);
         left_control_panel_.setBounds(dynamic_on ? left_bound_ : center_bound_);
         right_control_panel_.setVisible(dynamic_on);
+    }
+
+    void ControlPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
+        if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kMatchPanel, property)) {
+            base_.setSelectedBand(zlp::kBandNum);
+            const auto f = static_cast<int>(std::round(
+                static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchPanel))));
+            match_control_panel_.setVisible(f > 0);
+        }
     }
 }

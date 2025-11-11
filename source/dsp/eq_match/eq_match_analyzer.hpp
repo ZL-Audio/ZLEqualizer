@@ -12,15 +12,15 @@
 #include "../fft_analyzer/multiple_avg_fft_base.hpp"
 
 namespace zldsp::eq_match {
+    enum MatchMode {
+        kMatchSide,
+        kMatchSlope,
+        kMatchPreset
+    };
+
     template <typename FloatType, size_t kPointNum>
     class EqMatchAnalyzer final : public zldsp::analyzer::MultipleAvgFFTBase<FloatType, 2, kPointNum> {
     public:
-        enum MatchMode {
-            kMatchSide,
-            kMatchPreset,
-            kMatchSlope
-        };
-
         static constexpr size_t kSmoothSize = 7;
 
         explicit EqMatchAnalyzer(size_t fft_order = 12) :
@@ -82,17 +82,19 @@ namespace zldsp::eq_match {
         }
 
         void prepareTarget() {
-            c_mode_ = mode_.load();
-            if (c_mode_ == kMatchSlope && to_update_from_slope_.exchange(false, std::memory_order::acquire)) {
+            const auto new_mode = mode_.load();
+            const auto mode_changed = (new_mode != c_mode_);
+            if (mode_changed) {
+                c_mode_ = new_mode;
+            }
+            if (c_mode_ == kMatchSlope &&
+                (mode_changed || to_update_from_slope_.exchange(false, std::memory_order::acquire))) {
                 // update target from a slope value
                 const auto min_log2 = std::log2(this->interplot_freqs_.front());
                 const auto max_log2 = std::log2(this->interplot_freqs_.back());
-                const auto total_slope = target_slope_.load(std::memory_order::relaxed) * (max_log2 - min_log2);
-                const auto delta_slope = total_slope / static_cast<float>(this->interplot_freqs_.size() - 1);
-                auto slope = total_slope * .5f;
+                const auto total_slope = -target_slope_.load(std::memory_order::relaxed) * (max_log2 - min_log2);
                 for (size_t i = 0; i < interpolated_target_dbs_.size(); ++i) {
-                    interpolated_target_dbs_[i] = slope;
-                    slope += delta_slope;
+                    interpolated_target_dbs_[i] = (this->interplot_freqs_p_[i] - .5f) * total_slope;
                 }
             } else if (c_mode_ == kMatchPreset && to_update_from_preset_.load()) {
                 // update target from a preset
@@ -157,16 +159,16 @@ namespace zldsp::eq_match {
                 }
                 diffs_[i] = sum;
             }
-            if (std::abs(rescale_ - 1.f) > 1e-3f) {
-                diff_v = diff_v * rescale_;
-            }
             // center diffs & apply shift/drawing
+            const auto min_log2 = std::log2(this->interplot_freqs_.front());
+            const auto max_log2 = std::log2(this->interplot_freqs_.back());
+            const auto total_slope = -diff_slope_.load(std::memory_order::relaxed) * (max_log2 - min_log2);
             const auto c_shift = diff_shift_.load(std::memory_order::relaxed);
-            const auto diff_c = kfr::mean(diff_v) - c_shift;
+            const auto diff_c = kfr::mean(diff_v) + c_shift;
             for (size_t idx = 0; idx < diffs_.size(); ++idx) {
                 diffs_[idx] = drawing_diff_indicator_[idx]
                     ? drawing_diff_values_[idx] + c_shift
-                    : diffs_[idx] - diff_c;
+                    : diffs_[idx] - diff_c + total_slope * (this->interplot_freqs_p_[idx] - .5f);
             }
             // save target dbs & diffs
             std::lock_guard<std::mutex> lock(saved_mutex_);
@@ -219,16 +221,22 @@ namespace zldsp::eq_match {
         }
 
         void setDiffSmooth(const float x) {
-            diff_smooth_.store(x);
-            to_update_smooth_.store(true);
+            diff_smooth_.store(x, std::memory_order::relaxed);
+            to_update_smooth_.store(true, std::memory_order::release);
         }
 
         void setDiffSlope(const float x) {
-            diff_slope_.store(x);
+            diff_slope_.store(x, std::memory_order::relaxed);
         }
 
         void setDiffShift(const float x) {
-            diff_shift_.store(x);
+            diff_shift_.store(x, std::memory_order::relaxed);
+        }
+
+        void saveFreq(std::vector<float>& freqs) {
+            std::lock_guard<std::mutex> lock(saved_mutex_);
+            freqs.resize(saved_freqs_.size());
+            zldsp::vector::copy(freqs.data(), saved_freqs_.data(), freqs.size());
         }
 
         void saveTarget(std::vector<float>& target_dbs) {
@@ -264,6 +272,10 @@ namespace zldsp::eq_match {
         }
 
     private:
+        static constexpr std::array<float, kSmoothSize> kIdentityKernel{
+            0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f};
+        static constexpr std::array<float, kSmoothSize> kMaxSmoothKernel{
+            0.070014f, 0.131107f, 0.191157f, 0.215443f, 0.191157f, 0.131107f, 0.070014f};
         MatchMode c_mode_{MatchMode::kMatchSide};
         std::atomic<MatchMode> mode_{MatchMode::kMatchSide};
         std::atomic<bool> to_reset_match_{false};
@@ -282,7 +294,7 @@ namespace zldsp::eq_match {
         std::vector<bool> drawing_diff_indicator_{};
         std::vector<float> drawing_diff_values_{};
 
-        std::atomic<float> target_slope_{4.5f};
+        std::atomic<float> target_slope_{0.f};
         std::atomic<bool> to_update_from_slope_{false};
         std::vector<float> preset_freqs_{}, preset_dbs_{};
         std::atomic<bool> to_update_from_preset_{false};
@@ -291,25 +303,15 @@ namespace zldsp::eq_match {
         std::atomic<float> diff_smooth_{.5f}, diff_slope_{.0f}, diff_shift_{0.f};
         std::atomic<bool> to_update_smooth_{true};
         std::array<float, kSmoothSize> smooth_kernel_{};
-        float rescale_ = 1.f;
 
         void updateSmooth() {
-            if (to_update_smooth_.exchange(false)) {
+            if (to_update_smooth_.exchange(false, std::memory_order::acquire)) {
                 smooth_kernel_[kSmoothSize / 2] = 1.0;
-                const auto c_smooth = std::clamp(diff_smooth_.load(), 0.f, .5f);
-                rescale_ = std::clamp(2.f - 2 * diff_smooth_.load(), 0.f, 1.f);
-                constexpr float mid_slope = -1.f / static_cast<float>(kSmoothSize / 2);
-                const auto temp_slope = c_smooth < 0.5
-                    ? -1.f * (1 - c_smooth * 2.f) + c_smooth * 2.f * mid_slope
-                    : (2.f - 2.f * c_smooth) * mid_slope;
-                for (size_t i = 1; i < kSmoothSize / 2 + 1; i++) {
-                    smooth_kernel_[kSmoothSize / 2 + i] = std::max(temp_slope * static_cast<float>(i) + 1, 0.f);
-                    smooth_kernel_[kSmoothSize / 2 - i] = smooth_kernel_[kSmoothSize / 2 + i];
-                }
-                const auto kernel_c = 1.f /
-                    std::max(std::reduce(smooth_kernel_.begin(), smooth_kernel_.end(), 0.0f), 0.01f);
-                for (auto& x : smooth_kernel_) {
-                    x *= kernel_c;
+                const auto c_smooth = diff_smooth_.load(std::memory_order::relaxed);
+                const auto mix = std::clamp(2.f * c_smooth, 0.f, 1.f);
+                const auto scale = std::clamp(2.f - 2.f * c_smooth, 0.f, 1.f);
+                for (size_t i = 0; i < kSmoothSize; ++i) {
+                    smooth_kernel_[i] = (kIdentityKernel[i] * (1.f - mix) + kMaxSmoothKernel[i] * mix) * scale;
                 }
             }
         }

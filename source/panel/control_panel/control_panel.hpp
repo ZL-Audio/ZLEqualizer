@@ -11,15 +11,17 @@
 
 #include "left_control_panel.hpp"
 #include "right_control_panel.hpp"
+#include "match_control_panel.hpp"
 #include "side_loudness_display_panel.hpp"
 
 namespace zlpanel {
-    class ControlPanel final : public juce::Component {
+    class ControlPanel final : public juce::Component,
+                               private juce::ValueTree::Listener {
     public:
         explicit ControlPanel(PluginProcessor& p, zlgui::UIBase& base,
                               const multilingual::TooltipHelper& tooltip_helper);
 
-        ~ControlPanel() override = default;
+        ~ControlPanel() override;
 
         int getIdealWidth() const;
 
@@ -43,6 +45,7 @@ namespace zlpanel {
         LeftControlPanel left_control_panel_;
         RightControlPanel right_control_panel_;
         SideLoudnessDisplayPanel side_loudness_display_panel_;
+        MatchControlPanel match_control_panel_;
 
         std::atomic<float>* dynamic_on_ptr_{nullptr};
         bool c_dynamic_on_{false};
@@ -53,5 +56,7 @@ namespace zlpanel {
         juce::Rectangle<int> center_bound_{};
 
         void changeLeftRightBound(bool dynamic_on);
+
+        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };
 }

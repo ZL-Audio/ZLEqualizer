@@ -51,6 +51,8 @@ namespace zlpanel {
             } else {
                 setVisible(false);
             }
+        } else {
+            setVisible(false);
         }
     }
 
