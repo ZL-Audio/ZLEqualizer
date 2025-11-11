@@ -21,7 +21,7 @@ namespace zldsp::eq_match {
             kMatchSlope
         };
 
-        static constexpr size_t kSmoothSize = 11;
+        static constexpr size_t kSmoothSize = 7;
 
         explicit EqMatchAnalyzer(size_t fft_order = 12) :
             zldsp::analyzer::MultipleAvgFFTBase<FloatType, 2, 251>(fft_order) {
@@ -57,7 +57,7 @@ namespace zldsp::eq_match {
             if (to_reset_match_.exchange(false, std::memory_order::acquire)) {
                 const auto n = this->getResultDBs()[0].size();
                 diffs_.resize(n);
-                original_diffs_.resize(n);
+                original_diffs_.resize(n + (kSmoothSize / 2) * 2);
                 saved_freqs_.resize(n);
                 saved_target_dbs_.resize(n);
                 saved_diffs_.resize(n);
@@ -138,8 +138,28 @@ namespace zldsp::eq_match {
             auto target_v = c_mode_ == kMatchSide
                 ? kfr::make_univector(this->getResultDBs()[1])
                 : kfr::make_univector(interpolated_target_dbs_);
+            auto original_diff_v = kfr::make_univector(
+                original_diffs_.data() + kSmoothSize / 2, diffs_.size());
             auto diff_v = kfr::make_univector(diffs_);
-            diff_v = target_v - source_v;
+            original_diff_v = source_v - target_v;
+            // smooth diffs
+            updateSmooth();
+            for (size_t i = 0; i < kSmoothSize / 2; ++i) {
+                original_diffs_[i] = original_diffs_[kSmoothSize / 2];
+            }
+            for (size_t i = diffs_.size() + kSmoothSize / 2; i < original_diffs_.size(); ++i) {
+                original_diffs_[i] = original_diffs_[diffs_.size() + kSmoothSize / 2 - 1];
+            }
+            for (size_t i = 0; i < diffs_.size(); ++i) {
+                float sum = 0.f;
+                for (size_t j = 0; j < kSmoothSize; ++j) {
+                    sum += original_diffs_[i + j] * smooth_kernel_[j];
+                }
+                diffs_[i] = sum;
+            }
+            if (std::abs(rescale_ - 1.f) > 1e-3f) {
+                diff_v = diff_v * rescale_;
+            }
             // center diffs & apply shift/drawing
             const auto c_shift = diff_shift_.load(std::memory_order::relaxed);
             const auto diff_c = kfr::mean(diff_v) - c_shift;
@@ -276,20 +296,20 @@ namespace zldsp::eq_match {
         void updateSmooth() {
             if (to_update_smooth_.exchange(false)) {
                 smooth_kernel_[kSmoothSize / 2] = 1.0;
-                const auto currentSmooth = std::clamp(diff_smooth_.load(), 0.f, .5f);
+                const auto c_smooth = std::clamp(diff_smooth_.load(), 0.f, .5f);
                 rescale_ = std::clamp(2.f - 2 * diff_smooth_.load(), 0.f, 1.f);
-                constexpr float midSlope = -1.f / static_cast<float>(kSmoothSize / 2);
-                const auto tempSlope = currentSmooth < 0.5
-                    ? -1.f * (1 - currentSmooth * 2.f) + currentSmooth * 2.f * midSlope
-                    : (2.f - 2.f * currentSmooth) * midSlope;
+                constexpr float mid_slope = -1.f / static_cast<float>(kSmoothSize / 2);
+                const auto temp_slope = c_smooth < 0.5
+                    ? -1.f * (1 - c_smooth * 2.f) + c_smooth * 2.f * mid_slope
+                    : (2.f - 2.f * c_smooth) * mid_slope;
                 for (size_t i = 1; i < kSmoothSize / 2 + 1; i++) {
-                    smooth_kernel_[kSmoothSize / 2 + i] = std::max(tempSlope * static_cast<float>(i) + 1, 0.f);
+                    smooth_kernel_[kSmoothSize / 2 + i] = std::max(temp_slope * static_cast<float>(i) + 1, 0.f);
                     smooth_kernel_[kSmoothSize / 2 - i] = smooth_kernel_[kSmoothSize / 2 + i];
                 }
-                const auto kernelC = 1.f /
+                const auto kernel_c = 1.f /
                     std::max(std::reduce(smooth_kernel_.begin(), smooth_kernel_.end(), 0.0f), 0.01f);
                 for (auto& x : smooth_kernel_) {
-                    x *= kernelC;
+                    x *= kernel_c;
                 }
             }
         }
