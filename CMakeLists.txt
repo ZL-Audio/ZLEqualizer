@@ -193,10 +193,10 @@ target_link_libraries(SharedCode
 )
 
 # add nlopt
-#set(BUILD_SHARED_LIBS OFF)
-#set(DISABLE_FP_CONTRACT OFF)
-#add_subdirectory(nlopt)
-#target_link_libraries(SharedCode INTERFACE nlopt)
+set(BUILD_SHARED_LIBS OFF)
+set(DISABLE_FP_CONTRACT OFF)
+add_subdirectory(nlopt)
+target_link_libraries(SharedCode INTERFACE nlopt)
 
 # add kfr
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
