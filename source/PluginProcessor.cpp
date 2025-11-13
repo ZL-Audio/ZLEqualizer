@@ -180,8 +180,9 @@ void PluginProcessor::processBlockBypassed(juce::AudioBuffer<double>& buffer, ju
 template <bool bypass>
 void PluginProcessor::processBlockInternal(juce::AudioBuffer<float>& buffer) {
     juce::ScopedNoDenormals no_denormals;
-    if (buffer.getNumSamples() == 0)
+    if (buffer.getNumSamples() == 0) {
         return; // ignore empty blocks
+    }
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;
     const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
     switch (channel_layout_) {
@@ -271,8 +272,9 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<float>& buffer) {
 template <bool bypass>
 void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
     juce::ScopedNoDenormals no_denormals;
-    if (buffer.getNumSamples() == 0)
+    if (buffer.getNumSamples() == 0) {
         return; // ignore empty blocks
+    }
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;
     const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
     switch (channel_layout_) {

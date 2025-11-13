@@ -117,13 +117,34 @@ namespace zldsp::eq_match {
 
         void prepareDrawing() {
             if (to_update_drawing_.exchange(false, std::memory_order::acquire)) {
+                bool pre_f{false};
+                float pre_v{0.f};
                 for (size_t i = 0; i < 100; ++i) {
                     const auto f1 = drawing_flag_[i].load(std::memory_order::relaxed);
                     const auto v1 = drawing_diffs_[i].load(std::memory_order::relaxed);
-                    for (size_t j = drawing_mapping_start_[i]; j < drawing_mapping_start_[i + 1]; ++j) {
-                        drawing_diff_indicator_[j] = f1;
-                        drawing_diff_values_[j] = v1;
+                    const auto mapping_start = drawing_mapping_start_[i];
+                    const auto mapping_end = drawing_mapping_start_[i + 1];
+                    const auto count = mapping_end - mapping_start;
+                    if (f1) {
+                        if (pre_f && count > 1) {
+                            for (size_t j = mapping_start; j < mapping_end; ++j) {
+                                const auto r = static_cast<float>(j - mapping_start + 1) / static_cast<float>(count);
+                                drawing_diff_indicator_[j] = true;
+                                drawing_diff_values_[j] = pre_v + r * (v1 - pre_v);
+                            }
+                        } else {
+                            for (size_t j = mapping_start; j < mapping_end; ++j) {
+                                drawing_diff_indicator_[j] = true;
+                                drawing_diff_values_[j] = v1;
+                            }
+                        }
+                    } else {
+                        for (size_t j = mapping_start; j < mapping_end; ++j) {
+                            drawing_diff_indicator_[j] = false;
+                        }
                     }
+                    pre_f = f1;
+                    pre_v = v1;
                 }
                 const auto f1 = drawing_flag_.back().load(std::memory_order::relaxed);
                 const auto v1 = drawing_diffs_.back().load(std::memory_order::relaxed);
@@ -252,14 +273,14 @@ namespace zldsp::eq_match {
         }
 
         void setDrawingDiffs(const float idx_p, const float diff) {
-            const auto idx = static_cast<size_t>(std::round(idx_p) * 100.f);
+            const auto idx = static_cast<size_t>(std::round(std::clamp(idx_p, 0.f, 1.f) * 100.f));
             drawing_diffs_[idx].store(diff - diff_shift_.load(std::memory_order::relaxed), std::memory_order::relaxed);
             drawing_flag_[idx].store(true, std::memory_order::relaxed);
             to_update_drawing_.store(true, std::memory_order::release);
         }
 
         void clearDrawingDiffs(const float idx_p) {
-            const auto idx = static_cast<size_t>(std::round(idx_p) * 100.f);
+            const auto idx = static_cast<size_t>(std::round(std::clamp(idx_p, 0.f, 1.f) * 100.f));
             drawing_flag_[idx].store(false, std::memory_order::relaxed);
             to_update_drawing_.store(true, std::memory_order::release);
         }

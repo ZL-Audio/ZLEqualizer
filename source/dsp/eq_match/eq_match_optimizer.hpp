@@ -134,7 +134,7 @@ namespace zldsp::eq_match {
         }
 
     private:
-        static constexpr double kEps = 1e-3, kHighOrderEps = 1.;
+        static constexpr double kEps = 1e-3, kHighOrderEps = 4.;
 
         static constexpr std::array kAlgos1{
             nlopt::algorithm::LD_MMA, nlopt::algorithm::LD_SLSQP, nlopt::algorithm::LD_VAR2

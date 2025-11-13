@@ -54,8 +54,12 @@ namespace zlpanel {
         min_ratio_.store(negative_height / mid_height, std::memory_order::relaxed);
         max_ratio_.store(-positive_height / mid_height, std::memory_order::relaxed);
 
-        k_.store(-mid_height * .5f, std::memory_order::relaxed);
-        b_.store(positive_height + mid_height * .5f, std::memory_order::relaxed);
+        if (mid_height > 1.f) {
+            drawing_k_ = -1.f / (mid_height * .5f);
+            drawing_b_ = -(positive_height + mid_height * .5f);
+            k_.store(1.f / drawing_k_, std::memory_order::relaxed);
+            b_.store(-drawing_b_, std::memory_order::relaxed);
+        }
     }
 
     void MatchFFTPanel::updateSampleRate(const double sample_rate) {
@@ -71,6 +75,7 @@ namespace zlpanel {
         bound.setWidth(bound.getWidth() * kFFTSizeOverWidth);
         bound.setWidth(bound.getWidth() * static_cast<float>(
             std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1)));
+        fft_width_ = bound.getWidth();
         atomic_bound_.store(bound);
     }
 
@@ -156,6 +161,74 @@ namespace zlpanel {
             p_ref_.getController().setEQMatchAnalyzerON(false);
             source_path_.clear();
             target_path_.clear();
+        }
+    }
+
+    void MatchFFTPanel::mouseDown(const juce::MouseEvent& event) {
+        if (event.mods.isCommandDown()) {
+            const auto eq_max_idx = eq_max_db_ref_.load(std::memory_order_relaxed);
+            const auto eq_max = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_idx))];
+            drawing_actual_k_ = drawing_k_ * eq_max;
+
+            pre_drawing_p_ = std::round(event.position.x / fft_width_ * 100.f) / 100.f;
+            if (event.mods.isRightButtonDown()) {
+                pre_drawing_db_ = drawing_actual_k_ * (event.position.y + drawing_b_);
+            } else {
+                pre_drawing_db_ = 0.f;
+            }
+        }
+    }
+
+    void MatchFFTPanel::mouseDrag(const juce::MouseEvent& event) {
+        if (event.mods.isCommandDown()) {
+            auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+            const auto c_drawing_p = std::round(event.position.x / fft_width_ * 100.f) / 100.f;
+            const auto count = static_cast<size_t>(std::round(std::abs(pre_drawing_p_ - c_drawing_p) / 0.01f));
+            if (count == 0) {
+                if (pre_drawing_p_ < 0.f || pre_drawing_p_ > 1.f) {
+                    return;
+                }
+                if (event.mods.isRightButtonDown()) {
+                    analyzer.clearDrawingDiffs(pre_drawing_p_);
+                } else if (event.mods.isShiftDown()) {
+                    analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
+                    pre_drawing_db_ = 0.f;
+                } else {
+                    const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
+                    analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
+                    pre_drawing_db_ = c_drawing_db;
+                }
+            } else {
+                const auto delta_p = c_drawing_p > pre_drawing_p_ ? 0.01f : -0.01f;
+                if (event.mods.isRightButtonDown()) {
+                    for (size_t i = 0; i < count; ++i) {
+                        if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+                            analyzer.clearDrawingDiffs(pre_drawing_p_);
+                        }
+                        pre_drawing_p_ += delta_p;
+                    }
+                } else if (event.mods.isShiftDown()) {
+                    for (size_t i = 0; i < count; ++i) {
+                        if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+                            analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
+                        }
+                        pre_drawing_p_ += delta_p;
+                    }
+                    pre_drawing_db_ = 0.f;
+                } else {
+                    const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
+                    const auto delta_db = (c_drawing_db - pre_drawing_db_) / (static_cast<float>(count));
+                    for (size_t i = 0; i < count; ++i) {
+                        if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+                            analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
+                        }
+                        pre_drawing_p_ += delta_p;
+                        pre_drawing_db_ += delta_db;
+                    }
+                    pre_drawing_db_ = c_drawing_db;
+                }
+            }
+            pre_drawing_p_ = c_drawing_p;
         }
     }
 }

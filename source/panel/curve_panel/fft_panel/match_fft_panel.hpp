@@ -51,8 +51,16 @@ namespace zlpanel {
         juce::Path diff_path_, next_diff_path_;
         std::mutex mutex_;
 
+        float fft_width_{1.f};
+        float pre_drawing_p_{0.f}, pre_drawing_db_{0.f};
+        float drawing_k_{1.f}, drawing_actual_k_{1.f}, drawing_b_{0.f};
+
         void updatePath(juce::Path& path, const juce::Rectangle<float>& bound, std::span<float> ys) const;
 
         void visibilityChanged() override;
+
+        void mouseDown(const juce::MouseEvent& event) override;
+
+        void mouseDrag(const juce::MouseEvent& event) override;
     };
 }
