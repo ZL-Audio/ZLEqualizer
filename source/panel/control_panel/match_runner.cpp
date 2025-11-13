@@ -53,6 +53,7 @@ namespace zlpanel {
         num_band_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
             0.0, static_cast<double>(copy_paras_.size()), 1.0));
         num_band_slider_.getSlider().setValue(static_cast<double>(suggest_num_band), juce::dontSendNotification);
+        num_band_slider_.getSlider().setDoubleClickReturnValue(true, static_cast<double>(suggest_num_band));
         num_band_slider_.updateDisplayValue();
         sliderValueChanged(&num_band_slider_.getSlider());
         base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 2.0);
