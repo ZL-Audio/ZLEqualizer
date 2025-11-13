@@ -21,10 +21,10 @@ namespace zlpanel {
                      tooltip_helper.getToolTipText(multilingual::kFilterStructure),
                      {tooltip_helper.getToolTipText(multilingual::kMinimumPhase),
                       tooltip_helper.getToolTipText(multilingual::kStateVariable),
-                      tooltip_helper.getToolTipText(multilingual::kParallelPhase),
+                      tooltip_helper.getToolTipText(multilingual::kParallel),
                       tooltip_helper.getToolTipText(multilingual::kMatchedPhase),
                       tooltip_helper.getToolTipText(multilingual::kMixedPhase),
-                      tooltip_helper.getToolTipText(multilingual::kLinearPhase)}),
+                      tooltip_helper.getToolTipText(multilingual::kZeroPhase)}),
         fstruct_attach_(fstruct_box_.getBox(), p.parameters_, zlp::PFilterStructure::kID, updater_),
         bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
                                                              BinaryData::bypass_svgSize)),
@@ -38,7 +38,8 @@ namespace zlpanel {
         ext_attach_(ext_button_.getButton(), p.parameters_, zlp::PExtSide::kID, updater_),
         match_drawable_(juce::Drawable::createFromImageData(BinaryData::match_svg,
                                                             BinaryData::match_svgSize)),
-        match_button_(base, match_drawable_.get(), match_drawable_.get()) {
+        match_button_(base, match_drawable_.get(), match_drawable_.get(),
+                      tooltip_helper.getToolTipText(multilingual::kEQMatch)) {
         logo_panel_.setBufferedToImage(true);
         addAndMakeVisible(logo_panel_);
 

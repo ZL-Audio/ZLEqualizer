@@ -34,12 +34,15 @@ namespace zlpanel {
                      tooltip_helper.getToolTipText(multilingual::kBandSideSwap)),
         link_drawable_(juce::Drawable::createFromImageData(BinaryData::link_svg,
                                                            BinaryData::link_svgSize)),
-        link_button_(base, link_drawable_.get(), link_drawable_.get()),
-        ftype_box_(zlp::PSideFilterType::kChoices, base),
+        link_button_(base, link_drawable_.get(), link_drawable_.get(),
+            tooltip_helper.getToolTipText(multilingual::kBandDynamicSideLink)),
+        ftype_box_(zlp::PSideFilterType::kChoices, base,
+            tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFilterType)),
         slope_box_(juce::StringArray{
                        "6 dB/oct", "12 dB/oct", "24 dB/oct", "36 dB/oct",
                        "48 dB/oct", "72 dB/oct", "96 dB/oct"
-                   }, base),
+                   }, base,
+                   tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFilterSlope)),
         th_slider_("Threshold", base,
                    tooltip_helper.getToolTipText(multilingual::kBandDynamicThreshold)),
         knee_slider_("Knee", base,
