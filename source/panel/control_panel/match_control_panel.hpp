@@ -12,10 +12,10 @@
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
-#include "../helper/freq_note.hpp"
 #include "../multilingual/tooltip_helper.hpp"
 
 #include "control_background.hpp"
+#include "match_runner.hpp"
 
 namespace zlpanel {
     class MatchControlPanel final : public juce::Component {
@@ -65,6 +65,8 @@ namespace zlpanel {
                 .getChildFile(JucePlugin_Name)
                 .getChildFile("Match Presets");
         std::vector<float> preset_freqs_, preset_dbs_{};
+
+        MatchRunner match_runner_;
 
         void visibilityChanged() override;
 

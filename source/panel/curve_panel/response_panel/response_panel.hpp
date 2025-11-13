@@ -50,7 +50,6 @@ namespace zlpanel {
         };
 
         static constexpr size_t kNumPoints = 400;
-        static constexpr double kFreqScaleConst = 20.0 * std::numbers::pi / 480000.0;
 
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;

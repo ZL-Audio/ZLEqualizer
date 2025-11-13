@@ -54,7 +54,7 @@ namespace zlpanel {
         min_ratio_.store(negative_height / mid_height, std::memory_order::relaxed);
         max_ratio_.store(-positive_height / mid_height, std::memory_order::relaxed);
 
-        k_.store(mid_height * .5f, std::memory_order::relaxed);
+        k_.store(-mid_height * .5f, std::memory_order::relaxed);
         b_.store(positive_height + mid_height * .5f, std::memory_order::relaxed);
     }
 

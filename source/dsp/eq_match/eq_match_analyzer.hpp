@@ -143,7 +143,7 @@ namespace zldsp::eq_match {
             auto original_diff_v = kfr::make_univector(
                 original_diffs_.data() + kSmoothSize / 2, diffs_.size());
             auto diff_v = kfr::make_univector(diffs_);
-            original_diff_v = source_v - target_v;
+            original_diff_v = target_v - source_v;
             // smooth diffs
             updateSmooth();
             for (size_t i = 0; i < kSmoothSize / 2; ++i) {

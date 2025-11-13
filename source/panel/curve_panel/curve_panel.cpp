@@ -116,7 +116,6 @@ namespace zlpanel {
         if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kMatchPanel, property)) {
             const auto f = static_cast<int>(std::round(
                 static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchPanel))));
-            std::cout << f << std::endl;
             match_fft_panel_.setVisible(f > 0);
             scale_panel_.setVisible(f > 0);
             fft_panel_.setVisible(f == 0);

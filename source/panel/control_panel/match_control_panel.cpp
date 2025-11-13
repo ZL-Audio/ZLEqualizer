@@ -8,7 +8,6 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "match_control_panel.hpp"
-
 #include "BinaryData.h"
 
 namespace zlpanel {
@@ -38,7 +37,8 @@ namespace zlpanel {
                           tooltip_helper.getToolTipText(multilingual::kMatchStartFit)),
 
         num_band_slider_("", base,
-                         tooltip_helper.getToolTipText(multilingual::kMatchNumBand)) {
+                         tooltip_helper.getToolTipText(multilingual::kMatchNumBand)),
+        match_runner_(p, base, num_band_slider_) {
         // create the preset directory if not exists
         if (!kPresetDirectory.isDirectory()) {
             const auto f = kPresetDirectory.createDirectory();
@@ -101,14 +101,25 @@ namespace zlpanel {
             addAndMakeVisible(s);
         }
 
+        fit_start_button_.getButton().onClick = [this]() {
+            num_band_slider_.setAlpha(.5f);
+            num_band_slider_.setInterceptsMouseClicks(false, false);
+            for (size_t band = 0; band < zlp::kBandNum; ++band) {
+                const auto band_s = std::to_string(band);
+                auto* status_para = p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + band_s);
+                updateValue(status_para, 0.f);
+                auto* stereo_para = p_ref_.parameters_.getParameter(zlp::PLRMode::kID + band_s);
+                updateValue(stereo_para, 0.f);
+                band_helper::turnOnOffDynamic(p_ref_, band, false);
+            }
+            match_runner_.startThread(juce::Thread::Priority::low);
+        };
         fit_start_button_.setBufferedToImage(true);
         addAndMakeVisible(fit_start_button_);
 
         num_band_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
             0.0, static_cast<double>(zlp::kBandNum), 1.0));
         num_band_slider_.setBufferedToImage(true);
-        num_band_slider_.setAlpha(.5f);
-        num_band_slider_.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(num_band_slider_);
 
         preset_freqs_.reserve(zlp::Controller::kAnalyzerPointNum);
@@ -125,7 +136,6 @@ namespace zlpanel {
 
     int MatchControlPanel::getIdealWidth() const {
         const auto font_size = base_.getFontSize();
-        // const auto slider_width = getSliderWidth(font_size);
         const auto small_slider_width = getSmallSliderWidth(font_size);
         const auto button_size = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
@@ -187,6 +197,9 @@ namespace zlpanel {
     }
 
     void MatchControlPanel::visibilityChanged() {
+        if (!isVisible()) {
+            return;
+        }
         auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
         target_box_.getBox().setSelectedItemIndex(0, juce::dontSendNotification);
         analyzer.setMatchMode(zldsp::eq_match::MatchMode::kMatchSide);
@@ -194,7 +207,10 @@ namespace zlpanel {
         analyzer.setDiffSmooth(0.5f);
         slope_slider_.getSlider().setValue(0., juce::sendNotificationSync);
         analyzer.setDiffSlope(0.f);
-        num_band_slider_.getSlider().setValue(0., juce::sendNotificationSync);
+        num_band_slider_.setAlpha(.5f);
+        num_band_slider_.setInterceptsMouseClicks(false, false);
+        num_band_slider_.getSlider().setValue(0., juce::dontSendNotification);
+        num_band_slider_.updateDisplayValue();
     }
 
     void MatchControlPanel::saveToPreset() {

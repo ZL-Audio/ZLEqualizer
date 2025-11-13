@@ -87,7 +87,7 @@ namespace zldsp::filter {
         }
 
         FloatType getCenterMagnitudeSquare(FloatType w) const {
-            FloatType g0 = static_cast<FloatType>(1.0);
+            auto g0 = static_cast<FloatType>(1.0);
             for (size_t i = 0; i < current_filter_num_; ++i) {
                 g0 *= IdealBase::getMagnitudeSquare<FloatType>(coeffs_[i], w);
             }

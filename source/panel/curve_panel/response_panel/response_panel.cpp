@@ -44,12 +44,6 @@ namespace zlpanel {
             sum_mags_[i].resize(kNumPoints);
             on_lr_indices_[i].reserve(zlp::kBandNum);
         }
-        for (auto& f : ideal_) {
-            f.prepare(480000.0);
-        }
-        for (auto& f : side_ideal_) {
-            f.prepare(480000.0);
-        }
         addAndMakeVisible(single_panel_);
         addAndMakeVisible(sum_panel_);
         addAndMakeVisible(dragger_panel_);
@@ -409,10 +403,17 @@ namespace zlpanel {
                 return;
             }
             fft_max_ = freq_helper::getFFTMax(sample_rate);
+            for (auto& f : ideal_) {
+                f.prepare(sample_rate);
+            }
+            for (auto& f : side_ideal_) {
+                f.prepare(sample_rate);
+            }
             const auto max_log_value = std::log(fft_max_ * 0.1) / static_cast<double>(kFFTSizeOverWidth);
             const auto interval_log_value = max_log_value / static_cast<double>(kNumPoints - 1);
+            const auto freq_scale = 20.0 * std::numbers::pi / sample_rate;
             for (size_t i = 0; i < kNumPoints; ++i) {
-                ws_[i] = static_cast<float>(std::exp(interval_log_value * static_cast<double>(i)) * kFreqScaleConst);
+                ws_[i] = static_cast<float>(std::exp(interval_log_value * static_cast<double>(i)) * freq_scale);
             }
             std::fill(to_update_base_y_flags_.begin(), to_update_base_y_flags_.end(), true);
         }
@@ -469,7 +470,7 @@ namespace zlpanel {
                     if (!c_dynamic_ons_[band]) {
                         dynamic_mags_[band] = base_mags_[band];
                     }
-                    const auto center_w = para.freq * (2.0 * std::numbers::pi / 480000.0);
+                    const auto center_w = para.freq * (2.0 * std::numbers::pi / c_sample_rate_);
                     const float center_square_magnitude = std::log10(std::max(
                         ideal_[band].getCenterMagnitudeSquare(static_cast<float>(center_w)), 1e-24f));
                     const auto [left_x, center_x, right_x] = getLeftCenterRightX(para);
