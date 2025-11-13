@@ -110,6 +110,8 @@ namespace zlpanel {
                 updateValue(status_para, 0.f);
                 auto* stereo_para = p_ref_.parameters_.getParameter(zlp::PLRMode::kID + band_s);
                 updateValue(stereo_para, 0.f);
+                auto* dynamic_para = p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + band_s);
+                updateValue(dynamic_para, 0.f);
                 band_helper::turnOnOffDynamic(p_ref_, band, false);
             }
             match_runner_.startThread(juce::Thread::Priority::low);
