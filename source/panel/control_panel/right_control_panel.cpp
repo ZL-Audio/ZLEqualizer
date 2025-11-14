@@ -251,15 +251,20 @@ namespace zlpanel {
                 slope_box_.getBox(), p_ref_.parameters_, zlp::PSideOrder::kID + band_s, updater_);
             th_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 th_slider_.getSlider(), p_ref_.parameters_, zlp::PThreshold::kID + band_s, updater_);
+            th_slider_.setComponentID(zlp::PThreshold::kID + band_s);
             knee_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 knee_slider_.getSlider(), p_ref_.parameters_, zlp::PKneeW::kID + band_s, updater_);
+            knee_slider_.setComponentID(zlp::PKneeW::kID + band_s);
             attack_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 attack_slider_.getSlider(), p_ref_.parameters_, zlp::PAttack::kID + band_s, updater_);
+            attack_slider_.setComponentID(zlp::PAttack::kID + band_s);
             release_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 release_slider_.getSlider(), p_ref_.parameters_, zlp::PRelease::kID + band_s, updater_);
+            release_slider_.setComponentID(zlp::PRelease::kID + band_s);
             updateFreqMax(freq_max_);
             q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 q_slider_.getSlider1(), p_ref_.parameters_, zlp::PSideQ::kID + band_s, updater_);
+            q_slider_.setComponentID(zlp::PSideQ::kID + band_s);
         } else {
             bypass_attachment_.reset();
             auto_attachment_.reset();
@@ -284,6 +289,7 @@ namespace zlpanel {
                 zlp::PSideFreq::kID + std::to_string(base_.getSelectedBand()),
                 zlp::getLogMidRange(10.0, freq_max, 1000.0, 0.1),
                 updater_);
+            freq_slider_.setComponentID(zlp::PSideFreq::kID + std::to_string(base_.getSelectedBand()));
             freq_slider_.visibilityChanged();
         } else {
             freq_attachment_.reset();

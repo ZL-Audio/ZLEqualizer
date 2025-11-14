@@ -121,6 +121,18 @@ void PluginEditor::updateIsShowing() {
     }
 }
 
+int PluginEditor::getControlParameterIndex(Component& c) {
+    const auto id = c.getComponentID();
+    if (id.isEmpty()) {
+        return -1;
+    }
+    if (const auto para = p_ref_.parameters_.getParameter(id); para == nullptr) {
+        return -1;
+    } else {
+        return para->getParameterIndex();
+    }
+}
+
 zlstate::Property& PluginEditor::initProperty(PluginProcessor& p) {
     p.property_.loadAPVTS(p.state_);
     return p.property_;

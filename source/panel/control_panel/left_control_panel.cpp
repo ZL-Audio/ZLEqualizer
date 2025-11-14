@@ -94,6 +94,7 @@ namespace zlpanel {
                 gain_slider_.getSlider1(), p_ref_.parameters_, zlp::PGain::kID + band_s, updater_);
             target_gain_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 gain_slider_.getSlider2(), p_ref_.parameters_, zlp::PTargetGain::kID + band_s, updater_);
+            gain_slider_.setComponentID(zlp::PGain::kID + band_s);
             gain_slider_.visibilityChanged();
             ftype_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterType::kID + band_s);
         } else {
@@ -113,6 +114,7 @@ namespace zlpanel {
                 zlp::PFreq::kID + std::to_string(base_.getSelectedBand()),
                 zlp::getLogMidRange(10.0, freq_max, 1000.0, 0.1),
                 updater_);
+            freq_slider_.setComponentID(zlp::PFreq::kID + std::to_string(base_.getSelectedBand()));
             freq_slider_.visibilityChanged();
         } else {
             freq_attachment_.reset();

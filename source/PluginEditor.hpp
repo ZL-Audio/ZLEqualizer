@@ -21,7 +21,7 @@ class PluginEditor final : public juce::AudioProcessorEditor,
                            private juce::ValueTree::Listener,
                            private juce::AsyncUpdater {
 public:
-    explicit PluginEditor(PluginProcessor&);
+    explicit PluginEditor(PluginProcessor& p);
 
     ~PluginEditor() override;
 
@@ -35,6 +35,8 @@ public:
     void parentHierarchyChanged() override;
 
     void minimisationStateChanged(bool isNowMinimised) override;
+
+    int getControlParameterIndex(Component& c) override;
 
 private:
     PluginProcessor& p_ref_;

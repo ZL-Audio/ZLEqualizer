@@ -221,6 +221,7 @@ namespace zlpanel {
                 stereo_box_.getBox(), p_ref_.parameters_, zlp::PLRMode::kID + band_s, updater_);
             q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 q_slider_.getSlider1(), p_ref_.parameters_, zlp::PQ::kID + band_s, updater_);
+            q_slider_.setComponentID(zlp::PQ::kID + band_s);
             dynamic_attachment_ = std::make_unique<zlgui::attachment::ButtonAttachment<true>>(
                 dynamic_button_.getButton(), p_ref_.parameters_, zlp::PDynamicON::kID + band_s, updater_,
                 juce::dontSendNotification);

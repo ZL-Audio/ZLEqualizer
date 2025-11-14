@@ -70,9 +70,11 @@ namespace zlpanel {
         scale_label_.setBufferedToImage(true);
         addAndMakeVisible(scale_label_);
 
+        gain_slider_.setComponentID(zlp::POutputGain::kID);
         gain_slider_.setBufferedToImage(true);
         addAndMakeVisible(gain_slider_);
 
+        scale_slider_.setComponentID(zlp::PGainScale::kID);
         scale_slider_.setBufferedToImage(true);
         addAndMakeVisible(scale_slider_);
 
