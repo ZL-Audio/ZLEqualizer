@@ -45,6 +45,7 @@ namespace zlgui {
         kOutputPanel,
         kAnalyzerPanel,
         kMatchPanel,
+        kMatchDrawing,
         kPanelSettingNum
     };
 
@@ -54,7 +55,8 @@ namespace zlgui {
         juce::Identifier("curve_should_transparent"),
         juce::Identifier("output_panel"),
         juce::Identifier("analyzer_panel"),
-        juce::Identifier("match_panel")
+        juce::Identifier("match_panel"),
+        juce::Identifier("match_drawing")
     };
 
     inline juce::Identifier kSoloIdentifier("solo_whole_idx");

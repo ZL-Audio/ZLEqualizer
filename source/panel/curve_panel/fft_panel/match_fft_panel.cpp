@@ -18,9 +18,11 @@ namespace zlpanel {
         fft_min_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
         eq_max_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
         p_ref_.getController().getEQMatchAnalyzer().setMinFreq(10.0);
+        base_.getPanelValueTree().addListener(this);
     }
 
     MatchFFTPanel::~MatchFFTPanel() {
+        base_.getPanelValueTree().removeListener(this);
         stopThread(-1);
     }
 
@@ -121,7 +123,7 @@ namespace zlpanel {
             const auto eq_max_idx = eq_max_db_ref_.load(std::memory_order_relaxed);
             const auto eq_max = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_idx))];
             analyzer.createDiffPathYs(diff_ys_, k_.load(std::memory_order_relaxed) / eq_max,
-                b_.load(std::memory_order_relaxed));
+                                      b_.load(std::memory_order_relaxed));
 
             analyzer.getLock().unlock();
             if (xs_.empty()) {
@@ -158,77 +160,97 @@ namespace zlpanel {
             startThread(juce::Thread::Priority::low);
         } else {
             stopThread(-1);
+            p_ref_.getController().getEQMatchAnalyzer().clearDrawingDiffs();
             p_ref_.getController().setEQMatchAnalyzerON(false);
             source_path_.clear();
             target_path_.clear();
+            diff_path_.clear();
         }
     }
 
     void MatchFFTPanel::mouseDown(const juce::MouseEvent& event) {
-        if (event.mods.isCommandDown()) {
-            const auto eq_max_idx = eq_max_db_ref_.load(std::memory_order_relaxed);
-            const auto eq_max = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_idx))];
-            drawing_actual_k_ = drawing_k_ * eq_max;
+        if (!draw_on_) {
+            return;
+        }
+        const auto eq_max_idx = eq_max_db_ref_.load(std::memory_order_relaxed);
+        const auto eq_max = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_idx))];
+        drawing_actual_k_ = drawing_k_ * eq_max;
 
-            pre_drawing_p_ = std::round(event.position.x / fft_width_ * 100.f) / 100.f;
-            if (event.mods.isRightButtonDown()) {
-                pre_drawing_db_ = drawing_actual_k_ * (event.position.y + drawing_b_);
-            } else {
-                pre_drawing_db_ = 0.f;
-            }
+        pre_drawing_p_ = std::round(event.position.x / fft_width_ * 100.f) / 100.f;
+        if (event.mods.isRightButtonDown()) {
+            pre_drawing_db_ = drawing_actual_k_ * (event.position.y + drawing_b_);
+        } else {
+            pre_drawing_db_ = 0.f;
         }
     }
 
     void MatchFFTPanel::mouseDrag(const juce::MouseEvent& event) {
-        if (event.mods.isCommandDown()) {
-            auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
-            const auto c_drawing_p = std::round(event.position.x / fft_width_ * 100.f) / 100.f;
-            const auto count = static_cast<size_t>(std::round(std::abs(pre_drawing_p_ - c_drawing_p) / 0.01f));
-            if (count == 0) {
-                if (pre_drawing_p_ < 0.f || pre_drawing_p_ > 1.f) {
-                    return;
-                }
-                if (event.mods.isRightButtonDown()) {
-                    analyzer.clearDrawingDiffs(pre_drawing_p_);
-                } else if (event.mods.isShiftDown()) {
-                    analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
-                    pre_drawing_db_ = 0.f;
-                } else {
-                    const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
-                    analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
-                    pre_drawing_db_ = c_drawing_db;
-                }
-            } else {
-                const auto delta_p = c_drawing_p > pre_drawing_p_ ? 0.01f : -0.01f;
-                if (event.mods.isRightButtonDown()) {
-                    for (size_t i = 0; i < count; ++i) {
-                        if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
-                            analyzer.clearDrawingDiffs(pre_drawing_p_);
-                        }
-                        pre_drawing_p_ += delta_p;
-                    }
-                } else if (event.mods.isShiftDown()) {
-                    for (size_t i = 0; i < count; ++i) {
-                        if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
-                            analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
-                        }
-                        pre_drawing_p_ += delta_p;
-                    }
-                    pre_drawing_db_ = 0.f;
-                } else {
-                    const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
-                    const auto delta_db = (c_drawing_db - pre_drawing_db_) / (static_cast<float>(count));
-                    for (size_t i = 0; i < count; ++i) {
-                        if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
-                            analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
-                        }
-                        pre_drawing_p_ += delta_p;
-                        pre_drawing_db_ += delta_db;
-                    }
-                    pre_drawing_db_ = c_drawing_db;
-                }
+        if (!draw_on_) {
+            return;
+        }
+        auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+        const auto c_drawing_p = std::round(event.position.x / fft_width_ * 100.f) / 100.f;
+        const auto count = static_cast<size_t>(std::round(std::abs(pre_drawing_p_ - c_drawing_p) / 0.01f));
+        if (count == 0) {
+            if (pre_drawing_p_ < 0.f || pre_drawing_p_ > 1.f) {
+                return;
             }
-            pre_drawing_p_ = c_drawing_p;
+            if (event.mods.isRightButtonDown()) {
+                analyzer.clearDrawingDiffs(pre_drawing_p_);
+            } else if (event.mods.isShiftDown()) {
+                analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
+                pre_drawing_db_ = 0.f;
+            } else {
+                const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
+                analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
+                pre_drawing_db_ = c_drawing_db;
+            }
+        } else {
+            const auto delta_p = c_drawing_p > pre_drawing_p_ ? 0.01f : -0.01f;
+            if (event.mods.isRightButtonDown()) {
+                for (size_t i = 0; i < count; ++i) {
+                    if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+                        analyzer.clearDrawingDiffs(pre_drawing_p_);
+                    }
+                    pre_drawing_p_ += delta_p;
+                }
+            } else if (event.mods.isShiftDown()) {
+                for (size_t i = 0; i < count; ++i) {
+                    if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+                        analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
+                    }
+                    pre_drawing_p_ += delta_p;
+                }
+                pre_drawing_db_ = 0.f;
+            } else {
+                const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
+                const auto delta_db = (c_drawing_db - pre_drawing_db_) / (static_cast<float>(count));
+                for (size_t i = 0; i < count; ++i) {
+                    if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+                        analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
+                    }
+                    pre_drawing_p_ += delta_p;
+                    pre_drawing_db_ += delta_db;
+                }
+                pre_drawing_db_ = c_drawing_db;
+            }
+        }
+        pre_drawing_p_ = c_drawing_p;
+    }
+
+    void MatchFFTPanel::mouseDoubleClick(const juce::MouseEvent& event) {
+        if (!draw_on_) {
+            return;
+        }
+        auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+        if (event.mods.isLeftButtonDown()) {
+            analyzer.clearDrawingDiffs();
+        }
+    }
+
+    void MatchFFTPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
+        if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kMatchDrawing, property)) {
+            draw_on_ = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchDrawing)) > 0.5;
         }
     }
 }

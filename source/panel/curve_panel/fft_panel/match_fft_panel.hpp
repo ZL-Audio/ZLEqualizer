@@ -16,7 +16,8 @@
 
 namespace zlpanel {
     class MatchFFTPanel final : public juce::Component,
-                                public juce::Thread {
+                                public juce::Thread,
+                                private juce::ValueTree::Listener {
     public:
         explicit MatchFFTPanel(PluginProcessor& p, zlgui::UIBase& base,
                                const multilingual::TooltipHelper& tooltip_helper);
@@ -51,6 +52,7 @@ namespace zlpanel {
         juce::Path diff_path_, next_diff_path_;
         std::mutex mutex_;
 
+        bool draw_on_{false};
         float fft_width_{1.f};
         float pre_drawing_p_{0.f}, pre_drawing_db_{0.f};
         float drawing_k_{1.f}, drawing_actual_k_{1.f}, drawing_b_{0.f};
@@ -62,5 +64,9 @@ namespace zlpanel {
         void mouseDown(const juce::MouseEvent& event) override;
 
         void mouseDrag(const juce::MouseEvent& event) override;
+
+        void mouseDoubleClick(const juce::MouseEvent& event) override;
+
+        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };
 }

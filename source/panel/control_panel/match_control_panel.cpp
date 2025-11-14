@@ -20,15 +20,19 @@ namespace zlpanel {
                                                            BinaryData::save_svgSize)),
         save_button_(base, save_drawable_.get(), nullptr,
                      tooltip_helper.getToolTipText(multilingual::kEQMatchSave)),
+        draw_drawable_(juce::Drawable::createFromImageData(BinaryData::draw_svg,
+                                                           BinaryData::draw_svgSize)),
+        draw_button_(base, draw_drawable_.get(), draw_drawable_.get(),
+                     tooltip_helper.getToolTipText(multilingual::kEQMatchDiffDraw)),
         target_box_({"Side", "Flat", "Preset"}, base,
                     tooltip_helper.getToolTipText(multilingual::kEQMatchTarget),
                     {tooltip_helper.getToolTipText(multilingual::kEQMatchTargetSide),
-                    tooltip_helper.getToolTipText(multilingual::kEQMatchTargetFlat),
-                    tooltip_helper.getToolTipText(multilingual::kEQMatchTargetPreset)}),
+                     tooltip_helper.getToolTipText(multilingual::kEQMatchTargetFlat),
+                     tooltip_helper.getToolTipText(multilingual::kEQMatchTargetPreset)}),
         label_laf_(base),
         shift_label_("", "Shift"),
         shift_slider_("", base,
-            tooltip_helper.getToolTipText(multilingual::kEQMatchDiffShift)),
+                      tooltip_helper.getToolTipText(multilingual::kEQMatchDiffShift)),
         smooth_label_("", "Smooth"),
         smooth_slider_("", base,
                        tooltip_helper.getToolTipText(multilingual::kEQMatchDiffSmooth)),
@@ -57,6 +61,13 @@ namespace zlpanel {
         };
         save_button_.setBufferedToImage(true);
         addAndMakeVisible(save_button_);
+
+        draw_button_.getButton().onClick = [this]() {
+            base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchDrawing,
+                                   static_cast<double>(draw_button_.getToggleState()));
+        };
+        draw_button_.setBufferedToImage(true);
+        addAndMakeVisible(draw_button_);
 
         target_box_.getBox().onChange = [this]() {
             const auto mode = static_cast<zldsp::eq_match::MatchMode>(target_box_.getBox().getSelectedItemIndex());
@@ -151,7 +162,6 @@ namespace zlpanel {
 
     void MatchControlPanel::resized() {
         const auto font_size = base_.getFontSize();
-        // const auto slider_width = getSliderWidth(font_size);
         const auto small_slider_width = getSmallSliderWidth(font_size);
         const auto box_height = getBoxHeight(font_size);
         const auto button_size = getButtonSize(font_size);
@@ -166,7 +176,9 @@ namespace zlpanel {
             const auto box_bound = temp_bound.removeFromBottom(temp_bound.getHeight() / 2);
             target_box_.setBounds(box_bound.withSizeKeepingCentre(box_bound.getWidth(), box_height));
             temp_bound.removeFromBottom(padding);
-            save_button_.setBounds(temp_bound.withSizeKeepingCentre(button_size, button_size));
+            const auto button_bound1 = temp_bound.removeFromLeft(temp_bound.getWidth() / 2);
+            save_button_.setBounds(button_bound1.withSizeKeepingCentre(button_size, button_size));
+            draw_button_.setBounds(temp_bound.withSizeKeepingCentre(button_size, button_size));
         }
         bound.removeFromLeft(padding);
         {
@@ -217,6 +229,9 @@ namespace zlpanel {
         num_band_slider_.setInterceptsMouseClicks(false, false);
         num_band_slider_.getSlider().setValue(0., juce::dontSendNotification);
         num_band_slider_.updateDisplayValue();
+
+        draw_button_.getButton().setToggleState(true, juce::sendNotificationSync);
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchDrawing, 1.0);
     }
 
     void MatchControlPanel::saveToPreset() {

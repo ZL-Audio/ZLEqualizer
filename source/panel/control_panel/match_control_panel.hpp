@@ -38,6 +38,9 @@ namespace zlpanel {
         const std::unique_ptr<juce::Drawable> save_drawable_;
         zlgui::button::ClickButton save_button_;
 
+        const std::unique_ptr<juce::Drawable> draw_drawable_;
+        zlgui::button::ClickButton draw_button_;
+
         zlgui::combobox::CompactCombobox target_box_;
 
         zlgui::label::NameLookAndFeel label_laf_;
