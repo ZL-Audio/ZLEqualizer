@@ -31,6 +31,14 @@ namespace zlpanel {
 
         void stopThreads();
 
+        ControlPanel& getControlPanel() {
+            return control_panel_;
+        }
+
+        OutputPanel& getOutputPanel() {
+            return curve_panel_.getOutputPanel();
+        }
+
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;

@@ -28,6 +28,8 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
     juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(base_.font_);
     // add the main panel
     addAndMakeVisible(main_panel_);
+    main_panel_.getControlPanel().addMouseListener(this, true);
+    main_panel_.getOutputPanel().addMouseListener(this, true);
 
     // set size & size listener
     setResizeLimits(static_cast<int>(zlstate::PWindowW::kMinV - 1),
@@ -130,6 +132,22 @@ int PluginEditor::getControlParameterIndex(Component& c) {
         return -1;
     } else {
         return para->getParameterIndex();
+    }
+}
+
+void PluginEditor::mouseDown(const juce::MouseEvent& event) {
+    if (event.mods.isRightButtonDown() && event.getNumberOfClicks() == 1) {
+        if (event.originalComponent != nullptr) {
+            if (const auto id = event.originalComponent->getComponentID(); !id.isEmpty()) {
+                if (const auto para = p_ref_.parameters_.getParameter(id); para != nullptr) {
+                    if (const auto* context = getHostContext(); context != nullptr) {
+                        if (auto menu = context->getContextMenuForParameter(para)) {
+                            menu->showNativeMenu(juce::Component::getMouseXYRelative());
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

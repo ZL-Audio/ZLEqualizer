@@ -256,9 +256,9 @@ namespace zlgui::slider {
             if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
                 return;
             }
-            if (!show_slider2_ || event.mods.isLeftButtonDown()) {
+            if (event.mods.isLeftButtonDown()) {
                 slider1_.mouseUp(event);
-            } else {
+            } else if (show_slider2_ && event.mods.isRightButtonDown()) {
                 slider2_.mouseUp(event);
             }
         }
@@ -267,9 +267,9 @@ namespace zlgui::slider {
             if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
                 return;
             }
-            if (!show_slider2_ || event.mods.isLeftButtonDown()) {
+            if (event.mods.isLeftButtonDown()) {
                 slider1_.mouseDown(event);
-            } else {
+            } else if (show_slider2_ && event.mods.isRightButtonDown()) {
                 slider2_.mouseDown(event);
             }
             const auto currentShiftPressed = event.mods.isShiftDown();
@@ -280,9 +280,9 @@ namespace zlgui::slider {
         }
 
         void mouseDrag(const juce::MouseEvent& event) override {
-            if (!show_slider2_ || event.mods.isLeftButtonDown()) {
+            if (event.mods.isLeftButtonDown()) {
                 slider1_.mouseDrag(event);
-            } else {
+            } else if (show_slider2_ && event.mods.isRightButtonDown()) {
                 slider2_.mouseDrag(event);
             }
         }
@@ -336,9 +336,9 @@ namespace zlgui::slider {
                     return;
                 }
             }
-            if (!show_slider2_ || event.mods.isLeftButtonDown()) {
+            if (event.mods.isLeftButtonDown()) {
                 slider1_.mouseDoubleClick(event);
-            } else {
+            } else if (show_slider2_ && event.mods.isRightButtonDown()) {
                 slider2_.mouseDoubleClick(event);
             }
         }

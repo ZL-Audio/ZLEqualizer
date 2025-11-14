@@ -94,7 +94,7 @@ namespace zlpanel {
                 gain_slider_.getSlider1(), p_ref_.parameters_, zlp::PGain::kID + band_s, updater_);
             target_gain_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 gain_slider_.getSlider2(), p_ref_.parameters_, zlp::PTargetGain::kID + band_s, updater_);
-            gain_slider_.setComponentID(zlp::PGain::kID + band_s);
+            updateGainSliderComponentID();
             gain_slider_.visibilityChanged();
             ftype_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterType::kID + band_s);
         } else {
@@ -122,7 +122,9 @@ namespace zlpanel {
     }
 
     void LeftControlPanel::turnOnOffDynamic(const bool dynamic_on) {
+        dynamic_on_ = dynamic_on;
         gain_slider_.setShowSlider2(dynamic_on);
+        updateGainSliderComponentID();
     }
 
     void LeftControlPanel::updateGainSliderDraggingDistance() {
@@ -136,6 +138,15 @@ namespace zlpanel {
         } else {
             gain_slider_.setMouseDragSensitivity(
                 static_cast<int>(std::round(font_size * kSliderDraggingDistanceScale)));
+        }
+    }
+
+    void LeftControlPanel::updateGainSliderComponentID() {
+        const auto band = base_.getSelectedBand();
+        if (band < zlp::kBandNum && !dynamic_on_) {
+            gain_slider_.setComponentID(zlp::PGain::kID + std::to_string(band));
+        } else {
+            gain_slider_.setComponentID("");
         }
     }
 }

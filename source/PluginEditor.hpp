@@ -38,6 +38,8 @@ public:
 
     int getControlParameterIndex(Component& c) override;
 
+    void mouseDown(const juce::MouseEvent& event) override;
+
 private:
     PluginProcessor& p_ref_;
     zlstate::Property& property_;

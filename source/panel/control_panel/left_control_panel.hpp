@@ -53,6 +53,10 @@ namespace zlpanel {
         std::atomic<float>* ftype_ptr_{nullptr};
         int c_ftype_{-1};
 
+        bool dynamic_on_{false};
+
         void updateGainSliderDraggingDistance();
+
+        void updateGainSliderComponentID();
     };
 } // zlpanel
