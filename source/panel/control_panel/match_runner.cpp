@@ -56,7 +56,7 @@ namespace zlpanel {
         num_band_slider_.getSlider().setDoubleClickReturnValue(true, static_cast<double>(suggest_num_band));
         num_band_slider_.updateDisplayValue();
         sliderValueChanged(&num_band_slider_.getSlider());
-        base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 2.0);
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 3.0);
         num_band_slider_.setAlpha(1.f);
         num_band_slider_.setInterceptsMouseClicks(true, true);
     }

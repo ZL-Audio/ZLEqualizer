@@ -12,7 +12,7 @@
 namespace zlpanel {
     CurvePanel::CurvePanel(PluginProcessor& p,
                            zlgui::UIBase& base,
-                           const multilingual::TooltipHelper& tooltip_helper) :
+                           multilingual::TooltipHelper& tooltip_helper) :
         base_(base),
         background_panel_(p, base, tooltip_helper),
         fft_panel_(p, base, tooltip_helper),
@@ -114,13 +114,13 @@ namespace zlpanel {
 
     void CurvePanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
         if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kMatchPanel, property)) {
-            const auto f = static_cast<int>(std::round(
-                static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchPanel))));
-            match_fft_panel_.setVisible(f > 0);
-            scale_panel_.setVisible(f > 0);
-            fft_panel_.setVisible(f == 0);
-            response_panel_.setVisible(f != 1);
-            response_panel_.turnMatchON(f > 0);
+            const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchPanel));
+            const auto idx = static_cast<int>(std::round(f));
+            match_fft_panel_.setVisible(idx > 0);
+            scale_panel_.setVisible(idx > 0);
+            fft_panel_.setVisible(idx == 0);
+            response_panel_.setVisible(idx != 1 && idx != 2);
+            response_panel_.turnMatchON(idx > 0);
         }
     }
 }

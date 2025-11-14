@@ -16,11 +16,12 @@
 
 namespace zlpanel {
     class MatchFFTPanel final : public juce::Component,
+                                public juce::SettableTooltipClient,
                                 public juce::Thread,
                                 private juce::ValueTree::Listener {
     public:
         explicit MatchFFTPanel(PluginProcessor& p, zlgui::UIBase& base,
-                               const multilingual::TooltipHelper& tooltip_helper);
+                               multilingual::TooltipHelper& tooltip_helper);
 
         ~MatchFFTPanel() override;
 
@@ -35,6 +36,7 @@ namespace zlpanel {
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
+        multilingual::TooltipHelper& tooltip_helper_;
         std::atomic<float>& fft_min_db_ref_;
         std::atomic<float>& eq_max_db_ref_;
 

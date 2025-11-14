@@ -12,9 +12,9 @@
 namespace zlpanel {
     MatchFFTPanel::MatchFFTPanel(PluginProcessor& p,
                                  zlgui::UIBase& base,
-                                 const multilingual::TooltipHelper&) :
+                                 multilingual::TooltipHelper& tooltip_helper) :
         Thread("match_analyzer"),
-        p_ref_(p), base_(base),
+        p_ref_(p), base_(base), tooltip_helper_(tooltip_helper),
         fft_min_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
         eq_max_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
         p_ref_.getController().getEQMatchAnalyzer().setMinFreq(10.0);
@@ -251,6 +251,18 @@ namespace zlpanel {
     void MatchFFTPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
         if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kMatchDrawing, property)) {
             draw_on_ = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchDrawing)) > 0.5;
+        } else if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kMatchPanel, property)) {
+            const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchPanel));
+            const auto idx = static_cast<int>(std::round(f));
+            if (idx == 0) {
+                setTooltip("");
+            } else if (idx == 1) {
+                setTooltip(tooltip_helper_.getToolTipText(multilingual::kEQMatchNotification1));
+            } else if (idx == 2) {
+                setTooltip(tooltip_helper_.getToolTipText(multilingual::kEQMatchNotification2));
+            } else if (idx == 3) {
+                setTooltip(tooltip_helper_.getToolTipText(multilingual::kEQMatchNotification3));
+            }
         }
     }
 }

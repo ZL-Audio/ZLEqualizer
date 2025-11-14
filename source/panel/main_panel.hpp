@@ -46,7 +46,7 @@ namespace zlpanel {
         UISettingPanel ui_setting_panel_;
 
         zlgui::tooltip::TooltipLookAndFeel tooltip_laf_;
-        zlgui::tooltip::TooltipWindow tooltip_window_;
+        std::unique_ptr<zlgui::tooltip::TooltipWindow> tooltip_window_;
 
         size_t c_band_{zlp::kBandNum};
         double c_sample_rate_{0.};

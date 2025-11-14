@@ -21,12 +21,15 @@ namespace zlpanel {
         curve_panel_(p, base, tooltip_helper_),
         top_panel_(p, base, tooltip_helper_),
         ui_setting_panel_(p, base_),
-        tooltip_laf_(base_), tooltip_window_(&curve_panel_) {
+        tooltip_laf_(base_) {
         juce::ignoreUnused(base_);
 
-        tooltip_window_.setLookAndFeel(&tooltip_laf_);
-        tooltip_window_.setOpaque(false);
-        tooltip_window_.setBufferedToImage(true);
+        if (base_.getTooltipLangID() != 0) {
+            tooltip_window_ = std::make_unique<zlgui::tooltip::TooltipWindow>(&curve_panel_);
+            tooltip_window_->setLookAndFeel(&tooltip_laf_);
+            tooltip_window_->setOpaque(false);
+            tooltip_window_->setBufferedToImage(true);
+        }
 
         base_.getPanelValueTree().addListener(this);
 

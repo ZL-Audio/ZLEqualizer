@@ -14,17 +14,13 @@
 namespace zlgui::tooltip {
     class TooltipWindow final : public juce::TooltipWindow {
     public:
-        explicit TooltipWindow(Component* parentComponent, const int millisecondsBeforeTipAppears = 700)
-            : juce::TooltipWindow(parentComponent, millisecondsBeforeTipAppears) {
+        explicit TooltipWindow(Component* parent_component, const int milliseconds_before_appears = 700)
+            : juce::TooltipWindow(parent_component, milliseconds_before_appears) {
+            setInterceptsMouseClicks(false, false);
         }
 
         juce::String getTipFor(Component& c) override {
-            return is_on_ ? juce::TooltipWindow::getTipFor(c) : juce::String();
+            return juce::TooltipWindow::getTipFor(c);
         }
-
-        void setON(const bool x) { is_on_ = x; }
-
-    private:
-        bool is_on_{true};
     };
 }

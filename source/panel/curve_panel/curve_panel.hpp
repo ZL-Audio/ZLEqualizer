@@ -21,7 +21,7 @@ namespace zlpanel {
                              private juce::ValueTree::Listener {
     public:
         explicit CurvePanel(PluginProcessor& p, zlgui::UIBase& base,
-                            const multilingual::TooltipHelper& tooltip_helper);
+                            multilingual::TooltipHelper& tooltip_helper);
 
         ~CurvePanel() override;
 

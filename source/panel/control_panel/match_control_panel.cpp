@@ -117,6 +117,9 @@ namespace zlpanel {
         }
 
         fit_start_button_.getButton().onClick = [this]() {
+            if (match_runner_.isThreadRunning()) {
+                return;
+            }
             num_band_slider_.setAlpha(.5f);
             num_band_slider_.setInterceptsMouseClicks(false, false);
             for (size_t band = 0; band < zlp::kBandNum; ++band) {
@@ -129,6 +132,7 @@ namespace zlpanel {
                 updateValue(dynamic_para, 0.f);
                 band_helper::turnOnOffDynamic(p_ref_, band, false);
             }
+            base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 2.0);
             match_runner_.startThread(juce::Thread::Priority::low);
         };
         fit_start_button_.setBufferedToImage(true);

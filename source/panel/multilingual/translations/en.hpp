@@ -80,7 +80,7 @@ namespace zlpanel::multilingual::en {
         "Control the slope of difference curve.",
         "Click: start the fitting process.",
         "Control the number of bands.",
-        "The EQ match model is analyzing the main-chain signal and the side-chain signal.\nThe source must be the main-chain signal, but you can choose the target.\nThe difference between the source and the target is the difference.\nOnce the difference becomes stable, you can further adjust it before the fitting process.",
+        "The EQ match model is analyzing the main-chain signal and the side-chain signal.\nThe source must be the main-chain signal, but you can choose the target.\nThe difference between the source and the target is the difference curve.\nOnce the difference becomes stable, you can further adjust it before the fitting process.",
         "The EQ match model is running the fitting process. It should take at most several seconds.",
         "The EQ match model has completed the fitting process. You can now change the number of bands used for fitting.",
         "Press: enable difference curve drawing."

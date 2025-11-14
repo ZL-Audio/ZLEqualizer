@@ -76,9 +76,9 @@ namespace zlpanel::multilingual {
         kEQMatchDiffSlope,
         kEQMatchFit,
         kEQMatchNumBand,
-        KEQMatchNotification1,
-        KEQMatchNotification2,
-        KEQMatchNotification3,
+        kEQMatchNotification1,
+        kEQMatchNotification2,
+        kEQMatchNotification3,
         kEQMatchDiffDraw
     };
 }
