@@ -125,9 +125,6 @@ namespace zldsp::analyzer {
             }
             // pull data from FIFO
             const int num_ready = abstract_fifo_.getNumReady();
-            if (num_ready == 0) {
-                return false;
-            }
             const auto range = abstract_fifo_.prepareToRead(num_ready);
             const auto num_replace = static_cast<int>(fft_.getSize()) - num_ready;
             for (const auto& i : is_on_vector) {
