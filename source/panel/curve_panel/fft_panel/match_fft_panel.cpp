@@ -105,6 +105,7 @@ namespace zlpanel {
                 diff_ys_.resize(n);
                 c_width_ = -1.f;
             }
+            analyzer.prepareDiff();
             if (std::abs(bound.getWidth() - c_width_) > 1e-3f) {
                 c_width_ = bound.getWidth();
                 analyzer.createPathXs(xs_, c_width_);
@@ -115,8 +116,6 @@ namespace zlpanel {
             const auto min_db = min_ratio_.load(std::memory_order_relaxed) * fft_min;
             analyzer.createPathYs(std::span(source_ys_), std::span(target_ys_),
                                   bound.getHeight(), min_db, max_db);
-
-            analyzer.prepareDiff();
             analyzer.prepareTarget();
             analyzer.prepareDrawing();
             analyzer.runDiff();

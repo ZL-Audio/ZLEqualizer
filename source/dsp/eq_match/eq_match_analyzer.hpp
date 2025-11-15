@@ -24,13 +24,13 @@ namespace zldsp::eq_match {
         static constexpr size_t kSmoothSize = 7;
 
         explicit EqMatchAnalyzer(size_t fft_order = 12) :
-            zldsp::analyzer::MultipleAvgFFTBase<FloatType, 2, 251>(fft_order) {
+            zldsp::analyzer::MultipleAvgFFTBase<FloatType, 2, kPointNum>(fft_order) {
 
         }
 
         // call this before starting the background thread
         void reset() {
-            zldsp::analyzer::MultipleAvgFFTBase<FloatType, 2, 251>::reset();
+            zldsp::analyzer::MultipleAvgFFTBase<FloatType, 2, kPointNum>::reset();
             to_reset_match_.store(true, std::memory_order::release);
         }
 
@@ -54,8 +54,9 @@ namespace zldsp::eq_match {
         }
 
         void prepareDiff() {
-            if (to_reset_match_.exchange(false, std::memory_order::acquire)) {
-                const auto n = this->getResultDBs()[0].size();
+            const auto n = this->getResultDBs()[0].size();
+            if (to_reset_match_.exchange(false, std::memory_order::acquire)
+                || n != diffs_.size()) {
                 diffs_.resize(n);
                 original_diffs_.resize(n + (kSmoothSize / 2) * 2);
                 saved_freqs_.resize(n);
@@ -222,7 +223,7 @@ namespace zldsp::eq_match {
             }
             if (!target_ys.empty()) {
                 auto target_db = c_mode_ == kMatchSide
-                    ? kfr::make_univector(this->getResultDBs()[1])
+                    ? kfr::make_univector(this->result_dbs_[1])
                     : kfr::make_univector(interpolated_target_dbs_);
                 auto y = kfr::make_univector(target_ys);
                 if (std::abs(max_db) > 0.01f) {
