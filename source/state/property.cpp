@@ -11,33 +11,54 @@
 
 namespace zlstate {
     Property::Property() {
-        if (!kPath.isDirectory()) {
-            if (!kPath.createDirectory()) return;
-        }
-        ui_file_ = std::make_unique<juce::PropertiesFile>(kUIPath, juce::PropertiesFile::Options());
     }
 
     Property::Property(juce::AudioProcessorValueTreeState& apvts) {
-        if (!kPath.isDirectory()) {
-            if (!kPath.createDirectory()) return;
-        }
-        ui_file_ = std::make_unique<juce::PropertiesFile>(kUIPath, juce::PropertiesFile::Options());
         loadAPVTS(apvts);
     }
 
     void Property::loadAPVTS(juce::AudioProcessorValueTreeState& apvts) {
-        const juce::ScopedReadLock scoped_lock(read_write_lock_);
-        const auto file = ui_file_->getFile();
-        if (const auto xml = juce::XmlDocument::parse(file)) {
-            apvts.replaceState(juce::ValueTree::fromXml(*xml));
+        std::lock_guard<std::mutex> lock_guard{mutex_};
+        if (checkCreateDirectory()) {
+            if (const auto xml = juce::XmlDocument::parse(kUIPath); xml) {
+                apvts.replaceState(juce::ValueTree::fromXml(*xml));
+            }
         }
     }
 
     void Property::saveAPVTS(juce::AudioProcessorValueTreeState& apvts) {
-        const juce::ScopedWriteLock scoped_lock(read_write_lock_);
-        const auto file = ui_file_->getFile();
-        if (const auto xml = apvts.copyState().createXml()) {
-            if (!xml->writeTo(file)) return;
+        std::lock_guard<std::mutex> lock{mutex_};
+        if (checkCreateDirectory()) {
+            if (const auto xml = apvts.copyState().createXml(); xml) {
+                if (!xml->writeTo(kUIPath)) {
+                    return;
+                }
+            }
         }
     }
-} // namespace zlstate
+
+    bool Property::checkCreateDirectory() const {
+        // create directory if not exists
+        if (!kPath.isDirectory()) {
+            if (!kPath.createDirectory()) {
+                return false;
+            }
+        }
+        // check if UI preset exists
+        if (kUIPath.existsAsFile()) {
+            return true;
+        }
+        // check if old UI preset exists
+        // yes -> copy old UI preset to UI preset
+        if (kOldUIPath.existsAsFile()) {
+            if (const auto c_res = kOldUIPath.copyFileTo(kUIPath); c_res) {
+                if (const auto d_res = kOldUIPath.deleteFile(); d_res) {
+                    return true;
+                }
+            }
+        }
+        // no -> create a blank UI preset
+        const auto res = kUIPath.create();
+        return res.wasOk();
+    }
+}
