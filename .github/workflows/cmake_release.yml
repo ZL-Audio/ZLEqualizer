@@ -73,7 +73,7 @@ jobs:
         run: brew install ninja osxutils
 
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: recursive
           fetch-depth: 0
@@ -104,7 +104,7 @@ jobs:
 
       - name: Download AAX pre-release repo
         if: (matrix.name == 'macOS-x86') || (matrix.name == 'macOS-arm') || (matrix.name == 'Windows-x86')
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: "ZL-Audio/ZLEqualizerAAX"
           path: "aax_releases"
@@ -215,7 +215,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         fetch-depth: 1
         fetch-tags: true
