@@ -14,12 +14,12 @@ jobs:
       contents: write
     steps:
     - name: Checkout current repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         submodules: false
         path: "current_repo"
     - name: Download release repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         repository: "ZL-Audio/ZLRelease"
         fetch-depth: 0

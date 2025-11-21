@@ -73,7 +73,7 @@ jobs:
         run: brew install ninja osxutils
 
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: recursive
           fetch-depth: 0
@@ -207,13 +207,13 @@ jobs:
         path: "current_release"
 
     - name: Checkout current repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         submodules: false
         path: "current_repo"
 
     - name: Download nightly-release repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         repository: "ZL-Audio/ZLNightlyRelease"
         fetch-depth: 0
