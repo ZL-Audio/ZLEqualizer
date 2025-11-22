@@ -99,10 +99,10 @@ namespace zlpanel {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kLowPass);
         } else if (freq < 40.f) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kLowShelf);
-            init_values[5] = std::clamp(y_portion * 2.f, -.1f, 1.f) * max_db;
+            init_values[5] = std::clamp(y_portion * 2.f, -1.f, 1.f) * max_db;
         } else if (freq > 6250.f) {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kHighShelf);
-            init_values[5] = std::clamp(y_portion * 2.f, -.1f, 1.f) * max_db;
+            init_values[5] = std::clamp(y_portion * 2.f, -1.f, 1.f) * max_db;
         } else {
             init_values[1] = static_cast<float>(zldsp::filter::FilterType::kPeak);
             init_values[5] = std::clamp(y_portion, -1.f, 1.f) * max_db;
