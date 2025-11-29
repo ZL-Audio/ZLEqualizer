@@ -10,6 +10,9 @@
 #pragma once
 
 #include <vector>
+#include <bit> // For std::bit_ceil (C++20) or implement fallback
+#include <algorithm>
+#include <cassert>
 
 namespace zldsp::container {
     /**
@@ -23,65 +26,75 @@ namespace zldsp::container {
             setCapacity(capacity);
         }
 
-        [[nodiscard]] size_t capacity() const { return data_.size() - 1; }
-
-        [[nodiscard]] size_t size() const {
-            return tail_ >= head_
-                       ? static_cast<size_t>(tail_ - head_)
-                       : static_cast<size_t>(tail_ + static_cast<unsigned int>(data_.size()) - head_);
+        [[nodiscard]] size_t size() const noexcept {
+            return tail_ - head_;
         }
 
-        [[nodiscard]] bool isEmpty() const {
-            return tail_ == head_;
+        [[nodiscard]] size_t capacity() const noexcept {
+            return mask_;
+        }
+
+        [[nodiscard]] bool isEmpty() const noexcept {
+            return head_ == tail_;
         }
 
         void setCapacity(const size_t capacity) {
-            data_.resize(capacity + 1);
+            size_t real_size = std::bit_ceil(capacity + 1);
+            data_.resize(real_size);
+            mask_ = real_size - 1;
             clear();
         }
 
-        void clear() {
+        void clear() noexcept {
             head_ = 0;
             tail_ = 0;
         }
 
+        template <bool boundary_check = true>
         void pushBack(T x) {
-            tail_ = (tail_ + 1) % static_cast<unsigned int>(data_.size());
-            data_[static_cast<size_t>(tail_)] = x;
-            if (tail_ == head_) {
-                popFront();
+            data_[tail_++ & mask_] = x;
+            if constexpr (boundary_check) {
+                if (size() > mask_) {
+                    head_++;
+                }
             }
         }
 
         T popBack() {
-            const auto t = data_[static_cast<size_t>(tail_)];
-            tail_ = tail_ > 0 ? tail_ - 1 : static_cast<unsigned int>(data_.size()) - 1;
-            return t;
+            return data_[--tail_ & mask_];
         }
 
-        T getBack() {
-            return data_[static_cast<size_t>(tail_)];
+        T& getBack() {
+            return data_[(tail_ - 1) & mask_];
         }
 
+        template <bool boundary_check = true>
         void pushFront(T x) {
-            data_[static_cast<size_t>(head_)] = x;
-            head_ = head_ > 0 ? head_ - 1 : static_cast<unsigned int>(data_.size()) - 1;
-            if (head_ == tail_) {
-                popBack();
+            data_[--head_ & mask_] = x;
+            if constexpr (boundary_check) {
+                if (size() > mask_) {
+                    tail_--;
+                }
             }
         }
 
         T popFront() {
-            head_ = (head_ + 1) % static_cast<unsigned int>(data_.size());
-            return data_[static_cast<size_t>(head_)];
+            return data_[head_++ & mask_];
         }
 
         T getFront() {
-            return data_[static_cast<size_t>((head_ + 1) % static_cast<unsigned int>(data_.size()))];
+            return data_[head_ & mask_];
+        }
+
+        T operator[](const size_t index) {
+            return data_[(head_ + index) & mask_];
         }
 
     private:
         std::vector<T> data_;
-        unsigned int head_{0}, tail_{0};
+
+        size_t head_{0};
+        size_t tail_{0};
+        size_t mask_{0};
     };
 }

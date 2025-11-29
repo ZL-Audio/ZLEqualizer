@@ -12,7 +12,7 @@
 #include <atomic>
 #include <span>
 
-#include "../container/container.hpp"
+#include "../container/abstract_fifo.hpp"
 #include "../interpolation/interpolation.hpp"
 #include "../fft/fft.hpp"
 #include "../vector/vector.hpp"

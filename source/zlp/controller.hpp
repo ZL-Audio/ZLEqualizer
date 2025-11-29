@@ -138,6 +138,20 @@ namespace zlp {
             to_update_.store(true, std::memory_order::release);
         }
 
+        void setDynamicRMSLength(const size_t idx, const double rms_length) {
+            dynamic_rms_length_[idx].store(rms_length, std::memory_order::relaxed);
+            dynamic_rms_length_update_[idx].store(true, std::memory_order::relaxed);
+            dynamic_extra_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
+        void setDynamicRMSMix(const size_t idx, const double rms_mix) {
+            dynamic_rms_mix_[idx].store(rms_mix, std::memory_order::relaxed);
+            dynamic_rms_mix_update_[idx].store(true, std::memory_order::relaxed);
+            dynamic_extra_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
         std::array<zldsp::filter::Empty, kBandNum>& getEmptyFilters() {
             return emptys_;
         }
@@ -347,6 +361,10 @@ namespace zlp {
         std::array<std::atomic<bool>, kBandNum> dynamic_extra_update_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_smooth_update_{};
         std::array<std::atomic<double>, kBandNum> dynamic_smooth_{};
+        std::array<std::atomic<bool>, kBandNum> dynamic_rms_length_update_{};
+        std::array<std::atomic<double>, kBandNum> dynamic_rms_length_{};
+        std::array<std::atomic<bool>, kBandNum> dynamic_rms_mix_update_{};
+        std::array<std::atomic<double>, kBandNum> dynamic_rms_mix_{};
         // histogram for dynamic auto-threshold
         double hist_unit_decay_{1.0}, slow_hist_unit_decay_{1.0};
         std::array<double, 3> hist_percentiles_{0.1, 0.5, 0.9};

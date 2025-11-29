@@ -38,7 +38,7 @@ namespace zlp {
         }
 
         for (size_t i = 0; i < kBandNum; ++i) {
-            dynamic_side_handlers_[i].prepare(sample_rate);
+            dynamic_side_handlers_[i].prepare(sample_rate, 41. / 1000.);
             tdf_filters_[i].prepare(sample_rate, 2, max_num_samples);
             tdf_filters_[i].getFilter().updateParas(filter_paras_[i]);
             svf_filters_[i].prepare(sample_rate, 2, max_num_samples);
@@ -446,6 +446,14 @@ namespace zlp {
                 if (dynamic_smooth_update_[i].exchange(false, std::memory_order::acquire)) {
                     auto& follower{dynamic_side_handlers_[i].getFollower()};
                     follower.setSmooth<true>(dynamic_smooth_[i].load(std::memory_order::relaxed));
+                }
+                if (dynamic_rms_length_update_[i].exchange(false, std::memory_order::acquire)) {
+                    auto& handler{dynamic_side_handlers_[i]};
+                    handler.setRMSLength(dynamic_rms_length_[i].load(std::memory_order::relaxed));
+                }
+                if (dynamic_rms_mix_update_[i].exchange(false, std::memory_order::acquire)) {
+                    auto& handler{dynamic_side_handlers_[i]};
+                    handler.setRMSMix(dynamic_rms_mix_[i].load(std::memory_order::relaxed));
                 }
             }
         }

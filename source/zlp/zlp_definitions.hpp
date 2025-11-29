@@ -471,18 +471,18 @@ namespace zlp {
         static constexpr auto kDefaultV = 500.f;
     };
 
-    class PRMSLength : public FloatParameters<PRMSLength> {
+    class PDynamicRMSLength : public FloatParameters<PDynamicRMSLength> {
     public:
-        auto static constexpr kID = "rms_length";
-        auto static constexpr kName = "RMS Length";
+        auto static constexpr kID = "dynamic_rms_length";
+        auto static constexpr kName = "Dynamic RMS Length";
         inline auto static const kRange = getLogMidRangeShift(4.f, 44.f, 14.f, 0.1f, -4.f);
         auto static constexpr kDefaultV = 0.f;
     };
 
-    class PRMSMix : public FloatParameters<PRMSMix> {
+    class PDynamicRMSMix : public FloatParameters<PDynamicRMSMix> {
     public:
-        auto static constexpr kID = "rms_mix";
-        auto static constexpr kName = "RMS Mix";
+        auto static constexpr kID = "dynamic_rms_mix";
+        auto static constexpr kName = "Dynamic RMS Mix";
         inline auto static const kRange = juce::NormalisableRange<float>(0.f, 100.f, .1f);
         auto static constexpr kDefaultV = 50.f;
     };
@@ -551,7 +551,7 @@ namespace zlp {
                        PSideSwap::get(suffix),
                        PSideLink::get(suffix, true, true),
                        PThreshold::get(suffix), PKneeW::get(suffix), PAttack::get(suffix), PRelease::get(suffix),
-                       PRMSLength::get(suffix), PRMSMix::get(suffix), PDynamicSmooth::get(suffix),
+                       PDynamicRMSLength::get(suffix), PDynamicRMSMix::get(suffix), PDynamicSmooth::get(suffix),
                        PSideFilterType::get(suffix), PSideOrder::get(suffix),
                        PSideFreq::get(suffix), PSideQ::get(suffix));
         }
