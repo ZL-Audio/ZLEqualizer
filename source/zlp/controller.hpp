@@ -415,7 +415,7 @@ namespace zlp {
         std::atomic<double> makeup_gain_linear_{};
         double c_makeup_gain_linear_{};
         zldsp::gain::Gain<double> output_gain_{};
-        std::atomic<double> displayed_gain_{0.};
+        std::atomic<double> displayed_gain_{1.};
         // phase flip
         std::atomic<bool> phase_flip_on_{false};
         bool c_phase_flip_on_{false};

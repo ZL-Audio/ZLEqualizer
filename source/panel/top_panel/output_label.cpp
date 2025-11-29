@@ -65,12 +65,15 @@ namespace zlpanel {
 
     void OutputLabel::checkUpdate() {
         const auto scale = scale_ref_.load(std::memory_order_relaxed);
-        const auto gain_db = zldsp::chore::gainToDecibels(p_ref_.getController().getDisplayedGain());
+        auto gain_db = zldsp::chore::gainToDecibels(p_ref_.getController().getDisplayedGain());
         if (std::abs(scale - c_scale_) > 1e-3) {
             c_scale_ = scale;
             scale_label_.setText(floatToStringSnprintf(c_scale_, 0) + "%",
                                  juce::dontSendNotification);
             scale_label_.repaint();
+        }
+        if (std::abs(gain_db) < 1e-6) {
+            gain_db = 0.0;
         }
         if (std::abs(gain_db - c_gain_db_) > 1e-3) {
             c_gain_db_ = gain_db;
