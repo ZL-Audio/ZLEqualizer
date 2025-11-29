@@ -32,12 +32,14 @@ namespace zlpanel {
                                                            BinaryData::shuffle_svgSize)),
         swap_button_(base, swap_drawable_.get(), swap_drawable_.get(),
                      tooltip_helper.getToolTipText(multilingual::kBandSideSwap)),
-        link_drawable_(juce::Drawable::createFromImageData(BinaryData::link_svg,
-                                                           BinaryData::link_svgSize)),
+        extra_drawable_(juce::Drawable::createFromImageData(BinaryData::up_arrow_svg,
+                                                            BinaryData::up_arrow_svgSize)),
+        extra_button_(base, extra_drawable_.get(), extra_drawable_.get()),
+        link_drawable_(juce::Drawable::createFromImageData(BinaryData::link_svg, BinaryData::link_svgSize)),
         link_button_(base, link_drawable_.get(), link_drawable_.get(),
-            tooltip_helper.getToolTipText(multilingual::kBandDynamicSideLink)),
+                     tooltip_helper.getToolTipText(multilingual::kBandDynamicSideLink)),
         ftype_box_(zlp::PSideFilterType::kChoices, base,
-            tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFilterType)),
+                   tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFilterType)),
         slope_box_(juce::StringArray{
                        "6 dB/oct", "12 dB/oct", "24 dB/oct", "36 dB/oct",
                        "48 dB/oct", "72 dB/oct", "96 dB/oct"
@@ -82,12 +84,23 @@ namespace zlpanel {
         swap_button_.setBufferedToImage(true);
         addAndMakeVisible(swap_button_);
 
+        extra_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
+        extra_button_.setBufferedToImage(true);
+        addAndMakeVisible(extra_button_);
+        extra_button_.getButton().onClick = [this]() {
+            const auto extra_visible =
+                static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kDynamicExtraPanel)) > 0.5;
+            if (extra_visible != extra_button_.getToggleState()) {
+                base_.setPanelProperty(zlgui::PanelSettingIdx::kDynamicExtraPanel, extra_visible ? 0.0 : 1.0);
+            }
+        };
+
         link_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         link_button_.setBufferedToImage(true);
         addAndMakeVisible(link_button_);
 
-        const auto popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
-            juce::PopupMenu::Options::PopupDirection::upwards);
+        const auto popup_option =
+            juce::PopupMenu::Options().withPreferredPopupDirection(juce::PopupMenu::Options::PopupDirection::upwards);
         slope_box_.getLAF().setItemJustification(juce::Justification::centredRight);
         for (auto& box : {&ftype_box_, &slope_box_}) {
             box->getLAF().setOption(popup_option);
@@ -129,10 +142,15 @@ namespace zlpanel {
         ftype_box_.addMouseListener(this, false);
         freq_slider_.addMouseListener(this, false);
         q_slider_.addMouseListener(this, false);
+
         setInterceptsMouseClicks(false, true);
+
+        base_.getPanelValueTree().addListener(this);
     }
 
-    RightControlPanel::~RightControlPanel() = default;
+    RightControlPanel::~RightControlPanel() {
+        base_.getPanelValueTree().removeListener(this);
+    }
 
     int RightControlPanel::getIdealWidth() const {
         const auto font_size = base_.getFontSize();
@@ -153,12 +171,12 @@ namespace zlpanel {
         const auto padding = getPaddingSize(font_size);
 
         auto bound = getLocalBounds();
-        control_background_.setBounds(bound);
+        changeBackgroundBound();
 
         bound.reduce(padding + padding / 2, padding);
 
         auto top_bound = bound.removeFromTop(button_height);
-        const auto w_padding = (2 * slider_width + padding - 4 * button_height) / 4;
+        const auto w_padding = (2 * slider_width + padding - 5 * button_height) / 4;
         bypass_button_.setBounds(top_bound.removeFromLeft(button_height));
         top_bound.removeFromLeft(w_padding);
         auto_button_.setBounds(top_bound.removeFromLeft(button_height));
@@ -166,7 +184,9 @@ namespace zlpanel {
         relative_button_.setBounds(top_bound.removeFromLeft(button_height));
         top_bound.removeFromLeft(w_padding);
         swap_button_.setBounds(top_bound.removeFromLeft(button_height));
-        top_bound.removeFromLeft(2 * slider_width + 2 * padding - 4 * button_height - 3 * w_padding);
+        top_bound.removeFromLeft(w_padding);
+        extra_button_.setBounds(top_bound.removeFromLeft(button_height));
+        top_bound.removeFromLeft(2 * slider_width + 2 * padding - 5 * button_height - 4 * w_padding);
         link_button_.setBounds(top_bound.removeFromLeft(button_height));
         top_bound.removeFromLeft(padding);
         slope_box_.setBounds(top_bound.removeFromRight(slider_width));
@@ -287,8 +307,7 @@ namespace zlpanel {
             freq_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 freq_slider_.getSlider1(), p_ref_.parameters_,
                 zlp::PSideFreq::kID + std::to_string(base_.getSelectedBand()),
-                zlp::getLogMidRange(10.0, freq_max, 1000.0, 0.1),
-                updater_);
+                zlp::getLogMidRange(10.0, freq_max, 1000.0, 0.1), updater_);
             freq_slider_.setComponentID(zlp::PSideFreq::kID + std::to_string(base_.getSelectedBand()));
             freq_slider_.visibilityChanged();
         } else {
@@ -330,6 +349,29 @@ namespace zlpanel {
             if (event.originalComponent == &freq_slider_ || event.originalComponent == &q_slider_) {
                 updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
             }
+        }
+    }
+
+    void RightControlPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
+        if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kDynamicExtraPanel, property)) {
+            const auto extra_visible =
+                static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kDynamicExtraPanel)) > 0.5;
+            if (extra_visible != extra_button_.getToggleState()) {
+                extra_button_.getButton().setToggleState(extra_visible, juce::sendNotificationSync);
+            }
+            changeBackgroundBound();
+        }
+    }
+
+    void RightControlPanel::changeBackgroundBound() {
+        const auto extra_visible =
+            static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kDynamicExtraPanel)) > 0.5;
+        const auto bound = getLocalBounds();
+        if (extra_visible) {
+            control_background_.setBounds({bound.getX(), bound.getY() - bound.getHeight(),
+                                           bound.getWidth(), bound.getHeight() + bound.getHeight()});
+        } else {
+            control_background_.setBounds(bound);
         }
     }
 }

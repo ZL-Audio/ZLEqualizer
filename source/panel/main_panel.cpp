@@ -18,6 +18,7 @@ namespace zlpanel {
             ),
         refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]),
         control_panel_(p, base, tooltip_helper_),
+        extra_dynamic_panel_(p, base, tooltip_helper_),
         curve_panel_(p, base, tooltip_helper_),
         top_panel_(p, base, tooltip_helper_),
         ui_setting_panel_(p, base_),
@@ -37,6 +38,8 @@ namespace zlpanel {
 
         addAndMakeVisible(curve_panel_);
         addAndMakeVisible(control_panel_);
+        extra_dynamic_panel_.setBufferedToImage(true);
+        addChildComponent(extra_dynamic_panel_);
         addAndMakeVisible(top_panel_);
         addChildComponent(ui_setting_panel_);
     }
@@ -72,6 +75,11 @@ namespace zlpanel {
         control_bound = control_bound.removeFromBottom(control_panel_.getIdealHeight());
         control_bound = control_bound.withSizeKeepingCentre(control_panel_.getIdealWidth(), control_bound.getHeight());
         control_panel_.setBounds(control_bound);
+        const auto extra_dynamic_height = extra_dynamic_panel_.getIdealHeight();
+        const auto extra_dynamic_width = extra_dynamic_panel_.getIdealWidth();
+        extra_dynamic_panel_.setBounds({control_bound.getRight() - extra_dynamic_width,
+                                        control_bound.getY() - extra_dynamic_height,
+                                        extra_dynamic_width, extra_dynamic_height});
 
         ui_setting_panel_.setBounds(bound);
         top_panel_.setBounds(bound.removeFromTop(top_panel_.getIdealHeight()));
@@ -87,6 +95,7 @@ namespace zlpanel {
             // update selected band
             if (c_band_ != base_.getSelectedBand()) {
                 c_band_ = base_.getSelectedBand();
+                extra_dynamic_panel_.updateBand();
                 control_panel_.updateBand();
                 curve_panel_.updateBand();
             }
@@ -127,6 +136,7 @@ namespace zlpanel {
             control_panel_.updateSampleRate(sample_rate);
         }
         // sub slow callbacks
+        extra_dynamic_panel_.repaintCallBackSlow();
         control_panel_.repaintCallBackSlow();
         curve_panel_.repaintCallBackSlow();
         top_panel_.repaintCallbackSlow();

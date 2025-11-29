@@ -73,7 +73,7 @@ namespace zlpanel::band_helper {
     inline void turnOffBand(PluginProcessor& p, const size_t band, juce::SelectedItemSet<size_t>& items_set) {
         if (items_set.isSelected(band)) {
             const auto band_array = items_set.getItemArray();
-            for (const size_t& b: band_array) {
+            for (const size_t& b : band_array) {
                 updateValue(p.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(b)), 0.f);
             }
             items_set.deselectAll();
@@ -105,7 +105,8 @@ namespace zlpanel::band_helper {
                     dynamic_on ? 1.f : 0.f);
 
         if (!dynamic_on) {
-            for (const auto& ID : {zlp::PThreshold::kID, zlp::PKneeW::kID, zlp::PAttack::kID, zlp::PRelease::kID}) {
+            for (const auto& ID : {zlp::PThreshold::kID, zlp::PKneeW::kID, zlp::PAttack::kID, zlp::PRelease::kID,
+                                   zlp::PRMSLength::kID, zlp::PRMSMix::kID, zlp::PDynamicSmooth::kID}) {
                 auto* para = p.parameters_.getParameter(ID + band_s);
                 updateValue(para, para->getDefaultValue());
             }

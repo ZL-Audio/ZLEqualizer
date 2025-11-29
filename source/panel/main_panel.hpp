@@ -10,6 +10,7 @@
 #pragma once
 
 #include "control_panel/control_panel.hpp"
+#include "control_panel/extra_dynamic_panel.hpp"
 #include "curve_panel/curve_panel.hpp"
 #include "top_panel/top_panel.hpp"
 #include "ui_setting_panel/ui_setting_panel.hpp"
@@ -49,6 +50,7 @@ namespace zlpanel {
         double refresh_rate_{-1.0};
 
         ControlPanel control_panel_;
+        ExtraDynamicPanel extra_dynamic_panel_;
         CurvePanel curve_panel_;
         TopPanel top_panel_;
         UISettingPanel ui_setting_panel_;

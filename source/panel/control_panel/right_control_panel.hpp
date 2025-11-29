@@ -11,14 +11,15 @@
 
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
-#include "../helper/helper.hpp"
 #include "../helper/freq_note.hpp"
+#include "../helper/helper.hpp"
 #include "../multilingual/tooltip_helper.hpp"
 
 #include "control_background.hpp"
 
 namespace zlpanel {
-    class RightControlPanel final : public juce::Component {
+    class RightControlPanel final : public juce::Component,
+                                    private juce::ValueTree::Listener {
     public:
         explicit RightControlPanel(PluginProcessor& p, zlgui::UIBase& base,
                                    const multilingual::TooltipHelper& tooltip_helper);
@@ -57,6 +58,9 @@ namespace zlpanel {
         const std::unique_ptr<juce::Drawable> swap_drawable_;
         zlgui::button::ClickButton swap_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> swap_attachment_;
+
+        const std::unique_ptr<juce::Drawable> extra_drawable_;
+        zlgui::button::ClickButton extra_button_;
 
         const std::unique_ptr<juce::Drawable> link_drawable_;
         zlgui::button::ClickButton link_button_;
@@ -101,5 +105,9 @@ namespace zlpanel {
         void mouseDrag(const juce::MouseEvent& event) override;
 
         void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override;
+
+        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
+
+        void changeBackgroundBound();
     };
 }
