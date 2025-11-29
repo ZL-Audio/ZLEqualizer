@@ -259,6 +259,7 @@ namespace zlp {
                 side_empty_update_flags_[i].store(true, std::memory_order::relaxed);
                 dynamic_th_update_[i].store(true, std::memory_order::relaxed);
                 dynamic_ar_update_[i].store(true, std::memory_order::relaxed);
+                dynamic_extra_update_[i].store(true, std::memory_order::relaxed);
             }
         } else {
             // turn dynamic off and reset filter gain
@@ -440,6 +441,12 @@ namespace zlp {
                 auto& follower{dynamic_side_handlers_[i].getFollower()};
                 follower.setAttack<false>(dynamic_attack_[i].load(std::memory_order::relaxed));
                 follower.setRelease<true>(dynamic_release_[i].load(std::memory_order::relaxed));
+            }
+            if (dynamic_extra_update_[i].exchange(false, std::memory_order::acquire)) {
+                if (dynamic_smooth_update_[i].exchange(false, std::memory_order::acquire)) {
+                    auto& follower{dynamic_side_handlers_[i].getFollower()};
+                    follower.setSmooth<true>(dynamic_smooth_[i].load(std::memory_order::relaxed));
+                }
             }
         }
     }

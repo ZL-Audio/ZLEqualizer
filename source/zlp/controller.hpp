@@ -131,6 +131,13 @@ namespace zlp {
             to_update_.store(true, std::memory_order::release);
         }
 
+        void setDynamicSmooth(const size_t idx, const double smooth) {
+            dynamic_smooth_[idx].store(smooth, std::memory_order::relaxed);
+            dynamic_smooth_update_[idx].store(true, std::memory_order::relaxed);
+            dynamic_extra_update_[idx].store(true, std::memory_order::release);
+            to_update_.store(true, std::memory_order::release);
+        }
+
         std::array<zldsp::filter::Empty, kBandNum>& getEmptyFilters() {
             return emptys_;
         }
@@ -337,6 +344,9 @@ namespace zlp {
         std::array<std::atomic<bool>, kBandNum> dynamic_ar_update_{};
         std::array<std::atomic<double>, kBandNum> dynamic_attack_{};
         std::array<std::atomic<double>, kBandNum> dynamic_release_{};
+        std::array<std::atomic<bool>, kBandNum> dynamic_extra_update_{};
+        std::array<std::atomic<bool>, kBandNum> dynamic_smooth_update_{};
+        std::array<std::atomic<double>, kBandNum> dynamic_smooth_{};
         // histogram for dynamic auto-threshold
         double hist_unit_decay_{1.0}, slow_hist_unit_decay_{1.0};
         std::array<double, 3> hist_percentiles_{0.1, 0.5, 0.9};

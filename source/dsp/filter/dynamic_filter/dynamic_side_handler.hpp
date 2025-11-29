@@ -94,11 +94,11 @@ namespace zldsp::filter {
          *
          * @return the underlying follower
          */
-        zldsp::compressor::PSFollower<FloatType, false, false>& getFollower() {
+        zldsp::compressor::PSFollower<FloatType>& getFollower() {
             return follower_;
         }
 
-        double getBaseGain() const {
+        [[nodiscard]] double getBaseGain() const {
             return base_gain_;
         }
 
@@ -106,12 +106,13 @@ namespace zldsp::filter {
             return base_gain_ + follower_.getCurrentSample() * gain_diff_;
         }
 
+        template <zldsp::compressor::SState s_state>
         double getNextGain(const double p) {
-            return base_gain_ + follower_.processSample(p) * gain_diff_;
+            return base_gain_ + follower_.template processSample<s_state>(p) * gain_diff_;
         }
 
     protected:
-        zldsp::compressor::PSFollower<FloatType, false, false> follower_;
+        zldsp::compressor::PSFollower<FloatType> follower_;
         double base_gain_{}, target_gain_{}, gain_diff_{};
 
         FloatType threshold_{}, knee_{static_cast<FloatType>(0.01)};

@@ -48,6 +48,8 @@ namespace zlp {
             controller_.setDynamicAttack(idx_, value);
         } else if (parameter_ID.startsWith(PRelease::kID)) {
             controller_.setDynamicRelease(idx_, value);
+        } else if (parameter_ID.startsWith(PDynamicSmooth::kID)) {
+            controller_.setDynamicSmooth(idx_, value * 0.01f);
         }
     }
 }

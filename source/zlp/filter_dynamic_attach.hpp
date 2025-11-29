@@ -31,6 +31,7 @@ namespace zlp {
             PDynamicLearn::kID, PDynamicRelative::kID,
             PSideSwap::kID,
             PThreshold::kID, PKneeW::kID, PAttack::kID, PRelease::kID,
+            PDynamicSmooth::kID
         };
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
