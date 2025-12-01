@@ -26,11 +26,11 @@ jobs:
       matrix:
         include:
           - name: macOS-x86
-            os: macos-15
+            os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DKFR_ARCHS="sse2;avx;avx2" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
           - name: macOS-arm
-            os: macos-15
+            os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
           - name: Windows-x86

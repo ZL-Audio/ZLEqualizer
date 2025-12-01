@@ -36,7 +36,7 @@ jobs:
             pluginval-binary: ./pluginval
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=8
           - name: macOS
-            os: macos-15
+            os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DZL_EQ_BAND_NUM=8
           - name: Windows

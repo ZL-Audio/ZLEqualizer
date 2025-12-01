@@ -34,11 +34,11 @@ jobs:
             app_suffix: ""
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
           - name: macOS-x86
-            os: macos-15
+            os: macos-latest
             app_suffix: ".app"
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DKFR_ARCHS="sse2;avx;avx2" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_EQ_BAND_NUM=24
           - name: macOS-arm
-            os: macos-15
+            os: macos-latest
             app_suffix: ".app"
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_EQ_BAND_NUM=24
           - name: Windows-x86
@@ -149,7 +149,7 @@ jobs:
         run: |
           mkdir "${{ env.ARTIFACTS_PATH }}/dmgtmp"
           mv "${{ env.ARTIFACT_NAME }}.pkg" "${{ env.ARTIFACTS_PATH }}/dmgtmp"
-          hdiutil create "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -ov -volname "${{ env.ARTIFACT_NAME }}" -fs HFS+ -srcfolder "${{ env.ARTIFACTS_PATH }}/dmgtmp"
+          hdiutil create "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -ov -volname "${{ env.ARTIFACT_NAME }}" -fs HFS+ -srcfolder "${{ env.ARTIFACTS_PATH }}/dmgtmp" -format UDRW
           sync
           sleep 5
           hdiutil convert "${{ env.ARTIFACTS_PATH }}/tmp.dmg" -format UDZO -o "${{ env.ARTIFACT_NAME }}.dmg"
