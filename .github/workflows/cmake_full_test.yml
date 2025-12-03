@@ -72,7 +72,7 @@ jobs:
           fetch-depth: 0
 
       - name: Import Certificates (macOS)
-        uses: apple-actions/import-codesign-certs@v5 # only exists as a tag right now
+        uses: apple-actions/import-codesign-certs@v6 # only exists as a tag right now
         if: ${{ (runner.os == 'macOS') && (env.p12-file-base64 != '')}}
         with:
           p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
