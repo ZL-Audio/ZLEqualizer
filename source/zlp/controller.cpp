@@ -916,7 +916,9 @@ namespace zlp {
                 parallel_filters_[i].processPre<true>(main_pointers, num_samples);
             }
         } else {
-            parallel_filters_[i].processPost<false>(main_pointers, num_samples);
+            if (c_filter_status_[i] == kOn) {
+                parallel_filters_[i].processPost<false>(main_pointers, num_samples);
+            }
         }
     }
 
