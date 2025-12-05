@@ -209,6 +209,7 @@ namespace zlpanel {
         if (band == base_.getSelectedBand()) {
             target_dragger_.setVisible(is_dynamic_on);
             side_dragger_.setVisible(is_dynamic_on);
+            float_pop_panel_.setTargetVisible(is_dynamic_on);
         }
         is_dynamic_on_[band] = is_dynamic_on;
         draggers_[band].setAlpha(filter_status == zlp::FilterStatus::kBypass ? kBypassAlphaMultiplier : 1.f);

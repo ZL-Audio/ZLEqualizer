@@ -158,6 +158,9 @@ namespace zlpanel {
         solo_button_.setBounds(bottom_bound.removeFromLeft(button_size));
         close_button_.setBounds(bottom_bound.removeFromRight(button_size));
         freq_slider_.setBounds(bottom_bound);
+
+        ideal_height_ = static_cast<float>(getIdealHeight());
+        ideal_width_ = static_cast<float>(getIdealWidth());
     }
 
     void FloatPopPanel::updateBand() {
@@ -204,23 +207,36 @@ namespace zlpanel {
         return 2 * button_size + 3 * padding;
     }
 
-    void FloatPopPanel::updatePosition(juce::Point<float> position) {
-        if (std::abs(position.x - target_position_.x) > .01f
-            || std::abs(position.y - target_position_.y) > .01f) {
-            target_position_ = position;
+    void FloatPopPanel::setTargetVisible(const bool is_target_visible) {
+        if (is_target_visible != is_target_visible_) {
+            is_target_visible_ = is_target_visible;
             updateTransformation();
         }
     }
 
-    void FloatPopPanel::updateFloatingBound(juce::Rectangle<float> bound) {
-        const auto width = static_cast<float>(getIdealWidth());
-        const auto height = static_cast<float>(getIdealHeight());
+    void FloatPopPanel::updatePosition(const juce::Point<float> position) {
+        if (std::abs(position.x - position_.x) > .01f
+            || std::abs(position.y - position_.y) > .01f) {
+            position_ = position;
+            updateTransformation();
+        }
+    }
+
+    void FloatPopPanel::updateFloatingBound(const juce::Rectangle<float> bound) {
+        const auto width = ideal_width_;
+        const auto height = ideal_height_;
+        const auto padding = base_.getFontSize() * kPaddingScale * 1.5f;
 
         upper_center_ = {width * .5f, -base_.getFontSize()};
         lower_center_ = {width * .5f, height + base_.getFontSize()};
+        left_center_ = {-padding, ideal_height_ * .5f};
+        right_center_ = {width + padding, ideal_height_ * .5f};
 
         x_min_ = width * .5f;
+        x_mid_ = bound.getWidth() * .5f;
         x_max_ = bound.getWidth() - width * .5f;
+        y_min_ = ideal_height_ * .5f;
+        y_max_ = bound.getHeight() - height * .5f;
 
         y1_ = bound.getHeight() * .25f;
         y2_ = bound.getHeight() * .5f + .5f;
@@ -230,12 +246,24 @@ namespace zlpanel {
     }
 
     void FloatPopPanel::updateTransformation() {
-        const auto target_position = juce::Point<float>{
-            std::clamp(target_position_.x, x_min_, x_max_), target_position_.y};
-        if (target_position_.y < y1_ || (target_position_.y > y2_ && target_position_.y < y3_)) {
-            setTransform(juce::AffineTransform::translation(target_position - upper_center_));
+        if (is_target_visible_) {
+            if (position_.x < x_mid_) {
+                setTransform(juce::AffineTransform::translation(
+                    position_.x - left_center_.x,
+                    std::clamp(position_.y, y_min_, y_max_) - left_center_.y));
+            } else {
+                setTransform(juce::AffineTransform::translation(
+                    position_.x - right_center_.x,
+                    std::clamp(position_.y, y_min_, y_max_) - right_center_.y));
+            }
+        } else if (position_.y < y1_ || (position_.y > y2_ && position_.y < y3_)) {
+            setTransform(juce::AffineTransform::translation(
+                std::clamp(position_.x, x_min_, x_max_) - upper_center_.x,
+                position_.y - upper_center_.y));
         } else {
-            setTransform(juce::AffineTransform::translation(target_position - lower_center_));
+            setTransform(juce::AffineTransform::translation(
+                std::clamp(position_.x, x_min_, x_max_) - lower_center_.x,
+                position_.y - lower_center_.y));
         }
     }
 

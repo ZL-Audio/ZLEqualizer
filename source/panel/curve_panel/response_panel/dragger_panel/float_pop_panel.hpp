@@ -37,6 +37,8 @@ namespace zlpanel {
 
         void updatePosition(juce::Point<float> position);
 
+        void setTargetVisible(bool is_target_visible);
+
         void updateFloatingBound(juce::Rectangle<float> bound);
 
     private:
@@ -46,11 +48,15 @@ namespace zlpanel {
 
         ControlBackground control_background_;
 
-        juce::Point<float> target_position_{};
+        bool is_target_visible_{false};
+        juce::Point<float> position_{};
         juce::Point<float> upper_center_{};
         juce::Point<float> lower_center_{};
+        juce::Point<float> left_center_{};
+        juce::Point<float> right_center_{};
+        float ideal_height_{}, ideal_width_{};
 
-        float x_min_{}, x_max_{};
+        float x_min_{}, x_max_{}, x_mid_{}, y_min_{}, y_max_{};
         float y1_{}, y2_{}, y3_{};
 
         const std::unique_ptr<juce::Drawable> bypass_drawable_;
