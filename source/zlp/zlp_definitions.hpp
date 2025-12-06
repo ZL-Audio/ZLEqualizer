@@ -242,7 +242,7 @@ namespace zlp {
         static constexpr auto kID = "total_bypass";
         static constexpr auto kName = "Bypass";
         inline static const auto kChoices = juce::StringArray{
-            "ON", "Bypass"
+            "On", "Bypass"
         };
         static constexpr int kDefaultI = 0;
     };
@@ -268,7 +268,7 @@ namespace zlp {
         static constexpr auto kID = "total_auto_gain";
         static constexpr auto kName = "Auto Gain";
         inline static const auto kChoices = juce::StringArray{
-            "OFF", "ON"
+            "Off", "On"
         };
         static constexpr int kDefaultI = 0;
     };
@@ -278,7 +278,7 @@ namespace zlp {
         static constexpr auto kID = "total_static_gain";
         static constexpr auto kName = "Static Gain";
         inline static const auto kChoices = juce::StringArray{
-            "OFF", "ON"
+            "Off", "On"
         };
         static constexpr int kDefaultI = 0;
     };
@@ -288,7 +288,7 @@ namespace zlp {
         static constexpr auto kID = "total_phase_flip";
         static constexpr auto kName = "phase_flip";
         inline static const auto kChoices = juce::StringArray{
-            "OFF", "ON"
+            "Off", "On"
         };
         static constexpr int kDefaultI = 0;
     };
@@ -302,13 +302,12 @@ namespace zlp {
     };
 
     // band parameters
-
     class PFilterStatus : public ChoiceParameters<PFilterStatus> {
     public:
         static constexpr auto kID = "filter_status";
         static constexpr auto kName = "Filter Status";
         inline static const auto kChoices = juce::StringArray{
-            "OFF", "Bypass", "ON"
+            "Off", "Bypass", "On"
         };
         static constexpr int kDefaultI = 0;
     };

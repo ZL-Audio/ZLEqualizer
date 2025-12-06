@@ -176,9 +176,11 @@ namespace zlpanel {
             tree.addChild(filter, i, nullptr);
             i += 1;
             const auto band_s = std::to_string(band);
+
             for (auto& para_ID : kIDs) {
+                const auto* para = p_ref_.parameters_.getParameter(para_ID + band_s);
                 filter.setProperty(para_ID,
-                                   getValue(p_ref_.parameters_, para_ID + band_s),
+                                   para->getCurrentValueAsText(),
                                    nullptr);
             }
         }
@@ -204,7 +206,7 @@ namespace zlpanel {
             for (auto& para_ID : kIDs) {
                 if (filter.hasProperty(para_ID)) {
                     auto* para = p_ref_.parameters_.getParameter(para_ID + band_s);
-                    updateValue(para, para->convertTo0to1(filter.getProperty(para_ID)));
+                    updateValue(para, para->getValueForText(filter.getProperty(para_ID)));
                 }
             }
             base_.getSelectedBandSet().addToSelection(band);
