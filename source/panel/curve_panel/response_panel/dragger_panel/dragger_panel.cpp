@@ -453,10 +453,12 @@ namespace zlpanel {
     }
 
     void DraggerPanel::mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) {
-        if (event.mods.isCommandDown()) {
-            slope_slider_.mouseWheelMove(event, wheel);
-        } else {
-            q_slider_.mouseWheelMove(event, wheel);
+        if (event.originalComponent != &mouse_event_panel_) {
+            if (event.mods.isCommandDown()) {
+                slope_slider_.mouseWheelMove(event, wheel);
+            } else {
+                q_slider_.mouseWheelMove(event, wheel);
+            }
         }
     }
 
