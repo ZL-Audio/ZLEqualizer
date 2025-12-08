@@ -392,11 +392,19 @@ namespace zlpanel {
             if (event.originalComponent == &(draggers_[band].getButton())) {
                 if (event.mods.isCommandDown()) {
                     if (event.mods.isLeftButtonDown()) {
-                        const auto dynamic_on = getValue(
-                            p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
-                        updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
-                                    dynamic_on ? 0.f : 1.f);
-                        band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on);
+                        const auto ftype = static_cast<int>(std::round(
+                            getValue(p_ref_.parameters_, zlp::PFilterType::kID + std::to_string(band))));
+                        const auto gain_enabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
+                            || (ftype == static_cast<int>(zldsp::filter::kLowShelf))
+                            || (ftype == static_cast<int>(zldsp::filter::kHighShelf))
+                            || (ftype == static_cast<int>(zldsp::filter::kTiltShelf));
+                        if (gain_enabled) {
+                            const auto dynamic_on = getValue(
+                                p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
+                            updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
+                                        dynamic_on ? 0.f : 1.f);
+                            band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on);
+                        }
                     }
                 } else {
                     if (event.mods.isLeftButtonDown()) {
