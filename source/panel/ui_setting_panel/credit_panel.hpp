@@ -32,7 +32,7 @@ namespace zlpanel {
             "[nlopt](https://github.com/stevengj/nlopt) by [Steven G. Johnson](https://github.com/stevengj)\n\n"
             "[kfr](https://github.com/kfrlib/kfr) by [KFR](https://github.com/kfrlib)\n\n"
             "[Material Symbols](https://github.com/google/material-design-icons) by [Google](https://github.com/google)\n\n"
-            "[inter](https://github.com/rsms/inter) by [The Inter Project Authors](https://github.com/rsms/inter))\n\n"
+            "[inter](https://github.com/rsms/inter) by [The Inter Project Authors](https://github.com/rsms/inter)\n\n"
             "Vicanek, Martin. Matched One-Pole Digital Shelving Filters. (2019).\n\n"
             "Vicanek, Martin. Matched Second Order Digital Filters. (2016).\n\n"
             "Redmon, Nigel. Cascading filters. (2016).\n\n"
