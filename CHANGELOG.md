@@ -4,6 +4,69 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.1.0
+
+BREAKING CHANGES
+
+- fix incorrect stereo dynamic handling
+  - This fix will correct the previous incorrect stereo dynamic behavior. Please finish your current mixing session before updating if stereo dynamic behavior is used.
+
+New Features
+
+- add extra dynamic parameters: RMS `Length`, RMS `Mix` and `Smooth`
+- add FFT analyzer stereo channel
+
+Bug fixes and Improvements
+
+- fix incorrect parallel bypass behavior
+- fix floating window overlapping issue
+- fix displayed values when they are close to zero
+- fix incorrect copy/paste from ZL Compressor
+
+## 1.0.3
+
+Bug fixes and Improvements
+
+- fix plugin crashes when it does not have UI preset folder permission
+- fix incorrect low/high shelf gain when added by double-clicking
+
+## 1.0.2
+
+New Features
+
+- add more side-chain filters controls (filter type & filer slope)
+- add right-click panel
+- add more controls to the floating window
+- add more shortcuts
+- add UI scaling control
+- add EQ Match drawing control
+
+Bug fixes
+
+- fix wrong octave notes
+- fix incorrect solo display
+- fix incorrect parallel processing in mid/side
+
+Improvements
+
+- improve `Matched Phase` and `Mixed Phase` performance
+- improve general DSP performance
+- improve dynamic processing
+- improve FFT analyzer display
+- improve EQ Match fitting speed
+
+Other Changes
+
+- increase frequency maximum value when the sample rate > 44.1 kHz
+- remove `RMS` & `Smooth` from dynamic parameters
+- remove `Zero Latency` as dynamic won't require extra 1ms latency
+- remove `High Quality` as dynamic always stays in high quality
+- remove EQ Match `Weight` & fitting algorithm control
+- support VST3 parameter context menu
+    - In hosts that support this feature, if you right-click on some sliders, a native parameter menu will pop up.
+- support VST3/AAX parameter index
+    - In hosts that support this feature, hosts can map screen locations to parameters, e.g., Cubase "AI Knob".
+
 ## 0.6.2
 
 DSP
