@@ -20,6 +20,10 @@
 #include "../lock/spin_lock.hpp"
 
 namespace zldsp::analyzer {
+    enum class FFTStereoMode {
+        kStereo, kLeft, kRight, kMid, kSide
+    };
+
     /**
      * a fft analyzer that makes sure that multiple FFTs are synchronized in time
      * @tparam FloatType the float type of input audio buffers
@@ -79,13 +83,15 @@ namespace zldsp::analyzer {
         void process(std::array<std::span<FloatType*>, kFFTNum> buffers, const size_t num_samples) {
             int free_space = abstract_fifo_.getNumFree();
             for (size_t i = 0; i < kFFTNum; ++i) {
-                if (!is_on_[i].load(std::memory_order::relaxed)) continue;
+                if (!is_on_[i].load(std::memory_order::relaxed))
+                    continue;
                 free_space = std::min(free_space, static_cast<int>(num_samples));
             }
             if (free_space == 0) { return; }
             const auto range = abstract_fifo_.prepareToWrite(free_space);
             for (size_t i = 0; i < kFFTNum; ++i) {
-                if (!is_on_[i].load(std::memory_order::relaxed)) continue;
+                if (!is_on_[i].load(std::memory_order::relaxed))
+                    continue;
                 const auto buffer = buffers[i];
                 if (range.block_size1 > 0) {
                     for (size_t chan = 0; chan < buffer.size(); ++chan) {
@@ -113,7 +119,7 @@ namespace zldsp::analyzer {
          * run the forward FFT and calculate the interpolated DBs
          * @return whether to update
          */
-        bool run() {
+        bool run(const FFTStereoMode fft_stereo_mode = FFTStereoMode::kStereo) {
             if (fft_buffer_.empty()) {
                 return false;
             }
@@ -121,7 +127,8 @@ namespace zldsp::analyzer {
             // cache on indices
             std::vector<size_t> is_on_vector{};
             for (size_t i = 0; i < kFFTNum; ++i) {
-                if (is_on_[i].load()) is_on_vector.push_back(i);
+                if (is_on_[i].load())
+                    is_on_vector.push_back(i);
             }
             // pull data from FIFO
             const int num_ready = abstract_fifo_.getNumReady();
@@ -159,23 +166,47 @@ namespace zldsp::analyzer {
             for (const auto& i : is_on_vector) {
                 // forward FFT and take average of each channel
                 auto ms_v = kfr::make_univector(ms_fft_buffer_.data(), ms_fft_buffer_.size());
-                for (size_t chan = 0; chan < circular_buffers_[i].size(); ++chan) {
-                    std::copy(circular_buffers_[i][chan].begin(), circular_buffers_[i][chan].end(),
-                              fft_buffer_.begin());
+                if (circular_buffers_[i].size() != 2 || fft_stereo_mode == FFTStereoMode::kStereo) {
+                    for (size_t chan = 0; chan < circular_buffers_[i].size(); ++chan) {
+                        std::copy(circular_buffers_[i][chan].begin(), circular_buffers_[i][chan].end(),
+                                  fft_buffer_.begin());
+                        auto temp = kfr::make_univector(fft_buffer_.data(), window_.size());
+                        temp = temp * window_;
+                        fft_.forwardMagnitudeOnly(fft_buffer_.data());
+                        auto v = kfr::make_univector(fft_buffer_.data(), ms_fft_buffer_.size());
+                        if (chan == 0) {
+                            ms_v = kfr::sqr(v);
+                        } else {
+                            ms_v = ms_v + kfr::sqr(v);
+                        }
+                    }
+                } else {
+                    if (fft_stereo_mode == FFTStereoMode::kLeft) {
+                        std::copy(circular_buffers_[i][0].begin(), circular_buffers_[i][0].end(),
+                                  fft_buffer_.begin());
+                    } else if (fft_stereo_mode == FFTStereoMode::kRight) {
+                        std::copy(circular_buffers_[i][1].begin(), circular_buffers_[i][1].end(),
+                                  fft_buffer_.begin());
+                    } else {
+                        auto v1 = kfr::make_univector(circular_buffers_[i][0]);
+                        auto v2 = kfr::make_univector(circular_buffers_[i][1]);
+                        auto v = kfr::make_univector(fft_buffer_.data(), circular_buffers_[i][0].size());
+                        if (fft_stereo_mode == FFTStereoMode::kMid) {
+                            v = v1 + v2;
+                        } else if (fft_stereo_mode == FFTStereoMode::kSide) {
+                            v = v1 - v2;
+                        }
+                    }
                     auto temp = kfr::make_univector(fft_buffer_.data(), window_.size());
                     temp = temp * window_;
                     fft_.forwardMagnitudeOnly(fft_buffer_.data());
                     auto v = kfr::make_univector(fft_buffer_.data(), ms_fft_buffer_.size());
-                    if (chan == 0) {
-                        ms_v = kfr::sqr(v);
-                    } else {
-                        ms_v = ms_v + kfr::sqr(v);
-                    }
+                    ms_v = kfr::sqr(v);
                 }
                 // smooth decay
                 const auto decay = is_frozen_[i].load(std::memory_order::relaxed)
-                                       ? 1.f
-                                       : actual_decay_rates_[i].load(std::memory_order::relaxed);
+                    ? 1.f
+                    : actual_decay_rates_[i].load(std::memory_order::relaxed);
                 auto& input_dbs{seq_input_dbs_[i]};
                 if (to_reset_[i].exchange(false)) {
                     std::fill(input_dbs.begin(), input_dbs.end(), kMinDB);
@@ -192,8 +223,8 @@ namespace zldsp::analyzer {
 
                     const auto current_db = chore::squareGainToDecibels(mean_square);
                     input_dbs[j] = current_db < input_dbs[j]
-                                       ? input_dbs[j] * decay + current_db * (1 - decay)
-                                       : current_db;
+                        ? input_dbs[j] * decay + current_db * (1 - decay)
+                        : current_db;
                 }
                 // interpolate
                 seq_akima_[i]->prepare();

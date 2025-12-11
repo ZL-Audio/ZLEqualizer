@@ -39,6 +39,7 @@ namespace zlpanel {
         std::atomic<float>& post_ref_;
         std::atomic<float>& side_ref_;
         std::atomic<float>& fft_min_db_ref_;
+        std::atomic<float>& fft_stereo_ref_;
         std::atomic<float>& collision_ref_;
         std::atomic<float>& collision_strength_ref_;
 

@@ -19,6 +19,7 @@ namespace zlpanel {
         post_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPostON::kID)),
         side_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSideON::kID)),
         fft_min_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
+        fft_stereo_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTStereo::kID)),
         collision_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionON::kID)),
         collision_strength_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionStrength::kID)) {
         p_ref_.getController().getFFTAnalyzer().setMinFreq(10.0);
@@ -121,7 +122,9 @@ namespace zlpanel {
             if (!analyzer.getLock().try_lock()) {
                 continue;
             }
-            const auto akima_reset_flag = analyzer.run();
+            const auto fft_stereo = static_cast<zldsp::analyzer::FFTStereoMode>(
+                std::round(fft_stereo_ref_.load(std::memory_order::relaxed)));
+            const auto akima_reset_flag = analyzer.run(fft_stereo);
             const size_t n = analyzer.getInterplotSize();
             if (akima_reset_flag || n != xs_.size()) {
                 xs_.resize(n);

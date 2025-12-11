@@ -41,6 +41,22 @@ namespace zlpanel {
                        tooltip_helper.getToolTipText(multilingual::kFFTFreeze)),
         freeze_attach_(freeze_button_.getButton(), p.parameters_NA_,
                        zlstate::PFFTFreezeON::kID, updater_),
+        lr_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
+            std::vector<std::unique_ptr<juce::Drawable>> icons;
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::stereo_svg, BinaryData::stereo_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::left_svg, BinaryData::left_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::right_svg, BinaryData::right_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::mid_svg, BinaryData::mid_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::side_svg, BinaryData::side_svgSize));
+            return icons;
+        }(), base, "", {}),
+        lr_attachment_(lr_box_.getBox(), p.parameters_NA_,
+                       zlstate::PFFTStereo::kID, updater_),
         collision_drawable_(juce::Drawable::createFromImageData(BinaryData::collision_svg,
                                                                 BinaryData::collision_svgSize)),
         collision_button_(base, collision_drawable_.get(), collision_drawable_.get(),
@@ -70,6 +86,12 @@ namespace zlpanel {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
+
+        const auto popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
+            juce::PopupMenu::Options::PopupDirection::downwards);
+        lr_box_.getLAF().setOption(popup_option);
+        lr_box_.setBufferedToImage(true);
+        addAndMakeVisible(lr_box_);
 
         for (auto& b : {&freeze_button_, &collision_button_}) {
             b->setImageAlpha(.5f, .5f, 1.f, 1.f);
@@ -136,9 +158,12 @@ namespace zlpanel {
         bound.removeFromTop(padding);
         {
             auto t_bound = bound.removeFromTop(button_height);
-            const auto h_padding = (t_bound.getWidth() - button_height * 2) / 2;
+            const auto h_padding = (t_bound.getWidth() - button_height * 3) / 3;
             t_bound.removeFromLeft(h_padding / 2);
             freeze_button_.setBounds(t_bound.removeFromLeft(button_height));
+            t_bound.removeFromLeft(h_padding);
+            const auto lr_box_bound = t_bound.removeFromLeft(button_height);
+            lr_box_.setBounds(lr_box_bound.reduced(static_cast<int>(std::round(base_.getFontSize() * .1f))));
             t_bound.removeFromRight(h_padding / 2);
             collision_button_.setBounds(t_bound.removeFromRight(button_height));
         }

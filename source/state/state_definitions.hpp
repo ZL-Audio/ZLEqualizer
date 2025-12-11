@@ -185,6 +185,16 @@ namespace zlstate {
         static constexpr auto kDefaultV = false;
     };
 
+    class PFFTStereo : public ChoiceParameters<PFFTStereo> {
+    public:
+        static constexpr auto kID = "fft_stereo";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "Stereo", "Left", "Right", "Mid", "Side"
+        };
+        static constexpr int kDefaultI = 0;
+    };
+
     class PCollisionON : public BoolParameters<PCollisionON> {
     public:
         static constexpr auto kID = "collision_on";
@@ -205,7 +215,7 @@ namespace zlstate {
         layout.add(PEQMaxDB::get(), PFFTMinDB::get(),
                    PFFTPreON::get(), PFFTPostON::get(), PFFTSideON::get(),
                    PFFTSpeed::get(), PFFTTilt::get(),
-                   PFFTFreezeON::get(), PCollisionON::get(), PCollisionStrength::get());
+                   PFFTFreezeON::get(), PFFTStereo::get(), PCollisionON::get(), PCollisionStrength::get());
         return layout;
     }
 

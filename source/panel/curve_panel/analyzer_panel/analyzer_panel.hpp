@@ -58,6 +58,9 @@ namespace zlpanel {
         zlgui::button::ClickButton freeze_button_;
         zlgui::attachment::ButtonAttachment<true> freeze_attach_;
 
+        zlgui::combobox::CompactCombobox lr_box_;
+        zlgui::attachment::ComboBoxAttachment<true> lr_attachment_;
+
         const std::unique_ptr<juce::Drawable> collision_drawable_;
         zlgui::button::ClickButton collision_button_;
         zlgui::attachment::ButtonAttachment<true> collision_attach_;
