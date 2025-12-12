@@ -34,7 +34,7 @@ jobs:
           - name: macOS
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=24
           - name: Windows
             os: windows-2022
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
@@ -106,23 +106,9 @@ jobs:
           format: YYYYMMDD
 
       - name: Pluginval VST3 validations
-        if: ${{ runner.os != 'macOS' }}
         shell: bash
         run: |
           ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
-        env:
-          STRICTNESS_LEVEL: 10
-          TIMEOUT_MS: 7200000
-          REPEAT: 10
-          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
-
-      - name: Pluginval AU validations (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        shell: bash
-        run: |
-          sudo cp -r "${{ env.AU_PATH }}" "/Library/Audio/Plug-ins/components"
-          sudo killall -9 AudioComponentRegistrar
-          ${{ matrix.pluginval-binary }} --verbose --validate "/Library/Audio/Plug-ins/components/${{ env.PRODUCT_NAME }}.component" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 7200000

@@ -193,7 +193,7 @@ namespace zldsp::analyzer {
                         auto v = kfr::make_univector(fft_buffer_.data(), circular_buffers_[i][0].size());
                         if (fft_stereo_mode == FFTStereoMode::kMid) {
                             v = v1 + v2;
-                        } else if (fft_stereo_mode == FFTStereoMode::kSide) {
+                        } else {
                             v = v1 - v2;
                         }
                     }
