@@ -45,10 +45,6 @@ jobs:
         shell: bash
         run: choco install ninja
 
-      - name: Install macOS Deps
-        if: ${{ matrix.name == 'macOS' }}
-        run: brew install ninja osxutils
-
       - name: Checkout code
         uses: actions/checkout@v6
         with:

@@ -36,10 +36,6 @@ jobs:
             cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DZL_JUCE_FORMATS="VST3;AU" -DZL_EQ_BAND_NUM=8
 
     steps:
-      - name: Install macOS Deps
-        if: ${{ runner.os == 'macOS' }}
-        run: brew install ninja osxutils
-
       - name: Checkout code
         uses: actions/checkout@v6
         with:
