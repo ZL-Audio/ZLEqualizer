@@ -17,7 +17,8 @@ namespace zldsp::filter {
     public:
         static constexpr size_t kStartDecayIdx = 1, kEndDecayIdx = 32;
 
-        ZeroCalculator() : CorrectionCalculator<kFilterNum, kFilterSize>() {
+        ZeroCalculator() :
+            CorrectionCalculator<kFilterNum, kFilterSize>() {
             decays_.resize(kEndDecayIdx);
             const auto k1 = std::log(static_cast<float>(kStartDecayIdx));
             const auto k2 = std::log(static_cast<float>(kEndDecayIdx));
@@ -38,9 +39,9 @@ namespace zldsp::filter {
         }
 
         void updateCorrection(const size_t idx) override {
-            auto& proto_res{CorrectionCalculator < kFilterNum, kFilterSize > ::proto_res_};
-            auto& biquad_res{CorrectionCalculator < kFilterNum, kFilterSize > ::biquad_res_};
-            auto& correction{CorrectionCalculator < kFilterNum, kFilterSize > ::corrections_[idx]};
+            auto& proto_res{CorrectionCalculator<kFilterNum, kFilterSize>::proto_res_};
+            auto& biquad_res{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_res_};
+            auto& correction{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_[idx]};
 
             for (size_t w_idx = kStartDecayIdx; w_idx < kEndDecayIdx; ++w_idx) {
                 auto biquad = biquad_res[w_idx];
@@ -49,7 +50,7 @@ namespace zldsp::filter {
             for (size_t w_idx = kEndDecayIdx; w_idx < correction.size(); ++w_idx) {
                 auto proto = proto_res[w_idx];
                 auto biquad = biquad_res[w_idx];
-                if (std::abs(biquad) < CorrectionCalculator < kFilterNum, kFilterSize > ::kMinMagnitude) {
+                if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
                     // ill condition, keep correction the same
                 } else {
                     // normal condition

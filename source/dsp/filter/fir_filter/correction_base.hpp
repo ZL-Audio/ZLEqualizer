@@ -73,14 +73,22 @@ namespace zldsp::filter {
                 }
             }
             total_correction_.back() = std::complex(std::abs(total_correction_[total_correction_.size() - 2]), 0.f);
+
+            start_idx_ = total_correction_.size() - 1;
+            for (size_t i = 0; i < total_correction_.size(); ++i) {
+                if (std::abs(total_correction_[i].imag()) > 1e-3) {
+                    start_idx_ = i;
+                }
+            }
         }
 
     private:
         kfr::univector<std::complex<float>> total_correction_{};
-        size_t multiplication_size_{};
 
         kfr::univector<std::complex<float>> dummy_correction_{};
         kfr::univector<float> fir_coeffs_{};
+
+        size_t start_idx_{0};
 
         void setOrder(size_t num_channels, size_t order) override {
             FIRBase<FloatType, kDefaultFFTOrder>::setFFTOrder(num_channels, order);
@@ -89,22 +97,12 @@ namespace zldsp::filter {
 
             total_correction_.resize(FIRBase<FloatType, kDefaultFFTOrder>::num_bin_);
             std::fill(total_correction_.begin(), total_correction_.end(), std::complex(1.f, 0.f));
-            if constexpr (kStartIdx != 0) {
-                multiplication_size_ = total_correction_.size() - kStartIdx;
-            }
         }
 
         void processSpectrum() override {
-            auto* cdata = reinterpret_cast<std::complex<float>*>(
-                FIRBase<FloatType, kDefaultFFTOrder>::fft_data_.data());
-            if constexpr (kStartIdx == 0) {
-                auto c_vector = kfr::make_univector(cdata, total_correction_.size());
-                c_vector = c_vector * total_correction_;
-            } else {
-                auto c_vector = kfr::make_univector(cdata + kStartIdx, multiplication_size_);
-                auto m_vector = kfr::make_univector(total_correction_.data() + kStartIdx, multiplication_size_);
-                c_vector = c_vector * m_vector;
-            }
+            auto c_vector = this->fft_data_.slice(start_idx_);
+            auto m_vector = total_correction_.slice(start_idx_);
+            c_vector = c_vector * m_vector;
         }
     };
 }

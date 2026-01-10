@@ -91,7 +91,8 @@ namespace zldsp::filter {
         // circular buffers for incoming and outgoing audio data.
         std::vector<kfr::univector<float>> input_fifo_, output_fifo_;
         // circular FFT working space which contains interleaved complex numbers.
-        kfr::univector<float> fft_in_, fft_data_;
+        kfr::univector<float> fft_in_;
+        kfr::univector<std::complex<float>>fft_data_;
 
         size_t fft_data_pos_ = 0;
         int latency_{0};
@@ -117,7 +118,7 @@ namespace zldsp::filter {
             input_fifo_.resize(num_channels);
             output_fifo_.resize(num_channels);
             fft_in_.resize(fft_size_);
-            fft_data_.resize(fft_size_ * 2);
+            fft_data_.resize(num_bin_);
         }
 
         template <bool bypass = false>
@@ -132,9 +133,9 @@ namespace zldsp::filter {
                 if constexpr (!bypass) {
                     fft_in_ = fft_in_ * window1_;
 
-                    fft_.forward(fft_in_.data(), fft_data_.data());
+                    fft_.forward(fft_in_, fft_data_);
                     processSpectrum();
-                    fft_.backward(fft_data_.data(), fft_in_.data());
+                    fft_.backward(fft_data_, fft_in_);
 
                     fft_in_ = fft_in_ * window2_;
                 } else {

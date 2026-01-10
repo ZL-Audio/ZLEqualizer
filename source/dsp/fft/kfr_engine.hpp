@@ -37,6 +37,10 @@ namespace zldsp::fft {
             temp_buffer_.resize(fft_plan_->temp_size);
         }
 
+        void forward(kfr::univector<float>& in_buffer, kfr::univector<std::complex<float>>& out_buffer) {
+            fft_plan_->execute(out_buffer, in_buffer, temp_buffer_);
+        }
+
         void forward(FloatType* in_buffer, std::complex<FloatType>* out_buffer) {
             fft_plan_->execute(out_buffer, in_buffer, temp_buffer_.data());
         }
@@ -44,6 +48,10 @@ namespace zldsp::fft {
         void forward(FloatType* in_buffer, FloatType* float_out_buffer) {
             auto out_buffer = reinterpret_cast<std::complex<FloatType>*>(float_out_buffer);
             forward(in_buffer, out_buffer);
+        }
+
+        void backward(kfr::univector<std::complex<float>>& out_buffer, kfr::univector<float>& in_buffer) {
+            fft_plan_->execute(in_buffer, out_buffer, temp_buffer_);
         }
 
         void backward(std::complex<FloatType>* out_buffer, FloatType* in_buffer) {
