@@ -207,10 +207,16 @@ namespace zlp {
                 }
                 if (c_filter_structure_ == kSVF) {
                     svf_filters_[i].getFilter().updateParas(filter_paras_[i]);
+                    if (c_dynamic_on_[i]) {
+                        svf_filters_[i].getFilter().cacheDynPara();
+                    }
                 } else if (c_filter_structure_ == kParallel) {
                     parallel_filters_[i].getFilter().updateParas(filter_paras_[i]);
                 } else {
                     tdf_filters_[i].getFilter().updateParas(filter_paras_[i]);
+                    if (c_dynamic_on_[i]) {
+                        tdf_filters_[i].getFilter().cacheDynPara();
+                    }
                 }
                 res_update_flags_[i] = true;
             }
@@ -251,8 +257,10 @@ namespace zlp {
             if (c_dynamic_on_[i] != true) {
                 c_dynamic_on_[i] = true;
                 svf_filters_[i].resetDynamic();
+                svf_filters_[i].getFilter().cacheDynPara();
                 parallel_filters_[i].resetDynamic();
                 tdf_filters_[i].resetDynamic();
+                tdf_filters_[i].getFilter().cacheDynPara();
                 side_filters_[i].reset();
                 to_update_correction_indices_ = true;
 

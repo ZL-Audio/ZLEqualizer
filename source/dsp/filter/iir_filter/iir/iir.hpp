@@ -120,7 +120,7 @@ namespace zldsp::filter {
             return c_q_.getTarget();
         }
 
-        bool isFreqQSmoothing() const {
+        [[nodiscard]] bool isFreqQSmoothing() const {
             return this->c_freq_.isSmoothing() || this->c_q_.isSmoothing();
         }
 
@@ -172,6 +172,10 @@ namespace zldsp::filter {
             return coeffs_;
         }
 
+        void cacheDynPara() {
+            cacheDyn(c_filter_type_, c_order_, c_freq_.getTarget(), sample_rate_, c_q_.getTarget());
+        }
+
     protected:
         std::array<std::array<double, 6>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
@@ -181,6 +185,7 @@ namespace zldsp::filter {
         zldsp::chore::SmoothedValue<double, zldsp::chore::kFixMul> c_freq_{1000.0};
         size_t c_order_{2};
         FilterType c_filter_type_{FilterType::kPeak};
+        std::array<double, kFilterSize + 7> cache_{};
 
         double sample_rate_{48000.0};
 
@@ -188,6 +193,11 @@ namespace zldsp::filter {
                                       const double f, const double fs, const double g0, const double q0,
                                       std::array<std::array<double, 6>, kFilterSize>& coeffs) {
             return FilterDesign::updateCoeffs<MartinCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
+        }
+
+        void cacheDyn(const FilterType filterType, const size_t n,
+                      const double f, const double fs, const double q0) {
+            FilterDesign::updateCache<MartinCoeff>(filterType, n, f, fs, q0, cache_);
         }
     };
 }

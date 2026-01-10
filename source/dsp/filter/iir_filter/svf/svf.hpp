@@ -23,7 +23,8 @@ namespace zldsp::filter {
     template <typename FloatType, size_t kFilterSize>
     class SVF final : public IIR<kFilterSize> {
     public:
-        SVF() : IIR<kFilterSize>() {
+        SVF() :
+            IIR<kFilterSize>() {
         }
 
         void reset() override {
@@ -33,7 +34,7 @@ namespace zldsp::filter {
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t) override {
-            IIR < kFilterSize > ::prepareSampleRate(sample_rate);
+            IIR<kFilterSize>::prepareSampleRate(sample_rate);
             for (auto& f : filters_) {
                 f.prepare(num_channels);
             }
@@ -86,9 +87,9 @@ namespace zldsp::filter {
             const auto next_freq = this->c_freq_.getCurrent();
             const auto next_gain = this->c_gain_.getCurrent();
             const auto next_q = this->c_q_.getCurrent();
-            this->current_filter_num_ = IIR < kFilterSize > ::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
-                                                                              next_freq, this->sample_rate_,
-                                                                              next_gain, next_q, this->coeffs_);
+            this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
+                                                                          next_freq, this->sample_rate_,
+                                                                          next_gain, next_q, this->coeffs_);
             for (size_t i = 0; i < this->current_filter_num_; ++i) {
                 filters_[i].updateFromBiquad(this->coeffs_[i]);
             }
@@ -98,7 +99,11 @@ namespace zldsp::filter {
          * update filter coefficients when only gain changes
          */
         void updateGain() override {
-            updateCoeffs();
+            FilterDesign::updateGain<MartinCoeff>(this->c_filter_type_, this->c_order_,
+                                                  this->c_gain_.getCurrent(), this->cache_, this->coeffs_);
+            for (size_t i = 0; i < this->current_filter_num_; ++i) {
+                filters_[i].updateFromBiquad(this->coeffs_[i]);
+            }
         }
 
         /**

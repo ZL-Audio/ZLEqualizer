@@ -11,6 +11,7 @@
 
 #include "analog_func.hpp"
 #include <numbers>
+#include <span>
 
 namespace zldsp::filter {
     class MartinCoeff {
@@ -35,11 +36,23 @@ namespace zldsp::filter {
 
         static std::array<double, 6> get2Peak(double w0, double g, double q);
 
+        static std::array<double, 6> get2Peak(double g, std::span<double> cache);
+
+        static void update2PeakDynamicCache(double w0, double q, std::span<double> cache);
+
         static std::array<double, 6> get2TiltShelf(double w0, double g, double q);
+
+        static std::array<double, 6> get2TiltShelf(double g, std::span<double> cache);
+
+        static void update2TiltShelfDynamicCache(double w0, double q, std::span<double> cache);
 
         static std::array<double, 6> get2LowShelf(double w0, double g, double q);
 
+        static std::array<double, 6> get2LowShelf(double g, std::span<double> cache);
+
         static std::array<double, 6> get2HighShelf(double w0, double g, double q);
+
+        static std::array<double, 6> get2HighShelf(double g, std::span<double> cache);
 
     private:
         constexpr static double kPiHalf = std::numbers::pi * 0.5;

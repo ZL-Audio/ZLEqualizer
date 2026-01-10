@@ -208,6 +208,33 @@ namespace zldsp::filter {
         return {a[0], a[1], a[2], b[0], b[1], b[2]};
     }
 
+    std::array<double, 6> MartinCoeff::get2Peak(const double g, const std::span<double> cache) {
+        const auto a = solve_a(cache[0], cache[2] / std::sqrt(g));
+        const auto A = get_AB(a);
+
+        const auto R1 = dotProduct(A, {cache[3], cache[4], cache[5]}) * sqr(g);
+        const auto R2 = (-A[0] + A[1] - cache[7] * A[2]) * sqr(g);
+
+        std::array<double, 3> B{A[0], 0, 0};
+        B[2] = (R1 - R2 * cache[4] - B[0]) * cache[6];
+        B[1] = R2 + B[0] + cache[7] * B[2];
+        const auto b = get_ab(B);
+
+        return {a[0], a[1], a[2], b[0], b[1], b[2]};
+    }
+
+    void MartinCoeff::update2PeakDynamicCache(const double w0, const double q, std::span<double> cache) {
+        cache[0] = w0;
+        cache[1] = q;
+        cache[2] = 0.5 / q;
+        const auto phi0 = get_phi(w0);
+        cache[3] = phi0[0];
+        cache[4] = phi0[1];
+        cache[5] = phi0[2];
+        cache[6] = 1.0 / (4.0 * sqr(phi0[1]));
+        cache[7] = 4.0 * (phi0[1] - phi0[0]);
+    }
+
     std::array<double, 6> MartinCoeff::get2TiltShelf(const double w0, double g, const double q) {
         const bool reverse_ab = (g > 1);
         if (g > 1) {
@@ -277,14 +304,105 @@ namespace zldsp::filter {
         }
     }
 
+    std::array<double, 6> MartinCoeff::get2TiltShelf(double g, const std::span<double> cache) {
+        const bool reverse_ab = (g > 1);
+        if (g > 1) {
+            g = 1 / g;
+        }
+        const auto sqrt_g = std::sqrt(g);
+        const auto ssqrt_g = std::sqrt(sqrt_g);
+        const auto a = solve_a(cache[0], ssqrt_g * cache[2], ssqrt_g);
+        const auto A = get_AB(a);
+
+        const auto c2 = sqrt_g * cache[3];
+        const auto c2half_rep = 1.0 / (2.0 * c2);
+        const auto c0 = c2 * cache[4] * cache[4];
+        const auto c1 = cache[6] * (1 + g);
+        auto delta = c1 * c1 - 4 * c0 * c2;
+        std::array<double, 3> ws{};
+        if (delta <= 0) {
+            ws = {0, cache[0] * 0.5, cache[0]};
+        } else {
+            delta = std::sqrt(delta);
+            const auto sol1 = (-c1 + delta) * c2half_rep;
+            const auto sol2 = (-c1 - delta) * c2half_rep;
+            if (sol1 < 0 || sol2 < 0) {
+                ws = {0, cache[0] * 0.5, cache[0]};
+            } else {
+                const auto w1 = std::sqrt((-c1 + delta) * c2half_rep);
+                const auto w2 = std::sqrt((-c1 - delta) * c2half_rep);
+                if (w1 < kPi || w2 < kPi) {
+                    ws = {0, std::min(w1, w2), std::min(std::max(w1, w2), kPi)};
+                } else {
+                    ws = {0, kPiHalf, kPi};
+                }
+            }
+        }
+        std::array<double, 3> B{-1, -1, -1};
+        size_t trial = 0;
+        const auto _ws = ws;
+        while (!check_AB(B) && trial < 20) {
+            trial += 1;
+            std::array<std::array<double, 3>, 3> phi{};
+            std::array<double, 3> res{};
+            for (size_t i = 0; i < 3; ++i) {
+                phi[i] = get_phi(ws[i]);
+                res[i] = get2TiltShelfMagnitude2Fast(cache[5], cache[4], sqrt_g, ssqrt_g, ws[i]) *
+                    dotProduct(phi[i], A);
+            }
+            B = linear_solve(phi, res);
+            ws[2] = 0.5 * (ws[2] + kPi);
+        }
+        if (trial == 20) {
+            ws = _ws;
+            std::array<std::array<double, 3>, 3> phi{};
+            std::array<double, 3> res{};
+            for (size_t i = 0; i < 3; ++i) {
+                phi[i] = get_phi(ws[i]);
+                res[i] = get2TiltShelfMagnitude2Fast(cache[5], cache[4], sqrt_g, ssqrt_g, ws[i]) *
+                    dotProduct(phi[i], A);
+            }
+            B = linear_solve(phi, res);
+            ws[2] = cache[0] > kPiHalf ? 0.9 * ws[2] : 0.9 * ws[2] + 0.1 * kPi;
+        }
+        const auto b = get_ab(B);
+        if (reverse_ab) {
+            return {b[0], b[1], b[2], a[0], a[1], a[2]};
+        } else {
+            return {a[0], a[1], a[2], b[0], b[1], b[2]};
+        }
+    }
+
+    void MartinCoeff::update2TiltShelfDynamicCache(const double w0, const double q, std::span<double> cache) {
+        cache[0] = w0;
+        cache[1] = q;
+        cache[2] = 1.0 / (2.0 * q);
+        cache[3] = -1.0 + 2.0 * q * q;
+        cache[4] = w0 * w0;
+        cache[5] = w0 / q;
+        cache[6] = -2 * sqr(q * w0);
+    }
+
     std::array<double, 6> MartinCoeff::get2LowShelf(const double w0, const double g, const double q) {
         const auto ab = get2TiltShelf(w0, 1 / g, q);
         const auto A = std::sqrt(g);
         return {ab[0], ab[1], ab[2], ab[3] * A, ab[4] * A, ab[5] * A};
     }
 
+    std::array<double, 6> MartinCoeff::get2LowShelf(const double g, const std::span<double> cache) {
+        const auto ab = get2TiltShelf(g, cache);
+        const auto A = std::sqrt(g);
+        return {ab[0], ab[1], ab[2], ab[3] * A, ab[4] * A, ab[5] * A};
+    }
+
     std::array<double, 6> MartinCoeff::get2HighShelf(const double w0, const double g, const double q) {
         const auto ab = get2TiltShelf(w0, g, q);
+        const auto A = std::sqrt(g);
+        return {ab[0], ab[1], ab[2], ab[3] * A, ab[4] * A, ab[5] * A};
+    }
+
+    std::array<double, 6> MartinCoeff::get2HighShelf(const double g, const std::span<double> cache) {
+        const auto ab = get2TiltShelf(g, cache);
         const auto A = std::sqrt(g);
         return {ab[0], ab[1], ab[2], ab[3] * A, ab[4] * A, ab[5] * A};
     }
