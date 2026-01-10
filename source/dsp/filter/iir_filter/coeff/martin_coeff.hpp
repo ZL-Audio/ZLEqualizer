@@ -46,7 +46,9 @@ namespace zldsp::filter {
         constexpr static double kPi = std::numbers::pi;
         constexpr static double kPi2 = std::numbers::pi * std::numbers::pi;
 
-        static std::array<double, 3> solve_a(double w0, double b, double c = 1);
+        static std::array<double, 3> solve_a(double w0, double b);
+
+        static std::array<double, 3> solve_a(double w0, double b, double c);
 
         static std::array<double, 3> get_AB(const std::array<double, 3>& a);
 

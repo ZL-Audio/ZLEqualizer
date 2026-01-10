@@ -36,7 +36,7 @@ namespace zldsp::filter {
     };
 
     inline double dotProduct(const std::array<double, 3>& x, const std::array<double, 3>& y) {
-        return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
+        return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
     }
 
     inline double gainToDB(const double gain) {

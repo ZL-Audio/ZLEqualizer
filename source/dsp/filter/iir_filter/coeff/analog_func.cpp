@@ -35,11 +35,11 @@ namespace zldsp::filter {
         return get2Magnitude2({1, w0 / q, w0 * w0, 1, 0, w0 * w0}, w);
     }
 
-    double AnalogFunc::get2PeakMagnitude2(const double w0, double g, const double q, const double w) {
+    double AnalogFunc::get2PeakMagnitude2(const double w0, const double g, const double q, const double w) {
         return get2Magnitude2({1, w0 / std::sqrt(g) / q, w0 * w0, 1, w0 * std::sqrt(g) / q, w0 * w0}, w);
     }
 
-    double AnalogFunc::get2TiltShelfMagnitude2(const double w0, double g, const double q, const double w) {
+    double AnalogFunc::get2TiltShelfMagnitude2(const double w0, const double g, const double q, const double w) {
         const auto A = std::sqrt(g);
         return get2Magnitude2({1, std::sqrt(A) * w0 / q, A * w0 * w0, A, std::sqrt(A) * w0 / q, w0 * w0}, w);
     }
