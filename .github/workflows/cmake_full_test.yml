@@ -34,7 +34,7 @@ jobs:
           - name: Linux
             os: ubuntu-22.04
             pluginval-binary: ./pluginval
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=8
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=8
           - name: macOS
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
@@ -51,7 +51,7 @@ jobs:
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x ./llvm.sh
-          sudo ./llvm.sh 20
+          sudo ./llvm.sh 21
 
       # This also starts up our "fake" display Xvfb, needed for pluginval
       - name: Install Deps (Linux)
