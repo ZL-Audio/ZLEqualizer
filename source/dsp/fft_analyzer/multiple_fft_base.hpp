@@ -120,7 +120,7 @@ namespace zldsp::analyzer {
          * @return whether to update
          */
         bool run(const FFTStereoMode fft_stereo_mode = FFTStereoMode::kStereo) {
-            if (fft_buffer_.empty()) {
+            if (fft_in_.empty()) {
                 return false;
             }
             bool to_update{false};
@@ -165,43 +165,28 @@ namespace zldsp::analyzer {
             // run forward FFT & interpolate
             for (const auto& i : is_on_vector) {
                 // forward FFT and take average of each channel
-                auto ms_v = kfr::make_univector(ms_fft_buffer_.data(), ms_fft_buffer_.size());
                 if (circular_buffers_[i].size() != 2 || fft_stereo_mode == FFTStereoMode::kStereo) {
                     for (size_t chan = 0; chan < circular_buffers_[i].size(); ++chan) {
-                        std::copy(circular_buffers_[i][chan].begin(), circular_buffers_[i][chan].end(),
-                                  fft_buffer_.begin());
-                        auto temp = kfr::make_univector(fft_buffer_.data(), window_.size());
-                        temp = temp * window_;
-                        fft_.forwardMagnitudeOnly(fft_buffer_.data());
-                        auto v = kfr::make_univector(fft_buffer_.data(), ms_fft_buffer_.size());
+                        fft_in_ = circular_buffers_[i][chan] * window_;
+                        fft_.forward(fft_in_, fft_out_);
                         if (chan == 0) {
-                            ms_v = kfr::sqr(v);
+                            ms_fft_buffer_ = kfr::cabssqr(fft_out_);
                         } else {
-                            ms_v = ms_v + kfr::sqr(v);
+                            ms_fft_buffer_ = ms_fft_buffer_ + kfr::cabssqr(fft_out_);
                         }
                     }
                 } else {
                     if (fft_stereo_mode == FFTStereoMode::kLeft) {
-                        std::copy(circular_buffers_[i][0].begin(), circular_buffers_[i][0].end(),
-                                  fft_buffer_.begin());
+                        fft_in_ = circular_buffers_[i][0] * window_;
                     } else if (fft_stereo_mode == FFTStereoMode::kRight) {
-                        std::copy(circular_buffers_[i][1].begin(), circular_buffers_[i][1].end(),
-                                  fft_buffer_.begin());
+                        fft_in_ = circular_buffers_[i][1] * window_;
+                    } else if (fft_stereo_mode == FFTStereoMode::kMid) {
+                        fft_in_ = (circular_buffers_[i][0] + circular_buffers_[i][1]) * window_;
                     } else {
-                        auto v1 = kfr::make_univector(circular_buffers_[i][0]);
-                        auto v2 = kfr::make_univector(circular_buffers_[i][1]);
-                        auto v = kfr::make_univector(fft_buffer_.data(), circular_buffers_[i][0].size());
-                        if (fft_stereo_mode == FFTStereoMode::kMid) {
-                            v = v1 + v2;
-                        } else {
-                            v = v1 - v2;
-                        }
+                        fft_in_ = (circular_buffers_[i][0] - circular_buffers_[i][1]) * window_;
                     }
-                    auto temp = kfr::make_univector(fft_buffer_.data(), window_.size());
-                    temp = temp * window_;
-                    fft_.forwardMagnitudeOnly(fft_buffer_.data());
-                    auto v = kfr::make_univector(fft_buffer_.data(), ms_fft_buffer_.size());
-                    ms_v = kfr::sqr(v);
+                    fft_.forward(fft_in_, fft_out_);
+                    ms_fft_buffer_ = kfr::cabssqr(fft_out_);
                 }
                 // smooth decay
                 const auto decay = is_frozen_[i].load(std::memory_order::relaxed)
@@ -308,9 +293,10 @@ namespace zldsp::analyzer {
         zldsp::lock::SpinLock lock_;
 
         std::array<std::vector<std::vector<float>>, kFFTNum> sample_fifos_;
-        std::array<std::vector<std::vector<float>>, kFFTNum> circular_buffers_;
+        std::array<std::vector<kfr::univector<float>>, kFFTNum> circular_buffers_;
         zldsp::container::AbstractFIFO abstract_fifo_{0};
-        std::vector<float> fft_buffer_, ms_fft_buffer_;
+        kfr::univector<float> fft_in_, ms_fft_buffer_;
+        kfr::univector<std::complex<float>> fft_out_;
 
         // smooth dbs over high frequency for Akimas input
         std::atomic<double> sample_rate_{48000.}, min_freq_{10.}, max_freq_{22000.};
@@ -466,12 +452,13 @@ namespace zldsp::analyzer {
             fft_.setOrder(static_cast<size_t>(fft_order));
             const auto fft_size = fft_.getSize();
 
-            window_.resize(static_cast<size_t>(fft_size));
+            window_.resize(fft_size);
             zldsp::fft::fillCycleHanningWindow(window_, static_cast<size_t>(fft_size));
             const auto scale = 1.f / static_cast<float>(fft_size);
             window_ = window_ * scale;
 
-            fft_buffer_.resize(fft_size * 2);
+            fft_in_.resize(fft_size);
+            fft_out_.resize(fft_size / 2 + 1);
             ms_fft_buffer_.resize(fft_size / 2 + 1);
             abstract_fifo_.setCapacity(static_cast<int>(fft_size));
             for (size_t i = 0; i < kFFTNum; ++i) {
