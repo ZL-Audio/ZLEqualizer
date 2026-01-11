@@ -76,8 +76,10 @@ namespace zldsp::filter {
 
             start_idx_ = total_correction_.size() - 1;
             for (size_t i = 0; i < total_correction_.size(); ++i) {
-                if (std::abs(total_correction_[i].imag()) > 1e-3) {
+                if (std::abs(total_correction_[i].imag()) > 1e-3
+                    || std::abs(total_correction_[i].real() - 1.f) > 1e-3) {
                     start_idx_ = i;
+                    break;
                 }
             }
         }
