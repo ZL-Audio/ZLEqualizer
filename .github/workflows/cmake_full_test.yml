@@ -40,7 +40,8 @@ jobs:
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
             cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DZL_EQ_BAND_NUM=8
           - name: Windows
-            os: windows-2022
+            os: windows-latest
+            wix_arch: x64
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             pluginval-binary: ./pluginval.exe
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=8
@@ -185,26 +186,36 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}.dmg
           path: "${{ env.ARTIFACT_NAME }}.dmg"
 
-      - name: Generate InnoScript (Windows)
+      - name: Install WiX v5 (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: dotnet tool install --global wix
+
+      - name: Add the WiX UI Extension (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: wix extension add WixToolset.UI.wixext
+
+      - name: Generate WiX (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: |
-          python3 -u packaging/packager_Windows.py
-          cat "packaging\installer.iss"
+          python3 -u packaging/packager_Windows_WiX.py
+          cat "packaging\installer.wxs"
 
       - name: Generate Installer (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: |
-          iscc "packaging\installer.iss"
-          mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
+          wix build packaging/installer.wxs -ext WixToolset.UI.wixext -loc packaging/overrides.wxl -arch ${{ matrix.wix_arch }} -o "packaging/${{ env.ARTIFACT_NAME }}.msi"
+          mv "packaging/${{ env.ARTIFACT_NAME }}.msi" "${{ env.ARTIFACTS_PATH }}/"
 
-      - name: Upload Exe (Windows)
+      - name: Upload MSI (Windows)
         if: ${{ runner.os == 'Windows' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}.exe
-          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
+          name: ${{ env.ARTIFACT_NAME }}.msi
+          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.msi"
 
       - name: Generate Zip (Linux)
         if: ${{ runner.os == 'Linux' }}
