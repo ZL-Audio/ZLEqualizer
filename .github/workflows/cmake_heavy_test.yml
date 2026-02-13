@@ -34,7 +34,7 @@ jobs:
           - name: macOS
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DZL_JUCE_FORMATS="VST3" -DKFR_ENABLE_MULTIARCH=OFF -DZL_EQ_BAND_NUM=24
           - name: Windows
             os: windows-2022
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'

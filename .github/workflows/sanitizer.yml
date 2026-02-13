@@ -29,11 +29,11 @@ jobs:
           - name: macOS Address Sanitizer
             os: macos-latest
             pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF -DZL_JUCE_FORMATS="VST3;AU" -DZL_EQ_BAND_NUM=8
+            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;AU" -DZL_EQ_BAND_NUM=8
           - name: macOS Thread Sanitizer
             os: macos-latest
             pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DZL_JUCE_FORMATS="VST3;AU" -DZL_EQ_BAND_NUM=8
+            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;AU" -DZL_EQ_BAND_NUM=8
 
     steps:
       - name: Checkout code

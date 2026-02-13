@@ -38,7 +38,7 @@ jobs:
           - name: macOS
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DZL_EQ_BAND_NUM=8
+            cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DKFR_ENABLE_MULTIARCH=OFF -DZL_EQ_BAND_NUM=8
           - name: Windows
             os: windows-latest
             wix_arch: x64

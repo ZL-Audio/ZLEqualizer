@@ -18,7 +18,7 @@ env:
 # jobs are run in paralell on different machines
 # all steps run in series
 jobs:
-  build_and_test:
+  build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -28,16 +28,16 @@ jobs:
           - name: macOS-x86
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DKFR_ARCHS="sse2;avx;avx2" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DKFR_ENABLE_MULTIARCH=ON -DKFR_ARCHS="sse2;avx2" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
           - name: macOS-arm
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
           - name: Windows-x86
             os: windows-latest
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             pluginval-binary: ./pluginval.exe
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ARCHS="sse2;avx;avx2" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=ON -DKFR_ARCHS="sse2;avx2" -DZL_JUCE_FORMATS="AAX" -DZL_EQ_BAND_NUM=24
 
     steps:
       - name: Install Ninja (Windows)
@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0
 
       - name: Import Certificates (macOS)
-        uses: apple-actions/import-codesign-certs@v6 # only exists as a tag right now
+        uses: apple-actions/import-codesign-certs@v6
         if: ${{ (matrix.name == 'macOS') && (env.p12-file-base64 != '')}}
         with:
           p12-file-base64: ${{ secrets.DEV_ID_APP_CERT }}
@@ -78,8 +78,7 @@ jobs:
       - name: Read in .env from CMake
         shell: bash
         run: |
-          cat .env # show us the config
-          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+          cat .env >> $GITHUB_ENV
 
       - name: Check AAX releases
         shell: bash
@@ -96,43 +95,26 @@ jobs:
     name: Release AAX
     runs-on: ubuntu-latest
     needs: build_and_test
-    permissions:
-      contents: write
-
     steps:
     - name: Get artifacts
       uses: actions/download-artifact@v7
-
-    - name: Download AAX pre-release repo
-      uses: actions/checkout@v6
       with:
-        repository: "ZL-Audio/ZLEqualizerAAX"
-        fetch-depth: 0
-        path: "release_repo"
-        ssh-key: ${{ secrets.AAX_RELEASE_DEPLOY_KEY }}
+        path: artifacts
 
-    - name: Remove old AAX releases
+    - name: Zip Artifacts
       run: |
-        rm -rf "release_repo/macOS"
-        rm -rf "release_repo/Windows"
-        rm -rf "release_repo/macOS-x86"
-        rm -rf "release_repo/macOS-arm"
-        rm -rf "release_repo/Windows-x86"
+        mkdir -p upload_ready
+        cd artifacts
+        for dir in */; do
+            name=${dir%/}
+            echo "Zipping folder $name..."
+            zip -r "../upload_ready/$name.zip" "$name"
+        done
+        cd ..
+        ls -l upload_ready
 
-    - name: Move current AAX pre-releases
+    - name: Upload to ZLAAX Release
+      env:
+        GH_TOKEN: ${{ secrets.AAX_RELEASE_PAT }} 
       run: |
-        mv -v "macOS-x86" "release_repo/macOS-x86"
-        mv -v "macOS-arm" "release_repo/macOS-arm"
-        mv -v "Windows-x86" "release_repo/Windows-x86"
-
-    - name: Commit AAX pre-release repo
-      run: |
-        cd "release_repo"
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git checkout --orphan newBranch
-        git add -A
-        git commit -m "pre-release"
-        git branch -D main
-        git branch -m main
-        git push -f origin main
+        gh release upload ZLCompressor upload_ready/*.zip --repo "ZL-Audio/ZLAAX" --clobber
