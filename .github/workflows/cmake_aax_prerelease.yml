@@ -117,4 +117,4 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.AAX_RELEASE_PAT }} 
       run: |
-        gh release upload ZLCompressor upload_ready/*.zip --repo "ZL-Audio/ZLAAX" --clobber
+        gh release upload ZLEqualizer upload_ready/*.zip --repo "ZL-Audio/ZLAAX" --clobber
