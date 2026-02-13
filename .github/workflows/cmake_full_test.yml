@@ -38,7 +38,7 @@ jobs:
           - name: macOS
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DZL_EQ_BAND_NUM=8
+            cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DKFR_ENABLE_MULTIARCH=OFF -DZL_EQ_BAND_NUM=8
           - name: Windows
             os: windows-latest
             wix_arch: x64
@@ -189,12 +189,12 @@ jobs:
       - name: Install WiX v5 (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: bash
-        run: dotnet tool install --global wix
+        run: dotnet tool install --global wix --version 5.0.2
 
       - name: Add the WiX UI Extension (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: bash
-        run: wix extension add WixToolset.UI.wixext
+        run: wix extension add WixToolset.UI.wixext/5.0.2
 
       - name: Generate WiX (Windows)
         if: ${{ runner.os == 'Windows' }}
@@ -212,7 +212,7 @@ jobs:
 
       - name: Upload MSI (Windows)
         if: ${{ runner.os == 'Windows' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.ARTIFACT_NAME }}.msi
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.msi"
