@@ -212,7 +212,7 @@ jobs:
 
       - name: Upload MSI (Windows)
         if: ${{ runner.os == 'Windows' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.ARTIFACT_NAME }}.msi
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.msi"
