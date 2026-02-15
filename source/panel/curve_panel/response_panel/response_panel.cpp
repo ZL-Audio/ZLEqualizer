@@ -68,7 +68,7 @@ namespace zlpanel {
     }
 
     void ResponsePanel::paint(juce::Graphics& g) {
-        const std::unique_lock<std::mutex> lock{paint_mutex_, std::try_to_lock};
+        const std::unique_lock lock{paint_mutex_, std::try_to_lock};
         if (!lock.owns_lock()) {
             return;
         }
@@ -251,7 +251,7 @@ namespace zlpanel {
                 }
             }
             {
-                std::lock_guard<std::mutex> lock{paint_mutex_};
+                std::lock_guard lock{paint_mutex_};
                 single_panel_.runUpdate(to_update_base_y_flags_, to_update_target_y_flags_, to_update_side_y_flags_);
             }
             if (threadShouldExit()) {
@@ -267,7 +267,7 @@ namespace zlpanel {
                 }
             }
             {
-                std::lock_guard<std::mutex> lock{paint_mutex_};
+                std::lock_guard lock{paint_mutex_};
                 sum_panel_.runUpdate(to_update_lr_flags_);
             }
             if (threadShouldExit()) {

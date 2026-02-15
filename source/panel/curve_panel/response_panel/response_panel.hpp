@@ -126,7 +126,7 @@ namespace zlpanel {
         // side button x, side left x, side right x
         std::array<std::array<std::atomic<float>, 3>, zlp::kBandNum> side_points_{};
 
-        std::mutex paint_mutex_;
+        zldsp::lock::SpinLock paint_mutex_;
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
 

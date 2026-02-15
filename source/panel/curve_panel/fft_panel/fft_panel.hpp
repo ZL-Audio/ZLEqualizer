@@ -55,7 +55,7 @@ namespace zlpanel {
         juce::Path post_path_, next_post_path_;
         juce::Path side_path_, next_side_path_;
         juce::ColourGradient gradient_, next_gradient_;
-        std::mutex mutex_;
+        zldsp::lock::SpinLock mutex_;
 
         void updatePath(juce::Path &path, const juce::Rectangle<float>& bound, std::span<float> ys) const;
 

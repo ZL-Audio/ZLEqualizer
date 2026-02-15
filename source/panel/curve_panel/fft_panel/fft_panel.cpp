@@ -34,7 +34,7 @@ namespace zlpanel {
     }
 
     void FFTPanel::paint(juce::Graphics& g) {
-        const std::unique_lock<std::mutex> lock{mutex_, std::try_to_lock};
+        const std::unique_lock lock{mutex_, std::try_to_lock};
         if (!lock.owns_lock()) {
             return;
         }
@@ -185,7 +185,7 @@ namespace zlpanel {
             if (collision_on) {
                 updateCollision();
             }
-            std::lock_guard<std::mutex> lock{mutex_};
+            std::lock_guard lock{mutex_};
             if (pre_on) {
                 pre_path_.swapWithPath(next_pre_path_);
             }
