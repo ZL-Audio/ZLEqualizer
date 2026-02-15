@@ -20,7 +20,7 @@ namespace zlpanel {
                             private juce::ValueTree::Listener,
                             private juce::Timer {
     public:
-        explicit MainPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit MainPanel(PluginProcessor& p, zlgui::UIBase& base, multilingual::TooltipLanguage language);
 
         ~MainPanel() override;
 

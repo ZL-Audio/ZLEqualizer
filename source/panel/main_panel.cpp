@@ -10,12 +10,9 @@
 #include "main_panel.hpp"
 
 namespace zlpanel {
-    MainPanel::MainPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    MainPanel::MainPanel(PluginProcessor& p, zlgui::UIBase& base, const multilingual::TooltipLanguage language) :
         p_ref_(p), base_(base),
-        tooltip_helper_(
-            static_cast<multilingual::TooltipLanguage>(std::round(
-                getValue(p_ref_.state_, zlstate::PTooltipLang::kID)))
-            ),
+        tooltip_helper_(language),
         refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]),
         control_panel_(p, base, tooltip_helper_),
         extra_dynamic_panel_(p, base, tooltip_helper_),

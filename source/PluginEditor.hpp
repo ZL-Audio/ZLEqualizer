@@ -42,7 +42,9 @@ public:
 
 private:
     PluginProcessor& p_ref_;
-    zlstate::Property& property_;
+    zlstate::DummyProcessor dummy_processor_;
+    juce::AudioProcessorValueTreeState state_;
+    zlstate::Property property_;
     juce::Value last_ui_width_, last_ui_height_;
 
     zlgui::UIBase base_;

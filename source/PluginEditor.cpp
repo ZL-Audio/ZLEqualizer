@@ -14,9 +14,13 @@
 PluginEditor::PluginEditor(PluginProcessor& p) :
     AudioProcessorEditor(&p),
     p_ref_(p),
-    property_(initProperty(p)),
-    base_(p.state_),
-    main_panel_(p, base_) {
+    state_(dummy_processor_, nullptr,
+           juce::Identifier("ZLEqualizerState"),
+           zlstate::getStateParameterLayout()),
+    property_(state_),
+    base_(state_),
+    main_panel_(p, base_, static_cast<zlpanel::multilingual::TooltipLanguage>(std::round(
+                    zlpanel::getValue(state_, zlstate::PTooltipLang::kID)))) {
     // set font
 #if defined(JUCE_WINDOWS)
     base_.font_ = juce::Typeface::createSystemTypefaceFor(
@@ -44,8 +48,8 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
     this->resizableCorner->setAlwaysOnTop(true);
     this->resizableCorner->resized();
 
-    last_ui_width_.referTo(p.state_.getParameterAsValue(zlstate::PWindowW::kID));
-    last_ui_height_.referTo(p.state_.getParameterAsValue(zlstate::PWindowH::kID));
+    last_ui_width_.referTo(state_.getParameterAsValue(zlstate::PWindowW::kID));
+    last_ui_height_.referTo(state_.getParameterAsValue(zlstate::PWindowH::kID));
     setSize(last_ui_width_.getValue(), last_ui_height_.getValue());
 
     startTimerHz(1);
@@ -102,7 +106,7 @@ void PluginEditor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identi
 }
 
 void PluginEditor::handleAsyncUpdate() {
-    property_.saveAPVTS(p_ref_.state_);
+    property_.saveAPVTS(state_);
 }
 
 void PluginEditor::timerCallback() {
@@ -151,9 +155,4 @@ void PluginEditor::mouseDown(const juce::MouseEvent& event) {
             }
         }
     }
-}
-
-zlstate::Property& PluginEditor::initProperty(PluginProcessor& p) {
-    p.property_.loadAPVTS(p.state_);
-    return p.property_;
 }
