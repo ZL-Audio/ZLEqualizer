@@ -10,6 +10,7 @@
 #pragma once
 
 #include <atomic>
+#include <thread>
 
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -20,18 +21,42 @@ namespace zldsp::lock {
     private:
         std::atomic_flag flag = ATOMIC_FLAG_INIT;
 
-    public:
-        void lock() noexcept {
-            while (flag.test_and_set(std::memory_order_acquire)) {
+        static inline void cpu_relax() noexcept {
 #if defined(_MSC_VER) && !defined(__clang__)
-                _mm_pause();
+            _mm_pause();
 #elif defined(__GNUC__) || defined(__clang__)
 #if defined(__i386__) || defined(__x86_64__)
-                __builtin_ia32_pause();
-#elif defined(__aarch64__)
-                asm volatile("yield");
+            __builtin_ia32_pause();
+#elif defined(__aarch64__) || defined(__arm__)
+            asm volatile("yield");
 #endif
 #endif
+        }
+
+    public:
+        SpinLock() = default;
+
+        SpinLock(const SpinLock&) = delete;
+
+        SpinLock& operator=(const SpinLock&) = delete;
+
+        void lock() noexcept {
+            if (!flag.test_and_set(std::memory_order_acquire)) {
+                return;
+            }
+            while (true) {
+                int spin_count = 0;
+                while (flag.test(std::memory_order_relaxed)) {
+                    if (spin_count < 128) {
+                        cpu_relax();
+                        spin_count += 1;
+                    } else {
+                        std::this_thread::yield();
+                    }
+                }
+                if (!flag.test_and_set(std::memory_order_acquire)) {
+                    return;
+                }
             }
         }
 
