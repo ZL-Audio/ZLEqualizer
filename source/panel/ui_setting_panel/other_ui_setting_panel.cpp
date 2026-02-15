@@ -21,7 +21,8 @@ namespace zlpanel {
         tooltip_box_(zlstate::PTooltipLang::kChoices, base),
         font_mode_box_(zlstate::PFontMode::kChoices, base),
         font_scale_slider_("Scale", base),
-        static_font_size_slider_("Static", base) {
+        static_font_size_slider_("Static", base),
+        window_size_fix_box_(zlstate::PWindowSizeFix::kChoices, base) {
         juce::ignoreUnused(p_ref_);
         name_laf_.setFontScale(zlgui::kFontHuge);
 
@@ -70,6 +71,12 @@ namespace zlpanel {
         addAndMakeVisible(font_scale_slider_);
         static_font_size_slider_.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(static_font_size_slider_);
+
+        window_size_fix_label_.setText("Window Size Fix", juce::dontSendNotification);
+        window_size_fix_label_.setJustificationType(juce::Justification::centredRight);
+        window_size_fix_label_.setLookAndFeel(&name_laf_);
+        addAndMakeVisible(window_size_fix_label_);
+        addAndMakeVisible(window_size_fix_box_);
     }
 
     void OtherUISettingPanel::loadSetting() {
@@ -82,6 +89,7 @@ namespace zlpanel {
         font_mode_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getFontMode()), juce::sendNotificationSync);
         font_scale_slider_.getSlider().setValue(static_cast<double>(base_.getFontScale()));
         static_font_size_slider_.getSlider().setValue(static_cast<double>(base_.getFontSize()));
+        window_size_fix_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getWindowSizeFix()));
         comboBoxChanged(&font_mode_box_.getBox());
     }
 
@@ -95,6 +103,7 @@ namespace zlpanel {
         base_.setFontMode(static_cast<size_t>(font_mode_box_.getBox().getSelectedItemIndex()));
         base_.setFontScale(static_cast<float>(font_scale_slider_.getSlider().getValue()));
         base_.setStaticFontSize(static_cast<float>(static_font_size_slider_.getSlider().getValue()));
+        base_.setWindowSizeFix(window_size_fix_box_.getBox().getSelectedItemIndex() > 0);
         base_.saveToAPVTS();
     }
 
@@ -105,7 +114,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale * 3.f);
         const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
 
-        return 6 * padding + 5 * slider_height;
+        return 7 * padding + 6 * slider_height;
     }
 
     void OtherUISettingPanel::resized() {
@@ -168,6 +177,13 @@ namespace zlpanel {
                 min_font_size, max_font_size, 0.01));
             static_font_size_slider_.getSlider().setDoubleClickReturnValue(
                 true, .5f * (min_font_size + max_font_size));
+        }
+        {
+            bound.removeFromTop(padding);
+            auto local_bound = bound.removeFromTop(slider_height);
+            window_size_fix_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
+            local_bound.removeFromLeft(padding);
+            window_size_fix_box_.setBounds(local_bound.removeFromLeft(slider_width).reduced(0, padding / 3));
         }
     }
 

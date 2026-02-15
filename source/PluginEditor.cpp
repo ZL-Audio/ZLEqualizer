@@ -68,13 +68,15 @@ void PluginEditor::paint(juce::Graphics& g) {
 
 void PluginEditor::resized() {
     main_panel_.setBounds(getLocalBounds());
-    last_ui_width_ = std::clamp(getWidth(),
-                                static_cast<int>(zlstate::PWindowW::kMinV),
-                                static_cast<int>(zlstate::PWindowW::kMaxV));
-    last_ui_height_ = std::clamp(getHeight(),
-                                 static_cast<int>(zlstate::PWindowH::kMinV),
-                                 static_cast<int>(zlstate::PWindowH::kMaxV));
-    triggerAsyncUpdate();
+    if (!base_.getWindowSizeFix()) {
+        last_ui_width_ = std::clamp(getWidth(),
+                                    static_cast<int>(zlstate::PWindowW::kMinV),
+                                    static_cast<int>(zlstate::PWindowW::kMaxV));
+        last_ui_height_ = std::clamp(getHeight(),
+                                     static_cast<int>(zlstate::PWindowH::kMinV),
+                                     static_cast<int>(zlstate::PWindowH::kMaxV));
+        triggerAsyncUpdate();
+    }
 }
 
 void PluginEditor::visibilityChanged() {
