@@ -97,6 +97,10 @@ private:
 
     std::atomic<double> sample_rate_{48000.0};
 
+    bool updateChannelLayoutPerCall{false};
+
+    void updateChannelLayout();
+
     template <bool bypass = false>
     void processBlockInternal(juce::AudioBuffer<float>& buffer);
 

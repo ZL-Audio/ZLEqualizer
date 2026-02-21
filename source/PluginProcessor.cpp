@@ -100,30 +100,9 @@ void PluginProcessor::prepareToPlay(const double sample_rate, const int samples_
         side_buffer_[i].resize(static_cast<size_t>(samples_per_block));
         side_pointers_[i] = side_buffer_[i].data();
     }
-    // determine current channel layout
-    const auto* main_bus = getBus(true, 0);
-    const auto* aux_bus = getBus(true, 1);
-    channel_layout_ = ChannelLayout::kInvalid;
-    if (main_bus == nullptr) {
-        return;
-    }
-    if (main_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
-        if (aux_bus == nullptr || !aux_bus->isEnabled()) {
-            channel_layout_ = ChannelLayout::kMain1Aux0;
-        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
-            channel_layout_ = ChannelLayout::kMain1Aux1;
-        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
-            channel_layout_ = ChannelLayout::kMain1Aux2;
-        }
-    } else if (main_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
-        if (aux_bus == nullptr || !aux_bus->isEnabled()) {
-            channel_layout_ = ChannelLayout::kMain2Aux0;
-        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
-            channel_layout_ = ChannelLayout::kMain2Aux1;
-        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
-            channel_layout_ = ChannelLayout::kMain2Aux2;
-        }
-    }
+    updateChannelLayout();
+    const juce::PluginHostType hostType;
+    updateChannelLayoutPerCall = hostType.isMaschine();
     controller_.prepare(sample_rate, static_cast<size_t>(samples_per_block));
     sample_rate_.store(sample_rate, std::memory_order::relaxed);
 }
@@ -178,6 +157,9 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<float>& buffer) {
     juce::ScopedNoDenormals no_denormals;
     if (buffer.getNumSamples() == 0) {
         return; // ignore empty blocks
+    }
+    if (updateChannelLayoutPerCall) {
+        updateChannelLayout();
     }
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;
     const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
@@ -370,6 +352,33 @@ void PluginProcessor::setStateInformation(const void* data, const int size_in_by
         const auto temp_tree = juce::ValueTree::fromXml(*xml_state);
         parameters_.replaceState(temp_tree.getChildWithName(parameters_.state.getType()));
         parameters_NA_.replaceState(temp_tree.getChildWithName(parameters_NA_.state.getType()));
+    }
+}
+
+void PluginProcessor::updateChannelLayout() {
+    // determine current channel layout
+    const auto* main_bus = getBus(true, 0);
+    const auto* aux_bus = getBus(true, 1);
+    channel_layout_ = ChannelLayout::kInvalid;
+    if (main_bus == nullptr) {
+        return;
+    }
+    if (main_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
+        if (aux_bus == nullptr || !aux_bus->isEnabled()) {
+            channel_layout_ = ChannelLayout::kMain1Aux0;
+        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
+            channel_layout_ = ChannelLayout::kMain1Aux1;
+        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+            channel_layout_ = ChannelLayout::kMain1Aux2;
+        }
+    } else if (main_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+        if (aux_bus == nullptr || !aux_bus->isEnabled()) {
+            channel_layout_ = ChannelLayout::kMain2Aux0;
+        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::mono()) {
+            channel_layout_ = ChannelLayout::kMain2Aux1;
+        } else if (aux_bus->getCurrentLayout() == juce::AudioChannelSet::stereo()) {
+            channel_layout_ = ChannelLayout::kMain2Aux2;
+        }
     }
 }
 
