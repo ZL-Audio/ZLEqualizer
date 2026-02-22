@@ -63,6 +63,18 @@ namespace zlpanel {
         base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, f < .5 ? 1. : 0.);
     }
 
+    void OutputLabel::mouseEnter(const juce::MouseEvent&) {
+        is_over_ = true;
+        const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel));
+        updateAlpha(f > .5);
+    }
+
+    void OutputLabel::mouseExit(const juce::MouseEvent&) {
+        is_over_ = false;
+        const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel));
+        updateAlpha(f > .5);
+    }
+
     void OutputLabel::checkUpdate() {
         const auto scale = scale_ref_.load(std::memory_order_relaxed);
         auto gain_db = zldsp::chore::gainToDecibels(p_ref_.getController().getDisplayedGain());
@@ -87,7 +99,17 @@ namespace zlpanel {
         if (base_.isPanelIdentifier(zlgui::kOutputPanel, property)) {
             const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel));
             control_background_.setVisible(f > .5);
-            setAlpha(f > .5 ? 1.f : .5f);
+            updateAlpha(f > .5);
+        }
+    }
+
+    void OutputLabel::updateAlpha(const bool is_panel_open) {
+        if (is_panel_open) {
+            setAlpha(1.f);
+        } else if (is_over_) {
+            setAlpha(.75f);
+        } else {
+            setAlpha(.5f);
         }
     }
 }

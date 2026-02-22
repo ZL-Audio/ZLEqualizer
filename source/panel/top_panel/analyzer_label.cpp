@@ -51,11 +51,33 @@ namespace zlpanel {
         base_.setPanelProperty(zlgui::PanelSettingIdx::kAnalyzerPanel, f < .5 ? 1. : 0.);
     }
 
+    void AnalyzerLabel::mouseEnter(const juce::MouseEvent&) {
+        is_over_ = true;
+        const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kAnalyzerPanel));
+        updateAlpha(f > .5);
+    }
+
+    void AnalyzerLabel::mouseExit(const juce::MouseEvent&) {
+        is_over_ = false;
+        const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kAnalyzerPanel));
+        updateAlpha(f > .5);
+    }
+
     void AnalyzerLabel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
         if (base_.isPanelIdentifier(zlgui::kAnalyzerPanel, property)) {
             const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kAnalyzerPanel));
             control_background_.setVisible(f > .5);
-            setAlpha(f > .5 ? 1.f : .5f);
+            updateAlpha(f > .5);
+        }
+    }
+
+    void AnalyzerLabel::updateAlpha(const bool is_panel_open) {
+        if (is_panel_open) {
+            setAlpha(1.f);
+        } else if (is_over_) {
+            setAlpha(.75f);
+        } else {
+            setAlpha(.5f);
         }
     }
 }

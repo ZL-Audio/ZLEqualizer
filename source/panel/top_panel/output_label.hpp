@@ -28,8 +28,6 @@ namespace zlpanel {
 
         void repaintCallbackSlow();
 
-        void mouseDown(const juce::MouseEvent&) override;
-
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
@@ -54,6 +52,16 @@ namespace zlpanel {
             return std::string(buffer);
         }
 
+        bool is_over_{false};
+
+        void mouseDown(const juce::MouseEvent&) override;
+
+        void mouseEnter(const juce::MouseEvent&) override;
+
+        void mouseExit(const juce::MouseEvent&) override;
+
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
+
+        void updateAlpha(bool is_panel_open);
     };
 }

@@ -18,15 +18,13 @@
 
 namespace zlpanel {
     class AnalyzerLabel final : public juce::Component,
-                              private juce::ValueTree::Listener {
+                                private juce::ValueTree::Listener {
     public:
         explicit AnalyzerLabel(PluginProcessor&, zlgui::UIBase& base);
 
         ~AnalyzerLabel() override;
 
         void resized() override;
-
-        void mouseDown(const juce::MouseEvent&) override;
 
     private:
         zlgui::UIBase& base_;
@@ -36,6 +34,16 @@ namespace zlpanel {
         zlgui::label::NameLookAndFeel label_laf_;
         juce::Label analyzer_label_;
 
+        bool is_over_{false};
+
+        void mouseDown(const juce::MouseEvent&) override;
+
+        void mouseEnter(const juce::MouseEvent&) override;
+
+        void mouseExit(const juce::MouseEvent&) override;
+
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
+
+        void updateAlpha(bool is_panel_open);
     };
 }
