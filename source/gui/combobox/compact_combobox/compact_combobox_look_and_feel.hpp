@@ -67,6 +67,7 @@ namespace zlgui::combobox {
             const auto corner_size = base_.getFontSize() * 0.375f;
             const auto box_bound = juce::Rectangle<float>(0, 0, static_cast<float>(width),
                                                           static_cast<float>(height));
+            g.setColour(base_.getBackgroundColour().withAlpha(.95f));
             g.fillRoundedRectangle(box_bound, corner_size);
         }
 
