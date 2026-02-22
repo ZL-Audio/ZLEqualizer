@@ -92,7 +92,7 @@ namespace zlpanel {
         };
 
         for (auto& b : {&sgc_button_, &lm_button_, &agc_button_, &phase_button_}) {
-            b->setImageAlpha(.5f, .5f, 1.f, 1.f);
+            b->setImageAlpha(.5f, .75f, 1.f, 1.f);
             b->setBufferedToImage(true);
             addAndMakeVisible(b);
         }

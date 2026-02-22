@@ -94,7 +94,7 @@ namespace zlpanel {
         addAndMakeVisible(lr_box_);
 
         for (auto& b : {&freeze_button_, &collision_button_}) {
-            b->setImageAlpha(.5f, .5f, 1.f, 1.f);
+            b->setImageAlpha(.5f, .75f, 1.f, 1.f);
             b->setBufferedToImage(true);
             addAndMakeVisible(b);
         }
