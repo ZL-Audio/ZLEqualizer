@@ -86,7 +86,7 @@ jobs:
           ls "${{ env.ARTIFACTS_PATH }}/AAX"
 
       - name: Upload AAX
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/AAX/*.aaxplugin"
@@ -97,7 +97,7 @@ jobs:
     needs: build_and_test
     steps:
     - name: Get artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         path: artifacts
 
