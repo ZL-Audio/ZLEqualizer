@@ -96,10 +96,12 @@ jobs:
           echo "PLUGINVAL_DISABLED=Plugin state restoration" >> $GITHUB_ENV
 
       - name: Setup Pluginval random seed
-        uses: josStorer/get-current-time@v2
-        id: current-time
-        with:
-          format: YYYYMMDD
+        id: setup_seed
+        shell: bash
+        run: |
+          CURRENT_DATE_SEED=$(date +%Y%m%d)
+          echo "Generated Seed: $CURRENT_DATE_SEED"
+          echo "RANDOM_SEED=$CURRENT_DATE_SEED" >> "$GITHUB_OUTPUT"
 
       - name: Pluginval VST3 validations
         shell: bash
@@ -109,4 +111,4 @@ jobs:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 7200000
           REPEAT: 10
-          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
+          RANDOM_SEED: "${{ steps.setup_seed.outputs.RANDOM_SEED }}"
