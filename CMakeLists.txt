@@ -134,6 +134,19 @@ juce_add_plugin("${PROJECT_NAME}"
         ZL_EQ_BAND_NUM "${ZL_EQ_BAND_NUM}"
 )
 
+# Add LV2 tags
+if ("LV2" IN_LIST FORMATS)
+    set(LV2_TARGET "${PROJECT_NAME}_LV2")
+    set(LV2_SHORT_TAGS eq paraeq)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    set(PATCH_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/packaging/patch_lv2.py")
+    add_custom_command(TARGET ${LV2_TARGET} POST_BUILD
+        COMMAND Python3::Interpreter "${PATCH_SCRIPT}" "$<TARGET_FILE_DIR:${LV2_TARGET}>" ${LV2_SHORT_TAGS}
+        COMMENT "Running Python script to patch LV2 tags: ${LV2_SHORT_TAGS}..."
+        VERBATIM
+    )
+endif()
+
 # This lets us use our code in both the JUCE targets and our Test target
 # Without running into ODR violations
 add_library(SharedCode INTERFACE)
