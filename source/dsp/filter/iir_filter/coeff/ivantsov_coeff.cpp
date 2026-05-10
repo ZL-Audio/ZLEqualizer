@@ -7,9 +7,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include "ivantsov_coeff.hpp"
 
-#include "compact_button/compact_button.hpp"
-#include "click_button/click_button.hpp"
-#include "click_text_button/click_text_button.hpp"
-#include "../attachment/button_attachment.hpp"
+namespace zldsp::filter {
+}

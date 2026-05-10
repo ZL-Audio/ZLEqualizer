@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "compact_button/compact_button.hpp"
-#include "click_button/click_button.hpp"
-#include "click_text_button/click_text_button.hpp"
-#include "../attachment/button_attachment.hpp"
+namespace zldsp::filter {
+    class IvantsovCoeff {
+    };
+}
