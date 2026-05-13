@@ -4,6 +4,12 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.2.0
+
+BREAKING CHANGES
+
+- change filter de-cramping method to the one proposed by Yuriy Ivantsov
+
 ## 1.1.1
 
 Bug fixes

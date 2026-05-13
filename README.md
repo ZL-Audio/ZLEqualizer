@@ -85,12 +85,14 @@ JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
 ## References
 
-Vicanek, Martin. *Matched One-Pole Digital Shelving Filters*. (2019).
+Yuriy Ivantsov. *On the ideal bilinear and biquadratic digital filter*. (2025).
 
-Vicanek, Martin. *Matched Second Order Digital Filters*. (2016).
+Martin Vicanek. *Matched One-Pole Digital Shelving Filters*. (2019).
 
-Redmon, Nigel. *Cascading filters*. (2016).
+Martin Vicanek. *Matched Second Order Digital Filters*. (2016).
 
-Wishnick, Aaron. *Time-Varying Filters for Musical Applications*. DAFx. (2014).
+Nigel Redmon. *Cascading filters*. (2016).
 
-Moler, Cleve. [*Makima Piecewise Cubic Interpolation*](https://blogs.mathworks.com/cleve/2019/04/29/makima-piecewise-cubic-interpolation/). MathWorks Blogs. (2019).
+Aaron Wishnick. *Time-Varying Filters for Musical Applications*. DAFx. (2014).
+
+Cleve Moler. [*Makima Piecewise Cubic Interpolation*](https://blogs.mathworks.com/cleve/2019/04/29/makima-piecewise-cubic-interpolation/). MathWorks Blogs. (2019).

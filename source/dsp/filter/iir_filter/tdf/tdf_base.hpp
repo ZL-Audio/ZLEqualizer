@@ -75,12 +75,11 @@ namespace zldsp::filter {
         }
 
         void updateFromBiquad(const std::array<double, 6>& coeff) {
-            const auto a0_inv = 1.0 / coeff[0];
-            coeff_[0] = static_cast<FloatType>(coeff[3] * a0_inv);
-            coeff_[1] = static_cast<FloatType>(coeff[4] * a0_inv);
-            coeff_[2] = static_cast<FloatType>(coeff[5] * a0_inv);
-            coeff_[3] = static_cast<FloatType>(coeff[1] * a0_inv);
-            coeff_[4] = static_cast<FloatType>(coeff[2] * a0_inv);
+            coeff_[0] = static_cast<FloatType>(coeff[3]);
+            coeff_[1] = static_cast<FloatType>(coeff[4]);
+            coeff_[2] = static_cast<FloatType>(coeff[5]);
+            coeff_[3] = static_cast<FloatType>(coeff[1]);
+            coeff_[4] = static_cast<FloatType>(coeff[2]);
         }
 
     private:

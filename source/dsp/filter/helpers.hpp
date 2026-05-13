@@ -20,6 +20,9 @@ namespace zldsp::filter {
     inline constexpr double pi = std::numbers::pi;
     inline constexpr double ppi = 2 * std::numbers::pi;
 
+    inline constexpr double kDbToExp2 = 0.16609640474436813;
+    inline constexpr double kDbToExp2Sqrt = kDbToExp2 * 0.5;
+
     enum FilterType {
         kPeak, kLowShelf, kLowPass, kHighShelf, kHighPass,
         kNotch, kBandPass, kTiltShelf, kBandShelf,

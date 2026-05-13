@@ -30,14 +30,14 @@ namespace zldsp::loudness {
             const auto w1 = scale * 38.13713296248405;
             const auto w2 = scale * 1500.6868667368922;
             high_pass_.updateFromBiquad(
-                zldsp::filter::MartinCoeff::get2HighPass(w1, 0.500242812458813));
+                zldsp::filter::IvantsovCoeff::get2HighPass(w1, 0.500242812458813));
             high_shelf_.updateFromBiquad(
-                zldsp::filter::MartinCoeff::get2HighShelf(w2, 1.5847768458311522, 0.7096433028107384));
+                zldsp::filter::IvantsovCoeff::get2HighShelf(w2, 1.5847768458311522, 0.7096433028107384));
             if constexpr (kUseLowPass) {
                 low_pass_.prepare(num_channels);
                 const auto w3 = scale * 22000.0;
                 low_pass_.updateFromBiquad(
-                    zldsp::filter::MartinCoeff::get2LowPass(w3, 0.7071067811865476));
+                    zldsp::filter::IvantsovCoeff::get2LowPass(w3, 0.7071067811865476));
             }
         }
 

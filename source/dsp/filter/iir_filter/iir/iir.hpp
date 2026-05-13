@@ -10,7 +10,7 @@
 #pragma once
 
 #include "../../filter_design/filter_design.hpp"
-#include "../coeff/martin_coeff.hpp"
+#include "../coeff/ivantsov_coeff.hpp"
 #include "../../../chore/smoothed_value.hpp"
 
 namespace zldsp::filter {
@@ -192,12 +192,12 @@ namespace zldsp::filter {
         static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
                                       std::array<std::array<double, 6>, kFilterSize>& coeffs) {
-            return FilterDesign::updateCoeffs<MartinCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
+            return FilterDesign::updateCoeffs<IvantsovCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
         }
 
         void cacheDyn(const FilterType filterType, const size_t n,
                       const double f, const double fs, const double q0) {
-            FilterDesign::updateCache<MartinCoeff>(filterType, n, f, fs, q0, cache_);
+            FilterDesign::updateCache<IvantsovCoeff>(filterType, n, f, fs, q0, cache_);
         }
     };
 }

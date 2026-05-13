@@ -40,4 +40,4 @@ namespace zldsp::filter {
 
         static std::array<double, 6> get2HighShelf(double w0, double g, double q);
     };
-} // zldsp::filter
+}

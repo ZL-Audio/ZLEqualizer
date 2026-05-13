@@ -33,11 +33,12 @@ namespace zlpanel {
             "[kfr](https://github.com/kfrlib/kfr) by [KFR](https://github.com/kfrlib)\n\n"
             "[Material Symbols](https://github.com/google/material-design-icons) by [Google](https://github.com/google)\n\n"
             "[inter](https://github.com/rsms/inter) by [The Inter Project Authors](https://github.com/rsms/inter)\n\n"
-            "Vicanek, Martin. Matched One-Pole Digital Shelving Filters. (2019).\n\n"
-            "Vicanek, Martin. Matched Second Order Digital Filters. (2016).\n\n"
-            "Redmon, Nigel. Cascading filters. (2016).\n\n"
-            "Wishnick, Aaron. Time-Varying Filters for Musical Applications. DAFx. (2014).\n\n"
-            "Moler, Cleve. Makima Piecewise Cubic Interpolation. MathWorks Blogs. (2019).";
+            "Yuriy Ivantsov. On the ideal bilinear and biquadratic digital filter. (2025).\n\n"
+            "Martin Vicanek. Matched One-Pole Digital Shelving Filters. (2019).\n\n"
+            "Martin Vicanek. Matched Second Order Digital Filters. (2016).\n\n"
+            "Nigel Redmon. Cascading filters. (2016).\n\n"
+            "Aaron Wishnick. Time-Varying Filters for Musical Applications. DAFx. (2014).\n\n"
+            "Cleve Moler. Makima Piecewise Cubic Interpolation. MathWorks Blogs. (2019).";
 
         [[nodiscard]] juce::TextLayout getTipTextLayout(const juce::String& text,
                                                         const float w, const float h) const {

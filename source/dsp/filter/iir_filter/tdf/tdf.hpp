@@ -99,7 +99,7 @@ namespace zldsp::filter {
          * update filter coefficients when only gain changes
          */
         void updateGain() override {
-            FilterDesign::updateGain<MartinCoeff>(this->c_filter_type_, this->c_order_,
+            FilterDesign::updateGain<IvantsovCoeff>(this->c_filter_type_, this->c_order_,
                                                   this->c_gain_.getCurrent(), this->cache_, this->coeffs_);
             for (size_t i = 0; i < this->current_filter_num_; ++i) {
                 filters_[i].updateFromBiquad(this->coeffs_[i]);
