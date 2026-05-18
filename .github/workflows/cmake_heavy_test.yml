@@ -32,7 +32,7 @@ jobs:
           - name: macOS
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DZL_HWY_STATIC_TARGET="NEON"
+            cmake_extra_flags: -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="NEON"
           - name: Windows
             os: windows-latest
             wix_arch: x64

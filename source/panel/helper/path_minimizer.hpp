@@ -13,7 +13,7 @@
 #include <span>
 
 namespace zlpanel {
-    template <int kIntTol = 1>
+    template <int kIntTol = 10>
     class PathMinimizer {
     public:
         static constexpr float kTol = 0.01f * static_cast<float>(kIntTol);
@@ -37,7 +37,7 @@ namespace zlpanel {
         void lineTo(const float x, const float y) {
             if (x - start_x_ > .25f) {
                 const auto w = (current_x_ - start_x_) / (x - start_x_);
-                if (std::abs(w * start_y_ + (1.f - w) * y - current_y_) > kTol) {
+                if (std::abs((1.f - w) * start_y_ + w * y - current_y_) > kTol) {
                     path_ref_.lineTo(current_x_, current_y_);
                     start_x_ = x;
                     start_y_ = y;

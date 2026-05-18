@@ -89,7 +89,7 @@ namespace zlpanel {
             }
         }
 
-        PathMinimizer minimizer(path);
+        PathMinimizer<1> minimizer(path);
         minimizer.drawPath<true, false>(xs, std::span(temp_db_));
     }
 

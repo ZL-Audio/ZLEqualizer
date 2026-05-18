@@ -111,7 +111,7 @@ namespace zlpanel {
             if (filter_status != zlp::FilterStatus::kOff) {
                 zldsp::vector::fma(temp_db_.data(), base_mag.data(), k, b, temp_db_.size());
                 // draw base path
-                PathMinimizer minimizer{next_base_paths_[band]};
+                PathMinimizer<1> minimizer{next_base_paths_[band]};
                 minimizer.drawPath<true, false>(xs, std::span(temp_db_));
                 // draw base fill
                 next_base_fills_[band] = next_base_paths_[band];
@@ -131,7 +131,7 @@ namespace zlpanel {
                 zldsp::vector::fma(temp_db_.data(), target_mag.data(), k, b, temp_db_.size());
                 // draw target fill
                 next_target_fills_[band] = next_base_paths_[band];
-                PathMinimizer minimizer{next_target_fills_[band]};
+                PathMinimizer<1> minimizer{next_target_fills_[band]};
                 minimizer.drawPath<false, true>(xs, std::span(temp_db_));
                 next_target_fills_[band].closeSubPath();
             }

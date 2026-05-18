@@ -17,6 +17,7 @@
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_smoother.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_tilter.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_decayer.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/spectrum_collision.hpp"
 
 namespace zlpanel {
     class FFTPanel final : public juce::Component,
@@ -41,6 +42,8 @@ namespace zlpanel {
         std::atomic<float>& pre_ref_;
         std::atomic<float>& post_ref_;
         std::atomic<float>& side_ref_;
+        std::atomic<float>& coll_ref_;
+        std::atomic<float>& coll_strength_ref_;
 
         std::atomic<float> &fft_min_db_idx_ref_;
         float c_fft_min_db_{0.f};
@@ -86,6 +89,9 @@ namespace zlpanel {
         zldsp::analyzer::SpectrumSmoother smoother_;
         zldsp::analyzer::SpectrumTilter tilter_;
         std::array<zldsp::analyzer::SpectrumDecayer, 3> decayers_;
+
+        zldsp::vector::aligned_vector<float> current_ps_{}, coll_ps_{};
+        BufferedUI<juce::ColourGradient> gradient_;
 
         void runFFT();
 

@@ -17,6 +17,8 @@ namespace zlpanel {
         pre_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPreON::kID)),
         post_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPostON::kID)),
         side_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSideON::kID)),
+        coll_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionON::kID)),
+        coll_strength_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionStrength::kID)),
         fft_min_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
         fft_speed_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSpeed::kID)),
         fft_tilt_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTTilt::kID)) {
@@ -40,9 +42,11 @@ namespace zlpanel {
             skip_next_repaint_ = false;
             return;
         }
-        const std::array<bool, 3> is_on{pre_ref_.load(std::memory_order::relaxed) > .5f,
-                                        post_ref_.load(std::memory_order::relaxed) > .5f,
-                                        side_ref_.load(std::memory_order::relaxed) > .5f};
+        const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
+        const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
+        const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
+        const auto coll_on = coll_ref_.load(std::memory_order::relaxed) > .5f;
+        const std::array<bool, 3> is_on{pre_on, post_on, side_on};
         for (size_t i = 0; i < 3; ++i) {
             if (is_on[i]) {
                 paths_[i].pull();
@@ -64,6 +68,11 @@ namespace zlpanel {
         if (is_on[2]) {
             g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kSideColour));
             g.fillPath(paths_[2].getReader());
+        }
+        if (coll_on && ((pre_on && post_on) || (side_on && post_on))) {
+            gradient_.pull();
+            g.setGradientFill(gradient_.getReader());
+            g.fillRect(getLocalBounds());
         }
     }
 
@@ -93,9 +102,11 @@ namespace zlpanel {
     }
 
     void FFTPanel::runFFT() {
-        const std::array<bool, 3> is_on{pre_ref_.load(std::memory_order::relaxed) > .5f,
-                                        post_ref_.load(std::memory_order::relaxed) > .5f,
-                                        side_ref_.load(std::memory_order::relaxed) > .5f};
+        const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
+        const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
+        const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
+        const auto coll_on = coll_ref_.load(std::memory_order::relaxed) > .5f;
+        const std::array<bool, 3> is_on{pre_on, post_on, side_on};
         auto& sender{p_ref_.getController().getAnalyzerSender()};
         if (!sender.getLock().try_lock()) {
             return;
@@ -129,6 +140,8 @@ namespace zlpanel {
 
             xs_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
             ys_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
+            current_ps_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
+            coll_ps_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
 
             to_update_xs_para_.store(true, std::memory_order::relaxed);
             to_update_ys_para_.store(true, std::memory_order::relaxed);
@@ -230,14 +243,14 @@ namespace zlpanel {
             receivers_[i].forward(zldsp::analyzer::StereoType::kStereo);
             auto& spectrum{receivers_[i].getAbsSqrFFTBuffer()};
             smoother_.smooth(spectrum);
-            zldsp::vector::sqr_mag_to_db(spectrum.data(), num_point_);
-            tilter_.tilt(std::span{spectrum.data(), num_point_});
-            decayers_[i].decay(std::span{spectrum.data(), num_point_},
+            zldsp::vector::sqr_mag_to_db(spectrum.data(), spectrum.size());
+            tilter_.tilt(std::span{spectrum.data(), spectrum.size()});
+            decayers_[i].decay(std::span{spectrum.data(), spectrum.size()},
                                is_fft_frozen_.load(std::memory_order::relaxed));
             zldsp::vector::fma(ys_.data(), spectrum.data(), y_k_, y_b_, num_point_);
             auto& path{paths_[i].getWriter()};
             path.clear();
-            PathMinimizer<50> minimizer{path};
+            PathMinimizer minimizer{path};
             const auto num_accu = static_cast<size_t>(std::sqrt(static_cast<float>(num_point_)));
             path.startNewSubPath(xs_.front() - .1f, c_height_ * 1.5f);
             for (size_t j = 0; j < num_accu; ++j) {
@@ -250,7 +263,6 @@ namespace zlpanel {
             minimizer.finish();
             path.lineTo(xs_[num_point_ - 1] + .1f, c_height_ * 1.5f);
             path.closeSubPath();
-
             if (threadShouldExit()) {
                 return;
             }
@@ -259,6 +271,38 @@ namespace zlpanel {
             if (is_on[i]) {
                 paths_[i].publish();
             }
+        }
+        if (threadShouldExit()) {
+            return;
+        }
+        // update collision
+        if (coll_on && ((pre_on && post_on) || (side_on && post_on))) {
+            if (side_on) {
+                zldsp::analyzer::SpectrumCollision<float>::createGradientPs(
+                    receivers_[1].getAbsSqrFFTBuffer(), receivers_[2].getAbsSqrFFTBuffer(),
+                    current_ps_, coll_ps_, coll_strength_ref_.load(std::memory_order::relaxed));
+            } else {
+                zldsp::analyzer::SpectrumCollision<float>::createGradientPs(
+                    receivers_[1].getAbsSqrFFTBuffer(), receivers_[0].getAbsSqrFFTBuffer(),
+                    current_ps_, coll_ps_, coll_strength_ref_.load(std::memory_order::relaxed));
+            }
+            if (threadShouldExit()) {
+                return;
+            }
+            const auto width = width_.load(std::memory_order::relaxed);
+            auto& gradient{gradient_.getWriter()};
+            gradient.clearColours();
+            gradient.point1 = {0.f, 0.f};
+            gradient.point2 = {width, 0.f};
+            gradient.isRadial = false;
+            GradientMinimizer gradient_minimizer(gradient, base_.getColourByIdx(zlgui::kCollisionColour));
+            gradient_minimizer.start(0.f, 0.f);
+            for (size_t i = 1; i < num_point_ - 1; ++i) {
+                gradient_minimizer.addColour(xs_[i] / width, coll_ps_[i]);
+            }
+            gradient_minimizer.addColour(std::clamp(xs_[num_point_ - 1] / width, 0.f, 1.f),
+                                         coll_ps_[num_point_ - 1]);
+            gradient_.publish();
         }
     }
 
