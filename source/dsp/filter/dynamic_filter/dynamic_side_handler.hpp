@@ -259,16 +259,17 @@ namespace zldsp::filter {
 
         void updateTK() {
             constexpr double kln10 = 2.30258509299404568402;
+            constexpr auto inv_ln10_abs = static_cast<FloatType>(20.0 / kln10);
+            constexpr auto inv_ln10_sqr = static_cast<FloatType>(10.0 / kln10);
             const auto low = threshold_ - knee_;
             const auto slope = static_cast<FloatType>(0.5) / knee_;
-            const auto inv_ln10 = static_cast<FloatType>(20.0 / kln10);
             const auto fma_offset = -(low * slope);
 
             low_abs_ = fma_offset;
-            slope_abs_ = slope * inv_ln10;
+            slope_abs_ = slope * inv_ln10_abs;
 
             low_sqr_ = fma_offset;
-            slope_sqr_ = slope * inv_ln10;
+            slope_sqr_ = slope * inv_ln10_sqr;
         }
     };
 }
