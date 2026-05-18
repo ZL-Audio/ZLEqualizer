@@ -48,7 +48,7 @@ namespace zlpanel {
     void SumPanel::run(const size_t lr, const bool to_update, const bool is_not_off,
                        const std::span<size_t> on_indices,
                        const std::span<float> xs, float k, float b,
-                       std::array<kfr::univector<float>, zlp::kBandNum>& dynamic_mags) {
+                       std::array<zldsp::vector::aligned_vector<float>, zlp::kBandNum>& dynamic_mags) {
         if (!to_update) {
             return;
         }
@@ -64,11 +64,30 @@ namespace zlpanel {
             return;
         }
 
-        temp_db_ = dynamic_mags[on_indices[0]];
-        for (size_t i = 1; i < on_indices.size(); ++i) {
-            temp_db_ += dynamic_mags[on_indices[i]];
+        {
+            namespace hn = hwy::HWY_NAMESPACE;
+            static constexpr hn::ScalableTag<float> d;
+            static constexpr size_t lanes = hn::MaxLanes(d);
+
+            const auto vk = hn::Set(d, k);
+            const auto vb = hn::Set(d, b);
+            size_t i = 0;
+            for (; i + lanes <= temp_db_.size(); i += lanes) {
+                auto v_sum = hn::Zero(d);
+                for (const size_t on_index : on_indices) {
+                    const float* mag_ptr = dynamic_mags[on_index].data();
+                    v_sum = hn::Add(v_sum, hn::Load(d, mag_ptr + i));
+                }
+                hn::Store(hn::MulAdd(vk, v_sum, vb), d, temp_db_.data() + i);
+            }
+            for (; i < temp_db_.size(); ++i) {
+                float sum = 0.0f;
+                for (const size_t on_index : on_indices) {
+                    sum += dynamic_mags[on_index][i];
+                }
+                temp_db_[i] = std::fma(k, sum, b);
+            }
         }
-        temp_db_ = k * temp_db_ + b;
 
         PathMinimizer minimizer(path);
         minimizer.drawPath<true, false>(xs, std::span(temp_db_));

@@ -70,11 +70,11 @@ namespace zlpanel {
         addAndMakeVisible(draw_button_);
 
         target_box_.getBox().onChange = [this]() {
-            const auto mode = static_cast<zldsp::eq_match::MatchMode>(target_box_.getBox().getSelectedItemIndex());
-            if (mode == zldsp::eq_match::MatchMode::kMatchPreset) {
-                loadFromPreset();
-            }
-            p_ref_.getController().getEQMatchAnalyzer().setMatchMode(mode);
+            // const auto mode = static_cast<zldsp::eq_match::MatchMode>(target_box_.getBox().getSelectedItemIndex());
+            // if (mode == zldsp::eq_match::MatchMode::kMatchPreset) {
+            //     loadFromPreset();
+            // }
+            // p_ref_.getController().getEQMatchAnalyzer().setMatchMode(mode);
         };
         target_box_.setBufferedToImage(true);
         addAndMakeVisible(target_box_);
@@ -83,24 +83,24 @@ namespace zlpanel {
             -30.0, 30.0, 0.1));
         shift_slider_.getSlider().setDoubleClickReturnValue(true, 0.);
         shift_slider_.getSlider().onValueChange = [this]() {
-            p_ref_.getController().getEQMatchAnalyzer().setDiffShift(
-                static_cast<float>(shift_slider_.getSlider().getValue()));
+            // p_ref_.getController().getEQMatchAnalyzer().setDiffShift(
+            //     static_cast<float>(shift_slider_.getSlider().getValue()));
         };
 
         smooth_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
             0.0, 1.0, 0.01));
         smooth_slider_.getSlider().setDoubleClickReturnValue(true, 0.5);
         smooth_slider_.getSlider().onValueChange = [this]() {
-            p_ref_.getController().getEQMatchAnalyzer().setDiffSmooth(
-                static_cast<float>(smooth_slider_.getSlider().getValue()));
+            // p_ref_.getController().getEQMatchAnalyzer().setDiffSmooth(
+            //     static_cast<float>(smooth_slider_.getSlider().getValue()));
         };
 
         slope_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
             -4.5, 4.5, 0.1));
         slope_slider_.getSlider().setDoubleClickReturnValue(true, 0.);
         slope_slider_.getSlider().onValueChange = [this]() {
-            p_ref_.getController().getEQMatchAnalyzer().setDiffSlope(
-                static_cast<float>(slope_slider_.getSlider().getValue()));
+            // p_ref_.getController().getEQMatchAnalyzer().setDiffSlope(
+            //     static_cast<float>(slope_slider_.getSlider().getValue()));
         };
 
         label_laf_.setFontScale(1.5f);
@@ -222,19 +222,19 @@ namespace zlpanel {
         if (!isVisible()) {
             return;
         }
-        auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
-        target_box_.getBox().setSelectedItemIndex(0, juce::dontSendNotification);
-        analyzer.setMatchMode(zldsp::eq_match::MatchMode::kMatchSide);
-        smooth_slider_.getSlider().setValue(0.5, juce::sendNotificationSync);
-        analyzer.setDiffSmooth(0.5f);
-        slope_slider_.getSlider().setValue(0., juce::sendNotificationSync);
-        analyzer.setDiffSlope(0.f);
-        num_band_slider_.setAlpha(.5f);
-        num_band_slider_.setInterceptsMouseClicks(false, false);
-        num_band_slider_.getSlider().setValue(0., juce::dontSendNotification);
-        num_band_slider_.updateDisplayValue();
-
-        draw_button_.getButton().setToggleState(true, juce::sendNotificationSync);
+        // auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+        // target_box_.getBox().setSelectedItemIndex(0, juce::dontSendNotification);
+        // analyzer.setMatchMode(zldsp::eq_match::MatchMode::kMatchSide);
+        // smooth_slider_.getSlider().setValue(0.5, juce::sendNotificationSync);
+        // analyzer.setDiffSmooth(0.5f);
+        // slope_slider_.getSlider().setValue(0., juce::sendNotificationSync);
+        // analyzer.setDiffSlope(0.f);
+        // num_band_slider_.setAlpha(.5f);
+        // num_band_slider_.setInterceptsMouseClicks(false, false);
+        // num_band_slider_.getSlider().setValue(0., juce::dontSendNotification);
+        // num_band_slider_.updateDisplayValue();
+        //
+        // draw_button_.getButton().setToggleState(true, juce::sendNotificationSync);
         base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchDrawing, 1.0);
     }
 
@@ -245,21 +245,21 @@ namespace zlpanel {
         constexpr auto setting_save_flags = juce::FileBrowserComponent::saveMode |
             juce::FileBrowserComponent::warnAboutOverwriting;
         chooser_->launchAsync(setting_save_flags, [this](const juce::FileChooser& chooser) {
-            if (chooser.getResults().size() <= 0) { return; }
-            auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
-            analyzer.saveFreq(preset_freqs_);
-            analyzer.saveTarget(preset_dbs_);
-            juce::File preset_file(chooser.getResult().withFileExtension("csv"));
-            if (juce::FileOutputStream output(preset_file); output.openedOk()) {
-                output.setPosition(0);
-                output.truncate();
-                for (size_t i = 0; i < preset_freqs_.size(); ++i) {
-                    output.writeText(juce::String(preset_freqs_[i]), false, false, nullptr);
-                    output.writeText(",", false, false, nullptr);
-                    output.writeText(juce::String(preset_dbs_[i]), false, false, nullptr);
-                    output.writeText("\n", false, false, nullptr);
-                }
-            }
+            // if (chooser.getResults().size() <= 0) { return; }
+            // auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+            // analyzer.saveFreq(preset_freqs_);
+            // analyzer.saveTarget(preset_dbs_);
+            // juce::File preset_file(chooser.getResult().withFileExtension("csv"));
+            // if (juce::FileOutputStream output(preset_file); output.openedOk()) {
+            //     output.setPosition(0);
+            //     output.truncate();
+            //     for (size_t i = 0; i < preset_freqs_.size(); ++i) {
+            //         output.writeText(juce::String(preset_freqs_[i]), false, false, nullptr);
+            //         output.writeText(",", false, false, nullptr);
+            //         output.writeText(juce::String(preset_dbs_[i]), false, false, nullptr);
+            //         output.writeText("\n", false, false, nullptr);
+            //     }
+            // }
         });
     }
 
@@ -297,8 +297,8 @@ namespace zlpanel {
                 if (preset_freqs_.size() < 2) {
                     return;
                 }
-                auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
-                analyzer.setTargetPreset(preset_freqs_, preset_dbs_);
+                // auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+                // analyzer.setTargetPreset(preset_freqs_, preset_dbs_);
             }
         });
     }

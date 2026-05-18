@@ -9,19 +9,17 @@
 
 #pragma once
 
-#include "../vector/kfr_import.hpp"
+#include "../vector/vector.hpp"
 #include "k_weighting_filter.hpp"
 
 namespace zldsp::loudness {
-    /**
-     * a integrated loudness meter
-     * @tparam FloatType the float type of input audio buffer
-     * @tparam kUseLowPass whether to use an extra lowpass filter at 22,000 Hz
-     */
     template <typename FloatType, bool kUseLowPass = false>
     class LUFSMeter {
     public:
-        LUFSMeter() = default;
+        LUFSMeter() {
+            histogram_.resize(701);
+            histogram_sums_.resize(701);
+        }
 
         void prepare(const double sample_rate, const size_t num_channels) {
             k_weighting_filter_.prepare(sample_rate, num_channels);
@@ -60,9 +58,9 @@ namespace zldsp::loudness {
                 // now we get a full 100 ms small block
                 const auto remaining_num = max_idx_ - current_idx_;
                 for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                    zldsp::vector::copy(small_buffer_[channel].data() + static_cast<size_t>(current_idx_),
-                                        buffer[channel] + static_cast<size_t>(start_idx),
-                                        static_cast<size_t>(remaining_num));
+                    vector::copy(small_buffer_[channel].data() + static_cast<size_t>(current_idx_),
+                                 buffer[channel] + static_cast<size_t>(start_idx),
+                                 static_cast<size_t>(remaining_num));
                 }
                 start_idx += remaining_num;
                 current_idx_ = 0;
@@ -71,31 +69,26 @@ namespace zldsp::loudness {
             if (num_total - start_idx > 0) {
                 const auto remaining_num = num_total - start_idx;
                 for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                    zldsp::vector::copy(small_buffer_[channel].data() + static_cast<size_t>(current_idx_),
-                                        buffer[channel] + static_cast<size_t>(start_idx),
-                                        static_cast<size_t>(remaining_num));
+                    vector::copy(small_buffer_[channel].data() + static_cast<size_t>(current_idx_),
+                                 buffer[channel] + static_cast<size_t>(start_idx),
+                                 static_cast<size_t>(remaining_num));
                 }
                 current_idx_ += remaining_num;
             }
         }
 
-        /**
-         *
-         * @return integrated loudness
-         */
         FloatType getIntegratedLoudness() const {
-            const auto total_count = kfr::sum(histogram_);
+            const auto total_count = vector::sum(histogram_.data(), histogram_.size());
             if (total_count < FloatType(0.5)) { return FloatType(0); }
-            const auto total_sum = kfr::sum(histogram_sums_);
+            const auto total_sum = vector::sum(histogram_sums_.data(), histogram_sums_.size());
             const auto total_mean_square = total_sum / total_count;
             const auto total_lufs = FloatType(-0.691) + FloatType(10) * std::log10(total_mean_square);
             if (total_lufs <= FloatType(-60)) {
                 return total_lufs;
             } else {
-                const auto end_idx = static_cast<size_t>(
-                    std::round(-(total_lufs - FloatType(10)) * FloatType(10)));
-                const auto sub_count = kfr::sum(histogram_.slice(0, end_idx));
-                const auto sub_sum = kfr::sum(histogram_sums_.slice(0, end_idx));
+                const auto end_idx = static_cast<size_t>(std::round(-(total_lufs - FloatType(10)) * FloatType(10)));
+                const auto sub_count = vector::sum(histogram_.data(), end_idx);
+                const auto sub_sum = vector::sum(histogram_sums_.data(), end_idx);
                 const auto sub_mean_square = sub_sum / sub_count;
                 const auto sub_lufs = FloatType(-0.691) + FloatType(10) * std::log10(sub_mean_square);
                 return sub_lufs;
@@ -111,8 +104,8 @@ namespace zldsp::loudness {
         FloatType mean_mul_{1};
         std::array<FloatType, 4> sum_squares_{};
 
-        kfr::univector<FloatType, 701> histogram_{};
-        kfr::univector<FloatType, 701> histogram_sums_{};
+        vector::aligned_vector<FloatType> histogram_{};
+        vector::aligned_vector<FloatType> histogram_sums_{};
         std::vector<FloatType> weights_;
 
         void update() {
@@ -121,8 +114,8 @@ namespace zldsp::loudness {
             // calculate the sum square of the small block
             FloatType sum_square = 0;
             for (size_t channel = 0; channel < small_buffer_.size(); ++channel) {
-                auto channel_v = kfr::make_univector(small_buffer_[channel]);
-                FloatType channel_sum_square = kfr::sumsqr(channel_v);
+                const auto channel_sum_square = vector::sum_sqr(small_buffer_[channel].data(),
+                                                                small_buffer_[channel].size());
                 sum_square += channel_sum_square * weights_[channel];
             }
             // shift circular sumSquares

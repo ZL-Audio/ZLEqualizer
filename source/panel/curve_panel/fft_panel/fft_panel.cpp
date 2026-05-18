@@ -10,226 +10,268 @@
 #include "fft_panel.hpp"
 
 namespace zlpanel {
-    FFTPanel::FFTPanel(PluginProcessor& p,
-                       zlgui::UIBase& base,
-                       const multilingual::TooltipHelper&) :
+    FFTPanel::FFTPanel(PluginProcessor& p, zlgui::UIBase& base) :
         Thread("fft_panel"),
-        p_ref_(p), base_(base),
+        p_ref_(p),
+        base_(base),
         pre_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPreON::kID)),
         post_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPostON::kID)),
         side_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSideON::kID)),
-        fft_min_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
-        fft_stereo_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTStereo::kID)),
-        collision_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionON::kID)),
-        collision_strength_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionStrength::kID)) {
-        p_ref_.getController().getFFTAnalyzer().setMinFreq(10.0);
-
-        gradient_.isRadial = true;
-        next_gradient_.isRadial = true;
+        fft_min_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
+        fft_speed_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSpeed::kID)),
+        fft_tilt_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTTilt::kID)) {
+        constexpr auto preallocate_space = 100 * 3 + 1;
+        for (auto& buffered_path : paths_) {
+            for (auto& path : buffered_path.getBuffer()) {
+                path.preallocateSpace(preallocate_space);
+            }
+        }
         setInterceptsMouseClicks(false, false);
+
+        base_.getPanelValueTree().addListener(this);
     }
 
     FFTPanel::~FFTPanel() {
-        stopThread(-1);
+        base_.getPanelValueTree().removeListener(this);
     }
 
     void FFTPanel::paint(juce::Graphics& g) {
-        const std::unique_lock lock{mutex_, std::try_to_lock};
-        if (!lock.owns_lock()) {
+        if (skip_next_repaint_) {
+            skip_next_repaint_ = false;
             return;
         }
-        const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
-        const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
-        const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
-        const auto collision_on = collision_ref_.load(std::memory_order::relaxed) > .5f;
-
-        if (pre_on) {
-            g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPreColour));
-            g.fillPath(pre_path_);
-        } else {
-            pre_path_.clear();
+        const std::array<bool, 3> is_on{pre_ref_.load(std::memory_order::relaxed) > .5f,
+                                        post_ref_.load(std::memory_order::relaxed) > .5f,
+                                        side_ref_.load(std::memory_order::relaxed) > .5f};
+        for (size_t i = 0; i < 3; ++i) {
+            if (is_on[i]) {
+                paths_[i].pull();
+            }
         }
-        if (post_on) {
+
+        if (is_on[0]) {
+            g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPreColour));
+            g.fillPath(paths_[0].getReader());
+        }
+        if (is_on[1]) {
             const auto thickness = base_.getFontSize() * .2f;
             g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPostColour).withAlpha(1.f));
-            g.strokePath(post_path_, {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
+            g.strokePath(paths_[1].getReader(),
+                         {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
             g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPostColour));
-            g.fillPath(post_path_);
-        } else {
-            post_path_.clear();
+            g.fillPath(paths_[1].getReader());
         }
-        if (side_on) {
+        if (is_on[2]) {
             g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kSideColour));
-            g.fillPath(side_path_);
-        } else {
-            side_path_.clear();
-        }
-        if (collision_on) {
-            if (!gradient_.isRadial) {
-                g.setGradientFill(gradient_);
-                g.fillRect(getLocalBounds());
-            }
-        } else {
-            gradient_.isRadial = true;
+            g.fillPath(paths_[2].getReader());
         }
     }
 
     void FFTPanel::resized() {
-        auto bound = getLocalBounds().toFloat();
+        const auto bound = getLocalBounds().toFloat();
         if (bound.getHeight() < 1.f) {
             return;
         }
-        bound.setWidth(bound.getWidth() * kFFTSizeOverWidth);
-        updateSampleRate(sample_rate_);
+        width_.store(bound.getWidth());
+        height_.store(bound.getHeight());
+        font_size_.store(base_.getFontSize());
 
-        const auto bottom_area_height = getBottomAreaHeight(base_.getFontSize());
-        const auto positive_height = base_.getFontSize() * kDraggerScale;
-        const auto negative_height = bound.getHeight() - positive_height;
-        const auto mid_height = negative_height - positive_height - static_cast<float>(bottom_area_height);
-
-        min_ratio_.store(negative_height / mid_height, std::memory_order::relaxed);
-        max_ratio_.store(-positive_height / mid_height, std::memory_order::relaxed);
-    }
-
-    void FFTPanel::updateSampleRate(const double sample_rate) {
-        if (sample_rate < 1.0) {
-            return;
-        }
-        if (std::abs(sample_rate - sample_rate_) > 1.0) {
-            sample_rate_ = sample_rate;
-            p_ref_.getController().getFFTAnalyzer().setMaxFreq(sample_rate * .5 - 0.1);
-        }
-        const auto fft_max = freq_helper::getFFTMax(sample_rate);
-        auto bound = getLocalBounds().toFloat();
-        bound.setWidth(bound.getWidth() * kFFTSizeOverWidth);
-        bound.setWidth(bound.getWidth() * static_cast<float>(
-            std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1)));
-        atomic_bound_.store(bound);
+        skip_next_repaint_ = true;
+        to_update_xs_para_.store(true, std::memory_order::release);
+        to_update_ys_para_.store(true, std::memory_order::release);
     }
 
     void FFTPanel::run() {
+        for (auto& receiver : receivers_) {
+            receiver.setON(true);
+        }
         while (!threadShouldExit()) {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
-            if (threadShouldExit()) {
-                break;
-            }
-            const auto bound = atomic_bound_.load();
-            if (bound.getWidth() < .1f) {
-                continue;
-            }
-            auto& analyzer{p_ref_.getController().getFFTAnalyzer()};
-            if (!analyzer.getLock().try_lock()) {
-                continue;
-            }
-            const auto fft_stereo = static_cast<zldsp::analyzer::FFTStereoMode>(
-                std::round(fft_stereo_ref_.load(std::memory_order::relaxed)));
-            const auto akima_reset_flag = analyzer.run(fft_stereo);
-            const size_t n = analyzer.getInterplotSize();
-            if (akima_reset_flag || n != xs_.size()) {
-                xs_.resize(n);
-                pre_ys_.resize(n);
-                post_ys_.resize(n);
-                side_ys_.resize(n);
-                current_ps_.resize(n);
-                collision_ps_.resize(n);
-                c_width_ = -1.f;
-            }
-            const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
-            const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
-            const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
-            const auto collision_on = collision_ref_.load(std::memory_order::relaxed) > .5f;
-            if (std::abs(bound.getWidth() - c_width_) > 1e-3f) {
-                c_width_ = bound.getWidth();
-                analyzer.createPathXs(xs_, c_width_);
-            }
-            const auto fft_min_idx = fft_min_db_ref_.load(std::memory_order_relaxed);
-            const auto fft_min = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(std::round(fft_min_idx))];
-            const auto max_db = max_ratio_.load(std::memory_order_relaxed) * fft_min;
-            const auto min_db = min_ratio_.load(std::memory_order_relaxed) * fft_min;
-            analyzer.createPathYs({std::span(pre_ys_), std::span(post_ys_), std::span(side_ys_)},
-                                  bound.getHeight(), min_db, max_db);
-            // update collision p
-            if (collision_on) {
-                const auto strength = collision_strength_ref_.load(std::memory_order::relaxed) * .3f + .425f;
-                if (!side_on) {
-                    zldsp::analyzer::FFTCollisionAnalyzer<float>::createGradientPs(
-                        analyzer.getResultDBs()[1], analyzer.getResultDBs()[0],
-                        current_ps_, collision_ps_, strength);
-                } else {
-                    zldsp::analyzer::FFTCollisionAnalyzer<float>::createGradientPs(
-                        analyzer.getResultDBs()[1], analyzer.getResultDBs()[2],
-                        current_ps_, collision_ps_, strength);
-                }
-            }
-            analyzer.getLock().unlock();
-            if (xs_.empty()) {
-                continue;
-            }
-            if (threadShouldExit()) {
-                break;
-            }
-            // update pre path
-            if (pre_on) {
-                updatePath(next_pre_path_, bound, pre_ys_);
-            }
-            // update post path
-            if (post_on) {
-                updatePath(next_post_path_, bound, post_ys_);
-            }
-            // update side path
-            if (side_on) {
-                updatePath(next_side_path_, bound, side_ys_);
-            }
-            // update collision gradient
-            if (collision_on) {
-                updateCollision();
-            }
-            std::lock_guard lock{mutex_};
-            if (pre_on) {
-                pre_path_.swapWithPath(next_pre_path_);
-            }
-            if (post_on) {
-                post_path_.swapWithPath(next_post_path_);
-            }
-            if (side_on) {
-                side_path_.swapWithPath(next_side_path_);
-            }
-            if (collision_on) {
-                gradient_ = next_gradient_;
-            }
+            runFFT();
         }
     }
 
-    void FFTPanel::updatePath(juce::Path& path, const juce::Rectangle<float>& bound, std::span<float> ys) const {
-        path.clear();
-        path.startNewSubPath(xs_[0] - bound.getWidth() * 0.05f, bound.getHeight() * 1.05f);
-        for (size_t i = 0; i < xs_.size(); ++i) {
-            if (std::isfinite(ys[i])) {
-                path.lineTo(xs_[i], ys[i]);
-            }
-        }
-        path.lineTo(xs_.back(), bound.getHeight() * 1.05f);
-        path.closeSubPath();
-    }
-
-    void FFTPanel::updateCollision() {
-        next_gradient_.isRadial = true;
-        if (xs_.size() < 3) {
+    void FFTPanel::runFFT() {
+        const std::array<bool, 3> is_on{pre_ref_.load(std::memory_order::relaxed) > .5f,
+                                        post_ref_.load(std::memory_order::relaxed) > .5f,
+                                        side_ref_.load(std::memory_order::relaxed) > .5f};
+        auto& sender{p_ref_.getController().getAnalyzerSender()};
+        if (!sender.getLock().try_lock()) {
             return;
         }
-        next_gradient_.point1 = {0.f, 0.f};
-        next_gradient_.point2 = {c_width_, 0.f};
-        next_gradient_.isRadial = false;
+        // update sample rate
+        const auto sample_rate = sender.getSampleRate();
+        if (std::abs(c_sample_rate_ - sample_rate) > 0.1) {
+            c_sample_rate_ = sample_rate;
+            to_update_tilt_.store(true, std::memory_order::relaxed);
+            int fft_order;
+            if (sample_rate <= 50000) {
+                fft_order = 12;
+            } else if (sample_rate <= 100000) {
+                fft_order = 13;
+            } else if (sample_rate <= 200000) {
+                fft_order = 14;
+            } else {
+                fft_order = 15;
+            }
+            fft_size_ = 1 << fft_order;
+            processor_.prepare(fft_order);
+            for (auto& receiver : receivers_) {
+                receiver.prepare(2);
+            }
+            smoother_.prepare(static_cast<size_t>(fft_size_));
+            smoother_.setSmooth(0.1);
+            tilter_.prepare(static_cast<size_t>(fft_size_));
+            for (auto& decayer : decayers_) {
+                decayer.prepare(static_cast<size_t>(fft_size_));
+            }
 
-        const auto colour = base_.getColourByIdx(zlgui::kCollisionColour);
-        next_gradient_.clearColours();
-        next_gradient_.addColour(xs_.front() / c_width_, colour.withAlpha(collision_ps_.front()));
-        for (size_t i = 1; i < collision_ps_.size() - 1; ++i) {
-            if (collision_ps_[i - 1] > .01f || collision_ps_[i] > .01f || collision_ps_[i + 1] > 0.01f) {
-                next_gradient_.addColour(xs_[i] / c_width_, colour.withAlpha(collision_ps_[i]));
+            xs_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
+            ys_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
+
+            to_update_xs_para_.store(true, std::memory_order::relaxed);
+            to_update_ys_para_.store(true, std::memory_order::relaxed);
+        }
+        // receiver pull data
+        auto& fifo{sender.getAbstractFIFO()};
+        auto num_read = fifo.getNumReady() / 4 * 3;
+        if (num_read > fft_size_) {
+            (void)fifo.prepareToRead(num_read - fft_size_);
+            fifo.finishRead(num_read - fft_size_);
+            num_read = fft_size_;
+        }
+        const auto range = fifo.prepareToRead(num_read);
+        for (size_t i = 0; i < 3; i++) {
+            if (is_on[i]) {
+                receivers_[i].pull(range, sender.getSampleFIFOs()[i]);
             }
         }
-        next_gradient_.addColour(xs_.back() / c_width_, colour.withAlpha(collision_ps_.back()));
+        fifo.finishRead(num_read);
+        sender.getLock().unlock();
+        if (threadShouldExit()) {
+            return;
+        }
+        if (fft_size_ <= 0) {
+            return;
+        }
+        // update min db
+        const auto min_db = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(std::round(
+            fft_min_db_idx_ref_.load(std::memory_order::relaxed)))];
+        if (std::abs(min_db - c_fft_min_db_) > .1f) {
+            c_fft_min_db_ = min_db;
+            to_update_decay_.store(true, std::memory_order::relaxed);
+            to_update_ys_para_.store(true, std::memory_order::relaxed);
+        }
+        // update tilt
+        const auto fft_tilt_idx = static_cast<int>(std::round(
+            fft_tilt_idx_ref_.load(std::memory_order::relaxed)));
+        if (fft_tilt_idx != fft_speed_idx_) {
+            fft_tilt_idx_ = fft_tilt_idx;
+            to_update_tilt_.store(true, std::memory_order::relaxed);
+        }
+        if (to_update_tilt_.exchange(false, std::memory_order::acquire)) {
+            tilter_.setTiltSlope(sample_rate,
+                                 zlstate::PFFTTilt::kSlopes[static_cast<size_t>(fft_tilt_idx)] +
+                                 spectrum_extra_tilt_slope_.load(std::memory_order::relaxed));
+        }
+        // update speed
+        const auto fft_speed_idx = static_cast<int>(std::round(
+            fft_speed_idx_ref_.load(std::memory_order::relaxed)));
+        if (fft_speed_idx != fft_speed_idx_) {
+            fft_speed_idx_ = fft_speed_idx;
+            to_update_decay_.store(true, std::memory_order::relaxed);
+        }
+        if (to_update_decay_.exchange(false, std::memory_order::acquire)) {
+            const auto refresh_rate = refresh_rate_.load(std::memory_order::relaxed);
+            const auto decay_speed = zlstate::PFFTSpeed::kSpeeds[
+                static_cast<size_t>(fft_speed_idx_)] * spectrum_extra_decay_speed_.load(std::memory_order::relaxed);
+            for (auto& decayer : decayers_) {
+                decayer.setDecaySpeed(refresh_rate, c_fft_min_db_, static_cast<float>(0.125 / decay_speed));
+            }
+        }
+        // update xs para
+        if (to_update_xs_para_.exchange(false, std::memory_order::acquire)) {
+            const auto fft_max = freq_helper::getFFTMax(sample_rate);
+            c_width_ = width_.load(std::memory_order::relaxed) * kFFTSizeOverWidth;
+            c_width_ *= static_cast<float>(std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1));
+            const auto delta_freq = static_cast<float>(sample_rate / static_cast<double>(fft_size_));
+            const auto temp_scale = static_cast<float>(1.0 / std::log(sample_rate * 0.5 / 10.0)) * c_width_;
+            const auto temp_bias = std::log(static_cast<float>(10.0)) * temp_scale;
+            num_point_ = xs_.size();
+            for (size_t i = 1; i < xs_.size(); ++i) {
+                const auto freq = delta_freq * static_cast<float>(i);
+                xs_[i] = std::log(freq) * temp_scale - temp_bias;
+                if (xs_[i] > c_width_) {
+                    num_point_ = i + 1;
+                    break;
+                }
+            }
+            xs_[0] = std::min(0.f, xs_[2] - 2.f * xs_[1]);
+        }
+        // update ys para
+        if (to_update_ys_para_.exchange(false, std::memory_order::acquire)) {
+            c_height_ = height_.load(std::memory_order::relaxed);
+            const auto font_size = font_size_.load(std::memory_order::relaxed);
+            const auto bottom_area_height = getBottomAreaHeight(font_size);
+            const auto height0 = font_size * kDraggerScale;
+            const auto height1 = c_height_ - static_cast<float>(bottom_area_height) - height0;
+            y_b_ = height0;
+            y_k_ = (height1 - height0) / c_fft_min_db_;
+        }
+        if (num_point_ < 3) {
+            return;
+        }
+        // update each path
+        for (size_t i = 0; i < 3; i++) {
+            if (!is_on[i]) {
+                continue;
+            }
+            receivers_[i].forward(zldsp::analyzer::StereoType::kStereo);
+            auto& spectrum{receivers_[i].getAbsSqrFFTBuffer()};
+            smoother_.smooth(spectrum);
+            zldsp::vector::sqr_mag_to_db(spectrum.data(), num_point_);
+            tilter_.tilt(std::span{spectrum.data(), num_point_});
+            decayers_[i].decay(std::span{spectrum.data(), num_point_},
+                               is_fft_frozen_.load(std::memory_order::relaxed));
+            zldsp::vector::fma(ys_.data(), spectrum.data(), y_k_, y_b_, num_point_);
+            auto& path{paths_[i].getWriter()};
+            path.clear();
+            PathMinimizer<50> minimizer{path};
+            const auto num_accu = static_cast<size_t>(std::sqrt(static_cast<float>(num_point_)));
+            path.startNewSubPath(xs_.front() - .1f, c_height_ * 1.5f);
+            for (size_t j = 0; j < num_accu; ++j) {
+                path.lineTo(xs_[j], ys_[j]);
+            }
+            minimizer.startNewSubPath<false>(xs_[num_accu], ys_[num_accu]);
+            for (size_t j = num_accu + 1; j < num_point_; ++j) {
+                minimizer.lineTo(xs_[j], ys_[j]);
+            }
+            minimizer.finish();
+            path.lineTo(xs_[num_point_ - 1] + .1f, c_height_ * 1.5f);
+            path.closeSubPath();
+
+            if (threadShouldExit()) {
+                return;
+            }
+        }
+        for (size_t i = 0; i < 3; i++) {
+            if (is_on[i]) {
+                paths_[i].publish();
+            }
+        }
+    }
+
+    void FFTPanel::setRefreshRate(const double refresh_rate) {
+        refresh_rate_.store(static_cast<float>(refresh_rate), std::memory_order::relaxed);
+        to_update_decay_.store(true, std::memory_order::release);
+    }
+
+    void FFTPanel::lookAndFeelChanged() {
+        spectrum_extra_decay_speed_.store(base_.getFFTExtraSpeed(), std::memory_order::relaxed);
+        to_update_decay_.store(true, std::memory_order::release);
+
+        spectrum_extra_tilt_slope_.store(base_.getFFTExtraTilt(), std::memory_order::relaxed);
+        to_update_tilt_.store(true, std::memory_order::release);
     }
 }

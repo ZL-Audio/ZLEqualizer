@@ -30,7 +30,7 @@ namespace zlpanel {
         void run(size_t lr, bool to_update, bool is_not_off,
                  std::span<size_t> on_indices,
                  std::span<float> xs, float k, float b,
-                 std::array<kfr::univector<float>, zlp::kBandNum>& dynamic_mags);
+                 std::array<zldsp::vector::aligned_vector<float>, zlp::kBandNum>& dynamic_mags);
 
         void runUpdate(std::array<bool, 5>& to_update_flags_);
 
@@ -48,7 +48,7 @@ namespace zlpanel {
 
         float curve_thickness_{0.f};
 
-        kfr::univector<float> temp_db_{};
+        zldsp::vector::aligned_vector<float> temp_db_{};
 
         void lookAndFeelChanged() override;
     };

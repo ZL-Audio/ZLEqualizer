@@ -17,7 +17,7 @@ namespace zlpanel {
         p_ref_(p), base_(base), tooltip_helper_(tooltip_helper),
         fft_min_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
         eq_max_db_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
-        p_ref_.getController().getEQMatchAnalyzer().setMinFreq(10.0);
+        // p_ref_.getController().getEQMatchAnalyzer().setMinFreq(10.0);
         base_.getPanelValueTree().addListener(this);
     }
 
@@ -27,17 +27,17 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::paint(juce::Graphics& g) {
-        const std::unique_lock<std::mutex> lock{mutex_, std::try_to_lock};
-        if (!lock.owns_lock()) {
-            return;
-        }
-        const auto thickness = base_.getFontSize() * .2f;
-        g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPreColour).withAlpha(1.f));
-        g.strokePath(source_path_, {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
-        g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kSideColour).withAlpha(1.f));
-        g.strokePath(target_path_, {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
-        g.setColour(base_.getTextColour());
-        g.strokePath(diff_path_, {thickness * 1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
+        // const std::unique_lock<std::mutex> lock{mutex_, std::try_to_lock};
+        // if (!lock.owns_lock()) {
+        //     return;
+        // }
+        // const auto thickness = base_.getFontSize() * .2f;
+        // g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPreColour).withAlpha(1.f));
+        // g.strokePath(source_path_, {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
+        // g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kSideColour).withAlpha(1.f));
+        // g.strokePath(target_path_, {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
+        // g.setColour(base_.getTextColour());
+        // g.strokePath(diff_path_, {thickness * 1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
     }
 
     void MatchFFTPanel::resized() {
@@ -70,7 +70,7 @@ namespace zlpanel {
         }
         if (std::abs(sample_rate - sample_rate_) > 1.0) {
             sample_rate_ = sample_rate;
-            p_ref_.getController().getEQMatchAnalyzer().setMaxFreq(sample_rate * .5 - 0.1);
+            // p_ref_.getController().getEQMatchAnalyzer().setMaxFreq(sample_rate * .5 - 0.1);
         }
         const auto fft_max = freq_helper::getFFTMax(sample_rate);
         auto bound = getLocalBounds().toFloat();
@@ -82,63 +82,63 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::run() {
-        while (!threadShouldExit()) {
-            const auto flag = wait(-1);
-            juce::ignoreUnused(flag);
-            if (threadShouldExit()) {
-                break;
-            }
-            const auto bound = atomic_bound_.load();
-            if (bound.getWidth() < .1f) {
-                continue;
-            }
-            auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
-            if (!analyzer.getLock().try_lock()) {
-                continue;
-            }
-            const auto akima_reset_flag = analyzer.run();
-            const size_t n = analyzer.getInterplotSize();
-            if (akima_reset_flag || n != xs_.size()) {
-                xs_.resize(n);
-                source_ys_.resize(n);
-                target_ys_.resize(n);
-                diff_ys_.resize(n);
-                c_width_ = -1.f;
-            }
-            analyzer.prepareDiff();
-            if (std::abs(bound.getWidth() - c_width_) > 1e-3f) {
-                c_width_ = bound.getWidth();
-                analyzer.createPathXs(xs_, c_width_);
-            }
-            const auto fft_min_idx = fft_min_db_ref_.load(std::memory_order_relaxed);
-            const auto fft_min = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(std::round(fft_min_idx))];
-            const auto max_db = max_ratio_.load(std::memory_order_relaxed) * fft_min;
-            const auto min_db = min_ratio_.load(std::memory_order_relaxed) * fft_min;
-            analyzer.createPathYs(std::span(source_ys_), std::span(target_ys_),
-                                  bound.getHeight(), min_db, max_db);
-            analyzer.prepareTarget();
-            analyzer.prepareDrawing();
-            analyzer.runDiff();
-            const auto eq_max_idx = eq_max_db_ref_.load(std::memory_order_relaxed);
-            const auto eq_max = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_idx))];
-            analyzer.createDiffPathYs(diff_ys_, k_.load(std::memory_order_relaxed) / eq_max,
-                                      b_.load(std::memory_order_relaxed));
-
-            analyzer.getLock().unlock();
-            if (xs_.empty()) {
-                continue;
-            }
-            if (threadShouldExit()) {
-                break;
-            }
-            updatePath(next_source_path_, bound, source_ys_);
-            updatePath(next_target_path_, bound, target_ys_);
-            updatePath(next_diff_path_, bound, diff_ys_);
-            std::lock_guard<std::mutex> lock{mutex_};
-            source_path_.swapWithPath(next_source_path_);
-            target_path_.swapWithPath(next_target_path_);
-            diff_path_.swapWithPath(next_diff_path_);
-        }
+        // while (!threadShouldExit()) {
+        //     const auto flag = wait(-1);
+        //     juce::ignoreUnused(flag);
+        //     if (threadShouldExit()) {
+        //         break;
+        //     }
+        //     const auto bound = atomic_bound_.load();
+        //     if (bound.getWidth() < .1f) {
+        //         continue;
+        //     }
+        //     auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+        //     if (!analyzer.getLock().try_lock()) {
+        //         continue;
+        //     }
+        //     const auto akima_reset_flag = analyzer.run();
+        //     const size_t n = analyzer.getInterplotSize();
+        //     if (akima_reset_flag || n != xs_.size()) {
+        //         xs_.resize(n);
+        //         source_ys_.resize(n);
+        //         target_ys_.resize(n);
+        //         diff_ys_.resize(n);
+        //         c_width_ = -1.f;
+        //     }
+        //     analyzer.prepareDiff();
+        //     if (std::abs(bound.getWidth() - c_width_) > 1e-3f) {
+        //         c_width_ = bound.getWidth();
+        //         analyzer.createPathXs(xs_, c_width_);
+        //     }
+        //     const auto fft_min_idx = fft_min_db_ref_.load(std::memory_order_relaxed);
+        //     const auto fft_min = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(std::round(fft_min_idx))];
+        //     const auto max_db = max_ratio_.load(std::memory_order_relaxed) * fft_min;
+        //     const auto min_db = min_ratio_.load(std::memory_order_relaxed) * fft_min;
+        //     analyzer.createPathYs(std::span(source_ys_), std::span(target_ys_),
+        //                           bound.getHeight(), min_db, max_db);
+        //     analyzer.prepareTarget();
+        //     analyzer.prepareDrawing();
+        //     analyzer.runDiff();
+        //     const auto eq_max_idx = eq_max_db_ref_.load(std::memory_order_relaxed);
+        //     const auto eq_max = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_idx))];
+        //     analyzer.createDiffPathYs(diff_ys_, k_.load(std::memory_order_relaxed) / eq_max,
+        //                               b_.load(std::memory_order_relaxed));
+        //
+        //     analyzer.getLock().unlock();
+        //     if (xs_.empty()) {
+        //         continue;
+        //     }
+        //     if (threadShouldExit()) {
+        //         break;
+        //     }
+        //     updatePath(next_source_path_, bound, source_ys_);
+        //     updatePath(next_target_path_, bound, target_ys_);
+        //     updatePath(next_diff_path_, bound, diff_ys_);
+        //     std::lock_guard<std::mutex> lock{mutex_};
+        //     source_path_.swapWithPath(next_source_path_);
+        //     target_path_.swapWithPath(next_target_path_);
+        //     diff_path_.swapWithPath(next_diff_path_);
+        // }
     }
 
     void MatchFFTPanel::updatePath(juce::Path& path, const juce::Rectangle<float>& bound, std::span<float> ys) const {
@@ -153,18 +153,18 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::visibilityChanged() {
-        if (isVisible()) {
-            p_ref_.getController().getEQMatchAnalyzer().reset();
-            p_ref_.getController().setEQMatchAnalyzerON(true);
-            startThread(juce::Thread::Priority::low);
-        } else {
-            stopThread(-1);
-            p_ref_.getController().getEQMatchAnalyzer().clearDrawingDiffs();
-            p_ref_.getController().setEQMatchAnalyzerON(false);
-            source_path_.clear();
-            target_path_.clear();
-            diff_path_.clear();
-        }
+        // if (isVisible()) {
+        //     p_ref_.getController().getEQMatchAnalyzer().reset();
+        //     p_ref_.getController().setEQMatchAnalyzerON(true);
+        //     startThread(juce::Thread::Priority::low);
+        // } else {
+        //     stopThread(-1);
+        //     p_ref_.getController().getEQMatchAnalyzer().clearDrawingDiffs();
+        //     p_ref_.getController().setEQMatchAnalyzerON(false);
+        //     source_path_.clear();
+        //     target_path_.clear();
+        //     diff_path_.clear();
+        // }
     }
 
     void MatchFFTPanel::mouseDown(const juce::MouseEvent& event) {
@@ -184,67 +184,67 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::mouseDrag(const juce::MouseEvent& event) {
-        if (!draw_on_) {
-            return;
-        }
-        auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
-        const auto c_drawing_p = std::round(event.position.x / fft_width_ * 100.f) / 100.f;
-        const auto count = static_cast<size_t>(std::round(std::abs(pre_drawing_p_ - c_drawing_p) / 0.01f));
-        if (count == 0) {
-            if (pre_drawing_p_ < 0.f || pre_drawing_p_ > 1.f) {
-                return;
-            }
-            if (event.mods.isRightButtonDown()) {
-                analyzer.clearDrawingDiffs(pre_drawing_p_);
-            } else if (event.mods.isShiftDown()) {
-                analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
-                pre_drawing_db_ = 0.f;
-            } else {
-                const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
-                analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
-                pre_drawing_db_ = c_drawing_db;
-            }
-        } else {
-            const auto delta_p = c_drawing_p > pre_drawing_p_ ? 0.01f : -0.01f;
-            if (event.mods.isRightButtonDown()) {
-                for (size_t i = 0; i < count; ++i) {
-                    if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
-                        analyzer.clearDrawingDiffs(pre_drawing_p_);
-                    }
-                    pre_drawing_p_ += delta_p;
-                }
-            } else if (event.mods.isShiftDown()) {
-                for (size_t i = 0; i < count; ++i) {
-                    if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
-                        analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
-                    }
-                    pre_drawing_p_ += delta_p;
-                }
-                pre_drawing_db_ = 0.f;
-            } else {
-                const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
-                const auto delta_db = (c_drawing_db - pre_drawing_db_) / (static_cast<float>(count));
-                for (size_t i = 0; i < count; ++i) {
-                    if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
-                        analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
-                    }
-                    pre_drawing_p_ += delta_p;
-                    pre_drawing_db_ += delta_db;
-                }
-                pre_drawing_db_ = c_drawing_db;
-            }
-        }
-        pre_drawing_p_ = c_drawing_p;
+        // if (!draw_on_) {
+        //     return;
+        // }
+        // auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+        // const auto c_drawing_p = std::round(event.position.x / fft_width_ * 100.f) / 100.f;
+        // const auto count = static_cast<size_t>(std::round(std::abs(pre_drawing_p_ - c_drawing_p) / 0.01f));
+        // if (count == 0) {
+        //     if (pre_drawing_p_ < 0.f || pre_drawing_p_ > 1.f) {
+        //         return;
+        //     }
+        //     if (event.mods.isRightButtonDown()) {
+        //         analyzer.clearDrawingDiffs(pre_drawing_p_);
+        //     } else if (event.mods.isShiftDown()) {
+        //         analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
+        //         pre_drawing_db_ = 0.f;
+        //     } else {
+        //         const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
+        //         analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
+        //         pre_drawing_db_ = c_drawing_db;
+        //     }
+        // } else {
+        //     const auto delta_p = c_drawing_p > pre_drawing_p_ ? 0.01f : -0.01f;
+        //     if (event.mods.isRightButtonDown()) {
+        //         for (size_t i = 0; i < count; ++i) {
+        //             if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+        //                 analyzer.clearDrawingDiffs(pre_drawing_p_);
+        //             }
+        //             pre_drawing_p_ += delta_p;
+        //         }
+        //     } else if (event.mods.isShiftDown()) {
+        //         for (size_t i = 0; i < count; ++i) {
+        //             if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+        //                 analyzer.setDrawingDiffs(pre_drawing_p_, 0.f);
+        //             }
+        //             pre_drawing_p_ += delta_p;
+        //         }
+        //         pre_drawing_db_ = 0.f;
+        //     } else {
+        //         const auto c_drawing_db = drawing_actual_k_ * (event.position.y + drawing_b_);
+        //         const auto delta_db = (c_drawing_db - pre_drawing_db_) / (static_cast<float>(count));
+        //         for (size_t i = 0; i < count; ++i) {
+        //             if (pre_drawing_p_ >= 0.f && pre_drawing_p_ <= 1.f) {
+        //                 analyzer.setDrawingDiffs(pre_drawing_p_, pre_drawing_db_);
+        //             }
+        //             pre_drawing_p_ += delta_p;
+        //             pre_drawing_db_ += delta_db;
+        //         }
+        //         pre_drawing_db_ = c_drawing_db;
+        //     }
+        // }
+        // pre_drawing_p_ = c_drawing_p;
     }
 
     void MatchFFTPanel::mouseDoubleClick(const juce::MouseEvent& event) {
-        if (!draw_on_) {
-            return;
-        }
-        auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
-        if (event.mods.isLeftButtonDown()) {
-            analyzer.clearDrawingDiffs();
-        }
+        // if (!draw_on_) {
+        //     return;
+        // }
+        // auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
+        // if (event.mods.isLeftButtonDown()) {
+        //     analyzer.clearDrawingDiffs();
+        // }
     }
 
     void MatchFFTPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {

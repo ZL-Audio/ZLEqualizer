@@ -87,21 +87,20 @@ namespace zldsp::filter {
         }
 
         FloatType getCenterMagnitudeSquare(FloatType w) const {
-            auto g0 = static_cast<FloatType>(1.0);
-            for (size_t i = 0; i < current_filter_num_; ++i) {
-                g0 *= IdealBase::getMagnitudeSquare<FloatType>(coeffs_[i], w);
-            }
-            return g0;
+            std::array<FloatType, 1> ws = {w};
+            std::array<FloatType, 1> gains;
+            updateMagnitudeSquare(ws, gains);
+            return gains[0];
         }
 
-        void updateMagnitudeSquare(std::span<FloatType> ws, std::span<FloatType> gains) {
+        void updateMagnitudeSquare(std::span<FloatType> ws, std::span<FloatType> gains) const {
             if (current_filter_num_ == 0) {
                 std::fill(gains.begin(), gains.end(), static_cast<FloatType>(1.0));
                 return;
             }
-            IdealBase::updateMagnitudeSquareInplace<FloatType>(coeffs_[0], ws, gains);
+            IdealBase<FloatType>::template updateMagnitudeSquare<true>(coeffs_[0], ws, gains);
             for (size_t i = 1; i < current_filter_num_; ++i) {
-                IdealBase::updateMagnitudeSquare<FloatType>(coeffs_[i], ws, gains);
+                IdealBase<FloatType>::template updateMagnitudeSquare<false>(coeffs_[i], ws, gains);
             }
         }
 
@@ -109,7 +108,7 @@ namespace zldsp::filter {
             return current_filter_num_;
         }
 
-        std::array<std::array<double, 6>, kFilterSize>& getCoeff() {
+        std::array<std::array<double, 5>, kFilterSize>& getCoeff() {
             return coeffs_;
         }
 
@@ -118,7 +117,7 @@ namespace zldsp::filter {
         }
 
     protected:
-        std::array<std::array<double, 6>, kFilterSize> coeffs_{};
+        std::array<std::array<double, 5>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
         double freq_max_{20000.0};
         double c_gain_{0.0}, c_q_{0.707}, c_freq_{1000.0};
@@ -129,7 +128,7 @@ namespace zldsp::filter {
 
         static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
                                       const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 6>, kFilterSize>& coeffs) {
+                                      std::array<std::array<double, 5>, kFilterSize>& coeffs) {
             return FilterDesign::updateCoeffs<IdealCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
         }
     };

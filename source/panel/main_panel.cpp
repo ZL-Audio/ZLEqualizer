@@ -101,7 +101,7 @@ namespace zlpanel {
             const auto c_refresh_rate = refresh_handler_.getActualRefreshRate();
             if (std::abs(c_refresh_rate - refresh_rate_) > 0.1) {
                 refresh_rate_ = c_refresh_rate;
-                p_ref_.getController().getFFTAnalyzer().setRefreshRate(static_cast<float>(refresh_rate_));
+                curve_panel_.getFFTPanel().setRefreshRate(static_cast<float>(refresh_rate_));
             }
         }
     }

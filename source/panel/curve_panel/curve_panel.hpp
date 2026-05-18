@@ -43,7 +43,13 @@ namespace zlpanel {
 
         void stopThreads();
 
-        OutputPanel& getOutputPanel() { return output_panel_; }
+        auto& getFFTPanel() {
+            return fft_panel_;
+        }
+
+        auto& getOutputPanel() {
+            return output_panel_;
+        }
 
     private:
         zlgui::UIBase& base_;

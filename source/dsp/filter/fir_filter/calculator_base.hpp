@@ -12,7 +12,6 @@
 #include "../../vector/vector.hpp"
 #include "../iir_filter/tdf/tdf.hpp"
 #include "../ideal_filter/ideal.hpp"
-#include "fir_helper.hpp"
 
 namespace zldsp::filter {
     template <size_t kFilterNum, size_t kFilterSize>
@@ -24,57 +23,72 @@ namespace zldsp::filter {
 
         void prepare(const size_t num_bin) {
             w_prototype_.resize(num_bin);
-            calculateWsForPrototype<float>(w_prototype_);
+            zldsp::filter::IdealBase<float>::calculateWs(w_prototype_);
 
-            w_biquad_.resize(num_bin);
-            calculateWsForBiquad<float>(w_biquad_);
+            w_biquad_real_.resize(num_bin);
+            w_biquad_imag_.resize(num_bin);
+            zldsp::filter::TDFBase<float>::calculateWs(w_biquad_real_, w_biquad_imag_);
 
-            proto_res_.resize(num_bin);
-            biquad_res_.resize(num_bin);
+            proto_real_.resize(num_bin);
+            proto_imag_.resize(num_bin);
+            biquad_real_.resize(num_bin);
+            biquad_imag_.resize(num_bin);
 
-            for (auto& correction : corrections_) {
+            for (auto& correction : corrections_real_) {
                 correction.resize(num_bin);
-                correction[0] = std::complex(1.f, 0.f);
+                correction[0] = 1.f;
+            }
+            for (auto& correction : corrections_imag_) {
+                correction.resize(num_bin);
             }
         }
 
-        void update(std::array<TDF < float, kFilterSize>, kFilterNum> &tdfs,
-                    std::array<Ideal < float, kFilterSize>, kFilterNum> &ideals,
+        void update(std::array<TDF<float, kFilterSize>, kFilterNum>& tdfs,
+                    std::array<Ideal<float, kFilterSize>, kFilterNum>& ideals,
                     const std::span<size_t> indices,
                     std::array<bool, kFilterNum>& update_flags) {
             // update filter corrections
             for (const size_t& i : indices) {
                 if (!update_flags[i]) { continue; }
-                std::fill(corrections_[i].begin(), corrections_[i].end(), std::complex(1.f, 0.f));
+                std::ranges::fill(corrections_real_[i], 1.f);
+                std::ranges::fill(corrections_imag_[i], 0.f);
                 auto& ideal{ideals[i]};
                 auto& tdf{tdfs[i]};
                 const auto filter_num = ideal.getFilterNum();
                 for (size_t idx = 0; idx < filter_num; ++idx) {
                     // update proto response
                     const auto proto_coeff = ideal.getCoeff()[idx];
-                    for (size_t w_idx = 1; w_idx < w_prototype_.size(); ++w_idx) {
-                        proto_res_[w_idx] = IdealBase::getResponse(proto_coeff, w_prototype_[w_idx]);
-                    }
+                    IdealBase<float>::updateResponse(proto_coeff, w_prototype_,
+                                                     proto_real_, proto_imag_);
                     // update biquad response
                     const auto biquad_coeff = tdf.getCoeff()[idx];
-                    for (size_t w_idx = 1; w_idx < w_biquad_.size(); ++w_idx) {
-                        biquad_res_[w_idx] = TDFBase<float>::getResponse(biquad_coeff, w_biquad_[w_idx]);
-                    }
+                    TDFBase<float>::updateResponse(biquad_coeff, w_biquad_real_, w_biquad_imag_,
+                                                   biquad_real_, biquad_imag_);
                     // update correction
                     updateCorrection(i);
                 }
             }
         }
 
-        std::array<kfr::univector<std::complex<float>>, kFilterNum>& getCorrections() {
-            return corrections_;
+        std::array<vector::aligned_vector<float>, kFilterNum>& getCorrectionsReal() {
+            return corrections_real_;
+        }
+
+        std::array<vector::aligned_vector<float>, kFilterNum>& getCorrectionsImag() {
+            return corrections_imag_;
         }
 
     protected:
         static constexpr float kMinMagnitude = 1e-8f, kMaxMagnitude = 1e8f;
-        kfr::univector<std::complex<float>> w_prototype_{}, w_biquad_{};
-        kfr::univector<std::complex<float>> proto_res_{}, biquad_res_{};
-        std::array<kfr::univector<std::complex<float>>, kFilterNum> corrections_{};
+        static constexpr float kMinMagSqr = 1e-16f, kMaxMagSqr = 1e16f;
+        vector::aligned_vector<float> w_prototype_;
+        vector::aligned_vector<float> w_biquad_real_, w_biquad_imag_;
+
+        vector::aligned_vector<float> proto_real_, proto_imag_;
+        vector::aligned_vector<float> biquad_real_, biquad_imag_;
+
+        std::array<vector::aligned_vector<float>, kFilterNum> corrections_real_{};
+        std::array<vector::aligned_vector<float>, kFilterNum> corrections_imag_{};
 
         virtual void prepareCorrection(size_t num_bin) = 0;
 

@@ -9,102 +9,101 @@
 
 #pragma once
 
-#include "../../fft/kfr_engine.hpp"
+#include "../../fft/zldsp_fft_window.hpp"
 #include "fir_base.hpp"
 
 namespace zldsp::filter {
+    namespace hn = hwy::HWY_NAMESPACE;
+
     template <typename FloatType, size_t kDefaultFFTOrder, size_t kStartIdx>
     class CorrectionBase final : public FIRBase<FloatType, kDefaultFFTOrder> {
     public:
-        explicit CorrectionBase(zldsp::fft::KFREngine<float>& fft) : FIRBase<FloatType, kDefaultFFTOrder>(fft) {
+        explicit CorrectionBase(std::unique_ptr<zldsp::fft::RFFT<float>>& fft) :
+            FIRBase<FloatType, kDefaultFFTOrder>(fft) {
         }
 
-        void updateCorrection(std::span<kfr::univector<std::complex<float>>> corrections,
+        void updateCorrection(std::span<vector::aligned_vector<float>> corrections_real,
+                              std::span<vector::aligned_vector<float>> corrections_imag,
                               const std::span<size_t> on_indices) {
             if (on_indices.empty()) {
-                std::fill(total_correction_.begin(), total_correction_.end(), std::complex(1.f, 0.f));
+                std::ranges::fill(correction_real_, 1.f);
+                std::ranges::fill(correction_imag_, 0.f);
                 return;
             }
             // multiply corrections
             bool is_first = true;
-            for (const size_t& i : on_indices) {
+            for (const size_t& idx : on_indices) {
                 if (is_first) {
-                    total_correction_ = corrections[i];
+                    vector::copy(correction_real_.data(), corrections_real[idx].data(), correction_real_.size());
+                    vector::copy(correction_imag_.data(), corrections_imag[idx].data(), correction_imag_.size());
                     is_first = false;
                 } else {
-                    total_correction_ *= corrections[i];
+                    static constexpr hn::ScalableTag<float> d;
+                    static constexpr size_t lanes = hn::MaxLanes(d);
+                    for (size_t i = 0; i < correction_real_.size() - 1; i += lanes) {
+                        const auto t_real_v = hn::Load(d, corrections_real[idx].data() + i);
+                        const auto t_imag_v = hn::Load(d, corrections_imag[idx].data() + i);
+                        const auto cor_real_v = hn::Load(d, correction_real_.data() + i);
+                        const auto cor_imag_v = hn::Load(d, correction_imag_.data() + i);
+
+                        const auto out_real_v = hn::NegMulAdd(t_imag_v, cor_imag_v, hn::Mul(t_real_v, cor_real_v));
+                        const auto out_imag_v = hn::MulAdd(t_real_v, cor_imag_v, hn::Mul(t_imag_v, cor_real_v));
+
+                        hn::Store(out_real_v, d, correction_real_.data() + i);
+                        hn::Store(out_imag_v, d, correction_imag_.data() + i);
+                    }
                 }
-                for (size_t w_idx = kStartIdx; w_idx < total_correction_.size(); ++w_idx) {
-                    const auto c_mag = std::abs(total_correction_[w_idx]);
+                for (size_t w_idx = kStartIdx; w_idx < correction_real_.size(); ++w_idx) {
+                    const auto re = correction_real_[w_idx];
+                    const auto im = correction_imag_[w_idx];
                     // if the total correction is larger than 60 dB, scale back to 60 dB
-                    if (c_mag > 1000.f) {
-                        total_correction_[w_idx] *= (1000.f / c_mag);
+                    if (const auto abs_sqr = re * re + im * im; abs_sqr > 1e6f) {
+                        const auto scale = 1000.f / std::sqrt(abs_sqr);
+                        correction_real_[w_idx] *= scale;
+                        correction_imag_[w_idx] *= scale;
                     }
                 }
             }
-            // apply the window
-            std::copy(total_correction_.begin(), total_correction_.end(), dummy_correction_.begin());
-            dummy_correction_[0] = std::complex(dummy_correction_[0].real(), 0.f);
-            const auto nyquist_idx = dummy_correction_.size() / 2;
-            dummy_correction_[nyquist_idx] = std::complex(dummy_correction_[nyquist_idx].real(), 0.f);
-            for (size_t i = 1; i < nyquist_idx; ++i) {
-                dummy_correction_[dummy_correction_.size() - i] = std::conj(dummy_correction_[i]);
-            }
-            FIRBase<FloatType, kDefaultFFTOrder>::fft_.backward(dummy_correction_.data(), fir_coeffs_.data());
-
-            std::rotate(fir_coeffs_.begin(),
-                        fir_coeffs_.begin() + static_cast<std::ptrdiff_t>(fir_coeffs_.size() / 2),
-                        fir_coeffs_.end());
-
-            for (size_t i = 0; i < fir_coeffs_.size(); ++i) {
-                const auto p = static_cast<double>(i) / static_cast<double>(fir_coeffs_.size() - 1);
-                const auto window = 0.5 * (1.0 - std::cos(2.0 * std::numbers::pi * p)) / static_cast<double>(fir_coeffs_
-                    .size());
-                fir_coeffs_[i] *= static_cast<float>(window);
-            }
-            FIRBase<FloatType, kDefaultFFTOrder>::fft_.forward(fir_coeffs_.data(), dummy_correction_.data());
-
-            std::copy(dummy_correction_.begin(),
-                      dummy_correction_.begin() + static_cast<ptrdiff_t>(total_correction_.size()),
-                      total_correction_.begin());
-            for (size_t i = 0; i < total_correction_.size(); ++i) {
-                if (i % 2 == 1) {
-                    total_correction_[i] = -total_correction_[i];
-                }
-            }
-            total_correction_.back() = std::complex(std::abs(total_correction_[total_correction_.size() - 2]), 0.f);
-
-            start_idx_ = total_correction_.size() - 1;
-            for (size_t i = 0; i < total_correction_.size(); ++i) {
-                if (std::abs(total_correction_[i].imag()) > 1e-3
-                    || std::abs(total_correction_[i].real() - 1.f) > 1e-3) {
-                    start_idx_ = i;
-                    break;
+            {
+                const auto last_real = correction_real_.back();
+                const auto last_imag = correction_imag_.back();
+                const auto last_abs = std::sqrt(last_real * last_real + last_imag * last_imag);
+                if (last_real > 0.f) {
+                    correction_real_.back() = last_abs;
+                } else {
+                    correction_real_.back() = -last_abs;
                 }
             }
         }
 
     private:
-        kfr::univector<std::complex<float>> total_correction_{};
-
-        kfr::univector<std::complex<float>> dummy_correction_{};
-        kfr::univector<float> fir_coeffs_{};
-
-        size_t start_idx_{0};
+        vector::aligned_vector<float> correction_real_, correction_imag_;
 
         void setOrder(size_t num_channels, size_t order) override {
             FIRBase<FloatType, kDefaultFFTOrder>::setFFTOrder(num_channels, order);
-            fir_coeffs_.resize(FIRBase<FloatType, kDefaultFFTOrder>::fft_size_);
-            dummy_correction_.resize(FIRBase<FloatType, kDefaultFFTOrder>::fft_size_);
 
-            total_correction_.resize(FIRBase<FloatType, kDefaultFFTOrder>::num_bin_);
-            std::fill(total_correction_.begin(), total_correction_.end(), std::complex(1.f, 0.f));
+            correction_real_.resize(FIRBase<FloatType, kDefaultFFTOrder>::num_bin_);
+            correction_imag_.resize(FIRBase<FloatType, kDefaultFFTOrder>::num_bin_);
+            std::ranges::fill(correction_real_, 1.f);
+            std::ranges::fill(correction_imag_, 0.f);
         }
 
         void processSpectrum() override {
-            auto c_vector = this->fft_data_.slice(start_idx_);
-            auto m_vector = total_correction_.slice(start_idx_);
-            c_vector = c_vector * m_vector;
+            static constexpr hn::ScalableTag<float> d;
+            static constexpr size_t lanes = hn::MaxLanes(d);
+            for (size_t i = 0; i < correction_real_.size() - 1; i += lanes) {
+                const auto fft_real_v = hn::Load(d, this->fft_out_real_.data() + i);
+                const auto fft_imag_v = hn::Load(d, this->fft_out_imag_.data() + i);
+                const auto cor_real_v = hn::Load(d, correction_real_.data() + i);
+                const auto cor_imag_v = hn::Load(d, correction_imag_.data() + i);
+
+                const auto out_real_v = hn::NegMulAdd(fft_imag_v, cor_imag_v, hn::Mul(fft_real_v, cor_real_v));
+                const auto out_imag_v = hn::MulAdd(fft_real_v, cor_imag_v, hn::Mul(fft_imag_v, cor_real_v));
+
+                hn::Store(out_real_v, d, this->fft_out_real_.data() + i);
+                hn::Store(out_imag_v, d, this->fft_out_imag_.data() + i);
+            }
+            this->fft_out_real_.back() *= correction_real_.back();
         }
     };
 }

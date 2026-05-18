@@ -13,9 +13,10 @@
 #include <span>
 
 namespace zlpanel {
+    template <int kIntTol = 1>
     class PathMinimizer {
     public:
-        static constexpr float kTol = 0.01f;
+        static constexpr float kTol = 0.01f * static_cast<float>(kIntTol);
 
         explicit PathMinimizer(juce::Path& path) : path_ref_(path) {
         }
@@ -34,11 +35,13 @@ namespace zlpanel {
         }
 
         void lineTo(const float x, const float y) {
-            const auto w = (current_x_ - start_x_) / (x - start_x_);
-            if (std::abs(w * start_y_ + (1.f - w) * y - current_y_) > kTol) {
-                path_ref_.lineTo(current_x_, current_y_);
-                start_x_ = x;
-                start_y_ = y;
+            if (x - start_x_ > .25f) {
+                const auto w = (current_x_ - start_x_) / (x - start_x_);
+                if (std::abs(w * start_y_ + (1.f - w) * y - current_y_) > kTol) {
+                    path_ref_.lineTo(current_x_, current_y_);
+                    start_x_ = x;
+                    start_y_ = y;
+                }
             }
             current_x_ = x;
             current_y_ = y;

@@ -9,9 +9,20 @@
 
 #pragma once
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
-#pragma clang diagnostic ignored "-Weverything"
-#include <kfr/kfr.h>
-#include <kfr/dsp.hpp>
-#pragma clang diagnostic pop
+#include <span>
+#include <vector>
+#include <algorithm>
+
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+#pragma GCC diagnostic ignored "-Wshadow-field-in-constructor"
+#endif
+#include <hwy/highway.h>
+#include <hwy/aligned_allocator.h>
+#include <hwy/contrib/math/math-inl.h>
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif

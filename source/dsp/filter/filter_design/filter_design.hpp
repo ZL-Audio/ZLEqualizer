@@ -9,21 +9,22 @@
 
 #pragma once
 
+#include <span>
 #include "../helpers.hpp"
 
 namespace zldsp::filter::FilterDesign {
     template <class Coeff, FilterType filter_type>
     size_t updatePassCoeffs(const size_t n, const size_t start_idx,
                             const double w0, const double q0,
-                            std::span<std::array<double, 6>> coeffs) {
+                            std::span<std::array<double, 5>> coeffs) {
         if (n == 1) {
             if constexpr (filter_type == kLowPass) {
                 const auto coeff = Coeff::get1LowPass(w0);
-                coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             if constexpr (filter_type == kHighPass) {
                 const auto coeff = Coeff::get1HighPass(w0);
-                coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             return 1;
         }
@@ -49,19 +50,19 @@ namespace zldsp::filter::FilterDesign {
     template <class Coeff, FilterType filter_type>
     size_t updateShelfCoeffs(const size_t n, const size_t start_idx,
                              const double w0, const double g_dB, const double q0,
-                             std::span<std::array<double, 6>> coeffs) {
+                             std::span<std::array<double, 5>> coeffs) {
         if (n == 1) {
             if constexpr (filter_type == kLowShelf) {
                 const auto coeff = Coeff::get1LowShelf(w0, g_dB);
-                coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             if constexpr (filter_type == kHighShelf) {
                 const auto coeff = Coeff::get1HighShelf(w0, g_dB);
-                coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             if constexpr (filter_type == kTiltShelf) {
                 const auto coeff = Coeff::get1TiltShelf(w0, g_dB);
-                coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             return 1;
         } else if (n == 2) {
@@ -101,19 +102,19 @@ namespace zldsp::filter::FilterDesign {
 
     template <class Coeff, FilterType filter_type>
     void updateShelfGain(const size_t n, const size_t start_idx, const double g_dB, const std::span<double> cache,
-                         std::span<std::array<double, 6>> coeffs) {
+                         std::span<std::array<double, 5>> coeffs) {
         if (n == 1) {
             if constexpr (filter_type == kLowShelf) {
                 const auto coeff = Coeff::get1LowShelf(cache[0], g_dB);
-                coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             if constexpr (filter_type == kHighShelf) {
                 const auto coeff = Coeff::get1HighShelf(cache[0], g_dB);
-                coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             if constexpr (filter_type == kTiltShelf) {
                 const auto coeff = Coeff::get1TiltShelf(cache[0], g_dB);
-                coeffs[start_idx] = {coeff[0], coeff[1], 0.0, coeff[2], coeff[3], 0.0};
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
         } else if (n == 2) {
             if constexpr (filter_type == kLowShelf) {
@@ -160,7 +161,7 @@ namespace zldsp::filter::FilterDesign {
     template <class Coeff>
     size_t updateBandPassCoeffs(const size_t n, const size_t start_idx,
                                 const double w0, const double q0,
-                                std::span<std::array<double, 6>> coeffs) {
+                                std::span<std::array<double, 5>> coeffs) {
         if (n < 2) { return 0; }
         const size_t number = n / 2;
         const auto halfbw = std::asinh(0.5 / q0) / std::log(2);
@@ -178,7 +179,7 @@ namespace zldsp::filter::FilterDesign {
     template <class Coeff>
     size_t updateNotchCoeffs(const size_t n, const size_t start_idx,
                              const double w0, const double q0,
-                             std::span<std::array<double, 6>> coeffs) {
+                             std::span<std::array<double, 5>> coeffs) {
         if (n < 2) { return 0; }
         const size_t number = n / 2;
         const auto halfbw = std::asinh(0.5 / q0) / std::log(2);
@@ -196,13 +197,13 @@ namespace zldsp::filter::FilterDesign {
     template <class Coeff>
     size_t updateBandShelfCoeffs(const size_t n, const size_t start_idx,
                                  const double w0, const double g_dB, const double q0,
-                                 std::span<std::array<double, 6>> coeffs) {
+                                 std::span<std::array<double, 5>> coeffs) {
         if (n < 2) { return 0; }
         const auto halfbw = std::asinh(0.5 / q0) / std::log(2);
         const auto scale = std::pow(2, halfbw);
         const auto w1 = w0 / scale;
         const auto w2 = w0 * scale;
-        const auto f1 = w1 > 10.0 * 2 * pi / 48000, f2 = w2 < 22000.0 * 2 * pi / 48000;
+        const auto f1 = w1 > 10.0 / 48000.0, f2 = w2 < 22000.0 / 48000.0;
         size_t n1 = 1;
         size_t n2 = 0;
         if (f1 && f2) {
@@ -214,22 +215,22 @@ namespace zldsp::filter::FilterDesign {
             n1 = updateShelfCoeffs<Coeff, kLowShelf>(n, start_idx, w2, g_dB, std::sqrt(2) / 2, coeffs);
         } else {
             const auto g_linear = std::exp2(g_dB * kDbToExp2);
-            coeffs[start_idx] = {1, 1, 1, g_linear, g_linear, g_linear};
+            coeffs[start_idx] = {1.0, 1.0, g_linear, g_linear, g_linear};
         }
         return n1 + n2;
     }
 
     template <class Coeff>
     void updateBandShelfGain(const size_t n, const double g_dB, const std::span<double> cache,
-                             std::span<std::array<double, 6>> coeffs) {
+                             std::span<std::array<double, 5>> coeffs) {
         if (n < 2) { return; }
         const auto halfbw = std::asinh(0.5 / cache[1]) / std::log(2);
         const auto scale = std::pow(2, halfbw);
         const auto w0 = cache[0];
         const auto w1 = cache[0] / scale;
         const auto w2 = cache[0] * scale;
-        const auto f1 = w1 > 10.0 * 2 * pi / 48000;
-        const auto f2 = w2 < 22000.0 * 2 * pi / 48000;
+        const auto f1 = w1 > 10.0 / 48000.0;
+        const auto f2 = w2 < 22000.0 / 48000.0;
         if (f1 && f2) {
             cache[0] = w1;
             updateShelfGain<Coeff, kLowShelf>(n, 0, -g_dB, cache, coeffs);
@@ -243,7 +244,7 @@ namespace zldsp::filter::FilterDesign {
             updateShelfGain<Coeff, kLowShelf>(n, 0, g_dB, cache, coeffs);
         } else {
             const auto g_linear = std::exp2(g_dB * kDbToExp2);
-            coeffs[0] = {1, 1, 1, g_linear, g_linear, g_linear};
+            coeffs[0] = {1.0, 1.0, g_linear, g_linear, g_linear};
         }
         cache[0] = w0;
     }
@@ -251,7 +252,7 @@ namespace zldsp::filter::FilterDesign {
     template <class Coeff>
     size_t updateCoeffs(const FilterType filterType, const size_t n,
                         const double f, const double fs, const double g_dB, const double q0,
-                        std::span<std::array<double, 6>> coeffs) {
+                        std::span<std::array<double, 5>> coeffs) {
         const auto w0 = f / fs;
         const auto g0 = g_dB;
         switch (filterType) {
@@ -334,7 +335,7 @@ namespace zldsp::filter::FilterDesign {
     template <class Coeff>
     void updateGain(const FilterType filterType, const size_t n, const double g_dB,
                     const std::span<double> cache,
-                    std::span<std::array<double, 6>> coeffs) {
+                    std::span<std::array<double, 5>> coeffs) {
         switch (filterType) {
         case kPeak: {
             if (n == 2) {

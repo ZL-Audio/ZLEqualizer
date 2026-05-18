@@ -27,20 +27,20 @@ namespace zlpanel {
         std::vector<float> diffs;
         freqs.reserve(zlp::Controller::kAnalyzerPointNum);
         diffs.reserve(zlp::Controller::kAnalyzerPointNum);
-        p_ref_.getController().getEQMatchAnalyzer().saveFreq(freqs);
-        p_ref_.getController().getEQMatchAnalyzer().saveDiffs(diffs);
-        zldsp::eq_match::EqMatchOptimizer optimizer{p_ref_.getAtomicSampleRate(), freqs, diffs};
-
-        std::vector<zldsp::filter::FilterParameters> paras{};
-        const auto suggest_num_band = optimizer.fit(paras, zlp::kBandNum,
-                                                    [this]() { return this->threadShouldExit(); },
-                                                    1.0);
-        {
-            std::lock_guard<std::mutex> lock{mutex_};
-            suggest_num_band_ = suggest_num_band;
-            paras_.assign(paras.begin(), paras.end());
-        }
-        triggerAsyncUpdate();
+        // p_ref_.getController().getEQMatchAnalyzer().saveFreq(freqs);
+        // p_ref_.getController().getEQMatchAnalyzer().saveDiffs(diffs);
+        // zldsp::eq_match::EqMatchOptimizer optimizer{p_ref_.getAtomicSampleRate(), freqs, diffs};
+        //
+        // std::vector<zldsp::filter::FilterParameters> paras{};
+        // const auto suggest_num_band = optimizer.fit(paras, zlp::kBandNum,
+        //                                             [this]() { return this->threadShouldExit(); },
+        //                                             1.0);
+        // {
+        //     std::lock_guard<std::mutex> lock{mutex_};
+        //     suggest_num_band_ = suggest_num_band;
+        //     paras_.assign(paras.begin(), paras.end());
+        // }
+        // triggerAsyncUpdate();
     }
 
     void MatchRunner::handleAsyncUpdate() {

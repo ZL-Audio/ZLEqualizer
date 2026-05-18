@@ -440,7 +440,7 @@ namespace zlpanel {
             const auto padding = c_font_size_ * kDraggerScale;
             const auto h1 = h * .5f;
             const auto h2 = h - padding;
-            c_k_ = 10.f * (h1 - h2) / z;
+            c_k_ = (h1 - h2) / z;
             c_b_ = h1;
             std::fill(to_update_base_y_flags_.begin(), to_update_base_y_flags_.end(), true);
         }
@@ -466,13 +466,13 @@ namespace zlpanel {
                     para.freq = std::min(para.freq, c_slider_max_);
                     ideal_[band].forceUpdate(para);
                     ideal_[band].updateMagnitudeSquare(ws_, base_mags_[band]);
-                    base_mags_[band] = kfr::log10(kfr::max(base_mags_[band], 1e-24f));
+                    zldsp::vector::sqr_mag_to_db(base_mags_[band].data(), base_mags_[band].size());
                     if (!c_dynamic_ons_[band]) {
                         dynamic_mags_[band] = base_mags_[band];
                     }
                     const auto center_w = para.freq * (2.0 * std::numbers::pi / c_sample_rate_);
-                    const float center_square_magnitude = std::log10(std::max(
-                        ideal_[band].getCenterMagnitudeSquare(static_cast<float>(center_w)), 1e-24f));
+                    const float center_square_magnitude = zldsp::chore::squareGainToDecibels(
+                        ideal_[band].getCenterMagnitudeSquare(static_cast<float>(center_w)));
                     const auto [left_x, center_x, right_x] = getLeftCenterRightX(para);
 
                     points_[band][0].store(static_cast<float>(center_x), std::memory_order::relaxed);
@@ -493,7 +493,7 @@ namespace zlpanel {
                     ideal_[band].setGain(target_gain);
                     ideal_[band].updateCoeffs();
                     ideal_[band].updateMagnitudeSquare(ws_, target_mags_[band]);
-                    target_mags_[band] = kfr::log10(kfr::max(target_mags_[band], 1e-24f));
+                    zldsp::vector::sqr_mag_to_db(target_mags_[band].data(), target_mags_[band].size());
                     auto para = ideal_[band].getParas();
                     para.gain = original_target_gains_[band].load(std::memory_order::relaxed);
                     points_[band][5].store(c_k_ * getButtonMag(para) + c_b_, std::memory_order::relaxed);
@@ -526,7 +526,7 @@ namespace zlpanel {
                     ideal_[band].setGain(p_ref_.getController().getCurrentGain(band));
                     ideal_[band].updateCoeffs();
                     ideal_[band].updateMagnitudeSquare(ws_, dynamic_mags_[band]);
-                    dynamic_mags_[band] = kfr::log10(kfr::max(dynamic_mags_[band], 1e-24f));
+                    zldsp::vector::sqr_mag_to_db(dynamic_mags_[band].data(), dynamic_mags_[band].size());
                     if (threadShouldExit()) {
                         return false;
                     }
@@ -540,11 +540,11 @@ namespace zlpanel {
 
     float ResponsePanel::getButtonMag(const zldsp::filter::FilterParameters& para) {
         if (para.filter_type == zldsp::filter::kPeak) {
-            return static_cast<float>(0.1 * para.gain);
+            return static_cast<float>(para.gain);
         } else if (para.filter_type == zldsp::filter::kLowShelf
             || para.filter_type == zldsp::filter::kHighShelf
             || para.filter_type == zldsp::filter::kTiltShelf) {
-            return static_cast<float>(0.05 * para.gain);
+            return static_cast<float>(0.5 * para.gain);
         } else {
             return 0.f;
         }

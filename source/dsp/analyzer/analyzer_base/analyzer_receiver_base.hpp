@@ -9,24 +9,15 @@
 
 #pragma once
 
-#include <cmath>
-#include <array>
-
-namespace zldsp::filter {
-    class AnalogFunc {
-    public:
-        static double get2LowPassMagnitude2(double w0, double q, double w);
-
-        static double get2HighPassMagnitude2(double w0, double q, double w);
-
-        static double get2BandPassMagnitude2(double w0, double q, double w);
-
-        static double get2NotchMagnitude2(double w0, double q, double w);
-
-        static double get2PeakMagnitude2(double w0, double g, double q, double w);
-
-        static double get2TiltShelfMagnitude2(double w0, double g, double q, double w);
-
-        static double get2Magnitude2(const std::array<double, 6>& coeff, double w);
+namespace zldsp::analyzer {
+    enum class MagType {
+        kPeak, kRMS
     };
+
+    enum class StereoType {
+        kStereo, kLeft, kRight, kMid, kSide
+    };
+
+    inline constexpr float kSqrt2Over2 = static_cast<float>(
+            0.7071067811865475244008443621048490392848359376884740365883398690);
 }

@@ -84,7 +84,6 @@ private:
     std::array<std::unique_ptr<zlp::FilterDynamicAttach>, zlp::kBandNum> filter_dynamic_attachments_;
     std::array<std::unique_ptr<zlp::FilterSideAttach>, zlp::kBandNum> filter_side_attachments_;
     zlp::ChoreAttach chore_attachment_;
-    zlp::AnalyzerAttach analyzer_attachment_;
 
     enum ChannelLayout {
         kMain1Aux0, kMain1Aux1, kMain1Aux2,
@@ -97,7 +96,7 @@ private:
 
     std::atomic<double> sample_rate_{48000.0};
 
-    bool updateChannelLayoutPerCall{false};
+    bool update_channel_layout_per_call_{false};
 
     void updateChannelLayout();
 

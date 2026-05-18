@@ -100,7 +100,7 @@ namespace zlpanel {
                           const zlp::FilterStatus filter_status,
                           const bool to_update_base, const bool to_update_target,
                           std::span<float> xs, const float k, const float b,
-                          kfr::univector<float>& base_mag, kfr::univector<float>& target_mag,
+                          zldsp::vector::aligned_vector<float>& base_mag, zldsp::vector::aligned_vector<float>& target_mag,
                           const float center_x, const float center_mag, const float button_mag,
                           const bool to_update_side, const float left_x, const float right_x) {
         const auto center_y = center_y_.load(std::memory_order_relaxed);
@@ -109,7 +109,7 @@ namespace zlpanel {
             next_base_fills_[band].clear();
             next_button_lines_[band].setEnd(-100.f, -100.f);
             if (filter_status != zlp::FilterStatus::kOff) {
-                temp_db_ = k * base_mag + b;
+                zldsp::vector::fma(temp_db_.data(), base_mag.data(), k, b, temp_db_.size());
                 // draw base path
                 PathMinimizer minimizer{next_base_paths_[band]};
                 minimizer.drawPath<true, false>(xs, std::span(temp_db_));
@@ -128,7 +128,7 @@ namespace zlpanel {
         if (to_update_target) {
             next_target_fills_[band].clear();
             if (filter_status != zlp::FilterStatus::kOff) {
-                temp_db_ = k * target_mag + b;
+                zldsp::vector::fma(temp_db_.data(), target_mag.data(), k, b, temp_db_.size());
                 // draw target fill
                 next_target_fills_[band] = next_base_paths_[band];
                 PathMinimizer minimizer{next_target_fills_[band]};

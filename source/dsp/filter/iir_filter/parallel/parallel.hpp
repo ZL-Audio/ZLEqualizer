@@ -108,9 +108,7 @@ namespace zldsp::filter {
             if constexpr (!bypass) {
                 if (should_be_parallel_) {
                     for (size_t i = 0; i < buffer.size(); ++i) {
-                        auto v1 = kfr::make_univector(buffer[i], num_samples);
-                        auto v2 = kfr::make_univector(parallel_buffers_pointers_[i], num_samples);
-                        v1 = v1 + v2;
+                        vector::add(buffer[i], parallel_buffers_pointers_[i], num_samples);
                     }
                 }
             }

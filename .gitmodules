@@ -6,6 +6,9 @@
 	path = nlopt
 	url = https://github.com/ZL-Audio/nlopt
 	branch = master
-[submodule "kfr"]
-	path = kfr
-	url = https://github.com/ZL-Audio/kfr
+[submodule "highway"]
+	path = highway
+	url = https://github.com/ZL-Audio/highway
+[submodule "source/dsp/fft/zldsp_fft"]
+	path = source/dsp/fft/zldsp_fft
+	url = https://github.com/ZL-Audio/zldsp_fft

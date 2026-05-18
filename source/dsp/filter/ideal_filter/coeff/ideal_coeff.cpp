@@ -13,84 +13,84 @@
 #include "../../helpers.hpp"
 
 namespace zldsp::filter {
-    std::array<double, 4> IdealCoeff::get1LowPass(double w0) {
+    std::array<double, 3> IdealCoeff::get1LowPass(double w0) {
         w0 = w0 * ppi;
-        return {1.0, w0, 0.0, w0};
+        return {w0, 0.0, w0};
     }
 
-    std::array<double, 4> IdealCoeff::get1HighPass(double w0) {
+    std::array<double, 3> IdealCoeff::get1HighPass(double w0) {
         w0 = w0 * ppi;
-        return {1.0, w0, 1.0, 0.0};;
+        return {w0, 1.0, 0.0};;
     }
 
-    std::array<double, 4> IdealCoeff::get1TiltShelf(double w0, const double g) {
-        w0 = w0 * ppi;
-        const auto A = std::exp2(g * kDbToExp2Sqrt);;
-        return {1.0, A * w0, A, w0};
-    }
-
-    std::array<double, 4> IdealCoeff::get1LowShelf(double w0, const double g) {
+    std::array<double, 3> IdealCoeff::get1TiltShelf(double w0, const double g) {
         w0 = w0 * ppi;
         const auto A = std::exp2(g * kDbToExp2Sqrt);;
-        return {1.0, w0 / A, 1.0, w0 * A};
+        return {A * w0, A, w0};
     }
 
-    std::array<double, 4> IdealCoeff::get1HighShelf(double w0, const double g) {
+    std::array<double, 3> IdealCoeff::get1LowShelf(double w0, const double g) {
         w0 = w0 * ppi;
         const auto A = std::exp2(g * kDbToExp2Sqrt);;
-        return {1.0 / A, w0, A, w0};
+        return {w0 / A, 1.0, w0 * A};
     }
 
-    std::array<double, 6> IdealCoeff::get2LowPass(double w0, const double q) {
+    std::array<double, 3> IdealCoeff::get1HighShelf(double w0, const double g) {
+        w0 = w0 * ppi;
+        const auto A = std::exp2(g * kDbToExp2Sqrt);;
+        return {w0 * A, A * A, w0 * A};
+    }
+
+    std::array<double, 5> IdealCoeff::get2LowPass(double w0, const double q) {
         w0 = w0 * ppi;
         const auto w02 = w0 * w0;
-        return {1.0, w0 / q, w02, 0, 0, w02};
+        return {w0 / q, w02, 0, 0, w02};
     }
 
-    std::array<double, 6> IdealCoeff::get2HighPass(double w0, const double q) {
+    std::array<double, 5> IdealCoeff::get2HighPass(double w0, const double q) {
         w0 = w0 * ppi;
-        return {1, w0 / q, w0 * w0, 1, 0, 0};
+        return {w0 / q, w0 * w0, 1, 0, 0};
     }
 
-    std::array<double, 6> IdealCoeff::get2BandPass(double w0, const double q) {
+    std::array<double, 5> IdealCoeff::get2BandPass(double w0, const double q) {
         w0 = w0 * ppi;
-        return {1, w0 / q, w0 * w0, 0, w0 / q, 0};
+        return {w0 / q, w0 * w0, 0, w0 / q, 0};
     }
 
-    std::array<double, 6> IdealCoeff::get2Notch(double w0, const double q) {
+    std::array<double, 5> IdealCoeff::get2Notch(double w0, const double q) {
         w0 = w0 * ppi;
         const auto w02 = w0 * w0;
-        return {1, w0 / q, w02, 1, 0, w02};
+        return {w0 / q, w02, 1, 0, w02};
     }
 
-    std::array<double, 6> IdealCoeff::get2Peak(double w0, const double g, const double q) {
+    std::array<double, 5> IdealCoeff::get2Peak(double w0, const double g, const double q) {
         w0 = w0 * ppi;
         const auto w02 = w0 * w0;
         const auto A = std::exp2(g * kDbToExp2Sqrt);;
-        return {1.0, w0 / A / q, w02, 1, w0 * A / q, w02};
+        return {w0 / A / q, w02, 1, w0 * A / q, w02};
     }
 
-    std::array<double, 6> IdealCoeff::get2TiltShelf(double w0, const double g, const double q) {
+    std::array<double, 5> IdealCoeff::get2TiltShelf(double w0, const double g, const double q) {
         w0 = w0 * ppi;
         const auto A = std::exp2(g * kDbToExp2Sqrt);;
         const auto Awq = std::sqrt(A) * w0 / q;
         const auto w02 = w0 * w0;
-        return {1, Awq, A * w02, A, Awq, w02};
+        return {Awq, A * w02, A, Awq, w02};
     }
 
-    std::array<double, 6> IdealCoeff::get2LowShelf(double w0, const double g, const double q) {
+    std::array<double, 5> IdealCoeff::get2LowShelf(double w0, const double g, const double q) {
         w0 = w0 * ppi;
         const auto A = std::exp2(g * kDbToExp2Sqrt);;
         const auto Awq = std::sqrt(A) * w0 / q;
         const auto w02 = w0 * w0;
-        return {A, Awq, w02, A, A * Awq, A * A * w02};
+        return {Awq / A, w02 / A, 1.0, Awq, A * w02};
     }
 
-    std::array<double, 6> IdealCoeff::get2HighShelf(double w0, const double g, const double q) {
+    std::array<double, 5> IdealCoeff::get2HighShelf(double w0, const double g, const double q) {
         w0 = w0 * ppi;
         const auto A = std::exp2(g * kDbToExp2Sqrt);
         const auto Awq = std::sqrt(A) * w0 / q;
         const auto w02 = w0 * w0;
-        return {1, Awq, A * w02, A * A, A * Awq, A * w02};
+        return {Awq, A * w02, A * A, A * Awq, A * w02};
     }
 }

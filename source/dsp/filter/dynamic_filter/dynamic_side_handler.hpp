@@ -79,37 +79,117 @@ namespace zldsp::filter {
         }
 
         void process(std::span<FloatType*> side_buffer, const size_t num_samples) {
-            auto side_v = kfr::make_univector(side_buffer[0], num_samples);
+            namespace hn = hwy::HWY_NAMESPACE;
+            hn::ScalableTag<FloatType> d;
+            const size_t lanes = hn::Lanes(d);
+
+            FloatType* out = side_buffer[0];
+
+            const auto v_zero = hn::Zero(d);
+            const auto v_one = hn::Set(d, FloatType(1));
+
             if (use_rms_) {
-                side_v = kfr::sqr(side_v);
-                for (size_t chan = 1; chan < side_buffer.size(); ++chan) {
-                    side_v = side_v + kfr::sqr(kfr::make_univector(side_buffer[chan], num_samples));
+                // calculate sum of square across channels
+                size_t i = 0;
+                for (; i + lanes <= num_samples; i += lanes) {
+                    auto v = hn::LoadU(d, out + i);
+                    v = hn::Mul(v, v);
+                    for (size_t chan = 1; chan < side_buffer.size(); ++chan) {
+                        auto c = hn::LoadU(d, side_buffer[chan] + i);
+                        v = hn::Add(v, hn::Mul(c, c));
+                    }
+                    hn::StoreU(v, d, out + i);
                 }
+                for (; i < num_samples; ++i) {
+                    FloatType val = out[i] * out[i];
+                    for (size_t chan = 1; chan < side_buffer.size(); ++chan) {
+                        FloatType c = side_buffer[chan][i];
+                        val += c * c;
+                    }
+                    out[i] = val;
+                }
+                // add RMS portion
                 for (size_t idx = 0; idx < num_samples; ++idx) {
                     if (rms_buffer_.size() > rms_length_counts_) {
                         square_sum_ -= rms_buffer_.popFront();
                     }
-                    const auto square = side_v[idx];
+                    const auto square = out[idx];
                     square_sum_ += square;
                     rms_buffer_.template pushBack<false>(square);
-                    side_v[idx] = square * rms_mix_c_ + square_sum_ * rms_mix_reverse_;
+                    out[idx] = square * rms_mix_c_ + square_sum_ * rms_mix_reverse_;
                 }
-                side_v = kfr::log10(kfr::max(side_v, FloatType(1e-24)));
-                side_v = (side_v - low_sqr_) * slope_sqr_;
+                // convert to ratio
+                const auto v_1e24 = hn::Set(d, FloatType(1e-24));
+                const auto v_fma_multiplier = hn::Set(d, slope_sqr_);
+                const auto v_fma_offset = hn::Set(d, low_sqr_);
+                i = 0;
+                for (; i + lanes <= num_samples; i += lanes) {
+                    auto v = hn::LoadU(d, out + i);
+                    v = hn::Max(v, v_1e24);
+                    v = hn::Log(d, v);
+                    v = hn::MulAdd(v, v_fma_multiplier, v_fma_offset);
+                    v = hn::Clamp(v, v_zero, v_one);
+                    hn::StoreU(hn::Mul(v, v), d, out + i);
+                }
+                for (; i < num_samples; ++i) {
+                    FloatType v = std::max(out[i], FloatType(1e-24));
+                    v = std::log(v) * slope_sqr_ + low_sqr_;
+                    v = std::clamp(v, FloatType(0), FloatType(1));
+                    out[i] = v * v;
+                }
             } else {
                 if (side_buffer.size() == 1) {
-                    side_v = kfr::log10(kfr::max(kfr::abs(side_v), FloatType(1e-12)));
-                    side_v = (side_v - low_abs_) * slope_abs_;
-                } else {
-                    side_v = kfr::sqr(side_v);
-                    for (size_t chan = 1; chan < side_buffer.size(); ++chan) {
-                        side_v = side_v + kfr::sqr(kfr::make_univector(side_buffer[chan], num_samples));
+                    // convert to ratio
+                    const auto v_1e12 = hn::Set(d, FloatType(1e-12));
+                    const auto v_fma_multiplier = hn::Set(d, slope_abs_);
+                    const auto v_fma_offset = hn::Set(d, low_abs_);
+                    size_t i = 0;
+                    for (; i + lanes <= num_samples; i += lanes) {
+                        auto v = hn::LoadU(d, out + i);
+                        v = hn::Max(hn::Abs(v), v_1e12);
+                        v = hn::Log(d, v);
+                        v = hn::MulAdd(v, v_fma_multiplier, v_fma_offset);
+                        v = hn::Clamp(v, v_zero, v_one);
+                        hn::StoreU(hn::Mul(v, v), d, out + i);
                     }
-                    side_v = kfr::log10(kfr::max(side_v, FloatType(1e-24)));
-                    side_v = (side_v - low_sqr_) * slope_sqr_;
+                    for (; i < num_samples; ++i) {
+                        FloatType v = std::max(std::abs(out[i]), FloatType(1e-12));
+                        v = std::log(v) * slope_abs_ + low_abs_;
+                        v = std::clamp(v, FloatType(0), FloatType(1));
+                        out[i] = v * v;
+                    }
+                } else {
+                    // calculate sum of square across channels and convert to ratio
+                    const auto v_1e24 = hn::Set(d, FloatType(1e-24));
+                    const auto v_fma_multiplier = hn::Set(d, slope_sqr_);
+                    const auto v_fma_offset = hn::Set(d, low_sqr_);
+                    size_t i = 0;
+                    for (; i + lanes <= num_samples; i += lanes) {
+                        auto v = hn::LoadU(d, out + i);
+                        v = hn::Mul(v, v);
+                        for (size_t chan = 1; chan < side_buffer.size(); ++chan) {
+                            auto c = hn::LoadU(d, side_buffer[chan] + i);
+                            v = hn::Add(v, hn::Mul(c, c));
+                        }
+                        v = hn::Max(v, v_1e24);
+                        v = hn::Log(d, v);
+                        v = hn::MulAdd(v, v_fma_multiplier, v_fma_offset);
+                        v = hn::Clamp(v, v_zero, v_one);
+                        hn::StoreU(hn::Mul(v, v), d, out + i);
+                    }
+                    for (; i < num_samples; ++i) {
+                        FloatType val = out[i] * out[i];
+                        for (size_t chan = 1; chan < side_buffer.size(); ++chan) {
+                            FloatType c = side_buffer[chan][i];
+                            val += c * c;
+                        }
+                        FloatType v = std::max(val, FloatType(1e-24));
+                        v = std::log(v) * slope_sqr_ + low_sqr_;
+                        v = std::clamp(v, FloatType(0), FloatType(1));
+                        out[i] = v * v;
+                    }
                 }
             }
-            side_v = kfr::sqr(kfr::clamp(side_v, FloatType(0), FloatType(1)));
         }
 
         /**
@@ -178,13 +258,17 @@ namespace zldsp::filter {
         FloatType rms_mix_{}, rms_mix_c_{}, rms_mix_reverse_{};
 
         void updateTK() {
+            constexpr double kln10 = 2.30258509299404568402;
             const auto low = threshold_ - knee_;
             const auto slope = static_cast<FloatType>(0.5) / knee_;
-            low_abs_ = low / static_cast<FloatType>(20);
-            slope_abs_ = slope * static_cast<FloatType>(20);
+            const auto inv_ln10 = static_cast<FloatType>(20.0 / kln10);
+            const auto fma_offset = -(low * slope);
 
-            low_sqr_ = low / static_cast<FloatType>(10);
-            slope_sqr_ = slope * static_cast<FloatType>(10);
+            low_abs_ = fma_offset;
+            slope_abs_ = slope * inv_ln10;
+
+            low_sqr_ = fma_offset;
+            slope_sqr_ = slope * inv_ln10;
         }
     };
 }

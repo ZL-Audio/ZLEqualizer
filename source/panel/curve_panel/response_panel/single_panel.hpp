@@ -35,7 +35,7 @@ namespace zlpanel {
                  zlp::FilterStatus filter_status,
                  bool to_update_base, bool to_update_target,
                  std::span<float> xs, float k, float b,
-                 kfr::univector<float>& base_mag, kfr::univector<float>& target_mag,
+                 zldsp::vector::aligned_vector<float>& base_mag, zldsp::vector::aligned_vector<float>& target_mag,
                  float center_x, float center_mag, float button_mag,
                  bool to_update_side,
                  float left_x, float right_x);
@@ -84,7 +84,7 @@ namespace zlpanel {
 
         float curve_thickness_{0.f};
 
-        kfr::univector<float> temp_db_{};
+        zldsp::vector::aligned_vector<float> temp_db_{};
 
         template <bool thick = false>
         void drawBand(juce::Graphics& g, size_t band) const;

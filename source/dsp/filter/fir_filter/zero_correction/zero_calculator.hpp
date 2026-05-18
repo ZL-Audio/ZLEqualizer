@@ -39,31 +39,59 @@ namespace zldsp::filter {
         }
 
         void updateCorrection(const size_t idx) override {
-            auto& proto_res{CorrectionCalculator<kFilterNum, kFilterSize>::proto_res_};
-            auto& biquad_res{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_res_};
-            auto& correction{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_[idx]};
-
+            const auto& proto_real{CorrectionCalculator<kFilterNum, kFilterSize>::proto_real_};
+            const auto& proto_imag{CorrectionCalculator<kFilterNum, kFilterSize>::proto_imag_};
+            const auto& biquad_real{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_real_};
+            const auto& biquad_imag{CorrectionCalculator<kFilterNum, kFilterSize>::biquad_imag_};
+            auto& corr_real{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_real_[idx]};
+            auto& corr_imag{CorrectionCalculator<kFilterNum, kFilterSize>::corrections_imag_[idx]};
+            const auto min_mag_sq = CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagSqr;
+            // decay region
             for (size_t w_idx = kStartDecayIdx; w_idx < kEndDecayIdx; ++w_idx) {
-                auto biquad = biquad_res[w_idx];
-                correction[w_idx] *= std::polar(1.f, -std::arg(biquad) * decays_[w_idx]);
+                const auto b_r = biquad_real[w_idx];
+                const auto b_i = biquad_imag[w_idx];
+                const auto b_mag_sq = b_r * b_r + b_i * b_i;
+                if (b_mag_sq >= min_mag_sq) {
+                    const auto b_arg = std::atan2(b_i, b_r);
+                    const auto theta = -b_arg * decays_[w_idx];
+                    const auto mult_r = std::cos(theta);
+                    const auto mult_i = std::sin(theta);
+                    const auto c_r = corr_real[w_idx];
+                    const auto c_i = corr_imag[w_idx];
+                    corr_real[w_idx] = c_r * mult_r - c_i * mult_i;
+                    corr_imag[w_idx] = c_r * mult_i + c_i * mult_r;
+                }
             }
-            for (size_t w_idx = kEndDecayIdx; w_idx < correction.size(); ++w_idx) {
-                auto proto = proto_res[w_idx];
-                auto biquad = biquad_res[w_idx];
-                if (std::abs(biquad) < CorrectionCalculator<kFilterNum, kFilterSize>::kMinMagnitude) {
-                    // ill condition, keep correction the same
-                } else {
-                    // normal condition
-                    correction[w_idx] *= std::complex(std::abs(proto), 0.f) / biquad;
+            // full region
+            for (size_t w_idx = kEndDecayIdx; w_idx < proto_real.size(); ++w_idx) {
+                const auto b_r = biquad_real[w_idx];
+                const auto b_i = biquad_imag[w_idx];
+                const auto b_mag_sq = b_r * b_r + b_i * b_i;
+                if (b_mag_sq >= min_mag_sq) {
+                    const auto p_r = proto_real[w_idx];
+                    const auto p_i = proto_imag[w_idx];
+                    const auto p_mag = std::sqrt(p_r * p_r + p_i * p_i);
+                    const auto div_r = (p_mag * b_r) / b_mag_sq;
+                    const auto div_i = (-p_mag * b_i) / b_mag_sq;
+                    const auto c_r = corr_real[w_idx];
+                    const auto c_i = corr_imag[w_idx];
+                    corr_real[w_idx] = c_r * div_r - c_i * div_i;
+                    corr_imag[w_idx] = c_r * div_i + c_i * div_r;
                 }
             }
             // if a single correction is larger than 40 dB, scale back to 40 dB
-            for (size_t w_idx = 1; w_idx < correction.size(); ++w_idx) {
-                if (std::max(std::abs(correction[w_idx].real()), std::abs(correction[w_idx].imag())) > 100.f) {
-                    correction[w_idx] *= 100.f / std::abs(correction[w_idx]);
+            for (size_t w_idx = 1; w_idx < corr_real.size(); ++w_idx) {
+                const auto c_r = corr_real[w_idx];
+                const auto c_i = corr_imag[w_idx];
+                if (std::max(std::abs(c_r), std::abs(c_i)) > 100.f) {
+                    const auto c_mag = std::sqrt(c_r * c_r + c_i * c_i);
+                    const auto scale = 100.f / c_mag;
+                    corr_real[w_idx] *= scale;
+                    corr_imag[w_idx] *= scale;
                 }
             }
-            correction[0] = correction[1];
+            corr_real[0] = corr_real[1];
+            corr_imag[0] = corr_imag[1];
         }
     };
 }

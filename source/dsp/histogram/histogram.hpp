@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../vector/kfr_import.hpp"
+#include "../vector/vector.hpp"
 
 namespace zldsp::histogram {
     template <typename FloatType>
@@ -32,7 +32,7 @@ namespace zldsp::histogram {
         }
 
         void push(const FloatType value) {
-            bins_ = bins_ * decay_;
+            vector::multiply(bins_.data(), decay_, bins_.size());
 
             if (value < min_val_) {
                 bins_[0] += 1.0;
@@ -100,7 +100,7 @@ namespace zldsp::histogram {
 
     private:
         FloatType min_val_, max_val_;
-        kfr::univector<double> bins_;
+        vector::aligned_vector<double> bins_;
         FloatType bin_width_;
         double decay_{};
         double total_count_{};

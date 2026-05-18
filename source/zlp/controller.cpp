@@ -66,10 +66,10 @@ namespace zlp {
             pre_main_buffers_[chan].resize(max_num_samples);
             pre_main_pointers_[chan] = pre_main_buffers_[chan].data();
         }
-        fft_analyzer_.prepare(sample_rate, {2, 2, 2});
-        eq_match_analyzer_.prepare(sample_rate, {2, 2});
-        eq_match_analyzer_.setON(0, true);
-        eq_match_analyzer_.setON(1, true);
+        analyzer_sender_.prepare(sample_rate, max_num_samples, {2, 2, 2}, 0.1);
+        analyzer_sender_.setON(0, true);
+        analyzer_sender_.setON(1, true);
+        analyzer_sender_.setON(2, true);
 
         for (size_t chan = 0; chan < 2; ++chan) {
             solo_buffers_[chan].resize(max_num_samples);
@@ -305,11 +305,9 @@ namespace zlp {
             }
         }
         is_lr_on_ = !not_off_indices_[1].empty() || !not_off_indices_[2].empty() || !correction_on_indices_[1].empty()
-            ||
-            !correction_on_indices_[2].empty();
+            || !correction_on_indices_[2].empty();
         is_ms_on_ = !not_off_indices_[3].empty() || !not_off_indices_[4].empty() || !correction_on_indices_[3].empty()
-            ||
-            !correction_on_indices_[4].empty();
+            || !correction_on_indices_[4].empty();
         // get the latency for one correction
         int unit_latency = 0;
         if (c_filter_structure_ == kMatched) {
@@ -377,17 +375,20 @@ namespace zlp {
                 to_update_correction_[lr] = false;
                 switch (c_filter_structure_) {
                 case kMatched: {
-                    match_corrections_[lr].updateCorrection(match_calculator_.getCorrections(),
+                    match_corrections_[lr].updateCorrection(match_calculator_.getCorrectionsReal(),
+                        match_calculator_.getCorrectionsImag(),
                                                             correction_on_indices_[lr + 1]);
                     break;
                 }
                 case kMixed: {
-                    mixed_corrections_[lr].updateCorrection(mixed_calculator_.getCorrections(),
+                    mixed_corrections_[lr].updateCorrection(mixed_calculator_.getCorrectionsReal(),
+                    mixed_calculator_.getCorrectionsImag(),
                                                             correction_on_indices_[lr + 1]);
                     break;
                 }
                 case kZero: {
-                    zero_corrections_[lr].updateCorrection(zero_calculator_.getCorrections(),
+                    zero_corrections_[lr].updateCorrection(zero_calculator_.getCorrectionsReal(),
+                    zero_calculator_.getCorrectionsImag(),
                                                            correction_on_indices_[lr + 1]);
                     break;
                 }
@@ -517,7 +518,7 @@ namespace zlp {
             delay_.process(main_pointers, num_samples);
         }
         if (c_editor_on_ && eq_match_analyzer_on_.load(std::memory_order::relaxed)) {
-            eq_match_analyzer_.process({main_pointers, side_pointers}, num_samples);
+            // eq_match_analyzer_.process({main_pointers, side_pointers}, num_samples);
         }
         // copy pre buffer for FFT processing
         if (bypass || c_editor_on_) {
@@ -585,8 +586,7 @@ namespace zlp {
         if (c_agc_on_) {
             pre_square_sum_ = 0.0;
             for (size_t chan = 0; chan < 2; chan++) {
-                auto v = kfr::make_univector(main_pointers[chan], num_samples);
-                pre_square_sum_ += kfr::sumsqr(v);
+                pre_square_sum_ += zldsp::vector::sum_sqr(main_pointers[chan], num_samples);
             }
             pre_square_sum_ = std::clamp(pre_square_sum_ / static_cast<double>(num_samples), 1e-3, 1e3);
         }
@@ -621,8 +621,7 @@ namespace zlp {
         if (c_agc_on_) {
             double post_square_sum{0.0};
             for (size_t chan = 0; chan < 2; chan++) {
-                auto v = kfr::make_univector(main_pointers[chan], num_samples);
-                post_square_sum += kfr::sumsqr(v);
+                pre_square_sum_ += zldsp::vector::sum_sqr(main_pointers[chan], num_samples);
             }
             post_square_sum = std::clamp(post_square_sum / static_cast<double>(num_samples), 1e-3, 1e3);
             c_agc_gain_linear_ = std::sqrt(pre_square_sum_ / post_square_sum) / c_makeup_gain_linear_;
@@ -633,8 +632,7 @@ namespace zlp {
 
         if (c_agc_on_) {
             for (size_t chan = 0; chan < 2; chan++) {
-                auto v = kfr::make_univector(main_pointers[chan], num_samples);
-                v = kfr::clamp(v, -1.0, 1.0);
+                zldsp::vector::clamp(main_pointers[chan], -1.0, 1.0, num_samples);
             }
         }
 
@@ -644,9 +642,7 @@ namespace zlp {
         }
 
         if (c_editor_on_) {
-            fft_analyzer_.process(
-                {std::span(pre_main_pointers_), std::span(main_pointers), std::span(side_pointers)},
-                num_samples);
+            analyzer_sender_.process({pre_main_pointers_, main_pointers, side_pointers}, num_samples);
             if (c_sgc_on_) {
                 displayed_gain_.store(sgc_gain_.getCurrentGainLinear() * output_gain_.getCurrentGainLinear());
             } else {
@@ -707,8 +703,7 @@ namespace zlp {
         }
         if (c_phase_flip_on_) {
             for (size_t chan = 0; chan < 2; chan++) {
-                auto v = kfr::make_univector(main_pointers[chan], num_samples);
-                v = -v;
+                zldsp::vector::flip(main_pointers[chan], num_samples);
             }
         }
     }
@@ -810,8 +805,8 @@ namespace zlp {
             double side_total_loudness = 0.0;
             if (c_dynamic_th_relative_[i]) {
                 for (size_t chan = 0; chan < side_pointers.size(); ++chan) {
-                    auto side_v = kfr::make_univector(side_copy_pointers_[chan], num_samples);
-                    side_total_loudness += kfr::sumsqr(side_v) / static_cast<double>(num_samples);
+                    const auto side_sum_sqr = zldsp::vector::sum_sqr(side_copy_pointers_[chan], num_samples);
+                    side_total_loudness += side_sum_sqr / static_cast<double>(num_samples);
                 }
                 side_total_loudness = zldsp::chore::squareGainToDecibels(side_total_loudness);
             }
@@ -841,8 +836,8 @@ namespace zlp {
             if (c_dynamic_th_learn_[i]) {
                 double side_current_loudness = 0.0;
                 for (size_t chan = 0; chan < side_pointers.size(); ++chan) {
-                    auto side_v = kfr::make_univector(side_copy_pointers_[chan], num_samples);
-                    side_current_loudness += kfr::sumsqr(side_v) / static_cast<double>(num_samples);
+                    const auto side_sum_sqr = zldsp::vector::sum_sqr(side_copy_pointers_[chan], num_samples);
+                    side_current_loudness += side_sum_sqr / static_cast<double>(num_samples);
                 }
                 side_current_loudness = zldsp::chore::squareGainToDecibels(side_current_loudness);
                 // update histograms
@@ -862,8 +857,8 @@ namespace zlp {
             } else if (c_editor_on_) {
                 double side_current_loudness = 0.0;
                 for (size_t chan = 0; chan < side_pointers.size(); ++chan) {
-                    auto side_v = kfr::make_univector(side_copy_pointers_[chan], num_samples);
-                    side_current_loudness += kfr::sumsqr(side_v) / static_cast<double>(num_samples);
+                    const auto side_sum_sqr = zldsp::vector::sum_sqr(side_copy_pointers_[chan], num_samples);
+                    side_current_loudness += side_sum_sqr / static_cast<double>(num_samples);
                 }
                 side_current_loudness = zldsp::chore::squareGainToDecibels(side_current_loudness);
                 dynamic_side_loudness_display_[i].store(side_current_loudness, std::memory_order::relaxed);

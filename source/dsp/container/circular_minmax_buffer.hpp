@@ -1,27 +1,28 @@
 // Copyright (C) 2026 - zsliu98
-// This file is part of ZLEqualizer
+// This file is part of ZLCompressor
 //
-// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLCompressor is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
 //
-// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+// ZLCompressor is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License along with ZLCompressor. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
 #include "circular_buffer.hpp"
 
 namespace zldsp::container {
+    /**
+     * a circular buffer that can track the min/max value
+     * @tparam T the type of elements
+     * @tparam FindMin
+     * @tparam FindMax
+     */
     enum MinMaxBufferType {
         kFindMin, kFindMax
     };
 
-    /**
-     * a circular buffer that can track the min/max value
-     * @tparam T the type of elements
-     * @tparam kBufferType
-     */
-    template <typename T, MinMaxBufferType kBufferType>
+    template <typename T, MinMaxBufferType BufferType>
     class CircularMinMaxBuffer {
     public:
         explicit CircularMinMaxBuffer(const size_t capacity = 1) {
@@ -66,12 +67,12 @@ namespace zldsp::container {
                 minmax_buffer_.popFront();
             }
             // maintain monotonicity
-            if constexpr (kBufferType == kFindMin) {
+            if constexpr (BufferType == kFindMin) {
                 while (!minmax_buffer_.isEmpty() && minmax_buffer_.getBack().first >= x) {
                     minmax_buffer_.popBack();
                 }
             }
-            if constexpr (kBufferType == kFindMax) {
+            if constexpr (BufferType == kFindMax) {
                 while (!minmax_buffer_.isEmpty() && minmax_buffer_.getBack().first <= x) {
                     minmax_buffer_.popBack();
                 }

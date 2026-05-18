@@ -27,8 +27,8 @@
 #include "../dsp/filter/fir_filter/zero_correction/zero_correction.hpp"
 #include "../dsp/filter/fir_filter/zero_correction/zero_calculator.hpp"
 
-#include "../dsp/fft_analyzer/multiple_fft_analyzer.hpp"
-#include "../dsp/eq_match/eq_match_analyzer.hpp"
+#include "../dsp/analyzer/analyzer_base/analyzer_sender_base.hpp"
+// #include "../dsp/eq_match/eq_match_analyzer.hpp"
 #include "../dsp/splitter/inplace_ms_splitter.hpp"
 #include "../dsp/histogram/histogram.hpp"
 
@@ -164,8 +164,8 @@ namespace zlp {
             editor_on_.store(editor_on, std::memory_order::relaxed);
         }
 
-        zldsp::analyzer::MultipleFFTAnalyzer<double, 3, kAnalyzerPointNum>& getFFTAnalyzer() {
-            return fft_analyzer_;
+        auto& getAnalyzerSender() {
+            return analyzer_sender_;
         }
 
         double getLearnedThreshold(const size_t idx) const {
@@ -252,10 +252,6 @@ namespace zlp {
             eq_match_analyzer_on_.store(f, std::memory_order::relaxed);
         }
 
-        zldsp::eq_match::EqMatchAnalyzer<double, kAnalyzerPointNum>& getEQMatchAnalyzer() {
-            return eq_match_analyzer_;
-        }
-
     private:
         juce::AudioProcessor& p_ref_;
         std::atomic<bool> to_update_{false};
@@ -324,17 +320,17 @@ namespace zlp {
         std::array<zldsp::filter::Ideal<float, kFilterSize>, kBandNum> res_ideals_{};
         std::array<zldsp::filter::TDF<float, kFilterSize>, kBandNum> res_tdfs_{};
         // match correction
-        zldsp::fft::KFREngine<float> match_fft_;
+        std::unique_ptr<zldsp::fft::RFFT<float>> match_fft_;
         zldsp::filter::MatchCalculator<kBandNum, kFilterSize> match_calculator_;
         std::array<zldsp::filter::MatchCorrection<double>, 4> match_corrections_
             = make_array_of<zldsp::filter::MatchCorrection<double>, 4>(match_fft_);
         // mixed correction
-        zldsp::fft::KFREngine<float> mixed_fft_;
+        std::unique_ptr<zldsp::fft::RFFT<float>> mixed_fft_;
         zldsp::filter::MixedCalculator<kBandNum, kFilterSize> mixed_calculator_;
         std::array<zldsp::filter::MixedCorrection<double>, 4> mixed_corrections_
             = make_array_of<zldsp::filter::MixedCorrection<double>, 4>(mixed_fft_);
         // linear phase (zero phase) correction
-        zldsp::fft::KFREngine<float> zero_fft_;
+        std::unique_ptr<zldsp::fft::RFFT<float>> zero_fft_;
         zldsp::filter::ZeroCalculator<kBandNum, kFilterSize> zero_calculator_;
         std::array<zldsp::filter::ZeroCorrection<double>, 4> zero_corrections_
             = make_array_of<zldsp::filter::ZeroCorrection<double>, 4>(zero_fft_);
@@ -384,7 +380,7 @@ namespace zlp {
         std::array<double*, 2> pre_main_pointers_{};
         std::atomic<bool> editor_on_{false};
         bool c_editor_on_{false};
-        zldsp::analyzer::MultipleFFTAnalyzer<double, 3, kAnalyzerPointNum> fft_analyzer_;
+        zldsp::analyzer::AnalyzerSenderBase<double, 3> analyzer_sender_{};
         // solo related
         zldsp::filter::TDF<double, kFilterSize / 2> solo_filter_;
         std::array<std::vector<double>, 2> solo_buffers_{};
@@ -427,7 +423,6 @@ namespace zlp {
         zldsp::delay::IntegerDelay<double> delay_{};
         // eq match analyzer
         std::atomic<bool> eq_match_analyzer_on_{false};
-        zldsp::eq_match::EqMatchAnalyzer<double, kAnalyzerPointNum> eq_match_analyzer_;
 
         void prepareBuffer();
 

@@ -57,16 +57,18 @@ namespace zldsp::filter {
             return chp_ * y_hp + cbp_ * y_bp + clp_ * y_lp;
         }
 
-        void updateFromBiquad(const std::array<double, 6>& coeff) {
-            const auto temp1 = std::sqrt(std::abs((-coeff[0] - coeff[1] - coeff[2])));
-            const auto temp2 = std::sqrt(std::abs((-coeff[0] + coeff[1] - coeff[2])));
+        void updateFromBiquad(const std::array<double, 5>& coeff) {
+            const auto temp1 = std::sqrt(std::abs((-1.0 - coeff[0] - coeff[1])));
+            const auto temp2 = std::sqrt(std::abs((-1.0 + coeff[0] - coeff[1])));
+            const auto scale = 2.0 / (temp1 * temp2);
+
             g_ = static_cast<FloatType>(temp1 / temp2);
-            R2_ = static_cast<FloatType>(2.0 * (coeff[0] - coeff[2]) / (temp1 * temp2));
+            R2_ = static_cast<FloatType>(scale * (1.0 - coeff[1]));
             h_ = static_cast<FloatType>(1) / (g_ * (R2_ + g_) + static_cast<FloatType>(1));
 
-            chp_ = static_cast<FloatType>((coeff[3] - coeff[4] + coeff[5]) / (coeff[0] - coeff[1] + coeff[2]));
-            cbp_ = static_cast<FloatType>(2 * (coeff[5] - coeff[3]) / (temp1 * temp2));
-            clp_ = static_cast<FloatType>((coeff[3] + coeff[4] + coeff[5]) / (coeff[0] + coeff[1] + coeff[2]));
+            chp_ = static_cast<FloatType>((coeff[2] - coeff[3] + coeff[4]) / (1.0 - coeff[0] + coeff[1]));
+            cbp_ = static_cast<FloatType>(scale * (coeff[4] - coeff[2]));
+            clp_ = static_cast<FloatType>((coeff[2] + coeff[3] + coeff[4]) / (1.0 + coeff[0] + coeff[1]));
         }
 
     private:

@@ -98,9 +98,6 @@ void PluginEditor::minimisationStateChanged(bool) {
 void PluginEditor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
     if (base_.isPanelIdentifier(zlgui::kUISettingChanged, property)) {
         sendLookAndFeelChange();
-        auto& fft{p_ref_.getController().getFFTAnalyzer()};
-        fft.setExtraTilt(base_.getFFTExtraTilt());
-        fft.setExtraSpeed(base_.getFFTExtraSpeed());
         triggerAsyncUpdate();
     }
 }

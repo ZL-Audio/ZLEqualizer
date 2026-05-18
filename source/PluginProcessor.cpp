@@ -26,7 +26,6 @@ PluginProcessor::PluginProcessor() :
                    zlstate::getNAParameterLayout()),
     controller_(*this),
     chore_attachment_(*this, parameters_, controller_),
-    analyzer_attachment_(*this, parameters_NA_, controller_),
     ext_side_(*parameters_.getRawParameterValue(zlp::PExtSide::kID)),
     bypass_(*parameters_.getRawParameterValue(zlp::PBypass::kID)) {
     for (size_t i = 0; i < zlp::kBandNum; ++i) {
@@ -102,7 +101,7 @@ void PluginProcessor::prepareToPlay(const double sample_rate, const int samples_
     }
     updateChannelLayout();
     const juce::PluginHostType hostType;
-    updateChannelLayoutPerCall = hostType.isMaschine();
+    update_channel_layout_per_call_ = hostType.isMaschine();
     controller_.prepare(sample_rate, static_cast<size_t>(samples_per_block));
     sample_rate_.store(sample_rate, std::memory_order::relaxed);
 }
@@ -158,7 +157,7 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<float>& buffer) {
     if (buffer.getNumSamples() == 0) {
         return; // ignore empty blocks
     }
-    if (updateChannelLayoutPerCall) {
+    if (update_channel_layout_per_call_) {
         updateChannelLayout();
     }
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;

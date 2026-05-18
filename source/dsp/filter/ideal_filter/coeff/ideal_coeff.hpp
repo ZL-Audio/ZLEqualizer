@@ -14,30 +14,30 @@
 namespace zldsp::filter {
     class IdealCoeff {
     public:
-        static std::array<double, 4> get1LowPass(double w0);
+        static std::array<double, 3> get1LowPass(double w0);
 
-        static std::array<double, 4> get1HighPass(double w0);
+        static std::array<double, 3> get1HighPass(double w0);
 
-        static std::array<double, 4> get1TiltShelf(double w0, double g);
+        static std::array<double, 3> get1TiltShelf(double w0, double g);
 
-        static std::array<double, 4> get1LowShelf(double w0, double g);
+        static std::array<double, 3> get1LowShelf(double w0, double g);
 
-        static std::array<double, 4> get1HighShelf(double w0, double g);
+        static std::array<double, 3> get1HighShelf(double w0, double g);
 
-        static std::array<double, 6> get2LowPass(double w0, double q);
+        static std::array<double, 5> get2LowPass(double w0, double q);
 
-        static std::array<double, 6> get2HighPass(double w0, double q);
+        static std::array<double, 5> get2HighPass(double w0, double q);
 
-        static std::array<double, 6> get2BandPass(double w0, double q);
+        static std::array<double, 5> get2BandPass(double w0, double q);
 
-        static std::array<double, 6> get2Notch(double w0, double q);
+        static std::array<double, 5> get2Notch(double w0, double q);
 
-        static std::array<double, 6> get2Peak(double w0, double g, double q);
+        static std::array<double, 5> get2Peak(double w0, double g, double q);
 
-        static std::array<double, 6> get2TiltShelf(double w0, double g, double q);
+        static std::array<double, 5> get2TiltShelf(double w0, double g, double q);
 
-        static std::array<double, 6> get2LowShelf(double w0, double g, double q);
+        static std::array<double, 5> get2LowShelf(double w0, double g, double q);
 
-        static std::array<double, 6> get2HighShelf(double w0, double g, double q);
+        static std::array<double, 5> get2HighShelf(double w0, double g, double q);
     };
 }

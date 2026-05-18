@@ -9,59 +9,147 @@
 
 #pragma once
 
-#include "../vector/kfr_import.hpp"
+#include "../vector/vector.hpp"
 
 namespace zldsp::splitter {
+    namespace hn = hwy::HWY_NAMESPACE;
     /**
-     * a splitter that splits the stereo audio signal input mid signal and side signal
+     * a splitter that splits the left/right signal into mid/side signal
      * @tparam FloatType
      */
     template <typename FloatType>
     class InplaceMSSplitter {
     public:
-        enum GainMode {
+        enum class GainMode {
             kPre, kAvg, kPost
         };
 
         InplaceMSSplitter() = default;
 
         /**
-         * switch left/right buffer to mid/side buffer
+         * inplace mid/side split
+         * @tparam Mode
+         * @param l_buffer input l & output mid
+         * @param r_buffer input r & output side
+         * @param num_samples
          */
         template <GainMode Mode = GainMode::kPre>
-        static constexpr void split(FloatType* l_buffer, FloatType* r_buffer, const size_t num_samples) {
-            auto l_vector = kfr::make_univector(l_buffer, num_samples);
-            auto r_vector = kfr::make_univector(r_buffer, num_samples);
-
+        static void split(FloatType* __restrict l_buffer, FloatType* __restrict r_buffer, const size_t num_samples) {
+            static constexpr hn::ScalableTag<FloatType> d;
+            static constexpr size_t lanes = hn::MaxLanes(d);
+            size_t i = 0;
             if constexpr (Mode == GainMode::kPre) {
-                l_vector = FloatType(0.5) * (l_vector + r_vector);
-                r_vector = l_vector - r_vector;
-            } else if constexpr (Mode == GainMode::kAvg) {
-                l_vector = kSqrt2Over2 * (l_vector + r_vector);
-                r_vector = l_vector - kSqrt2 * r_vector;
-            } else if constexpr (Mode == GainMode::kPost) {
-                l_vector = l_vector + r_vector;
-                r_vector = l_vector - FloatType(2) * r_vector;
+                const auto v_half = hn::Set(d, FloatType(0.5));
+                for (; i + lanes <= num_samples; i += lanes) {
+                    auto v_l = hn::LoadU(d, l_buffer + i);
+                    auto v_r = hn::LoadU(d, r_buffer + i);
+                    auto v_mid = hn::Mul(v_half, hn::Add(v_l, v_r));
+                    auto v_side = hn::Sub(v_mid, v_r);
+                    hn::StoreU(v_mid, d, l_buffer + i);
+                    hn::StoreU(v_side, d, r_buffer + i);
+                }
+            }
+            else if constexpr (Mode == GainMode::kAvg) {
+                const auto v_sqrt2_over_2 = hn::Set(d, kSqrt2Over2);
+                const auto v_sqrt2 = hn::Set(d, kSqrt2);
+                for (; i + lanes <= num_samples; i += lanes) {
+                    auto v_l = hn::LoadU(d, l_buffer + i);
+                    auto v_r = hn::LoadU(d, r_buffer + i);
+                    auto v_mid = hn::Mul(v_sqrt2_over_2, hn::Add(v_l, v_r));
+                    auto v_side = hn::NegMulAdd(v_sqrt2, v_r, v_mid);
+                    hn::StoreU(v_mid, d, l_buffer + i);
+                    hn::StoreU(v_side, d, r_buffer + i);
+                }
+            }
+            else if constexpr (Mode == GainMode::kPost) {
+                const auto v_two = hn::Set(d, FloatType(2));
+                for (; i + lanes <= num_samples; i += lanes) {
+                    auto v_l = hn::LoadU(d, l_buffer + i);
+                    auto v_r = hn::LoadU(d, r_buffer + i);
+                    auto v_mid = hn::Add(v_l, v_r);
+                    auto v_side = hn::NegMulAdd(v_two, v_r, v_mid);
+                    hn::StoreU(v_mid, d, l_buffer + i);
+                    hn::StoreU(v_side, d, r_buffer + i);
+                }
+            }
+            for (; i < num_samples; ++i) {
+                const auto l = l_buffer[i];
+                const auto r = r_buffer[i];
+                if constexpr (Mode == GainMode::kPre) {
+                    l_buffer[i] = FloatType(0.5) * (l + r);
+                    r_buffer[i] = l_buffer[i] - r;
+                }
+                else if constexpr (Mode == GainMode::kAvg) {
+                    l_buffer[i] = kSqrt2Over2 * (l + r);
+                    r_buffer[i] = l_buffer[i] - kSqrt2 * r;
+                }
+                else if constexpr (Mode == GainMode::kPost) {
+                    l_buffer[i] = l + r;
+                    r_buffer[i] = l_buffer[i] - FloatType(2) * r;
+                }
             }
         }
 
         /**
-         * switch mis/side buffer to left/right buffer
+         * inplace mid/side combine
+         * @tparam Mode
+         * @param l_buffer input mid & output l
+         * @param r_buffer input side & output r
+         * @param num_samples
          */
         template <GainMode Mode = GainMode::kPre>
-        static constexpr void combine(FloatType* l_buffer, FloatType* r_buffer, const size_t num_samples) {
-            auto l_vector = kfr::make_univector(l_buffer, num_samples);
-            auto r_vector = kfr::make_univector(r_buffer, num_samples);
-
+        static void combine(FloatType* __restrict l_buffer, FloatType* __restrict r_buffer, const size_t num_samples) {
+            static constexpr hn::ScalableTag<FloatType> d;
+            static constexpr size_t lanes = hn::MaxLanes(d);
+            size_t i = 0;
             if constexpr (Mode == GainMode::kPre) {
-                l_vector = l_vector + r_vector;
-                r_vector = l_vector - FloatType(2) * r_vector;
-            } else if constexpr (Mode == GainMode::kAvg) {
-                l_vector = kSqrt2Over2 * (l_vector + r_vector);
-                r_vector = l_vector - kSqrt2 * r_vector;
-            } else if constexpr (Mode == GainMode::kPost) {
-                l_vector = FloatType(0.5) * (l_vector + r_vector);
-                r_vector = l_vector - r_vector;
+                for (; i + lanes <= num_samples; i += lanes) {
+                    auto v_mid = hn::LoadU(d, l_buffer + i);
+                    auto v_side = hn::LoadU(d, r_buffer + i);
+                    auto v_l = hn::Add(v_mid, v_side);
+                    auto v_r = hn::Sub(v_mid, v_side);
+                    hn::StoreU(v_l, d, l_buffer + i);
+                    hn::StoreU(v_r, d, r_buffer + i);
+                }
+            }
+            else if constexpr (Mode == GainMode::kAvg) {
+                const auto v_sqrt2_over_2 = hn::Set(d, kSqrt2Over2);
+                const auto v_sqrt2 = hn::Set(d, kSqrt2);
+                for (; i + lanes <= num_samples; i += lanes) {
+                    auto v_mid = hn::LoadU(d, l_buffer + i);
+                    auto v_side = hn::LoadU(d, r_buffer + i);
+                    auto v_l = hn::Mul(v_sqrt2_over_2, hn::Add(v_mid, v_side));
+                    auto v_r = hn::NegMulAdd(v_sqrt2, v_side, v_l);
+                    hn::StoreU(v_l, d, l_buffer + i);
+                    hn::StoreU(v_r, d, r_buffer + i);
+                }
+            }
+            else if constexpr (Mode == GainMode::kPost) {
+                const auto v_half = hn::Set(d, FloatType(0.5));
+                for (; i + lanes <= num_samples; i += lanes) {
+                    auto v_mid = hn::LoadU(d, l_buffer + i);
+                    auto v_side = hn::LoadU(d, r_buffer + i);
+                    auto v_l = hn::Mul(v_half, hn::Add(v_mid, v_side));
+                    auto v_r = hn::Sub(v_l, v_side);
+                    hn::StoreU(v_l, d, l_buffer + i);
+                    hn::StoreU(v_r, d, r_buffer + i);
+                }
+            }
+            for (; i < num_samples; ++i) {
+                const auto mid = l_buffer[i];
+                const auto side = r_buffer[i];
+                if constexpr (Mode == GainMode::kPre) {
+                    l_buffer[i] = mid + side;
+                    r_buffer[i] = mid - side;
+                }
+                else if constexpr (Mode == GainMode::kAvg) {
+                    l_buffer[i] = kSqrt2Over2 * (mid + side);
+                    r_buffer[i] = l_buffer[i] - kSqrt2 * side;
+                }
+                else if constexpr (Mode == GainMode::kPost) {
+                    l_buffer[i] = FloatType(0.5) * (mid + side);
+                    r_buffer[i] = l_buffer[i] - side;
+                }
             }
         }
 

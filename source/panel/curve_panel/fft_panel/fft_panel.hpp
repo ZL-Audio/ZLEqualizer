@@ -13,24 +13,27 @@
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
 #include "../../multilingual/tooltip_helper.hpp"
-#include "../../../dsp/fft_analyzer/fft_collision_analyzer.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/fft_analyzer_receiver.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/spectrum_smoother.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/spectrum_tilter.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/spectrum_decayer.hpp"
 
 namespace zlpanel {
     class FFTPanel final : public juce::Component,
-                           public juce::Thread {
+                           public juce::Thread,
+                           private juce::ValueTree::Listener {
     public:
-        explicit FFTPanel(PluginProcessor& p, zlgui::UIBase& base,
-                          const multilingual::TooltipHelper& tooltip_helper);
+        explicit FFTPanel(PluginProcessor& p, zlgui::UIBase& base);
 
         ~FFTPanel() override;
 
         void paint(juce::Graphics& g) override;
 
+        void run() override;
+
         void resized() override;
 
-        void updateSampleRate(double sample_rate);
-
-        void run() override;
+        void setRefreshRate(double refresh_rate);
 
     private:
         PluginProcessor& p_ref_;
@@ -38,27 +41,54 @@ namespace zlpanel {
         std::atomic<float>& pre_ref_;
         std::atomic<float>& post_ref_;
         std::atomic<float>& side_ref_;
-        std::atomic<float>& fft_min_db_ref_;
-        std::atomic<float>& fft_stereo_ref_;
-        std::atomic<float>& collision_ref_;
-        std::atomic<float>& collision_strength_ref_;
 
-        double sample_rate_{0.};
-        AtomicBound<float> atomic_bound_{};
+        std::atomic<float> &fft_min_db_idx_ref_;
+        float c_fft_min_db_{0.f};
+
+        std::atomic<float> &fft_speed_idx_ref_;
+        int fft_speed_idx_{zlstate::PFFTSpeed::kDefaultI};
+
+        std::atomic<float> &fft_tilt_idx_ref_;
+        int fft_tilt_idx_{zlstate::PFFTTilt::kDefaultI};
+
+        bool skip_next_repaint_{false};
+
+        std::vector<float> xs_{}, ys_{};
+        std::array<BufferedUI<juce::Path>, 3> paths_;
+
+        double c_sample_rate_{0.0};
+        int fft_size_{0};
+        size_t num_point_{0};
+
+        std::atomic<float> width_{0.f}, height_{0.f};
+        std::atomic<float> font_size_{0.1f};
         float c_width_{0.f};
-        std::atomic<float> min_ratio_{1.f}, max_ratio_{1.f};
+        float c_height_{0.f};
+        float y_k_{0.f}, y_b_{0.f};
+        std::atomic<bool> to_update_xs_para_{true};
+        std::atomic<bool> to_update_ys_para_{true};
 
-        std::vector<float> xs_{};
-        std::vector<float> pre_ys_{}, post_ys_{}, side_ys_{};
-        std::vector<float> current_ps_{}, collision_ps_{};
-        juce::Path pre_path_, next_pre_path_;
-        juce::Path post_path_, next_post_path_;
-        juce::Path side_path_, next_side_path_;
-        juce::ColourGradient gradient_, next_gradient_;
-        zldsp::lock::SpinLock mutex_;
+        std::atomic<float> refresh_rate_{30.0};
+        std::atomic<float> spectrum_extra_decay_speed_{1.f};
+        std::atomic<bool> to_update_decay_{true};
 
-        void updatePath(juce::Path &path, const juce::Rectangle<float>& bound, std::span<float> ys) const;
+        std::atomic<float> spectrum_extra_tilt_slope_{0.f};
+        std::atomic<bool> to_update_tilt_{true};
 
-        void updateCollision();
+        std::atomic<bool> is_fft_frozen_{false};
+
+        zldsp::analyzer::FFTAnalyzerProcessor processor_;
+        std::array<zldsp::analyzer::FFTAnalyzerReceiver, 3> receivers_{
+            zldsp::analyzer::FFTAnalyzerReceiver{processor_},
+            zldsp::analyzer::FFTAnalyzerReceiver{processor_},
+            zldsp::analyzer::FFTAnalyzerReceiver{processor_}
+        };
+        zldsp::analyzer::SpectrumSmoother smoother_;
+        zldsp::analyzer::SpectrumTilter tilter_;
+        std::array<zldsp::analyzer::SpectrumDecayer, 3> decayers_;
+
+        void runFFT();
+
+        void lookAndFeelChanged() override;
     };
 }

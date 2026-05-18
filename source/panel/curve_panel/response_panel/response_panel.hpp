@@ -90,10 +90,10 @@ namespace zlpanel {
         std::array<zldsp::filter::Ideal<float, zlp::Controller::kFilterSize>, zlp::kBandNum> ideal_{};
         std::array<zldsp::filter::Ideal<float, zlp::Controller::kFilterSize / 2>, zlp::kBandNum> side_ideal_{};
 
-        std::array<kfr::univector<float>, zlp::kBandNum> base_mags_;
-        std::array<kfr::univector<float>, zlp::kBandNum> target_mags_;
-        std::array<kfr::univector<float>, zlp::kBandNum> dynamic_mags_;
-        std::array<kfr::univector<float>, 5> sum_mags_;
+        std::array<zldsp::vector::aligned_vector<float>, zlp::kBandNum> base_mags_;
+        std::array<zldsp::vector::aligned_vector<float>, zlp::kBandNum> target_mags_;
+        std::array<zldsp::vector::aligned_vector<float>, zlp::kBandNum> dynamic_mags_;
+        std::array<zldsp::vector::aligned_vector<float>, 5> sum_mags_;
 
         std::array<zldsp::filter::Empty, zlp::kBandNum> empty_{};
         std::array<std::atomic<bool>, zlp::kBandNum> to_update_empty_flags_{};

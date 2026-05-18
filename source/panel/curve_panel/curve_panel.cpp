@@ -15,7 +15,7 @@ namespace zlpanel {
                            multilingual::TooltipHelper& tooltip_helper) :
         base_(base),
         background_panel_(p, base, tooltip_helper),
-        fft_panel_(p, base, tooltip_helper),
+        fft_panel_(p, base),
         response_panel_(p, base, tooltip_helper),
         match_fft_panel_(p, base, tooltip_helper),
         scale_panel_(p, base, tooltip_helper),
@@ -93,7 +93,6 @@ namespace zlpanel {
 
     void CurvePanel::updateSampleRate(const double sample_rate) {
         background_panel_.updateSampleRate(sample_rate);
-        fft_panel_.updateSampleRate(sample_rate);
         response_panel_.updateSampleRate(sample_rate);
         match_fft_panel_.updateSampleRate(sample_rate);
     }

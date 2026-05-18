@@ -1,16 +1,17 @@
 // Copyright (C) 2026 - zsliu98
-// This file is part of ZLEqualizer
+// This file is part of ZLCompressor
 //
-// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLCompressor is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
 //
-// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+// ZLCompressor is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License along with ZLCompressor. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
 #include <atomic>
 #include <algorithm>
+#include "fifo_base.hpp"
 
 namespace zldsp::container {
     /**
@@ -18,13 +19,6 @@ namespace zldsp::container {
      */
     class AbstractFIFO {
     public:
-        struct Range {
-            int start_index1;
-            int block_size1;
-            int start_index2;
-            int block_size2;
-        };
-
         explicit AbstractFIFO(const int capacity = 0)
             : capacity_(capacity),
               head_(0),
@@ -67,8 +61,8 @@ namespace zldsp::container {
             return capacity_ - current_tail + current_head - 1;
         }
 
-        Range prepareToWrite(const int num_to_write) const {
-            Range range;
+        FIFORange prepareToWrite(const int num_to_write) const {
+            FIFORange range;
             const int current_tail = tail_.load(std::memory_order::relaxed);
 
             range.block_size1 = std::min(num_to_write, capacity_ - current_tail);
@@ -77,7 +71,8 @@ namespace zldsp::container {
             if (num_to_write > range.block_size1) {
                 range.start_index2 = 0;
                 range.block_size2 = num_to_write - range.block_size1;
-            } else {
+            }
+            else {
                 range.start_index2 = 0;
                 range.block_size2 = 0;
             }
@@ -92,8 +87,8 @@ namespace zldsp::container {
             }
         }
 
-        Range prepareToRead(const int num_to_read) const {
-            Range range;
+        FIFORange prepareToRead(const int num_to_read) const {
+            FIFORange range;
             const int current_head = head_.load(std::memory_order::relaxed);
 
             range.block_size1 = std::min(num_to_read, capacity_ - current_head);
@@ -102,7 +97,8 @@ namespace zldsp::container {
             if (num_to_read > range.block_size1) {
                 range.start_index2 = 0;
                 range.block_size2 = num_to_read - range.block_size1;
-            } else {
+            }
+            else {
                 range.start_index2 = 0;
                 range.block_size2 = 0;
             }
