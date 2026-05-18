@@ -16,24 +16,22 @@ env:
   ADDRESS_SANITIZER_FLAG: True
   PLUGINVAL_DISABLED: Plugin state restoration
 
-# jobs are run in paralell on different machines
-# all steps run in series
 jobs:
   build_and_test:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      fail-fast: false
       matrix:
         include:
           - name: macOS Address Sanitizer
             os: macos-latest
             pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;AU" -DZL_EQ_BAND_NUM=8
+            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF -DZL_JUCE_FORMATS="VST3;AU" -DZL_HWY_STATIC_TARGET="NEON"
           - name: macOS Thread Sanitizer
             os: macos-latest
             pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;AU" -DZL_EQ_BAND_NUM=8
+            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DZL_JUCE_FORMATS="VST3;AU" -DZL_HWY_STATIC_TARGET="NEON"
 
     steps:
       - name: Checkout code

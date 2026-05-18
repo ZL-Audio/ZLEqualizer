@@ -15,44 +15,52 @@ env:
   DISPLAY: :0 # linux pluginval needs this
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 
-# jobs are run in paralell on different machines
-# all steps run in series
 jobs:
   build_and_test:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      fail-fast: false
       matrix:
         include:
-          - name: Linux-x86
+          - name: Linux-x86-64
             os: ubuntu-22.04
             app_suffix: ""
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DKFR_ENABLE_MULTIARCH=ON -DKFR_ARCHS="sse2;avx2" -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
-          - name: Linux-arm
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="SSE2"
+          - name: Linux-x86-64-AVX2
+            os: ubuntu-22.04
+            app_suffix: ""
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="AVX2"
+          - name: Linux-arm64
             os: ubuntu-22.04-arm
             app_suffix: ""
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
-          - name: macOS-x86
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
+          - name: macOS-x86-64
             os: macos-latest
             app_suffix: ".app"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DKFR_ENABLE_MULTIARCH=ON -DKFR_ARCHS="sse42;avx2" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_EQ_BAND_NUM=24
-          - name: macOS-arm
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_HWY_STATIC_TARGET="SSE4"
+          - name: macOS-arm64
             os: macos-latest
             app_suffix: ".app"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_EQ_BAND_NUM=24
-          - name: Windows-x86
+            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
+          - name: Windows-x86-64
             os: windows-latest
             wix_arch: x64
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=ON -DKFR_ARCHS="sse2;avx2" -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
-          - name: Windows-arm
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="SSE2"
+          - name: Windows-x86-64-AVX2
+            os: windows-latest
+            wix_arch: x64
+            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            app_suffix: ".exe"
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="AVX2"
+          - name: Windows-arm64
             os: windows-11-arm
             wix_arch: arm64
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsarm64.bat"'
             app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
 
     steps:
       - name: Set up Clang (Linux)
@@ -60,7 +68,7 @@ jobs:
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x ./llvm.sh
-          sudo ./llvm.sh 20
+          sudo ./llvm.sh 21
 
       - name: Install Deps (Linux)
         if: runner.os == 'Linux'

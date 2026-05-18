@@ -17,29 +17,28 @@ env:
   SCCACHE_GHA_ENABLED: true
   SCCACHE_CACHE_MULTIARCH: 1
 
-# jobs are run in paralell on different machines
-# all steps run in series
 jobs:
   build_and_test:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false # show all errors for each platform (vs. cancel jobs on error)
+      fail-fast: false
       matrix:
         include:
           - name: Linux
-            os: ubuntu-22.04
+            os: ubuntu-latest
             pluginval-binary: ./pluginval
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="AVX2"
           - name: macOS
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DZL_JUCE_FORMATS="VST3" -DKFR_ENABLE_MULTIARCH=OFF -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DZL_JUCE_FORMATS="AU" -DZL_HWY_STATIC_TARGET="NEON"
           - name: Windows
-            os: windows-2022
+            os: windows-latest
+            wix_arch: x64
             vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
             pluginval-binary: ./pluginval.exe
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3" -DZL_EQ_BAND_NUM=24
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="AVX2"
 
     steps:
       - name: Set up Clang (Linux)
@@ -47,7 +46,7 @@ jobs:
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x ./llvm.sh
-          sudo ./llvm.sh 20
+          sudo ./llvm.sh 21
 
       # This also starts up our "fake" display Xvfb, needed for pluginval
       - name: Install Deps (Linux)
