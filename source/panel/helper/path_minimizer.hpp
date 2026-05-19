@@ -35,7 +35,7 @@ namespace zlpanel {
         }
 
         void lineTo(const float x, const float y) {
-            if (x - start_x_ > .25f) {
+            if (std::abs(x - start_x_) > kTol) {
                 const auto w = (current_x_ - start_x_) / (x - start_x_);
                 if (std::abs((1.f - w) * start_y_ + w * y - current_y_) > kTol) {
                     path_ref_.lineTo(current_x_, current_y_);
