@@ -200,7 +200,7 @@ namespace zlpanel {
             const auto decay_speed = zlstate::PFFTSpeed::kSpeeds[
                 static_cast<size_t>(fft_speed_idx_)] * spectrum_extra_decay_speed_.load(std::memory_order::relaxed);
             for (auto& decayer : decayers_) {
-                decayer.setDecaySpeed(refresh_rate, c_fft_min_db_, static_cast<float>(0.125 / decay_speed));
+                decayer.setDecaySpeed(refresh_rate, c_fft_min_db_, static_cast<float>(0.15 / decay_speed));
             }
         }
         // update xs para
@@ -312,7 +312,8 @@ namespace zlpanel {
     }
 
     void FFTPanel::lookAndFeelChanged() {
-        spectrum_extra_decay_speed_.store(base_.getFFTExtraSpeed(), std::memory_order::relaxed);
+        const auto extra_speed = base_.getFFTExtraSpeed();
+        spectrum_extra_decay_speed_.store(extra_speed * extra_speed + 0.1f, std::memory_order::relaxed);
         to_update_decay_.store(true, std::memory_order::release);
 
         spectrum_extra_tilt_slope_.store(base_.getFFTExtraTilt(), std::memory_order::relaxed);

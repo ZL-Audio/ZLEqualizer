@@ -57,6 +57,8 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
 
     base_.setPanelProperty(zlgui::kUISettingChanged, true);
     base_.getPanelValueTree().addListener(this);
+
+    sendLookAndFeelChange();
 }
 
 PluginEditor::~PluginEditor() {
@@ -97,12 +99,12 @@ void PluginEditor::minimisationStateChanged(bool) {
 
 void PluginEditor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
     if (base_.isPanelIdentifier(zlgui::kUISettingChanged, property)) {
-        sendLookAndFeelChange();
         triggerAsyncUpdate();
     }
 }
 
 void PluginEditor::handleAsyncUpdate() {
+    sendLookAndFeelChange();
     property_.saveAPVTS(state_);
 }
 
