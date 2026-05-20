@@ -164,7 +164,7 @@ namespace zldsp::filter {
          */
         virtual void updateGain() = 0;
 
-        size_t getFilterNum() const {
+        [[nodiscard]] size_t getFilterNum() const {
             return current_filter_num_;
         }
 
@@ -185,7 +185,7 @@ namespace zldsp::filter {
         zldsp::chore::SmoothedValue<double, zldsp::chore::kFixMul> c_freq_{1000.0};
         size_t c_order_{2};
         FilterType c_filter_type_{FilterType::kPeak};
-        std::array<double, kFilterSize + 7> cache_{};
+        std::array<double, kFilterSize * 3 + 1> cache_{};
 
         double sample_rate_{48000.0};
 
@@ -197,7 +197,7 @@ namespace zldsp::filter {
 
         void cacheDyn(const FilterType filterType, const size_t n,
                       const double f, const double fs, const double q0) {
-            FilterDesign::updateCache<IvantsovCoeff>(filterType, n, f, fs, q0, cache_);
+            FilterDesign::updateCache<IvantsovCoeff>(filterType, n, f, fs, q0, cache_.data());
         }
     };
 }

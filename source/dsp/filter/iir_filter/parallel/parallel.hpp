@@ -24,7 +24,8 @@ namespace zldsp::filter {
     template <typename FloatType, size_t kFilterSize>
     class Parallel final : public IIR<kFilterSize> {
     public:
-        Parallel() : IIR<kFilterSize>() {
+        Parallel() :
+            IIR<kFilterSize>() {
         }
 
         void reset() override {
@@ -34,7 +35,7 @@ namespace zldsp::filter {
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) override {
-            IIR < kFilterSize > ::prepareSampleRate(sample_rate);
+            IIR<kFilterSize>::prepareSampleRate(sample_rate);
             for (auto& f : filters_) {
                 f.prepare(num_channels);
             }
@@ -129,21 +130,21 @@ namespace zldsp::filter {
                 updateGain();
             } else if (this->c_filter_type_ == kLowShelf && this->c_order_ <= 2) {
                 should_be_parallel_ = true;
-                this->current_filter_num_ = IIR < kFilterSize > ::updateIIRCoeffs(FilterType::kLowPass, this->c_order_,
-                    next_freq, this->sample_rate_,
-                    next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(FilterType::kLowPass, this->c_order_,
+                                                                              next_freq, this->sample_rate_,
+                                                                              next_gain, next_q, this->coeffs_);
                 updateGain();
             } else if (this->c_filter_type_ == kHighShelf && this->c_order_ <= 2) {
                 should_be_parallel_ = true;
-                this->current_filter_num_ = IIR < kFilterSize > ::updateIIRCoeffs(kHighPass, this->c_order_,
-                    next_freq, this->sample_rate_,
-                    next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(kHighPass, this->c_order_,
+                                                                              next_freq, this->sample_rate_,
+                                                                              next_gain, next_q, this->coeffs_);
                 updateGain();
             } else {
                 should_be_parallel_ = false;
-                this->current_filter_num_ = IIR < kFilterSize > ::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
-                    next_freq, this->sample_rate_,
-                    next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
+                                                                              next_freq, this->sample_rate_,
+                                                                              next_gain, next_q, this->coeffs_);
             }
             for (size_t i = 0; i < this->current_filter_num_; ++i) {
                 filters_[i].updateFromBiquad(this->coeffs_[i]);

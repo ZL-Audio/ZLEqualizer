@@ -101,7 +101,7 @@ namespace zldsp::filter::FilterDesign {
     }
 
     template <class Coeff, FilterType filter_type>
-    void updateShelfGain(const size_t n, const size_t start_idx, const double g_dB, const std::span<double> cache,
+    void updateShelfGain(const size_t n, const size_t start_idx, const double g_dB, const double* cache,
                          std::span<std::array<double, 5>> coeffs) {
         if (n == 1) {
             if constexpr (filter_type == kLowShelf) {
@@ -131,30 +131,30 @@ namespace zldsp::filter::FilterDesign {
             const auto _g = g_dB / static_cast<double>(number);
             for (size_t i = 0; i < number; i++) {
                 if constexpr (filter_type == kLowShelf) {
-                    coeffs[i + start_idx] = Coeff::get2LowShelf(cache[0], _g, cache[i + 2]);
+                    coeffs[i + start_idx] = Coeff::get2LowShelf(_g, cache + (i * 3));
                 }
                 if constexpr (filter_type == kHighShelf) {
-                    coeffs[i + start_idx] = Coeff::get2HighShelf(cache[0], _g, cache[i + 2]);
+                    coeffs[i + start_idx] = Coeff::get2HighShelf(_g, cache + (i * 3));
                 }
                 if constexpr (filter_type == kTiltShelf) {
-                    coeffs[i + start_idx] = Coeff::get2TiltShelf(cache[0], _g, cache[i + 2]);
+                    coeffs[i + start_idx] = Coeff::get2TiltShelf(_g, cache + (i * 3));
                 }
             }
         }
     }
 
-    inline void updateShelfDynamicCache(const size_t n, const double w0, const double q0, std::span<double> cache) {
+    template <class Coeff>
+    inline void updateShelfDynamicCache(const size_t n, const double w0, const double q0, double* cache) {
         const size_t number = n / 2;
         const auto theta0 = pi / static_cast<double>(number) / 4;
         const auto scale = std::pow(std::sqrt(2.0) * q0, 1 / static_cast<double>(number));
         const auto rescale_base = std::log10(std::sqrt(2.0) * q0) / std::pow(static_cast<double>(n), 1.5) * 12;
-        cache[0] = w0;
-        cache[1] = q0;
         for (size_t i = 0; i < number; i++) {
             const auto centered = static_cast<double>(i) - static_cast<double>(number) / 2 + 0.5;
             const auto rescale = centered * rescale_base;
             const auto theta = theta0 * static_cast<double>(2 * i + 1);
-            cache[i + 2] = 1.0 / 2.0 / std::cos(theta) * scale * std::pow(2, rescale);
+            const auto _q = 1.0 / 2.0 / std::cos(theta) * scale * std::pow(2, rescale);
+            Coeff::update2LowShelfDynamicCache(w0, _q, cache + (i * 3));
         }
     }
 
@@ -221,32 +221,46 @@ namespace zldsp::filter::FilterDesign {
     }
 
     template <class Coeff>
-    void updateBandShelfGain(const size_t n, const double g_dB, const std::span<double> cache,
+    void updateBandShelfGain(const size_t n, const double g_dB, const double* cache,
                              std::span<std::array<double, 5>> coeffs) {
-        if (n < 2) { return; }
-        const auto halfbw = std::asinh(0.5 / cache[1]) / std::log(2);
-        const auto scale = std::pow(2, halfbw);
-        const auto w0 = cache[0];
-        const auto w1 = cache[0] / scale;
-        const auto w2 = cache[0] * scale;
-        const auto f1 = w1 > 10.0 / 48000.0;
-        const auto f2 = w2 < 22000.0 / 48000.0;
-        if (f1 && f2) {
-            cache[0] = w1;
-            updateShelfGain<Coeff, kLowShelf>(n, 0, -g_dB, cache, coeffs);
-            cache[0] = w2;
-            updateShelfGain<Coeff, kLowShelf>(n, n / 2, g_dB, cache, coeffs);
-        } else if (f1) {
-            cache[0] = w1;
-            updateShelfGain<Coeff, kHighShelf>(n, 0, g_dB, cache, coeffs);
-        } else if (f2) {
-            cache[0] = w2;
-            updateShelfGain<Coeff, kLowShelf>(n, 0, g_dB, cache, coeffs);
+        const auto mode = static_cast<int>(cache[0]);
+        if (mode == 3) {
+            const size_t number = n / 2;
+            updateShelfGain<Coeff, kLowShelf>(n, 0, -g_dB, cache + 1, coeffs);
+            updateShelfGain<Coeff, kLowShelf>(n, number, g_dB, cache + 1 + 3 * number, coeffs);
+        } else if (mode == 1) {
+            updateShelfGain<Coeff, kHighShelf>(n, 0, g_dB, cache + 1, coeffs);
+        } else if (mode == 2) {
+            updateShelfGain<Coeff, kLowShelf>(n, 0, g_dB, cache + 1, coeffs);
         } else {
             const auto g_linear = std::exp2(g_dB * kDbToExp2);
             coeffs[0] = {1.0, 1.0, g_linear, g_linear, g_linear};
         }
-        cache[0] = w0;
+    }
+
+    template <class Coeff>
+    inline void updateBandShelfDynamicCache(const size_t n, const double w0, const double q0, double* cache) {
+        if (n < 2) return;
+        const auto halfbw = std::asinh(0.5 / q0) / std::log(2);
+        const auto scale = std::pow(2, halfbw);
+        const auto w1 = w0 / scale;
+        const auto w2 = w0 * scale;
+        const auto f1 = w1 > 10.0 / 48000.0;
+        const auto f2 = w2 < 22000.0 / 48000.0;
+        const size_t number = n / 2;
+        if (f1 && f2) {
+            cache[0] = 3.0;
+            updateShelfDynamicCache<Coeff>(n, w1, std::sqrt(2.0) / 2.0, cache + 1);
+            updateShelfDynamicCache<Coeff>(n, w2, std::sqrt(2.0) / 2.0, cache + 1 + 3 * number);
+        } else if (f1) {
+            cache[0] = 1.0;
+            updateShelfDynamicCache<Coeff>(n, w1, std::sqrt(2.0) / 2.0, cache + 1);
+        } else if (f2) {
+            cache[0] = 2.0;
+            updateShelfDynamicCache<Coeff>(n, w2, std::sqrt(2.0) / 2.0, cache + 1);
+        } else {
+            cache[0] = 0.0;
+        }
     }
 
     template <class Coeff>
@@ -299,26 +313,27 @@ namespace zldsp::filter::FilterDesign {
     template <class Coeff>
     void updateCache(const FilterType filterType, const size_t n,
                      const double f, const double fs, const double q0,
-                     std::span<double> cache) {
+                     double* cache) {
         const auto w0 = f / fs;
         switch (filterType) {
         case kPeak: {
             if (n == 2) {
                 Coeff::update2PeakDynamicCache(w0, q0, cache);
             } else if (n > 2) {
-                updateShelfDynamicCache(n, w0, q0, cache);
+                updateBandShelfDynamicCache<Coeff>(n, w0, q0, cache);
             }
             break;
         }
         case kLowShelf:
         case kHighShelf:
         case kTiltShelf: {
+            const auto q_modified = std::sqrt(q0 * std::sqrt(2.0)) / std::sqrt(2.0);
             if (n == 1) {
                 cache[0] = w0;
             } else if (n == 2) {
-                Coeff::update2TiltShelfDynamicCache(w0, q0, cache);
+                Coeff::update2TiltShelfDynamicCache(w0, q_modified, cache);
             } else if (n > 2) {
-                updateShelfDynamicCache(n, w0, q0, cache);
+                updateShelfDynamicCache<Coeff>(n, w0, q_modified, cache);
             }
             break;
         }
@@ -334,7 +349,7 @@ namespace zldsp::filter::FilterDesign {
 
     template <class Coeff>
     void updateGain(const FilterType filterType, const size_t n, const double g_dB,
-                    const std::span<double> cache,
+                    const double* cache,
                     std::span<std::array<double, 5>> coeffs) {
         switch (filterType) {
         case kPeak: {
