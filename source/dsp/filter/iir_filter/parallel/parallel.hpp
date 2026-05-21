@@ -29,15 +29,21 @@ namespace zldsp::filter {
         }
 
         void reset() override {
-            for (size_t i = 0; i < this->current_filter_num_; ++i) {
-                filters_[i].reset();
+            for (auto& s : s1s_) {
+                std::ranges::fill(s.begin(), s.end(), static_cast<FloatType>(0));
+            }
+            for (auto& s : s2s_) {
+                std::ranges::fill(s.begin(), s.end(), static_cast<FloatType>(0));
             }
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) override {
             IIR<kFilterSize>::prepareSampleRate(sample_rate);
-            for (auto& f : filters_) {
-                f.prepare(num_channels);
+            for (auto& s : s1s_) {
+                s.resize(num_channels);
+            }
+            for (auto& s : s2s_) {
+                s.resize(num_channels);
             }
             parallel_buffers_.resize(num_channels);
             parallel_buffers_pointers_.resize(num_channels);
@@ -94,7 +100,13 @@ namespace zldsp::filter {
 
         FloatType processSample(const size_t channel, FloatType sample) {
             for (size_t filter_idx = 0; filter_idx < this->current_filter_num_; ++filter_idx) {
-                sample = filters_[filter_idx].processSample(channel, sample);
+                const auto& coeff{IIR<kFilterSize>::coeffs_[filter_idx]};
+                auto& s1{s1s_[filter_idx][channel]};
+                auto& s2{s2s_[filter_idx][channel]};
+                const auto output = sample * coeff[2] + s1;
+                s1 = (sample * coeff[3]) - (output * coeff[0]) + s2;
+                s2 = (sample * coeff[4]) - (output * coeff[1]);
+                sample = output;
             }
             return sample;
         }
@@ -146,9 +158,6 @@ namespace zldsp::filter {
                                                                               next_freq, this->sample_rate_,
                                                                               next_gain, next_q, this->coeffs_);
             }
-            for (size_t i = 0; i < this->current_filter_num_; ++i) {
-                filters_[i].updateFromBiquad(this->coeffs_[i]);
-            }
         }
 
         /**
@@ -161,14 +170,6 @@ namespace zldsp::filter {
             } else {
                 updateCoeffs();
             }
-        }
-
-        /**
-         * get the array of 2nd order filters
-         * @return
-         */
-        std::array<TDFBase<FloatType>, kFilterSize>& getFilters() {
-            return filters_;
         }
 
         [[nodiscard]] bool getShouldBeParallel() const {
@@ -184,7 +185,7 @@ namespace zldsp::filter {
         }
 
     private:
-        std::array<TDFBase<FloatType>, kFilterSize> filters_{};
+        std::array<std::vector<FloatType>, kFilterSize> s1s_{}, s2s_{};
         std::vector<std::vector<FloatType>> parallel_buffers_;
         std::vector<FloatType*> parallel_buffers_pointers_;
         bool should_be_parallel_ = false;

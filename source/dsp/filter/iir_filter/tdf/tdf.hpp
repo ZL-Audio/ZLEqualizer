@@ -28,16 +28,23 @@ namespace zldsp::filter {
         }
 
         void reset() override {
-            for (size_t i = 0; i < this->current_filter_num_; ++i) {
-                filters_[i].reset();
+            for (auto& s : s1s_) {
+                std::ranges::fill(s.begin(), s.end(), static_cast<FloatType>(0));
+            }
+            for (auto& s : s2s_) {
+                std::ranges::fill(s.begin(), s.end(), static_cast<FloatType>(0));
             }
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t) override {
             IIR<kFilterSize>::prepareSampleRate(sample_rate);
-            for (auto& f : filters_) {
-                f.prepare(num_channels);
+            for (auto& s : s1s_) {
+                s.resize(num_channels);
             }
+            for (auto& s : s2s_) {
+                s.resize(num_channels);
+            }
+            reset();
         }
 
         /**
@@ -75,7 +82,13 @@ namespace zldsp::filter {
 
         FloatType processSample(const size_t channel, FloatType sample) {
             for (size_t filter_idx = 0; filter_idx < this->current_filter_num_; ++filter_idx) {
-                sample = filters_[filter_idx].processSample(channel, sample);
+                const auto& coeff{IIR<kFilterSize>::coeffs_[filter_idx]};
+                auto& s1{s1s_[filter_idx][channel]};
+                auto& s2{s2s_[filter_idx][channel]};
+                const auto output = sample * coeff[2] + s1;
+                s1 = (sample * coeff[3]) - (output * coeff[0]) + s2;
+                s2 = (sample * coeff[4]) - (output * coeff[1]);
+                sample = output;
             }
             return sample;
         }
@@ -90,9 +103,6 @@ namespace zldsp::filter {
             this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
                                                                           next_freq, this->sample_rate_,
                                                                           next_gain, next_q, this->coeffs_);
-            for (size_t i = 0; i < this->current_filter_num_; ++i) {
-                filters_[i].updateFromBiquad(this->coeffs_[i]);
-            }
         }
 
         /**
@@ -100,21 +110,10 @@ namespace zldsp::filter {
          */
         void updateGain() override {
             FilterDesign::updateGain<IvantsovCoeff>(this->c_filter_type_, this->c_order_,
-                                                  this->c_gain_.getCurrent(), this->cache_.data(), this->coeffs_);
-            for (size_t i = 0; i < this->current_filter_num_; ++i) {
-                filters_[i].updateFromBiquad(this->coeffs_[i]);
-            }
-        }
-
-        /**
-         * get the array of 2nd order filters
-         * @return
-         */
-        std::array<TDFBase<FloatType>, kFilterSize>& getFilters() {
-            return filters_;
+                                                    this->c_gain_.getCurrent(), this->cache_.data(), this->coeffs_);
         }
 
     private:
-        std::array<TDFBase<FloatType>, kFilterSize> filters_{};
+        std::array<std::vector<FloatType>, kFilterSize> s1s_{}, s2s_{};
     };
 }

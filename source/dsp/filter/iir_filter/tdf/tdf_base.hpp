@@ -11,7 +11,6 @@
 
 #include <numbers>
 #include <vector>
-#include <complex>
 #include <span>
 
 #include "../../../vector/vector.hpp"
