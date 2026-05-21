@@ -80,8 +80,8 @@ namespace zldsp::filter {
 
         void process(std::span<FloatType*> side_buffer, const size_t num_samples) {
             namespace hn = hwy::HWY_NAMESPACE;
-            hn::ScalableTag<FloatType> d;
-            const size_t lanes = hn::Lanes(d);
+            static constexpr hn::ScalableTag<FloatType> d;
+            static constexpr size_t lanes = hn::MaxLanes(d);
 
             FloatType* out = side_buffer[0];
 

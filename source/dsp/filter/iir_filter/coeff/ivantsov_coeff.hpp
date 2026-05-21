@@ -34,14 +34,18 @@ namespace zldsp::filter {
 
         static void update2PeakDynamicCache(double w0, double q, double* cache);
         static std::array<double, 5> get2Peak(double g, const double* cache);
+        static std::array<double, 5> get2PeakWithCache(double g_linear_sqrt, const double* cache);
 
         static void update2TiltShelfDynamicCache(double w0, double q, double* cache);
         static std::array<double, 5> get2TiltShelf(double g, const double* cache);
+        static std::array<double, 5> get2TiltShelfWithCache(double g_linear_sqrt, const double* cache);
 
         static void update2LowShelfDynamicCache(double w0, double q, double* cache);
         static std::array<double, 5> get2LowShelf(double g, const double* cache);
+        static std::array<double, 5> get2LowShelfWithCache(double g_linear_sqrt, const double* cache);
 
         static void update2HighShelfDynamicCache(double w0, double q, double* cache);
         static std::array<double, 5> get2HighShelf(double g, const double* cache);
+        static std::array<double, 5> get2HighShelfWithCache(double g_linear_sqrt, const double* cache);
     };
 }
