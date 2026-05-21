@@ -105,15 +105,15 @@ namespace zldsp::filter::FilterDesign {
                          std::span<std::array<double, 5>> coeffs) {
         if (n == 1) {
             if constexpr (filter_type == kLowShelf) {
-                const auto coeff = Coeff::get1LowShelf(cache[0], g_dB);
+                const auto coeff = Coeff::get1LowShelf(g_dB, cache);
                 coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             if constexpr (filter_type == kHighShelf) {
-                const auto coeff = Coeff::get1HighShelf(cache[0], g_dB);
+                const auto coeff = Coeff::get1HighShelf(g_dB, cache);
                 coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
             if constexpr (filter_type == kTiltShelf) {
-                const auto coeff = Coeff::get1TiltShelf(cache[0], g_dB);
+                const auto coeff = Coeff::get1TiltShelf(g_dB, cache);
                 coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
         } else if (n == 2) {
@@ -154,7 +154,7 @@ namespace zldsp::filter::FilterDesign {
             const auto rescale = centered * rescale_base;
             const auto theta = theta0 * static_cast<double>(2 * i + 1);
             const auto _q = 1.0 / 2.0 / std::cos(theta) * scale * std::pow(2, rescale);
-            Coeff::update2LowShelfDynamicCache(w0, _q, cache + (i * 3));
+            Coeff::update2ShelfDynamicCache(w0, _q, cache + (i * 3));
         }
     }
 
@@ -327,12 +327,13 @@ namespace zldsp::filter::FilterDesign {
         case kLowShelf:
         case kHighShelf:
         case kTiltShelf: {
-            const auto q_modified = std::sqrt(q0 * std::sqrt(2.0)) / std::sqrt(2.0);
             if (n == 1) {
-                cache[0] = w0;
+                Coeff::update1ShelfDynamicCache(w0, cache);
             } else if (n == 2) {
-                Coeff::update2TiltShelfDynamicCache(w0, q_modified, cache);
+                const auto q_modified = std::sqrt(q0 * std::sqrt(2.0)) / std::sqrt(2.0);
+                Coeff::update2ShelfDynamicCache(w0, q_modified, cache);
             } else if (n > 2) {
+                const auto q_modified = std::sqrt(q0 * std::sqrt(2.0)) / std::sqrt(2.0);
                 updateShelfDynamicCache<Coeff>(n, w0, q_modified, cache);
             }
             break;
