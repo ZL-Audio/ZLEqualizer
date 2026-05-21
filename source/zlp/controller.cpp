@@ -212,6 +212,9 @@ namespace zlp {
                     }
                 } else if (c_filter_structure_ == kParallel) {
                     parallel_filters_[i].getFilter().updateParas(filter_paras_[i]);
+                    if (c_dynamic_on_[i]) {
+                        parallel_filters_[i].getFilter().cacheDynPara();
+                    }
                 } else {
                     tdf_filters_[i].getFilter().updateParas(filter_paras_[i]);
                     if (c_dynamic_on_[i]) {

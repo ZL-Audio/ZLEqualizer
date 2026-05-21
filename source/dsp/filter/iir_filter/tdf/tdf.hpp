@@ -105,12 +105,9 @@ namespace zldsp::filter {
                                                                           next_gain, next_q, this->coeffs_);
         }
 
-        /**
-         * update filter coefficients when only gain changes
-         */
-        void updateGain() override {
-            FilterDesign::updateGain<IvantsovCoeff>(this->c_filter_type_, this->c_order_,
-                                                    this->c_gain_.getCurrent(), this->cache_.data(), this->coeffs_);
+        void updateGainLinear(const FloatType g_linear_sqrt) {
+            FilterDesign::updateGainLinear<IvantsovCoeff>(this->c_filter_type_, this->c_order_,
+                                                          g_linear_sqrt, this->cache_.data(), this->coeffs_);
         }
 
     private:

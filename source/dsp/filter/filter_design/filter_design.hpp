@@ -100,49 +100,6 @@ namespace zldsp::filter::FilterDesign {
         return number;
     }
 
-    template <class Coeff, FilterType filter_type>
-    void updateShelfGain(const size_t n, const size_t start_idx, const double g_dB, const double* cache,
-                         std::span<std::array<double, 5>> coeffs) {
-        if (n == 1) {
-            if constexpr (filter_type == kLowShelf) {
-                const auto coeff = Coeff::get1LowShelf(g_dB, cache);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
-            }
-            if constexpr (filter_type == kHighShelf) {
-                const auto coeff = Coeff::get1HighShelf(g_dB, cache);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
-            }
-            if constexpr (filter_type == kTiltShelf) {
-                const auto coeff = Coeff::get1TiltShelf(g_dB, cache);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
-            }
-        } else if (n == 2) {
-            if constexpr (filter_type == kLowShelf) {
-                coeffs[start_idx] = Coeff::get2LowShelf(g_dB, cache);
-            }
-            if constexpr (filter_type == kHighShelf) {
-                coeffs[start_idx] = Coeff::get2HighShelf(g_dB, cache);
-            }
-            if constexpr (filter_type == kTiltShelf) {
-                coeffs[start_idx] = Coeff::get2TiltShelf(g_dB, cache);
-            }
-        } else {
-            const size_t number = n / 2;
-            const auto _g = g_dB / static_cast<double>(number);
-            for (size_t i = 0; i < number; i++) {
-                if constexpr (filter_type == kLowShelf) {
-                    coeffs[i + start_idx] = Coeff::get2LowShelf(_g, cache + (i * 3));
-                }
-                if constexpr (filter_type == kHighShelf) {
-                    coeffs[i + start_idx] = Coeff::get2HighShelf(_g, cache + (i * 3));
-                }
-                if constexpr (filter_type == kTiltShelf) {
-                    coeffs[i + start_idx] = Coeff::get2TiltShelf(_g, cache + (i * 3));
-                }
-            }
-        }
-    }
-
     template <class Coeff>
     inline void updateShelfDynamicCache(const size_t n, const double w0, const double q0, double* cache) {
         const size_t number = n / 2;
@@ -218,24 +175,6 @@ namespace zldsp::filter::FilterDesign {
             coeffs[start_idx] = {1.0, 1.0, g_linear, g_linear, g_linear};
         }
         return n1 + n2;
-    }
-
-    template <class Coeff>
-    void updateBandShelfGain(const size_t n, const double g_dB, const double* cache,
-                             std::span<std::array<double, 5>> coeffs) {
-        const auto mode = static_cast<int>(cache[0]);
-        if (mode == 3) {
-            const size_t number = n / 2;
-            updateShelfGain<Coeff, kLowShelf>(n, 0, -g_dB, cache + 1, coeffs);
-            updateShelfGain<Coeff, kLowShelf>(n, number, g_dB, cache + 1 + 3 * number, coeffs);
-        } else if (mode == 1) {
-            updateShelfGain<Coeff, kHighShelf>(n, 0, g_dB, cache + 1, coeffs);
-        } else if (mode == 2) {
-            updateShelfGain<Coeff, kLowShelf>(n, 0, g_dB, cache + 1, coeffs);
-        } else {
-            const auto g_linear = std::exp2(g_dB * kDbToExp2);
-            coeffs[0] = {1.0, 1.0, g_linear, g_linear, g_linear};
-        }
     }
 
     template <class Coeff>
@@ -348,33 +287,92 @@ namespace zldsp::filter::FilterDesign {
         }
     }
 
+    template <class Coeff, FilterType filter_type>
+    void updateShelfGainLinear(const size_t n, const size_t start_idx, const double g_linear_sqrt, const double* cache,
+                               std::span<std::array<double, 5>> coeffs) {
+        if (n == 1) {
+            if constexpr (filter_type == kLowShelf) {
+                const auto coeff = Coeff::get1LowShelfWithCache(g_linear_sqrt, cache);
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+            }
+            if constexpr (filter_type == kHighShelf) {
+                const auto coeff = Coeff::get1HighShelfWithCache(g_linear_sqrt, cache);
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+            }
+            if constexpr (filter_type == kTiltShelf) {
+                const auto coeff = Coeff::get1TiltShelfWithCache(g_linear_sqrt, cache);
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+            }
+        } else if (n == 2) {
+            if constexpr (filter_type == kLowShelf) {
+                coeffs[start_idx] = Coeff::get2LowShelfWithCache(g_linear_sqrt, cache);
+            }
+            if constexpr (filter_type == kHighShelf) {
+                coeffs[start_idx] = Coeff::get2HighShelfWithCache(g_linear_sqrt, cache);
+            }
+            if constexpr (filter_type == kTiltShelf) {
+                coeffs[start_idx] = Coeff::get2TiltShelfWithCache(g_linear_sqrt, cache);
+            }
+        } else {
+            const size_t number = n / 2;
+            for (size_t i = 0; i < number; i++) {
+                if constexpr (filter_type == kLowShelf) {
+                    coeffs[i + start_idx] = Coeff::get2LowShelfWithCache(g_linear_sqrt, cache + (i * 3));
+                }
+                if constexpr (filter_type == kHighShelf) {
+                    coeffs[i + start_idx] = Coeff::get2HighShelfWithCache(g_linear_sqrt, cache + (i * 3));
+                }
+                if constexpr (filter_type == kTiltShelf) {
+                    coeffs[i + start_idx] = Coeff::get2TiltShelfWithCache(g_linear_sqrt, cache + (i * 3));
+                }
+            }
+        }
+    }
+
     template <class Coeff>
-    void updateGain(const FilterType filterType, const size_t n, const double g_dB,
-                    const double* cache,
-                    std::span<std::array<double, 5>> coeffs) {
+    void updateBandShelfGainLinear(const size_t n, const double g_linear_sqrt, const double* cache,
+                                   std::span<std::array<double, 5>> coeffs) {
+        const auto mode = static_cast<int>(cache[0]);
+        if (mode == 3) {
+            const size_t number = n / 2;
+            updateShelfGainLinear<Coeff, kLowShelf>(n, 0, 1.0 / g_linear_sqrt, cache + 1, coeffs);
+            updateShelfGainLinear<Coeff, kLowShelf>(n, number, g_linear_sqrt, cache + 1 + 3 * number, coeffs);
+        } else if (mode == 1) {
+            updateShelfGainLinear<Coeff, kHighShelf>(n, 0, g_linear_sqrt, cache + 1, coeffs);
+        } else if (mode == 2) {
+            updateShelfGainLinear<Coeff, kLowShelf>(n, 0, g_linear_sqrt, cache + 1, coeffs);
+        } else {
+            const auto g_linear = g_linear_sqrt * g_linear_sqrt;
+            coeffs[0] = {1.0, 1.0, g_linear, g_linear, g_linear};
+        }
+    }
+
+    template <class Coeff>
+    void updateGainLinear(const FilterType filterType, const size_t n, const double g_linear_sqrt,
+                          const double* cache, std::span<std::array<double, 5>> coeffs) {
         switch (filterType) {
         case kPeak: {
             if (n == 2) {
-                coeffs[0] = Coeff::get2Peak(g_dB, cache);
+                coeffs[0] = Coeff::get2PeakWithCache(g_linear_sqrt, cache);
             } else {
-                updateBandShelfGain<Coeff>(n, g_dB, cache, coeffs);
+                updateBandShelfGainLinear<Coeff>(n, g_linear_sqrt, cache, coeffs);
             }
             break;
         }
         case kLowShelf: {
-            updateShelfGain<Coeff, kLowShelf>(n, 0, g_dB, cache, coeffs);
+            updateShelfGainLinear<Coeff, kLowShelf>(n, 0, g_linear_sqrt, cache, coeffs);
             break;
         }
         case kHighShelf: {
-            updateShelfGain<Coeff, kHighShelf>(n, 0, g_dB, cache, coeffs);
+            updateShelfGainLinear<Coeff, kHighShelf>(n, 0, g_linear_sqrt, cache, coeffs);
             break;
         }
         case kTiltShelf: {
-            updateShelfGain<Coeff, kTiltShelf>(n, 0, g_dB, cache, coeffs);
+            updateShelfGainLinear<Coeff, kTiltShelf>(n, 0, g_linear_sqrt, cache, coeffs);
             break;
         }
         case kBandShelf: {
-            updateBandShelfGain<Coeff>(n, g_dB, cache, coeffs);
+            updateBandShelfGainLinear<Coeff>(n, g_linear_sqrt, cache, coeffs);
             break;
         }
         case kLowPass:

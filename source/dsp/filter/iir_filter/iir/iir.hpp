@@ -159,11 +159,6 @@ namespace zldsp::filter {
          */
         virtual void updateCoeffs() = 0;
 
-        /**
-         * update filter gain
-         */
-        virtual void updateGain() = 0;
-
         [[nodiscard]] size_t getFilterNum() const {
             return current_filter_num_;
         }

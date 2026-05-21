@@ -192,6 +192,16 @@ namespace zldsp::filter {
             }
         }
 
+        template <zldsp::compressor::SState s_state>
+        void processToGainLinear(FloatType* side, const size_t num_samples, const size_t gain_num) {
+            const auto scale = kDbToExp2Sqrt / static_cast<FloatType>(gain_num);
+            const auto to_mul = gain_diff_ * scale;
+            const auto to_add = base_gain_ * scale;
+            for (size_t i = 0; i < num_samples; ++i) {
+                side[i] = std::exp2(std::fma(to_mul, follower_.template processSample<s_state>(side[i]), to_add));
+            }
+        }
+
         /**
          *
          * @return the underlying follower
@@ -206,11 +216,6 @@ namespace zldsp::filter {
 
         double getCurrentGain() {
             return base_gain_ + follower_.getCurrentSample() * gain_diff_;
-        }
-
-        template <zldsp::compressor::SState s_state>
-        double getNextGain(const double p) {
-            return base_gain_ + follower_.template processSample<s_state>(p) * gain_diff_;
         }
 
         void setRMSLength(const double rms_length_seconds) {
@@ -240,6 +245,8 @@ namespace zldsp::filter {
         }
 
     protected:
+        static constexpr FloatType kDbToExp2Sqrt = static_cast<FloatType>(0.16609640474436813 * 0.5);
+
         zldsp::compressor::PSFollower<FloatType> follower_;
         double base_gain_{}, target_gain_{}, gain_diff_{};
 

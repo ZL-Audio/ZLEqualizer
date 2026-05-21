@@ -139,19 +139,19 @@ namespace zldsp::filter {
                 this->current_filter_num_ = this->updateIIRCoeffs(FilterType::kBandPass, this->c_order_,
                                                                   next_freq, this->sample_rate_,
                                                                   next_gain, next_q, this->coeffs_);
-                updateGain();
+                parallel_multiplier_ = static_cast<FloatType>(dbToGain(this->c_gain_.getCurrent()) - 1.0);
             } else if (this->c_filter_type_ == kLowShelf && this->c_order_ <= 2) {
                 should_be_parallel_ = true;
                 this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(FilterType::kLowPass, this->c_order_,
                                                                               next_freq, this->sample_rate_,
                                                                               next_gain, next_q, this->coeffs_);
-                updateGain();
+                parallel_multiplier_ = static_cast<FloatType>(dbToGain(this->c_gain_.getCurrent()) - 1.0);
             } else if (this->c_filter_type_ == kHighShelf && this->c_order_ <= 2) {
                 should_be_parallel_ = true;
                 this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(kHighPass, this->c_order_,
                                                                               next_freq, this->sample_rate_,
                                                                               next_gain, next_q, this->coeffs_);
-                updateGain();
+                parallel_multiplier_ = static_cast<FloatType>(dbToGain(this->c_gain_.getCurrent()) - 1.0);
             } else {
                 should_be_parallel_ = false;
                 this->current_filter_num_ = IIR<kFilterSize>::updateIIRCoeffs(this->c_filter_type_, this->c_order_,
@@ -160,15 +160,12 @@ namespace zldsp::filter {
             }
         }
 
-        /**
-         * update filter coefficients when only gain changes
-         * for parallel filters, only multiplier needs to be updated
-         */
-        void updateGain() override {
+        void updateGainLinear(const FloatType g_linear_sqrt) {
             if (should_be_parallel_) {
-                parallel_multiplier_ = static_cast<FloatType>(dbToGain(this->c_gain_.getCurrent()) - 1.0);
+                parallel_multiplier_ = static_cast<FloatType>(g_linear_sqrt * g_linear_sqrt - 1.0);
             } else {
-                updateCoeffs();
+                FilterDesign::updateGainLinear<IvantsovCoeff>(this->c_filter_type_, this->c_order_,
+                                                              g_linear_sqrt, this->cache_.data(), this->coeffs_);
             }
         }
 

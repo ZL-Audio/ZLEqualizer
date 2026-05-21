@@ -71,7 +71,7 @@ namespace zldsp::filter {
             if constexpr (dynamic_on) {
                 if constexpr (dynamic_bypass) {
                     filter_.template setGain<true>(handler_.getBaseGain());
-                    filter_.updateGain();
+                    filter_.updateCoeffs();
                 }
                 // make sure that freq & q are update to date
                 if (filter_.isFreqQSmoothing()) {
@@ -79,42 +79,41 @@ namespace zldsp::filter {
                 }
                 // calculate portion using SIMD
                 handler_.process(side_buffer, num_samples);
+                const size_t gain_num = filter_.getOrder() < 3 ? 1 : filter_.getOrder() / 2;
                 switch (handler_.getFollower().getSState()) {
                 case zldsp::compressor::SState::kOff: {
-                    internalProcess<bypass, dynamic_bypass, zldsp::compressor::SState::kOff>(
-                        main_buffer, side_buffer, num_samples);
+                    handler_.template processToGainLinear<zldsp::compressor::SState::kOff>(
+                        side_buffer[0], num_samples, gain_num);
                     break;
                 }
                 case zldsp::compressor::SState::kFull: {
-                    internalProcess<bypass, dynamic_bypass, zldsp::compressor::SState::kFull>(
-                        main_buffer, side_buffer, num_samples);
+                    handler_.template processToGainLinear<zldsp::compressor::SState::kFull>(
+                        side_buffer[0], num_samples, gain_num);
                     break;
                 }
                 case zldsp::compressor::SState::kMix: {
-                    internalProcess<bypass, dynamic_bypass, zldsp::compressor::SState::kMix>(
-                        main_buffer, side_buffer, num_samples);
+                    handler_.template processToGainLinear<zldsp::compressor::SState::kMix>(
+                        side_buffer[0], num_samples, gain_num);
                     break;
                 }
                 default: {
                     break;
                 }
                 }
+                internalProcess<bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
             } else {
                 filter_.template process<bypass>(main_buffer, num_samples);
             }
         }
 
-        template <bool bypass = false, bool dynamic_bypass = false, zldsp::compressor::SState s_state>
+        template <bool bypass = false, bool dynamic_bypass = false>
         void internalProcess(std::span<FloatType*> main_buffer, std::span<FloatType*> side_buffer,
                              const size_t num_samples) {
             const auto side_p = side_buffer[0];
             // dynamic processing
             for (size_t i = 0; i < num_samples; ++i) {
-                if constexpr (dynamic_bypass) {
-                    handler_.template getNextGain<s_state>(side_p[i]);
-                } else {
-                    filter_.template setGain<true>(handler_.template getNextGain<s_state>(side_p[i]));
-                    filter_.updateGain();
+                if constexpr (!dynamic_bypass) {
+                    filter_.updateGainLinear(side_p[i]);
                 }
                 for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
                     if constexpr (bypass) {

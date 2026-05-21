@@ -95,23 +95,12 @@ namespace zldsp::filter {
             }
         }
 
-        /**
-         * update filter coefficients when only gain changes
-         */
-        void updateGain() override {
-            FilterDesign::updateGain<IvantsovCoeff>(this->c_filter_type_, this->c_order_,
-                                                  this->c_gain_.getCurrent(), this->cache_.data(), this->coeffs_);
+        void updateGainLinear(const FloatType g_linear_sqrt) {
+            FilterDesign::updateGainLinear<IvantsovCoeff>(this->c_filter_type_, this->c_order_,
+                                                          g_linear_sqrt, this->cache_.data(), this->coeffs_);
             for (size_t i = 0; i < this->current_filter_num_; ++i) {
                 filters_[i].updateFromBiquad(this->coeffs_[i]);
             }
-        }
-
-        /**
-         * get the array of 2nd order filters
-         * @return
-         */
-        std::array<SVFBase<FloatType>, kFilterSize>& getFilters() {
-            return filters_;
         }
 
     private:
