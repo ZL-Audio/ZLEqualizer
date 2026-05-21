@@ -17,26 +17,30 @@ namespace zlpanel {
         setInterceptsMouseClicks(false, false);
     }
 
-    void SumPanel::paintSameStereo(juce::Graphics& g) const {
+    void SumPanel::paintSameStereo(juce::Graphics& g) {
         for (size_t lr = 0; lr < 5; ++lr) {
             const auto i = static_cast<size_t>(4) - lr;
-            if (!paths_[i].isEmpty() && is_same_stereo_[i]) {
+            paths_[i].pull();
+            auto& path{paths_[i].getReader()};
+            if (!path.isEmpty() && is_same_stereo_[i]) {
                 g.setColour(base_.getColourMap2(i));
-                g.strokePath(paths_[i], juce::PathStrokeType(curve_thickness_,
-                                                              juce::PathStrokeType::curved,
-                                                              juce::PathStrokeType::butt));
+                g.strokePath(path, juce::PathStrokeType(curve_thickness_,
+                                                        juce::PathStrokeType::curved,
+                                                        juce::PathStrokeType::butt));
             }
         }
     }
 
-    void SumPanel::paintDifferentStereo(juce::Graphics& g) const {
+    void SumPanel::paintDifferentStereo(juce::Graphics& g) {
         for (size_t lr = 0; lr < 5; ++lr) {
             const auto i = static_cast<size_t>(4) - lr;
-            if (!paths_[i].isEmpty() && !is_same_stereo_[i]) {
+            paths_[i].pull();
+            auto& path{paths_[i].getReader()};
+            if (!path.isEmpty() && !is_same_stereo_[i]) {
                 g.setColour(base_.getColourMap2(i).withAlpha(kDiffStereoAlphaMultiplier));
-                g.strokePath(paths_[i], juce::PathStrokeType(curve_thickness_,
-                                                              juce::PathStrokeType::curved,
-                                                              juce::PathStrokeType::butt));
+                g.strokePath(path, juce::PathStrokeType(curve_thickness_,
+                                                        juce::PathStrokeType::curved,
+                                                        juce::PathStrokeType::butt));
             }
         }
     }
@@ -53,7 +57,7 @@ namespace zlpanel {
             return;
         }
 
-        auto& path{next_paths_[lr]};
+        auto& path{paths_[lr].getWriter()};
         path.clear();
 
         if (on_indices.empty()) {
@@ -61,6 +65,7 @@ namespace zlpanel {
                 path.startNewSubPath(xs[0], b);
                 path.lineTo(xs.back(), b);
             }
+            paths_[lr].publish();
             return;
         }
 
@@ -91,14 +96,7 @@ namespace zlpanel {
 
         PathMinimizer<1> minimizer(path);
         minimizer.drawPath<true, false>(xs, std::span(temp_db_));
-    }
-
-    void SumPanel::runUpdate(std::array<bool, 5>& to_update_flags_) {
-        for (size_t lr = 0; lr < 5; ++lr) {
-            if (std::exchange(to_update_flags_[lr], false)) {
-                paths_[lr] = next_paths_[lr];
-            }
-        }
+        paths_[lr].publish();
     }
 
     void SumPanel::updateDrawingParas(const int lr, const bool is_same_stereo) {

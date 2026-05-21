@@ -19,9 +19,9 @@ namespace zlpanel {
     public:
         explicit SumPanel(PluginProcessor& p, zlgui::UIBase& base);
 
-        void paintSameStereo(juce::Graphics& g) const;
+        void paintSameStereo(juce::Graphics& g);
 
-        void paintDifferentStereo(juce::Graphics& g) const;
+        void paintDifferentStereo(juce::Graphics& g);
 
         void resized() override;
 
@@ -32,8 +32,6 @@ namespace zlpanel {
                  std::span<float> xs, float k, float b,
                  std::array<zldsp::vector::aligned_vector<float>, zlp::kBandNum>& dynamic_mags);
 
-        void runUpdate(std::array<bool, 5>& to_update_flags_);
-
     private:
         static constexpr size_t kNumPoints = 400;
         static constexpr float kDiffStereoAlphaMultiplier = .25f;
@@ -41,8 +39,7 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
 
-        std::array<juce::Path, 5> paths_{};
-        std::array<juce::Path, 5> next_paths_{};
+        std::array<TriBuffer<juce::Path>, 5> paths_{};
 
         std::array<bool, zlp::kBandNum> is_same_stereo_{};
 

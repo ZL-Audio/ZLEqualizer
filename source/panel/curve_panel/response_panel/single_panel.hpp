@@ -20,9 +20,9 @@ namespace zlpanel {
         explicit SinglePanel(PluginProcessor& p, zlgui::UIBase& base,
                              std::vector<size_t>& not_off_indices);
 
-        void paintSameStereo(juce::Graphics& g) const;
+        void paintSameStereo(juce::Graphics& g);
 
-        void paintDifferentStereo(juce::Graphics& g) const;
+        void paintDifferentStereo(juce::Graphics& g);
 
         void resized() override;
 
@@ -39,10 +39,6 @@ namespace zlpanel {
                  float center_x, float center_mag, float button_mag,
                  bool to_update_side,
                  float left_x, float right_x);
-
-        void runUpdate(std::array<bool, zlp::kBandNum>& to_update_base_flags,
-                       std::array<bool, zlp::kBandNum>& to_update_target_flags,
-                       std::array<bool, zlp::kBandNum>& to_update_side_flags);
 
     private:
         static constexpr size_t kNumPoints = 400;
@@ -61,20 +57,15 @@ namespace zlpanel {
         std::atomic<float> center_y_{0.f};
         float side_y_{0.f};
 
-        std::array<juce::Path, zlp::kBandNum> base_paths_{};
-        std::array<juce::Path, zlp::kBandNum> next_base_paths_{};
+        std::array<TriBuffer<juce::Path>, zlp::kBandNum> base_paths_{};
 
-        std::array<juce::Path, zlp::kBandNum> base_fills_{};
-        std::array<juce::Path, zlp::kBandNum> next_base_fills_{};
+        std::array<TriBuffer<juce::Path>, zlp::kBandNum> base_fills_{};
 
-        std::array<juce::Path, zlp::kBandNum> target_fills_{};
-        std::array<juce::Path, zlp::kBandNum> next_target_fills_{};
+        std::array<TriBuffer<juce::Path>, zlp::kBandNum> target_fills_{};
 
-        std::array<juce::Line<float>, zlp::kBandNum> button_lines_{};
-        std::array<juce::Line<float>, zlp::kBandNum> next_button_lines_{};
+        std::array<TriBuffer<juce::Line<float>>, zlp::kBandNum> button_lines_{};
 
-        std::array<juce::Line<float>, zlp::kBandNum> side_lines_{};
-        std::array<juce::Line<float>, zlp::kBandNum> next_side_lines_{};
+        std::array<TriBuffer<juce::Line<float>>, zlp::kBandNum> side_lines_{};
 
         std::array<float, zlp::kBandNum> base_stroke_alpha_{};
         std::array<float, zlp::kBandNum> base_fill_alpha_{};
@@ -87,7 +78,7 @@ namespace zlpanel {
         zldsp::vector::aligned_vector<float> temp_db_{};
 
         template <bool thick = false>
-        void drawBand(juce::Graphics& g, size_t band) const;
+        void drawBand(juce::Graphics& g, size_t band);
 
         void lookAndFeelChanged() override;
     };

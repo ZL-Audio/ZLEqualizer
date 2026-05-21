@@ -68,10 +68,6 @@ namespace zlpanel {
     }
 
     void ResponsePanel::paint(juce::Graphics& g) {
-        const std::unique_lock lock{paint_mutex_, std::try_to_lock};
-        if (!lock.owns_lock()) {
-            return;
-        }
         const auto should_alpha = static_cast<float>(base_.getPanelProperty(zlgui::kCurveShouldTransparent)) > .5f;
         if (should_alpha) {
             g.beginTransparencyLayer(.5f);
@@ -250,13 +246,6 @@ namespace zlpanel {
                     break;
                 }
             }
-            {
-                std::lock_guard lock{paint_mutex_};
-                single_panel_.runUpdate(to_update_base_y_flags_, to_update_target_y_flags_, to_update_side_y_flags_);
-            }
-            if (threadShouldExit()) {
-                break;
-            }
             for (size_t lr = 0; lr < 5; ++lr) {
                 sum_panel_.run(lr, to_update_lr_flags_[lr], is_lr_not_off_flags_[lr],
                                on_lr_indices_[lr],
@@ -265,13 +254,6 @@ namespace zlpanel {
                 if (threadShouldExit()) {
                     break;
                 }
-            }
-            {
-                std::lock_guard lock{paint_mutex_};
-                sum_panel_.runUpdate(to_update_lr_flags_);
-            }
-            if (threadShouldExit()) {
-                break;
             }
         }
     }

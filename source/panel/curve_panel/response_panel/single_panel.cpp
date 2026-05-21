@@ -20,7 +20,7 @@ namespace zlpanel {
         setInterceptsMouseClicks(false, false);
     }
 
-    void SinglePanel::paintSameStereo(juce::Graphics& g) const {
+    void SinglePanel::paintSameStereo(juce::Graphics& g) {
         const auto selected_band = base_.getSelectedBand();
         if (selected_band < zlp::kBandNum) {
             for (const auto& band : not_off_indices_) {
@@ -31,14 +31,15 @@ namespace zlpanel {
             drawBand<true>(g, selected_band);
             if (target_fill_alpha_[selected_band] > 0.01f) {
                 g.setColour(base_stroke_colour_[selected_band]);
-                const auto line = side_lines_[selected_band];
+                side_lines_[selected_band].pull();
+                const auto line = side_lines_[selected_band].getReader();
                 g.fillRect(line.getStartX(), side_y_ - curve_thickness_ * .35f,
-                               line.getEndX() - line.getStartX(), curve_thickness_ * .7f);
+                           line.getEndX() - line.getStartX(), curve_thickness_ * .7f);
             }
         }
     }
 
-    void SinglePanel::paintDifferentStereo(juce::Graphics& g) const {
+    void SinglePanel::paintDifferentStereo(juce::Graphics& g) {
         const auto selected_band = base_.getSelectedBand();
         if (selected_band < zlp::kBandNum) {
             for (const auto& band : not_off_indices_) {
@@ -100,84 +101,88 @@ namespace zlpanel {
                           const zlp::FilterStatus filter_status,
                           const bool to_update_base, const bool to_update_target,
                           std::span<float> xs, const float k, const float b,
-                          zldsp::vector::aligned_vector<float>& base_mag, zldsp::vector::aligned_vector<float>& target_mag,
+                          zldsp::vector::aligned_vector<float>& base_mag,
+                          zldsp::vector::aligned_vector<float>& target_mag,
                           const float center_x, const float center_mag, const float button_mag,
                           const bool to_update_side, const float left_x, const float right_x) {
         const auto center_y = center_y_.load(std::memory_order_relaxed);
+        auto& next_base_path{base_paths_[band].getWriter()};
+        auto& next_base_fill{base_fills_[band].getWriter()};
+        auto& next_button_line{button_lines_[band].getWriter()};
+        auto& next_target_fill{target_fills_[band].getWriter()};
+        auto& next_side_line{side_lines_[band].getWriter()};
+
         if (to_update_base) {
-            next_base_paths_[band].clear();
-            next_base_fills_[band].clear();
-            next_button_lines_[band].setEnd(-100.f, -100.f);
+            next_base_path.clear();
+            next_base_fill.clear();
+            next_button_line.setEnd(-100.f, -100.f);
             if (filter_status != zlp::FilterStatus::kOff) {
                 zldsp::vector::fma(temp_db_.data(), base_mag.data(), k, b, temp_db_.size());
                 // draw base path
-                PathMinimizer<1> minimizer{next_base_paths_[band]};
+                PathMinimizer<1> minimizer{next_base_path};
                 minimizer.drawPath<true, false>(xs, std::span(temp_db_));
                 // draw base fill
-                next_base_fills_[band] = next_base_paths_[band];
-                next_base_fills_[band].lineTo(xs.back(), center_y);
-                next_base_fills_[band].lineTo(xs[0], center_y);
-                next_base_fills_[band].closeSubPath();
+                next_base_fill = next_base_path;
+                next_base_fill.lineTo(xs.back(), center_y);
+                next_base_fill.lineTo(xs[0], center_y);
+                next_base_fill.closeSubPath();
                 // draw button line
                 if (std::abs(center_mag - button_mag) > 1e-6f) {
-                    next_button_lines_[band].setStart(center_x, center_mag);
-                    next_button_lines_[band].setEnd(center_x, button_mag);
+                    next_button_line.setStart(center_x, center_mag);
+                    next_button_line.setEnd(center_x, button_mag);
                 }
             }
         }
         if (to_update_target) {
-            next_target_fills_[band].clear();
+            next_target_fill.clear();
             if (filter_status != zlp::FilterStatus::kOff) {
                 zldsp::vector::fma(temp_db_.data(), target_mag.data(), k, b, temp_db_.size());
                 // draw target fill
-                next_target_fills_[band] = next_base_paths_[band];
-                PathMinimizer<1> minimizer{next_target_fills_[band]};
+                next_target_fill = next_base_path;
+                PathMinimizer<1> minimizer{next_target_fill};
                 minimizer.drawPath<false, true>(xs, std::span(temp_db_));
-                next_target_fills_[band].closeSubPath();
+                next_target_fill.closeSubPath();
             }
         }
         if (to_update_side) {
-            next_side_lines_[band].setStart(left_x, 0.f);
-            next_side_lines_[band].setEnd(right_x, 0.f);
+            next_side_line.setStart(left_x, 0.f);
+            next_side_line.setEnd(right_x, 0.f);
         }
-    }
-
-    void SinglePanel::runUpdate(std::array<bool, zlp::kBandNum>& to_update_base_flags,
-                                std::array<bool, zlp::kBandNum>& to_update_target_flags,
-                                std::array<bool, zlp::kBandNum>& to_update_side_flags) {
-        for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            if (std::exchange(to_update_base_flags[band], false)) {
-                base_paths_[band] = next_base_paths_[band];
-                base_fills_[band].swapWithPath(next_base_fills_[band]);
-                button_lines_[band] = next_button_lines_[band];
-            }
-            if (std::exchange(to_update_target_flags[band], false)) {
-                target_fills_[band].swapWithPath(next_target_fills_[band]);
-            }
-            if (std::exchange(to_update_side_flags[band], false)) {
-                side_lines_[band] = next_side_lines_[band];
-            }
+        if (to_update_base) {
+            base_paths_[band].publish();
+            base_fills_[band].publish();
+            button_lines_[band].publish();
+        }
+        if (to_update_target) {
+            target_fills_[band].publish();
+        }
+        if (to_update_side) {
+            side_lines_[band].publish();
         }
     }
 
     template <bool thick>
-    void SinglePanel::drawBand(juce::Graphics& g, const size_t band) const {
+    void SinglePanel::drawBand(juce::Graphics& g, const size_t band) {
         const auto colour = base_.getColourMap1(band);
         if (base_fill_alpha_[band] > 0.01f) {
-            g.setColour(colour.withAlpha(base_fill_alpha_[band]));
-            g.fillPath(base_fills_[band]);
+            g.setColour(colour.withAlpha(base_fill_alpha_[band]));\
+            base_fills_[band].pull();
+            g.fillPath(base_fills_[band].getReader());
         }
         if (target_fill_alpha_[band] > 0.01f) {
             g.setColour(colour.withAlpha(target_fill_alpha_[band]));
-            g.fillPath(target_fills_[band]);
+            target_fills_[band].pull();
+            g.fillPath(target_fills_[band].getReader());
         }
         const auto curve_thickness = thick ? curve_thickness_ * kThickMultiplier : curve_thickness_;
         if (base_stroke_alpha_[band] > 0.01f) {
             g.setColour(base_stroke_colour_[band]);
-            g.strokePath(base_paths_[band], juce::PathStrokeType(curve_thickness,
-                                                                 juce::PathStrokeType::curved,
-                                                                 juce::PathStrokeType::square));
-            if (const auto line = button_lines_[band]; line.getEndX() > 0.f) {
+            base_paths_[band].pull();
+            g.strokePath(base_paths_[band].getReader(), juce::PathStrokeType(curve_thickness,
+                                                                             juce::PathStrokeType::curved,
+                                                                             juce::PathStrokeType::square));
+            button_lines_[band].pull();
+            if (const auto line = button_lines_[band].getReader(); line.getEndX() > 0.f) {
                 if (line.getEndY() > line.getStartY()) {
                     g.fillRect(line.getStartX() - curve_thickness * .35f, line.getStartY(),
                                curve_thickness * .7f, line.getEndY() - line.getStartY());

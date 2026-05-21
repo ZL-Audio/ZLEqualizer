@@ -14,9 +14,9 @@
 
 namespace zlpanel {
     template <typename C>
-    class BufferedUI {
+    class TriBuffer {
     public:
-        explicit BufferedUI() = default;
+        TriBuffer() = default;
 
         /**
          * pull new object before reading

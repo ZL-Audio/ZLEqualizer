@@ -57,7 +57,7 @@ namespace zlpanel {
         bool skip_next_repaint_{false};
 
         std::vector<float> xs_{}, ys_{};
-        std::array<BufferedUI<juce::Path>, 3> paths_;
+        std::array<TriBuffer<juce::Path>, 3> paths_;
 
         double c_sample_rate_{0.0};
         int fft_size_{0};
@@ -91,7 +91,7 @@ namespace zlpanel {
         std::array<zldsp::analyzer::SpectrumDecayer, 3> decayers_;
 
         zldsp::vector::aligned_vector<float> current_ps_{}, coll_ps_{};
-        BufferedUI<juce::ColourGradient> gradient_;
+        TriBuffer<juce::ColourGradient> gradient_;
 
         void runFFT();
 
