@@ -10,7 +10,7 @@
 #pragma once
 
 #include <atomic>
-#include <juce_gui_basics/juce_gui_basics.h>
+#include <array>
 
 namespace zlpanel {
     template <typename C>

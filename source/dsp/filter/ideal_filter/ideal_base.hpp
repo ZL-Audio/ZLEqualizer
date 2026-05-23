@@ -12,6 +12,7 @@
 #include <span>
 #include <array>
 #include <complex>
+#include "../../vector/highway_import.hpp"
 
 namespace zldsp::filter {
     template <typename FloatType>
@@ -21,7 +22,7 @@ namespace zldsp::filter {
         static void updateMagnitudeSquare(const std::array<double, 5>& coeff,
                                           std::span<const FloatType> ws,
                                           std::span<FloatType> res_mag_sqr) {
-
+            namespace hn = hwy::HWY_NAMESPACE;
             static constexpr hn::ScalableTag<FloatType> d;
             static constexpr size_t lanes = hn::MaxLanes(d);
 
@@ -78,7 +79,7 @@ namespace zldsp::filter {
         static void updateResponse(const std::array<double, 5>& coeff,
                                    std::span<const FloatType> ws,
                                    std::span<FloatType> res_real, std::span<FloatType> res_imag) {
-
+            namespace hn = hwy::HWY_NAMESPACE;
             static constexpr hn::ScalableTag<FloatType> d;
             static constexpr size_t lanes = hn::MaxLanes(d);
 

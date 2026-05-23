@@ -17,4 +17,4 @@
 #include "juce_parameter_value.hpp"
 #include "band_helper.hpp"
 #include "freq_helper.hpp"
-#include "buffered_ui.hpp"
+#include "tri_buffer.hpp"

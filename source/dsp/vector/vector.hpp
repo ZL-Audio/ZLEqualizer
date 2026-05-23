@@ -16,6 +16,7 @@
 #include "vector_transform/vector_clamp.hpp"
 #include "vector_transform/vector_mag_to_db.hpp"
 #include "vector_transform/vector_flip.hpp"
+#include "vector_transform/vector_log.hpp"
 #include "vector_transform/vector_fma.hpp"
 
 #include "vector_reduce/vector_sum.hpp"
