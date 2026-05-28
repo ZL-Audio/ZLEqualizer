@@ -13,15 +13,23 @@
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
 #include "../../multilingual/tooltip_helper.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/fft_analyzer_receiver.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/spectrum_smoother.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/spectrum_tilter.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/spectrum_accumulator.hpp"
+#include "../../../dsp/interpolation/interpolation.hpp"
 
 namespace zlpanel {
     class MatchFFTPanel final : public juce::Component,
-                                public juce::SettableTooltipClient,
-                                public juce::Thread,
                                 private juce::ValueTree::Listener {
     public:
-        explicit MatchFFTPanel(PluginProcessor& p, zlgui::UIBase& base,
-                               multilingual::TooltipHelper& tooltip_helper);
+        static constexpr size_t kNumPoints = 128;
+
+        enum class SideMode {
+            kSide, kPreset, kFlat
+        };
+
+        explicit MatchFFTPanel(PluginProcessor& p, zlgui::UIBase& base);
 
         ~MatchFFTPanel() override;
 
@@ -29,46 +37,69 @@ namespace zlpanel {
 
         void resized() override;
 
-        void updateSampleRate(double sample_rate);
-
-        void run() override;
+        void run(juce::Thread& thread);
 
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
-        multilingual::TooltipHelper& tooltip_helper_;
-        std::atomic<float>& fft_min_db_ref_;
-        std::atomic<float>& eq_max_db_ref_;
 
-        double sample_rate_{0.};
-        AtomicBound<float> atomic_bound_{};
-        float c_width_{0.f};
-        std::atomic<float> min_ratio_{1.f}, max_ratio_{1.f};
-        std::atomic<float> k_{1.f}, b_{0.f};
+        std::atomic<SideMode> side_mode_{SideMode::kSide};
 
-        std::vector<float> xs_{};
-        std::vector<float> source_ys_{}, target_ys_{}, diff_ys_{};
+        std::atomic<float> &fft_min_db_idx_ref_;
+        float c_fft_min_db_{0.f};
 
-        juce::Path source_path_, next_source_path_;
-        juce::Path target_path_, next_target_path_;
-        juce::Path diff_path_, next_diff_path_;
-        std::mutex mutex_;
+        std::atomic<float>& eq_max_db_idx_ref_;
+        float c_eq_max_db_{0.f};
 
-        bool draw_on_{false};
-        float fft_width_{1.f};
-        float pre_drawing_p_{0.f}, pre_drawing_db_{0.f};
-        float drawing_k_{1.f}, drawing_actual_k_{1.f}, drawing_b_{0.f};
+        zldsp::vector::aligned_vector<float> raw_freqs_{}, raw_dbs_{};
+        zldsp::vector::aligned_vector<float> freqs_{};
+        std::array<zldsp::vector::aligned_vector<float>, 2> dbs_{};
+        zldsp::vector::aligned_vector<float> xs_{};
+        zldsp::vector::aligned_vector<float> ys_{};
+        std::array<TriBuffer<juce::Path>, 3> paths_;
 
-        void updatePath(juce::Path& path, const juce::Rectangle<float>& bound, std::span<float> ys) const;
+        double c_sample_rate_{0.0};
+        int fft_size_{0};
 
-        void visibilityChanged() override;
+        std::atomic<float> width_{0.f}, height_{0.f};
+        std::atomic<float> font_size_{0.1f};
+        float y_k_{0.f}, y_b_{0.f};
+        float c_k_{0.f}, c_b_{0.f};
+        std::atomic<bool> to_update_xs_para_{true};
+        std::atomic<bool> to_update_ys_para_{true};
+        std::atomic<bool> to_update_curve_para_{true};
 
-        void mouseDown(const juce::MouseEvent& event) override;
+        zldsp::analyzer::FFTAnalyzerProcessor processor_;
+        std::array<zldsp::analyzer::FFTAnalyzerReceiver, 2> receivers_{
+            zldsp::analyzer::FFTAnalyzerReceiver{processor_},
+            zldsp::analyzer::FFTAnalyzerReceiver{processor_}
+        };
+        std::array<zldsp::analyzer::SpectrumAccumulator, 2> accumulators_;
+        zldsp::analyzer::SpectrumSmoother smoother_;
+        zldsp::analyzer::SpectrumTilter tilter_;
+        std::unique_ptr<zldsp::interpolation::SeqMakima<float>> interpolator_;
 
-        void mouseDrag(const juce::MouseEvent& event) override;
+        std::mutex save_freq_mutex_;
+        std::mutex save_db_mutex_;
 
-        void mouseDoubleClick(const juce::MouseEvent& event) override;
+        std::atomic<bool> to_update_preset_{false};
+        std::mutex load_freq_mutex_;
+        std::mutex load_db_mutex_;
+        std::vector<float> preset_freqs_;
+        std::vector<float> preset_dbs_;
 
-        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
+        void runFFT(juce::Thread& thread);
+
+        void processMainFFT();
+
+        void processSideFFT();
+
+        void processTargetPreset();
+
+        void processTargetFlat();
+
+        void processDiff();
+
+        void createPath(juce::Path& path) const;
     };
 }

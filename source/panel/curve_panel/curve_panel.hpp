@@ -18,7 +18,8 @@
 
 namespace zlpanel {
     class CurvePanel final : public juce::Component,
-                             private juce::ValueTree::Listener {
+                             private juce::ValueTree::Listener,
+                             private juce::Thread {
     public:
         explicit CurvePanel(PluginProcessor& p, zlgui::UIBase& base,
                             multilingual::TooltipHelper& tooltip_helper);
@@ -26,6 +27,8 @@ namespace zlpanel {
         ~CurvePanel() override;
 
         void paintOverChildren(juce::Graphics& g) override;
+
+        void run() override;
 
         void resized() override;
 
@@ -60,6 +63,7 @@ namespace zlpanel {
         ScalePanel scale_panel_;
         OutputPanel output_panel_;
         AnalyzerPanel analyzer_panel_;
+        std::atomic<bool> is_match_on_{false};
 
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };

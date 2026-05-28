@@ -11,12 +11,12 @@
 
 namespace zlpanel {
     FFTPanel::FFTPanel(PluginProcessor& p, zlgui::UIBase& base) :
-        Thread("fft_panel"),
         p_ref_(p),
         base_(base),
         pre_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPreON::kID)),
         post_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPostON::kID)),
         side_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSideON::kID)),
+        stereo_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTStereo::kID)),
         coll_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionON::kID)),
         coll_strength_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionStrength::kID)),
         fft_min_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
@@ -29,7 +29,9 @@ namespace zlpanel {
             }
         }
         setInterceptsMouseClicks(false, false);
-
+        for (auto& receiver : receivers_) {
+            receiver.setON(true);
+        }
         base_.getPanelValueTree().addListener(this);
     }
 
@@ -90,18 +92,11 @@ namespace zlpanel {
         to_update_ys_para_.store(true, std::memory_order::release);
     }
 
-    void FFTPanel::run() {
-        for (auto& receiver : receivers_) {
-            receiver.setON(true);
-        }
-        while (!threadShouldExit()) {
-            const auto flag = wait(-1);
-            juce::ignoreUnused(flag);
-            runFFT();
-        }
+    void FFTPanel::run(const juce::Thread& thread) {
+        runFFT(thread);
     }
 
-    void FFTPanel::runFFT() {
+    void FFTPanel::runFFT(const juce::Thread& thread) {
         const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
         const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
         const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
@@ -162,7 +157,7 @@ namespace zlpanel {
         }
         fifo.finishRead(num_read);
         sender.getLock().unlock();
-        if (threadShouldExit()) {
+        if (thread.threadShouldExit()) {
             return;
         }
         if (fft_size_ <= 0) {
@@ -236,11 +231,13 @@ namespace zlpanel {
             return;
         }
         // update each path
+        const auto fft_stereo = static_cast<zldsp::analyzer::StereoType>(std::round(
+            stereo_ref_.load(std::memory_order::relaxed)));
         for (size_t i = 0; i < 3; i++) {
             if (!is_on[i]) {
                 continue;
             }
-            receivers_[i].forward(zldsp::analyzer::StereoType::kStereo);
+            receivers_[i].forward(fft_stereo);
             auto& spectrum{receivers_[i].getAbsSqrFFTBuffer()};
             smoother_.smooth(spectrum);
             zldsp::vector::sqr_mag_to_db(spectrum.data(), spectrum.size());
@@ -263,7 +260,7 @@ namespace zlpanel {
             minimizer.finish();
             path.lineTo(xs_[num_point_ - 1] + .1f, c_height_ * 1.5f);
             path.closeSubPath();
-            if (threadShouldExit()) {
+            if (thread.threadShouldExit()) {
                 return;
             }
         }
@@ -272,7 +269,7 @@ namespace zlpanel {
                 paths_[i].publish();
             }
         }
-        if (threadShouldExit()) {
+        if (thread.threadShouldExit()) {
             return;
         }
         // update collision
@@ -286,7 +283,7 @@ namespace zlpanel {
                     receivers_[1].getAbsSqrFFTBuffer(), receivers_[0].getAbsSqrFFTBuffer(),
                     current_ps_, coll_ps_, coll_strength_ref_.load(std::memory_order::relaxed));
             }
-            if (threadShouldExit()) {
+            if (thread.threadShouldExit()) {
                 return;
             }
             const auto width = width_.load(std::memory_order::relaxed);

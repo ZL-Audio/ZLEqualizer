@@ -13,11 +13,12 @@ namespace zlpanel {
     CurvePanel::CurvePanel(PluginProcessor& p,
                            zlgui::UIBase& base,
                            multilingual::TooltipHelper& tooltip_helper) :
+        Thread("curve_panel"),
         base_(base),
         background_panel_(p, base, tooltip_helper),
         fft_panel_(p, base),
         response_panel_(p, base, tooltip_helper),
-        match_fft_panel_(p, base, tooltip_helper),
+        match_fft_panel_(p, base),
         scale_panel_(p, base, tooltip_helper),
         output_panel_(p, base, tooltip_helper),
         analyzer_panel_(p, base, tooltip_helper) {
@@ -41,12 +42,19 @@ namespace zlpanel {
     }
 
     void CurvePanel::paintOverChildren(juce::Graphics&) {
-        if (fft_panel_.isVisible()) {
-            fft_panel_.notify();
-        }
+        notify();
         response_panel_.notify();
-        if (match_fft_panel_.isVisible()) {
-            match_fft_panel_.notify();
+    }
+
+    void CurvePanel::run() {
+        while (!threadShouldExit()) {
+            const auto flag = wait(-1);
+            juce::ignoreUnused(flag);
+            if (is_match_on_.load(std::memory_order::relaxed)) {
+                match_fft_panel_.run(*this);
+            } else {
+                fft_panel_.run(*this);
+            }
         }
     }
 
@@ -94,17 +102,16 @@ namespace zlpanel {
     void CurvePanel::updateSampleRate(const double sample_rate) {
         background_panel_.updateSampleRate(sample_rate);
         response_panel_.updateSampleRate(sample_rate);
-        match_fft_panel_.updateSampleRate(sample_rate);
     }
 
     void CurvePanel::startThreads() {
-        fft_panel_.startThread(juce::Thread::Priority::low);
+        startThread(juce::Thread::Priority::low);
         response_panel_.startThread(juce::Thread::Priority::low);
     }
 
     void CurvePanel::stopThreads() {
-        if (fft_panel_.isThreadRunning()) {
-            fft_panel_.stopThread(-1);
+        if (isThreadRunning()) {
+            stopThread(-1);
         }
         if (response_panel_.isThreadRunning()) {
             response_panel_.stopThread(-1);
@@ -116,6 +123,7 @@ namespace zlpanel {
             const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchPanel));
             const auto idx = static_cast<int>(std::round(f));
             match_fft_panel_.setVisible(idx > 0);
+            is_match_on_.store(idx > 0, std::memory_order::relaxed);
             scale_panel_.setVisible(idx > 0);
             fft_panel_.setVisible(idx == 0);
             response_panel_.setVisible(idx != 1 && idx != 2);

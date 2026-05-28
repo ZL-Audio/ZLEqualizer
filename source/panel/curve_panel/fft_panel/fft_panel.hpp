@@ -21,7 +21,6 @@
 
 namespace zlpanel {
     class FFTPanel final : public juce::Component,
-                           public juce::Thread,
                            private juce::ValueTree::Listener {
     public:
         explicit FFTPanel(PluginProcessor& p, zlgui::UIBase& base);
@@ -30,7 +29,7 @@ namespace zlpanel {
 
         void paint(juce::Graphics& g) override;
 
-        void run() override;
+        void run(const juce::Thread& thread);
 
         void resized() override;
 
@@ -42,6 +41,7 @@ namespace zlpanel {
         std::atomic<float>& pre_ref_;
         std::atomic<float>& post_ref_;
         std::atomic<float>& side_ref_;
+        std::atomic<float>& stereo_ref_;
         std::atomic<float>& coll_ref_;
         std::atomic<float>& coll_strength_ref_;
 
@@ -93,7 +93,7 @@ namespace zlpanel {
         zldsp::vector::aligned_vector<float> current_ps_{}, coll_ps_{};
         TriBuffer<juce::ColourGradient> gradient_;
 
-        void runFFT();
+        void runFFT(const juce::Thread& thread);
 
         void lookAndFeelChanged() override;
     };

@@ -163,9 +163,9 @@ namespace zlchore::eq_match {
         const std::array<double, 3> upper_bound_;
 
         zldsp::filter::Ideal<float, 6> filter_;
-        std::vector<float> ws_;
-        std::vector<float> diffs_;
-        std::vector<float> res_;
+        zldsp::vector::aligned_vector<float> ws_;
+        zldsp::vector::aligned_vector<float> diffs_;
+        zldsp::vector::aligned_vector<float> res_;
 
         struct OptFData {
             size_t n;

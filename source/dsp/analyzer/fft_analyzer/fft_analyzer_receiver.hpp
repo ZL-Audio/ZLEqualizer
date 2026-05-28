@@ -30,7 +30,14 @@ namespace zldsp::analyzer {
         void prepare(const size_t num_channels) {
             abs_sqr_fft_buffer_.resize(processor_.getFFTSize() / 2 + 1);
             circular_buffer_.resize(num_channels);
-            for (size_t chan = 0; chan < num_channels; ++chan) {
+            reset();
+        }
+
+        /**
+         * reset internal buffers
+         */
+        void reset() {
+            for (size_t chan = 0; chan < circular_buffer_.size(); ++chan) {
                 circular_buffer_[chan].resize(processor_.getFFTSize());
                 std::fill(circular_buffer_[chan].begin(), circular_buffer_[chan].end(), 0.f);
             }
