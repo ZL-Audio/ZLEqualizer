@@ -28,10 +28,10 @@ namespace zlpanel {
                 path.preallocateSpace(preallocate_space);
             }
         }
-        setInterceptsMouseClicks(false, false);
         for (auto& receiver : receivers_) {
             receiver.setON(true);
         }
+        setInterceptsMouseClicks(false, false);
         base_.getPanelValueTree().addListener(this);
     }
 

@@ -35,9 +35,13 @@ namespace zlpanel {
 
         void paint(juce::Graphics& g) override;
 
+        void run(juce::Thread& thread);
+
         void resized() override;
 
-        void run(juce::Thread& thread);
+        void loadFromPreset(const std::vector<float>& freqs, const std::vector<float>& dbs);
+
+        void saveToPreset(std::vector<float>& freqs, std::vector<float>& dbs);
 
     private:
         PluginProcessor& p_ref_;
@@ -88,6 +92,13 @@ namespace zlpanel {
         std::vector<float> preset_freqs_;
         std::vector<float> preset_dbs_;
 
+        std::array<std::atomic<float>, kNumPoints> drawing_dbs_{};
+        std::array<float, kNumPoints> c_drawing_dbs_{};
+        std::atomic<bool> to_update_drawing_{false};
+        float drawing_k_{1.f}, drawing_b_{0.f}, drawing_p_scale_{0.f};
+        size_t drawing_pre_idx_{0};
+        float drawing_pre_db_{0.f};
+
         void runFFT(juce::Thread& thread);
 
         void processMainFFT();
@@ -101,5 +112,11 @@ namespace zlpanel {
         void processDiff();
 
         void createPath(juce::Path& path) const;
+
+        void mouseDown(const juce::MouseEvent& event) override;
+
+        void mouseDrag(const juce::MouseEvent& event) override;
+
+        void mouseDoubleClick(const juce::MouseEvent& event) override;
     };
 }

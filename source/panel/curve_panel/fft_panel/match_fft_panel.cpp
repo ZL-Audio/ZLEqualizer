@@ -18,6 +18,11 @@ namespace zlpanel {
         for (auto& receiver : receivers_) {
             receiver.setON(true);
         }
+        setInterceptsMouseClicks(true, false);
+        for (auto& db : drawing_dbs_) {
+            db.store(-1000.f, std::memory_order::relaxed);
+        }
+        std::ranges::fill(c_drawing_dbs_, -1000.f);
     }
 
     MatchFFTPanel::~MatchFFTPanel() = default;
@@ -54,6 +59,29 @@ namespace zlpanel {
         to_update_xs_para_.store(true, std::memory_order::release);
         to_update_ys_para_.store(true, std::memory_order::release);
         to_update_curve_para_.store(true, std::memory_order::release);
+    }
+
+    void MatchFFTPanel::loadFromPreset(const std::vector<float>& freqs, const std::vector<float>& dbs) {
+        {
+            std::lock_guard lock{load_freq_mutex_};
+            preset_freqs_ = freqs;
+        }
+        {
+            std::lock_guard lock{load_db_mutex_};
+            preset_dbs_ = dbs;
+        }
+        to_update_preset_.store(true, std::memory_order::release);
+    }
+
+    void MatchFFTPanel::saveToPreset(std::vector<float>& freqs, std::vector<float>& dbs) {
+        {
+            std::lock_guard lock{load_freq_mutex_};
+            freqs = preset_freqs_;
+        }
+        {
+            std::lock_guard lock{load_db_mutex_};
+            dbs = preset_dbs_;
+        }
     }
 
     void MatchFFTPanel::runFFT(juce::Thread& thread) {
@@ -173,6 +201,7 @@ namespace zlpanel {
             y_k_ = (h1 - h0) / c_fft_min_db_;
             y_b_ = h0;
         }
+        // update curve para
         const auto eq_max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(
             eq_max_db_idx_ref_.load(std::memory_order::relaxed)))];
         if (std::abs(eq_max_db - c_eq_max_db_) > .1f) {
@@ -280,8 +309,21 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::processDiff() {
-        zldsp::vector::sub(dbs_[0].data(), dbs_[1].data(), dbs_[0].size());
-        zldsp::vector::fma(ys_.data(), dbs_[0].data(), c_k_, c_b_, ys_.size());
+        auto& dbs{dbs_[0]};
+        zldsp::vector::sub(dbs.data(), dbs_[1].data(), dbs.size());
+        const auto diff_avg = zldsp::vector::sum(dbs.data(), dbs.size()) / static_cast<float>(dbs.size());
+        zldsp::vector::add(dbs.data(), -diff_avg, dbs.size());
+        if (to_update_drawing_.exchange(false, std::memory_order::acquire)) {
+            for (size_t i = 0; i < kNumPoints; ++i) {
+                c_drawing_dbs_[i] = drawing_dbs_[i].load(std::memory_order::relaxed);
+            }
+        }
+        for (size_t i = 0; i < kNumPoints; ++i) {
+            if (c_drawing_dbs_[i] > -100.f) {
+                dbs[i] = c_drawing_dbs_[i];
+            }
+        }
+        zldsp::vector::fma(ys_.data(), dbs.data(), c_k_, c_b_, ys_.size());
         createPath(paths_[2].getWriter());
     }
 
@@ -291,5 +333,87 @@ namespace zlpanel {
         for (size_t i = 1; i < xs_.size(); ++i) {
             path.lineTo(xs_[i], ys_[i]);
         }
+    }
+
+    void MatchFFTPanel::mouseDown(const juce::MouseEvent& event) {
+        // update drawing y scaling (to index)
+        {
+            const auto sample_rate = p_ref_.getAtomicSampleRate();
+            const auto fft_max = freq_helper::getFFTMax(sample_rate);
+            auto fft_width = getLocalBounds().toFloat().getWidth();
+            fft_width *= kFFTSizeOverWidth;
+            fft_width *= static_cast<float>(std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1));
+            drawing_p_scale_ = static_cast<float>(kNumPoints - 1) / fft_width;
+        }
+        // update drawing x scaling (to dB)
+        {
+            const auto height = static_cast<float>(getHeight());
+            const auto font_size = base_.getFontSize();
+            const auto h = height - static_cast<float>(getBottomAreaHeight(font_size));
+            const auto padding = font_size * kDraggerScale;
+            const auto h0 = h * .5f;
+            const auto h1 = h - padding;
+            const auto eq_max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(
+                eq_max_db_idx_ref_.load(std::memory_order::relaxed)))];
+            drawing_k_ = eq_max_db / (h1 - h0);
+            drawing_b_ = -h0;
+        }
+        // update drawing pre idx/db
+        {
+            drawing_pre_idx_ = std::clamp(
+                static_cast<size_t>(std::round(event.position.x * drawing_p_scale_)),
+                static_cast<size_t>(0), kNumPoints - 1);
+            if (event.mods.isRightButtonDown()) {
+                drawing_pre_db_ = 0.f;
+            } else {
+                drawing_pre_db_ = drawing_k_ * (event.position.y + drawing_b_);
+            }
+        }
+    }
+
+    void MatchFFTPanel::mouseDrag(const juce::MouseEvent& event) {
+        const auto c_drawing_idx = std::clamp(
+            static_cast<size_t>(std::round(event.position.x * drawing_p_scale_)),
+            static_cast<size_t>(0), kNumPoints - 1);
+        const auto c_drawing_db = drawing_k_ * (event.position.y + drawing_b_);
+
+        const size_t start_idx = std::min(drawing_pre_idx_, c_drawing_idx);
+        const size_t end_idx = std::max(drawing_pre_idx_, c_drawing_idx);
+
+        if (event.mods.isRightButtonDown()) {
+            // reset drawing dbs to none
+            for (size_t i = start_idx; i <= end_idx; ++i) {
+                drawing_dbs_[i].store(-1000.f, std::memory_order::relaxed);
+            }
+        } else if (event.mods.isShiftDown()) {
+            // set drawing dbs to zero
+            for (size_t i = start_idx; i <= end_idx; ++i) {
+                drawing_dbs_[i].store(0.f, std::memory_order::relaxed);
+            }
+        } else {
+            // interpolate drawing dbs
+            if (start_idx == end_idx) {
+                drawing_dbs_[c_drawing_idx].store(c_drawing_db, std::memory_order::relaxed);
+            } else {
+                const float y_start = (start_idx == drawing_pre_idx_) ? drawing_pre_db_ : c_drawing_db;
+                const float y_end = (start_idx == drawing_pre_idx_) ? c_drawing_db : drawing_pre_db_;
+                for (size_t i = start_idx; i <= end_idx; ++i) {
+                    const float t = static_cast<float>(i - start_idx) / static_cast<float>(end_idx - start_idx);
+                    const float interp_db = y_start + t * (y_end - y_start);
+                    drawing_dbs_[i].store(interp_db, std::memory_order::relaxed);
+                }
+            }
+        }
+
+        drawing_pre_idx_ = c_drawing_idx;
+        drawing_pre_db_ = c_drawing_db;
+        to_update_drawing_.store(true, std::memory_order::release);
+    }
+
+    void MatchFFTPanel::mouseDoubleClick(const juce::MouseEvent&) {
+        for (auto& db : drawing_dbs_) {
+            db.store(-1000.f, std::memory_order::relaxed);
+        }
+        to_update_drawing_.store(true, std::memory_order::acquire);
     }
 }
