@@ -8,7 +8,18 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 BREAKING CHANGES
 
-- change filter de-cramping method to the one proposed by Yuriy Ivantsov
+- change filter de-cramping method (proposed by Yuriy Ivantsov)
+  - the filter of which cutoff freq is near the Nyquist will have slightly different response
+
+Bug fixes
+
+- fix dynamic filter might fail to update gain after dynamic is turned off
+- fix mouse dragging sensitivity of several sliders
+
+Improvements
+
+- improve DSP performance
+- improve GUI performance
 
 ## 1.1.1
 
