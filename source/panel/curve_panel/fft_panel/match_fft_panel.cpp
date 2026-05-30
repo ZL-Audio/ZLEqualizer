@@ -96,7 +96,8 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::setDiffDrawOn(const bool is_on) {
-        diff_draw_off_ = !is_on;
+        c_diff_draw_off_ = !is_on;
+        diff_draw_off_.store(!is_on, std::memory_order::relaxed);
     }
 
     void MatchFFTPanel::setDiffScale(const float diff_scale) {
@@ -388,9 +389,11 @@ namespace zlpanel {
         const auto diff_shift = diff_shift_.load(std::memory_order::relaxed);
         zldsp::vector::fma(dbs.data(), diff_scale, diff_shift - diff_avg * diff_scale, dbs.size());
         zldsp::vector::add(dbs.data(), c_diff_tilt_.data(), dbs.size());
-        for (size_t i = 0; i < kNumPoints; ++i) {
-            if (c_drawing_dbs_[i] > -100.f) {
-                dbs[i] = c_drawing_dbs_[i];
+        if (!diff_draw_off_.load(std::memory_order::relaxed)) {
+            for (size_t i = 0; i < kNumPoints; ++i) {
+                if (c_drawing_dbs_[i] > -100.f) {
+                    dbs[i] = c_drawing_dbs_[i];
+                }
             }
         }
         zldsp::vector::fma(ys_.data(), dbs.data(), c_k_, c_b_, ys_.size());
@@ -406,7 +409,7 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::mouseDown(const juce::MouseEvent& event) {
-        if (diff_draw_off_) {
+        if (c_diff_draw_off_) {
             return;
         }
         // update drawing y scaling (to index)
@@ -433,9 +436,8 @@ namespace zlpanel {
         }
         // update drawing pre idx/db
         {
-            drawing_pre_idx_ = std::clamp(
-                static_cast<size_t>(std::round(event.position.x * drawing_p_scale_)),
-                static_cast<size_t>(0), kNumPoints - 1);
+            const int raw_pre_idx = static_cast<int>(std::round(event.position.x * drawing_p_scale_));
+            drawing_pre_idx_ = static_cast<size_t>(std::clamp(raw_pre_idx, 0, static_cast<int>(kNumPoints - 1)));
             if (event.mods.isRightButtonDown()) {
                 drawing_pre_db_ = 0.f;
             } else {
@@ -445,18 +447,17 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::mouseDrag(const juce::MouseEvent& event) {
-        if (diff_draw_off_) {
+        if (c_diff_draw_off_) {
             return;
         }
-        const auto c_drawing_idx = std::clamp(
-            static_cast<size_t>(std::round(event.position.x * drawing_p_scale_)),
-            static_cast<size_t>(0), kNumPoints - 1);
+        const int raw_c_idx = static_cast<int>(std::round(event.position.x * drawing_p_scale_));
+        const auto c_drawing_idx = static_cast<size_t>(std::clamp(raw_c_idx, 0, static_cast<int>(kNumPoints - 1)));
         const auto c_drawing_db = drawing_k_ * (event.position.y + drawing_b_);
 
         const size_t start_idx = std::min(drawing_pre_idx_, c_drawing_idx);
         const size_t end_idx = std::max(drawing_pre_idx_, c_drawing_idx);
 
-        if (event.mods.isRightButtonDown()) {
+        if (event.mods.isCommandDown()) {
             // reset drawing dbs to none
             for (size_t i = start_idx; i <= end_idx; ++i) {
                 drawing_dbs_[i].store(-1000.f, std::memory_order::relaxed);
@@ -486,7 +487,7 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::mouseDoubleClick(const juce::MouseEvent&) {
-        if (diff_draw_off_) {
+        if (c_diff_draw_off_) {
             return;
         }
         for (auto& db : drawing_dbs_) {
@@ -500,9 +501,9 @@ namespace zlpanel {
         const auto match_result = match_result_.getReader();
         base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 3.0);
         base_.setPanelProperty(zlgui::PanelSettingIdx::kMaximumNumBand,
-            static_cast<float>(match_result.filter_paras_.size()));
+                               static_cast<float>(match_result.filter_paras_.size()));
         base_.setPanelProperty(zlgui::PanelSettingIdx::kSuggestedNumBand,
-            static_cast<float>(match_result.num_band_));
+                               static_cast<float>(match_result.num_band_));
     }
 
     void MatchFFTPanel::updateMatchNumBand(const size_t num_band) {

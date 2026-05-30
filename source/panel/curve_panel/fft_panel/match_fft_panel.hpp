@@ -112,7 +112,8 @@ namespace zlpanel {
         std::vector<float> preset_freqs_;
         std::vector<float> preset_dbs_;
 
-        bool diff_draw_off_{false};
+        bool c_diff_draw_off_{false};
+        std::atomic<bool> diff_draw_off_{false};
         std::array<std::atomic<float>, kNumPoints> drawing_dbs_{};
         alignas(64) std::array<float, kNumPoints> c_drawing_dbs_{};
         std::atomic<bool> to_update_drawing_{false};
