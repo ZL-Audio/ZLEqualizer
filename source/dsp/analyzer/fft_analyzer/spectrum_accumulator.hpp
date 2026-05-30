@@ -30,7 +30,7 @@ namespace zldsp::analyzer {
         }
 
         void process(std::span<float> spectrum_abs_sqr) {
-            assert(spectrum.size() == sum_count_.size());
+            assert(spectrum_abs_sqr.size() == sums_.size());
             sum_count_ += 1;
             const auto mul = 1.0 / static_cast<double>(sum_count_);
             for (size_t i = 0; i < sums_.size(); ++i) {
