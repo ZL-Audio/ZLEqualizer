@@ -35,6 +35,7 @@ namespace zldsp::filter {
          */
         void resetDynamic() {
             filter_.setGain(handler_.getBaseGain());
+            filter_.updateCoeffs();
         }
 
         /**
