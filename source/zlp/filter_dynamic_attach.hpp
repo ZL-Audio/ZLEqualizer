@@ -36,4 +36,4 @@ namespace zlp {
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;
     };
-} // zlp
+}

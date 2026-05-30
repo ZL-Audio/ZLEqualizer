@@ -34,8 +34,6 @@ namespace zldsp::vector {
                 sum3 = hn::Add(sum3, hn::LoadU(d, in + i + lanes * 3));
             }
             single_sum = hn::Add(hn::Add(sum0, sum1), hn::Add(sum2, sum3));
-        } else {
-            single_sum = hn::Zero(d);
         }
         for (; i + lanes <= size; i += lanes) {
             auto va = hn::LoadU(d, in + i);

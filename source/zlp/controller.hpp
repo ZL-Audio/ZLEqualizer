@@ -247,10 +247,6 @@ namespace zlp {
             return displayed_gain_.load(std::memory_order::relaxed);
         }
 
-        void setEQMatchAnalyzerON(const bool f) {
-            eq_match_analyzer_on_.store(f, std::memory_order::relaxed);
-        }
-
     private:
         juce::AudioProcessor& p_ref_;
         std::atomic<bool> to_update_{false};
@@ -420,8 +416,6 @@ namespace zlp {
         std::atomic<int> delay_latency_{0};
         bool c_delay_on_{false};
         zldsp::delay::IntegerDelay<double> delay_{};
-        // eq match analyzer
-        std::atomic<bool> eq_match_analyzer_on_{false};
 
         void prepareBuffer();
 

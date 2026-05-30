@@ -520,9 +520,6 @@ namespace zlp {
         if (c_delay_on_) {
             delay_.process(main_pointers, num_samples);
         }
-        if (c_editor_on_ && eq_match_analyzer_on_.load(std::memory_order::relaxed)) {
-            // eq_match_analyzer_.process({main_pointers, side_pointers}, num_samples);
-        }
         // copy pre buffer for FFT processing
         if (bypass || c_editor_on_) {
             zldsp::vector::copy(pre_main_pointers_[0], main_pointers[0], num_samples);

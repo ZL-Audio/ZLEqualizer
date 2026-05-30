@@ -51,8 +51,6 @@ namespace zldsp::vector {
                 }
             }
             single_sum = hn::Add(hn::Add(sum0, sum1), hn::Add(sum2, sum3));
-        } else {
-            single_sum = hn::Zero(d);
         }
         for (; i + lanes <= size; i += lanes) {
             auto va = hn::LoadU(d, in0 + i);
