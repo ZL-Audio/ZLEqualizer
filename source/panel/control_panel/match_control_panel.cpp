@@ -113,6 +113,7 @@ namespace zlpanel {
         }
 
         fit_start_button_.getButton().onClick = [this]() {
+            match_fft_panel_.updateMatchNumBand(0);
             base_.setPanelProperty(zlgui::PanelSettingIdx::kSuggestedNumBand, 0.0);
             base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 2.0);
             match_fft_panel_.setMatchPhase(MatchFFTPanel::MatchPhase::kMatch);
