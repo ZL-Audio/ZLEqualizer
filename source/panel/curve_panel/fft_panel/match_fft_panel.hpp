@@ -22,7 +22,6 @@
 
 namespace zlpanel {
     class MatchFFTPanel final : public juce::Component,
-                                private juce::ValueTree::Listener,
                                 private juce::AsyncUpdater {
     public:
         static constexpr size_t kNumPoints = 128;
@@ -62,6 +61,8 @@ namespace zlpanel {
         void setMatchPhase(MatchPhase match_phase);
 
         void updateMatchNumBand(size_t num_band);
+
+        void resetAnalyzer();
 
     private:
         PluginProcessor& p_ref_;
@@ -132,6 +133,8 @@ namespace zlpanel {
         };
         std::atomic<MatchPhase> match_phase_{MatchPhase::kAnalyze};
         TriBuffer<MatchResult> match_result_;
+
+        std::atomic<bool> to_reset_analyzer_{false};
 
         void runAnalyze(const juce::Thread& thread);
 

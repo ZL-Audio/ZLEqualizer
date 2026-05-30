@@ -44,6 +44,17 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::run(const juce::Thread& thread) {
+        if (to_reset_analyzer_.load(std::memory_order::relaxed)) {
+            if (to_reset_analyzer_.exchange(false, std::memory_order::relaxed)) {
+                for (auto& accu : accumulators_) {
+                    accu.reset();
+                }
+                for (auto& db : drawing_dbs_) {
+                    db.store(-1000.f, std::memory_order::relaxed);
+                }
+                to_update_drawing_.store(true, std::memory_order::release);
+            }
+        }
         if (match_phase_.load(std::memory_order::relaxed) == MatchPhase::kAnalyze) {
             runAnalyze(thread);
         } else {
@@ -511,6 +522,10 @@ namespace zlpanel {
         auto match_result = match_result_.getReader();
         match_result.num_band_ = num_band;
         updateMatchFilters(match_result);
+    }
+
+    void MatchFFTPanel::resetAnalyzer() {
+        to_reset_analyzer_.store(true, std::memory_order::relaxed);
     }
 
     void MatchFFTPanel::updateMatchFilters(const MatchResult& match_result) {

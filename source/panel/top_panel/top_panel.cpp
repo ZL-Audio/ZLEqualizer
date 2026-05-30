@@ -68,7 +68,7 @@ namespace zlpanel {
         addAndMakeVisible(ext_button_);
 
         match_button_.getButton().onClick = [this]() {
-            base_.setPanelProperty(zlgui::kMatchPanel, static_cast<double>(match_button_.getToggleState()));
+            base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, static_cast<double>(match_button_.getToggleState()));
         };
         match_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
         match_button_.setBufferedToImage(true);

@@ -298,9 +298,11 @@ namespace zlpanel {
             num_band_slider_.getSlider().setDoubleClickReturnValue(true, suggested_num_band);
             num_band_slider_.getSlider().setValue(suggested_num_band, juce::sendNotificationSync);
         } else if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kMatchPanel, property)) {
-            const auto is_finished = static_cast<double>(
-                base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchPanel)) > 2.5;
-            num_band_slider_.setVisible(is_finished);
+            const auto status_value = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kMatchPanel));
+            num_band_slider_.setVisible(status_value > 2.5);
+            if (status_value < 0.5) {
+                match_fft_panel_.resetAnalyzer();
+            }
         }
     }
 }

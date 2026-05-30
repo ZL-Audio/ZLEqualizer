@@ -15,7 +15,6 @@ namespace zlpanel {
         control_background_(base),
         label_laf_(base) {
         control_background_.setInterceptsMouseClicks(false, false);
-        // control_background_.setBufferedToImage(true);
         addChildComponent(control_background_);
 
         label_laf_.setFontScale(1.5f);
