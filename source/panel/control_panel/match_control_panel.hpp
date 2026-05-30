@@ -15,15 +15,17 @@
 #include "../multilingual/tooltip_helper.hpp"
 
 #include "control_background.hpp"
-#include "match_runner.hpp"
 #include "../curve_panel/curve_panel.hpp"
 
 namespace zlpanel {
-    class MatchControlPanel final : public juce::Component {
+    class MatchControlPanel final : public juce::Component,
+                                    private juce::ValueTree::Listener {
     public:
         explicit MatchControlPanel(PluginProcessor& p, zlgui::UIBase& base,
                                    MatchFFTPanel& match_fft_panel,
                                    const multilingual::TooltipHelper& tooltip_helper);
+
+        ~MatchControlPanel() override;
 
         int getIdealHeight() const;
 
@@ -72,12 +74,12 @@ namespace zlpanel {
             .getChildFile("Match Presets");
         std::vector<float> preset_freqs_, preset_dbs_{};
 
-        MatchRunner match_runner_;
-
         void visibilityChanged() override;
 
         void saveToPreset();
 
         void loadFromPreset();
+
+        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };
 }

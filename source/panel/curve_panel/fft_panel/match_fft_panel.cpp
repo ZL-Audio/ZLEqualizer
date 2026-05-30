@@ -43,8 +43,13 @@ namespace zlpanel {
                      {thickness * 1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
     }
 
-    void MatchFFTPanel::run(juce::Thread& thread) {
-        runFFT(thread);
+    void MatchFFTPanel::run(const juce::Thread& thread) {
+        if (match_phase_.load(std::memory_order::relaxed) == MatchPhase::kAnalyze) {
+            runAnalyze(thread);
+        } else {
+            runMatch(thread);
+            match_phase_.store(MatchPhase::kAnalyze, std::memory_order::release);
+        }
     }
 
     void MatchFFTPanel::resized() {
@@ -75,17 +80,23 @@ namespace zlpanel {
 
     void MatchFFTPanel::saveToPreset(std::vector<float>& freqs, std::vector<float>& dbs) {
         {
-            std::lock_guard lock{load_freq_mutex_};
-            freqs = preset_freqs_;
+            std::lock_guard lock{save_freq_mutex_};
+            freqs.resize(freqs_.size());
+            std::ranges::copy(freqs_, freqs.begin());
         }
         {
-            std::lock_guard lock{load_db_mutex_};
-            dbs = preset_dbs_;
+            std::lock_guard lock{save_db_mutex_};
+            dbs.resize(dbs_[1].size());
+            std::ranges::copy(dbs_[1], dbs.begin());
         }
     }
 
     void MatchFFTPanel::setSideMode(const SideMode mode) {
         side_mode_.store(mode, std::memory_order::release);
+    }
+
+    void MatchFFTPanel::setDiffDrawOn(const bool is_on) {
+        diff_draw_off_ = !is_on;
     }
 
     void MatchFFTPanel::setDiffScale(const float diff_scale) {
@@ -96,12 +107,16 @@ namespace zlpanel {
         diff_shift_.store(diff_shift, std::memory_order::relaxed);
     }
 
-    void MatchFFTPanel::setDiffSlope(float diff_slope) {
+    void MatchFFTPanel::setDiffSlope(const float diff_slope) {
         diff_slope_.store(diff_slope, std::memory_order::relaxed);
         to_update_diff_slope_.store(true, std::memory_order::release);
     }
 
-    void MatchFFTPanel::runFFT(const juce::Thread& thread) {
+    void MatchFFTPanel::setMatchPhase(const MatchPhase match_phase) {
+        match_phase_.store(match_phase, std::memory_order::relaxed);
+    }
+
+    void MatchFFTPanel::runAnalyze(const juce::Thread& thread) {
         auto& sender{p_ref_.getController().getAnalyzerSender()};
         if (!sender.getLock().try_lock()) {
             return;
@@ -261,6 +276,24 @@ namespace zlpanel {
         }
     }
 
+    void MatchFFTPanel::runMatch(const juce::Thread& thread) {
+        zldsp::vector::aligned_vector<float> diffs;
+        diffs.resize(dbs_[0].size());
+        zldsp::vector::multiply(diffs.data(), dbs_[0].data(), -1.f, dbs_[0].size());
+        zlchore::eq_match::EqMatchOptimizer optimizer{
+            p_ref_.getAtomicSampleRate(),
+            freqs_,
+            diffs
+        };
+        auto& match_result{match_result_.getWriter()};
+        match_result.num_band_ = optimizer.fit(
+            match_result.filter_paras_, zlp::kBandNum, [&thread]() {
+                return thread.threadShouldExit();
+            });
+        match_result_.publish();
+        triggerAsyncUpdate();
+    }
+
     void MatchFFTPanel::processMainFFT() {
         constexpr size_t i = 0;
         receivers_[i].forward(zldsp::analyzer::StereoType::kStereo);
@@ -327,6 +360,8 @@ namespace zlpanel {
 
     void MatchFFTPanel::processDiff() {
         namespace hn = hwy::HWY_NAMESPACE;
+        static constexpr hn::ScalableTag<float> d;
+        static constexpr size_t lanes = hn::Lanes(d);
 
         if (to_update_drawing_.exchange(false, std::memory_order::acquire)) {
             for (size_t i = 0; i < kNumPoints; ++i) {
@@ -336,8 +371,6 @@ namespace zlpanel {
         if (to_update_diff_slope_.exchange(false, std::memory_order::acquire)) {
             const float center_freq = std::sqrt(freqs_.front() * freqs_.back());
             const float log2_center = std::log2(center_freq);
-            static constexpr hn::ScalableTag<float> d;
-            static constexpr size_t lanes = hn::Lanes(d);
             const auto v_log2_center = hn::Set(d, log2_center);
             const auto v_slope = hn::Set(d, diff_slope_.load(std::memory_order::relaxed));
             for (size_t i = 0; i < kNumPoints; i += lanes) {
@@ -373,6 +406,9 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::mouseDown(const juce::MouseEvent& event) {
+        if (diff_draw_off_) {
+            return;
+        }
         // update drawing y scaling (to index)
         {
             const auto sample_rate = p_ref_.getAtomicSampleRate();
@@ -409,6 +445,9 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::mouseDrag(const juce::MouseEvent& event) {
+        if (diff_draw_off_) {
+            return;
+        }
         const auto c_drawing_idx = std::clamp(
             static_cast<size_t>(std::round(event.position.x * drawing_p_scale_)),
             static_cast<size_t>(0), kNumPoints - 1);
@@ -447,9 +486,56 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::mouseDoubleClick(const juce::MouseEvent&) {
+        if (diff_draw_off_) {
+            return;
+        }
         for (auto& db : drawing_dbs_) {
             db.store(-1000.f, std::memory_order::relaxed);
         }
         to_update_drawing_.store(true, std::memory_order::release);
+    }
+
+    void MatchFFTPanel::handleAsyncUpdate() {
+        match_result_.pull();
+        const auto match_result = match_result_.getReader();
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 3.0);
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kMaximumNumBand,
+            static_cast<float>(match_result.filter_paras_.size()));
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kSuggestedNumBand,
+            static_cast<float>(match_result.num_band_));
+    }
+
+    void MatchFFTPanel::updateMatchNumBand(const size_t num_band) {
+        match_result_.pull();
+        auto match_result = match_result_.getReader();
+        match_result.num_band_ = num_band;
+        updateMatchFilters(match_result);
+    }
+
+    void MatchFFTPanel::updateMatchFilters(const MatchResult& match_result) {
+        const auto num_band = std::min(match_result.num_band_, match_result.filter_paras_.size());
+        for (size_t band = num_band; band < zlp::kBandNum; ++band) {
+            const auto band_s = std::to_string(band);
+            auto* status_para = p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + band_s);
+            updateValue(status_para, 0.f);
+        }
+        for (size_t band = 0; band < num_band; ++band) {
+            const auto band_s = std::to_string(band);
+            const auto& paras{match_result.filter_paras_[band]};
+            std::array IDs{
+                zlp::PFilterType::kID, zlp::POrder::kID,
+                zlp::PFreq::kID, zlp::PGain::kID, zlp::PQ::kID,
+                zlp::PFilterStatus::kID
+            };
+            std::array values{
+                static_cast<float>(paras.filter_type), static_cast<float>(zlp::POrder::convertToIdx(paras.order)),
+                static_cast<float>(paras.freq), static_cast<float>(paras.gain), static_cast<float>(paras.q),
+                2.f
+            };
+            for (size_t i = 0; i < IDs.size(); ++i) {
+                auto* para = p_ref_.parameters_.getParameter(IDs[i] + band_s);
+                updateValue(para, para->convertTo0to1(values[i]));
+            }
+        }
     }
 }

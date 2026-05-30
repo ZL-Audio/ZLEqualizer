@@ -46,7 +46,8 @@ namespace zlgui {
         kAnalyzerPanel,
         kDynamicExtraPanel,
         kMatchPanel,
-        kMatchDrawing,
+        kSuggestedNumBand,
+        kMaximumNumBand,
         kPanelSettingNum
     };
 
@@ -58,7 +59,8 @@ namespace zlgui {
         juce::Identifier("analyzer_panel"),
         juce::Identifier("dynamic_extra_panel"),
         juce::Identifier("match_panel"),
-        juce::Identifier("match_drawing")
+        juce::Identifier("suggested_num_band"),
+        juce::Identifier("maximum_num_band")
     };
 
     inline juce::Identifier kSoloIdentifier("solo_whole_idx");

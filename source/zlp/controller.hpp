@@ -51,7 +51,6 @@ namespace zlp {
     class Controller final : private juce::AsyncUpdater {
     public:
         static constexpr size_t kFilterSize = 16;
-        static constexpr size_t kAnalyzerPointNum = 251;
 
         explicit Controller(juce::AudioProcessor& processor);
 
