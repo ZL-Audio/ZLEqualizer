@@ -21,7 +21,7 @@ namespace zldsp::vector {
         static constexpr size_t block = lanes << 2;
 
         size_t i = 0;
-        hn::Vec<decltype(d)> single_sum;
+        auto single_sum = hn::Zero(d);
         if (size >= block) {
             auto sum0 = hn::Zero(d);
             auto sum1 = hn::Zero(d);

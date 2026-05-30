@@ -624,7 +624,7 @@ namespace zlp {
         if (c_agc_on_) {
             double post_square_sum{0.0};
             for (size_t chan = 0; chan < 2; chan++) {
-                pre_square_sum_ += zldsp::vector::sum_sqr(main_pointers[chan], num_samples);
+                post_square_sum += zldsp::vector::sum_sqr(main_pointers[chan], num_samples);
             }
             post_square_sum = std::clamp(post_square_sum / static_cast<double>(num_samples), 1e-3, 1e3);
             c_agc_gain_linear_ = std::sqrt(pre_square_sum_ / post_square_sum) / c_makeup_gain_linear_;
