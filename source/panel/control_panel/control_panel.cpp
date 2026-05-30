@@ -11,12 +11,13 @@
 
 namespace zlpanel {
     ControlPanel::ControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+                               MatchFFTPanel& match_fft_panel,
                                const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
         left_control_panel_(p, base, tooltip_helper),
         right_control_panel_(p, base, tooltip_helper),
         side_loudness_display_panel_(p, base),
-        match_control_panel_(p, base, tooltip_helper) {
+        match_control_panel_(p, base, match_fft_panel, tooltip_helper) {
         addAndMakeVisible(mouse_event_eater_);
 
         left_control_panel_.setBufferedToImage(true);

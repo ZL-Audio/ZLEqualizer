@@ -16,11 +16,13 @@
 
 #include "control_background.hpp"
 #include "match_runner.hpp"
+#include "../curve_panel/curve_panel.hpp"
 
 namespace zlpanel {
     class MatchControlPanel final : public juce::Component {
     public:
         explicit MatchControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+                                   MatchFFTPanel& match_fft_panel,
                                    const multilingual::TooltipHelper& tooltip_helper);
 
         int getIdealHeight() const;
@@ -32,6 +34,7 @@ namespace zlpanel {
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
+        MatchFFTPanel& match_fft_panel_;
 
         ControlBackground control_background_;
 
@@ -48,8 +51,8 @@ namespace zlpanel {
         juce::Label shift_label_;
         zlgui::slider::CompactLinearSlider<false, false, false> shift_slider_;
 
-        juce::Label smooth_label_;
-        zlgui::slider::CompactLinearSlider<false, false, false> smooth_slider_;
+        juce::Label scale_label_;
+        zlgui::slider::CompactLinearSlider<false, false, false> scale_slider_;
 
         juce::Label slope_label_;
         zlgui::slider::CompactLinearSlider<false, false, false> slope_slider_;
@@ -61,12 +64,12 @@ namespace zlpanel {
 
         std::unique_ptr<juce::FileChooser> chooser_;
         const juce::File kPresetDirectory =
-                juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-                .getChildFile("Audio")
-                .getChildFile("Presets")
-                .getChildFile(JucePlugin_Manufacturer)
-                .getChildFile(JucePlugin_Name)
-                .getChildFile("Match Presets");
+            juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+            .getChildFile("Audio")
+            .getChildFile("Presets")
+            .getChildFile(JucePlugin_Manufacturer)
+            .getChildFile(JucePlugin_Name)
+            .getChildFile("Match Presets");
         std::vector<float> preset_freqs_, preset_dbs_{};
 
         MatchRunner match_runner_;

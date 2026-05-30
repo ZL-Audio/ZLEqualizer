@@ -23,7 +23,7 @@ namespace zlpanel {
     class MatchFFTPanel final : public juce::Component,
                                 private juce::ValueTree::Listener {
     public:
-        static constexpr size_t kNumPoints = 128;
+        static constexpr size_t kNumPoints = 128; // must be a multiplier of lane size
 
         enum class SideMode {
             kSide, kPreset, kFlat
@@ -42,6 +42,14 @@ namespace zlpanel {
         void loadFromPreset(const std::vector<float>& freqs, const std::vector<float>& dbs);
 
         void saveToPreset(std::vector<float>& freqs, std::vector<float>& dbs);
+
+        void setSideMode(SideMode mode);
+
+        void setDiffScale(float diff_scale);
+
+        void setDiffShift(float diff_shift);
+
+        void setDiffSlope(float diff_slope);
 
     private:
         PluginProcessor& p_ref_;
@@ -93,13 +101,17 @@ namespace zlpanel {
         std::vector<float> preset_dbs_;
 
         std::array<std::atomic<float>, kNumPoints> drawing_dbs_{};
-        std::array<float, kNumPoints> c_drawing_dbs_{};
+        alignas(64) std::array<float, kNumPoints> c_drawing_dbs_{};
         std::atomic<bool> to_update_drawing_{false};
         float drawing_k_{1.f}, drawing_b_{0.f}, drawing_p_scale_{0.f};
         size_t drawing_pre_idx_{0};
         float drawing_pre_db_{0.f};
+        std::atomic<float> diff_scale_{1.f}, diff_shift_{0.f};
+        alignas(64) std::array<float, kNumPoints> c_diff_tilt_{};
+        std::atomic<float> diff_slope_{0.f};
+        std::atomic<bool> to_update_diff_slope_{false};
 
-        void runFFT(juce::Thread& thread);
+        void runFFT(const juce::Thread& thread);
 
         void processMainFFT();
 

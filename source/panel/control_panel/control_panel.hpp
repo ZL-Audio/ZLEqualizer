@@ -19,6 +19,7 @@ namespace zlpanel {
                                private juce::ValueTree::Listener {
     public:
         explicit ControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+                              MatchFFTPanel& match_fft_panel,
                               const multilingual::TooltipHelper& tooltip_helper);
 
         ~ControlPanel() override;

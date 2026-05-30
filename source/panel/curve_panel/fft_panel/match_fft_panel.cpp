@@ -84,7 +84,24 @@ namespace zlpanel {
         }
     }
 
-    void MatchFFTPanel::runFFT(juce::Thread& thread) {
+    void MatchFFTPanel::setSideMode(const SideMode mode) {
+        side_mode_.store(mode, std::memory_order::release);
+    }
+
+    void MatchFFTPanel::setDiffScale(const float diff_scale) {
+        diff_scale_.store(diff_scale, std::memory_order::relaxed);
+    }
+
+    void MatchFFTPanel::setDiffShift(const float diff_shift) {
+        diff_shift_.store(diff_shift, std::memory_order::relaxed);
+    }
+
+    void MatchFFTPanel::setDiffSlope(float diff_slope) {
+        diff_slope_.store(diff_slope, std::memory_order::relaxed);
+        to_update_diff_slope_.store(true, std::memory_order::release);
+    }
+
+    void MatchFFTPanel::runFFT(const juce::Thread& thread) {
         auto& sender{p_ref_.getController().getAnalyzerSender()};
         if (!sender.getLock().try_lock()) {
             return;
@@ -309,15 +326,35 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::processDiff() {
-        auto& dbs{dbs_[0]};
-        zldsp::vector::sub(dbs.data(), dbs_[1].data(), dbs.size());
-        const auto diff_avg = zldsp::vector::sum(dbs.data(), dbs.size()) / static_cast<float>(dbs.size());
-        zldsp::vector::add(dbs.data(), -diff_avg, dbs.size());
+        namespace hn = hwy::HWY_NAMESPACE;
+
         if (to_update_drawing_.exchange(false, std::memory_order::acquire)) {
             for (size_t i = 0; i < kNumPoints; ++i) {
                 c_drawing_dbs_[i] = drawing_dbs_[i].load(std::memory_order::relaxed);
             }
         }
+        if (to_update_diff_slope_.exchange(false, std::memory_order::acquire)) {
+            const float center_freq = std::sqrt(freqs_.front() * freqs_.back());
+            const float log2_center = std::log2(center_freq);
+            static constexpr hn::ScalableTag<float> d;
+            static constexpr size_t lanes = hn::Lanes(d);
+            const auto v_log2_center = hn::Set(d, log2_center);
+            const auto v_slope = hn::Set(d, diff_slope_.load(std::memory_order::relaxed));
+            for (size_t i = 0; i < kNumPoints; i += lanes) {
+                const auto v_freq = hn::Load(d, freqs_.data() + i);
+                const auto v_log2_freq = hn::Log2(d, v_freq);
+                const auto v_octaves = hn::Sub(v_log2_center, v_log2_freq);
+                const auto v_tilt = hn::Mul(v_octaves, v_slope);
+                hn::Store(v_tilt, d, c_diff_tilt_.data() + i);
+            }
+        }
+        auto& dbs{dbs_[0]};
+        zldsp::vector::sub(dbs.data(), dbs_[1].data(), dbs.size());
+        const auto diff_avg = zldsp::vector::sum(dbs.data(), dbs.size()) / static_cast<float>(dbs.size());
+        const auto diff_scale = diff_scale_.load(std::memory_order::relaxed);
+        const auto diff_shift = diff_shift_.load(std::memory_order::relaxed);
+        zldsp::vector::fma(dbs.data(), diff_scale, diff_shift - diff_avg * diff_scale, dbs.size());
+        zldsp::vector::add(dbs.data(), c_diff_tilt_.data(), dbs.size());
         for (size_t i = 0; i < kNumPoints; ++i) {
             if (c_drawing_dbs_[i] > -100.f) {
                 dbs[i] = c_drawing_dbs_[i];
@@ -404,7 +441,6 @@ namespace zlpanel {
                 }
             }
         }
-
         drawing_pre_idx_ = c_drawing_idx;
         drawing_pre_db_ = c_drawing_db;
         to_update_drawing_.store(true, std::memory_order::release);
@@ -414,6 +450,6 @@ namespace zlpanel {
         for (auto& db : drawing_dbs_) {
             db.store(-1000.f, std::memory_order::relaxed);
         }
-        to_update_drawing_.store(true, std::memory_order::acquire);
+        to_update_drawing_.store(true, std::memory_order::release);
     }
 }

@@ -14,9 +14,9 @@ namespace zlpanel {
         p_ref_(p), base_(base),
         tooltip_helper_(language),
         refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]),
-        control_panel_(p, base, tooltip_helper_),
-        extra_dynamic_panel_(p, base, tooltip_helper_),
         curve_panel_(p, base, tooltip_helper_),
+        control_panel_(p, base, curve_panel_.getMatchFFTPanel(), tooltip_helper_),
+        extra_dynamic_panel_(p, base, tooltip_helper_),
         top_panel_(p, base, tooltip_helper_),
         ui_setting_panel_(p, base_),
         tooltip_laf_(base_) {

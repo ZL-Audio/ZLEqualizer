@@ -54,6 +54,10 @@ namespace zlpanel {
             return output_panel_;
         }
 
+        auto& getMatchFFTPanel() {
+            return match_fft_panel_;
+        }
+
     private:
         zlgui::UIBase& base_;
         BackgroundPanel background_panel_;

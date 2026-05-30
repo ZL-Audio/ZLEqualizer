@@ -49,9 +49,9 @@ namespace zlpanel {
         double previous_time_stamp_{-1.0};
         double refresh_rate_{-1.0};
 
+        CurvePanel curve_panel_;
         ControlPanel control_panel_;
         ExtraDynamicPanel extra_dynamic_panel_;
-        CurvePanel curve_panel_;
         TopPanel top_panel_;
         UISettingPanel ui_setting_panel_;
 

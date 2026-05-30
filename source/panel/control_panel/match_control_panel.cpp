@@ -11,10 +11,11 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    MatchControlPanel::MatchControlPanel(PluginProcessor& p,
-                                         zlgui::UIBase& base,
+    MatchControlPanel::MatchControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+                                         MatchFFTPanel& match_fft_panel,
                                          const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
+        match_fft_panel_(match_fft_panel),
         control_background_(base),
         save_drawable_(juce::Drawable::createFromImageData(BinaryData::save_svg,
                                                            BinaryData::save_svgSize)),
@@ -33,9 +34,9 @@ namespace zlpanel {
         shift_label_("", "Shift"),
         shift_slider_("", base,
                       tooltip_helper.getToolTipText(multilingual::kEQMatchDiffShift)),
-        smooth_label_("", "Smooth"),
-        smooth_slider_("", base,
-                       tooltip_helper.getToolTipText(multilingual::kEQMatchDiffSmooth)),
+        scale_label_("", "Scale"),
+        scale_slider_("", base,
+                      tooltip_helper.getToolTipText(multilingual::kEQMatchDiffSmooth)),
         slope_label_("", "Slope"),
         slope_slider_("", base,
                       tooltip_helper.getToolTipText(multilingual::kEQMatchDiffSlope)),
@@ -83,35 +84,32 @@ namespace zlpanel {
             -30.0, 30.0, 0.1));
         shift_slider_.getSlider().setDoubleClickReturnValue(true, 0.);
         shift_slider_.getSlider().onValueChange = [this]() {
-            // p_ref_.getController().getEQMatchAnalyzer().setDiffShift(
-            //     static_cast<float>(shift_slider_.getSlider().getValue()));
+            match_fft_panel_.setDiffShift(static_cast<float>(shift_slider_.getSlider().getValue()));
         };
 
-        smooth_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
+        scale_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
             0.0, 1.0, 0.01));
-        smooth_slider_.getSlider().setDoubleClickReturnValue(true, 0.5);
-        smooth_slider_.getSlider().onValueChange = [this]() {
-            // p_ref_.getController().getEQMatchAnalyzer().setDiffSmooth(
-            //     static_cast<float>(smooth_slider_.getSlider().getValue()));
+        scale_slider_.getSlider().setDoubleClickReturnValue(true, 1.0);
+        scale_slider_.getSlider().onValueChange = [this]() {
+            match_fft_panel_.setDiffScale(static_cast<float>(scale_slider_.getSlider().getValue()));
         };
 
         slope_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
             -4.5, 4.5, 0.1));
         slope_slider_.getSlider().setDoubleClickReturnValue(true, 0.);
         slope_slider_.getSlider().onValueChange = [this]() {
-            // p_ref_.getController().getEQMatchAnalyzer().setDiffSlope(
-            //     static_cast<float>(slope_slider_.getSlider().getValue()));
+            match_fft_panel_.setDiffSlope(static_cast<float>(slope_slider_.getSlider().getValue()));
         };
 
         label_laf_.setFontScale(1.5f);
-        for (auto& l : {&shift_label_, &smooth_label_, &slope_label_}) {
+        for (auto& l : {&shift_label_, &scale_label_, &slope_label_}) {
             l->setLookAndFeel(&label_laf_);
             l->setJustificationType(juce::Justification::centred);
             l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
 
-        for (auto& s : {&shift_slider_, &smooth_slider_, &slope_slider_}) {
+        for (auto& s : {&shift_slider_, &scale_slider_, &slope_slider_}) {
             s->setBufferedToImage(true);
             addAndMakeVisible(s);
         }
@@ -196,9 +194,9 @@ namespace zlpanel {
             temp_bound.removeFromTop(padding);
             {
                 auto t_bound = temp_bound.removeFromTop(button_size);
-                smooth_label_.setBounds(t_bound.removeFromLeft(small_slider_width));
-                smooth_slider_.setBounds(t_bound);
-                smooth_slider_.getSlider().setMouseDragSensitivity(small_slider_width);
+                scale_label_.setBounds(t_bound.removeFromLeft(small_slider_width));
+                scale_slider_.setBounds(t_bound);
+                scale_slider_.getSlider().setMouseDragSensitivity(small_slider_width);
             }
             temp_bound.removeFromTop(padding);
             {
@@ -222,6 +220,12 @@ namespace zlpanel {
         if (!isVisible()) {
             return;
         }
+        shift_slider_.getSlider().setValue(0.0, juce::sendNotificationSync);
+        match_fft_panel_.setDiffShift(0.f);
+        scale_slider_.getSlider().setValue(1.0, juce::sendNotificationSync);
+        match_fft_panel_.setDiffScale(1.f);
+        slope_slider_.getSlider().setValue(0.0, juce::sendNotificationSync);
+        match_fft_panel_.setDiffSlope(0.f);
         // auto& analyzer{p_ref_.getController().getEQMatchAnalyzer()};
         // target_box_.getBox().setSelectedItemIndex(0, juce::dontSendNotification);
         // analyzer.setMatchMode(zldsp::eq_match::MatchMode::kMatchSide);
