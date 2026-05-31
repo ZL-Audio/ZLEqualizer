@@ -60,6 +60,8 @@ namespace zlpanel {
 
         void setMatchPhase(MatchPhase match_phase);
 
+        MatchPhase getMatchPhase() const;
+
         void updateMatchNumBand(size_t num_band);
 
         void resetAnalyzer();

@@ -128,6 +128,10 @@ namespace zlpanel {
         match_phase_.store(match_phase, std::memory_order::relaxed);
     }
 
+    MatchFFTPanel::MatchPhase MatchFFTPanel::getMatchPhase() const {
+        return match_phase_.load(std::memory_order::relaxed);
+    }
+
     void MatchFFTPanel::runAnalyze(const juce::Thread& thread) {
         auto& sender{p_ref_.getController().getAnalyzerSender()};
         if (!sender.getLock().try_lock()) {
