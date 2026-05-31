@@ -11,28 +11,25 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync GitHub repo to Gitee
+      - name: Checkout GitHub repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync to Gitee
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITEE_USERNAME: ${{ github.actor }}
           GITEE_PASSWORD: ${{ secrets.GITEE_PAT }}
           GITEE_REPOSITORY: ${{ github.repository }}
         run: |
-          git init
-          git remote add origin https://github.com/${GITHUB_REPOSITORY}.git
-          git config http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${GITHUB_TOKEN}" | base64)"
-
-          git fetch --all
-
-          for branch in $(git branch -a | grep remotes | grep -v HEAD); do
-            git branch --track ${branch##*/} $branch
+          for branch in $(git branch -a | grep remotes/origin | grep -v HEAD); do
+            local_branch_name=$(echo $branch | sed 's/remotes\/origin\///')
+            git branch --track "$local_branch_name" "$branch" 2>/dev/null || true
           done
 
           remote_repo="https://${GITEE_USERNAME}:${GITEE_PASSWORD}@gitee.com/${GITEE_REPOSITORY}.git"
           git remote add gitee "${remote_repo}"
 
           git show-ref
-          git branch --verbose
-
           git push --all --force gitee
           git push --tags --force gitee
