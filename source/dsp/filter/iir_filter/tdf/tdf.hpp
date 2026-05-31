@@ -10,6 +10,8 @@
 #pragma once
 
 #include <span>
+#include <vector>
+#include <algorithm>
 
 #include "tdf_base.hpp"
 #include "../iir/iir.hpp"
@@ -28,23 +30,14 @@ namespace zldsp::filter {
         }
 
         void reset() override {
-            for (auto& s : s1s_) {
-                std::ranges::fill(s.begin(), s.end(), static_cast<FloatType>(0));
-            }
-            for (auto& s : s2s_) {
-                std::ranges::fill(s.begin(), s.end(), static_cast<FloatType>(0));
-            }
+            std::ranges::fill(s1s_, static_cast<FloatType>(0));
+            std::ranges::fill(s2s_, static_cast<FloatType>(0));
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t) override {
             IIR<kFilterSize>::prepareSampleRate(sample_rate);
-            for (auto& s : s1s_) {
-                s.resize(num_channels);
-            }
-            for (auto& s : s2s_) {
-                s.resize(num_channels);
-            }
-            reset();
+            s1s_.assign(num_channels * kFilterSize, static_cast<FloatType>(0));
+            s2s_.assign(num_channels * kFilterSize, static_cast<FloatType>(0));
         }
 
         /**
@@ -81,10 +74,11 @@ namespace zldsp::filter {
         }
 
         FloatType processSample(const size_t channel, FloatType sample) {
+            const size_t channel_offset = channel * kFilterSize;
             for (size_t filter_idx = 0; filter_idx < this->current_filter_num_; ++filter_idx) {
                 const auto& coeff{IIR<kFilterSize>::coeffs_[filter_idx]};
-                auto& s1{s1s_[filter_idx][channel]};
-                auto& s2{s2s_[filter_idx][channel]};
+                auto& s1{s1s_[channel_offset + filter_idx]};
+                auto& s2{s2s_[channel_offset + filter_idx]};
                 const auto output = sample * coeff[2] + s1;
                 s1 = (sample * coeff[3]) - (output * coeff[0]) + s2;
                 s2 = (sample * coeff[4]) - (output * coeff[1]);
@@ -111,6 +105,7 @@ namespace zldsp::filter {
         }
 
     private:
-        std::array<std::vector<FloatType>, kFilterSize> s1s_{}, s2s_{};
+        std::vector<FloatType> s1s_{};
+        std::vector<FloatType> s2s_{};
     };
 }
