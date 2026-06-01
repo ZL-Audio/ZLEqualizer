@@ -13,6 +13,7 @@
 #include "sum_panel.hpp"
 #include "dragger_panel/dragger_panel.hpp"
 #include "solo_panel.hpp"
+#include "../../../chore/thread/notifier.hpp"
 
 namespace zlpanel {
     class ResponsePanel final : public juce::Component,
@@ -59,12 +60,12 @@ namespace zlpanel {
         std::atomic<float>& gain_scale_;
 
         std::vector<size_t> message_not_off_indices_;
-        std::atomic<bool> message_to_update_panels_{};
+        zlchore::thread::Notifier message_to_update_panels_{};
 
-        std::array<std::atomic<bool>, zlp::kBandNum> message_to_update_draggers_{};
-        std::atomic<bool> message_to_update_draggers_total_{};
-        std::atomic<bool> message_to_update_target_dragger_{};
-        std::atomic<bool> message_to_update_side_dragger_{};
+        std::array<zlchore::thread::Notifier, zlp::kBandNum> message_to_update_draggers_{};
+        zlchore::thread::Notifier message_to_update_draggers_total_{};
+        zlchore::thread::Notifier message_to_update_target_dragger_{};
+        zlchore::thread::Notifier message_to_update_side_dragger_{};
 
         SinglePanel single_panel_;
         SumPanel sum_panel_;
@@ -74,7 +75,7 @@ namespace zlpanel {
         float side_y_{0.f};
         std::atomic<float> width_{0.f}, height_{0.f}, font_size_{1.f};
         float c_width_{0.f}, c_height_{0.f}, c_font_size_{1.f};
-        std::atomic<bool> to_update_bound_{};
+        zlchore::thread::Notifier to_update_bound_{};
 
         std::atomic<float>& eq_max_db_idx_ref_;
         float c_eq_max_db_idx_{-1.f};
@@ -96,23 +97,23 @@ namespace zlpanel {
         std::array<zldsp::vector::aligned_vector<float>, 5> sum_mags_;
 
         std::array<zldsp::filter::Empty, zlp::kBandNum> empty_{};
-        std::array<std::atomic<bool>, zlp::kBandNum> to_update_empty_flags_{};
+        std::array<zlchore::thread::Notifier, zlp::kBandNum> to_update_empty_flags_{};
         std::array<std::atomic<float>, zlp::kBandNum> target_gains_{};
-        std::array<std::atomic<bool>, zlp::kBandNum> to_update_target_gain_flags_{};
+        std::array<zlchore::thread::Notifier, zlp::kBandNum> to_update_target_gain_flags_{};
         std::array<zldsp::filter::Empty, zlp::kBandNum> side_empty_{};
-        std::array<std::atomic<bool>, zlp::kBandNum> to_update_side_empty_flags_{};
+        std::array<zlchore::thread::Notifier, zlp::kBandNum> to_update_side_empty_flags_{};
 
         std::array<std::atomic<bool>, zlp::kBandNum> dynamic_ons_{};
         std::array<bool, zlp::kBandNum> c_dynamic_ons_{};
-        std::atomic<bool> to_update_dynamic_ons_{};
+        zlchore::thread::Notifier to_update_dynamic_ons_{};
 
         std::array<std::atomic<zlp::FilterStatus>, zlp::kBandNum> filter_status_{};
         std::array<zlp::FilterStatus, zlp::kBandNum> c_filter_status_{};
-        std::atomic<bool> to_update_filter_status_{};
+        zlchore::thread::Notifier to_update_filter_status_{};
 
         std::array<std::atomic<int>, zlp::kBandNum> lr_modes_{};
         std::array<int, zlp::kBandNum> c_lr_modes_{};
-        std::atomic<bool> to_update_lr_modes_{};
+        zlchore::thread::Notifier to_update_lr_modes_{};
         std::array<std::vector<size_t>, 5> on_lr_indices_{};
         std::array<bool, 5> to_update_lr_flags_{};
         std::array<bool, 5> is_lr_not_off_flags_{};

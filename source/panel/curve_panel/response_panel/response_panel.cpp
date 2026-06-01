@@ -93,7 +93,7 @@ namespace zlpanel {
         width_.store(static_cast<float>(bound.getWidth()), std::memory_order::relaxed);
         height_.store(static_cast<float>(bound.getHeight()), std::memory_order::relaxed);
         font_size_.store(base_.getFontSize(), std::memory_order::relaxed);
-        to_update_bound_.store(true, std::memory_order::release);
+        to_update_bound_.signal();
     }
 
     void ResponsePanel::repaintCallBack() {
@@ -104,11 +104,11 @@ namespace zlpanel {
 
     void ResponsePanel::updateDraggerPositions() {
         updateSoloPosition();
-        if (!message_to_update_draggers_total_.exchange(false, std::memory_order::acquire)) {
+        if (!message_to_update_draggers_total_.check()) {
             return;
         }
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            if (message_to_update_draggers_[band].exchange(false, std::memory_order::acquire)) {
+            if (message_to_update_draggers_[band].check()) {
                 dragger_panel_.updateFilterType(band, empty_[band].getFilterType());
                 dragger_panel_.getDragger(band).updateButton(
                 {points_[band][0].load(std::memory_order::relaxed),
@@ -160,7 +160,7 @@ namespace zlpanel {
     }
 
     void ResponsePanel::updateDrawingParas() {
-        if (!message_to_update_panels_.exchange(false, std::memory_order::acquire)) {
+        if (!message_to_update_panels_.check()) {
             return;
         }
         message_not_off_indices_.clear();
@@ -203,7 +203,7 @@ namespace zlpanel {
     }
 
     void ResponsePanel::updateBand() {
-        message_to_update_panels_.store(true, std::memory_order::relaxed);
+        message_to_update_panels_.signal();
         dragger_panel_.updateBand();
         solo_panel_.updateBand();
         updateFloatingPosition();
@@ -264,48 +264,48 @@ namespace zlpanel {
                 empty_[band].setGain(
                     std::clamp(
                         original_base_gains_[band].load(std::memory_order::relaxed) * value / 100.f, -30.f, 30.f));
-                to_update_empty_flags_[band].store(true, std::memory_order::release);
+                to_update_empty_flags_[band].signal();
                 target_gains_[band].store(
                     std::clamp(
                         original_target_gains_[band].load(std::memory_order::relaxed) * value / 100.f, -30.f, 30.f),
                     std::memory_order::relaxed);
-                to_update_target_gain_flags_[band].store(true, std::memory_order::release);
+                to_update_target_gain_flags_[band].signal();
             }
             return;
         }
         const auto band = static_cast<size_t>(parameter_ID.getTrailingIntValue());
         if (parameter_ID.startsWith(zlp::PFilterStatus::kID)) {
             filter_status_[band].store(static_cast<zlp::FilterStatus>(std::round(value)), std::memory_order::relaxed);
-            to_update_filter_status_.store(true, std::memory_order::release);
+            to_update_filter_status_.signal();
         } else if (parameter_ID.startsWith(zlp::PLRMode::kID)) {
             lr_modes_[band].store(static_cast<int>(std::round(value)), std::memory_order::relaxed);
-            to_update_lr_modes_.store(true, std::memory_order::release);
+            to_update_lr_modes_.signal();
         } else if (parameter_ID.startsWith(zlp::PFilterType::kID)) {
             empty_[band].setFilterType(static_cast<zldsp::filter::FilterType>(std::round(value)));
-            to_update_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::POrder::kID)) {
             empty_[band].setOrder(zlp::POrder::kOrderArray[static_cast<size_t>(std::round(value))]);
-            to_update_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PFreq::kID)) {
             empty_[band].setFreq(value);
-            to_update_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PGain::kID)) {
             original_base_gains_[band].store(value, std::memory_order::relaxed);
             empty_[band].setGain(
                 std::clamp(value * gain_scale_.load(std::memory_order::relaxed) / 100.f, -30.f, 30.f));
-            to_update_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PQ::kID)) {
             empty_[band].setQ(value);
-            to_update_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PDynamicON::kID)) {
             dynamic_ons_[band].store(value > .5f, std::memory_order::relaxed);
-            to_update_dynamic_ons_.store(true, std::memory_order::release);
+            to_update_dynamic_ons_.signal();
         } else if (parameter_ID.startsWith(zlp::PTargetGain::kID)) {
             original_target_gains_[band].store(value, std::memory_order::relaxed);
             target_gains_[band].store(
                 std::clamp(value * gain_scale_.load(std::memory_order::relaxed) / 100.f, -30.f, 30.f),
                 std::memory_order::relaxed);
-            to_update_target_gain_flags_[band].store(true, std::memory_order::release);
+            to_update_target_gain_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PSideFilterType::kID)) {
             if (value < .5f) {
                 side_empty_[band].setFilterType(zldsp::filter::kBandPass);
@@ -314,22 +314,22 @@ namespace zlpanel {
             } else {
                 side_empty_[band].setFilterType(zldsp::filter::kHighPass);
             }
-            to_update_side_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_side_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PSideOrder::kID)) {
             side_empty_[band].setOrder(zlp::POrder::kOrderArray[static_cast<size_t>(std::round(value))]);
-            to_update_side_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_side_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PSideFreq::kID)) {
             side_empty_[band].setFreq(value);
-            to_update_side_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_side_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PSideQ::kID)) {
             side_empty_[band].setQ(value);
-            to_update_side_empty_flags_[band].store(true, std::memory_order::release);
+            to_update_side_empty_flags_[band].signal();
         }
     }
 
     void ResponsePanel::updateCurveParas() {
         // update filter status
-        if (to_update_filter_status_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_filter_status_.check()) {
             for (size_t band = 0; band < zlp::kBandNum; ++band) {
                 const auto new_filter_status = filter_status_[band].load(std::memory_order::relaxed);
                 if (c_filter_status_[band] != new_filter_status) {
@@ -338,10 +338,10 @@ namespace zlpanel {
                     to_update_lr_flags_[static_cast<size_t>(c_lr_modes_[band])] = true;
                 }
             }
-            to_update_lr_modes_.store(true, std::memory_order::release);
+            to_update_lr_modes_.signal();
         }
         // update dynamic ons
-        if (to_update_dynamic_ons_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_dynamic_ons_.check()) {
             for (size_t band = 0; band < zlp::kBandNum; ++band) {
                 const auto dynamic_on = dynamic_ons_[band].load(std::memory_order::relaxed);
                 if (c_dynamic_ons_[band] != dynamic_on) {
@@ -352,10 +352,10 @@ namespace zlpanel {
                     }
                 }
             }
-            message_to_update_panels_.store(true, std::memory_order::release);
+            message_to_update_panels_.signal();
         }
         // update lr modes for summing
-        if (to_update_lr_modes_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_lr_modes_.check()) {
             for (auto& indices : on_lr_indices_) {
                 indices.clear();
             }
@@ -374,7 +374,7 @@ namespace zlpanel {
                     is_lr_not_off_flags_[static_cast<size_t>(lr_mode)] = true;
                 }
             }
-            message_to_update_panels_.store(true, std::memory_order::release);
+            message_to_update_panels_.signal();
         }
         // update sample rate
         if (const auto sample_rate = sample_rate_.load(std::memory_order::relaxed);
@@ -400,7 +400,7 @@ namespace zlpanel {
             std::fill(to_update_base_y_flags_.begin(), to_update_base_y_flags_.end(), true);
         }
         // update width & xs
-        if (to_update_bound_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_bound_.check()) {
             c_width_ = width_.load(std::memory_order::relaxed);
             c_height_ = height_.load(std::memory_order::relaxed);
             c_font_size_ = font_size_.load(std::memory_order::relaxed);
@@ -429,11 +429,11 @@ namespace zlpanel {
         // update db update flags
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             to_update_base_y_flags_[band] = to_update_base_y_flags_[band]
-                || to_update_empty_flags_[band].exchange(false, std::memory_order::acquire);
+                || to_update_empty_flags_[band].check();
             to_update_target_y_flags_[band] = to_update_base_y_flags_[band]
-                || to_update_target_gain_flags_[band].exchange(false, std::memory_order::acquire);
+                || to_update_target_gain_flags_[band].check();
             to_update_side_y_flags_[band] = to_update_base_y_flags_[band]
-                || to_update_side_empty_flags_[band].exchange(false, std::memory_order::acquire);
+                || to_update_side_empty_flags_[band].check();
             const auto lr = c_lr_modes_[band];
             to_update_lr_flags_[static_cast<size_t>(lr)] = to_update_lr_flags_[static_cast<size_t>(lr)]
                 || to_update_base_y_flags_[band] || c_dynamic_ons_[band];
@@ -467,8 +467,8 @@ namespace zlpanel {
                     if (threadShouldExit()) {
                         return false;
                     }
-                    message_to_update_draggers_[band].store(true, std::memory_order::release);
-                    message_to_update_draggers_total_.store(true, std::memory_order::release);
+                    message_to_update_draggers_[band].signal();
+                    message_to_update_draggers_total_.signal();
                 }
                 if (to_update_target_y_flags_[band]) {
                     const auto target_gain = target_gains_[band].load(std::memory_order::relaxed);
@@ -483,8 +483,8 @@ namespace zlpanel {
                     if (threadShouldExit()) {
                         return false;
                     }
-                    message_to_update_target_dragger_.store(true, std::memory_order::release);
-                    message_to_update_draggers_total_.store(true, std::memory_order::release);
+                    message_to_update_target_dragger_.signal();
+                    message_to_update_draggers_total_.signal();
                 }
                 if (to_update_side_y_flags_[band]) {
                     auto para = side_empty_[band].getParas();
@@ -501,8 +501,8 @@ namespace zlpanel {
                         side_points_[band][1].store(left_x, std::memory_order::relaxed);
                         side_points_[band][2].store(right_x, std::memory_order::relaxed);
                     }
-                    message_to_update_side_dragger_.store(true, std::memory_order::release);
-                    message_to_update_draggers_total_.store(true, std::memory_order::release);
+                    message_to_update_side_dragger_.signal();
+                    message_to_update_draggers_total_.signal();
                 }
                 if (c_dynamic_ons_[band]) {
                     ideal_[band].setGain(p_ref_.getController().getCurrentGain(band));

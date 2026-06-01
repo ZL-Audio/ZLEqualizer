@@ -39,13 +39,13 @@ namespace zlpanel {
         if (previous_band_ < zlp::kBandNum) {
             listenerAddRemove<false>(previous_band_);
             for (size_t i = 0; i < kScaleIDs.size(); ++i) {
-                to_update_scale_[i].store(false, std::memory_order_relaxed);
+                to_update_scale_[i].check();
             }
             for (size_t i = 0; i < kSyncIDs.size(); ++i) {
-                to_update_sync_[i].store(false, std::memory_order_relaxed);
+                to_update_sync_[i].check();
             }
             for (size_t i = 0; i < kShiftIDs.size(); ++i) {
-                to_update_shift_[i].store(false, std::memory_order_relaxed);
+                to_update_shift_[i].check();
             }
         }
         previous_band_ = base_.getSelectedBand();
@@ -76,16 +76,16 @@ namespace zlpanel {
         if (items_set_.getNumSelected() < 2) {
             return;
         }
-        if (!whole_to_update_.exchange(false, std::memory_order::acquire)) {
+        if (!whole_to_update_.check()) {
             return;
         }
-        if (whole_to_update_scale_.exchange(false, std::memory_order::acquire)) {
+        if (whole_to_update_scale_.check()) {
             updateScaleParas();
         }
-        if (whole_to_update_sync_.exchange(false, std::memory_order::acquire)) {
+        if (whole_to_update_sync_.check()) {
             updateSyncParas();
         }
-        if (whole_to_update_shift_.exchange(false, std::memory_order::acquire)) {
+        if (whole_to_update_shift_.check()) {
             updateShiftParas();
         }
     }
@@ -119,25 +119,25 @@ namespace zlpanel {
     void LassoBandUpdater::parameterChanged(const juce::String& parameter_ID, float) {
         for (size_t i = 0; i < kScaleIDs.size(); ++i) {
             if (parameter_ID.startsWith(kScaleIDs[i])) {
-                to_update_scale_[i].store(true, std::memory_order::relaxed);
-                whole_to_update_scale_.store(true, std::memory_order::release);
-                whole_to_update_.store(true, std::memory_order::release);
+                to_update_scale_[i].signal();
+                whole_to_update_scale_.signal();
+                whole_to_update_.signal();
                 return;
             }
         }
         for (size_t i = 0; i < kSyncIDs.size(); ++i) {
             if (parameter_ID.startsWith(kSyncIDs[i])) {
-                to_update_sync_[i].store(true, std::memory_order::relaxed);
-                whole_to_update_sync_.store(true, std::memory_order::release);
-                whole_to_update_.store(true, std::memory_order::release);
+                to_update_sync_[i].signal();
+                whole_to_update_sync_.signal();
+                whole_to_update_.signal();
                 return;
             }
         }
         for (size_t i = 0; i < kShiftIDs.size(); ++i) {
             if (parameter_ID.startsWith(kShiftIDs[i])) {
-                to_update_shift_[i].store(true, std::memory_order::relaxed);
-                whole_to_update_shift_.store(true, std::memory_order::release);
-                whole_to_update_.store(true, std::memory_order::release);
+                to_update_shift_[i].signal();
+                whole_to_update_shift_.signal();
+                whole_to_update_.signal();
                 return;
             }
         }
@@ -146,7 +146,7 @@ namespace zlpanel {
     void LassoBandUpdater::updateScaleParas() {
         const auto selected_band = base_.getSelectedBand();
         for (size_t i = 0; i < kScaleIDs.size(); ++i) {
-            if (to_update_scale_[i].exchange(false, std::memory_order::acquire)) {
+            if (to_update_scale_[i].check()) {
                 const auto* target_para = scale_paras_[i][selected_band];
                 const auto target = target_para->convertFrom0to1(target_para->getValue());
                 const auto source = scale_values_when_selected_[i][selected_band];
@@ -167,7 +167,7 @@ namespace zlpanel {
 
     void LassoBandUpdater::updateSyncParas() {
         const auto selected_band = base_.getSelectedBand();
-        if (to_update_sync_[0].exchange(false, std::memory_order::acquire)) {
+        if (to_update_sync_[0].check()) {
             const auto* target_para = sync_paras_[0][selected_band];
             const auto value = target_para->getValue();
             for (const auto& band: items_set_) {
@@ -181,7 +181,7 @@ namespace zlpanel {
             }
         }
         for (size_t i = 1; i < kSyncIDs.size(); ++i) {
-            if (to_update_sync_[i].exchange(false, std::memory_order::acquire)) {
+            if (to_update_sync_[i].check()) {
                 const auto* target_para = sync_paras_[i][selected_band];
                 const auto value = target_para->getValue();
                 for (const auto& band: items_set_) {
@@ -198,7 +198,7 @@ namespace zlpanel {
     void LassoBandUpdater::updateShiftParas() {
         const auto selected_band = base_.getSelectedBand();
         for (size_t i = 0; i < kShiftIDs.size(); ++i) {
-            if (to_update_shift_[i].exchange(false, std::memory_order::acquire)) {
+            if (to_update_shift_[i].check()) {
                 const auto* target_para = shift_paras_[i][selected_band];
                 const auto target = target_para->convertFrom0to1(target_para->getValue());
                 const auto source = shift_values_when_selected_[i][selected_band];

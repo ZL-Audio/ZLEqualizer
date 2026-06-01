@@ -20,9 +20,16 @@ namespace zlpanel {
 
         /**
          * pull new object before reading
+         * @tparam frequent whether the object is likely to get updated between pull()
          * @return whether the object has been updated
          */
+        template <bool frequent = true>
         bool pull() {
+            if constexpr (!frequent) {
+                if (!new_frame_ready_.load(std::memory_order::relaxed)) {
+                    return false;
+                }
+            }
             if (new_frame_ready_.exchange(false, std::memory_order_acquire)) {
                 read_idx_ = clean_idx_.exchange(read_idx_, std::memory_order_acq_rel);
                 return true;

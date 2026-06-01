@@ -12,6 +12,7 @@
 #include "../../../../PluginProcessor.hpp"
 #include "../../../../gui/gui.hpp"
 #include "../../../helper/helper.hpp"
+#include "../../../../chore/thread/notifier.hpp"
 
 namespace zlpanel {
     class LassoBandUpdater final : private juce::AudioProcessorValueTreeState::Listener {
@@ -45,13 +46,13 @@ namespace zlpanel {
             zlp::PThreshold::kID, zlp::PKneeW::kID
         };
 
-        std::atomic<bool> whole_to_update_{false};
-        std::atomic<bool> whole_to_update_scale_{false};
-        std::atomic<bool> whole_to_update_sync_{false};
-        std::atomic<bool> whole_to_update_shift_{false};
-        std::array<std::atomic<bool>, kScaleIDs.size()> to_update_scale_{};
-        std::array<std::atomic<bool>, kSyncIDs.size()> to_update_sync_{};
-        std::array<std::atomic<bool>, kShiftIDs.size()> to_update_shift_{};
+        zlchore::thread::Notifier whole_to_update_{};
+        zlchore::thread::Notifier whole_to_update_scale_{};
+        zlchore::thread::Notifier whole_to_update_sync_{};
+        zlchore::thread::Notifier whole_to_update_shift_{};
+        std::array<zlchore::thread::Notifier, kScaleIDs.size()> to_update_scale_{};
+        std::array<zlchore::thread::Notifier, kSyncIDs.size()> to_update_sync_{};
+        std::array<zlchore::thread::Notifier, kShiftIDs.size()> to_update_shift_{};
 
         std::array<std::array<juce::RangedAudioParameter*, zlp::kBandNum>, kScaleIDs.size()> scale_paras_;
         std::array<std::array<juce::RangedAudioParameter*, zlp::kBandNum>, kSyncIDs.size()> sync_paras_;

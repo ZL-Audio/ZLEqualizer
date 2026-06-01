@@ -73,7 +73,7 @@ namespace zlgui::attachment {
         void parameterChanged(const juce::String&, const float value) override {
             if constexpr (kUpdateFromAPVTS) {
                 atomic_.store(value, std::memory_order::relaxed);
-                updater_ref_.getFlag().store(true, std::memory_order::release);
+                updater_ref_.getFlag().signal();
             }
         }
 

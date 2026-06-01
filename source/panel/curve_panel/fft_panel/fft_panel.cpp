@@ -88,8 +88,8 @@ namespace zlpanel {
         font_size_.store(base_.getFontSize());
 
         skip_next_repaint_ = true;
-        to_update_xs_para_.store(true, std::memory_order::release);
-        to_update_ys_para_.store(true, std::memory_order::release);
+        to_update_xs_para_.signal();
+        to_update_ys_para_.signal();
     }
 
     void FFTPanel::run(const juce::Thread& thread) {
@@ -110,7 +110,7 @@ namespace zlpanel {
         const auto sample_rate = sender.getSampleRate();
         if (std::abs(c_sample_rate_ - sample_rate) > 0.1) {
             c_sample_rate_ = sample_rate;
-            to_update_tilt_.store(true, std::memory_order::relaxed);
+            to_update_tilt_.signal();
             int fft_order;
             if (sample_rate <= 50000) {
                 fft_order = 12;
@@ -138,8 +138,8 @@ namespace zlpanel {
             current_ps_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
             coll_ps_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
 
-            to_update_xs_para_.store(true, std::memory_order::relaxed);
-            to_update_ys_para_.store(true, std::memory_order::relaxed);
+            to_update_xs_para_.signal();
+            to_update_ys_para_.signal();
         }
         // receiver pull data
         auto& fifo{sender.getAbstractFIFO()};
@@ -168,17 +168,17 @@ namespace zlpanel {
             fft_min_db_idx_ref_.load(std::memory_order::relaxed)))];
         if (std::abs(min_db - c_fft_min_db_) > .1f) {
             c_fft_min_db_ = min_db;
-            to_update_decay_.store(true, std::memory_order::relaxed);
-            to_update_ys_para_.store(true, std::memory_order::relaxed);
+            to_update_decay_.signal();
+            to_update_ys_para_.signal();
         }
         // update tilt
         const auto fft_tilt_idx = static_cast<int>(std::round(
             fft_tilt_idx_ref_.load(std::memory_order::relaxed)));
         if (fft_tilt_idx != fft_speed_idx_) {
             fft_tilt_idx_ = fft_tilt_idx;
-            to_update_tilt_.store(true, std::memory_order::relaxed);
+            to_update_tilt_.signal();
         }
-        if (to_update_tilt_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_tilt_.check()) {
             tilter_.setTiltSlope(sample_rate,
                                  zlstate::PFFTTilt::kSlopes[static_cast<size_t>(fft_tilt_idx)] +
                                  spectrum_extra_tilt_slope_.load(std::memory_order::relaxed));
@@ -188,9 +188,9 @@ namespace zlpanel {
             fft_speed_idx_ref_.load(std::memory_order::relaxed)));
         if (fft_speed_idx != fft_speed_idx_) {
             fft_speed_idx_ = fft_speed_idx;
-            to_update_decay_.store(true, std::memory_order::relaxed);
+            to_update_decay_.signal();
         }
-        if (to_update_decay_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_decay_.check()) {
             const auto refresh_rate = refresh_rate_.load(std::memory_order::relaxed);
             const auto decay_speed = zlstate::PFFTSpeed::kSpeeds[
                 static_cast<size_t>(fft_speed_idx_)] * spectrum_extra_decay_speed_.load(std::memory_order::relaxed);
@@ -199,7 +199,7 @@ namespace zlpanel {
             }
         }
         // update xs para
-        if (to_update_xs_para_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_xs_para_.check()) {
             const auto fft_max = freq_helper::getFFTMax(sample_rate);
             c_width_ = width_.load(std::memory_order::relaxed) * kFFTSizeOverWidth;
             c_width_ *= static_cast<float>(std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1));
@@ -218,7 +218,7 @@ namespace zlpanel {
             xs_[0] = std::min(0.f, xs_[2] - 2.f * xs_[1]);
         }
         // update ys para
-        if (to_update_ys_para_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_ys_para_.check()) {
             c_height_ = height_.load(std::memory_order::relaxed);
             const auto font_size = font_size_.load(std::memory_order::relaxed);
             const auto bottom_area_height = getBottomAreaHeight(font_size);
@@ -305,15 +305,15 @@ namespace zlpanel {
 
     void FFTPanel::setRefreshRate(const double refresh_rate) {
         refresh_rate_.store(static_cast<float>(refresh_rate), std::memory_order::relaxed);
-        to_update_decay_.store(true, std::memory_order::release);
+        to_update_decay_.signal();
     }
 
     void FFTPanel::lookAndFeelChanged() {
         const auto extra_speed = base_.getFFTExtraSpeed();
         spectrum_extra_decay_speed_.store(extra_speed * extra_speed + 0.1f, std::memory_order::relaxed);
-        to_update_decay_.store(true, std::memory_order::release);
+        to_update_decay_.signal();
 
         spectrum_extra_tilt_slope_.store(base_.getFFTExtraTilt(), std::memory_order::relaxed);
-        to_update_tilt_.store(true, std::memory_order::release);
+        to_update_tilt_.signal();
     }
 }

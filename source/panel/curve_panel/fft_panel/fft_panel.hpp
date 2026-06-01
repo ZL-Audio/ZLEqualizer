@@ -18,6 +18,7 @@
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_tilter.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_decayer.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_collision.hpp"
+#include "../../../chore/thread/notifier.hpp"
 
 namespace zlpanel {
     class FFTPanel final : public juce::Component,
@@ -68,15 +69,15 @@ namespace zlpanel {
         float c_width_{0.f};
         float c_height_{0.f};
         float y_k_{0.f}, y_b_{0.f};
-        std::atomic<bool> to_update_xs_para_{true};
-        std::atomic<bool> to_update_ys_para_{true};
+        zlchore::thread::Notifier to_update_xs_para_{true};
+        zlchore::thread::Notifier to_update_ys_para_{true};
 
         std::atomic<float> refresh_rate_{30.0};
         std::atomic<float> spectrum_extra_decay_speed_{1.f};
-        std::atomic<bool> to_update_decay_{true};
+        zlchore::thread::Notifier to_update_decay_{true};
 
         std::atomic<float> spectrum_extra_tilt_slope_{0.f};
-        std::atomic<bool> to_update_tilt_{true};
+        zlchore::thread::Notifier to_update_tilt_{true};
 
         std::atomic<bool> is_fft_frozen_{false};
 

@@ -44,16 +44,14 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::run(const juce::Thread& thread) {
-        if (to_reset_analyzer_.load(std::memory_order::relaxed)) {
-            if (to_reset_analyzer_.exchange(false, std::memory_order::relaxed)) {
-                for (auto& accu : accumulators_) {
-                    accu.reset();
-                }
-                for (auto& db : drawing_dbs_) {
-                    db.store(-1000.f, std::memory_order::relaxed);
-                }
-                to_update_drawing_.store(true, std::memory_order::release);
+        if (to_reset_analyzer_.check()) {
+            for (auto& accu : accumulators_) {
+                accu.reset();
             }
+            for (auto& db : drawing_dbs_) {
+                db.store(-1000.f, std::memory_order::relaxed);
+            }
+            to_update_drawing_.signal();
         }
         if (match_phase_.load(std::memory_order::relaxed) == MatchPhase::kAnalyze) {
             runAnalyze(thread);
@@ -72,9 +70,9 @@ namespace zlpanel {
         height_.store(bound.getHeight());
         font_size_.store(base_.getFontSize());
 
-        to_update_xs_para_.store(true, std::memory_order::release);
-        to_update_ys_para_.store(true, std::memory_order::release);
-        to_update_curve_para_.store(true, std::memory_order::release);
+        to_update_xs_para_.signal();
+        to_update_ys_para_.signal();
+        to_update_curve_para_.signal();
     }
 
     void MatchFFTPanel::loadFromPreset(const std::vector<float>& freqs, const std::vector<float>& dbs) {
@@ -86,7 +84,7 @@ namespace zlpanel {
             std::lock_guard lock{load_db_mutex_};
             preset_dbs_ = dbs;
         }
-        to_update_preset_.store(true, std::memory_order::release);
+        to_update_preset_.signal();
     }
 
     void MatchFFTPanel::saveToPreset(std::vector<float>& freqs, std::vector<float>& dbs) {
@@ -121,7 +119,7 @@ namespace zlpanel {
 
     void MatchFFTPanel::setDiffSlope(const float diff_slope) {
         diff_slope_.store(diff_slope, std::memory_order::relaxed);
-        to_update_diff_slope_.store(true, std::memory_order::release);
+        to_update_diff_slope_.signal();
     }
 
     void MatchFFTPanel::setMatchPhase(const MatchPhase match_phase) {
@@ -198,8 +196,8 @@ namespace zlpanel {
                 }
                 freqs_.back() = static_cast<float>(fft_max - 0.1);
             }
-            to_update_xs_para_.store(true, std::memory_order::relaxed);
-            to_update_ys_para_.store(true, std::memory_order::relaxed);
+            to_update_xs_para_.signal();
+            to_update_ys_para_.signal();
         }
         // receiver pull data
         auto& fifo{sender.getAbstractFIFO()};
@@ -225,10 +223,10 @@ namespace zlpanel {
             fft_min_db_idx_ref_.load(std::memory_order::relaxed)))];
         if (std::abs(min_db - c_fft_min_db_) > .1f) {
             c_fft_min_db_ = min_db;
-            to_update_ys_para_.store(true, std::memory_order::relaxed);
+            to_update_ys_para_.signal();
         }
         // update xs para
-        if (to_update_xs_para_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_xs_para_.check()) {
             const auto fft_max = freq_helper::getFFTMax(sample_rate);
             auto c_width = width_.load(std::memory_order::relaxed) * kFFTSizeOverWidth;
             c_width *= static_cast<float>(std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1));
@@ -240,7 +238,7 @@ namespace zlpanel {
             xs_[0] = std::min(0.f, xs_[2] - 2.f * xs_[1]);
         }
         // update ys para
-        if (to_update_ys_para_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_ys_para_.check()) {
             const auto height = height_.load(std::memory_order::relaxed);
             const auto font_size = font_size_.load(std::memory_order::relaxed);
             const auto bottom_area_height = getBottomAreaHeight(font_size);
@@ -254,9 +252,9 @@ namespace zlpanel {
             eq_max_db_idx_ref_.load(std::memory_order::relaxed)))];
         if (std::abs(eq_max_db - c_eq_max_db_) > .1f) {
             c_eq_max_db_ = eq_max_db;
-            to_update_curve_para_.store(true, std::memory_order::relaxed);
+            to_update_curve_para_.signal();
         }
-        if (to_update_curve_para_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_curve_para_.check()) {
             const auto height = height_.load(std::memory_order::relaxed);
             const auto font_size = font_size_.load(std::memory_order::relaxed);
             const auto h = height - static_cast<float>(getBottomAreaHeight(font_size));
@@ -343,7 +341,7 @@ namespace zlpanel {
 
     void MatchFFTPanel::processTargetPreset() {
         constexpr size_t i = 1;
-        if (to_update_preset_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_preset_.check()) {
             std::vector<float> preset_freqs, preset_dbs;
             {
                 std::lock_guard lock{load_freq_mutex_};
@@ -379,12 +377,12 @@ namespace zlpanel {
         static constexpr hn::ScalableTag<float> d;
         static constexpr size_t lanes = hn::Lanes(d);
 
-        if (to_update_drawing_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_drawing_.check()) {
             for (size_t i = 0; i < kNumPoints; ++i) {
                 c_drawing_dbs_[i] = drawing_dbs_[i].load(std::memory_order::relaxed);
             }
         }
-        if (to_update_diff_slope_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_diff_slope_.check()) {
             const float center_freq = std::sqrt(freqs_.front() * freqs_.back());
             const float log2_center = std::log2(center_freq);
             const auto v_log2_center = hn::Set(d, log2_center);
@@ -498,7 +496,7 @@ namespace zlpanel {
         }
         drawing_pre_idx_ = c_drawing_idx;
         drawing_pre_db_ = c_drawing_db;
-        to_update_drawing_.store(true, std::memory_order::release);
+        to_update_drawing_.signal();
     }
 
     void MatchFFTPanel::mouseDoubleClick(const juce::MouseEvent&) {
@@ -508,7 +506,7 @@ namespace zlpanel {
         for (auto& db : drawing_dbs_) {
             db.store(-1000.f, std::memory_order::relaxed);
         }
-        to_update_drawing_.store(true, std::memory_order::release);
+        to_update_drawing_.signal();
     }
 
     void MatchFFTPanel::handleAsyncUpdate() {
@@ -529,7 +527,7 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::resetAnalyzer() {
-        to_reset_analyzer_.store(true, std::memory_order::relaxed);
+        to_reset_analyzer_.signal();
     }
 
     void MatchFFTPanel::updateMatchFilters(const MatchResult& match_result) {

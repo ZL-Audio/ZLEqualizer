@@ -19,6 +19,7 @@
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_accumulator.hpp"
 #include "../../../dsp/interpolation/interpolation.hpp"
 #include "../../../chore/eq_match_optimizer.hpp"
+#include "../../../chore/thread/notifier.hpp"
 
 namespace zlpanel {
     class MatchFFTPanel final : public juce::Component,
@@ -92,9 +93,9 @@ namespace zlpanel {
         std::atomic<float> font_size_{0.1f};
         float y_k_{0.f}, y_b_{0.f};
         float c_k_{0.f}, c_b_{0.f};
-        std::atomic<bool> to_update_xs_para_{true};
-        std::atomic<bool> to_update_ys_para_{true};
-        std::atomic<bool> to_update_curve_para_{true};
+        zlchore::thread::Notifier to_update_xs_para_{true};
+        zlchore::thread::Notifier to_update_ys_para_{true};
+        zlchore::thread::Notifier to_update_curve_para_{true};
 
         zldsp::analyzer::FFTAnalyzerProcessor processor_;
         std::array<zldsp::analyzer::FFTAnalyzerReceiver, 2> receivers_{
@@ -109,7 +110,7 @@ namespace zlpanel {
         std::mutex save_freq_mutex_;
         std::mutex save_db_mutex_;
 
-        std::atomic<bool> to_update_preset_{false};
+        zlchore::thread::Notifier to_update_preset_{};
         std::mutex load_freq_mutex_;
         std::mutex load_db_mutex_;
         std::vector<float> preset_freqs_;
@@ -119,7 +120,7 @@ namespace zlpanel {
         std::atomic<bool> diff_draw_off_{false};
         std::array<std::atomic<float>, kNumPoints> drawing_dbs_{};
         alignas(64) std::array<float, kNumPoints> c_drawing_dbs_{};
-        std::atomic<bool> to_update_drawing_{false};
+        zlchore::thread::Notifier to_update_drawing_{};
         float drawing_k_{1.f}, drawing_b_{0.f}, drawing_p_scale_{0.f};
         size_t drawing_pre_idx_{0};
         float drawing_pre_db_{0.f};
@@ -127,7 +128,7 @@ namespace zlpanel {
         std::atomic<float> diff_scale_{1.f}, diff_shift_{0.f};
         alignas(64) std::array<float, kNumPoints> c_diff_tilt_{};
         std::atomic<float> diff_slope_{0.f};
-        std::atomic<bool> to_update_diff_slope_{false};
+        zlchore::thread::Notifier to_update_diff_slope_{};
 
         struct MatchResult {
             std::vector<zldsp::filter::FilterParameters> filter_paras_;
@@ -136,7 +137,7 @@ namespace zlpanel {
         std::atomic<MatchPhase> match_phase_{MatchPhase::kAnalyze};
         TriBuffer<MatchResult> match_result_;
 
-        std::atomic<bool> to_reset_analyzer_{false};
+        zlchore::thread::Notifier to_reset_analyzer_{};
 
         void runAnalyze(const juce::Thread& thread);
 
