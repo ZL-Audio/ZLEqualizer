@@ -137,7 +137,7 @@ namespace zlgui::attachment {
 
         void parameterChanged(const juce::String&, const float new_value) override {
             atomic_value_.store(new_value, std::memory_order::relaxed);
-            updater_ref_.getFlag().store(true, std::memory_order::release);
+            updater_ref_.getFlag().signal();
         }
 
         void sliderValueChanged(juce::Slider*) override {

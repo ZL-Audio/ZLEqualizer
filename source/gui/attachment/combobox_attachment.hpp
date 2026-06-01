@@ -67,7 +67,7 @@ namespace zlgui::attachment {
 
         void parameterChanged(const juce::String&, const float new_value) override {
             atomic_index_.store(static_cast<int>(new_value), std::memory_order::relaxed);
-            updater_ref_.getFlag().store(true, std::memory_order::release);
+            updater_ref_.getFlag().signal();
         }
 
         void comboBoxChanged(juce::ComboBox*) override {

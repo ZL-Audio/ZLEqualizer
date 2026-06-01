@@ -66,7 +66,7 @@ namespace zlgui::attachment {
 
         void parameterChanged(const juce::String&, const float new_value) override {
             atomic_flag_.store(new_value > .5f, std::memory_order::relaxed);
-            updater_ref_.getFlag().store(true, std::memory_order::release);
+            updater_ref_.getFlag().signal();
         }
 
         void buttonStateChanged(juce::Button*) override {
