@@ -29,7 +29,7 @@ namespace zlp {
         std::atomic<float>& scale_;
         std::atomic<float>& target_gain_;
         std::atomic<bool>& update_flag_;
-        std::atomic<bool>& whole_update_flag_;
+        zlchore::thread::Notifier& whole_update_flag_;
 
         static constexpr std::array kIDs{
             PSideFilterType::kID, PSideOrder::kID, PSideFreq::kID, PSideQ::kID, PTargetGain::kID

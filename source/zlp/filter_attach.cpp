@@ -46,31 +46,31 @@ namespace zlp {
         } else if (parameter_ID.startsWith(PFilterType::kID)) {
             empty_.setFilterType(static_cast<zldsp::filter::FilterType>(std::round(value)));
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideFilterType();
             }
         } else if (parameter_ID.startsWith(POrder::kID)) {
             empty_.setOrder(POrder::kOrderArray[static_cast<size_t>(std::round(value))]);
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         } else if (parameter_ID.startsWith(PLRMode::kID)) {
             controller_.setLRMS(idx_, static_cast<FilterStereo>(std::round(value)));
         } else if (parameter_ID.startsWith(PFreq::kID)) {
             empty_.setFreq(value);
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideFreq();
             }
         } else if (parameter_ID.startsWith(PGain::kID)) {
             empty_.setGain(std::clamp(value * (scale_.load(std::memory_order::relaxed) / 100.f), -30.f, 30.f));
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         } else if (parameter_ID.startsWith(PQ::kID)) {
             empty_.setQ(value);
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideQ();
             }
@@ -83,7 +83,7 @@ namespace zlp {
         } else if (parameter_ID.startsWith(PGainScale::kID)) {
             empty_.setGain(std::clamp(gain_.load(std::memory_order::relaxed) * (value / 100.f), -30.f, 30.f));
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         }
     }
 

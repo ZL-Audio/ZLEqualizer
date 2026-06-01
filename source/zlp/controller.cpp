@@ -89,11 +89,11 @@ namespace zlp {
         delay_.prepare(sample_rate, max_num_samples, 2, 0.021);
         to_update_delay_.store(true, std::memory_order::release);
         to_update_output_.store(true, std::memory_order::release);
-        to_update_.store(true, std::memory_order_release);
+        to_update_.signal();
     }
 
     void Controller::prepareBuffer() {
-        if (!to_update_.exchange(false, std::memory_order::acquire)) {
+        if (!to_update_.check()) {
             return;
         }
         prepareStatus();

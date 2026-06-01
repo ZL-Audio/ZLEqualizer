@@ -47,27 +47,27 @@ namespace zlp {
                 side_empty_.setFilterType(zldsp::filter::kHighPass);
             }
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         } else if (parameter_ID.startsWith(PSideOrder::kID)) {
             side_empty_.setOrder(PSideOrder::kOrderArray[static_cast<size_t>(std::round(value))]);
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         } else if (parameter_ID.startsWith(PSideFreq::kID)) {
             side_empty_.setFreq(value);
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         } else if (parameter_ID.startsWith(PSideQ::kID)) {
             side_empty_.setQ(value);
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         } else if (parameter_ID.startsWith(PTargetGain::kID)) {
             side_empty_.setGain(std::clamp(value * (scale_.load(std::memory_order::relaxed) / 100.f), -30.f, 30.f));
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         } else if (parameter_ID.startsWith(PGainScale::kID)) {
             side_empty_.setGain(std::clamp(target_gain_.load(std::memory_order::relaxed) * (value / 100.f), -30.f, 30.f));
             update_flag_.store(true, std::memory_order::release);
-            whole_update_flag_.store(true, std::memory_order::release);
+            whole_update_flag_.signal();
         }
     }
 }
