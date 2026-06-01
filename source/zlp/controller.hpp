@@ -70,19 +70,19 @@ namespace zlp {
 
         void setFilterStatus(const size_t idx, const FilterStatus filter_status) {
             filter_status_[idx].store(filter_status, std::memory_order::relaxed);
-            to_update_status_.store(true, std::memory_order::release);
+            to_update_status_.signal();
             to_update_.signal();
         }
 
         void setLRMS(const size_t idx, const FilterStereo filter_stereo) {
             lrms_[idx].store(filter_stereo, std::memory_order::relaxed);
-            to_update_lrms_.store(true, std::memory_order::release);
+            to_update_lrms_.signal();
             to_update_.signal();
         }
 
         void setDynamicON(const size_t idx, const bool dynamic_on) {
             dynamic_on_[idx].store(dynamic_on, std::memory_order::relaxed);
-            to_update_dynamic_.store(true, std::memory_order::release);
+            to_update_dynamic_.signal();
             to_update_.signal();
         }
 
@@ -93,7 +93,7 @@ namespace zlp {
 
         void setDynamicRelative(const size_t idx, const bool is_relative) {
             dynamic_th_relative_[idx].store(is_relative, std::memory_order::relaxed);
-            dynamic_th_update_[idx].store(true, std::memory_order::release);
+            dynamic_th_update_[idx].signal();
             to_update_.signal();
         }
 
@@ -104,52 +104,52 @@ namespace zlp {
 
         void setDynamicLearn(const size_t idx, const bool is_learn) {
             dynamic_th_learn_[idx].store(is_learn, std::memory_order::relaxed);
-            dynamic_th_update_[idx].store(true, std::memory_order::release);
+            dynamic_th_update_[idx].signal();
             to_update_.signal();
         }
 
         void setDynamicThreshold(const size_t idx, const double threshold) {
             dynamic_threshold_[idx].store(threshold, std::memory_order::relaxed);
-            dynamic_th_update_[idx].store(true, std::memory_order::release);
+            dynamic_th_update_[idx].signal();
             to_update_.signal();
         }
 
         void setDynamicKnee(const size_t idx, const double knee) {
             dynamic_knee_[idx].store(knee, std::memory_order::relaxed);
-            dynamic_th_update_[idx].store(true, std::memory_order::release);
+            dynamic_th_update_[idx].signal();
             to_update_.signal();
         }
 
         void setDynamicAttack(const size_t idx, const double attack) {
             dynamic_attack_[idx].store(attack, std::memory_order::relaxed);
-            dynamic_ar_update_[idx].store(true, std::memory_order::release);
+            dynamic_ar_update_[idx].signal();
             to_update_.signal();
         }
 
         void setDynamicRelease(const size_t idx, const double release) {
             dynamic_release_[idx].store(release, std::memory_order::relaxed);
-            dynamic_ar_update_[idx].store(true, std::memory_order::release);
+            dynamic_ar_update_[idx].signal();
             to_update_.signal();
         }
 
         void setDynamicSmooth(const size_t idx, const double smooth) {
             dynamic_smooth_[idx].store(smooth, std::memory_order::relaxed);
-            dynamic_smooth_update_[idx].store(true, std::memory_order::relaxed);
-            dynamic_extra_update_[idx].store(true, std::memory_order::release);
+            dynamic_smooth_update_[idx].signal();
+            dynamic_extra_update_[idx].signal();
             to_update_.signal();
         }
 
         void setDynamicRMSLength(const size_t idx, const double rms_length) {
             dynamic_rms_length_[idx].store(rms_length, std::memory_order::relaxed);
-            dynamic_rms_length_update_[idx].store(true, std::memory_order::relaxed);
-            dynamic_extra_update_[idx].store(true, std::memory_order::release);
+            dynamic_rms_length_update_[idx].signal();
+            dynamic_extra_update_[idx].signal();
             to_update_.signal();
         }
 
         void setDynamicRMSMix(const size_t idx, const double rms_mix) {
             dynamic_rms_mix_[idx].store(rms_mix, std::memory_order::relaxed);
-            dynamic_rms_mix_update_[idx].store(true, std::memory_order::relaxed);
-            dynamic_extra_update_[idx].store(true, std::memory_order::release);
+            dynamic_rms_mix_update_[idx].signal();
+            dynamic_extra_update_[idx].signal();
             to_update_.signal();
         }
 
@@ -177,11 +177,11 @@ namespace zlp {
             return learned_knees_[idx].load(std::memory_order::relaxed);
         }
 
-        std::array<std::atomic<bool>, kBandNum>& getEmptyUpdateFlags() {
+        std::array<zlchore::thread::Notifier, kBandNum>& getEmptyUpdateFlags() {
             return empty_update_flags_;
         }
 
-        std::array<std::atomic<bool>, kBandNum>& getSideEmptyUpdateFlags() {
+        std::array<zlchore::thread::Notifier, kBandNum>& getSideEmptyUpdateFlags() {
             return side_empty_update_flags_;
         }
 
@@ -199,26 +199,26 @@ namespace zlp {
 
         void setSoloWholeIdx(const size_t idx) {
             solo_whole_idx_.store(idx, std::memory_order::relaxed);
-            to_update_solo_.store(true, std::memory_order::release);
+            to_update_solo_.signal();
             to_update_.signal();
         }
 
         void setMakeupGain(const double gain) {
             makeup_gain_linear_.store(zldsp::chore::decibelsToGain(gain), std::memory_order::relaxed);
-            to_update_makeup_.store(true, std::memory_order::release);
-            to_update_output_.store(true, std::memory_order::release);
+            to_update_makeup_.signal();
+            to_update_output_.signal();
             to_update_.signal();
         }
 
         void setSGCON(const bool f) {
             sgc_on_.store(f, std::memory_order::relaxed);
-            to_update_output_.store(true, std::memory_order::release);
+            to_update_output_.signal();
             to_update_.signal();
         }
 
         void setLoudnessMatchON(const bool f) {
             loudness_matcher_on_.store(f, std::memory_order::relaxed);
-            to_update_output_.store(true, std::memory_order::release);
+            to_update_output_.signal();
             to_update_.signal();
         }
 
@@ -228,20 +228,20 @@ namespace zlp {
 
         void setAGCON(const bool f) {
             agc_on_.store(f, std::memory_order::relaxed);
-            to_update_output_.store(true, std::memory_order::release);
+            to_update_output_.signal();
             to_update_.signal();
         }
 
         void setPhaseFlipON(const bool f) {
             phase_flip_on_.store(f, std::memory_order::relaxed);
-            to_update_output_.store(true, std::memory_order::release);
+            to_update_output_.signal();
             to_update_.signal();
         }
 
         void setDelay(const double delay_second) {
             delay_second_.store(delay_second, std::memory_order::relaxed);
-            to_update_delay_.store(true, std::memory_order::release);
-            to_update_output_.store(true, std::memory_order::release);
+            to_update_delay_.signal();
+            to_update_output_.signal();
             to_update_.signal();
         }
 
@@ -259,19 +259,19 @@ namespace zlp {
         std::array<std::atomic<FilterStatus>, kBandNum> filter_status_{};
         std::array<FilterStatus, kBandNum> c_filter_status_{};
         std::vector<size_t> not_off_total_{};
-        std::atomic<bool> to_update_status_{false};
+        zlchore::thread::Notifier to_update_status_{false};
         // filter l/r/m/s
         std::array<std::atomic<FilterStereo>, kBandNum> lrms_{};
         std::array<FilterStereo, kBandNum> c_lrms_{};
-        std::atomic<bool> to_update_lrms_{false};
+        zlchore::thread::Notifier to_update_lrms_{false};
         bool is_lr_on_{false}, is_ms_on_{false};
         // not off indices for stereo/l/r/m/s
         std::array<std::vector<size_t>, 5> not_off_indices_{};
         // empty filters for holding atomic parameters
         std::array<zldsp::filter::Empty, kBandNum> emptys_{};
-        std::array<std::atomic<bool>, kBandNum> empty_update_flags_{};
+        std::array<zlchore::thread::Notifier, kBandNum> empty_update_flags_{};
         std::array<zldsp::filter::Empty, kBandNum> side_emptys_{};
-        std::array<std::atomic<bool>, kBandNum> side_empty_update_flags_{};
+        std::array<zlchore::thread::Notifier, kBandNum> side_empty_update_flags_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> filter_paras_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> side_filter_paras_{};
         // dynamic handlers
@@ -336,11 +336,11 @@ namespace zlp {
         std::array<std::atomic<bool>, kBandNum> dynamic_on_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_bypass_{};
         std::array<bool, kBandNum> c_dynamic_on_{};
-        std::atomic<bool> to_update_dynamic_{false};
+        zlchore::thread::Notifier to_update_dynamic_{false};
         // filter dynamic swap flags
         std::array<std::atomic<bool>, kBandNum> dynamic_swap_{};
         // dynamic related parameters
-        std::array<std::atomic<bool>, kBandNum> dynamic_th_update_{};
+        std::array<zlchore::thread::Notifier, kBandNum> dynamic_th_update_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_relative_{};
         std::array<bool, kBandNum> c_dynamic_th_relative_{};
         std::array<std::atomic<bool>, kBandNum> dynamic_th_learn_{};
@@ -348,15 +348,15 @@ namespace zlp {
         std::array<std::atomic<double>, kBandNum> dynamic_threshold_{};
         std::array<double, kBandNum> c_dynamic_threshold_{};
         std::array<std::atomic<double>, kBandNum> dynamic_knee_{};
-        std::array<std::atomic<bool>, kBandNum> dynamic_ar_update_{};
+        std::array<zlchore::thread::Notifier, kBandNum> dynamic_ar_update_{};
         std::array<std::atomic<double>, kBandNum> dynamic_attack_{};
         std::array<std::atomic<double>, kBandNum> dynamic_release_{};
-        std::array<std::atomic<bool>, kBandNum> dynamic_extra_update_{};
-        std::array<std::atomic<bool>, kBandNum> dynamic_smooth_update_{};
+        std::array<zlchore::thread::Notifier, kBandNum> dynamic_extra_update_{};
+        std::array<zlchore::thread::Notifier, kBandNum> dynamic_smooth_update_{};
         std::array<std::atomic<double>, kBandNum> dynamic_smooth_{};
-        std::array<std::atomic<bool>, kBandNum> dynamic_rms_length_update_{};
+        std::array<zlchore::thread::Notifier, kBandNum> dynamic_rms_length_update_{};
         std::array<std::atomic<double>, kBandNum> dynamic_rms_length_{};
-        std::array<std::atomic<bool>, kBandNum> dynamic_rms_mix_update_{};
+        std::array<zlchore::thread::Notifier, kBandNum> dynamic_rms_mix_update_{};
         std::array<std::atomic<double>, kBandNum> dynamic_rms_mix_{};
         // histogram for dynamic auto-threshold
         double hist_unit_decay_{1.0}, slow_hist_unit_decay_{1.0};
@@ -382,13 +382,13 @@ namespace zlp {
         zldsp::filter::TDF<double, kFilterSize / 2> solo_filter_;
         std::array<std::vector<double>, 2> solo_buffers_{};
         std::array<double*, 2> solo_pointers_{};
-        std::atomic<bool> to_update_solo_{false};
+        zlchore::thread::Notifier to_update_solo_{false};
         std::atomic<size_t> solo_whole_idx_{2 * kBandNum};
         bool c_solo_on_{false};
         bool c_solo_side_{false};
         size_t c_solo_idx_{0};
         // static gain compensation
-        std::atomic<bool> to_update_output_{false};
+        zlchore::thread::Notifier to_update_output_{false};
         std::atomic<bool> sgc_on_{false};
         bool c_sgc_on_{false};
         std::array<double, kBandNum> sgc_values_{};
@@ -404,7 +404,7 @@ namespace zlp {
         bool c_loudness_matcher_on_{false};
         zldsp::loudness::LUFSMatcher<double, true> loudness_matcher_;
         // makeup gain
-        std::atomic<bool> to_update_makeup_{false};
+        zlchore::thread::Notifier to_update_makeup_{false};
         std::atomic<double> makeup_gain_linear_{};
         double c_makeup_gain_linear_{};
         zldsp::gain::Gain<double> output_gain_{};
@@ -414,7 +414,7 @@ namespace zlp {
         bool c_phase_flip_on_{false};
         // lookahead
         std::atomic<double> delay_second_{0.};
-        std::atomic<bool> to_update_delay_{false};
+        zlchore::thread::Notifier to_update_delay_{false};
         std::atomic<int> delay_latency_{0};
         bool c_delay_on_{false};
         zldsp::delay::IntegerDelay<double> delay_{};

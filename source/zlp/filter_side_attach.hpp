@@ -28,7 +28,7 @@ namespace zlp {
         zldsp::filter::Empty& side_empty_;
         std::atomic<float>& scale_;
         std::atomic<float>& target_gain_;
-        std::atomic<bool>& update_flag_;
+        zlchore::thread::Notifier& update_flag_;
         zlchore::thread::Notifier& whole_update_flag_;
 
         static constexpr std::array kIDs{

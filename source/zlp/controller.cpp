@@ -87,8 +87,8 @@ namespace zlp {
         output_gain_.prepare(sample_rate, max_num_samples, 0.5);
 
         delay_.prepare(sample_rate, max_num_samples, 2, 0.021);
-        to_update_delay_.store(true, std::memory_order::release);
-        to_update_output_.store(true, std::memory_order::release);
+        to_update_delay_.signal();
+        to_update_output_.signal();
         to_update_.signal();
     }
 
@@ -97,10 +97,10 @@ namespace zlp {
             return;
         }
         prepareStatus();
-        if (to_update_dynamic_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_dynamic_.check()) {
             prepareDynamics();
         }
-        if (to_update_lrms_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_lrms_.check()) {
             prepareLRMS();
             to_update_correction_indices_ = true;
             if (c_sgc_on_) {
@@ -115,7 +115,7 @@ namespace zlp {
             prepareCorrection();
         }
         prepareDynamicParameters();
-        if (to_update_output_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_output_.check()) {
             prepareOutput();
         }
     }
@@ -136,7 +136,7 @@ namespace zlp {
             }
             // force update all filters
             for (size_t i = 0; i < kBandNum; ++i) {
-                empty_update_flags_[i].store(true, std::memory_order::relaxed);
+                empty_update_flags_[i].signal();
             }
             // force reset all filters
             for (size_t i = 0; i < kBandNum; ++i) {
@@ -151,7 +151,7 @@ namespace zlp {
         } else {
             to_update_correction_indices_ = false;
         }
-        if (to_update_status_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_status_.check()) {
             // cache total not off indices
             not_off_total_.clear();
             for (size_t i = 0; i < kBandNum; ++i) {
@@ -160,9 +160,9 @@ namespace zlp {
                     not_off_total_.emplace_back(i);
                 }
             }
-            to_update_lrms_.store(true, std::memory_order::release);
+            to_update_lrms_.signal();
         }
-        if (to_update_solo_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_solo_.check()) {
             // update solo status
             const auto solo_whole_idx = solo_whole_idx_.load(std::memory_order::relaxed);
             if (solo_whole_idx == 2 * kBandNum) {
@@ -187,7 +187,7 @@ namespace zlp {
         // update not-off filters
         bool to_update_sgc{false};
         for (const size_t& i : not_off_total_) {
-            if (empty_update_flags_[i].exchange(false, std::memory_order::acquire)) {
+            if (empty_update_flags_[i].check()) {
                 const auto filter_type = filter_paras_[i].filter_type;
                 filter_paras_[i] = emptys_[i].getParas();
                 if (c_sgc_on_) {
@@ -267,10 +267,10 @@ namespace zlp {
                 side_filters_[i].reset();
                 to_update_correction_indices_ = true;
 
-                side_empty_update_flags_[i].store(true, std::memory_order::relaxed);
-                dynamic_th_update_[i].store(true, std::memory_order::relaxed);
-                dynamic_ar_update_[i].store(true, std::memory_order::relaxed);
-                dynamic_extra_update_[i].store(true, std::memory_order::relaxed);
+                side_empty_update_flags_[i].signal();
+                dynamic_th_update_[i].signal();
+                dynamic_ar_update_[i].signal();
+                dynamic_extra_update_[i].signal();
             }
         } else {
             // turn dynamic off and reset filter gain
@@ -410,7 +410,7 @@ namespace zlp {
             if (!dynamic_on_[i]) {
                 continue;
             }
-            if (side_empty_update_flags_[i].exchange(false, std::memory_order::acquire)) {
+            if (side_empty_update_flags_[i].check()) {
                 auto side_para = side_emptys_[i].getParas();
                 if (side_para.filter_type == zldsp::filter::kLowPass
                     || side_para.filter_type == zldsp::filter::kHighPass) {
@@ -424,7 +424,7 @@ namespace zlp {
                 side_para.gain = 0.0;
                 side_filters_[i].updateParas(side_para);
             }
-            if (dynamic_th_update_[i].exchange(false, std::memory_order::acquire)) {
+            if (dynamic_th_update_[i].check()) {
                 if (c_dynamic_th_relative_[i] != dynamic_th_relative_[i].load(std::memory_order::relaxed)) {
                     c_dynamic_th_relative_[i] = dynamic_th_relative_[i].load(std::memory_order::relaxed);
                     if (c_dynamic_th_learn_[i]) {
@@ -449,21 +449,21 @@ namespace zlp {
                 }
                 dynamic_side_handlers_[i].setKnee(dynamic_knee_[i].load(std::memory_order::relaxed));
             }
-            if (dynamic_ar_update_[i].exchange(false, std::memory_order::acquire)) {
+            if (dynamic_ar_update_[i].check()) {
                 auto& follower{dynamic_side_handlers_[i].getFollower()};
                 follower.setAttack<false>(dynamic_attack_[i].load(std::memory_order::relaxed));
                 follower.setRelease<true>(dynamic_release_[i].load(std::memory_order::relaxed));
             }
-            if (dynamic_extra_update_[i].exchange(false, std::memory_order::acquire)) {
-                if (dynamic_smooth_update_[i].exchange(false, std::memory_order::acquire)) {
+            if (dynamic_extra_update_[i].check()) {
+                if (dynamic_smooth_update_[i].check()) {
                     auto& follower{dynamic_side_handlers_[i].getFollower()};
                     follower.setSmooth<true>(dynamic_smooth_[i].load(std::memory_order::relaxed));
                 }
-                if (dynamic_rms_length_update_[i].exchange(false, std::memory_order::acquire)) {
+                if (dynamic_rms_length_update_[i].check()) {
                     auto& handler{dynamic_side_handlers_[i]};
                     handler.setRMSLength(dynamic_rms_length_[i].load(std::memory_order::relaxed));
                 }
-                if (dynamic_rms_mix_update_[i].exchange(false, std::memory_order::acquire)) {
+                if (dynamic_rms_mix_update_[i].check()) {
                     auto& handler{dynamic_side_handlers_[i]};
                     handler.setRMSMix(dynamic_rms_mix_[i].load(std::memory_order::relaxed));
                 }
@@ -499,11 +499,11 @@ namespace zlp {
             updateOutputGain();
         }
         c_phase_flip_on_ = phase_flip_on_.load(std::memory_order_relaxed);
-        if (to_update_makeup_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_makeup_.check()) {
             c_makeup_gain_linear_ = makeup_gain_linear_.load(std::memory_order::relaxed);
             updateOutputGain();
         }
-        if (to_update_delay_.exchange(false, std::memory_order::acquire)) {
+        if (to_update_delay_.check()) {
             const auto delay_second = delay_second_.load(std::memory_order::relaxed);
             c_delay_on_ = std::abs(delay_second) > 1e-6;
             delay_.setDelay(c_delay_on_ ? delay_second : 0.);

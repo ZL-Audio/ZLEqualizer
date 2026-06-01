@@ -14,7 +14,9 @@
 namespace zlchore::thread {
     class Notifier {
     public:
-        explicit Notifier(const bool initial_state = false) :
+        Notifier() = default;
+
+        explicit Notifier(const bool initial_state) :
             flag_(initial_state) {
         }
 
