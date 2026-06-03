@@ -300,6 +300,7 @@ namespace zlpanel {
                 gradient_minimizer.addColour(xs_[i] / width, coll_ps_[i]);
             }
             gradient_minimizer.addColour(xs_[num_point_ - 1], coll_ps_[num_point_ - 1]);
+            gradient_minimizer.finish();
             gradient_.publish();
         }
     }
