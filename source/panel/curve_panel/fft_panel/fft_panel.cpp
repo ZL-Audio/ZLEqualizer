@@ -137,6 +137,8 @@ namespace zlpanel {
             ys_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
             current_ps_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
             coll_ps_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
+            std::ranges::fill(current_ps_, 0.f);
+            std::ranges::fill(coll_ps_, 0.f);
 
             to_update_xs_para_.signal();
             to_update_ys_para_.signal();
