@@ -73,8 +73,11 @@ namespace zlpanel {
         }
         if (coll_on && ((pre_on && post_on) || (side_on && post_on))) {
             gradient_.pull();
-            g.setGradientFill(gradient_.getReader());
-            g.fillRect(getLocalBounds());
+            const auto& gradient = gradient_.getReader();
+            if (gradient.getNumColours() >= 2) {
+                g.setGradientFill(gradient);
+                g.fillRect(getLocalBounds());
+            }
         }
     }
 
