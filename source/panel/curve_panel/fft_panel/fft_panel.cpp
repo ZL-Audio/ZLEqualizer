@@ -233,6 +233,7 @@ namespace zlpanel {
         // update each path
         const auto fft_stereo = static_cast<zldsp::analyzer::StereoType>(std::round(
             stereo_ref_.load(std::memory_order::relaxed)));
+        const auto fft_frozen = is_fft_frozen_.load(std::memory_order::relaxed);
         for (size_t i = 0; i < 3; i++) {
             if (!is_on[i]) {
                 continue;
@@ -242,8 +243,7 @@ namespace zlpanel {
             smoother_.smooth(spectrum);
             zldsp::vector::sqr_mag_to_db(spectrum.data(), spectrum.size());
             tilter_.tilt(std::span{spectrum.data(), spectrum.size()});
-            decayers_[i].decay(std::span{spectrum.data(), spectrum.size()},
-                               is_fft_frozen_.load(std::memory_order::relaxed));
+            decayers_[i].decay(std::span{spectrum.data(), spectrum.size()}, fft_frozen);
             zldsp::vector::fma(ys_.data(), spectrum.data(), y_k_, y_b_, num_point_);
             auto& path{paths_[i].getWriter()};
             path.clear();
@@ -315,5 +315,12 @@ namespace zlpanel {
 
         spectrum_extra_tilt_slope_.store(base_.getFFTExtraTilt(), std::memory_order::relaxed);
         to_update_tilt_.signal();
+    }
+
+    void FFTPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
+        if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kFFTFrozen, property)) {
+            const auto is_fft_frozen = base_.getPanelProperty(zlgui::PanelSettingIdx::kFFTFrozen);
+            is_fft_frozen_.store(is_fft_frozen, std::memory_order::relaxed);
+        }
     }
 }

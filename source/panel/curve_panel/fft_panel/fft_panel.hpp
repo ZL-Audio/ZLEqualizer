@@ -97,5 +97,7 @@ namespace zlpanel {
         void runFFT(const juce::Thread& thread);
 
         void lookAndFeelChanged() override;
+
+        void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };
 }

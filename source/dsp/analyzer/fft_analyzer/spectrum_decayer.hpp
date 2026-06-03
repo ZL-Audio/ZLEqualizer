@@ -67,23 +67,16 @@ namespace zldsp::analyzer {
                 }
             } else {
                 const auto v_p = hn::Set(d, p_);
-
                 for (; i + lanes <= spectrum_db.size(); i += lanes) {
                     const auto spec = hn::LoadU(d, spectrum_ptr + i);
                     const auto state = hn::Load(d, state_ptr + i);
-
-                    // smoothed = state + p * (spec - state)
                     const auto diff = hn::Sub(spec, state);
                     const auto smoothed = hn::MulAdd(v_p, diff, state);
-
-                    // We only want to decay downwards. If spec > smoothed, jump to spec immediately (attack).
                     const auto v = hn::Max(spec, smoothed);
-
                     hn::Store(v, d, spectrum_ptr + i);
                     hn::Store(v, d, state_ptr + i);
                 }
                 for (; i < spectrum_db.size(); ++i) {
-                    // Scalar equivalent
                     const float smoothed = state_ptr[i] + p_ * (spectrum_ptr[i] - state_ptr[i]);
                     const float v = std::max(spectrum_ptr[i], smoothed);
                     spectrum_ptr[i] = v;
@@ -94,6 +87,6 @@ namespace zldsp::analyzer {
 
     private:
         vector::aligned_vector<float> state_{};
-        float p_{1.0f}; // Replaces decay_per_call_
+        float p_{1.0f};
     };
 }

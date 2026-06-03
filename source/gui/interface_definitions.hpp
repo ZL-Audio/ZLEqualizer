@@ -45,6 +45,7 @@ namespace zlgui {
         kOutputPanel,
         kAnalyzerPanel,
         kDynamicExtraPanel,
+        kFFTFrozen,
         kMatchPanel,
         kSuggestedNumBand,
         kMaximumNumBand,
@@ -58,6 +59,7 @@ namespace zlgui {
         juce::Identifier("output_panel"),
         juce::Identifier("analyzer_panel"),
         juce::Identifier("dynamic_extra_panel"),
+        juce::Identifier("fft_frozen"),
         juce::Identifier("match_panel"),
         juce::Identifier("suggested_num_band"),
         juce::Identifier("maximum_num_band")
