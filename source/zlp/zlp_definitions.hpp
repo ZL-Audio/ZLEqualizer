@@ -286,7 +286,7 @@ namespace zlp {
     class PPhaseFlip : public ChoiceParameters<PPhaseFlip> {
     public:
         static constexpr auto kID = "total_phase_flip";
-        static constexpr auto kName = "phase_flip";
+        static constexpr auto kName = "Phase Flip";
         inline static const auto kChoices = juce::StringArray{
             "Off", "On"
         };
