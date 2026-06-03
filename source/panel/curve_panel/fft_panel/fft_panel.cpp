@@ -299,8 +299,7 @@ namespace zlpanel {
             for (size_t i = 1; i < num_point_ - 1; ++i) {
                 gradient_minimizer.addColour(xs_[i] / width, coll_ps_[i]);
             }
-            gradient_minimizer.addColour(std::clamp(xs_[num_point_ - 1] / width, 0.f, 1.f),
-                                         coll_ps_[num_point_ - 1]);
+            gradient_minimizer.addColour(xs_[num_point_ - 1], coll_ps_[num_point_ - 1]);
             gradient_.publish();
         }
     }

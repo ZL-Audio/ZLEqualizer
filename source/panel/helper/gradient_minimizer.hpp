@@ -25,7 +25,8 @@ namespace zlpanel {
             : gradient_ref_(gradient), colour_(colour) {
         }
 
-        void start(const float proportion, const float alpha) {
+        void start(float proportion, const float alpha) {
+            proportion = std::clamp(proportion, 0.f, 1.f);
             gradient_ref_.addColour(proportion, colour_.withAlpha(alpha));
             start_prop_ = proportion;
             start_alpha_ = alpha;
@@ -33,7 +34,8 @@ namespace zlpanel {
             current_alpha_ = alpha;
         }
 
-        void addColour(const float proportion, const float alpha) {
+        void addColour(float proportion, const float alpha) {
+            proportion = std::clamp(proportion, 0.f, 1.f);
             if (proportion - start_prop_ > 1e-6f) {
                 const bool is_zero_portion = (start_alpha_ < kZeroTol &&
                                               current_alpha_ < kZeroTol &&
