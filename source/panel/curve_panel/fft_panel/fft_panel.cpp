@@ -139,6 +139,11 @@ namespace zlpanel {
 
             xs_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
             ys_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
+            inter_xs_.resize(kInterSize + 2);
+            inter_ys_.resize(kInterSize + 2);
+            inter_ = std::make_unique<zldsp::interpolation::SeqMakima<float>>(
+                xs_.data(), ys_.data(), (kInterSize / 2) + 2, 0.f, 0.f);
+
             current_ps_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
             coll_ps_.resize(static_cast<size_t>(fft_size_) / 2 + 1);
             std::ranges::fill(current_ps_, 0.f);
@@ -222,6 +227,13 @@ namespace zlpanel {
                     break;
                 }
             }
+            inter_xs_[0] = xs_[0];
+            inter_xs_[kInterSize] = xs_[kInterSize / 2];
+            inter_xs_[kInterSize + 1] = xs_[kInterSize / 2 + 1];
+            const auto delta_inter_x = (xs_[kInterSize / 2 - 1] - xs_[0]) / static_cast<float>(kInterSize - 1);
+            for (size_t i = 1; i < kInterSize; ++i) {
+                inter_xs_[i] = inter_xs_[i - 1] + delta_inter_x;
+            }
         }
         // update ys para
         if (to_update_ys_para_.check()) {
@@ -251,16 +263,20 @@ namespace zlpanel {
             tilter_.tilt(std::span{spectrum.data(), spectrum.size()});
             decayers_[i].decay(std::span{spectrum.data(), spectrum.size()}, fft_frozen);
             zldsp::vector::fma(ys_.data(), spectrum.data(), y_k_, y_b_, num_point_);
+            inter_->prepare();
+            inter_->eval(inter_xs_.data(), inter_ys_.data(), kInterSize + 2);
+
             auto& path{paths_[i].getWriter()};
             path.clear();
-            PathMinimizer minimizer{path};
-            const auto num_accu = static_cast<size_t>(std::sqrt(static_cast<float>(num_point_)));
-            path.startNewSubPath(xs_.front() - .1f, c_height_ * 1.5f);
-            for (size_t j = 0; j < num_accu; ++j) {
-                path.lineTo(xs_[j], ys_[j]);
+            PathMinimizer<5> minimizer{path};
+            path.startNewSubPath(inter_xs_.front() - .1f, c_height_ * 1.5f);
+            path.lineTo(inter_xs_[0], inter_ys_[0]);
+            for (size_t j = 1; j < kInterSize; j+= 2) {
+                path.quadraticTo(inter_xs_[j], inter_ys_[j], inter_xs_[j + 1], inter_ys_[j + 1]);
             }
-            minimizer.startNewSubPath<false>(xs_[num_accu], ys_[num_accu]);
-            for (size_t j = num_accu + 1; j < num_point_; ++j) {
+            path.lineTo(inter_xs_[kInterSize], inter_ys_[kInterSize]);
+            minimizer.startNewSubPath<false>(xs_[kInterSize / 2], ys_[kInterSize / 2]);
+            for (size_t j = kInterSize / 2 + 1; j < num_point_; ++j) {
                 minimizer.lineTo(xs_[j], ys_[j]);
             }
             minimizer.finish();

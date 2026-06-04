@@ -19,6 +19,7 @@
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_decayer.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_collision.hpp"
 #include "../../../chore/thread/notifier.hpp"
+#include "../../../dsp/interpolation/interpolation.hpp"
 
 namespace zlpanel {
     class FFTPanel final : public juce::Component,
@@ -57,7 +58,10 @@ namespace zlpanel {
 
         bool skip_next_repaint_{false};
 
+        static constexpr size_t kInterSize = 64;
         std::vector<float> xs_{}, ys_{};
+        std::vector<float> inter_xs_{}, inter_ys_{};
+        std::unique_ptr<zldsp::interpolation::SeqMakima<float>> inter_;
         std::array<TriBuffer<juce::Path>, 3> paths_;
 
         double c_sample_rate_{0.0};
