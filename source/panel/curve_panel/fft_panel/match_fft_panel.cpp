@@ -131,6 +131,7 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::runAnalyze(const juce::Thread& thread) {
+        juce::ScopedNoDenormals noDenormals;
         auto& sender{p_ref_.getController().getAnalyzerSender()};
         if (!sender.getLock().try_lock()) {
             return;
@@ -232,10 +233,10 @@ namespace zlpanel {
             c_width *= static_cast<float>(std::log((sample_rate * .5 - 0.1) * 0.1) / std::log(fft_max * 0.1));
             const auto temp_scale = static_cast<float>(1.0 / std::log(sample_rate * 0.5 / 10.0)) * c_width;
             const auto temp_bias = std::log(static_cast<float>(10.0)) * temp_scale;
+            xs_[0] = std::log(freqs_[1] * .5f) * temp_scale - temp_bias;
             for (size_t i = 1; i < xs_.size(); ++i) {
                 xs_[i] = std::log(freqs_[i]) * temp_scale - temp_bias;
             }
-            xs_[0] = std::min(0.f, xs_[2] - 2.f * xs_[1]);
         }
         // update ys para
         if (to_update_ys_para_.check()) {

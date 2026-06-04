@@ -30,6 +30,7 @@ namespace zldsp::analyzer {
         void prepare(const size_t num_channels) {
             abs_sqr_fft_buffer_.resize(processor_.getFFTSize() / 2 + 1);
             circular_buffer_.resize(num_channels);
+            states_.resize(num_channels);
             reset();
         }
 
@@ -39,8 +40,9 @@ namespace zldsp::analyzer {
         void reset() {
             for (size_t chan = 0; chan < circular_buffer_.size(); ++chan) {
                 circular_buffer_[chan].resize(processor_.getFFTSize());
-                std::fill(circular_buffer_[chan].begin(), circular_buffer_[chan].end(), 0.f);
+                std::ranges::fill(circular_buffer_[chan], 0.f);
             }
+            std::ranges::fill(states_, 0.f);
         }
 
         /**
@@ -55,19 +57,22 @@ namespace zldsp::analyzer {
             if (!is_on_) { return; }
             for (size_t chan = 0; chan < circular_buffer_.size(); ++chan) {
                 auto& circular_buffer{circular_buffer_[chan]};
+                auto y = circular_buffer.back();
+                auto x = states_[chan];
                 std::memmove(circular_buffer.data(),
                              circular_buffer.data() + static_cast<size_t>(num_ready),
                              sizeof(float) * static_cast<size_t>(num_replace));
                 if (range.block_size1 > 0) {
-                    vector::copy(circular_buffer.data() + static_cast<size_t>(num_replace),
-                                 sample_fifo[chan].data() + static_cast<size_t>(range.start_index1),
-                                 static_cast<size_t>(range.block_size1));
+                    copyWithHighPass(circular_buffer.data() + static_cast<size_t>(num_replace),
+                        sample_fifo[chan].data() + static_cast<size_t>(range.start_index1),
+                        static_cast<size_t>(range.block_size1), y, x);
                 }
                 if (range.block_size2 > 0) {
-                    vector::copy(circular_buffer.data() + static_cast<size_t>(num_replace + range.block_size1),
-                                 sample_fifo[chan].data() + static_cast<size_t>(range.start_index2),
-                                 static_cast<size_t>(range.block_size2));
+                    copyWithHighPass(circular_buffer.data() + static_cast<size_t>(num_replace + range.block_size1),
+                        sample_fifo[chan].data() + static_cast<size_t>(range.start_index2),
+                        static_cast<size_t>(range.block_size2), y, x);
                 }
+                states_[chan] = x;
             }
         }
 
@@ -152,6 +157,19 @@ namespace zldsp::analyzer {
         std::vector<vector::aligned_vector<float>> circular_buffer_;
         vector::aligned_vector<float> abs_sqr_fft_buffer_;
 
+        std::vector<float> states_;
+
         bool is_on_{false};
+
+        static void copyWithHighPass(float* __restrict output, const float* __restrict input,
+                                     const size_t num_samples,
+                                     float& y, float& x) {
+            for (size_t i = 0; i < num_samples; ++i) {
+                const auto in = input[i];
+                y = in - x + 0.9999f * y;
+                output[i] = y;
+                x = in;
+            }
+        }
     };
 }

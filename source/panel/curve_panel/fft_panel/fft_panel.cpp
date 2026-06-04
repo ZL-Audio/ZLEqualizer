@@ -100,6 +100,7 @@ namespace zlpanel {
     }
 
     void FFTPanel::runFFT(const juce::Thread& thread) {
+        juce::ScopedNoDenormals noDenormals;
         const auto pre_on = pre_ref_.load(std::memory_order::relaxed) > .5f;
         const auto post_on = post_ref_.load(std::memory_order::relaxed) > .5f;
         const auto side_on = side_ref_.load(std::memory_order::relaxed) > .5f;
@@ -212,6 +213,7 @@ namespace zlpanel {
             const auto temp_scale = static_cast<float>(1.0 / std::log(sample_rate * 0.5 / 10.0)) * c_width_;
             const auto temp_bias = std::log(static_cast<float>(10.0)) * temp_scale;
             num_point_ = xs_.size();
+            xs_[0] = std::log(delta_freq * 0.5f) * temp_scale - temp_bias;
             for (size_t i = 1; i < xs_.size(); ++i) {
                 const auto freq = delta_freq * static_cast<float>(i);
                 xs_[i] = std::log(freq) * temp_scale - temp_bias;
@@ -220,7 +222,6 @@ namespace zlpanel {
                     break;
                 }
             }
-            xs_[0] = std::min(0.f, xs_[2] - 2.f * xs_[1]);
         }
         // update ys para
         if (to_update_ys_para_.check()) {
