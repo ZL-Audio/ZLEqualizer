@@ -249,15 +249,15 @@ namespace zlpanel {
         const auto side_bound = bound.removeFromBottom(base_.getFontSize() * kDraggerScale);
 
         switch (filter_types_[band]) {
-        case zldsp::filter::kPeak:
-        case zldsp::filter::kBandShelf: {
+        case zldsp::filter::kPeak: {
             draggers_[band].setXYEnabled(true, true);
             dragger_y_enabled_[band] = true;
             break;
         }
         case zldsp::filter::kLowShelf:
         case zldsp::filter::kHighShelf:
-        case zldsp::filter::kTiltShelf: {
+        case zldsp::filter::kTiltShelf:
+        case zldsp::filter::kFlatShelf: {
             draggers_[band].setXYEnabled(true, true);
             dragger_y_enabled_[band] = true;
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() * .5f);

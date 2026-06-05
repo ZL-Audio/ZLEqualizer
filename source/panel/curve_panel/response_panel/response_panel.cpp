@@ -525,7 +525,8 @@ namespace zlpanel {
             return static_cast<float>(para.gain);
         } else if (para.filter_type == zldsp::filter::kLowShelf
             || para.filter_type == zldsp::filter::kHighShelf
-            || para.filter_type == zldsp::filter::kTiltShelf) {
+            || para.filter_type == zldsp::filter::kTiltShelf
+            || para.filter_type == zldsp::filter::kFlatShelf) {
             return static_cast<float>(0.5 * para.gain);
         } else {
             return 0.f;
@@ -544,7 +545,7 @@ namespace zlpanel {
         case zldsp::filter::kBandPass:
         case zldsp::filter::kNotch:
         case zldsp::filter::kTiltShelf:
-        case zldsp::filter::kBandShelf:
+        case zldsp::filter::kFlatShelf:
         default: {
             const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * para.q * para.q + 1.0) - 1.0);
             const auto left_x = std::log(left_f / 10.0) * freq_to_x_scale;

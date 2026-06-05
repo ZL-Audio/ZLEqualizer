@@ -59,4 +59,4 @@ namespace zlpanel {
 
         void updateGainSliderComponentID();
     };
-} // zlpanel
+}

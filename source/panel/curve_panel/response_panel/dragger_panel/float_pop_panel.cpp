@@ -43,6 +43,8 @@ namespace zlpanel {
                 juce::Drawable::createFromImageData(BinaryData::bandpass_svg, BinaryData::bandpass_svgSize));
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::tiltshelf_svg, BinaryData::tiltshelf_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::flatshelf_svg, BinaryData::flatshelf_svgSize));
             return icons;
         }(), base, "", {}),
         lr_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
@@ -104,7 +106,7 @@ namespace zlpanel {
         };
 
         const auto popup_option1 = juce::PopupMenu::Options().withPreferredPopupDirection(
-            juce::PopupMenu::Options::PopupDirection::upwards).withMinimumNumColumns(8);
+            juce::PopupMenu::Options::PopupDirection::upwards).withMinimumNumColumns(9);
         ftype_box_.getLAF().setOption(popup_option1);
         ftype_box_.setBufferedToImage(true);
         addAndMakeVisible(ftype_box_);

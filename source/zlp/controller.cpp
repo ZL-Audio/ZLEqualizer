@@ -255,7 +255,8 @@ namespace zlp {
             filter_paras_[i].filter_type == zldsp::filter::kPeak ||
             filter_paras_[i].filter_type == zldsp::filter::kLowShelf ||
             filter_paras_[i].filter_type == zldsp::filter::kHighShelf ||
-            filter_paras_[i].filter_type == zldsp::filter::kTiltShelf)) {
+            filter_paras_[i].filter_type == zldsp::filter::kTiltShelf ||
+            filter_paras_[i].filter_type == zldsp::filter::kFlatShelf)) {
             // turn on dynamic
             if (c_dynamic_on_[i] != true) {
                 c_dynamic_on_[i] = true;
@@ -953,7 +954,7 @@ namespace zlp {
         case zldsp::filter::kNotch:
         case zldsp::filter::kBandPass:
         case zldsp::filter::kTiltShelf:
-        case zldsp::filter::kBandShelf: {
+        case zldsp::filter::kFlatShelf: {
             paras.filter_type = zldsp::filter::kBandPass;
             break;
         }

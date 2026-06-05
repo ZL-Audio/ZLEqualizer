@@ -13,6 +13,86 @@
 #include "../helpers.hpp"
 
 namespace zldsp::filter::FilterDesign {
+    static constexpr std::array<double, 9> flat_freq = {
+        10.0, 40.0, 160.0, 640.0, 2560.0, 10240.0, 40960.0, 163840.0, 655360.0
+    };
+
+    static constexpr std::array<double, 9> inv_flat_freq_sqr = []() {
+        std::array<double, flat_freq.size()> arr{};
+        for (size_t i = 0; i < flat_freq.size(); ++i) {
+            arr[i] = 1.0 / (flat_freq[i] * flat_freq[i]);
+        }
+        return arr;
+    }();
+
+    template <class Coeff>
+    size_t updateFlatShelfCoeffs(const double freq, const double fs, const double g_dB,
+                                std::span<std::array<double, 5>> coeffs) {
+        size_t num_filters;
+        if (fs < 50000.0) {
+            num_filters = 6;
+        } else if (fs < 200000.0) {
+            num_filters = 7;
+        } else if (fs < 800000.0) {
+            num_filters = 8;
+        } else {
+            num_filters = 9;
+        }
+
+        const auto g_shelf_dB = g_dB * 0.5;
+        const double g_linear = dbToGain(g_shelf_dB);
+        const double g_linear_sq = g_linear * g_linear;
+        const double freq_sq = freq * freq;
+
+        double total_mag_sq = 1.0;
+        for (size_t i = 0; i < num_filters; ++i) {
+            const double w_sq = freq_sq * inv_flat_freq_sqr[i];
+            total_mag_sq *= (g_linear_sq * w_sq + g_linear) / (w_sq + g_linear);
+        }
+        const double makeup_gain = 1.0 / std::sqrt(total_mag_sq);
+
+        const double inv_fs = 1.0 / fs;
+        for (size_t i = 0; i < num_filters - 1; ++i) {
+            const double w_i = flat_freq[i] * inv_fs;
+            const auto coeff = Coeff::get1HighShelf(w_i, g_shelf_dB);
+            coeffs[i] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+        }
+        {
+            const auto i = num_filters - 1;
+            const double w_i = flat_freq[i] * inv_fs;
+            const auto coeff = Coeff::get1HighShelf(w_i, g_shelf_dB);
+            coeffs[i] = {coeff[0], 0.0, coeff[1] * makeup_gain, coeff[2] * makeup_gain, 0.0};
+        }
+
+        return num_filters;
+    }
+
+    template <class Coeff>
+    inline void updateFlatShelfDynamicCache(const double f, const double fs, double* cache) {
+        size_t num_filters;
+        if (fs < 50000.0) {
+            num_filters = 6;
+        } else if (fs < 200000.0) {
+            num_filters = 7;
+        } else if (fs < 800000.0) {
+            num_filters = 8;
+        } else {
+            num_filters = 9;
+        }
+        cache[0] = static_cast<double>(num_filters);
+
+        const double freq_sq = f * f;
+        for (size_t i = 0; i < num_filters; ++i) {
+            cache[i + 1] = freq_sq * inv_flat_freq_sqr[i];
+        }
+
+        const double inv_fs = 1.0 / fs;
+        for (size_t i = 0; i < num_filters; ++i) {
+            const double wi = flat_freq[i] * inv_fs;
+            Coeff::update1ShelfDynamicCache(wi, cache + i + 1 + num_filters);
+        }
+    }
+
     template <class Coeff, FilterType filter_type>
     size_t updatePassCoeffs(const size_t n, const size_t start_idx,
                             const double w0, const double q0,
@@ -179,7 +259,9 @@ namespace zldsp::filter::FilterDesign {
 
     template <class Coeff>
     inline void updateBandShelfDynamicCache(const size_t n, const double w0, const double q0, double* cache) {
-        if (n < 2) return;
+        if (n < 2) {
+            return;
+        }
         const auto halfbw = std::asinh(0.5 / q0) / std::log(2);
         const auto scale = std::pow(2, halfbw);
         const auto w1 = w0 / scale;
@@ -224,22 +306,19 @@ namespace zldsp::filter::FilterDesign {
             }
         case kLowShelf:
             return updateShelfCoeffs<Coeff, kLowShelf>(
-                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
-                coeffs);
+                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2), coeffs);
         case kLowPass:
             return updatePassCoeffs<Coeff, kLowPass>(n, 0, w0, q0, coeffs);
         case kHighShelf:
             return updateShelfCoeffs<Coeff, kHighShelf>(
-                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
-                coeffs);
+                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2), coeffs);
         case kHighPass:
             return updatePassCoeffs<Coeff, kHighPass>(n, 0, w0, q0, coeffs);
-        case kBandShelf:
-            return updateBandShelfCoeffs<Coeff>(n, 0, w0, g0, q0, coeffs);
         case kTiltShelf:
             return updateShelfCoeffs<Coeff, kTiltShelf>(
-                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2),
-                coeffs);
+                n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2), coeffs);
+        case kFlatShelf:
+            return updateFlatShelfCoeffs<Coeff>(f, fs, g_dB, coeffs);
         case kNotch:
             return updateNotchCoeffs<Coeff>(n, 0, w0, q0, coeffs);
         case kBandPass:
@@ -277,9 +356,11 @@ namespace zldsp::filter::FilterDesign {
             }
             break;
         }
+        case kFlatShelf: {
+            updateFlatShelfDynamicCache<Coeff>(f, fs, cache);
+        }
         case kLowPass:
         case kHighPass:
-        case kBandShelf:
         case kNotch:
         case kBandPass:
         default:
@@ -348,6 +429,32 @@ namespace zldsp::filter::FilterDesign {
     }
 
     template <class Coeff>
+    void updateFlatShelfGainLinear(const double g_linear_sqrt, const double* cache,
+                                  std::span<std::array<double, 5>> coeffs) {
+        const auto num_filters = static_cast<size_t>(cache[0]);
+        const auto g_shelf_linear = g_linear_sqrt;
+        const auto g_shelf_linear_sq = g_shelf_linear * g_shelf_linear;
+        double total_mag_sq = 1.0;
+        for (size_t i = 0; i < num_filters; ++i) {
+            const double w_sq = cache[i + 1];
+            total_mag_sq *= (g_shelf_linear_sq * w_sq + g_shelf_linear) / (w_sq + g_shelf_linear);
+        }
+        const double makeup_gain = 1.0 / std::sqrt(total_mag_sq);
+
+        const double* cache_shift = cache + 1 + num_filters;
+        const auto g_shelf_linear_sqrt = std::sqrt(g_shelf_linear);
+        for (size_t i = 0; i < num_filters - 1; ++i) {
+            const auto coeff = Coeff::get1HighShelfWithCache(g_shelf_linear_sqrt, cache_shift + i);
+            coeffs[i] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+        }
+        {
+            const size_t i = num_filters - 1;
+            const auto coeff = Coeff::get1HighShelfWithCache(g_shelf_linear_sqrt, cache_shift + i);
+            coeffs[i] = {coeff[0], 0.0, coeff[1] * makeup_gain, coeff[2] * makeup_gain, 0.0};
+        }
+    }
+
+    template <class Coeff>
     void updateGainLinear(const FilterType filterType, const size_t n, const double g_linear_sqrt,
                           const double* cache, std::span<std::array<double, 5>> coeffs) {
         switch (filterType) {
@@ -371,8 +478,8 @@ namespace zldsp::filter::FilterDesign {
             updateShelfGainLinear<Coeff, kTiltShelf>(n, 0, g_linear_sqrt, cache, coeffs);
             break;
         }
-        case kBandShelf: {
-            updateBandShelfGainLinear<Coeff>(n, g_linear_sqrt, cache, coeffs);
+        case kFlatShelf: {
+            updateFlatShelfGainLinear<Coeff>(g_linear_sqrt, cache, coeffs);
             break;
         }
         case kLowPass:

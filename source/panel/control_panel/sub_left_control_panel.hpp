@@ -33,7 +33,11 @@ namespace zlpanel {
 
         void enableSlope6(bool f);
 
+        void enableSlope(bool f);
+
         void enableGain(bool f);
+
+        void enableQ(bool f);
 
     private:
         PluginProcessor& p_ref_;

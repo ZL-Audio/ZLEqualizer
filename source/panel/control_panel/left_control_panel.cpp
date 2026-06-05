@@ -72,9 +72,13 @@ namespace zlpanel {
                 const auto gain_enabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
                     || (ftype == static_cast<int>(zldsp::filter::kLowShelf))
                     || (ftype == static_cast<int>(zldsp::filter::kHighShelf))
-                    || (ftype == static_cast<int>(zldsp::filter::kTiltShelf));
+                    || (ftype == static_cast<int>(zldsp::filter::kTiltShelf))
+                    || (ftype == static_cast<int>(zldsp::filter::kFlatShelf));
                 gain_slider_.setEditable(gain_enabled);
                 sub_left_control_panel_.enableGain(gain_enabled);
+
+                sub_left_control_panel_.enableSlope(c_ftype_ != zldsp::filter::kFlatShelf);
+                sub_left_control_panel_.enableQ(c_ftype_ != zldsp::filter::kFlatShelf);
             }
         }
         const auto max_db_idx = max_db_idx_ref_.load(std::memory_order::relaxed);

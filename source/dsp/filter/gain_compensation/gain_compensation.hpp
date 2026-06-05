@@ -105,8 +105,7 @@ namespace zldsp::filter {
 
     inline double getGainCompensation(const FilterParameters& paras) {
         switch (paras.filter_type) {
-        case kPeak:
-        case kBandShelf: {
+        case kPeak: {
             return sgc_detail::getPeakGainCompensation(paras.freq, paras.gain, paras.q);
         }
         case kLowShelf: {
@@ -120,6 +119,7 @@ namespace zldsp::filter {
         case kBandPass:
         case kNotch:
         case kTiltShelf:
+        case kFlatShelf:
         default:
             return 0.0;
         }
