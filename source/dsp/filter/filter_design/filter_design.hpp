@@ -317,7 +317,7 @@ namespace zldsp::filter::FilterDesign {
         case kTiltShelf:
             return updateShelfCoeffs<Coeff, kTiltShelf>(
                 n, 0, w0, g0, std::sqrt(q0 * std::sqrt(2)) / std::sqrt(2), coeffs);
-        case kFlatShelf:
+        case kFlatTilt:
             return updateFlatShelfCoeffs<Coeff>(f, fs, g_dB, coeffs);
         case kNotch:
             return updateNotchCoeffs<Coeff>(n, 0, w0, q0, coeffs);
@@ -356,7 +356,7 @@ namespace zldsp::filter::FilterDesign {
             }
             break;
         }
-        case kFlatShelf: {
+        case kFlatTilt: {
             updateFlatShelfDynamicCache<Coeff>(f, fs, cache);
         }
         case kLowPass:
@@ -478,7 +478,7 @@ namespace zldsp::filter::FilterDesign {
             updateShelfGainLinear<Coeff, kTiltShelf>(n, 0, g_linear_sqrt, cache, coeffs);
             break;
         }
-        case kFlatShelf: {
+        case kFlatTilt: {
             updateFlatShelfGainLinear<Coeff>(g_linear_sqrt, cache, coeffs);
             break;
         }

@@ -257,7 +257,7 @@ namespace zlpanel {
         case zldsp::filter::kLowShelf:
         case zldsp::filter::kHighShelf:
         case zldsp::filter::kTiltShelf:
-        case zldsp::filter::kFlatShelf: {
+        case zldsp::filter::kFlatTilt: {
             draggers_[band].setXYEnabled(true, true);
             dragger_y_enabled_[band] = true;
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() * .5f);
