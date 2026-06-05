@@ -952,9 +952,14 @@ namespace zlp {
         switch (paras.filter_type) {
         case zldsp::filter::kPeak:
         case zldsp::filter::kNotch:
-        case zldsp::filter::kBandPass:
+        case zldsp::filter::kBandPass: {
+            paras.filter_type = zldsp::filter::kBandPass;
+            break;
+        }
         case zldsp::filter::kTiltShelf:
         case zldsp::filter::kFlatShelf: {
+            paras.order = 2;
+            paras.q = std::sqrt(2.0) * 0.03125;
             paras.filter_type = zldsp::filter::kBandPass;
             break;
         }
