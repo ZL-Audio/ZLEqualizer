@@ -4,6 +4,22 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.2.1
+
+New Features
+
+- add `Flat Tilt` filter type
+
+Bug fixes
+
+- fix the missing FFT frozen feature
+- fix collision detection on Windows
+
+Improvements
+
+- improve DSP performance (slightly)
+- improve spectrum display
+
 ## 1.2.0
 
 BREAKING CHANGES
