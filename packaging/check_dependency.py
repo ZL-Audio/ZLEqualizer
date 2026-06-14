@@ -15,21 +15,43 @@ def main():
         print(result.stdout)
         print(result.stderr)
     elif platform.system() == 'Windows':
-        # set-up windows developer prompt
-        path2022 = 'C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat'
-        path2025 = 'C:/Program Files/Microsoft Visual Studio/2025/Enterprise/VC/Auxiliary/Build/vcvars64.bat'
-        for msvc_path in [os.path.abspath(path2022), os.path.abspath(path2025)]:
-            if os.path.exists(msvc_path):
-                print(f"Found MSVC at: {msvc_path}")
-                cmd = f'cmd.exe /c ""{msvc_path}" && set"'
-                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-                if result.returncode != 0:
-                    print(f"Error running {msvc_path}: {result.stderr}")
-                    return False
-                for line in result.stdout.splitlines():
-                    if '=' in line:
-                        key, value = line.split('=', 1)
-                        os.environ[key] = value
+        machine = platform.machine().lower()
+        if machine == 'arm64':
+            vcvars_script = 'vcvarsarm64.bat'
+        else:
+            vcvars_script = 'vcvars64.bat'
+
+        program_files_x86 = os.environ.get('ProgramFiles(x86)', 'C:\\Program Files (x86)')
+        vswhere_path = os.path.join(program_files_x86, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
+
+        vs_path = None
+        if os.path.exists(vswhere_path):
+            vswhere_cmd = f'"{vswhere_path}" -latest -property installationPath'
+            vswhere_result = subprocess.run(vswhere_cmd, shell=True, capture_output=True, text=True)
+            if vswhere_result.returncode == 0 and vswhere_result.stdout.strip():
+                vs_path = vswhere_result.stdout.strip()
+
+        if not vs_path:
+            print("Error: Could not locate Visual Studio via vswhere.")
+            return False
+        msvc_path = os.path.join(vs_path, 'VC', 'Auxiliary', 'Build', vcvars_script)
+
+        if os.path.exists(msvc_path):
+            print(f"Found MSVC at: {msvc_path}")
+            cmd = f'cmd.exe /c ""{msvc_path}" && set"'
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+
+            if result.returncode != 0:
+                print(f"Error running {msvc_path}: {result.stderr}")
+                return False
+
+            for line in result.stdout.splitlines():
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key] = value
+        else:
+            print(f"Error: Could not find {vcvars_script} at: {msvc_path}")
+            return False
 
         result = subprocess.run(['dumpbin', '/dependents', standalone_path], capture_output=True, text=True)
         print(result.stdout)

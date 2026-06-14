@@ -54,21 +54,21 @@ jobs:
           - name: Windows-x86-64
             os: windows-latest
             wix_arch: x64
-            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            vcvars_script: vcvars64.bat
             app_suffix: ".exe"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="SSE2"
             have_aax: true
           - name: Windows-x86-64-AVX2
             os: windows-latest
             wix_arch: x64
-            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            vcvars_script: vcvars64.bat
             app_suffix: ".exe"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="AVX2"
             have_aax: true
           - name: Windows-arm64
             os: windows-11-arm
             wix_arch: arm64
-            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsarm64.bat"'
+            vcvars_script: vcvarsarm64.bat
             app_suffix: ".exe"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
             have_aax: false
@@ -104,7 +104,8 @@ jobs:
         if: runner.os == 'Windows'
         shell: cmd
         run: |
-          call ${{ matrix.vcvars64_path }}
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set VS_PATH=%%i
+          call "%VS_PATH%\VC\Auxiliary\Build\${{ matrix.vcvars_script }}"
           cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
           cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
