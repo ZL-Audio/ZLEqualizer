@@ -995,12 +995,15 @@ namespace zlp {
                 case kLeft:
                 case kRight: {
                     sgc_gain_db += 0.5 * sgc_values_[band];
+                    break;
                 }
                 case kMid: {
                     sgc_gain_db += 0.9 * sgc_values_[band];
+                    break;
                 }
                 case kSide: {
                     sgc_gain_db += 0.1 * sgc_values_[band];
+                    break;
                 }
                 }
             }
