@@ -178,16 +178,28 @@ namespace zlstate {
         static constexpr int kDefaultI = 3;
     };
 
-    class PFFTSmoothValue : public ChoiceParameters<PFFTSmoothValue> {
+    class PFFTSmoothOCTValue : public ChoiceParameters<PFFTSmoothOCTValue> {
     public:
-        static constexpr auto kID = "fft_smooth_value";
+        static constexpr auto kID = "fft_smooth_oct_value";
         static constexpr auto kName = "";
         inline static const auto kChoices = juce::StringArray{
-            "Hi-Res", "1/12", "1/6", "1/3", "1", "2"
+            "1/24", "1/12", "1/6", "1/3", "1"
         };
-        static constexpr std::array<double, 6> kValues{
-            1. / 48., 1. / 12., 1. / 6., 1. / 3., 1., 2.};
-        static constexpr int kDefaultI = 3;
+        static constexpr std::array<double, 5> kValues{
+            1. / 24., 1. / 12., 1. / 6., 1. / 3., 1.};
+        static constexpr int kDefaultI = 1;
+    };
+
+    class PFFTSmoothERBValue : public ChoiceParameters<PFFTSmoothERBValue> {
+    public:
+        static constexpr auto kID = "fft_smooth_erb_value";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "1/4", "1/2", "1", "2", "4"
+        };
+        static constexpr std::array<double, 5> kValues{
+            1. / 4., 1. / 2., 1., 2., 4.};
+        static constexpr int kDefaultI = 1;
     };
 
     class PFFTSmoothType : public ChoiceParameters<PFFTSmoothType> {
@@ -236,7 +248,7 @@ namespace zlstate {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(PEQMaxDB::get(), PFFTMinDB::get(),
                    PFFTPreON::get(), PFFTPostON::get(), PFFTSideON::get(),
-                   PFFTSmoothValue::get(), PFFTSmoothType::get(),
+                   PFFTSmoothOCTValue::get(), PFFTSmoothERBValue::get(),PFFTSmoothType::get(),
                    PFFTSpeed::get(), PFFTTilt::get(),
                    PFFTFreezeON::get(), PFFTStereo::get(), PCollisionON::get(), PCollisionStrength::get());
         return layout;

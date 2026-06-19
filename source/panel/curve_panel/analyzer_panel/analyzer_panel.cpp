@@ -35,9 +35,12 @@ namespace zlpanel {
                    tooltip_helper.getToolTipText(multilingual::kFFTSlope)),
         slope_attach_(slope_box_.getBox(), p.parameters_NA_,
                       zlstate::PFFTTilt::kID, updater_),
-        smooth_value_box_(zlstate::PFFTSmoothValue::kChoices, base, ""),
-        smooth_value_attach_(smooth_value_box_.getBox(), p.parameters_NA_,
-                             zlstate::PFFTSmoothValue::kID, updater_),
+        smooth_oct_value_box_(zlstate::PFFTSmoothOCTValue::kChoices, base, ""),
+        smooth_oct_value_attach_(smooth_oct_value_box_.getBox(), p.parameters_NA_,
+                                 zlstate::PFFTSmoothOCTValue::kID, updater_),
+        smooth_erb_value_box_(zlstate::PFFTSmoothERBValue::kChoices, base, ""),
+        smooth_erb_value_attach_(smooth_erb_value_box_.getBox(), p.parameters_NA_,
+                                 zlstate::PFFTSmoothERBValue::kID, updater_),
         smooth_type_box_(zlstate::PFFTSmoothType::kChoices, base, ""),
         smooth_type_attach_(smooth_type_box_.getBox(), p.parameters_NA_,
                             zlstate::PFFTSmoothType::kID, updater_),
@@ -88,10 +91,22 @@ namespace zlpanel {
             addAndMakeVisible(b);
         }
 
-        for (auto& c : {&speed_box_, &slope_box_, &smooth_value_box_, &smooth_type_box_}) {
+        for (auto& c : {&speed_box_, &slope_box_, &smooth_type_box_}) {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
+
+        smooth_oct_value_box_.setBufferedToImage(true);
+        addChildComponent(smooth_oct_value_box_);
+
+        smooth_erb_value_box_.setBufferedToImage(true);
+        addAndMakeVisible(smooth_erb_value_box_);
+
+        smooth_type_box_.getBox().onChange = [this]() {
+            const auto selected_index = smooth_type_box_.getBox().getSelectedItemIndex();
+            smooth_oct_value_box_.setVisible(selected_index == 0);
+            smooth_erb_value_box_.setVisible(selected_index == 1);
+        };
 
         const auto popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::downwards);
@@ -164,8 +179,9 @@ namespace zlpanel {
         bound.removeFromTop(padding);
         {
             auto t_bound = bound.removeFromTop(button_height);
-            smooth_value_box_.setBounds(t_bound.removeFromLeft(t_bound.getWidth() / 2));
-            smooth_type_box_.setBounds(t_bound);
+            smooth_type_box_.setBounds(t_bound.removeFromRight(t_bound.getWidth() / 2));
+            smooth_oct_value_box_.setBounds(t_bound);
+            smooth_erb_value_box_.setBounds(t_bound);
         }
 
         bound.removeFromTop(padding);

@@ -54,8 +54,10 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox slope_box_;
         zlgui::attachment::ComboBoxAttachment<true> slope_attach_;
 
-        zlgui::combobox::CompactCombobox smooth_value_box_;
-        zlgui::attachment::ComboBoxAttachment<true> smooth_value_attach_;
+        zlgui::combobox::CompactCombobox smooth_oct_value_box_;
+        zlgui::attachment::ComboBoxAttachment<true> smooth_oct_value_attach_;
+        zlgui::combobox::CompactCombobox smooth_erb_value_box_;
+        zlgui::attachment::ComboBoxAttachment<true> smooth_erb_value_attach_;
         zlgui::combobox::CompactCombobox smooth_type_box_;
         zlgui::attachment::ComboBoxAttachment<true> smooth_type_attach_;
 

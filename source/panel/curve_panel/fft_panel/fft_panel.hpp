@@ -56,9 +56,11 @@ namespace zlpanel {
         std::atomic<float> &fft_tilt_idx_ref_;
         int fft_tilt_idx_{zlstate::PFFTTilt::kDefaultI};
 
-        std::atomic<float> &fft_smooth_value_idx_ref_;
+        std::atomic<float> &fft_smooth_oct_value_idx_ref_;
+        std::atomic<float> &fft_smooth_erb_value_idx_ref_;
         std::atomic<float> &fft_smooth_type_idx_ref_;
-        int fft_smooth_value_idx_{-1};
+        int fft_smooth_oct_value_idx_{-1};
+        int fft_smooth_erb_value_idx_{-1};
         int fft_smooth_type_idx_{-1};
 
         bool skip_next_repaint_{false};

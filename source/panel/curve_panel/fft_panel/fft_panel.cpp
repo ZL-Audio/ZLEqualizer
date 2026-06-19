@@ -22,7 +22,8 @@ namespace zlpanel {
         fft_min_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
         fft_speed_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSpeed::kID)),
         fft_tilt_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTTilt::kID)),
-        fft_smooth_value_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothValue::kID)),
+        fft_smooth_oct_value_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothOCTValue::kID)),
+        fft_smooth_erb_value_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothERBValue::kID)),
         fft_smooth_type_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothType::kID)) {
         constexpr auto preallocate_space = 100 * 3 + 1;
         for (auto& buffered_path : paths_) {
@@ -213,21 +214,27 @@ namespace zlpanel {
             }
         }
         // update smooth
-        const auto fft_smooth_value_idx = static_cast<int>(std::round(
-            fft_smooth_value_idx_ref_.load(std::memory_order::relaxed)));
+        const auto fft_smooth_oct_value_idx = static_cast<int>(std::round(
+            fft_smooth_oct_value_idx_ref_.load(std::memory_order::relaxed)));
+        const auto fft_smooth_erb_value_idx = static_cast<int>(std::round(
+            fft_smooth_erb_value_idx_ref_.load(std::memory_order::relaxed)));
         const auto fft_smooth_type_idx = static_cast<int>(std::round(
             fft_smooth_type_idx_ref_.load(std::memory_order::relaxed)));
-        if (fft_smooth_value_idx != fft_smooth_value_idx_ || fft_smooth_type_idx != fft_smooth_type_idx_) {
-            fft_smooth_value_idx_ = fft_smooth_value_idx;
+        if (fft_smooth_oct_value_idx != fft_smooth_oct_value_idx_ ||
+            fft_smooth_erb_value_idx != fft_smooth_erb_value_idx_ ||
+            fft_smooth_type_idx != fft_smooth_type_idx_) {
+            fft_smooth_oct_value_idx_ = fft_smooth_oct_value_idx;
+            fft_smooth_erb_value_idx_ = fft_smooth_erb_value_idx;
             fft_smooth_type_idx_ = fft_smooth_type_idx;
             update_smooth = true;
         }
         if (update_smooth) {
             if (fft_smooth_type_idx == 0) {
-                smoother_.setSmooth(zlstate::PFFTSmoothValue::kValues[static_cast<size_t>(fft_smooth_value_idx)]);
+                smoother_.setSmooth(
+                    zlstate::PFFTSmoothOCTValue::kValues[static_cast<size_t>(fft_smooth_oct_value_idx)]);
             } else {
-                smoother_.setSmoothERB(sample_rate,
-                                       zlstate::PFFTSmoothValue::kValues[static_cast<size_t>(fft_smooth_value_idx)]);
+                smoother_.setSmoothERB(
+                    sample_rate, zlstate::PFFTSmoothERBValue::kValues[static_cast<size_t>(fft_smooth_erb_value_idx)]);
             }
         }
         // update xs para
