@@ -178,6 +178,28 @@ namespace zlstate {
         static constexpr int kDefaultI = 3;
     };
 
+    class PFFTSmoothValue : public ChoiceParameters<PFFTSmoothValue> {
+    public:
+        static constexpr auto kID = "fft_smooth_value";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "Hi-Res", "1/12", "1/6", "1/3", "1", "2"
+        };
+        static constexpr std::array<double, 6> kValues{
+            1. / 48., 1. / 12., 1. / 6., 1. / 3., 1., 2.};
+        static constexpr int kDefaultI = 3;
+    };
+
+    class PFFTSmoothType : public ChoiceParameters<PFFTSmoothType> {
+    public:
+        static constexpr auto kID = "fft_smooth_type";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "OCT", "ERB"
+        };
+        static constexpr int kDefaultI = 1;
+    };
+
     class PFFTFreezeON : public BoolParameters<PFFTFreezeON> {
     public:
         static constexpr auto kID = "fft_freeze_on";
@@ -214,6 +236,7 @@ namespace zlstate {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
         layout.add(PEQMaxDB::get(), PFFTMinDB::get(),
                    PFFTPreON::get(), PFFTPostON::get(), PFFTSideON::get(),
+                   PFFTSmoothValue::get(), PFFTSmoothType::get(),
                    PFFTSpeed::get(), PFFTTilt::get(),
                    PFFTFreezeON::get(), PFFTStereo::get(), PCollisionON::get(), PCollisionStrength::get());
         return layout;

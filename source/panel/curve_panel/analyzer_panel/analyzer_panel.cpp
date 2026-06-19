@@ -35,6 +35,12 @@ namespace zlpanel {
                    tooltip_helper.getToolTipText(multilingual::kFFTSlope)),
         slope_attach_(slope_box_.getBox(), p.parameters_NA_,
                       zlstate::PFFTTilt::kID, updater_),
+        smooth_value_box_(zlstate::PFFTSmoothValue::kChoices, base, ""),
+        smooth_value_attach_(smooth_value_box_.getBox(), p.parameters_NA_,
+                             zlstate::PFFTSmoothValue::kID, updater_),
+        smooth_type_box_(zlstate::PFFTSmoothType::kChoices, base, ""),
+        smooth_type_attach_(smooth_type_box_.getBox(), p.parameters_NA_,
+                            zlstate::PFFTSmoothType::kID, updater_),
         freeze_drawable_(juce::Drawable::createFromImageData(BinaryData::freeze_svg,
                                                              BinaryData::freeze_svgSize)),
         freeze_button_(base, freeze_drawable_.get(), freeze_drawable_.get(),
@@ -82,7 +88,7 @@ namespace zlpanel {
             addAndMakeVisible(b);
         }
 
-        for (auto& c : {&speed_box_, &slope_box_}) {
+        for (auto& c : {&speed_box_, &slope_box_, &smooth_value_box_, &smooth_type_box_}) {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
@@ -130,7 +136,7 @@ namespace zlpanel {
         const auto padding = getPaddingSize(font_size);
         const auto button_height = getButtonSize(font_size);
 
-        return 6 * padding + 5 * button_height;
+        return 7 * padding + 6 * button_height;
     }
 
     void AnalyzerPanel::resized() {
@@ -154,6 +160,13 @@ namespace zlpanel {
 
         bound.removeFromTop(padding);
         slope_box_.setBounds(bound.removeFromTop(button_height));
+
+        bound.removeFromTop(padding);
+        {
+            auto t_bound = bound.removeFromTop(button_height);
+            smooth_value_box_.setBounds(t_bound.removeFromLeft(t_bound.getWidth() / 2));
+            smooth_type_box_.setBounds(t_bound);
+        }
 
         bound.removeFromTop(padding);
         {

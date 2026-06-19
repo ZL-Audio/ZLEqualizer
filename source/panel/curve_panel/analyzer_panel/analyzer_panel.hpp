@@ -54,6 +54,11 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox slope_box_;
         zlgui::attachment::ComboBoxAttachment<true> slope_attach_;
 
+        zlgui::combobox::CompactCombobox smooth_value_box_;
+        zlgui::attachment::ComboBoxAttachment<true> smooth_value_attach_;
+        zlgui::combobox::CompactCombobox smooth_type_box_;
+        zlgui::attachment::ComboBoxAttachment<true> smooth_type_attach_;
+
         const std::unique_ptr<juce::Drawable> freeze_drawable_;
         zlgui::button::ClickButton freeze_button_;
         zlgui::attachment::ButtonAttachment<true> freeze_attach_;

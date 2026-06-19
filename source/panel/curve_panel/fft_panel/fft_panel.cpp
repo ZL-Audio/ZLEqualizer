@@ -21,7 +21,9 @@ namespace zlpanel {
         coll_strength_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PCollisionStrength::kID)),
         fft_min_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
         fft_speed_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSpeed::kID)),
-        fft_tilt_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTTilt::kID)) {
+        fft_tilt_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTTilt::kID)),
+        fft_smooth_value_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothValue::kID)),
+        fft_smooth_type_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothType::kID)) {
         constexpr auto preallocate_space = 100 * 3 + 1;
         for (auto& buffered_path : paths_) {
             for (auto& path : buffered_path.getBuffer()) {
@@ -112,6 +114,7 @@ namespace zlpanel {
         }
         // update sample rate
         const auto sample_rate = sender.getSampleRate();
+        bool update_smooth{false};
         if (std::abs(c_sample_rate_ - sample_rate) > 0.1) {
             c_sample_rate_ = sample_rate;
             to_update_tilt_.signal();
@@ -131,7 +134,7 @@ namespace zlpanel {
                 receiver.prepare(2);
             }
             smoother_.prepare(static_cast<size_t>(fft_size_));
-            smoother_.setSmooth(0.1);
+            update_smooth = true;
             tilter_.prepare(static_cast<size_t>(fft_size_));
             for (auto& decayer : decayers_) {
                 decayer.prepare(static_cast<size_t>(fft_size_));
@@ -209,6 +212,24 @@ namespace zlpanel {
                 decayer.setDecaySpeed(refresh_rate, c_fft_min_db_, static_cast<float>(0.15 / decay_speed));
             }
         }
+        // update smooth
+        const auto fft_smooth_value_idx = static_cast<int>(std::round(
+            fft_smooth_value_idx_ref_.load(std::memory_order::relaxed)));
+        const auto fft_smooth_type_idx = static_cast<int>(std::round(
+            fft_smooth_type_idx_ref_.load(std::memory_order::relaxed)));
+        if (fft_smooth_value_idx != fft_smooth_value_idx_ || fft_smooth_type_idx != fft_smooth_type_idx_) {
+            fft_smooth_value_idx_ = fft_smooth_value_idx;
+            fft_smooth_type_idx_ = fft_smooth_type_idx;
+            update_smooth = true;
+        }
+        if (update_smooth) {
+            if (fft_smooth_type_idx == 0) {
+                smoother_.setSmooth(zlstate::PFFTSmoothValue::kValues[static_cast<size_t>(fft_smooth_value_idx)]);
+            } else {
+                smoother_.setSmoothERB(sample_rate,
+                                       zlstate::PFFTSmoothValue::kValues[static_cast<size_t>(fft_smooth_value_idx)]);
+            }
+        }
         // update xs para
         if (to_update_xs_para_.check()) {
             const auto fft_max = freq_helper::getFFTMax(sample_rate);
@@ -271,7 +292,7 @@ namespace zlpanel {
             PathMinimizer<5> minimizer{path};
             path.startNewSubPath(inter_xs_.front() - .1f, c_height_ * 1.5f);
             path.lineTo(inter_xs_[0], inter_ys_[0]);
-            for (size_t j = 1; j < kInterSize; j+= 2) {
+            for (size_t j = 1; j < kInterSize; j += 2) {
                 path.quadraticTo(inter_xs_[j], inter_ys_[j], inter_xs_[j + 1], inter_ys_[j + 1]);
             }
             path.lineTo(inter_xs_[kInterSize], inter_ys_[kInterSize]);
