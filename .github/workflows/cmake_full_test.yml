@@ -62,7 +62,7 @@ jobs:
           sudo /usr/bin/Xvfb $DISPLAY &
 
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
