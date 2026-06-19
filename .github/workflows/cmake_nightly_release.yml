@@ -80,7 +80,7 @@ jobs:
           sudo /usr/bin/Xvfb $DISPLAY &
 
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -227,13 +227,13 @@ jobs:
         path: "current_release"
 
     - name: Checkout current repo
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         submodules: false
         path: "current_repo"
 
     - name: Download nightly-release repo
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         repository: "ZL-Audio/ZLNightlyRelease"
         fetch-depth: 0
