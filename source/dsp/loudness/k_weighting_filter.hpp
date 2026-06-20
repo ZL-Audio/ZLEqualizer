@@ -26,13 +26,13 @@ namespace zldsp::loudness {
         void prepare(const double sample_rate, const size_t num_channels) {
             high_pass_.prepare(num_channels);
             high_shelf_.prepare(num_channels);
-            const auto scale = 2.0 * std::numbers::pi / sample_rate;
+            const auto scale = 1.0 / sample_rate;
             const auto w1 = scale * 38.13713296248405;
             const auto w2 = scale * 1500.6868667368922;
             high_pass_.updateFromBiquad(
                 zldsp::filter::IvantsovCoeff::get2HighPass(w1, 0.500242812458813));
             high_shelf_.updateFromBiquad(
-                zldsp::filter::IvantsovCoeff::get2HighShelf(w2, 1.5847768458311522, 0.7096433028107384));
+                zldsp::filter::IvantsovCoeff::get2HighShelf(w2, 3.9993623475151354, 0.7096433028107384));
             if constexpr (kUseLowPass) {
                 low_pass_.prepare(num_channels);
                 const auto w3 = scale * 22000.0;
