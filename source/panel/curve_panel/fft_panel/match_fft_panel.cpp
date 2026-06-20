@@ -376,7 +376,7 @@ namespace zlpanel {
     void MatchFFTPanel::processDiff() {
         namespace hn = hwy::HWY_NAMESPACE;
         static constexpr hn::ScalableTag<float> d;
-        static constexpr size_t lanes = hn::Lanes(d);
+        static constexpr size_t lanes = hn::MaxLanes(d);
 
         if (to_update_drawing_.check()) {
             for (size_t i = 0; i < kNumPoints; ++i) {
