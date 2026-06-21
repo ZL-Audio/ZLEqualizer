@@ -33,6 +33,7 @@ namespace zlgui {
         kMouseWheelFine,
         kMouseDrag,
         kMouseDragFine,
+        kMouseWheelCombobox,
         kSensitivityNum
     };
 
@@ -450,7 +451,7 @@ namespace zlgui {
         float static_font_size_{0.f};
         bool window_size_fix_{false};
         std::array<juce::Colour, kColourNum> custom_colours_;
-        std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, 0.12f, 1.f, .25f};
+        std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, 0.12f, 1.f, .25f, .5f};
         size_t rotary_style_id_{0};
         std::atomic<size_t> refresh_rate_id_{2};
         float rotary_drag_sensitivity_{1.f};

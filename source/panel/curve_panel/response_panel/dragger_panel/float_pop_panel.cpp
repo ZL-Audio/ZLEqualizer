@@ -113,6 +113,7 @@ namespace zlpanel {
 
         const auto popup_option2 = juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::upwards).withMinimumNumColumns(5);
+        lr_box_.setScrollEnabled(true);
         lr_box_.getLAF().setOption(popup_option2);
         lr_box_.setBufferedToImage(true);
         addAndMakeVisible(lr_box_);

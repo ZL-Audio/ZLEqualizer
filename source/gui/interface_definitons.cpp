@@ -261,6 +261,7 @@ namespace zlgui {
         wheel_sensitivity_[1] = loadPara(zlstate::PWheelFineSensitivity::kID);
         wheel_sensitivity_[2] = loadPara(zlstate::PDragSensitivity::kID);
         wheel_sensitivity_[3] = loadPara(zlstate::PDragFineSensitivity::kID);
+        wheel_sensitivity_[4] = loadPara(zlstate::PWheelComboboxSensitivity::kID);
         is_mouse_wheel_shift_reverse_.store(loadPara(zlstate::PWheelShiftReverse::kID) > .5f);
         rotary_style_id_ = static_cast<size_t>(std::round(loadPara(zlstate::PRotaryStyle::kID)));
         rotary_drag_sensitivity_ = loadPara(zlstate::PRotaryDragSensitivity::kID);
@@ -301,6 +302,7 @@ namespace zlgui {
         savePara(zlstate::PWheelFineSensitivity::kID, wheel_sensitivity_[1]);
         savePara(zlstate::PDragSensitivity::kID, wheel_sensitivity_[2]);
         savePara(zlstate::PDragFineSensitivity::kID, wheel_sensitivity_[3]);
+        savePara(zlstate::PWheelComboboxSensitivity::kID, wheel_sensitivity_[4]);
         savePara(zlstate::PWheelShiftReverse::kID,
             static_cast<float>(is_mouse_wheel_shift_reverse_.load(std::memory_order::relaxed)));
         savePara(zlstate::PRotaryStyle::kID, static_cast<float>(rotary_style_id_));

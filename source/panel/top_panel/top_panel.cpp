@@ -49,6 +49,7 @@ namespace zlpanel {
         analyzer_label_.setBufferedToImage(true);
         addAndMakeVisible(analyzer_label_);
 
+        fstruct_box_.setScrollEnabled(true);
         fstruct_box_.setAlpha(.5f);
         fstruct_box_.setBufferedToImage(true);
         addAndMakeVisible(fstruct_box_);

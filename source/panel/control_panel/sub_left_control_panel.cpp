@@ -119,6 +119,7 @@ namespace zlpanel {
             juce::PopupMenu::Options::PopupDirection::upwards);
         slope_box_.getLAF().setItemJustification(juce::Justification::centredRight);
         for (auto& box : {&ftype_box_, &slope_box_, &stereo_box_}) {
+            box->setScrollEnabled(true);
             box->getLAF().setOption(popup_option);
             box->setBufferedToImage(true);
             addAndMakeVisible(box);

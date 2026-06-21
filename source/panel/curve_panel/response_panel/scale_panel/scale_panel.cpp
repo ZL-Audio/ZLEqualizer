@@ -26,6 +26,7 @@ namespace zlpanel {
 
         const auto fft_popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::upwards);
+        fft_min_box_.setScrollEnabled(true);
         fft_min_box_.setAlpha(kFFTAlpha);
         fft_min_box_.getLAF().setFontScale(1.25f);
         fft_min_box_.getLAF().setOption(fft_popup_option);
@@ -34,6 +35,7 @@ namespace zlpanel {
 
         const auto eq_popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::downwards);
+        eq_max_box_.setScrollEnabled(true);
         eq_max_box_.getLAF().setFontScale(1.25f);
         eq_max_box_.getLAF().setOption(eq_popup_option);
         eq_max_box_.getLAF().setLabelJustification(juce::Justification::centredRight);

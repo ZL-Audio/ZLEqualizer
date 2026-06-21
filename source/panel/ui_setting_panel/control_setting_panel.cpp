@@ -18,7 +18,8 @@ namespace zlpanel {
                   zlgui::slider::CompactLinearSlider<true, true, true>("Rough", base),
                   zlgui::slider::CompactLinearSlider<true, true, true>("Fine", base),
                   zlgui::slider::CompactLinearSlider<true, true, true>("Rough", base),
-                  zlgui::slider::CompactLinearSlider<true, true, true>("Fine", base)
+                  zlgui::slider::CompactLinearSlider<true, true, true>("Fine", base),
+                  zlgui::slider::CompactLinearSlider<true, true, true>("Menu", base)
               }
           },
           wheel_reverse_box_(zlstate::PWheelShiftReverse::kChoices, base),
@@ -45,6 +46,7 @@ namespace zlpanel {
         sensitivity_sliders_[1].getSlider().setDoubleClickReturnValue(true, 0.12);
         sensitivity_sliders_[2].getSlider().setDoubleClickReturnValue(true, 1.0);
         sensitivity_sliders_[3].getSlider().setDoubleClickReturnValue(true, 0.25);
+        sensitivity_sliders_[4].getSlider().setDoubleClickReturnValue(true, 0.5);
         rotary_style_label_.setText("Rotary Slider Style", juce::dontSendNotification);
         rotary_style_label_.setJustificationType(juce::Justification::centredRight);
         rotary_style_label_.setLookAndFeel(&name_laf_);
@@ -123,6 +125,8 @@ namespace zlpanel {
             local_bound.removeFromLeft(padding);
             sensitivity_sliders_[1].setBounds(local_bound.removeFromLeft(slider_width));
             local_bound.removeFromLeft(padding);
+            sensitivity_sliders_[4].setBounds(local_bound.removeFromLeft(slider_width));
+            local_bound.removeFromLeft(padding);
             wheel_reverse_box_.setBounds(local_bound.removeFromLeft(slider_width + padding).reduced(0, padding / 3));
         } {
             bound.removeFromTop(padding);
@@ -189,6 +193,10 @@ namespace zlpanel {
                     const auto x = xml_element->getDoubleAttribute("value");
                     base_.setSensitivity(static_cast<float>(x), zlgui::SensitivityIdx::kMouseWheel);
                 }
+                if (const auto *xml_element = xml_input->getChildByName("wheel_combobox_sensitivity")) {
+                    const auto x = xml_element->getDoubleAttribute("value");
+                    base_.setSensitivity(static_cast<float>(x), zlgui::SensitivityIdx::kMouseWheelCombobox);
+                }
                 if (const auto *xml_element = xml_input->getChildByName("rotary_drag_sensitivity")) {
                     const auto x = xml_element->getDoubleAttribute("value");
                     base_.setRotaryDragSensitivity(static_cast<float>(x));
@@ -235,6 +243,9 @@ namespace zlpanel {
                     auto *xml_element = xml_output.createNewChildElement("wheel_sensitivity");
                     xml_element->setAttribute("value", base_.getSensitivity(zlgui::kMouseWheel));
                 } {
+                    auto *xml_element = xml_output.createNewChildElement("wheel_combobox_sensitivity");
+                    xml_element->setAttribute("value", base_.getSensitivity(zlgui::kMouseWheelCombobox));
+                } {
                     auto *xml_element = xml_output.createNewChildElement("rotary_drag_sensitivity");
                     xml_element->setAttribute("value", base_.getRotaryDragSensitivity());
                 } {
@@ -253,4 +264,4 @@ namespace zlpanel {
             }
         });
     }
-} // zlpanel
+}

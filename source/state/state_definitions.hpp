@@ -352,6 +352,14 @@ namespace zlstate {
         static constexpr auto kDefaultV = .25f;
     };
 
+    class PWheelComboboxSensitivity : public FloatParameters<PWheelComboboxSensitivity> {
+    public:
+        static constexpr auto kID = "wheel_combobox_sensitivity";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        static constexpr auto kDefaultV = .5f;
+    };
+
     class PRotaryStyle : public ChoiceParameters<PRotaryStyle> {
     public:
         static constexpr auto kID = "rotary_style";
@@ -537,7 +545,7 @@ namespace zlstate {
         layout.add(PWindowW::get(), PWindowH::get(), PWindowSizeFix::get(),
                    PFontMode::get(), PFontScale::get(), PStaticFontSize::get(),
                    PWheelSensitivity::get(), PWheelFineSensitivity::get(), PWheelShiftReverse::get(),
-                   PDragSensitivity::get(), PDragFineSensitivity::get(),
+                   PDragSensitivity::get(), PDragFineSensitivity::get(), PWheelComboboxSensitivity::get(),
                    PRotaryStyle::get(), PRotaryDragSensitivity::get(),
                    PSliderDoubleClickFunc::get(),
                    PTargetRefreshSpeed::get(),
