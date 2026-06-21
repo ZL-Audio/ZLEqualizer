@@ -249,8 +249,8 @@ namespace zlpanel {
             y_b_ = h0;
         }
         // update curve para
-        const auto eq_max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(
-            eq_max_db_idx_ref_.load(std::memory_order::relaxed)))];
+        const auto eq_max_db = base_.getCurveDBScale(static_cast<size_t>(std::round(
+            eq_max_db_idx_ref_.load(std::memory_order::relaxed))));
         if (std::abs(eq_max_db - c_eq_max_db_) > .1f) {
             c_eq_max_db_ = eq_max_db;
             to_update_curve_para_.signal();
@@ -443,8 +443,8 @@ namespace zlpanel {
             const auto padding = font_size * kDraggerScale;
             const auto h0 = h * .5f;
             const auto h1 = h - padding;
-            const auto eq_max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(
-                eq_max_db_idx_ref_.load(std::memory_order::relaxed)))];
+            const auto eq_max_db = base_.getCurveDBScale(static_cast<size_t>(std::round(
+                eq_max_db_idx_ref_.load(std::memory_order::relaxed))));
             drawing_k_ = eq_max_db / (h1 - h0);
             drawing_b_ = -h0;
         }

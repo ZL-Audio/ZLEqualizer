@@ -38,7 +38,7 @@ namespace zlpanel {
         const float label_height = base_.getFontSize() * 1.1f;
         const float y0 = base_.getFontSize() * kDraggerScale - label_height * .5f;
 
-        const auto eq_unit = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(c_eq_max_idx_)] / 3.f;
+        const auto eq_unit = base_.getCurveDBScale(static_cast<size_t>(c_eq_max_idx_)) / 3.f;
         const auto fft_unit = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(c_fft_min_idx_)] / 6.f;
         g.setFont(base_.getFontSize() * 1.25f);
 
@@ -55,11 +55,15 @@ namespace zlpanel {
             if (i != 6) {
                 const auto fft_value = std::round(static_cast<float>(i) * fft_unit);
                 g.setColour(base_.getTextColour().withAlpha(kFFTAlpha));
-                g.drawText(juce::String(fft_value), fft_label_bound, juce::Justification::centredRight, false);
+                g.drawText(juce::String(fft_value), fft_label_bound,
+                           juce::Justification::centredRight, false);
             }
-            const auto eq_value = std::round((3.f - static_cast<float>(i)) * eq_unit);
-            g.setColour(base_.getTextColour());
-            g.drawText(juce::String(eq_value), eq_label_bound, juce::Justification::centredRight, false);
+            const auto eq_value = (3.f - static_cast<float>(i)) * eq_unit;
+            if (std::abs(std::round(eq_value) - eq_value) < 0.01f) {
+                g.setColour(base_.getTextColour());
+                g.drawText(juce::String(static_cast<int>(std::round(eq_value))), eq_label_bound,
+                           juce::Justification::centredRight, false);
+            }
         }
         // draw the remaining fft labels
         for (int i = 7; i < 12; ++i) {

@@ -412,6 +412,16 @@ namespace zlgui {
 
         bool getWindowSizeFix() const { return window_size_fix_; }
 
+        void setCurveDBScales(const std::array<float, 3> scales) {
+            curve_db_scales_[0].store(scales[0], std::memory_order::relaxed);
+            curve_db_scales_[1].store(scales[1], std::memory_order::relaxed);
+            curve_db_scales_[2].store(scales[2], std::memory_order::relaxed);
+        }
+
+        auto getCurveDBScale(const size_t idx) const {
+            return curve_db_scales_[idx].load(std::memory_order::relaxed);
+        }
+
         bool isPanelIdentifier(const PanelSettingIdx idx, const juce::Identifier& identifier) const {
             return identifier == kPanelSettingIdentifiers[static_cast<size_t>(idx)];
         }
@@ -465,6 +475,8 @@ namespace zlgui {
 
         size_t colour_map1_idx_{zlstate::PColourMapIdx::kDefaultDark};
         size_t colour_map2_idx_{zlstate::PColourMapIdx::kSeabornBrightDark};
+
+        std::array<std::atomic<float>, 3> curve_db_scales_{6.f, 12.f, 30.f};
 
         size_t selected_band_{zlstate::kBandNum};
         juce::SelectedItemSet<size_t> selected_band_set_;

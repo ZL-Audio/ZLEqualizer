@@ -114,7 +114,7 @@ namespace zlstate {
         static constexpr auto kID = "eq_max_db";
         static constexpr auto kName = "";
         inline static const auto kChoices = juce::StringArray{
-            "6", "12", "30"
+            "Min", "Default", "Max"
         };
         static constexpr std::array kDBs = {6.f, 12.f, 30.f};
         static constexpr int kDefaultI = 1;
@@ -494,6 +494,30 @@ namespace zlstate {
         static constexpr int kDefaultI = 5;
     };
 
+    class PCurveDBScale0: public FloatParameters<PCurveDBScale0> {
+    public:
+        static constexpr auto kID = "curve_db0";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(1.f, 30.f, 1.f);
+        static constexpr auto kDefaultV = 6.f;
+    };
+
+    class PCurveDBScale1 : public FloatParameters<PCurveDBScale1> {
+    public:
+        static constexpr auto kID = "curve_db1";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(1.f, 30.f, 1.f);
+        static constexpr auto kDefaultV = 12.f;
+    };
+
+    class PCurveDBScale2 : public FloatParameters<PCurveDBScale2> {
+    public:
+        static constexpr auto kID = "curve_db2";
+        static constexpr auto kName = "";
+        inline static const auto kRange = juce::NormalisableRange<float>(1.f, 30.f, 1.f);
+        static constexpr auto kDefaultV = 30.f;
+    };
+
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout& layout,
                              const std::string& suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
@@ -551,7 +575,8 @@ namespace zlstate {
                    PTargetRefreshSpeed::get(),
                    PFFTExtraTilt::get(), PFFTExtraSpeed::get(),
                    PSingleEQCurveThickness::get(), PSumEQCurveThickness::get(),
-                   PTooltipLang::get());
+                   PTooltipLang::get(),
+                   PCurveDBScale0::get(), PCurveDBScale1::get(), PCurveDBScale2::get());
 
         for (size_t i = 0; i < kColourNames.size(); ++i) {
             const auto& name = kColourNames[i];

@@ -110,7 +110,7 @@ namespace zlpanel {
         const auto max_db_id = max_db_id_ref_.load(std::memory_order::relaxed);
         if (std::abs(max_db_id - c_max_db_id_) > .1f) {
             c_max_db_id_ = max_db_id;
-            const auto max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(c_max_db_id_))];
+            const auto max_db = base_.getCurveDBScale(static_cast<size_t>(std::round(c_max_db_id_)));
             gain_range_ = juce::NormalisableRange<float>(-max_db, max_db, .01f);
             if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
                 updateDraggerAttachment(band);
@@ -403,7 +403,9 @@ namespace zlpanel {
                                 p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
                             updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
                                         dynamic_on ? 0.f : 1.f);
-                            band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on);
+                            const auto max_db_id = std::round(max_db_id_ref_.load(std::memory_order::relaxed));
+                            band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on,
+                                base_.getCurveDBScale(static_cast<size_t>(max_db_id)));
                         }
                     }
                 } else {

@@ -274,6 +274,9 @@ namespace zlgui {
         tooltip_lang_id_ = static_cast<size_t>(std::round(loadPara(zlstate::PTooltipLang::kID)));
         colour_map1_idx_ = static_cast<size_t>(std::round(loadPara(zlstate::PColourMap1Idx::kID)));
         colour_map2_idx_ = static_cast<size_t>(std::round(loadPara(zlstate::PColourMap2Idx::kID)));
+        curve_db_scales_[0].store(loadPara(zlstate::PCurveDBScale0::kID));
+        curve_db_scales_[1].store(loadPara(zlstate::PCurveDBScale1::kID));
+        curve_db_scales_[2].store(loadPara(zlstate::PCurveDBScale2::kID));
     }
 
     void UIBase::saveToAPVTS() const {
@@ -304,12 +307,13 @@ namespace zlgui {
         savePara(zlstate::PDragFineSensitivity::kID, wheel_sensitivity_[3]);
         savePara(zlstate::PWheelComboboxSensitivity::kID, wheel_sensitivity_[4]);
         savePara(zlstate::PWheelShiftReverse::kID,
-            static_cast<float>(is_mouse_wheel_shift_reverse_.load(std::memory_order::relaxed)));
+                 static_cast<float>(is_mouse_wheel_shift_reverse_.load(std::memory_order::relaxed)));
         savePara(zlstate::PRotaryStyle::kID, static_cast<float>(rotary_style_id_));
         savePara(zlstate::PRotaryDragSensitivity::kID, rotary_drag_sensitivity_);
         savePara(zlstate::PSliderDoubleClickFunc::kID,
-            static_cast<float>(is_slider_double_click_open_editor_.load(std::memory_order::relaxed)));
-        savePara(zlstate::PTargetRefreshSpeed::kID, static_cast<float>(refresh_rate_id_.load(std::memory_order::relaxed)));
+                 static_cast<float>(is_slider_double_click_open_editor_.load(std::memory_order::relaxed)));
+        savePara(zlstate::PTargetRefreshSpeed::kID,
+                 static_cast<float>(refresh_rate_id_.load(std::memory_order::relaxed)));
         savePara(zlstate::PFFTExtraTilt::kID, fft_extra_tilt_.load(std::memory_order::relaxed));
         savePara(zlstate::PFFTExtraSpeed::kID, fft_extra_speed_.load(std::memory_order::relaxed));
         savePara(zlstate::PSingleEQCurveThickness::kID, single_eq_curve_thickness_.load(std::memory_order::relaxed));
@@ -317,5 +321,8 @@ namespace zlgui {
         savePara(zlstate::PTooltipLang::kID, static_cast<float>(tooltip_lang_id_));
         savePara(zlstate::PColourMap1Idx::kID, static_cast<float>(colour_map1_idx_));
         savePara(zlstate::PColourMap2Idx::kID, static_cast<float>(colour_map2_idx_));
+        savePara(zlstate::PCurveDBScale0::kID, curve_db_scales_[0].load(std::memory_order::relaxed));
+        savePara(zlstate::PCurveDBScale1::kID, curve_db_scales_[1].load(std::memory_order::relaxed));
+        savePara(zlstate::PCurveDBScale2::kID, curve_db_scales_[2].load(std::memory_order::relaxed));
     }
 }

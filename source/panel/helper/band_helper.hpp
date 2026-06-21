@@ -82,12 +82,10 @@ namespace zlpanel::band_helper {
         }
     }
 
-    inline void turnOnOffDynamic(PluginProcessor& p, const size_t c_band, const bool dynamic_on) {
+    inline void turnOnOffDynamic(PluginProcessor& p, const size_t c_band, const bool dynamic_on, const float eq_max_db) {
         const auto band_s = std::to_string(c_band);
 
         if (dynamic_on) {
-            const auto eq_max_db_idx = getValue(p.parameters_NA_, zlstate::PEQMaxDB::kID);
-            const auto eq_max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_db_idx))];
             const auto gain = getValue(p.parameters_, zlp::PGain::kID + band_s);
             auto* target_gain_para = p.parameters_.getParameter(zlp::PTargetGain::kID + band_s);
             updateValue(target_gain_para,

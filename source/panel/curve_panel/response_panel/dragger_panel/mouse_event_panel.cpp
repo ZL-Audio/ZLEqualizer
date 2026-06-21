@@ -76,8 +76,8 @@ namespace zlpanel {
 
         const auto height = static_cast<float>(getLocalBounds().getHeight() - getBottomAreaHeight(base_.getFontSize()));
         const auto y_portion = (height - 2 * event.position.y) / (height - 2 * padding);
-        const auto max_db = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(
-            getValue(p_ref_.parameters_NA_, zlstate::PEQMaxDB::kID)))];
+        const auto max_db = base_.getCurveDBScale(static_cast<size_t>(std::round(
+            getValue(p_ref_.parameters_NA_, zlstate::PEQMaxDB::kID))));
 
         std::array<float, kInitIDs.size()> init_values{};
         init_values[0] = 2.f;
@@ -114,7 +114,7 @@ namespace zlpanel {
             auto* para = p_ref_.parameters_.getParameter(kInitIDs[i] + std::to_string(band_idx));
             updateValue(para, para->convertTo0to1(init_values[i]));
         }
-        band_helper::turnOnOffDynamic(p_ref_, band_idx, init_values[7] > .5f);
+        band_helper::turnOnOffDynamic(p_ref_, band_idx, init_values[7] > .5f, max_db);
         base_.setSelectedBand(band_idx);
     }
 

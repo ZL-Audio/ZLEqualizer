@@ -124,7 +124,10 @@ namespace zlpanel {
                 updateValue(stereo_para, 0.f);
                 auto* dynamic_para = p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + band_s);
                 updateValue(dynamic_para, 0.f);
-                band_helper::turnOnOffDynamic(p_ref_, band, false);
+                const auto max_idx = std::round(p_ref_.parameters_NA_.getRawParameterValue(
+                    zlstate::PEQMaxDB::kID)->load(std::memory_order::relaxed));
+                band_helper::turnOnOffDynamic(p_ref_, band, false,
+                                              base_.getCurveDBScale(static_cast<size_t>(max_idx)));
             }
             base_.setPanelProperty(zlgui::PanelSettingIdx::kSuggestedNumBand, 0.0);
             base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 2.0);

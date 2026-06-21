@@ -48,6 +48,10 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox font_mode_box_;
         zlgui::slider::CompactLinearSlider<true, true, true> font_scale_slider_;
         zlgui::slider::CompactLinearSlider<true, true, true> static_font_size_slider_;
+        juce::Label curve_db_label_;
+        zlgui::slider::CompactLinearSlider<true, true, true> curve_db0_slider_;
+        zlgui::slider::CompactLinearSlider<true, true, true> curve_db1_slider_;
+        zlgui::slider::CompactLinearSlider<true, true, true> curve_db2_slider_;
         juce::Label window_size_fix_label_;
         zlgui::combobox::CompactCombobox window_size_fix_box_;
         int parent_width_{0};

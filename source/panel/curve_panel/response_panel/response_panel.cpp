@@ -417,7 +417,7 @@ namespace zlpanel {
         if (const auto eq_max_db_idx = eq_max_db_idx_ref_.load(std::memory_order::relaxed);
             std::abs(eq_max_db_idx - c_eq_max_db_idx_) > .1f) {
             c_eq_max_db_idx_ = eq_max_db_idx;
-            const auto z = zlstate::PEQMaxDB::kDBs[static_cast<size_t>(std::round(eq_max_db_idx))];
+            const auto z = base_.getCurveDBScale(static_cast<size_t>(std::round(eq_max_db_idx)));
             const auto h = c_height_ - static_cast<float>(getBottomAreaHeight(c_font_size_));
             const auto padding = c_font_size_ * kDraggerScale;
             const auto h1 = h * .5f;

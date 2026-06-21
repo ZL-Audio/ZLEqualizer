@@ -22,6 +22,9 @@ namespace zlpanel {
         font_mode_box_(zlstate::PFontMode::kChoices, base),
         font_scale_slider_("Scale", base),
         static_font_size_slider_("Static", base),
+        curve_db0_slider_("Min", base),
+        curve_db1_slider_("Default", base),
+        curve_db2_slider_("Max", base),
         window_size_fix_box_(zlstate::PWindowSizeFix::kChoices, base) {
         juce::ignoreUnused(p_ref_);
         name_laf_.setFontScale(zlgui::kFontHuge);
@@ -72,6 +75,20 @@ namespace zlpanel {
         static_font_size_slider_.setInterceptsMouseClicks(false, false);
         addAndMakeVisible(static_font_size_slider_);
 
+        curve_db_label_.setText("Curve DB Scale", juce::dontSendNotification);
+        curve_db_label_.setJustificationType(juce::Justification::centredRight);
+        curve_db_label_.setLookAndFeel(&name_laf_);
+        addAndMakeVisible(curve_db_label_);
+        curve_db0_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(1., 30.0, 1.));
+        curve_db0_slider_.getSlider().setDoubleClickReturnValue(true, 6.0);
+        addAndMakeVisible(curve_db0_slider_);
+        curve_db1_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(1., 30.0, 1.));
+        curve_db1_slider_.getSlider().setDoubleClickReturnValue(true, 12.0);
+        addAndMakeVisible(curve_db1_slider_);
+        curve_db2_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(1., 30.0, 1.));
+        curve_db2_slider_.getSlider().setDoubleClickReturnValue(true, 30.0);
+        addAndMakeVisible(curve_db2_slider_);
+
         window_size_fix_label_.setText("Window Size Fix", juce::dontSendNotification);
         window_size_fix_label_.setJustificationType(juce::Justification::centredRight);
         window_size_fix_label_.setLookAndFeel(&name_laf_);
@@ -89,6 +106,9 @@ namespace zlpanel {
         font_mode_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getFontMode()), juce::sendNotificationSync);
         font_scale_slider_.getSlider().setValue(static_cast<double>(base_.getFontScale()));
         static_font_size_slider_.getSlider().setValue(static_cast<double>(base_.getFontSize()));
+        curve_db0_slider_.getSlider().setValue(base_.getCurveDBScale(0));
+        curve_db1_slider_.getSlider().setValue(base_.getCurveDBScale(1));
+        curve_db2_slider_.getSlider().setValue(base_.getCurveDBScale(2));
         window_size_fix_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getWindowSizeFix()));
         comboBoxChanged(&font_mode_box_.getBox());
     }
@@ -103,6 +123,9 @@ namespace zlpanel {
         base_.setFontMode(static_cast<size_t>(font_mode_box_.getBox().getSelectedItemIndex()));
         base_.setFontScale(static_cast<float>(font_scale_slider_.getSlider().getValue()));
         base_.setStaticFontSize(static_cast<float>(static_font_size_slider_.getSlider().getValue()));
+        base_.setCurveDBScales({static_cast<float>(curve_db0_slider_.getSlider().getValue()),
+                                static_cast<float>(curve_db1_slider_.getSlider().getValue()),
+                                static_cast<float>(curve_db2_slider_.getSlider().getValue())});
         base_.setWindowSizeFix(window_size_fix_box_.getBox().getSelectedItemIndex() > 0);
         base_.saveToAPVTS();
     }
@@ -114,7 +137,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale * 3.f);
         const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
 
-        return 7 * padding + 6 * slider_height;
+        return 8 * padding + 7 * slider_height;
     }
 
     void OtherUISettingPanel::resized() {
@@ -177,6 +200,17 @@ namespace zlpanel {
                 min_font_size, max_font_size, 0.01));
             static_font_size_slider_.getSlider().setDoubleClickReturnValue(
                 true, .5f * (min_font_size + max_font_size));
+        }
+        {
+            bound.removeFromTop(padding);
+            auto local_bound = bound.removeFromTop(slider_height);
+            curve_db_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
+            local_bound.removeFromLeft(padding);
+            curve_db0_slider_.setBounds(local_bound.removeFromLeft(slider_width));
+            local_bound.removeFromLeft(padding);
+            curve_db1_slider_.setBounds(local_bound.removeFromLeft(slider_width));
+            local_bound.removeFromLeft(padding);
+            curve_db2_slider_.setBounds(local_bound.removeFromLeft(slider_width));
         }
         {
             bound.removeFromTop(padding);
