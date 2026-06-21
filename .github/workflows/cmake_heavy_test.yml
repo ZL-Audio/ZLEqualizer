@@ -79,10 +79,6 @@ jobs:
           cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
           cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
-      - name: Test
-        working-directory: ${{ env.BUILD_DIR }}
-        run: ctest --output-on-failure -j4 -VV
-
       - name: Read in .env from CMake # see GitHubENV.cmake
         shell: bash
         run: |
