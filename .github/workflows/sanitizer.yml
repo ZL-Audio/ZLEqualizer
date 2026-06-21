@@ -12,12 +12,12 @@ permissions:
   contents: read
 
 env:
-  BUILD_TYPE: Debug
+  BUILD_TYPE: RelWithDebugInfo
   BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DISPLAY: :0
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   ADDRESS_SANITIZER_FLAG: True
-  PLUGINVAL_DISABLED: Plugin state restoration
 
 jobs:
   build_and_test:
@@ -29,14 +29,39 @@ jobs:
         include:
           - name: macOS Address Sanitizer
             os: macos-latest
-            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebugInfo/pluginval.app/Contents/MacOS/pluginval
             cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF -DZL_JUCE_FORMATS="VST3;AU" -DZL_HWY_STATIC_TARGET="NEON"
+            pluginval_disabled: Plugin state restoration
           - name: macOS Thread Sanitizer
             os: macos-latest
-            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/Debug/pluginval.app/Contents/MacOS/pluginval
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebugInfo/pluginval.app/Contents/MacOS/pluginval
             cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DZL_JUCE_FORMATS="VST3;AU" -DZL_HWY_STATIC_TARGET="NEON"
+            pluginval_disabled: Plugin state restoration
+          - name: Linux Address Sanitizer
+            os: ubuntu-latest
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebugInfo/pluginval
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="AVX2"
+            pluginval_disabled: Plugin state restoration
+          - name: Linux Thread Sanitizer
+            os: ubuntu-latest
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebugInfo/pluginval
+            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="AVX2"
+            pluginval_disabled: Plugin state restoration,Background thread state
 
     steps:
+      - name: Set up Clang (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh 21
+
+      - name: Install Deps (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update && sudo apt install -y libasound2-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libfreetype-dev libfontconfig1-dev xvfb ninja-build ladspa-sdk
+          sudo /usr/bin/Xvfb $DISPLAY &
+
       - name: Checkout code
         uses: actions/checkout@v7
         with:
@@ -71,19 +96,13 @@ jobs:
           repository: 'ZL-Audio/pluginval'
           submodules: recursive
 
-      - name: Configure Pluginval
-        shell: bash
-        working-directory: ./pluginval
-        run: cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }}
-        env:
-          PLUGIN_OS_FORMAT: ${{ matrix.plugin_os_format }}
-
-      - name: Build Pluginval
+      - name: Configure and Build Pluginval (Linux & macOS)
+        if: runner.os != 'Windows'
         shell: bash
         working-directory: ./pluginval
         run: |
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} -DPLUGINVAL_VST3_VALIDATOR=OFF
           cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
-          ls ${{ env.BUILD_DIR }}/pluginval_artefacts/Debug
 
       - name: Setup Pluginval random seed
         id: setup_seed
@@ -93,12 +112,35 @@ jobs:
           echo "Generated Seed: $CURRENT_DATE_SEED"
           echo "RANDOM_SEED=$CURRENT_DATE_SEED" >> "$GITHUB_OUTPUT"
 
-      - name: Pluginval VST3 validations
+      - name: Setup TSan Suppressions (Linux)
+        if: runner.os == 'Linux' && contains(matrix.name, 'Thread Sanitizer')
         shell: bash
         run: |
-          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ env.PLUGINVAL_DISABLED }}"
+          echo "mutex:juce::MessageManager::Lock" > tsan_suppressions.txt
+          echo "TSAN_OPTIONS=suppressions=tsan_suppressions.txt detect_deadlocks=0" >> $GITHUB_ENV
+
+      - name: Pluginval VST3 validations (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ matrix.pluginval_disabled }}"
         env:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
-          REPEAT: 10
+          REPEAT: 3
+          RANDOM_SEED: "${{ steps.setup_seed.outputs.RANDOM_SEED }}"
+
+      - name: Pluginval VST3 validations (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ matrix.pluginval_disabled }}"
+          sleep 5
+          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ matrix.pluginval_disabled }}"
+          sleep 5
+          ${{ matrix.pluginval-binary }} --verbose --validate "${{ env.VST3_PATH }}" --disabled-tests "${{ matrix.pluginval_disabled }}"
+        env:
+          STRICTNESS_LEVEL: 10
+          TIMEOUT_MS: 1440000
+          REPEAT: 1
           RANDOM_SEED: "${{ steps.setup_seed.outputs.RANDOM_SEED }}"

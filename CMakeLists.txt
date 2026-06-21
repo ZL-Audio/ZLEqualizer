@@ -1,7 +1,7 @@
 # 3.24.1 is bundled in Visual Studio 2022 v17.4
 # 3.24.1 is also bundled in CLion as of 2023
 cmake_minimum_required(VERSION 3.24.1)
-set (CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 20)
 
 # This tells cmake we have goodies in the /cmake folder
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-includes")
@@ -39,7 +39,7 @@ set(LV2URI "https://github.com/ZL-Audio/ZLEqualizer2")
 project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 
 if (NOT DEFINED ZL_JUCE_COPY_PLUGIN)
-    set (ZL_JUCE_COPY_PLUGIN TRUE)
+    set(ZL_JUCE_COPY_PLUGIN TRUE)
 endif ()
 
 if (NOT DEFINED ZL_EQ_BAND_NUM)
@@ -134,6 +134,21 @@ juce_add_plugin("${PROJECT_NAME}"
         ZL_EQ_BAND_NUM "${ZL_EQ_BAND_NUM}"
 )
 
+# On Linux, JUCE adds -Wl,--no-undefined by default. 
+# This prevents shared libraries (like VST3) from having unresolved sanitizer symbols.
+# We must remove it if sanitizers are enabled, because the host provides the sanitizer runtime.
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND (WITH_ADDRESS_SANITIZER OR WITH_THREAD_SANITIZER))
+    foreach (target "${PROJECT_NAME}_VST3" "${PROJECT_NAME}_LV2" "${PROJECT_NAME}_Standalone" "${PROJECT_NAME}_SharedCode")
+        if (TARGET ${target})
+            get_target_property(CURRENT_OPTS ${target} LINK_OPTIONS)
+            if (CURRENT_OPTS)
+                list(REMOVE_ITEM CURRENT_OPTS "-Wl,--no-undefined")
+                set_target_properties(${target} PROPERTIES LINK_OPTIONS "${CURRENT_OPTS}")
+            endif ()
+        endif ()
+    endforeach ()
+endif ()
+
 # Add LV2 tags
 if ("LV2" IN_LIST FORMATS)
     set(LV2_TARGET "${PROJECT_NAME}_LV2")
@@ -141,11 +156,11 @@ if ("LV2" IN_LIST FORMATS)
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
     set(PATCH_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/packaging/patch_lv2.py")
     add_custom_command(TARGET ${LV2_TARGET} POST_BUILD
-        COMMAND Python3::Interpreter "${PATCH_SCRIPT}" "$<TARGET_FILE_DIR:${LV2_TARGET}>" ${LV2_SHORT_TAGS}
-        COMMENT "Running Python script to patch LV2 tags: ${LV2_SHORT_TAGS}..."
-        VERBATIM
+            COMMAND Python3::Interpreter "${PATCH_SCRIPT}" "$<TARGET_FILE_DIR:${LV2_TARGET}>" ${LV2_SHORT_TAGS}
+            COMMENT "Running Python script to patch LV2 tags: ${LV2_SHORT_TAGS}..."
+            VERBATIM
     )
-endif()
+endif ()
 
 # This lets us use our code in both the JUCE targets and our Test target
 # Without running into ODR violations
@@ -213,23 +228,23 @@ target_link_libraries(SharedCode INTERFACE nlopt)
 
 # add highway
 set(ZL_HWY_STATIC_TARGET "NONE" CACHE STRING "Target architecture for static dispatch")
-if(ZL_HWY_STATIC_TARGET STREQUAL "NONE")
+if (ZL_HWY_STATIC_TARGET STREQUAL "NONE")
     message(FATAL_ERROR "ZL_HWY_STATIC_TARGET must be set: SSE2/SEE42/AVX2/NEON.")
-endif()
+endif ()
 set(HWY_ENABLE_EXAMPLES OFF CACHE BOOL "Disable highway examples" FORCE)
 set(HWY_ENABLE_TESTS OFF CACHE BOOL "Disable highway tests" FORCE)
 set(HWY_COMPILE_ONLY_STATIC ON CACHE BOOL "Force highway static dispatch" FORCE)
-if(ZL_HWY_STATIC_TARGET STREQUAL "NEON")
+if (ZL_HWY_STATIC_TARGET STREQUAL "NEON")
     set(ZL_HWY_ARCH_FLAGS "-march=armv8-a+simd")
-elseif(ZL_HWY_STATIC_TARGET STREQUAL "SSE2")
+elseif (ZL_HWY_STATIC_TARGET STREQUAL "SSE2")
     set(ZL_HWY_ARCH_FLAGS "-march=x86-64")
-elseif(ZL_HWY_STATIC_TARGET STREQUAL "SSE4")
+elseif (ZL_HWY_STATIC_TARGET STREQUAL "SSE4")
     set(ZL_HWY_ARCH_FLAGS "-march=x86-64-v2" "-maes" "-mpclmul")
-elseif(ZL_HWY_STATIC_TARGET STREQUAL "AVX2")
+elseif (ZL_HWY_STATIC_TARGET STREQUAL "AVX2")
     set(ZL_HWY_ARCH_FLAGS "-march=x86-64-v3" "-maes" "-mpclmul")
-else()
+else ()
     message(FATAL_ERROR "Unsupported ZL_HWY_STATIC_TARGET chosen: ${ZL_HWY_STATIC_TARGET}")
-endif()
+endif ()
 message(STATUS "SIMD target is ${ZL_HWY_STATIC_TARGET}")
 target_compile_definitions(SharedCode INTERFACE HWY_COMPILE_ONLY_STATIC)
 target_compile_options(SharedCode INTERFACE ${ZL_HWY_ARCH_FLAGS})
