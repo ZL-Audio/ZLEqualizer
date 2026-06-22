@@ -240,7 +240,7 @@ namespace zldsp::filter::FilterDesign {
         const auto scale = std::pow(2, halfbw);
         const auto w1 = w0 / scale;
         const auto w2 = w0 * scale;
-        const auto f1 = w1 > (5.0 / 48000.0), f2 = w2 < 0.99;
+        const auto f1 = w1 > (1.0 / 48000.0), f2 = w2 < 0.99;
         size_t n1 = 1;
         size_t n2 = 0;
         if (f1 && f2) {
