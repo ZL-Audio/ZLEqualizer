@@ -14,7 +14,13 @@ namespace zlpanel {
         p_ref_(p), base_(base),
         control_background_(base),
         label_laf_(base),
-        scale_ref_(*p.parameters_.getRawParameterValue(zlp::PGainScale::kID)) {
+        scale_ref_(*p.parameters_.getRawParameterValue(zlp::PGainScale::kID)),
+        gain_slider_(base_, ""),
+        gain_attach_(gain_slider_, p.parameters_,
+                     zlp::POutputGain::kID, updater_),
+        scale_slider_(base_, ""),
+        scale_attach_(scale_slider_, p.parameters_,
+                      zlp::PGainScale::kID, updater_) {
         base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, 0.);
 
         control_background_.setInterceptsMouseClicks(false, false);
@@ -25,12 +31,15 @@ namespace zlpanel {
 
         scale_label_.setJustificationType(juce::Justification::centred);
         gain_label_.setJustificationType(juce::Justification::centredLeft);
-        for (auto& l:{&gain_label_, &scale_label_}) {
+        for (auto& l : {&gain_label_, &scale_label_}) {
             l->setInterceptsMouseClicks(false, false);
             l->setLookAndFeel(&label_laf_);
             l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
+
+        addChildComponent(gain_slider_);
+        addChildComponent(scale_slider_);
 
         setAlpha(.5f);
         setInterceptsMouseClicks(true, false);
@@ -43,19 +52,23 @@ namespace zlpanel {
     }
 
     void OutputLabel::resized() {
-        const auto padding = 2 * getPaddingSize(base_.getFontSize());
+        const auto font_size = base_.getFontSize();
+        const auto padding = 2 * getPaddingSize(font_size);
         auto bound = getLocalBounds();
         control_background_.setBounds(0, -padding, bound.getWidth(), bound.getHeight() + padding + padding / 4);
         scale_label_.setBounds(bound.removeFromLeft(bound.getWidth() / 2));
         gain_label_.setBounds(bound);
+
+        gain_slider_.setBounds(getLocalBounds());
+        scale_slider_.setBounds(getLocalBounds());
+        const auto dragging_distance = getSliderDraggingDistance(font_size);
+        gain_slider_.setMouseDragSensitivity(dragging_distance);
+        scale_slider_.setMouseDragSensitivity(dragging_distance);
     }
 
     void OutputLabel::repaintCallbackSlow() {
-        repaint_count_ += 1;
-        if (repaint_count_ >= 4) {
-            repaint_count_ = 0;
-            checkUpdate();
-        }
+        updater_.updateComponents();
+        checkUpdate();
     }
 
     void OutputLabel::mouseDown(const juce::MouseEvent&) {
@@ -73,6 +86,14 @@ namespace zlpanel {
         is_over_ = false;
         const auto f = static_cast<double>(base_.getPanelProperty(zlgui::PanelSettingIdx::kOutputPanel));
         updateAlpha(f > .5);
+    }
+
+    void OutputLabel::mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) {
+        if (event.mods.isCommandDown()) {
+            scale_slider_.mouseWheelMove(event, wheel);
+        } else {
+            gain_slider_.mouseWheelMove(event, wheel);
+        }
     }
 
     void OutputLabel::checkUpdate() {

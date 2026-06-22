@@ -31,6 +31,7 @@ namespace zlpanel {
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
+        zlgui::attachment::ComponentUpdater updater_;
 
         ControlBackground control_background_;
 
@@ -38,27 +39,34 @@ namespace zlpanel {
         juce::Label gain_label_;
         juce::Label scale_label_;
 
-        int repaint_count_{10};
         std::atomic<float>& scale_ref_;
         float c_scale_{1000.0};
 
         double c_gain_db_{1000.0};
+
+        bool is_over_{false};
+
+        zlgui::slider::SnappingSlider gain_slider_;
+        zlgui::attachment::SliderAttachment<true> gain_attach_;
+
+        zlgui::slider::SnappingSlider scale_slider_;
+        zlgui::attachment::SliderAttachment<true> scale_attach_;
 
         void checkUpdate();
 
         static std::string floatToStringSnprintf(const float value, const int precision = 1) {
             char buffer[32];
             snprintf(buffer, sizeof(buffer), "%.*f", precision, value);
-            return std::string(buffer);
+            return {buffer};
         }
-
-        bool is_over_{false};
 
         void mouseDown(const juce::MouseEvent&) override;
 
         void mouseEnter(const juce::MouseEvent&) override;
 
         void mouseExit(const juce::MouseEvent&) override;
+
+        void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override;
 
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
 
