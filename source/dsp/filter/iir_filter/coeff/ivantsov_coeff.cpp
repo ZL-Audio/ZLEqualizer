@@ -22,7 +22,14 @@ namespace zldsp::filter {
 
         constexpr double kSigmaSq = kSigma * kSigma;
         constexpr double kSigma4 = kSigmaSq * kSigmaSq;
-        constexpr double kIntersection = 0.4996419767299294;
+
+        constexpr double kSplineWA = 0.4996419767299294;
+        constexpr double kSplineWB = 0.6000000000000000;
+        constexpr double kSplineInvDelta = 9.9643253963754219;
+        constexpr double kSplineA = 1.5196726219924286;
+        constexpr double kSplineB = -2.7406294470946970;
+        constexpr double kSplineC = -0.0069999279922503;
+        constexpr double kSplineD = 4.0057345308722958;
 
         constexpr double kPhi0 = (kPi - kSigma) / (kPi + kSigma);
         constexpr double kLpA1 = 2.0 * kPhi0;
@@ -42,12 +49,15 @@ namespace zldsp::filter {
         };
 
         inline double get_wrapping_w2(const double w0) {
-            if (w0 < kIntersection) {
+            if (w0 <= kSplineWA) {
                 const auto pi_fc_fs = kPi * w0;
                 const auto tan_val = std::tan(pi_fc_fs);
                 return kSigmaSq + kPiSq / (tan_val * tan_val);
-            } else {
+            } else if (w0 >= kSplineWB) {
                 return 1.0 / (w0 * w0);
+            } else {
+                const double t = (w0 - kSplineWA) * kSplineInvDelta;
+                return t * (t * (kSplineA * t + kSplineB) + kSplineC) + kSplineD;
             }
         }
 
