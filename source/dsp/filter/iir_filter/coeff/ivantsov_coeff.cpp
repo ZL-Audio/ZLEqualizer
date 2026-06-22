@@ -22,6 +22,7 @@ namespace zldsp::filter {
 
         constexpr double kSigmaSq = kSigma * kSigma;
         constexpr double kSigma4 = kSigmaSq * kSigmaSq;
+        constexpr double kIntersection = 0.4996419767299294;
 
         constexpr double kPhi0 = (kPi - kSigma) / (kPi + kSigma);
         constexpr double kLpA1 = 2.0 * kPhi0;
@@ -41,9 +42,13 @@ namespace zldsp::filter {
         };
 
         inline double get_wrapping_w2(const double w0) {
-            const auto pi_fc_fs = kPi * w0;
-            const auto tan_val = std::tan(pi_fc_fs);
-            return kSigmaSq + kPiSq / (tan_val * tan_val);
+            if (w0 < kIntersection) {
+                const auto pi_fc_fs = kPi * w0;
+                const auto tan_val = std::tan(pi_fc_fs);
+                return kSigmaSq + kPiSq / (tan_val * tan_val);
+            } else {
+                return 1.0 / (w0 * w0);
+            }
         }
 
         inline double get_phi(const double w2) {

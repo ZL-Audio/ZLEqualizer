@@ -27,20 +27,19 @@ namespace zldsp::filter {
 
         void prepare(const double sample_rate) {
             sample_rate_ = sample_rate;
-            freq_max_ = std::floor(sample_rate / 44100.0 * 20000.0);
         }
 
         void forceUpdate(const FilterParameters& paras) {
             c_filter_type_ = paras.filter_type;
             c_order_ = paras.order;
-            c_freq_ = std::min(paras.freq, freq_max_);
+            c_freq_ = paras.freq;
             c_gain_ = paras.gain;
             c_q_ = paras.q;
             updateCoeffs();
         }
 
         void setFreq(const double freq) {
-            c_freq_ = std::min(freq, freq_max_);
+            c_freq_ = freq;
         }
 
         [[nodiscard]] double getFreq() const {
@@ -119,7 +118,6 @@ namespace zldsp::filter {
     protected:
         std::array<std::array<double, 5>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
-        double freq_max_{20000.0};
         double c_gain_{0.0}, c_q_{0.707}, c_freq_{1000.0};
         size_t c_order_{2};
         FilterType c_filter_type_{FilterType::kPeak};

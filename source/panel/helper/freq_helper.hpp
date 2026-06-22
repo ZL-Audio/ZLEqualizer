@@ -13,23 +13,18 @@
 
 namespace zlpanel::freq_helper {
     inline double getSliderMax(const double sample_rate) {
-        const double ratio441 = sample_rate / 44100.0;
-        if (std::fabs(ratio441 - std::round(ratio441)) < 1e-3) {
-            return std::round(sample_rate * (200.0 / 441.0));
+        if (sample_rate < 50000.0) {
+            return 30000.0;
         } else {
-            return std::floor(sample_rate * (200.0 / 441.0));
+            return 0.49964 * sample_rate;
         }
     }
 
     inline double getFFTMax(const double sample_rate) {
-        if (sample_rate > 352000.0) {
-            return 176000.0;
-        } else if (sample_rate > 176000.0) {
-            return 88000.0;
-        } else if (sample_rate > 88000.0) {
-            return 44000.0;
+        if (sample_rate < 50000.0) {
+            return 30000.0;
         } else {
-            return 22000.0;
+            return 0.5 * sample_rate;
         }
     }
 }

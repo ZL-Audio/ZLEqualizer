@@ -34,8 +34,7 @@ namespace zldsp::filter {
             c_freq_.prepare(sample_rate, 0.1);
             c_gain_.prepare(sample_rate, 0.001);
             c_q_.prepare(sample_rate, 0.001);
-            freq_max_ = std::floor(sample_rate / 44100.0 * 20000.0);
-            c_freq_.setCurrentAndTarget(std::min(c_freq_.getTarget(), freq_max_));
+            c_freq_.setCurrentAndTarget(c_freq_.getTarget());
             updateCoeffs();
         }
 
@@ -46,7 +45,7 @@ namespace zldsp::filter {
         void forceUpdate(const FilterParameters& paras) {
             c_filter_type_ = paras.filter_type;
             c_order_ = paras.order;
-            c_freq_.setCurrentAndTarget(std::min(paras.freq, freq_max_));
+            c_freq_.setCurrentAndTarget(paras.freq);
             c_gain_.setCurrentAndTarget(paras.gain);
             c_q_.setCurrentAndTarget(paras.q);
             updateCoeffs();
@@ -63,7 +62,7 @@ namespace zldsp::filter {
                 updateCoeffs();
                 reset();
             }
-            c_freq_.setTarget(std::min(paras.freq, freq_max_));
+            c_freq_.setTarget(paras.freq);
             c_gain_.setTarget(paras.gain);
             c_q_.setTarget(paras.q);
         }
@@ -73,8 +72,7 @@ namespace zldsp::filter {
          * @param freq
          */
         template <bool force = false>
-        void setFreq(double freq) {
-            freq = std::min(freq, freq_max_);
+        void setFreq(const double freq) {
             if constexpr (force) {
                 c_freq_.setCurrentAndTarget(freq);
             } else {
@@ -174,7 +172,6 @@ namespace zldsp::filter {
     protected:
         std::array<std::array<double, 5>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
-        double freq_max_{20000.0};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kLin> c_gain_{0.0};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kMul> c_q_{0.707};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kFixMul> c_freq_{1000.0};
