@@ -85,7 +85,7 @@ void PluginProcessor::setCurrentProgram(int index) {
 
 const juce::String PluginProcessor::getProgramName(int index) {
     juce::ignoreUnused(index);
-    return {};
+    return "Default";
 }
 
 void PluginProcessor::changeProgramName(int, const juce::String&) {
