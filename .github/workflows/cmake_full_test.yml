@@ -100,7 +100,7 @@ jobs:
         id: setup_seed
         shell: bash
         run: |
-          CURRENT_DATE_SEED=$(date +%Y%m%d)
+          CURRENT_DATE_SEED=$(date +%y%m%d%H%M)
           echo "Generated Seed: $CURRENT_DATE_SEED"
           echo "RANDOM_SEED=$CURRENT_DATE_SEED" >> "$GITHUB_OUTPUT"
 
@@ -126,4 +126,4 @@ jobs:
           STRICTNESS_LEVEL: 10
           TIMEOUT_MS: 1440000
           REPEAT: 2
-          RANDOM_SEED: "${{ steps.current-time.outputs.formattedTime }}"
+          RANDOM_SEED: "${{ steps.setup_seed.outputs.RANDOM_SEED }}"
