@@ -63,6 +63,8 @@ namespace zlpanel {
 
         MatchPhase getMatchPhase() const;
 
+        void setMatchLimit(float match_limit);
+
         void updateMatchNumBand(size_t num_band);
 
         void resetAnalyzer();
@@ -136,6 +138,8 @@ namespace zlpanel {
         };
         std::atomic<MatchPhase> match_phase_{MatchPhase::kAnalyze};
         TriBuffer<MatchResult> match_result_;
+
+        std::atomic<float> match_limit_{12.f};
 
         zlchore::thread::Notifier to_reset_analyzer_{};
 

@@ -40,6 +40,7 @@ namespace zlpanel {
         slope_label_("", "Slope"),
         slope_slider_("", base,
                       tooltip_helper.getToolTipText(multilingual::kEQMatchDiffSlope)),
+        limit_combobox_({"6 dB", "12 dB", "30 dB", "Inf"}, base, ""),
         start_drawable_(juce::Drawable::createFromImageData(BinaryData::start_svg,
                                                             BinaryData::start_svgSize)),
         fit_start_button_(base, start_drawable_.get(), nullptr,
@@ -111,6 +112,15 @@ namespace zlpanel {
             s->setBufferedToImage(true);
             addAndMakeVisible(s);
         }
+
+        limit_combobox_.getBox().onChange = [this]() {
+            constexpr std::array<float, 4> kLimits {6.f, 12.f, 30.f, 300.f};
+            const auto selected_index = static_cast<size_t>(
+                std::max(limit_combobox_.getBox().getSelectedItemIndex(), 0));
+            match_fft_panel_.setMatchLimit(kLimits[selected_index]);
+        };
+        limit_combobox_.setBufferedToImage(true);
+        addAndMakeVisible(limit_combobox_);
 
         fit_start_button_.getButton().onClick = [this]() {
             if (match_fft_panel_.getMatchPhase() == MatchFFTPanel::MatchPhase::kMatch) {
@@ -216,6 +226,8 @@ namespace zlpanel {
         bound.removeFromLeft(padding);
         {
             auto temp_bound = bound.removeFromLeft(2 * button_size);
+            limit_combobox_.setBounds(temp_bound.removeFromTop(button_size));
+            temp_bound.removeFromTop(padding);
             num_band_slider_.setBounds(temp_bound.removeFromBottom(temp_bound.getHeight() / 2));
             num_band_slider_.getSlider().setMouseDragSensitivity(small_slider_width);
             temp_bound.removeFromBottom(padding);
@@ -237,6 +249,8 @@ namespace zlpanel {
         match_fft_panel_.setDiffScale(1.f);
         slope_slider_.getSlider().setValue(0.0, juce::sendNotificationSync);
         match_fft_panel_.setDiffSlope(0.f);
+        limit_combobox_.getBox().setSelectedItemIndex(1, juce::sendNotificationSync);
+        match_fft_panel_.setMatchLimit(12.f);
     }
 
     void MatchControlPanel::saveToPreset() {

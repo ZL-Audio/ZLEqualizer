@@ -130,6 +130,10 @@ namespace zlpanel {
         return match_phase_.load(std::memory_order::relaxed);
     }
 
+    void MatchFFTPanel::setMatchLimit(const float match_limit) {
+        match_limit_.store(match_limit, std::memory_order::relaxed);
+    }
+
     void MatchFFTPanel::runAnalyze(const juce::Thread& thread) {
         juce::ScopedNoDenormals noDenormals;
         auto& sender{p_ref_.getController().getAnalyzerSender()};
@@ -295,6 +299,8 @@ namespace zlpanel {
         zldsp::vector::aligned_vector<float> diffs;
         diffs.resize(dbs_[0].size());
         zldsp::vector::multiply(diffs.data(), dbs_[0].data(), -1.f, dbs_[0].size());
+        const auto match_limit = match_limit_.load(std::memory_order::relaxed);
+        zldsp::vector::clamp(diffs.data(), -match_limit, match_limit, diffs.size());
         zlchore::eq_match::EqMatchOptimizer optimizer{
             p_ref_.getAtomicSampleRate(),
             freqs_,

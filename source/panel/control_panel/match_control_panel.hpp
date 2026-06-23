@@ -59,6 +59,8 @@ namespace zlpanel {
         juce::Label slope_label_;
         zlgui::slider::CompactLinearSlider<false, false, false> slope_slider_;
 
+        zlgui::combobox::CompactCombobox limit_combobox_;
+
         const std::unique_ptr<juce::Drawable> start_drawable_;
         zlgui::button::ClickButton fit_start_button_;
 
