@@ -24,11 +24,11 @@ namespace zldsp::filter {
         constexpr double kSigma4 = kSigmaSq * kSigmaSq;
 
         constexpr double kSplineWA = 0.4996419767299294;
-        constexpr double kSplineWB = 0.6000000000000000;
-        constexpr double kSplineInvDelta = 9.9643253963754219;
-        constexpr double kSplineA = 1.5196726219924286;
-        constexpr double kSplineB = -2.7406294470946970;
-        constexpr double kSplineC = -0.0069999279922503;
+        constexpr double kSplineWB = 0.5919981009;
+        constexpr double kSplineInvDelta = 10.8276522968691715;
+        constexpr double kSplineA = 1.4079737347730696;
+        constexpr double kSplineB = -2.5538880428234330;
+        constexpr double kSplineC = -0.0064417990487326;
         constexpr double kSplineD = 4.0057345308722958;
 
         constexpr double kPhi0 = (kPi - kSigma) / (kPi + kSigma);
