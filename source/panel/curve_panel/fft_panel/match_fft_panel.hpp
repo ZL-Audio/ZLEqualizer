@@ -23,7 +23,8 @@
 
 namespace zlpanel {
     class MatchFFTPanel final : public juce::Component,
-                                private juce::AsyncUpdater {
+                                private juce::AsyncUpdater,
+                                private juce::Timer {
     public:
         static constexpr size_t kNumPoints = 128;
 
@@ -136,6 +137,7 @@ namespace zlpanel {
             std::vector<zldsp::filter::FilterParameters> filter_paras_;
             size_t num_band_{0};
         };
+
         std::atomic<MatchPhase> match_phase_{MatchPhase::kAnalyze};
         TriBuffer<MatchResult> match_result_;
 
@@ -165,8 +167,10 @@ namespace zlpanel {
 
         void mouseDoubleClick(const juce::MouseEvent& event) override;
 
+        void updateMatchFilters(const MatchResult& match_result);
+
         void handleAsyncUpdate() override;
 
-        void updateMatchFilters(const MatchResult& match_result);
+        void timerCallback() override;
     };
 }

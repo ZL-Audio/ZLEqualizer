@@ -96,6 +96,9 @@ namespace zlp {
         if (!to_update_.check()) {
             return;
         }
+        if (to_update_ui_.check()) {
+            prepareUIStatus();
+        }
         prepareStatus();
         if (to_update_dynamic_.check()) {
             prepareDynamics();
@@ -118,6 +121,11 @@ namespace zlp {
         if (to_update_output_.check()) {
             prepareOutput();
         }
+    }
+
+    void Controller::prepareUIStatus() {
+        c_editor_on_ = editor_on_.load(std::memory_order::relaxed);
+        c_match_bypass_on_ = match_bypass_on_.load(std::memory_order::relaxed);
     }
 
     void Controller::prepareStatus() {
@@ -517,12 +525,11 @@ namespace zlp {
     void Controller::process(std::array<double*, 2> main_pointers, std::array<double*, 2> side_pointers,
                              const size_t num_samples) {
         prepareBuffer();
-        c_editor_on_ = editor_on_.load(std::memory_order::relaxed);
         if (c_delay_on_) {
             delay_.process(main_pointers, num_samples);
         }
         // copy pre buffer for FFT processing
-        if (bypass || c_editor_on_) {
+        if (bypass || c_editor_on_ || c_match_bypass_on_) {
             zldsp::vector::copy(pre_main_pointers_[0], main_pointers[0], num_samples);
             zldsp::vector::copy(pre_main_pointers_[1], main_pointers[1], num_samples);
         }
@@ -637,7 +644,7 @@ namespace zlp {
             }
         }
 
-        if constexpr (bypass) {
+        if (bypass || c_match_bypass_on_) {
             zldsp::vector::copy(main_pointers[0], pre_main_pointers_[0], num_samples);
             zldsp::vector::copy(main_pointers[1], pre_main_pointers_[1], num_samples);
         }

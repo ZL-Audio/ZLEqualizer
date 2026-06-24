@@ -25,7 +25,10 @@ namespace zlpanel {
         std::ranges::fill(c_drawing_dbs_, -1000.f);
     }
 
-    MatchFFTPanel::~MatchFFTPanel() = default;
+    MatchFFTPanel::~MatchFFTPanel() {
+        p_ref_.getController().setMatchBypassON(false);
+        stopTimer();
+    }
 
     void MatchFFTPanel::paint(juce::Graphics& g) {
         for (size_t i = 0; i < 3; i++) {
@@ -527,10 +530,13 @@ namespace zlpanel {
     }
 
     void MatchFFTPanel::updateMatchNumBand(const size_t num_band) {
+        p_ref_.getController().setMatchBypassON(true);
         match_result_.pull();
         auto match_result = match_result_.getReader();
         match_result.num_band_ = num_band;
         updateMatchFilters(match_result);
+        stopTimer();
+        startTimer(1000);
     }
 
     void MatchFFTPanel::resetAnalyzer() {
@@ -562,5 +568,10 @@ namespace zlpanel {
                 updateValue(para, para->convertTo0to1(values[i]));
             }
         }
+    }
+
+    void MatchFFTPanel::timerCallback() {
+        p_ref_.getController().setMatchBypassON(false);
+        stopTimer();
     }
 }

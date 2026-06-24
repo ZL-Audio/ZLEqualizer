@@ -163,6 +163,14 @@ namespace zlp {
 
         void setEditorON(const bool editor_on) {
             editor_on_.store(editor_on, std::memory_order::relaxed);
+            to_update_ui_.signal();
+            to_update_.signal();
+        }
+
+        void setMatchBypassON(const bool is_on) {
+            match_bypass_on_.store(is_on, std::memory_order::relaxed);
+            to_update_ui_.signal();
+            to_update_.signal();
         }
 
         auto& getAnalyzerSender() {
@@ -375,8 +383,13 @@ namespace zlp {
 
         std::array<std::vector<double>, 2> pre_main_buffers_{};
         std::array<double*, 2> pre_main_pointers_{};
+
         std::atomic<bool> editor_on_{false};
         bool c_editor_on_{false};
+        std::atomic<bool> match_bypass_on_{false};
+        bool c_match_bypass_on_{false};
+        zlchore::thread::Notifier to_update_ui_{false};
+
         zldsp::analyzer::AnalyzerSenderBase<double, 3> analyzer_sender_{};
         // solo related
         zldsp::filter::TDF<double, kFilterSize / 2> solo_filter_;
@@ -420,6 +433,8 @@ namespace zlp {
         zldsp::delay::IntegerDelay<double> delay_{};
 
         void prepareBuffer();
+
+        void prepareUIStatus();
 
         void prepareStatus();
 
