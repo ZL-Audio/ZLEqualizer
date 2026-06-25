@@ -14,7 +14,10 @@ namespace zlpanel {
         p_ref_(p),
         base_(base),
         fft_min_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
-        eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)) {
+        eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
+        fft_smooth_oct_value_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothOCTValue::kID)),
+        fft_smooth_erb_value_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothERBValue::kID)),
+        fft_smooth_type_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothType::kID)) {
         for (auto& receiver : receivers_) {
             receiver.setON(true);
         }
@@ -144,6 +147,7 @@ namespace zlpanel {
             return;
         }
         const auto sample_rate = sender.getSampleRate();
+        bool update_smooth{false};
         if (std::abs(c_sample_rate_ - sample_rate) > 0.1) {
             c_sample_rate_ = sample_rate;
             int fft_order;
@@ -165,7 +169,7 @@ namespace zlpanel {
                 accu.prepare(static_cast<size_t>(fft_size_));
             }
             smoother_.prepare(static_cast<size_t>(fft_size_));
-            smoother_.setSmooth(0.1);
+            update_smooth = true;
             tilter_.prepare(static_cast<size_t>(fft_size_));
             tilter_.setTiltSlope(sample_rate, 4.5);
 
@@ -232,6 +236,30 @@ namespace zlpanel {
         if (std::abs(min_db - c_fft_min_db_) > .1f) {
             c_fft_min_db_ = min_db;
             to_update_ys_para_.signal();
+        }
+        // update smooth
+        const auto fft_smooth_oct_value_idx = static_cast<int>(std::round(
+            fft_smooth_oct_value_idx_ref_.load(std::memory_order::relaxed)));
+        const auto fft_smooth_erb_value_idx = static_cast<int>(std::round(
+            fft_smooth_erb_value_idx_ref_.load(std::memory_order::relaxed)));
+        const auto fft_smooth_type_idx = static_cast<int>(std::round(
+            fft_smooth_type_idx_ref_.load(std::memory_order::relaxed)));
+        if (fft_smooth_oct_value_idx != fft_smooth_oct_value_idx_ ||
+            fft_smooth_erb_value_idx != fft_smooth_erb_value_idx_ ||
+            fft_smooth_type_idx != fft_smooth_type_idx_) {
+            fft_smooth_oct_value_idx_ = fft_smooth_oct_value_idx;
+            fft_smooth_erb_value_idx_ = fft_smooth_erb_value_idx;
+            fft_smooth_type_idx_ = fft_smooth_type_idx;
+            update_smooth = true;
+        }
+        if (update_smooth) {
+            if (fft_smooth_type_idx == 0) {
+                smoother_.setSmoothOCT(
+                    zlstate::PFFTSmoothOCTValue::kValues[static_cast<size_t>(fft_smooth_oct_value_idx)]);
+            } else {
+                smoother_.setSmoothERB(
+                    sample_rate, zlstate::PFFTSmoothERBValue::kValues[static_cast<size_t>(fft_smooth_erb_value_idx)]);
+            }
         }
         // update xs para
         if (to_update_xs_para_.check()) {

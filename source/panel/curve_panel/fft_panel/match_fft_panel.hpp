@@ -82,6 +82,13 @@ namespace zlpanel {
         std::atomic<float>& eq_max_db_idx_ref_;
         float c_eq_max_db_{0.f};
 
+        std::atomic<float> &fft_smooth_oct_value_idx_ref_;
+        std::atomic<float> &fft_smooth_erb_value_idx_ref_;
+        std::atomic<float> &fft_smooth_type_idx_ref_;
+        int fft_smooth_oct_value_idx_{-1};
+        int fft_smooth_erb_value_idx_{-1};
+        int fft_smooth_type_idx_{-1};
+
         zldsp::vector::aligned_vector<float> raw_freqs_{}, raw_dbs_{};
         zldsp::vector::aligned_vector<float> freqs_{};
         std::array<zldsp::vector::aligned_vector<float>, 2> dbs_{};

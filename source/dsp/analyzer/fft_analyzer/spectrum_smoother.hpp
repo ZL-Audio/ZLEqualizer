@@ -26,7 +26,7 @@ namespace zldsp::analyzer {
             temp_cum_sum_.resize(fft_size / 2 + 2);
         }
 
-        void setSmooth(const double smooth_oct) {
+        void setSmoothOCT(const double smooth_oct) {
             assert(low_idx_.size() != 0);
             const double factor = std::pow(2.0, smooth_oct * 0.5);
             const double factor_rep = 1.0 / factor;

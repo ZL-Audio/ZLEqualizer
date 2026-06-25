@@ -230,7 +230,7 @@ namespace zlpanel {
         }
         if (update_smooth) {
             if (fft_smooth_type_idx == 0) {
-                smoother_.setSmooth(
+                smoother_.setSmoothOCT(
                     zlstate::PFFTSmoothOCTValue::kValues[static_cast<size_t>(fft_smooth_oct_value_idx)]);
             } else {
                 smoother_.setSmoothERB(
