@@ -29,7 +29,7 @@ namespace zlpanel {
         static constexpr size_t kNumPoints = 128;
 
         enum class SideMode {
-            kSide, kFlat, kPreset
+            kSide, kPreset, kFlat,
         };
 
         enum class MatchPhase {
