@@ -18,7 +18,7 @@
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_tilter.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_accumulator.hpp"
 #include "../../../dsp/interpolation/interpolation.hpp"
-#include "../../../chore/eq_match_optimizer.hpp"
+#include "../../../chore/eq_match/eq_match_optimizer.hpp"
 #include "../../../chore/thread/notifier.hpp"
 
 namespace zlpanel {

@@ -14,8 +14,8 @@
 #include "nlopt.hpp"
 #pragma GCC diagnostic pop
 
-#include "../dsp/filter/ideal_filter/ideal.hpp"
-#include "../dsp/vector/vector.hpp"
+#include "../../dsp/filter/ideal_filter/ideal.hpp"
+#include "../../dsp/vector/vector.hpp"
 
 namespace zlchore::eq_match {
     namespace hn = hwy::HWY_NAMESPACE;
