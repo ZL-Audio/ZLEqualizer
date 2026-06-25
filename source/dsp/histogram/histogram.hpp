@@ -22,6 +22,8 @@ namespace zldsp::histogram {
             : min_val_(min_val), max_val_(max_val) {
             bins_.resize(num_bin);
             bin_width_ = (max_val_ - min_val_) / static_cast<FloatType>(num_bin);
+            inv_bin_width_ = static_cast<FloatType>(1.0) / bin_width_;
+            bin_max_index_ = static_cast<FloatType>(num_bin - 1);
             reset();
         }
 
@@ -40,15 +42,9 @@ namespace zldsp::histogram {
             }
 
             vector::multiply(bins_.data(), decay_, bins_.size());
-
-            if (value < min_val_) {
-                bins_[0] += 1.0;
-            } else if (value >= max_val_) {
-                bins_[bins_.size() - 1] += 1.0;
-            } else {
-                const auto bin_index = static_cast<size_t>((value - min_val_) / bin_width_);
-                bins_[std::min(bin_index, bins_.size() - 1)] += 1.0;
-            }
+            const FloatType raw_index = (value - min_val_) * inv_bin_width_;
+            const FloatType clamped_index = std::clamp(raw_index, static_cast<FloatType>(0), bin_max_index_);
+            bins_[static_cast<size_t>(clamped_index)] += 1.0;
 
             total_count_ = total_count_ * decay_ + 1.0;
         }
@@ -108,7 +104,8 @@ namespace zldsp::histogram {
     private:
         FloatType min_val_, max_val_;
         vector::aligned_vector<double> bins_;
-        FloatType bin_width_;
+        FloatType bin_width_, inv_bin_width_;
+        FloatType bin_max_index_;
         double decay_{};
         double total_count_{};
     };
