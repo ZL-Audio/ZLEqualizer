@@ -9,6 +9,9 @@
 
 #pragma once
 
+#include <cmath>
+#include <algorithm>
+
 #include "../vector/vector.hpp"
 
 namespace zldsp::histogram {
@@ -32,6 +35,10 @@ namespace zldsp::histogram {
         }
 
         void push(const FloatType value) {
+            if (std::isnan(value)) {
+                return;
+            }
+
             vector::multiply(bins_.data(), decay_, bins_.size());
 
             if (value < min_val_) {
@@ -40,7 +47,7 @@ namespace zldsp::histogram {
                 bins_[bins_.size() - 1] += 1.0;
             } else {
                 const auto bin_index = static_cast<size_t>((value - min_val_) / bin_width_);
-                bins_[bin_index] += 1.0;
+                bins_[std::min(bin_index, bins_.size() - 1)] += 1.0;
             }
 
             total_count_ = total_count_ * decay_ + 1.0;
