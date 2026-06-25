@@ -12,6 +12,9 @@
 #include <string>
 #include <array>
 #include <cmath>
+#include <optional>
+#include <cctype>
+#include <stdexcept>
 
 namespace zlpanel::freq_note {
     inline constexpr std::array kNoteNames = {
@@ -41,8 +44,14 @@ namespace zlpanel::freq_note {
         if (split_point == 0 || split_point == std::string::npos) {
             return std::nullopt;
         }
-        const std::string note_part = note.substr(0, split_point);
+
+        std::string note_part = note.substr(0, split_point);
         const std::string octave_part = note.substr(split_point);
+
+        for (char& c : note_part) {
+            c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+        }
+
         int note_index = -1;
         for (int i = 0; i < static_cast<int>(kNoteNames.size()); ++i) {
             if (kNoteNames[static_cast<size_t>(i)] == note_part) {
@@ -53,14 +62,18 @@ namespace zlpanel::freq_note {
         if (note_index == -1) {
             return std::nullopt;
         }
+
         int octave;
         try {
             octave = std::stoi(octave_part);
-        } catch (const std::invalid_argument&) {
-            return std::nullopt;
-        } catch (const std::out_of_range&) {
+        }
+        catch (const std::invalid_argument&) {
             return std::nullopt;
         }
+        catch (const std::out_of_range&) {
+            return std::nullopt;
+        }
+
         const int total_semitones_from_c0 = (octave * kNotesInOctave) + note_index;
         const int semitones_from_a4 = total_semitones_from_c0 - kA4SemitoneIndexFromC0;
         return kA4Frequency * std::pow(2.0, static_cast<double>(semitones_from_a4) / 12.0);

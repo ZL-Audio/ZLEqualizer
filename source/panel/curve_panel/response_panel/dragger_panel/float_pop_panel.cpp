@@ -122,7 +122,7 @@ namespace zlpanel {
         freq_slider_.getSlider().setDraggingEnabled(false);
         freq_slider_.getSlider().setSliderSnapsToMousePosition(false);
         freq_slider_.getSlider().setScrollWheelEnabled(false);
-        freq_slider_.permitted_characters_ = "-0123456789.kK#ABCDEFG";
+        freq_slider_.permitted_characters_ = "-0123456789.kK#ABCDEFGabcdefg";
         freq_slider_.value_formatter_ = freq_note::getNoteFromFrequency;
         freq_slider_.string_formatter_ = freq_note::getFrequencyFromNote;
         freq_slider_.setBufferedToImage(true);
