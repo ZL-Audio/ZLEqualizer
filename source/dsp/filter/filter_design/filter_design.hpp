@@ -27,7 +27,7 @@ namespace zldsp::filter::FilterDesign {
 
     template <class Coeff>
     size_t updateFlatShelfCoeffs(const double freq, const double fs, const double g_dB,
-                                std::span<std::array<double, 5>> coeffs) {
+                                 std::span<std::array<double, 5>> coeffs) {
         size_t num_filters;
         if (fs < 50000.0) {
             num_filters = 6;
@@ -430,7 +430,7 @@ namespace zldsp::filter::FilterDesign {
 
     template <class Coeff>
     void updateFlatShelfGainLinear(const double g_linear_sqrt, const double* cache,
-                                  std::span<std::array<double, 5>> coeffs) {
+                                   std::span<std::array<double, 5>> coeffs) {
         const auto num_filters = static_cast<size_t>(cache[0]);
         const auto g_shelf_linear = g_linear_sqrt;
         const auto g_shelf_linear_sq = g_shelf_linear * g_shelf_linear;

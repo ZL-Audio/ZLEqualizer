@@ -271,6 +271,7 @@ namespace zlp {
                 svf_filters_[i].resetDynamic();
                 svf_filters_[i].getFilter().cacheDynPara();
                 parallel_filters_[i].resetDynamic();
+                parallel_filters_[i].getFilter().cacheDynPara();
                 tdf_filters_[i].resetDynamic();
                 tdf_filters_[i].getFilter().cacheDynPara();
                 side_filters_[i].reset();
