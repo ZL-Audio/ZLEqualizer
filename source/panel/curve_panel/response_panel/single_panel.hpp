@@ -37,8 +37,11 @@ namespace zlpanel {
                  std::span<float> xs, float k, float b,
                  zldsp::vector::aligned_vector<float>& base_mag, zldsp::vector::aligned_vector<float>& target_mag,
                  float center_x, float center_mag, float button_mag,
+                 float base_left_x, float base_right_x,
                  bool to_update_side,
-                 float left_x, float right_x);
+                 float left_x, float right_x,
+                 bool is_all_pass = false,
+                 bool is_first_order = false);
 
     private:
         static constexpr size_t kNumPoints = 400;
@@ -66,6 +69,8 @@ namespace zlpanel {
         std::array<TriBuffer<juce::Line<float>>, zlp::kBandNum> button_lines_{};
 
         std::array<TriBuffer<juce::Line<float>>, zlp::kBandNum> side_lines_{};
+
+        std::array<TriBuffer<juce::Line<float>>, zlp::kBandNum> all_pass_lines_{};
 
         std::array<float, zlp::kBandNum> base_stroke_alpha_{};
         std::array<float, zlp::kBandNum> base_fill_alpha_{};

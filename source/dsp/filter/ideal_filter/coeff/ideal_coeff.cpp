@@ -29,6 +29,11 @@ namespace zldsp::filter {
         return {A * w0, A, w0};
     }
 
+    std::array<double, 3> IdealCoeff::get1AllPass(double w0) {
+        w0 = w0 * ppi;
+        return {w0, -1.0, w0};
+    }
+
     std::array<double, 3> IdealCoeff::get1LowShelf(double w0, const double g) {
         w0 = w0 * ppi;
         const auto A = std::exp2(g * kDbToExp2Sqrt);;
@@ -50,6 +55,12 @@ namespace zldsp::filter {
     std::array<double, 5> IdealCoeff::get2HighPass(double w0, const double q) {
         w0 = w0 * ppi;
         return {w0 / q, w0 * w0, 1, 0, 0};
+    }
+
+    std::array<double, 5> IdealCoeff::get2AllPass(double w0, const double q) {
+        w0 = w0 * ppi;
+        const auto w02 = w0 * w0;
+        return {w0 / q, w02, 1.0, -w0 / q, w02};
     }
 
     std::array<double, 5> IdealCoeff::get2BandPass(double w0, const double q) {

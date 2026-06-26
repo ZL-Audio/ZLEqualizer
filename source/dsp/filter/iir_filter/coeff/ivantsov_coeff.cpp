@@ -130,6 +130,12 @@ namespace zldsp::filter {
         return {beta, factor, -factor};
     }
 
+    std::array<double, 3> IvantsovCoeff::get1AllPass(const double w0) {
+        const auto w2 = get_wrapping_w2(w0);
+        const auto beta = get_phi(w2);
+        return {beta, beta, 1.0};
+    }
+
     std::array<double, 3> IvantsovCoeff::get1LowShelf(const double w0, const double g) {
         const auto w2 = get_wrapping_w2(w0);
         const auto g_linear = std::exp2(g * kDbToExp2);
@@ -216,6 +222,12 @@ namespace zldsp::filter {
         const auto phi = get_phi_sq(w2, zeta * zeta);
         const auto factor = (std::sqrt(w2) * zeta * kBpGMultiplier) / phi.d;
         return {phi.p1, phi.p2, factor, factor * kBpA1, factor * kBpA2};
+    }
+
+    std::array<double, 5> IvantsovCoeff::get2AllPass(const double w0, const double q) {
+        const auto w2 = get_wrapping_w2(w0);
+        const auto phi = get_phi_sq(w2, 1.0 / (4.0 * q * q));
+        return {phi.p1, phi.p2, phi.p2, phi.p1, 1.0};
     }
 
     std::array<double, 5> IvantsovCoeff::get2Notch(const double w0, const double q) {

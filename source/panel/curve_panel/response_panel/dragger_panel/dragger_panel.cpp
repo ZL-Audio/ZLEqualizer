@@ -267,6 +267,7 @@ namespace zlpanel {
         case zldsp::filter::kHighPass:
         case zldsp::filter::kBandPass:
         case zldsp::filter::kNotch:
+        case zldsp::filter::kAllPass:
         default: {
             draggers_[band].setXYEnabled(true, false);
             dragger_y_enabled_[band] = false;

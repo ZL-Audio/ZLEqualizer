@@ -319,7 +319,8 @@ namespace zlp {
         inline static const auto kChoices = juce::StringArray{
             "Peak", "Low Shelf", "Low Pass",
             "High Shelf", "High Pass", "Notch",
-            "Band Pass", "Tilt Shelf", "Flat Tilt"
+            "Band Pass", "Tilt Shelf", "Flat Tilt",
+            "All Pass"
         };
         static constexpr int kDefaultI = 0;
     };

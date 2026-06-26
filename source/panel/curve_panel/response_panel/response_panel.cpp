@@ -109,7 +109,8 @@ namespace zlpanel {
         }
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             if (message_to_update_draggers_[band].check()) {
-                dragger_panel_.updateFilterType(band, empty_[band].getFilterType());
+                const auto filter_type = empty_[band].getFilterType();
+                dragger_panel_.updateFilterType(band, filter_type);
                 dragger_panel_.getDragger(band).updateButton(
                 {points_[band][0].load(std::memory_order::relaxed),
                  points_[band][4].load(std::memory_order::relaxed)});
@@ -239,9 +240,13 @@ namespace zlpanel {
                                   points_[band][0].load(std::memory_order::relaxed),
                                   points_[band][3].load(std::memory_order::relaxed),
                                   points_[band][4].load(std::memory_order::relaxed),
+                                  points_[band][1].load(std::memory_order::relaxed),
+                                  points_[band][2].load(std::memory_order::relaxed),
                                   to_update_side_y_flags_[band],
                                   side_points_[band][1].load(std::memory_order::relaxed),
-                                  side_points_[band][2].load(std::memory_order::relaxed));
+                                  side_points_[band][2].load(std::memory_order::relaxed),
+                                  ideal_[band].getParas().filter_type == zldsp::filter::kAllPass,
+                                  ideal_[band].getParas().order == 1);
                 if (threadShouldExit()) {
                     break;
                 }
@@ -544,6 +549,7 @@ namespace zlpanel {
         case zldsp::filter::kPeak:
         case zldsp::filter::kBandPass:
         case zldsp::filter::kNotch:
+        case zldsp::filter::kAllPass:
         default: {
             const auto bandwidth = para.freq / para.q;
             const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * para.q * para.q + 1.0) - 1.0);

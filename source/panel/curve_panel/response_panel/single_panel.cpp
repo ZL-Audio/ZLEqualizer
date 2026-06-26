@@ -62,7 +62,8 @@ namespace zlpanel {
         lookAndFeelChanged();
     }
 
-    void SinglePanel::updateDrawingParas(const size_t band, const zlp::FilterStatus filter_status,
+    void SinglePanel::updateDrawingParas(const size_t band,
+                                         const zlp::FilterStatus filter_status,
                                          const bool is_dynamic_on, const bool is_same_stereo) {
         if (filter_status == zlp::FilterStatus::kOff) {
             base_fill_alpha_[band] = 0.f;
@@ -104,30 +105,44 @@ namespace zlpanel {
                           zldsp::vector::aligned_vector<float>& base_mag,
                           zldsp::vector::aligned_vector<float>& target_mag,
                           const float center_x, const float center_mag, const float button_mag,
-                          const bool to_update_side, const float left_x, const float right_x) {
+                          const float base_left_x, const float base_right_x,
+                          const bool to_update_side, const float left_x, const float right_x,
+                          const bool is_all_pass, const bool is_first_order) {
         const auto center_y = center_y_.load(std::memory_order_relaxed);
         auto& next_base_path{base_paths_[band].getWriter()};
         auto& next_base_fill{base_fills_[band].getWriter()};
         auto& next_button_line{button_lines_[band].getWriter()};
         auto& next_target_fill{target_fills_[band].getWriter()};
         auto& next_side_line{side_lines_[band].getWriter()};
+        auto& next_all_pass_line{all_pass_lines_[band].getWriter()};
 
         if (to_update_base) {
             next_base_path.clear();
             next_base_fill.clear();
             next_button_line.setEnd(-100.f, -100.f);
+            next_all_pass_line.setStart(-100.f, 0.f);
+            next_all_pass_line.setEnd(-100.f, 0.f);
             if (filter_status != zlp::FilterStatus::kOff) {
                 zldsp::vector::fma(temp_db_.data(), base_mag.data(), k, b, temp_db_.size());
-                // draw base path
-                PathMinimizer<1> minimizer{next_base_path};
-                minimizer.drawPath<true, false>(xs, std::span(temp_db_));
-                // draw base fill
-                next_base_fill = next_base_path;
-                next_base_fill.lineTo(xs.back(), center_y);
-                next_base_fill.lineTo(xs[0], center_y);
-                next_base_fill.closeSubPath();
+                if (is_all_pass) {
+                    next_base_path.startNewSubPath(center_x, 0.f);
+                    next_base_path.lineTo(center_x, center_y * 2.f);
+                    if (!is_first_order) {
+                        next_all_pass_line.setStart(base_left_x, 0.f);
+                        next_all_pass_line.setEnd(base_right_x, 0.f);
+                    }
+                } else {
+                    // draw base path
+                    PathMinimizer<1> minimizer{next_base_path};
+                    minimizer.drawPath<true, false>(xs, std::span(temp_db_));
+                    // draw base fill
+                    next_base_fill = next_base_path;
+                    next_base_fill.lineTo(xs.back(), center_y);
+                    next_base_fill.lineTo(xs[0], center_y);
+                    next_base_fill.closeSubPath();
+                }
                 // draw button line
-                if (std::abs(center_mag - button_mag) > 1e-6f) {
+                if (!is_all_pass && std::abs(center_mag - button_mag) > 1e-6f) {
                     next_button_line.setStart(center_x, center_mag);
                     next_button_line.setEnd(center_x, button_mag);
                 }
@@ -135,7 +150,7 @@ namespace zlpanel {
         }
         if (to_update_target) {
             next_target_fill.clear();
-            if (filter_status != zlp::FilterStatus::kOff) {
+            if (filter_status != zlp::FilterStatus::kOff && !is_all_pass) {
                 zldsp::vector::fma(temp_db_.data(), target_mag.data(), k, b, temp_db_.size());
                 // draw target fill
                 next_target_fill = next_base_path;
@@ -152,6 +167,7 @@ namespace zlpanel {
             base_paths_[band].publish();
             base_fills_[band].publish();
             button_lines_[band].publish();
+            all_pass_lines_[band].publish();
         }
         if (to_update_target) {
             target_fills_[band].publish();
@@ -165,7 +181,7 @@ namespace zlpanel {
     void SinglePanel::drawBand(juce::Graphics& g, const size_t band) {
         const auto colour = base_.getColourMap1(band);
         if (base_fill_alpha_[band] > 0.01f) {
-            g.setColour(colour.withAlpha(base_fill_alpha_[band]));\
+            g.setColour(colour.withAlpha(base_fill_alpha_[band]));
             base_fills_[band].pull();
             g.fillPath(base_fills_[band].getReader());
         }
@@ -189,6 +205,17 @@ namespace zlpanel {
                 } else {
                     g.fillRect(line.getStartX() - curve_thickness * .35f, line.getEndY(),
                                curve_thickness * .7f, line.getStartY() - line.getEndY());
+                }
+            }
+            if (thick) {
+                all_pass_lines_[band].pull();
+                const auto ap_line = all_pass_lines_[band].getReader();
+                if (ap_line.getEndX() > 0.f || ap_line.getEndY() > 0.f) {
+                    const auto center_y = center_y_.load(std::memory_order_relaxed);
+                    g.fillRect(ap_line.getStartX() - curve_thickness * .35f, center_y * .5f,
+                               curve_thickness * .7f, center_y);
+                    g.fillRect(ap_line.getEndX() - curve_thickness * .35f, center_y * .5f,
+                               curve_thickness * .7f, center_y);
                 }
             }
         }

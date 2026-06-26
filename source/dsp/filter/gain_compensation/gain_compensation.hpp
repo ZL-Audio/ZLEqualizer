@@ -120,6 +120,7 @@ namespace zldsp::filter {
         case kNotch:
         case kTiltShelf:
         case kFlatTilt:
+        case kAllPass:
         default:
             return 0.0;
         }

@@ -106,6 +106,10 @@ namespace zldsp::filter::FilterDesign {
                 const auto coeff = Coeff::get1HighPass(w0);
                 coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
             }
+            if constexpr (filter_type == kAllPass) {
+                const auto coeff = Coeff::get1AllPass(w0);
+                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+            }
             return 1;
         }
         const size_t number = n / 2;
@@ -122,6 +126,9 @@ namespace zldsp::filter::FilterDesign {
             }
             if constexpr (filter_type == kHighPass) {
                 coeffs[i + start_idx] = Coeff::get2HighPass(w0, qs);
+            }
+            if constexpr (filter_type == kAllPass) {
+                coeffs[i + start_idx] = Coeff::get2AllPass(w0, qs);
             }
         }
         return number;
@@ -323,6 +330,8 @@ namespace zldsp::filter::FilterDesign {
             return updateNotchCoeffs<Coeff>(n, 0, w0, q0, coeffs);
         case kBandPass:
             return updateBandPassCoeffs<Coeff>(n, 0, w0, q0, coeffs);
+        case kAllPass:
+            return updatePassCoeffs<Coeff, kAllPass>(n, 0, w0, q0, coeffs);
         default:
             return 0;
         }
@@ -363,6 +372,7 @@ namespace zldsp::filter::FilterDesign {
         case kHighPass:
         case kNotch:
         case kBandPass:
+        case kAllPass:
         default:
             return;
         }
@@ -486,6 +496,7 @@ namespace zldsp::filter::FilterDesign {
         case kHighPass:
         case kNotch:
         case kBandPass:
+        case kAllPass:
         default:
             break;
         }

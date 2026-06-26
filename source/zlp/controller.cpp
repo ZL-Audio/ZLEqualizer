@@ -960,7 +960,8 @@ namespace zlp {
         switch (paras.filter_type) {
         case zldsp::filter::kPeak:
         case zldsp::filter::kNotch:
-        case zldsp::filter::kBandPass: {
+        case zldsp::filter::kBandPass:
+        case zldsp::filter::kAllPass: {
             paras.filter_type = zldsp::filter::kBandPass;
             break;
         }
