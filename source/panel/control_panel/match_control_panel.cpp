@@ -25,7 +25,7 @@ namespace zlpanel {
                                                            BinaryData::draw_svgSize)),
         draw_button_(base, draw_drawable_.get(), draw_drawable_.get(),
                      tooltip_helper.getToolTipText(multilingual::kEQMatchDiffDraw)),
-        target_box_({"Side", "Preset", "Flat", "Balance", "Natural"}, base,
+        target_box_({"Side", "Preset", "Flat", "Balanced", "Natural"}, base,
                     tooltip_helper.getToolTipText(multilingual::kEQMatchTarget),
                     {tooltip_helper.getToolTipText(multilingual::kEQMatchTargetSide),
                      tooltip_helper.getToolTipText(multilingual::kEQMatchTargetPreset),

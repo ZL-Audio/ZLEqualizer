@@ -4,6 +4,29 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.2.2
+
+New Features
+
+- add support filter with freq beyond Nyquist (now freq can go up to 30 kHz under sample rate 44.1/48 kHz)
+- add analyzer smoothing choice
+- add combobox mouse-wheel control
+- add EQ curve dB scale settings (see UI settings)
+- add mousewheel control to gain and scale label
+- add EQ match dB limit choice
+- add two EQ match built-in target curves `Balanced` and `Natural`
+
+Bug fixes
+
+- fix static gain compensation value display
+- fix incorrect loudness matching results
+- fix potential audio glitches after EQ match
+- fix potential crash caused by dynamic `Flat Tilt`
+
+Other Changes
+
+- allow freq note to be entered as lower case
+
 ## 1.2.1
 
 New Features
