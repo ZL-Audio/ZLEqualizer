@@ -9,6 +9,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 New Features
 
 - add support filter with freq beyond Nyquist (now freq can go up to 30 kHz under sample rate 44.1/48 kHz)
+- add `All Pass` filter type
 - add analyzer smoothing choice
 - add combobox mouse-wheel control
 - add EQ curve dB scale settings (see UI settings)
