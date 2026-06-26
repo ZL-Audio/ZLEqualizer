@@ -441,7 +441,7 @@ namespace zlpanel {
 
             zldsp::filter::Ideal<float, 2> hsf;
             hsf.prepare(c_sample_rate_);
-            hsf.forceUpdate({zldsp::filter::kHighShelf, 2, 8000.0, 1.998, 0.707});
+            hsf.forceUpdate({zldsp::filter::kHighShelf, 2, 6600.0, 1.998, 0.707});
 
             std::vector<float> hpf_mag(kNumPoints), lpf_mag(kNumPoints), hsf_mag(kNumPoints);
             hpf.updateMagnitudeSquare(ws, hpf_mag);

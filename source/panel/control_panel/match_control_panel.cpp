@@ -178,7 +178,7 @@ namespace zlpanel {
         const auto button_size = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
 
-        return 4 * padding + 2 * (padding / 2) + 2 * small_slider_width + 4 * button_size;
+        return 5 * padding + 2 * (padding / 2) + 2 * small_slider_width + 4 * button_size;
     }
 
     void MatchControlPanel::resized() {
@@ -193,7 +193,7 @@ namespace zlpanel {
 
         bound.reduce(padding + padding / 2, padding + padding / 2);
         {
-            auto temp_bound = bound.removeFromLeft(small_slider_width);
+            auto temp_bound = bound.removeFromLeft(small_slider_width + padding);
             const auto box_bound = temp_bound.removeFromBottom(temp_bound.getHeight() / 2);
             target_box_.setBounds(box_bound.withSizeKeepingCentre(box_bound.getWidth(), box_height));
             temp_bound.removeFromBottom(padding);
