@@ -29,7 +29,7 @@ namespace zlpanel {
         static constexpr size_t kNumPoints = 128;
 
         enum class SideMode {
-            kSide, kPreset, kFlat,
+            kSide, kPreset, kFlat, kBalance, kNatural,
         };
 
         enum class MatchPhase {
@@ -106,6 +106,7 @@ namespace zlpanel {
         zlchore::thread::Notifier to_update_xs_para_{true};
         zlchore::thread::Notifier to_update_ys_para_{true};
         zlchore::thread::Notifier to_update_curve_para_{true};
+        zlchore::thread::Notifier to_update_target_curve_{true};
 
         zldsp::analyzer::FFTAnalyzerProcessor processor_;
         std::array<zldsp::analyzer::FFTAnalyzerReceiver, 2> receivers_{
@@ -163,6 +164,10 @@ namespace zlpanel {
         void processTargetPreset();
 
         void processTargetFlat();
+
+        void processTargetBalance();
+
+        void processTargetNatural();
 
         void processDiff();
 

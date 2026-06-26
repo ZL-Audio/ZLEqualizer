@@ -25,11 +25,13 @@ namespace zlpanel {
                                                            BinaryData::draw_svgSize)),
         draw_button_(base, draw_drawable_.get(), draw_drawable_.get(),
                      tooltip_helper.getToolTipText(multilingual::kEQMatchDiffDraw)),
-        target_box_({"Side", "Preset", "Flat"}, base,
+        target_box_({"Side", "Preset", "Flat", "Balance", "Natural"}, base,
                     tooltip_helper.getToolTipText(multilingual::kEQMatchTarget),
                     {tooltip_helper.getToolTipText(multilingual::kEQMatchTargetSide),
+                     tooltip_helper.getToolTipText(multilingual::kEQMatchTargetPreset),
                      tooltip_helper.getToolTipText(multilingual::kEQMatchTargetFlat),
-                     tooltip_helper.getToolTipText(multilingual::kEQMatchTargetPreset)}),
+                     tooltip_helper.getToolTipText(multilingual::kEQMatchTargetBalanced),
+                     tooltip_helper.getToolTipText(multilingual::kEQMatchTargetNatural)}),
         label_laf_(base),
         shift_label_("", "Shift"),
         shift_slider_("", base,
@@ -114,7 +116,7 @@ namespace zlpanel {
         }
 
         limit_combobox_.getBox().onChange = [this]() {
-            constexpr std::array<float, 4> kLimits {6.f, 12.f, 30.f, 300.f};
+            constexpr std::array<float, 4> kLimits{6.f, 12.f, 30.f, 300.f};
             const auto selected_index = static_cast<size_t>(
                 std::max(limit_combobox_.getBox().getSelectedItemIndex(), 0));
             match_fft_panel_.setMatchLimit(kLimits[selected_index]);

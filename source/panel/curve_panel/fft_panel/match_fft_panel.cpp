@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "match_fft_panel.hpp"
+#include "../../../dsp/filter/ideal_filter/ideal.hpp"
 
 namespace zlpanel {
     MatchFFTPanel::MatchFFTPanel(PluginProcessor& p, zlgui::UIBase& base) :
@@ -108,6 +109,7 @@ namespace zlpanel {
 
     void MatchFFTPanel::setSideMode(const SideMode mode) {
         side_mode_.store(mode, std::memory_order::release);
+        to_update_target_curve_.signal();
     }
 
     void MatchFFTPanel::setDiffDrawOn(const bool is_on) {
@@ -210,6 +212,7 @@ namespace zlpanel {
             }
             to_update_xs_para_.signal();
             to_update_ys_para_.signal();
+            to_update_target_curve_.signal();
         }
         // receiver pull data
         auto& fifo{sender.getAbstractFIFO()};
@@ -316,6 +319,14 @@ namespace zlpanel {
             processTargetFlat();
             break;
         }
+        case SideMode::kBalance: {
+            processTargetBalance();
+            break;
+        }
+        case SideMode::kNatural: {
+            processTargetNatural();
+            break;
+        }
         }
         processDiff();
         if (thread.threadShouldExit()) {
@@ -402,11 +413,89 @@ namespace zlpanel {
 
     void MatchFFTPanel::processTargetFlat() {
         constexpr size_t i = 1;
-        {
+        if (to_update_target_curve_.check()) {
             std::lock_guard lock{save_db_mutex_};
-            std::ranges::fill(dbs_[i], 0.f);
+            std::ranges::fill(dbs_[i], -30.f);
         }
-        std::ranges::fill(ys_, y_b_);
+        zldsp::vector::fma(ys_.data(), dbs_[i].data(), y_k_, y_b_, ys_.size());
+        createPath(paths_[i].getWriter());
+    }
+
+    void MatchFFTPanel::processTargetBalance() {
+        constexpr size_t i = 1;
+        if (to_update_target_curve_.check()) {
+            std::vector<float> ws(kNumPoints);
+            const auto freq_scale = static_cast<float>(2.0 * std::numbers::pi / c_sample_rate_);
+            ws[0] = freqs_[1] * 0.5f * freq_scale;
+            for (size_t j = 1; j < kNumPoints; ++j) {
+                ws[j] = freqs_[j] * freq_scale;
+            }
+
+            zldsp::filter::Ideal<float, 2> hpf;
+            hpf.prepare(c_sample_rate_);
+            hpf.forceUpdate({zldsp::filter::kHighPass, 2, 35.0, 0.0, 0.707});
+
+            zldsp::filter::Ideal<float, 2> lpf;
+            lpf.prepare(c_sample_rate_);
+            lpf.forceUpdate({zldsp::filter::kLowPass, 2, 17500.0, 0.0, 0.707});
+
+            zldsp::filter::Ideal<float, 2> hsf;
+            hsf.prepare(c_sample_rate_);
+            hsf.forceUpdate({zldsp::filter::kHighShelf, 2, 8000.0, 1.998, 0.707});
+
+            std::vector<float> hpf_mag(kNumPoints), lpf_mag(kNumPoints), hsf_mag(kNumPoints);
+            hpf.updateMagnitudeSquare(ws, hpf_mag);
+            lpf.updateMagnitudeSquare(ws, lpf_mag);
+            hsf.updateMagnitudeSquare(ws, hsf_mag);
+
+            std::lock_guard lock{save_db_mutex_};
+            for (size_t j = 0; j < kNumPoints; ++j) {
+                const float mag_sq = hpf_mag[j] * lpf_mag[j] * hsf_mag[j];
+                dbs_[i][j] = zldsp::chore::squareGainToDecibels(mag_sq) - 30.f;
+            }
+        }
+        zldsp::vector::fma(ys_.data(), dbs_[i].data(), y_k_, y_b_, ys_.size());
+        createPath(paths_[i].getWriter());
+    }
+
+    void MatchFFTPanel::processTargetNatural() {
+        constexpr size_t i = 1;
+        if (to_update_target_curve_.check()) {
+            std::vector<float> ws(kNumPoints);
+            const auto freq_scale = static_cast<float>(2.0 * std::numbers::pi / c_sample_rate_);
+            ws[0] = freqs_[1] * 0.5f * freq_scale;
+            for (size_t j = 1; j < kNumPoints; ++j) {
+                ws[j] = freqs_[j] * freq_scale;
+            }
+
+            zldsp::filter::Ideal<float, 2> hpf;
+            hpf.prepare(c_sample_rate_);
+            hpf.forceUpdate({zldsp::filter::kHighPass, 2, 40.0, 0.0, 0.707});
+
+            zldsp::filter::Ideal<float, 2> lpf;
+            lpf.prepare(c_sample_rate_);
+            lpf.forceUpdate({zldsp::filter::kLowPass, 2, 16000.0, 0.0, 0.707});
+
+            std::vector<float> hpf_mag(kNumPoints), lpf_mag(kNumPoints);
+            hpf.updateMagnitudeSquare(ws, hpf_mag);
+            lpf.updateMagnitudeSquare(ws, lpf_mag);
+
+            std::lock_guard lock{save_db_mutex_};
+            {
+                size_t j = 0;
+                const auto mag_sq = hpf_mag[j] * lpf_mag[j];
+                const auto filter_db = zldsp::chore::squareGainToDecibels(mag_sq);
+                const auto tilt_db = static_cast<float>(std::log2(freqs_[1] * 0.5f / 1000.0) * 1.5);
+                dbs_[i][j] = filter_db + tilt_db - 30.f;
+            }
+            for (size_t j = 1; j < kNumPoints; ++j) {
+                const auto mag_sq = hpf_mag[j] * lpf_mag[j];
+                const auto filter_db = zldsp::chore::squareGainToDecibels(mag_sq);
+                const auto tilt_db = static_cast<float>(std::log2(freqs_[j] / 1000.0) * 1.5);
+                dbs_[i][j] = filter_db + tilt_db - 30.f;
+            }
+        }
+        zldsp::vector::fma(ys_.data(), dbs_[i].data(), y_k_, y_b_, ys_.size());
         createPath(paths_[i].getWriter());
     }
 

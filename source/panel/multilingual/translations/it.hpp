@@ -78,6 +78,8 @@ namespace zlpanel::multilingual::it {
         "Apprendi la curva target dal segnale della side-chain.",
         "Imposta la curva target come linea piatta.",
         "Carica la curva target da un file preset.",
+        "Imposta la curva target come curva bilanciata.",
+        "Imposta la curva target come curva naturale.",
         "Controlla lo spostamento (shift) della curva di differenza.",
         "Controlla la fluidità della curva di differenza.",
         "Controlla la pendenza della curva di differenza.",

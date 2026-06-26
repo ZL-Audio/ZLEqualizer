@@ -71,6 +71,8 @@ namespace zlpanel::multilingual {
         kEQMatchTargetSide,
         kEQMatchTargetFlat,
         kEQMatchTargetPreset,
+        kEQMatchTargetBalanced,
+        kEQMatchTargetNatural,
         kEQMatchDiffShift,
         kEQMatchDiffSmooth,
         kEQMatchDiffSlope,

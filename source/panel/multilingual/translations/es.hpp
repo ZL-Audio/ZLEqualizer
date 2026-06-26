@@ -75,6 +75,8 @@ namespace zlpanel::multilingual::es {
         "Aprender la curva objetivo desde la señal de side-chain.",
         "Establecer la curva objetivo como una línea plana.",
         "Cargar la curva objetivo desde un archivo de preajuste.",
+        "Establecer la curva objetivo como una curva equilibrada.",
+        "Establecer la curva objetivo como una curva natural.",
         "Controlar el desplazamiento de la curva de diferencia.",
         "Controlar la suavidad de la curva de diferencia.",
         "Controlar la pendiente de la curva de diferencia.",

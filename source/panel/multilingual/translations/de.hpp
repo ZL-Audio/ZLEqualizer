@@ -75,6 +75,8 @@ namespace zlpanel::multilingual::de {
         "Zielkurve vom Side-Chain-Signal lernen.",
         "Zielkurve als flache Linie setzen.",
         "Zielkurve aus einer Preset-Datei laden.",
+        "Zielkurve als ausbalancierte Kurve setzen.",
+        "Zielkurve als natürliche Kurve setzen.",
         "Verschiebung der Differenzkurve einstellen.",
         "Glättung der Differenzkurve einstellen.",
         "Neigung der Differenzkurve einstellen.",

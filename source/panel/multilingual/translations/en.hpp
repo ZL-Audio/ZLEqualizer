@@ -75,6 +75,8 @@ namespace zlpanel::multilingual::en {
         "Learn the target curve from the side-chain signal.",
         "Set the target curve as a flat line.",
         "Load the target curve from a preset file.",
+        "Set the target curve as a balanced curve.",
+        "Set the target curve as a natural curve.",
         "Control the shift of the difference curve.",
         "Control the smoothness of the difference curve.",
         "Control the slope of the difference curve.",
