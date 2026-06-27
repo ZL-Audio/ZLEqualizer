@@ -538,8 +538,7 @@ namespace zlpanel {
         }
     }
 
-    std::tuple<float, float, float> ResponsePanel::getLeftCenterRightX(
-        const zldsp::filter::FilterParameters& para) const {
+    std::tuple<float, float, float> ResponsePanel::getLeftCenterRightX(zldsp::filter::FilterParameters para) const {
         const auto freq_to_x_scale = 1.0 / std::log(
             fft_max_ * 0.1) * static_cast<double>(c_width_) * static_cast<double>(
             kFFTSizeOverWidth);
@@ -549,8 +548,21 @@ namespace zlpanel {
         case zldsp::filter::kPeak:
         case zldsp::filter::kBandPass:
         case zldsp::filter::kNotch:
-        case zldsp::filter::kAllPass:
         default: {
+            const auto bandwidth = para.freq / para.q;
+            const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * para.q * para.q + 1.0) - 1.0);
+            const auto left_x = std::log(left_f / 10.0) * freq_to_x_scale;
+            const auto right_f = left_f + bandwidth;
+            const auto right_x = std::log(right_f / 10.0) * freq_to_x_scale;
+            return std::make_tuple(static_cast<float>(left_x),
+                                   static_cast<float>(center_x),
+                                   static_cast<float>(right_x));
+        }
+        case zldsp::filter::kAllPass: {
+            if (para.order == 1) {
+                para.q = std::sqrt(2) * 0.5;
+            }
+            para.order = 2;
             const auto bandwidth = para.freq / para.q;
             const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * para.q * para.q + 1.0) - 1.0);
             const auto left_x = std::log(left_f / 10.0) * freq_to_x_scale;

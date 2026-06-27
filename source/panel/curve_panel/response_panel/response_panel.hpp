@@ -147,6 +147,6 @@ namespace zlpanel {
 
         void updateFloatingPosition();
 
-        std::tuple<float, float, float> getLeftCenterRightX(const zldsp::filter::FilterParameters& para) const;
+        std::tuple<float, float, float> getLeftCenterRightX(const zldsp::filter::FilterParameters para) const;
     };
 }
