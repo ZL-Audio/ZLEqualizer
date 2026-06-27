@@ -42,31 +42,31 @@ jobs:
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
             have_aax: false
           - name: macOS-x86-64
-            os: macos-latest
+            os: macos-26
             app_suffix: ".app"
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_HWY_STATIC_TARGET="SSE4"
             have_aax: true
           - name: macOS-arm64
-            os: macos-latest
+            os: macos-26
             app_suffix: ".app"
             cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
             have_aax: true
           - name: Windows-x86-64
-            os: windows-latest
+            os: windows-2025
             wix_arch: x64
             vcvars_script: vcvars64.bat
             app_suffix: ".exe"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="SSE2"
             have_aax: true
           - name: Windows-x86-64-AVX2
-            os: windows-latest
+            os: windows-2025
             wix_arch: x64
             vcvars_script: vcvars64.bat
             app_suffix: ".exe"
             cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="AVX2"
             have_aax: true
           - name: Windows-arm64
-            os: windows-11-arm
+            os: windows-11-vs2026-arm
             wix_arch: arm64
             vcvars_script: vcvarsarm64.bat
             app_suffix: ".exe"
