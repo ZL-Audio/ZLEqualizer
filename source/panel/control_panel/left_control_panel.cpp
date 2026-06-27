@@ -60,10 +60,13 @@ namespace zlpanel {
     }
 
     void LeftControlPanel::repaintCallBackSlow() {
-        if (ftype_ptr_ != nullptr) {
+        if (ftype_ptr_ != nullptr && slope_ptr_ != nullptr) {
             const auto ftype = static_cast<int>(std::round(ftype_ptr_->load(std::memory_order::relaxed)));
-            if (ftype != c_ftype_) {
+            const auto slope = static_cast<int>(std::round(slope_ptr_->load(std::memory_order::relaxed)));
+
+            if (ftype != c_ftype_ || c_slope_ != slope) {
                 c_ftype_ = ftype;
+                c_slope_ = slope;
                 const auto slope_6_disabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
                     || (ftype == static_cast<int>(zldsp::filter::kBandPass))
                     || (ftype == static_cast<int>(zldsp::filter::kNotch));
@@ -78,7 +81,7 @@ namespace zlpanel {
                 sub_left_control_panel_.enableGain(gain_enabled);
 
                 sub_left_control_panel_.enableSlope(c_ftype_ != zldsp::filter::kFlatTilt);
-                sub_left_control_panel_.enableQ(c_ftype_ != zldsp::filter::kFlatTilt);
+                sub_left_control_panel_.enableQ(c_ftype_ != zldsp::filter::kFlatTilt && c_slope_ != 0);
             }
         }
         const auto max_db_idx = max_db_idx_ref_.load(std::memory_order::relaxed);
@@ -101,11 +104,13 @@ namespace zlpanel {
             updateGainSliderComponentID();
             gain_slider_.visibilityChanged();
             ftype_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterType::kID + band_s);
+            slope_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::POrder::kID + band_s);
         } else {
             freq_attachment_.reset();
             gain_attachment_.reset();
             target_gain_attachment_.reset();
             ftype_ptr_ = nullptr;
+            slope_ptr_ = nullptr;
         }
         sub_left_control_panel_.updateBand();
     }
