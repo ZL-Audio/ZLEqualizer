@@ -71,7 +71,9 @@ JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
 ## References
 
-Yuriy Ivantsov. *On the ideal bilinear and biquadratic digital filter*. (2025).
+Yuriy Ivantsov. *On the Ideal Bilinear and Biquadratic Digital Filter*. (2025).
+
+Yuriy Ivantsov. *On the State Space of a Linear Digital Filter*. (2025).
 
 Martin Vicanek. *Matched One-Pole Digital Shelving Filters*. (2019).
 

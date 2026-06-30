@@ -101,13 +101,20 @@ namespace zldsp::filter {
                     break;
                 }
                 }
-                internalProcess<bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
+                const auto order = filter_.getFilterType() == kFlatTilt ? 0 : filter_.getOrder();
+                if (order == 2) {
+                    internalProcess<2, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
+                } else if (order == 1) {
+                    internalProcess<1, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
+                } else {
+                    internalProcess<0, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
+                }
             } else {
                 filter_.template process<bypass>(main_buffer, num_samples);
             }
         }
 
-        template <bool bypass = false, bool dynamic_bypass = false>
+        template <int order, bool bypass = false, bool dynamic_bypass = false>
         void internalProcess(std::span<FloatType*> main_buffer, std::span<FloatType*> side_buffer,
                              const size_t num_samples) {
             const auto side_p = side_buffer[0];
@@ -118,9 +125,9 @@ namespace zldsp::filter {
                 }
                 for (size_t chan = 0; chan < main_buffer.size(); ++chan) {
                     if constexpr (bypass) {
-                        filter_.processSample(chan, main_buffer[chan][i]);
+                        filter_.template processSample<order>(chan, main_buffer[chan][i]);
                     } else {
-                        main_buffer[chan][i] = filter_.processSample(chan, main_buffer[chan][i]);
+                        main_buffer[chan][i] = filter_.template processSample<order>(chan, main_buffer[chan][i]);
                     }
                 }
             }

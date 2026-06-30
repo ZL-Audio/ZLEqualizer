@@ -63,27 +63,29 @@ namespace zldsp::filter {
                     case zldsp::compressor::SState::kOff: {
                         this->handler_.template processToGainLinear<zldsp::compressor::SState::kOff>(
                             side_buffer[0], num_samples, 1);
-                        internalDynamicProcess<bypass, dynamic_bypass>(
-                            side_buffer, num_samples);
                         break;
                     }
                     case zldsp::compressor::SState::kFull: {
                         this->handler_.template processToGainLinear<zldsp::compressor::SState::kFull>(
                             side_buffer[0], num_samples, 1);
-                        internalDynamicProcess<bypass, dynamic_bypass>(
-                            side_buffer, num_samples);
                         break;
                     }
                     case zldsp::compressor::SState::kMix: {
                         this->handler_.template processToGainLinear<zldsp::compressor::SState::kMix>(
                             side_buffer[0], num_samples, 1);
-                        internalDynamicProcess<bypass, dynamic_bypass>(
-                            side_buffer, num_samples);
                         break;
                     }
                     default: {
                         break;
                     }
+                    }
+                    const auto order = this->filter_.getFilterType() == kFlatTilt ? 0 : this->filter_.getOrder();
+                    if (order == 2) {
+                        internalDynamicProcess<2, bypass, dynamic_bypass>(side_buffer, num_samples);
+                    } else if (order == 1) {
+                        internalDynamicProcess<1, bypass, dynamic_bypass>(side_buffer, num_samples);
+                    } else {
+                        internalDynamicProcess<0, bypass, dynamic_bypass>(side_buffer, num_samples);
                     }
                 } else {
                     const auto parallel_buffer = this->filter_.getParallelBuffer();
@@ -110,7 +112,7 @@ namespace zldsp::filter {
         }
 
     private:
-        template <bool bypass = false, bool dynamic_bypass = false>
+        template <int order, bool bypass = false, bool dynamic_bypass = false>
         void internalDynamicProcess(std::span<FloatType*> side_buffer, const size_t num_samples) {
             const auto parallel_buffer = this->filter_.getParallelBuffer();
             const auto side_p = side_buffer[0];
@@ -122,9 +124,9 @@ namespace zldsp::filter {
                 const auto multiplier = this->filter_.getMultiplier();
                 for (size_t chan = 0; chan < parallel_buffer.size(); ++chan) {
                     if constexpr (bypass) {
-                        this->filter_.processSample(chan, parallel_buffer[chan][i]);
+                        this->filter_.template processSample<order>(chan, parallel_buffer[chan][i]);
                     } else {
-                        parallel_buffer[chan][i] = this->filter_.processSample(
+                        parallel_buffer[chan][i] = this->filter_.template processSample<order>(
                             chan, parallel_buffer[chan][i]) * multiplier;
                     }
                 }

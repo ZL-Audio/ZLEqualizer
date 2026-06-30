@@ -55,13 +55,13 @@ namespace zldsp::filter::FilterDesign {
         for (size_t i = 0; i < num_filters - 1; ++i) {
             const double w_i = flat_freq[i] * inv_fs;
             const auto coeff = Coeff::get1HighShelf(w_i, g_shelf_dB);
-            coeffs[i] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+            coeffs[i] = Coeff::pack1stOrder(coeff);
         }
         {
             const auto i = num_filters - 1;
             const double w_i = flat_freq[i] * inv_fs;
             const auto coeff = Coeff::get1HighShelf(w_i, g_shelf_dB);
-            coeffs[i] = {coeff[0], 0.0, coeff[1] * makeup_gain, coeff[2] * makeup_gain, 0.0};
+            coeffs[i] = Coeff::pack1stOrder(coeff, makeup_gain);
         }
 
         return num_filters;
@@ -100,15 +100,15 @@ namespace zldsp::filter::FilterDesign {
         if (n == 1) {
             if constexpr (filter_type == kLowPass) {
                 const auto coeff = Coeff::get1LowPass(w0);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
             if constexpr (filter_type == kHighPass) {
                 const auto coeff = Coeff::get1HighPass(w0);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
             if constexpr (filter_type == kAllPass) {
                 const auto coeff = Coeff::get1AllPass(w0);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
             return 1;
         }
@@ -141,15 +141,15 @@ namespace zldsp::filter::FilterDesign {
         if (n == 1) {
             if constexpr (filter_type == kLowShelf) {
                 const auto coeff = Coeff::get1LowShelf(w0, g_dB);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
             if constexpr (filter_type == kHighShelf) {
                 const auto coeff = Coeff::get1HighShelf(w0, g_dB);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
             if constexpr (filter_type == kTiltShelf) {
                 const auto coeff = Coeff::get1TiltShelf(w0, g_dB);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
             return 1;
         } else if (n == 2) {
@@ -384,15 +384,15 @@ namespace zldsp::filter::FilterDesign {
         if (n == 1) {
             if constexpr (filter_type == kLowShelf) {
                 const auto coeff = Coeff::get1LowShelfWithCache(g_linear_sqrt, cache);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
             if constexpr (filter_type == kHighShelf) {
                 const auto coeff = Coeff::get1HighShelfWithCache(g_linear_sqrt, cache);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
             if constexpr (filter_type == kTiltShelf) {
                 const auto coeff = Coeff::get1TiltShelfWithCache(g_linear_sqrt, cache);
-                coeffs[start_idx] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+                coeffs[start_idx] = Coeff::pack1stOrder(coeff);
             }
         } else if (n == 2) {
             if constexpr (filter_type == kLowShelf) {
@@ -455,12 +455,12 @@ namespace zldsp::filter::FilterDesign {
         const auto g_shelf_linear_sqrt = std::sqrt(g_shelf_linear);
         for (size_t i = 0; i < num_filters - 1; ++i) {
             const auto coeff = Coeff::get1HighShelfWithCache(g_shelf_linear_sqrt, cache_shift + i);
-            coeffs[i] = {coeff[0], 0.0, coeff[1], coeff[2], 0.0};
+            coeffs[i] = Coeff::pack1stOrder(coeff);
         }
         {
             const size_t i = num_filters - 1;
             const auto coeff = Coeff::get1HighShelfWithCache(g_shelf_linear_sqrt, cache_shift + i);
-            coeffs[i] = {coeff[0], 0.0, coeff[1] * makeup_gain, coeff[2] * makeup_gain, 0.0};
+            coeffs[i] = Coeff::pack1stOrder(coeff, makeup_gain);
         }
     }
 

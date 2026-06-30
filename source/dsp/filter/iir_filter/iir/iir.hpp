@@ -10,7 +10,6 @@
 #pragma once
 
 #include "../../filter_design/filter_design.hpp"
-#include "../coeff/ivantsov_coeff.hpp"
 #include "../../../chore/smoothed_value.hpp"
 
 namespace zldsp::filter {
@@ -165,10 +164,6 @@ namespace zldsp::filter {
             return coeffs_;
         }
 
-        void cacheDynPara() {
-            cacheDyn(c_filter_type_, c_order_, c_freq_.getTarget(), sample_rate_, c_q_.getTarget());
-        }
-
     protected:
         std::array<std::array<double, 5>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
@@ -180,16 +175,5 @@ namespace zldsp::filter {
         std::array<double, kFilterSize * 3 + 1> cache_{};
 
         double sample_rate_{48000.0};
-
-        static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
-                                      const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 5>, kFilterSize>& coeffs) {
-            return FilterDesign::updateCoeffs<IvantsovCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
-        }
-
-        void cacheDyn(const FilterType filterType, const size_t n,
-                      const double f, const double fs, const double q0) {
-            FilterDesign::updateCache<IvantsovCoeff>(filterType, n, f, fs, q0, cache_.data());
-        }
     };
 }

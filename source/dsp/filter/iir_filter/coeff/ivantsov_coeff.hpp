@@ -10,7 +10,6 @@
 #pragma once
 
 #include <array>
-#include <span>
 
 namespace zldsp::filter {
     class IvantsovCoeff {
@@ -64,5 +63,9 @@ namespace zldsp::filter {
         static std::array<double, 5> get2LowShelfWithCache(double g_linear_sqrt, const double* cache);
 
         static std::array<double, 5> get2HighShelfWithCache(double g_linear_sqrt, const double* cache);
+
+        static std::array<double, 5> pack1stOrder(const std::array<double, 3>& coeff, const double makeup_gain = 1.0) {
+            return {coeff[0], 0.0, coeff[1] * makeup_gain, coeff[2] * makeup_gain, 0.0};
+        }
     };
 }
