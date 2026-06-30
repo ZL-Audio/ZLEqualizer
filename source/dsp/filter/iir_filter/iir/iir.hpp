@@ -30,7 +30,7 @@ namespace zldsp::filter {
 
         void prepareSampleRate(const double sample_rate) {
             sample_rate_ = sample_rate;
-            c_freq_.prepare(sample_rate, 0.1);
+            c_freq_.prepare(sample_rate, 0.01);
             c_gain_.prepare(sample_rate, 0.001);
             c_q_.prepare(sample_rate, 0.001);
             c_freq_.setCurrentAndTarget(c_freq_.getTarget());
