@@ -24,20 +24,31 @@ namespace zldsp::loudness {
         KWeightingFilter() = default;
 
         void prepare(const double sample_rate, const size_t num_channels) {
-            high_pass_.prepare(num_channels);
-            high_shelf_.prepare(num_channels);
-            const auto scale = 1.0 / sample_rate;
-            const auto w1 = scale * 38.13713296248405;
-            const auto w2 = scale * 1500.6868667368922;
-            high_pass_.updateFromBiquad(
-                zldsp::filter::IvantsovCoeff::get2HighPass(w1, 0.500242812458813));
-            high_shelf_.updateFromBiquad(
-                zldsp::filter::IvantsovCoeff::get2HighShelf(w2, 3.9993623475151354, 0.7096433028107384));
+            {
+                high_pass_.prepare(sample_rate, num_channels, 0);
+                high_pass_.setFilterType(filter::FilterType::kHighPass);
+                high_pass_.setOrder(2);
+                high_pass_.setFreq(38.13713296248405);
+                high_pass_.setQ(0.500242812458813);
+                high_pass_.updateCoeffs();
+            }
+            {
+                high_shelf_.prepare(sample_rate, num_channels, 0);
+                high_shelf_.setFilterType(filter::FilterType::kHighShelf);
+                high_shelf_.setOrder(2);
+                high_shelf_.setFreq(1500.6868667368922);
+                high_shelf_.setGain(3.9993623475151354);
+                high_shelf_.setQ(0.7096433028107384);
+                high_shelf_.updateCoeffs();
+            }
+
             if constexpr (kUseLowPass) {
-                low_pass_.prepare(num_channels);
-                const auto w3 = scale * 22000.0;
-                low_pass_.updateFromBiquad(
-                    zldsp::filter::IvantsovCoeff::get2LowPass(w3, 0.7071067811865476));
+                low_pass_.prepare(sample_rate, num_channels, 0);
+                low_pass_.setFilterType(filter::FilterType::kLowPass);
+                low_pass_.setOrder(2);
+                low_pass_.setFreq(22000.0);
+                low_pass_.setQ(0.7071067811865476);
+                low_pass_.updateCoeffs();
             }
         }
 
@@ -50,22 +61,18 @@ namespace zldsp::loudness {
         }
 
         void process(std::span<FloatType*> buffer, const size_t num_samples) {
-            for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                auto samples = buffer[channel];
-                for (size_t i = 0; i < num_samples; ++i) {
-                    auto sample = samples[i];
-                    sample = high_pass_.processSample(channel, sample);
-                    sample = high_shelf_.processSample(channel, sample);
-                    if constexpr (kUseLowPass) {
-                        sample = low_pass_.processSample(channel, sample);
-                    }
-                    samples[i] = sample * kBias;
-                }
+            high_pass_.process(buffer, num_samples);
+            high_shelf_.process(buffer, num_samples);
+            if constexpr (kUseLowPass) {
+                low_pass_.process(buffer, num_samples);
+            }
+            for (size_t chan = 0; chan < buffer.size(); chan++) {
+                zldsp::vector::multiply(buffer[chan], kBias, num_samples);
             }
         }
 
     private:
-        zldsp::filter::TDFBase<FloatType> high_pass_, high_shelf_, low_pass_;
+        zldsp::filter::TDF<FloatType, 1> high_pass_, high_shelf_, low_pass_;
         static constexpr FloatType kBias = static_cast<FloatType>(1.0051643348917434);
     };
 }

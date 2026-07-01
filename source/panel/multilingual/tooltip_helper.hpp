@@ -43,4 +43,4 @@ namespace zlpanel::multilingual {
     private:
         TooltipLanguage language_;
     };
-} // zlpanel
+}

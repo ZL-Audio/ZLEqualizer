@@ -72,4 +72,4 @@ namespace zlpanel::multilingual {
         }
         }
     }
-} // zlpanel
+}

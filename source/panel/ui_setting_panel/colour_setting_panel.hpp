@@ -56,4 +56,4 @@ namespace zlpanel {
                 .getChildFile(JucePlugin_Manufacturer)
                 .getChildFile("Shared Settings");
     };
-} // zlpanel
+}

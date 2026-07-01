@@ -64,4 +64,4 @@ namespace zlpanel {
 
         void visibilityChanged() override;
     };
-} // zlpanel
+}

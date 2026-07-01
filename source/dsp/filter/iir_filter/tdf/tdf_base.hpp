@@ -118,47 +118,5 @@ namespace zldsp::filter {
                 wi_imag.back() = static_cast<FloatType>(-std::sin(w));
             }
         }
-
-        TDFBase() = default;
-
-        void prepare(const size_t num_channels) {
-            s1_.resize(num_channels);
-            s2_.resize(num_channels);
-            reset();
-        }
-
-        void reset() {
-            std::fill(s1_.begin(), s1_.end(), static_cast<FloatType>(0));
-            std::fill(s2_.begin(), s2_.end(), static_cast<FloatType>(0));
-        }
-
-        template <bool bypass = false>
-        void process(std::span<FloatType*> buffer, const size_t num_samples) noexcept {
-            for (size_t channel = 0; channel < buffer.size(); ++channel) {
-                auto* samples = buffer[channel];
-                for (size_t i = 0; i < num_samples; ++i) {
-                    if constexpr (bypass) {
-                        processSample(channel, samples[i]);
-                    } else {
-                        samples[i] = processSample(channel, samples[i]);
-                    }
-                }
-            }
-        }
-
-        FloatType processSample(const size_t channel, FloatType input) {
-            const auto output = input * coeff_[2] + s1_[channel];
-            s1_[channel] = (input * coeff_[3]) - (output * coeff_[0]) + s2_[channel];
-            s2_[channel] = (input * coeff_[4]) - (output * coeff_[1]);
-            return output;
-        }
-
-        void updateFromBiquad(const std::array<double, 5>& coeff) {
-            vector::copy(coeff_.data(), coeff.data(), 5);
-        }
-
-    private:
-        std::array<FloatType, 5> coeff_{0, 0, 0, 0, 0};
-        std::vector<FloatType> s1_, s2_;
     };
 }
