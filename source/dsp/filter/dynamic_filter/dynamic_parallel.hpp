@@ -79,13 +79,15 @@ namespace zldsp::filter {
                         break;
                     }
                     }
-                    const auto order = this->filter_.getFilterType() == kFlatTilt ? 0 : this->filter_.getOrder();
-                    if (order == 2) {
-                        internalDynamicProcess<2, bypass, dynamic_bypass>(side_buffer, num_samples);
-                    } else if (order == 1) {
-                        internalDynamicProcess<1, bypass, dynamic_bypass>(side_buffer, num_samples);
-                    } else {
-                        internalDynamicProcess<0, bypass, dynamic_bypass>(side_buffer, num_samples);
+                    if (this->filter_.getFilterNum() > 0) {
+                        const auto order = this->filter_.getFilterType() == kFlatTilt ? 0 : this->filter_.getOrder();
+                        if (order == 2) {
+                            internalDynamicProcess<2, bypass, dynamic_bypass>(side_buffer, num_samples);
+                        } else if (order == 1) {
+                            internalDynamicProcess<1, bypass, dynamic_bypass>(side_buffer, num_samples);
+                        } else {
+                            internalDynamicProcess<0, bypass, dynamic_bypass>(side_buffer, num_samples);
+                        }
                     }
                 } else {
                     const auto parallel_buffer = this->filter_.getParallelBuffer();

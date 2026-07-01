@@ -222,7 +222,8 @@ namespace zldsp::filter {
             if (rms_length_seconds > 1e-6) {
                 use_rms_ = true;
                 rms_length_seconds_ = rms_length_seconds;
-                rms_length_counts_ = static_cast<size_t>(std::round(rms_length_seconds_ * sample_rate_));
+                rms_length_counts_ = std::max(static_cast<size_t>(1),
+                                              static_cast<size_t>(std::round(rms_length_seconds_ * sample_rate_)));
                 rms_mix_reverse_ = rms_mix_ / static_cast<FloatType>(rms_length_counts_);
                 if (rms_length_counts_ < rms_buffer_.size()) {
                     const auto num_to_pop = rms_buffer_.size() - rms_length_counts_;

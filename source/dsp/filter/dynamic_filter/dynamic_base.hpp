@@ -101,13 +101,15 @@ namespace zldsp::filter {
                     break;
                 }
                 }
-                const auto order = filter_.getFilterType() == kFlatTilt ? 0 : filter_.getOrder();
-                if (order == 2) {
-                    internalProcess<2, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
-                } else if (order == 1) {
-                    internalProcess<1, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
-                } else {
-                    internalProcess<0, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
+                if (filter_.getFilterNum() > 0) {
+                    const auto order = filter_.getFilterType() == kFlatTilt ? 0 : filter_.getOrder();
+                    if (order == 2) {
+                        internalProcess<2, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
+                    } else if (order == 1) {
+                        internalProcess<1, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
+                    } else {
+                        internalProcess<0, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
+                    }
                 }
             } else {
                 filter_.template process<bypass>(main_buffer, num_samples);

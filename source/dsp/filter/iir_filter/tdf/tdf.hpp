@@ -48,6 +48,9 @@ namespace zldsp::filter {
          */
         template <bool bypass = false>
         void process(std::span<FloatType*> buffer, const size_t num_samples) {
+            if (this->current_filter_num_ == 0) {
+                return;
+            }
             const auto order = this->c_filter_type_ == kFlatTilt ? 0 : this->c_order_;
             if (this->c_freq_.isSmoothing() || this->c_gain_.isSmoothing() || this->c_q_.isSmoothing()) {
                 if (order == 2) {
