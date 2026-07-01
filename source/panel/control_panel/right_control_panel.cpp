@@ -285,6 +285,7 @@ namespace zlpanel {
             q_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 q_slider_.getSlider1(), p_ref_.parameters_, zlp::PSideQ::kID + band_s, updater_);
             q_slider_.setComponentID(zlp::PSideQ::kID + band_s);
+            q_slider_.visibilityChanged();
         } else {
             bypass_attachment_.reset();
             auto_attachment_.reset();
