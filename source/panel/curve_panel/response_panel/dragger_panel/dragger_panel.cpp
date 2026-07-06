@@ -354,18 +354,67 @@ namespace zlpanel {
             if (event.originalComponent == &(side_dragger_.getButton())) {
                 updateValue(p_ref_.parameters_.getParameter(zlp::PSideLink::kID + std::to_string(band)), 0.f);
             }
+
+            const auto action_type = event.mods.isRightButtonDown()
+                ? zlgui::UIBase::MouseActionType::kRightClick
+                : zlgui::UIBase::MouseActionType::kLeftClick;
+
             if (event.originalComponent == &(draggers_[band].getButton())
-                || event.originalComponent == &(target_dragger_.getButton())) {
-                const auto solo_whole_idx = base_.getSoloWholeIdx();
-                if (solo_whole_idx > zlp::kBandNum && solo_whole_idx < 2 * zlp::kBandNum) {
+                || event.originalComponent == &(target_dragger_.getButton())
+                || event.originalComponent == &(side_dragger_.getButton())) {
+
+                if (base_.isEnterSoloTriggered(action_type, event.mods)) {
+                    if (event.originalComponent == &(draggers_[band].getButton())
+                        || event.originalComponent == &(target_dragger_.getButton())) {
+                        base_.setSoloWholeIdx(band);
+                    } else if (event.originalComponent == &(side_dragger_.getButton())) {
+                        base_.setSoloWholeIdx(zlp::kBandNum + band);
+                    }
+                } else if (base_.isExitSoloTriggered(action_type, event.mods)) {
                     base_.setSoloWholeIdx(2 * zlp::kBandNum);
                 }
-            }
-            if (event.originalComponent == &(draggers_[band].getButton())) {
-                if (event.mods.isRightButtonDown() && !event.mods.isCommandDown()) {
+
+                if (base_.isRightClickTriggered(action_type, event.mods) && event.originalComponent == &(draggers_[
+                    band].getButton())) {
                     right_click_panel_.setPosition(draggers_[band].getButtonPos());
                     right_click_panel_.setVisible(true);
                     return;
+                }
+
+                if (base_.isToggleDynamicTriggered(action_type, event.mods)) {
+                    const auto ftype = static_cast<int>(std::round(
+                        getValue(p_ref_.parameters_, zlp::PFilterType::kID + std::to_string(band))));
+                    const auto gain_enabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
+                        || (ftype == static_cast<int>(zldsp::filter::kLowShelf))
+                        || (ftype == static_cast<int>(zldsp::filter::kHighShelf))
+                        || (ftype == static_cast<int>(zldsp::filter::kTiltShelf));
+                    if (gain_enabled) {
+                        const auto dynamic_on = getValue(
+                            p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
+                        updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
+                                    dynamic_on ? 0.f : 1.f);
+                        const auto max_db_id = std::round(max_db_id_ref_.load(std::memory_order::relaxed));
+                        band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on,
+                                                      base_.getCurveDBScale(static_cast<size_t>(max_db_id)));
+                    }
+                }
+
+                if (base_.isToggleBypassTriggered(action_type, event.mods)) {
+                    auto* para = p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(band));
+                    const auto status = static_cast<int>(std::round(para->convertFrom0to1(para->getValue())));
+                    if (status == static_cast<int>(zlp::FilterStatus::kOn)) {
+                        para->beginChangeGesture();
+                        para->setValueNotifyingHost(para->convertTo0to1(static_cast<float>(zlp::FilterStatus::kBypass)));
+                        para->endChangeGesture();
+                    } else if (status == static_cast<int>(zlp::FilterStatus::kBypass)) {
+                        para->beginChangeGesture();
+                        para->setValueNotifyingHost(para->convertTo0to1(static_cast<float>(zlp::FilterStatus::kOn)));
+                        para->endChangeGesture();
+                    }
+                }
+
+                if (base_.isDeleteBandTriggered(action_type, event.mods)) {
+                    band_helper::turnOffBand(p_ref_, band, base_.getSelectedBandSet());
                 }
             }
         }
@@ -379,6 +428,15 @@ namespace zlpanel {
             if (items_set_.getNumSelected() == 0) {
                 base_.setSelectedBand(zlp::kBandNum);
             }
+        } else {
+            if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+                auto action_type = event.mods.isRightButtonDown()
+                    ? zlgui::UIBase::MouseActionType::kRightRelease
+                    : zlgui::UIBase::MouseActionType::kLeftRelease;
+                if (base_.isExitSoloTriggered(action_type, event.mods)) {
+                    base_.setSoloWholeIdx(2 * zlp::kBandNum);
+                }
+            }
         }
     }
 
@@ -390,39 +448,64 @@ namespace zlpanel {
 
     void DraggerPanel::mouseDoubleClick(const juce::MouseEvent& event) {
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
-            if (event.originalComponent == &(draggers_[band].getButton())) {
-                if (event.mods.isCommandDown()) {
-                    if (event.mods.isLeftButtonDown()) {
-                        const auto ftype = static_cast<int>(std::round(
-                            getValue(p_ref_.parameters_, zlp::PFilterType::kID + std::to_string(band))));
-                        const auto gain_enabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
-                            || (ftype == static_cast<int>(zldsp::filter::kLowShelf))
-                            || (ftype == static_cast<int>(zldsp::filter::kHighShelf))
-                            || (ftype == static_cast<int>(zldsp::filter::kTiltShelf));
-                        if (gain_enabled) {
-                            const auto dynamic_on = getValue(
-                                p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
-                            updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
-                                        dynamic_on ? 0.f : 1.f);
-                            const auto max_db_id = std::round(max_db_id_ref_.load(std::memory_order::relaxed));
-                            band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on,
-                                base_.getCurveDBScale(static_cast<size_t>(max_db_id)));
-                        }
+            const auto action_type = event.mods.isRightButtonDown()
+                ? zlgui::UIBase::MouseActionType::kRightDoubleClick
+                : zlgui::UIBase::MouseActionType::kLeftDoubleClick;
+
+            if (event.originalComponent == &(draggers_[band].getButton())
+                || event.originalComponent == &(target_dragger_.getButton())
+                || event.originalComponent == &(side_dragger_.getButton())) {
+
+                if (base_.isEnterSoloTriggered(action_type, event.mods)) {
+                    if (event.originalComponent == &(draggers_[band].getButton())
+                        || event.originalComponent == &(target_dragger_.getButton())) {
+                        base_.setSoloWholeIdx(band);
+                    } else if (event.originalComponent == &(side_dragger_.getButton())) {
+                        base_.setSoloWholeIdx(zlp::kBandNum + band);
                     }
-                } else {
-                    if (event.mods.isLeftButtonDown()) {
-                        if (base_.getSoloWholeIdx() < zlp::kBandNum) {
-                            base_.setSoloWholeIdx(2 * zlp::kBandNum);
-                        } else {
-                            base_.setSoloWholeIdx(band);
-                        }
+                } else if (base_.isExitSoloTriggered(action_type, event.mods)) {
+                    base_.setSoloWholeIdx(2 * zlp::kBandNum);
+                }
+
+                if (base_.isRightClickTriggered(action_type, event.mods) && event.originalComponent == &(draggers_[
+                    band].getButton())) {
+                    right_click_panel_.setPosition(draggers_[band].getButtonPos());
+                    right_click_panel_.setVisible(true);
+                    return;
+                }
+
+                if (base_.isToggleDynamicTriggered(action_type, event.mods)) {
+                    const auto ftype = static_cast<int>(std::round(
+                        getValue(p_ref_.parameters_, zlp::PFilterType::kID + std::to_string(band))));
+                    const auto gain_enabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
+                        || (ftype == static_cast<int>(zldsp::filter::kLowShelf))
+                        || (ftype == static_cast<int>(zldsp::filter::kHighShelf))
+                        || (ftype == static_cast<int>(zldsp::filter::kTiltShelf));
+                    if (gain_enabled) {
+                        const auto dynamic_on = getValue(
+                            p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
+                        updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
+                                    dynamic_on ? 0.f : 1.f);
+                        const auto max_db_id = std::round(max_db_id_ref_.load(std::memory_order::relaxed));
+                        band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on,
+                                                      base_.getCurveDBScale(static_cast<size_t>(max_db_id)));
                     }
                 }
-            } else if (event.originalComponent == &(side_dragger_.getButton())) {
-                if (base_.getSoloWholeIdx() == 2 * zlp::kBandNum) {
-                    base_.setSoloWholeIdx(zlp::kBandNum + band);
-                } else {
-                    base_.setSoloWholeIdx(2 * zlp::kBandNum);
+
+                if (base_.isToggleBypassTriggered(action_type, event.mods)) {
+                    const auto status = static_cast<int>(std::round(
+                        getValue(p_ref_.parameters_, zlp::PFilterStatus::kID + std::to_string(band))));
+                    if (status == static_cast<int>(zlp::FilterStatus::kOn)) {
+                        updateValue(p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(band)),
+                                    static_cast<float>(zlp::FilterStatus::kBypass));
+                    } else if (status == static_cast<int>(zlp::FilterStatus::kBypass)) {
+                        updateValue(p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(band)),
+                                    static_cast<float>(zlp::FilterStatus::kOn));
+                    }
+                }
+
+                if (base_.isDeleteBandTriggered(action_type, event.mods)) {
+                    band_helper::turnOffBand(p_ref_, band, base_.getSelectedBandSet());
                 }
             }
         }

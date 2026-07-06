@@ -49,6 +49,10 @@ namespace zlpanel {
         juce::Label slider_double_click_label_;
         zlgui::combobox::CompactCombobox slider_double_click_box_;
 
+        std::array<juce::Label, 6> action_labels_;
+        std::array<zlgui::combobox::CompactCombobox, 6> action_mouse_boxes_;
+        std::array<zlgui::combobox::CompactCombobox, 6> action_key_boxes_;
+
         juce::Label import_label_, export_label_;
         std::unique_ptr<juce::FileChooser> chooser_;
         inline auto static const kSettingDirectory =

@@ -25,7 +25,23 @@ namespace zlpanel {
           wheel_reverse_box_(zlstate::PWheelShiftReverse::kChoices, base),
           rotary_style_box_(zlstate::PRotaryStyle::kChoices, base),
           rotary_drag_sensitivity_slider_("Distance", base),
-          slider_double_click_box_(zlstate::PSliderDoubleClickFunc::kChoices, base) {
+          slider_double_click_box_(zlstate::PSliderDoubleClickFunc::kChoices, base),
+          action_mouse_boxes_{
+              zlgui::combobox::CompactCombobox(zlstate::PEnterSoloMouse::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PExitSoloMouse::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PRightClickMenuMouse::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PToggleDynamicMouse::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PToggleBypassMouse::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PDeleteBandMouse::kChoices, base)
+          },
+          action_key_boxes_{
+              zlgui::combobox::CompactCombobox(zlstate::PEnterSoloKey::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PExitSoloKey::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PRightClickMenuKey::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PToggleDynamicKey::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PToggleBypassKey::kChoices, base),
+              zlgui::combobox::CompactCombobox(zlstate::PDeleteBandKey::kChoices, base)
+          } {
         juce::ignoreUnused(p_ref_);
         name_laf_.setFontScale(zlgui::kFontHuge);
 
@@ -61,6 +77,21 @@ namespace zlpanel {
         addAndMakeVisible(slider_double_click_label_);
         addAndMakeVisible(slider_double_click_box_);
 
+        action_labels_[0].setText("Enter Solo", juce::dontSendNotification);
+        action_labels_[1].setText("Exit Solo", juce::dontSendNotification);
+        action_labels_[2].setText("Context Menu", juce::dontSendNotification);
+        action_labels_[3].setText("Toggle Dynamic", juce::dontSendNotification);
+        action_labels_[4].setText("Toggle Bypass", juce::dontSendNotification);
+        action_labels_[5].setText("Delete Band", juce::dontSendNotification);
+
+        for (size_t i = 0; i < 6; ++i) {
+            action_labels_[i].setJustificationType(juce::Justification::centredRight);
+            action_labels_[i].setLookAndFeel(&name_laf_);
+            addAndMakeVisible(action_labels_[i]);
+            addAndMakeVisible(action_mouse_boxes_[i]);
+            addAndMakeVisible(action_key_boxes_[i]);
+        }
+
         import_label_.setText("Import Controls", juce::dontSendNotification);
         import_label_.setJustificationType(juce::Justification::centred);
         import_label_.setLookAndFeel(&name_laf_);
@@ -85,6 +116,18 @@ namespace zlpanel {
         rotary_drag_sensitivity_slider_.getSlider().setValue(static_cast<double>(base_.getRotaryDragSensitivity()));
         slider_double_click_box_.getBox().setSelectedId(
             static_cast<int>(base_.getIsSliderDoubleClickOpenEditor()) + 1);
+        action_mouse_boxes_[0].getBox().setSelectedId(static_cast<int>(base_.getEnterSoloMouse()) + 1);
+        action_key_boxes_[0].getBox().setSelectedId(static_cast<int>(base_.getEnterSoloKey()) + 1);
+        action_mouse_boxes_[1].getBox().setSelectedId(static_cast<int>(base_.getExitSoloMouse()) + 1);
+        action_key_boxes_[1].getBox().setSelectedId(static_cast<int>(base_.getExitSoloKey()) + 1);
+        action_mouse_boxes_[2].getBox().setSelectedId(static_cast<int>(base_.getContextMenuMouse()) + 1);
+        action_key_boxes_[2].getBox().setSelectedId(static_cast<int>(base_.getContextMenuKey()) + 1);
+        action_mouse_boxes_[3].getBox().setSelectedId(static_cast<int>(base_.getToggleDynamicMouse()) + 1);
+        action_key_boxes_[3].getBox().setSelectedId(static_cast<int>(base_.getToggleDynamicKey()) + 1);
+        action_mouse_boxes_[4].getBox().setSelectedId(static_cast<int>(base_.getToggleBypassMouse()) + 1);
+        action_key_boxes_[4].getBox().setSelectedId(static_cast<int>(base_.getToggleBypassKey()) + 1);
+        action_mouse_boxes_[5].getBox().setSelectedId(static_cast<int>(base_.getDeleteBandMouse()) + 1);
+        action_key_boxes_[5].getBox().setSelectedId(static_cast<int>(base_.getDeleteBandKey()) + 1);
     }
 
     void ControlSettingPanel::saveSetting() {
@@ -97,6 +140,18 @@ namespace zlpanel {
         base_.setRotaryDragSensitivity(static_cast<float>(rotary_drag_sensitivity_slider_.getSlider().getValue()));
         base_.setIsSliderDoubleClickOpenEditor(
             static_cast<bool>(slider_double_click_box_.getBox().getSelectedId() - 1));
+        base_.setEnterSoloMouse(static_cast<size_t>(action_mouse_boxes_[0].getBox().getSelectedId() - 1));
+        base_.setEnterSoloKey(static_cast<size_t>(action_key_boxes_[0].getBox().getSelectedId() - 1));
+        base_.setExitSoloMouse(static_cast<size_t>(action_mouse_boxes_[1].getBox().getSelectedId() - 1));
+        base_.setExitSoloKey(static_cast<size_t>(action_key_boxes_[1].getBox().getSelectedId() - 1));
+        base_.setContextMenuMouse(static_cast<size_t>(action_mouse_boxes_[2].getBox().getSelectedId() - 1));
+        base_.setContextMenuKey(static_cast<size_t>(action_key_boxes_[2].getBox().getSelectedId() - 1));
+        base_.setToggleDynamicMouse(static_cast<size_t>(action_mouse_boxes_[3].getBox().getSelectedId() - 1));
+        base_.setToggleDynamicKey(static_cast<size_t>(action_key_boxes_[3].getBox().getSelectedId() - 1));
+        base_.setToggleBypassMouse(static_cast<size_t>(action_mouse_boxes_[4].getBox().getSelectedId() - 1));
+        base_.setToggleBypassKey(static_cast<size_t>(action_key_boxes_[4].getBox().getSelectedId() - 1));
+        base_.setDeleteBandMouse(static_cast<size_t>(action_mouse_boxes_[5].getBox().getSelectedId() - 1));
+        base_.setDeleteBandKey(static_cast<size_t>(action_key_boxes_[5].getBox().getSelectedId() - 1));
         base_.saveToAPVTS();
     }
 
@@ -107,7 +162,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale * 3.f);
         const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
 
-        return padding * 6 + slider_height * 5;
+        return padding * 12 + slider_height * 11;
     }
 
     void ControlSettingPanel::resized() {
@@ -150,6 +205,16 @@ namespace zlpanel {
             slider_double_click_label_.setBounds(local_bound.removeFromLeft(slider_width * kLabelWidth));
             local_bound.removeFromLeft(padding);
             slider_double_click_box_.setBounds(local_bound.removeFromLeft(slider_width * 2).reduced(0, padding / 3));
+        }
+
+        for (size_t i = 0; i < 6; ++i) {
+            bound.removeFromTop(padding);
+            auto local_bound = bound.removeFromTop(slider_height);
+            action_labels_[i].setBounds(local_bound.removeFromLeft(slider_width * kLabelWidth));
+            local_bound.removeFromLeft(padding);
+            action_mouse_boxes_[i].setBounds(local_bound.removeFromLeft(static_cast<int>(slider_width * 2)).reduced(0, padding / 3));
+            local_bound.removeFromLeft(padding);
+            action_key_boxes_[i].setBounds(local_bound.removeFromLeft(static_cast<int>(slider_width * 2)).reduced(0, padding / 3));
         } {
             bound.removeFromTop(padding);
             const auto label_width = bound.getWidth() / 2;

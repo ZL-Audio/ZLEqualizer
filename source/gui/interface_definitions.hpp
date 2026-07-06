@@ -450,6 +450,81 @@ namespace zlgui {
 
         juce::SelectedItemSet<size_t>& getSelectedBandSet() { return selected_band_set_; }
 
+        enum class MouseActionType {
+            kLeftClick,
+            kRightClick,
+            kLeftDoubleClick,
+            kRightDoubleClick,
+            kLeftRelease,
+            kRightRelease
+        };
+
+        bool checkMouseKeyMatch(MouseActionType action_type, const juce::ModifierKeys& mods, size_t mouse_option, size_t key_option, bool is_exit_solo = false) const {
+            bool key_match = false;
+            if (key_option == 0) key_match = !mods.isCommandDown() && !mods.isShiftDown() && !mods.isAltDown();
+            else if (key_option == 1) key_match = mods.isCommandDown();
+            else if (key_option == 2) key_match = mods.isShiftDown();
+            else if (key_option == 3) key_match = mods.isAltDown();
+            if (!key_match) return false;
+
+            if (is_exit_solo) {
+                if (mouse_option == 0) return action_type == MouseActionType::kLeftRelease;
+                if (mouse_option == 1) return action_type == MouseActionType::kRightRelease;
+                if (mouse_option == 2) return action_type == MouseActionType::kLeftDoubleClick;
+                if (mouse_option == 3) return action_type == MouseActionType::kRightDoubleClick;
+            } else {
+                if (mouse_option == 0) return action_type == MouseActionType::kLeftClick;
+                if (mouse_option == 1) return action_type == MouseActionType::kRightClick;
+                if (mouse_option == 2) return action_type == MouseActionType::kLeftDoubleClick;
+                if (mouse_option == 3) return action_type == MouseActionType::kRightDoubleClick;
+            }
+            return false;
+        }
+
+        bool isEnterSoloTriggered(MouseActionType type, const juce::ModifierKeys& mods) const {
+            return checkMouseKeyMatch(type, mods, enter_solo_mouse_, enter_solo_key_);
+        }
+        bool isExitSoloTriggered(MouseActionType type, const juce::ModifierKeys& mods) const {
+            return checkMouseKeyMatch(type, mods, exit_solo_mouse_, exit_solo_key_, true);
+        }
+        bool isRightClickTriggered(MouseActionType type, const juce::ModifierKeys& mods) const {
+            return checkMouseKeyMatch(type, mods, context_menu_mouse_, context_menu_key_);
+        }
+        bool isToggleDynamicTriggered(MouseActionType type, const juce::ModifierKeys& mods) const {
+            return checkMouseKeyMatch(type, mods, toggle_dynamic_mouse_, toggle_dynamic_key_);
+        }
+        bool isToggleBypassTriggered(MouseActionType type, const juce::ModifierKeys& mods) const {
+            return checkMouseKeyMatch(type, mods, toggle_bypass_mouse_, toggle_bypass_key_);
+        }
+        bool isDeleteBandTriggered(MouseActionType type, const juce::ModifierKeys& mods) const {
+            return checkMouseKeyMatch(type, mods, delete_band_mouse_, delete_band_key_);
+        }
+
+        size_t getEnterSoloMouse() const { return enter_solo_mouse_; }
+        void setEnterSoloMouse(size_t x) { enter_solo_mouse_ = x; }
+        size_t getEnterSoloKey() const { return enter_solo_key_; }
+        void setEnterSoloKey(size_t x) { enter_solo_key_ = x; }
+        size_t getExitSoloMouse() const { return exit_solo_mouse_; }
+        void setExitSoloMouse(size_t x) { exit_solo_mouse_ = x; }
+        size_t getExitSoloKey() const { return exit_solo_key_; }
+        void setExitSoloKey(size_t x) { exit_solo_key_ = x; }
+        size_t getContextMenuMouse() const { return context_menu_mouse_; }
+        void setContextMenuMouse(size_t x) { context_menu_mouse_ = x; }
+        size_t getContextMenuKey() const { return context_menu_key_; }
+        void setContextMenuKey(size_t x) { context_menu_key_ = x; }
+        size_t getToggleDynamicMouse() const { return toggle_dynamic_mouse_; }
+        void setToggleDynamicMouse(size_t x) { toggle_dynamic_mouse_ = x; }
+        size_t getToggleDynamicKey() const { return toggle_dynamic_key_; }
+        void setToggleDynamicKey(size_t x) { toggle_dynamic_key_ = x; }
+        size_t getToggleBypassMouse() const { return toggle_bypass_mouse_; }
+        void setToggleBypassMouse(size_t x) { toggle_bypass_mouse_ = x; }
+        size_t getToggleBypassKey() const { return toggle_bypass_key_; }
+        void setToggleBypassKey(size_t x) { toggle_bypass_key_ = x; }
+        size_t getDeleteBandMouse() const { return delete_band_mouse_; }
+        void setDeleteBandMouse(size_t x) { delete_band_mouse_ = x; }
+        size_t getDeleteBandKey() const { return delete_band_key_; }
+        void setDeleteBandKey(size_t x) { delete_band_key_ = x; }
+
     private:
         juce::AudioProcessorValueTreeState& state;
         juce::ValueTree panel_value_tree_{"panel_setting_tree"};
@@ -480,6 +555,13 @@ namespace zlgui {
 
         size_t selected_band_{zlstate::kBandNum};
         juce::SelectedItemSet<size_t> selected_band_set_;
+
+        size_t enter_solo_mouse_{2}, enter_solo_key_{0};
+        size_t exit_solo_mouse_{2}, exit_solo_key_{0};
+        size_t context_menu_mouse_{1}, context_menu_key_{0};
+        size_t toggle_dynamic_mouse_{2}, toggle_dynamic_key_{1};
+        size_t toggle_bypass_mouse_{0}, toggle_bypass_key_{3};
+        size_t delete_band_mouse_{2}, delete_band_key_{3};
 
         float loadPara(const std::string& id) const {
             return state.getRawParameterValue(id)->load(std::memory_order::relaxed);

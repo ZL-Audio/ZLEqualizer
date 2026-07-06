@@ -13,7 +13,7 @@ namespace zlpanel {
     MouseEventPanel::MouseEventPanel(PluginProcessor& p,
                                      zlgui::UIBase& base,
                                      const multilingual::TooltipHelper& tooltip_helper,
-                                     RightClickPanel &right_click_panel) :
+                                     RightClickPanel& right_click_panel) :
         p_ref_(p), base_(base), right_click_panel_(right_click_panel),
         fft_freeze_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTFreezeON::kID)),
         q_slider_(base), slope_slider_(base) {
@@ -47,13 +47,19 @@ namespace zlpanel {
     }
 
     void MouseEventPanel::mouseDown(const juce::MouseEvent& event) {
-        if (event.mods.isLeftButtonDown()) {
-            right_click_panel_.setVisible(false);
-            startTimer(0, 200);
-        } else {
+        const auto action_type = event.mods.isRightButtonDown()
+            ? zlgui::UIBase::MouseActionType::kRightClick
+            : zlgui::UIBase::MouseActionType::kLeftClick;
+        if (base_.isRightClickTriggered(action_type, event.mods)) {
             base_.setSelectedBand(zlp::kBandNum);
             right_click_panel_.setPosition(event.position);
             right_click_panel_.setVisible(true);
+            return;
+        }
+
+        if (event.mods.isLeftButtonDown()) {
+            right_click_panel_.setVisible(false);
+            startTimer(0, 200);
         }
     }
 
@@ -63,6 +69,16 @@ namespace zlpanel {
 
     void MouseEventPanel::mouseDoubleClick(const juce::MouseEvent& event) {
         stopTimer(0);
+        const auto action_type = event.mods.isRightButtonDown()
+            ? zlgui::UIBase::MouseActionType::kRightDoubleClick
+            : zlgui::UIBase::MouseActionType::kLeftDoubleClick;
+        if (base_.isRightClickTriggered(action_type, event.mods)) {
+            base_.setSelectedBand(zlp::kBandNum);
+            right_click_panel_.setPosition(event.position);
+            right_click_panel_.setVisible(true);
+            return;
+        }
+
         // find an off band
         const size_t band_idx = band_helper::findOffBand(p_ref_);
         if (band_idx == zlp::kBandNum) {

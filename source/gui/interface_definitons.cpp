@@ -277,6 +277,19 @@ namespace zlgui {
         curve_db_scales_[0].store(loadPara(zlstate::PCurveDBScale0::kID));
         curve_db_scales_[1].store(loadPara(zlstate::PCurveDBScale1::kID));
         curve_db_scales_[2].store(loadPara(zlstate::PCurveDBScale2::kID));
+
+        enter_solo_mouse_ = static_cast<size_t>(std::round(loadPara(zlstate::PEnterSoloMouse::kID)));
+        enter_solo_key_ = static_cast<size_t>(std::round(loadPara(zlstate::PEnterSoloKey::kID)));
+        exit_solo_mouse_ = static_cast<size_t>(std::round(loadPara(zlstate::PExitSoloMouse::kID)));
+        exit_solo_key_ = static_cast<size_t>(std::round(loadPara(zlstate::PExitSoloKey::kID)));
+        context_menu_mouse_ = static_cast<size_t>(std::round(loadPara(zlstate::PRightClickMenuMouse::kID)));
+        context_menu_key_ = static_cast<size_t>(std::round(loadPara(zlstate::PRightClickMenuKey::kID)));
+        toggle_dynamic_mouse_ = static_cast<size_t>(std::round(loadPara(zlstate::PToggleDynamicMouse::kID)));
+        toggle_dynamic_key_ = static_cast<size_t>(std::round(loadPara(zlstate::PToggleDynamicKey::kID)));
+        toggle_bypass_mouse_ = static_cast<size_t>(std::round(loadPara(zlstate::PToggleBypassMouse::kID)));
+        toggle_bypass_key_ = static_cast<size_t>(std::round(loadPara(zlstate::PToggleBypassKey::kID)));
+        delete_band_mouse_ = static_cast<size_t>(std::round(loadPara(zlstate::PDeleteBandMouse::kID)));
+        delete_band_key_ = static_cast<size_t>(std::round(loadPara(zlstate::PDeleteBandKey::kID)));
     }
 
     void UIBase::saveToAPVTS() const {
@@ -324,5 +337,18 @@ namespace zlgui {
         savePara(zlstate::PCurveDBScale0::kID, curve_db_scales_[0].load(std::memory_order::relaxed));
         savePara(zlstate::PCurveDBScale1::kID, curve_db_scales_[1].load(std::memory_order::relaxed));
         savePara(zlstate::PCurveDBScale2::kID, curve_db_scales_[2].load(std::memory_order::relaxed));
+
+        savePara(zlstate::PEnterSoloMouse::kID, static_cast<float>(enter_solo_mouse_));
+        savePara(zlstate::PEnterSoloKey::kID, static_cast<float>(enter_solo_key_));
+        savePara(zlstate::PExitSoloMouse::kID, static_cast<float>(exit_solo_mouse_));
+        savePara(zlstate::PExitSoloKey::kID, static_cast<float>(exit_solo_key_));
+        savePara(zlstate::PRightClickMenuMouse::kID, static_cast<float>(context_menu_mouse_));
+        savePara(zlstate::PRightClickMenuKey::kID, static_cast<float>(context_menu_key_));
+        savePara(zlstate::PToggleDynamicMouse::kID, static_cast<float>(toggle_dynamic_mouse_));
+        savePara(zlstate::PToggleDynamicKey::kID, static_cast<float>(toggle_dynamic_key_));
+        savePara(zlstate::PToggleBypassMouse::kID, static_cast<float>(toggle_bypass_mouse_));
+        savePara(zlstate::PToggleBypassKey::kID, static_cast<float>(toggle_bypass_key_));
+        savePara(zlstate::PDeleteBandMouse::kID, static_cast<float>(delete_band_mouse_));
+        savePara(zlstate::PDeleteBandKey::kID, static_cast<float>(delete_band_key_));
     }
 }

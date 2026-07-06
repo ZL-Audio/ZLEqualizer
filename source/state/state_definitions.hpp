@@ -518,6 +518,123 @@ namespace zlstate {
         static constexpr auto kDefaultV = 30.f;
     };
 
+    class PMouseOption {
+    public:
+        inline static const auto kChoices = juce::StringArray{
+            "Left Click", "Right Click", "Left Double Click", "Right Double Click"
+        };
+    };
+
+    class PMouseOptionExitSolo {
+    public:
+        inline static const auto kChoices = juce::StringArray{
+            "Left Release", "Right Release", "Left Double Click", "Right Double Click"
+        };
+    };
+
+    class PKeyOption {
+    public:
+        inline static const auto kChoices = juce::StringArray{
+            "None", "Command/Ctrl", "Shift", "Alt"
+        };
+    };
+
+    class PEnterSoloMouse : public ChoiceParameters<PEnterSoloMouse> {
+    public:
+        static constexpr auto kID = "enter_solo_mouse";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PMouseOption::kChoices;
+        static constexpr int kDefaultI = 2;
+    };
+
+    class PEnterSoloKey : public ChoiceParameters<PEnterSoloKey> {
+    public:
+        static constexpr auto kID = "enter_solo_key";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PKeyOption::kChoices;
+        static constexpr int kDefaultI = 0;
+    };
+
+    class PExitSoloMouse : public ChoiceParameters<PExitSoloMouse> {
+    public:
+        static constexpr auto kID = "exit_solo_mouse";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PMouseOptionExitSolo::kChoices;
+        static constexpr int kDefaultI = 2;
+    };
+
+    class PExitSoloKey : public ChoiceParameters<PExitSoloKey> {
+    public:
+        static constexpr auto kID = "exit_solo_key";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PKeyOption::kChoices;
+        static constexpr int kDefaultI = 0;
+    };
+
+    class PRightClickMenuMouse : public ChoiceParameters<PRightClickMenuMouse> {
+    public:
+        static constexpr auto kID = "right_click_menu_mouse";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PMouseOption::kChoices;
+        static constexpr int kDefaultI = 1;
+    };
+
+    class PRightClickMenuKey : public ChoiceParameters<PRightClickMenuKey> {
+    public:
+        static constexpr auto kID = "right_click_menu_key";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PKeyOption::kChoices;
+        static constexpr int kDefaultI = 0;
+    };
+
+    class PToggleDynamicMouse : public ChoiceParameters<PToggleDynamicMouse> {
+    public:
+        static constexpr auto kID = "toggle_dynamic_mouse";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PMouseOption::kChoices;
+        static constexpr int kDefaultI = 2;
+    };
+
+    class PToggleDynamicKey : public ChoiceParameters<PToggleDynamicKey> {
+    public:
+        static constexpr auto kID = "toggle_dynamic_key";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PKeyOption::kChoices;
+        static constexpr int kDefaultI = 1;
+    };
+
+    class PToggleBypassMouse : public ChoiceParameters<PToggleBypassMouse> {
+    public:
+        static constexpr auto kID = "toggle_bypass_mouse";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PMouseOption::kChoices;
+        static constexpr int kDefaultI = 0;
+    };
+
+    class PToggleBypassKey : public ChoiceParameters<PToggleBypassKey> {
+    public:
+        static constexpr auto kID = "toggle_bypass_key";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PKeyOption::kChoices;
+        static constexpr int kDefaultI = 3;
+    };
+
+    class PDeleteBandMouse : public ChoiceParameters<PDeleteBandMouse> {
+    public:
+        static constexpr auto kID = "delete_band_mouse";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PMouseOption::kChoices;
+        static constexpr int kDefaultI = 3;
+    };
+
+    class PDeleteBandKey : public ChoiceParameters<PDeleteBandKey> {
+    public:
+        static constexpr auto kID = "delete_band_key";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = PKeyOption::kChoices;
+        static constexpr int kDefaultI = 3;
+    };
+
     inline void addOneColour(juce::AudioProcessorValueTreeState::ParameterLayout& layout,
                              const std::string& suffix = "",
                              const int red = 0, const int green = 0, const int blue = 0,
@@ -584,7 +701,13 @@ namespace zlstate {
             addOneColour(layout, std::string(name), dv.r, dv.g, dv.b, dv.has_opacity, dv.opacity);
         }
 
-        layout.add(PColourMap1Idx::get(), PColourMap2Idx::get());
+        layout.add(PColourMap1Idx::get(), PColourMap2Idx::get(),
+                   PEnterSoloMouse::get(), PEnterSoloKey::get(),
+                   PExitSoloMouse::get(), PExitSoloKey::get(),
+                   PRightClickMenuMouse::get(), PRightClickMenuKey::get(),
+                   PToggleDynamicMouse::get(), PToggleDynamicKey::get(),
+                   PToggleBypassMouse::get(), PToggleBypassKey::get(),
+                   PDeleteBandMouse::get(), PDeleteBandKey::get());
         return layout;
     }
 }
