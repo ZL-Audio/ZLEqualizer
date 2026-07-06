@@ -52,6 +52,12 @@ namespace zldsp::filter {
                         hn::Store(out_real_v, d, correction_real_.data() + i);
                         hn::Store(out_imag_v, d, correction_imag_.data() + i);
                     }
+                    const auto nyq_t_real = corrections_real[idx].back();
+                    const auto nyq_t_imag = corrections_imag[idx].back();
+                    const auto nyq_c_real = correction_real_.back();
+                    const auto nyq_c_imag = correction_imag_.back();
+                    correction_real_.back() = nyq_c_real * nyq_t_real - nyq_c_imag * nyq_t_imag;
+                    correction_imag_.back() = nyq_c_real * nyq_t_imag + nyq_c_imag * nyq_t_real;
                 }
                 for (size_t w_idx = kStartIdx; w_idx < correction_real_.size(); ++w_idx) {
                     const auto re = correction_real_[w_idx];
@@ -73,6 +79,7 @@ namespace zldsp::filter {
                 } else {
                     correction_real_.back() = -last_abs;
                 }
+                correction_imag_.back() = 0.f;
             }
         }
 
@@ -104,6 +111,7 @@ namespace zldsp::filter {
                 hn::Store(out_imag_v, d, this->fft_out_imag_.data() + i);
             }
             this->fft_out_real_.back() *= correction_real_.back();
+            this->fft_out_imag_.back() = 0.f;
         }
     };
 }
