@@ -48,8 +48,8 @@ namespace zlpanel {
 
     void MouseEventPanel::mouseDown(const juce::MouseEvent& event) {
         const auto action_type = event.mods.isRightButtonDown()
-            ? zlgui::UIBase::MouseActionType::kRightClick
-            : zlgui::UIBase::MouseActionType::kLeftClick;
+            ? zlgui::MouseActionType::kRightClick
+            : zlgui::MouseActionType::kLeftClick;
         if (base_.isRightClickTriggered(action_type, event.mods)) {
             base_.setSelectedBand(zlp::kBandNum);
             right_click_panel_.setPosition(event.position);
@@ -70,8 +70,8 @@ namespace zlpanel {
     void MouseEventPanel::mouseDoubleClick(const juce::MouseEvent& event) {
         stopTimer(0);
         const auto action_type = event.mods.isRightButtonDown()
-            ? zlgui::UIBase::MouseActionType::kRightDoubleClick
-            : zlgui::UIBase::MouseActionType::kLeftDoubleClick;
+            ? zlgui::MouseActionType::kRightDoubleClick
+            : zlgui::MouseActionType::kLeftDoubleClick;
         if (base_.isRightClickTriggered(action_type, event.mods)) {
             base_.setSelectedBand(zlp::kBandNum);
             right_click_panel_.setPosition(event.position);

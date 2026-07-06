@@ -111,23 +111,23 @@ namespace zlpanel {
             sensitivity_sliders_[i].getSlider().setValue(static_cast<double>(base_.getSensitivity(
                 static_cast<zlgui::SensitivityIdx>(i))));
         }
-        wheel_reverse_box_.getBox().setSelectedId(static_cast<int>(base_.getIsMouseWheelShiftReverse()) + 1);
-        rotary_style_box_.getBox().setSelectedId(static_cast<int>(base_.getRotaryStyleID()) + 1);
+        wheel_reverse_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getIsMouseWheelShiftReverse()));
+        rotary_style_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getRotaryStyleID()));
         rotary_drag_sensitivity_slider_.getSlider().setValue(static_cast<double>(base_.getRotaryDragSensitivity()));
-        slider_double_click_box_.getBox().setSelectedId(
-            static_cast<int>(base_.getIsSliderDoubleClickOpenEditor()) + 1);
-        action_mouse_boxes_[0].getBox().setSelectedId(static_cast<int>(base_.getEnterSoloMouse()) + 1);
-        action_key_boxes_[0].getBox().setSelectedId(static_cast<int>(base_.getEnterSoloKey()) + 1);
-        action_mouse_boxes_[1].getBox().setSelectedId(static_cast<int>(base_.getExitSoloMouse()) + 1);
-        action_key_boxes_[1].getBox().setSelectedId(static_cast<int>(base_.getExitSoloKey()) + 1);
-        action_mouse_boxes_[2].getBox().setSelectedId(static_cast<int>(base_.getContextMenuMouse()) + 1);
-        action_key_boxes_[2].getBox().setSelectedId(static_cast<int>(base_.getContextMenuKey()) + 1);
-        action_mouse_boxes_[3].getBox().setSelectedId(static_cast<int>(base_.getToggleDynamicMouse()) + 1);
-        action_key_boxes_[3].getBox().setSelectedId(static_cast<int>(base_.getToggleDynamicKey()) + 1);
-        action_mouse_boxes_[4].getBox().setSelectedId(static_cast<int>(base_.getToggleBypassMouse()) + 1);
-        action_key_boxes_[4].getBox().setSelectedId(static_cast<int>(base_.getToggleBypassKey()) + 1);
-        action_mouse_boxes_[5].getBox().setSelectedId(static_cast<int>(base_.getDeleteBandMouse()) + 1);
-        action_key_boxes_[5].getBox().setSelectedId(static_cast<int>(base_.getDeleteBandKey()) + 1);
+        slider_double_click_box_.getBox().setSelectedItemIndex(
+            static_cast<int>(base_.getIsSliderDoubleClickOpenEditor()));
+        action_mouse_boxes_[0].getBox().setSelectedItemIndex(static_cast<int>(base_.getEnterSoloMouse()));
+        action_key_boxes_[0].getBox().setSelectedItemIndex(static_cast<int>(base_.getEnterSoloKey()));
+        action_mouse_boxes_[1].getBox().setSelectedItemIndex(static_cast<int>(base_.getExitSoloMouse()));
+        action_key_boxes_[1].getBox().setSelectedItemIndex(static_cast<int>(base_.getExitSoloKey()));
+        action_mouse_boxes_[2].getBox().setSelectedItemIndex(static_cast<int>(base_.getContextMenuMouse()));
+        action_key_boxes_[2].getBox().setSelectedItemIndex(static_cast<int>(base_.getContextMenuKey()));
+        action_mouse_boxes_[3].getBox().setSelectedItemIndex(static_cast<int>(base_.getToggleDynamicMouse()));
+        action_key_boxes_[3].getBox().setSelectedItemIndex(static_cast<int>(base_.getToggleDynamicKey()));
+        action_mouse_boxes_[4].getBox().setSelectedItemIndex(static_cast<int>(base_.getToggleBypassMouse()));
+        action_key_boxes_[4].getBox().setSelectedItemIndex(static_cast<int>(base_.getToggleBypassKey()));
+        action_mouse_boxes_[5].getBox().setSelectedItemIndex(static_cast<int>(base_.getDeleteBandMouse()));
+        action_key_boxes_[5].getBox().setSelectedItemIndex(static_cast<int>(base_.getDeleteBandKey()));
     }
 
     void ControlSettingPanel::saveSetting() {
@@ -135,23 +135,23 @@ namespace zlpanel {
             base_.setSensitivity(static_cast<float>(sensitivity_sliders_[i].getSlider().getValue()),
                                  static_cast<zlgui::SensitivityIdx>(i));
         }
-        base_.setIsMouseWheelShiftReverse(static_cast<bool>(wheel_reverse_box_.getBox().getSelectedId() - 1));
-        base_.setRotaryStyleID(static_cast<size_t>(rotary_style_box_.getBox().getSelectedId() - 1));
+        base_.setIsMouseWheelShiftReverse(static_cast<bool>(wheel_reverse_box_.getBox().getSelectedItemIndex()));
+        base_.setRotaryStyleID(static_cast<size_t>(rotary_style_box_.getBox().getSelectedItemIndex()));
         base_.setRotaryDragSensitivity(static_cast<float>(rotary_drag_sensitivity_slider_.getSlider().getValue()));
         base_.setIsSliderDoubleClickOpenEditor(
-            static_cast<bool>(slider_double_click_box_.getBox().getSelectedId() - 1));
-        base_.setEnterSoloMouse(static_cast<size_t>(action_mouse_boxes_[0].getBox().getSelectedId() - 1));
-        base_.setEnterSoloKey(static_cast<size_t>(action_key_boxes_[0].getBox().getSelectedId() - 1));
-        base_.setExitSoloMouse(static_cast<size_t>(action_mouse_boxes_[1].getBox().getSelectedId() - 1));
-        base_.setExitSoloKey(static_cast<size_t>(action_key_boxes_[1].getBox().getSelectedId() - 1));
-        base_.setContextMenuMouse(static_cast<size_t>(action_mouse_boxes_[2].getBox().getSelectedId() - 1));
-        base_.setContextMenuKey(static_cast<size_t>(action_key_boxes_[2].getBox().getSelectedId() - 1));
-        base_.setToggleDynamicMouse(static_cast<size_t>(action_mouse_boxes_[3].getBox().getSelectedId() - 1));
-        base_.setToggleDynamicKey(static_cast<size_t>(action_key_boxes_[3].getBox().getSelectedId() - 1));
-        base_.setToggleBypassMouse(static_cast<size_t>(action_mouse_boxes_[4].getBox().getSelectedId() - 1));
-        base_.setToggleBypassKey(static_cast<size_t>(action_key_boxes_[4].getBox().getSelectedId() - 1));
-        base_.setDeleteBandMouse(static_cast<size_t>(action_mouse_boxes_[5].getBox().getSelectedId() - 1));
-        base_.setDeleteBandKey(static_cast<size_t>(action_key_boxes_[5].getBox().getSelectedId() - 1));
+            static_cast<bool>(slider_double_click_box_.getBox().getSelectedItemIndex()));
+        base_.setEnterSoloMouse(static_cast<zlgui::MouseActionType>(action_mouse_boxes_[0].getBox().getSelectedItemIndex()));
+        base_.setEnterSoloKey(static_cast<zlgui::KeyActionType>(action_key_boxes_[0].getBox().getSelectedItemIndex()));
+        base_.setExitSoloMouse(static_cast<zlgui::MouseActionType>(action_mouse_boxes_[1].getBox().getSelectedItemIndex()));
+        base_.setExitSoloKey(static_cast<zlgui::KeyActionType>(action_key_boxes_[1].getBox().getSelectedItemIndex()));
+        base_.setContextMenuMouse(static_cast<zlgui::MouseActionType>(action_mouse_boxes_[2].getBox().getSelectedItemIndex()));
+        base_.setContextMenuKey(static_cast<zlgui::KeyActionType>(action_key_boxes_[2].getBox().getSelectedItemIndex()));
+        base_.setToggleDynamicMouse(static_cast<zlgui::MouseActionType>(action_mouse_boxes_[3].getBox().getSelectedItemIndex()));
+        base_.setToggleDynamicKey(static_cast<zlgui::KeyActionType>(action_key_boxes_[3].getBox().getSelectedItemIndex()));
+        base_.setToggleBypassMouse(static_cast<zlgui::MouseActionType>(action_mouse_boxes_[4].getBox().getSelectedItemIndex()));
+        base_.setToggleBypassKey(static_cast<zlgui::KeyActionType>(action_key_boxes_[4].getBox().getSelectedItemIndex()));
+        base_.setDeleteBandMouse(static_cast<zlgui::MouseActionType>(action_mouse_boxes_[5].getBox().getSelectedItemIndex()));
+        base_.setDeleteBandKey(static_cast<zlgui::KeyActionType>(action_key_boxes_[5].getBox().getSelectedItemIndex()));
         base_.saveToAPVTS();
     }
 

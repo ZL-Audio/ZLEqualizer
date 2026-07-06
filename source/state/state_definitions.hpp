@@ -525,13 +525,6 @@ namespace zlstate {
         };
     };
 
-    class PMouseOptionExitSolo {
-    public:
-        inline static const auto kChoices = juce::StringArray{
-            "Left Release", "Right Release", "Left Double Click", "Right Double Click"
-        };
-    };
-
     class PKeyOption {
     public:
         inline static const auto kChoices = juce::StringArray{
@@ -559,7 +552,7 @@ namespace zlstate {
     public:
         static constexpr auto kID = "exit_solo_mouse";
         static constexpr auto kName = "";
-        inline static const auto kChoices = PMouseOptionExitSolo::kChoices;
+        inline static const auto kChoices = PMouseOption::kChoices;
         static constexpr int kDefaultI = 2;
     };
 

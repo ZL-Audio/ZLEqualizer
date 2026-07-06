@@ -356,8 +356,8 @@ namespace zlpanel {
             }
 
             const auto action_type = event.mods.isRightButtonDown()
-                ? zlgui::UIBase::MouseActionType::kRightClick
-                : zlgui::UIBase::MouseActionType::kLeftClick;
+                ? zlgui::MouseActionType::kRightClick
+                : zlgui::MouseActionType::kLeftClick;
 
             if (event.originalComponent == &(draggers_[band].getButton())
                 || event.originalComponent == &(target_dragger_.getButton())
@@ -431,8 +431,8 @@ namespace zlpanel {
         } else {
             if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
                 auto action_type = event.mods.isRightButtonDown()
-                    ? zlgui::UIBase::MouseActionType::kRightRelease
-                    : zlgui::UIBase::MouseActionType::kLeftRelease;
+                    ? zlgui::MouseActionType::kRightClick
+                    : zlgui::MouseActionType::kLeftClick;
                 if (base_.isExitSoloTriggered(action_type, event.mods)) {
                     base_.setSoloWholeIdx(2 * zlp::kBandNum);
                 }
@@ -449,8 +449,8 @@ namespace zlpanel {
     void DraggerPanel::mouseDoubleClick(const juce::MouseEvent& event) {
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
             const auto action_type = event.mods.isRightButtonDown()
-                ? zlgui::UIBase::MouseActionType::kRightDoubleClick
-                : zlgui::UIBase::MouseActionType::kLeftDoubleClick;
+                ? zlgui::MouseActionType::kRightDoubleClick
+                : zlgui::MouseActionType::kLeftDoubleClick;
 
             if (event.originalComponent == &(draggers_[band].getButton())
                 || event.originalComponent == &(target_dragger_.getButton())
