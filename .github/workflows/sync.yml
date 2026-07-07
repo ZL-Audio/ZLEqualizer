@@ -31,5 +31,5 @@ jobs:
           git remote add gitee "${remote_repo}"
 
           git show-ref
-          git push --all --force gitee
+          git push --all --prune --force gitee
           git push --tags --force gitee
