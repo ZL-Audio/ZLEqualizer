@@ -88,7 +88,7 @@ jobs:
       - name: Pluginval setup
         shell: bash
         run: |
-          curl -LO "https://github.com/Tracktion/pluginval/releases/download/v1.0.3/pluginval_${{ runner.os }}.zip"
+          curl -LO "https://github.com/ZL-Audio/pluginval/releases/download/v1.0.4-temp/pluginval_${{ runner.os }}.zip"
           7z x pluginval_${{ runner.os }}.zip
           echo "PLUGINVAL_DISABLED=Plugin state restoration" >> $GITHUB_ENV
 
