@@ -189,7 +189,7 @@ namespace zlpanel {
         // update tilt
         const auto fft_tilt_idx = static_cast<int>(std::round(
             fft_tilt_idx_ref_.load(std::memory_order::relaxed)));
-        if (fft_tilt_idx != fft_speed_idx_) {
+        if (fft_tilt_idx != fft_tilt_idx_) {
             fft_tilt_idx_ = fft_tilt_idx;
             to_update_tilt_.signal();
         }
