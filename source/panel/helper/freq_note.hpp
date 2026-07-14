@@ -63,14 +63,6 @@ namespace zlpanel::freq_note {
             }
         }
         if (note_index == -1) {
-            for (int i = 0; i < static_cast<int>(kNoteNamesAlt.size()); ++i) {
-                if (kNoteNamesAlt[static_cast<size_t>(i)] == note_part) {
-                    note_index = i;
-                    break;
-                }
-            }
-        }
-        if (note_index == -1) {
             return std::nullopt;
         }
 
