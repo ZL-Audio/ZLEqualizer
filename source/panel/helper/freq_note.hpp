@@ -52,12 +52,17 @@ namespace zlpanel::freq_note {
         const std::string octave_part = note.substr(split_point);
 
         for (char& c : note_part) {
-            c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+            if (c >= 'a' && c <= 'g') {
+                c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+            }
         }
 
         int note_index = -1;
         for (int i = 0; i < static_cast<int>(kNoteNames.size()); ++i) {
-            if (kNoteNames[static_cast<size_t>(i)] == note_part) {
+            if (
+                kNoteNames[static_cast<size_t>(i)] == note_part ||
+                kNoteNamesAlt[static_cast<size_t>(i)] == note_part
+            ) {
                 note_index = i;
                 break;
             }
