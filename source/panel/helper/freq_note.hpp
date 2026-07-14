@@ -20,6 +20,9 @@ namespace zlpanel::freq_note {
     inline constexpr std::array kNoteNames = {
         "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
     };
+    inline constexpr std::array kNoteNamesAlt = {
+        "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"
+    };
     inline constexpr int kNotesInOctave = 12;
     inline constexpr double kA4Frequency = 440.0;
     inline constexpr int kA4SemitoneIndexFromC0 = 57;
@@ -33,7 +36,7 @@ namespace zlpanel::freq_note {
         const int total_semitones_from_c0 = rounded_semitones_from_a4 + kA4SemitoneIndexFromC0;
         const int octave = static_cast<int>(std::floor(static_cast<double>(total_semitones_from_c0) / kNotesInOctave));
         const int note_index = (total_semitones_from_c0 % kNotesInOctave + kNotesInOctave) % kNotesInOctave;
-        return kNoteNames[static_cast<size_t>(note_index)] + std::to_string(octave);
+        return kNoteNamesAlt[static_cast<size_t>(note_index)] + std::to_string(octave);
     }
 
     inline std::optional<double> getFrequencyFromNote(const std::string& note) {
@@ -57,6 +60,14 @@ namespace zlpanel::freq_note {
             if (kNoteNames[static_cast<size_t>(i)] == note_part) {
                 note_index = i;
                 break;
+            }
+        }
+        if (note_index == -1) {
+            for (int i = 0; i < static_cast<int>(kNoteNamesAlt.size()); ++i) {
+                if (kNoteNamesAlt[static_cast<size_t>(i)] == note_part) {
+                    note_index = i;
+                    break;
+                }
             }
         }
         if (note_index == -1) {
