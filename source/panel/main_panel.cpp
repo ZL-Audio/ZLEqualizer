@@ -53,13 +53,11 @@ namespace zlpanel {
         {
             const auto height = static_cast<float>(bound.getHeight());
             const auto width = static_cast<float>(bound.getWidth());
-            if (height < width * 0.575f) {
-                bound.setHeight(static_cast<int>(std::ceil(width * .575f)));
-            } else if (height > width * 1.f) {
-                bound.setWidth(static_cast<int>(std::ceil(height * 1.f)));
+            if (height < width * kHoWMin) {
+                bound.setHeight(static_cast<int>(std::ceil(width * kHoWMin)));
             }
         }
-
+        // calculate actual font size
         const auto max_font_size = static_cast<float>(bound.getWidth()) * kFontSizeOverWidth;
         const auto min_font_size = max_font_size * .25f;
         const auto font_size = base_.getFontMode() == 0

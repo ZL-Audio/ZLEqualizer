@@ -41,6 +41,8 @@ namespace zlpanel {
         }
 
     private:
+        static constexpr float kHoWMin = 0.33f;
+
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         multilingual::TooltipHelper tooltip_helper_;
