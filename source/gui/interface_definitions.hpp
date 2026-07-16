@@ -618,12 +618,12 @@ namespace zlgui {
         size_t selected_band_{zlstate::kBandNum};
         juce::SelectedItemSet<size_t> selected_band_set_;
 
-        MouseActionType enter_solo_mouse_{MouseActionType::kLeftDoubleClick};
+        MouseActionType enter_solo_mouse_{MouseActionType::kRightClick};
         KeyActionType enter_solo_key_{KeyActionType::kNone};
-        MouseActionType exit_solo_mouse_{MouseActionType::kLeftDoubleClick};
+        MouseActionType exit_solo_mouse_{MouseActionType::kRightClick};
         KeyActionType exit_solo_key_{KeyActionType::kNone};
         MouseActionType right_click_menu_mouse_{MouseActionType::kRightClick};
-        KeyActionType right_click_menu_key_{KeyActionType::kNone};
+        KeyActionType right_click_menu_key_{KeyActionType::kAlt};
         MouseActionType toggle_dynamic_mouse_{MouseActionType::kLeftDoubleClick};
         KeyActionType toggle_dynamic_key_{KeyActionType::kCmdCtrl};
         MouseActionType toggle_bypass_mouse_{MouseActionType::kLeftClick};

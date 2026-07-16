@@ -528,7 +528,11 @@ namespace zlstate {
     class PKeyOption {
     public:
         inline static const auto kChoices = juce::StringArray{
-            "None", "Command/Ctrl", "Shift", "Alt"
+#if JUCE_MAC
+            "None", "Command", "Shift", "Option"
+#else
+            "None", "Ctrl", "Shift", "Alt"
+#endif
         };
     };
 
@@ -537,7 +541,7 @@ namespace zlstate {
         static constexpr auto kID = "enter_solo_mouse";
         static constexpr auto kName = "";
         inline static const auto kChoices = PMouseOption::kChoices;
-        static constexpr int kDefaultI = 2;
+        static constexpr int kDefaultI = 1;
     };
 
     class PEnterSoloKey : public ChoiceParameters<PEnterSoloKey> {
@@ -553,7 +557,7 @@ namespace zlstate {
         static constexpr auto kID = "exit_solo_mouse";
         static constexpr auto kName = "";
         inline static const auto kChoices = PMouseOption::kChoices;
-        static constexpr int kDefaultI = 2;
+        static constexpr int kDefaultI = 1;
     };
 
     class PExitSoloKey : public ChoiceParameters<PExitSoloKey> {
@@ -577,7 +581,7 @@ namespace zlstate {
         static constexpr auto kID = "right_click_menu_key";
         static constexpr auto kName = "";
         inline static const auto kChoices = PKeyOption::kChoices;
-        static constexpr int kDefaultI = 0;
+        static constexpr int kDefaultI = 3;
     };
 
     class PToggleDynamicMouse : public ChoiceParameters<PToggleDynamicMouse> {
