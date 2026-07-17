@@ -4,6 +4,26 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.3.0
+
+BREAKING CHANGES
+
+- raise the upper limit for the modulation speed of filter frequency
+- change the `State Variable` filter structure (proposed by Yuriy Ivantsov)
+    - now `State Variable` filters will have identical magnitude & phase response compared to `Minimum Phase`, but different modulation/dynamic behaviour
+- change several keyboard shortcuts
+  - now you adjust the keyboard shortcuts for different actions in `Control` setting panel
+  - now the default shortcut for solo status is `Right Click`
+  - now the default shortcut for Right-click Panel is `Right Click` + `Alt/Option`
+
+Bug fixes
+
+- fix fir correction at nyquist for cascading filters
+
+Other Changes
+
+- relax window size ratio constraints
+
 ## 1.2.2
 
 New Features
