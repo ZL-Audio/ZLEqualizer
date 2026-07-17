@@ -256,18 +256,10 @@ add_compile_definitions(HWY_COMPILE_ONLY_STATIC)
 add_compile_options(${ZL_HWY_ARCH_FLAGS})
 add_subdirectory(highway)
 target_link_libraries(SharedCode INTERFACE hwy)
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_options(SharedCode INTERFACE ${ZL_HWY_ARCH_FLAGS})
-endif ()
+target_link_options(SharedCode INTERFACE ${ZL_HWY_ARCH_FLAGS})
 
 # Link our SharedCode target
 target_link_libraries("${PROJECT_NAME}" PRIVATE SharedCode)
-
-# IPP support, comment out to disable
-# include(PamplejuceIPP)
-
-# A separate target keeps the Tests target fast!
-# include(Benchmarks)
 
 # Pass some config to GA (like our PRODUCT_NAME)
 include(GitHubENV)
