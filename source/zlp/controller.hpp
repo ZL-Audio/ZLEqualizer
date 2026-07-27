@@ -312,6 +312,7 @@ namespace zlp {
         std::array<zldsp::filter::TDF<double, kFilterSize / 2>, kBandNum> side_filters_{};
         // corrections
         bool c_correction_enabled_{false};
+        bool force_update_correction_{false};
         // update indices
         std::array<bool, kBandNum> res_update_flags_{};
         // correction on indices for stereo/l/r/m/s (might duplicate)

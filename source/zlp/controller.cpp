@@ -328,6 +328,7 @@ namespace zlp {
         if (correction_latency_.exchange(unit_latency, std::memory_order::relaxed) != unit_latency) {
             triggerAsyncUpdate();
         }
+        force_update_correction_ = true;
     }
 
     void Controller::prepareCorrection() {
@@ -356,7 +357,8 @@ namespace zlp {
             break;
         }
         }
-        bool needs_update = false;
+        bool needs_update = force_update_correction_;
+        force_update_correction_ = false;
         for (const size_t& i : correction_on_total_) {
             if (res_update_flags_[i]) {
                 needs_update = true;
