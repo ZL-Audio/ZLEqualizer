@@ -20,12 +20,11 @@
 #include "../dsp/filter/dynamic_filter/dynamic_parallel.hpp"
 #include "../dsp/filter/gain_compensation/gain_compensation.hpp"
 
-#include "../dsp/filter/fir_filter/match_correction/match_correction.hpp"
 #include "../dsp/filter/fir_filter/match_correction/match_calculator.hpp"
-#include "../dsp/filter/fir_filter/mixed_correction/mixed_correction.hpp"
 #include "../dsp/filter/fir_filter/mixed_correction/mixed_calculator.hpp"
-#include "../dsp/filter/fir_filter/zero_correction/zero_correction.hpp"
 #include "../dsp/filter/fir_filter/zero_correction/zero_calculator.hpp"
+
+#include "stereo_fir_processor.hpp"
 
 #include "../dsp/analyzer/analyzer_base/analyzer_sender_base.hpp"
 // #include "../dsp/eq_match/eq_match_analyzer.hpp"
@@ -313,7 +312,6 @@ namespace zlp {
         std::array<zldsp::filter::TDF<double, kFilterSize / 2>, kBandNum> side_filters_{};
         // corrections
         bool c_correction_enabled_{false};
-        std::array<bool, 4> to_update_correction_{};
         // update indices
         std::array<bool, kBandNum> res_update_flags_{};
         // correction on indices for stereo/l/r/m/s (might duplicate)
@@ -327,18 +325,15 @@ namespace zlp {
         // match correction
         std::unique_ptr<zldsp::fft::RFFT<float>> match_fft_;
         zldsp::filter::MatchCalculator<kBandNum, kFilterSize> match_calculator_;
-        std::array<zldsp::filter::MatchCorrection<double>, 4> match_corrections_
-            = make_array_of<zldsp::filter::MatchCorrection<double>, 4>(match_fft_);
+        StereoFIRProcessor<double, 9, 2> match_stereo_fir_{match_fft_};
         // mixed correction
         std::unique_ptr<zldsp::fft::RFFT<float>> mixed_fft_;
         zldsp::filter::MixedCalculator<kBandNum, kFilterSize> mixed_calculator_;
-        std::array<zldsp::filter::MixedCorrection<double>, 4> mixed_corrections_
-            = make_array_of<zldsp::filter::MixedCorrection<double>, 4>(mixed_fft_);
+        StereoFIRProcessor<double, 10, 16> mixed_stereo_fir_{mixed_fft_};
         // linear phase (zero phase) correction
         std::unique_ptr<zldsp::fft::RFFT<float>> zero_fft_;
         zldsp::filter::ZeroCalculator<kBandNum, kFilterSize> zero_calculator_;
-        std::array<zldsp::filter::ZeroCorrection<double>, 4> zero_corrections_
-            = make_array_of<zldsp::filter::ZeroCorrection<double>, 4>(zero_fft_);
+        StereoFIRProcessor<double, 13, 0> zero_stereo_fir_{zero_fft_};
 
         // filter dynamic flags
         std::array<std::atomic<bool>, kBandNum> dynamic_on_{};
@@ -484,9 +479,9 @@ namespace zlp {
         template <bool is_pre>
         void processParallelOneBandPrePost(size_t i, std::span<double*> main_pointers, size_t num_samples);
 
-        template <bool bypass, typename CorrectionArrayType>
-        void processCorrections(CorrectionArrayType& corrections, std::span<double*> main_pointers,
-                                size_t num_samples);
+        template <typename ProcessorType>
+        void processCorrections(ProcessorType& processor, std::span<double*> main_pointers,
+                                size_t num_samples, bool bypass);
 
         template <bool force>
         void updateSoloFilter(zldsp::filter::FilterParameters paras);

@@ -50,14 +50,12 @@ namespace zlp {
             res_ideals_[i].prepare(sample_rate);
             res_tdfs_[i].prepare(sample_rate, 1, 0);
         }
-        for (size_t lr = 0; lr < 4; ++lr) {
-            match_corrections_[lr].prepare(sample_rate, 1);
-            mixed_corrections_[lr].prepare(sample_rate, 1);
-            zero_corrections_[lr].prepare(sample_rate, 1);
-        }
-        match_calculator_.prepare(match_corrections_[0].getNumBin());
-        mixed_calculator_.prepare(mixed_corrections_[0].getNumBin());
-        zero_calculator_.prepare(zero_corrections_[0].getNumBin());
+        match_stereo_fir_.prepare(sample_rate);
+        mixed_stereo_fir_.prepare(sample_rate);
+        zero_stereo_fir_.prepare(sample_rate);
+        match_calculator_.prepare(match_stereo_fir_.getNumBin());
+        mixed_calculator_.prepare(mixed_stereo_fir_.getNumBin());
+        zero_calculator_.prepare(zero_stereo_fir_.getNumBin());
 
         hist_unit_decay_ = std::pow(0.9, 1.0 / sample_rate);
         slow_hist_unit_decay_ = std::pow(0.99, 1.0 / sample_rate);
@@ -155,7 +153,7 @@ namespace zlp {
             // update lr/ms on flags as they might be changed by corrections
             is_lr_on_ = !not_off_indices_[1].empty() || !not_off_indices_[2].empty();
             is_ms_on_ = !not_off_indices_[3].empty() || !not_off_indices_[4].empty();
-            std::fill(to_update_correction_.begin(), to_update_correction_.end(), true);
+            to_update_correction_indices_ = true;
         } else {
             to_update_correction_indices_ = false;
         }
@@ -306,17 +304,6 @@ namespace zlp {
                 }
             }
         }
-        if (correction_on_indices_[3].empty() && correction_on_indices_[4].empty()) {
-            for (const size_t& i : correction_on_indices_[0]) {
-                correction_on_indices_[1].emplace_back(i);
-                correction_on_indices_[2].emplace_back(i);
-            }
-        } else {
-            for (const size_t& i : correction_on_indices_[0]) {
-                correction_on_indices_[3].emplace_back(i);
-                correction_on_indices_[4].emplace_back(i);
-            }
-        }
         is_lr_on_ = !not_off_indices_[1].empty() || !not_off_indices_[2].empty() || !correction_on_indices_[1].empty()
             || !correction_on_indices_[2].empty();
         is_ms_on_ = !not_off_indices_[3].empty() || !not_off_indices_[4].empty() || !correction_on_indices_[3].empty()
@@ -324,23 +311,16 @@ namespace zlp {
         // get the latency for one correction
         int unit_latency = 0;
         if (c_filter_structure_ == kMatched) {
-            unit_latency = match_corrections_[0].getLatency();
+            unit_latency = match_stereo_fir_.getLatency();
         } else if (c_filter_structure_ == kMixed) {
-            unit_latency = mixed_corrections_[0].getLatency();
+            unit_latency = mixed_stereo_fir_.getLatency();
         } else if (c_filter_structure_ == kZero) {
-            unit_latency = zero_corrections_[0].getLatency();
+            unit_latency = zero_stereo_fir_.getLatency();
         }
-        // calculate total latency and update
-        int new_latency = 0;
-        if (is_lr_on_) {
-            new_latency += unit_latency;
-        } else if (is_ms_on_) {
-            new_latency += unit_latency;
-        }
-        if (correction_latency_.exchange(new_latency, std::memory_order::relaxed) != new_latency) {
+        // latency is constant once correction is enabled
+        if (correction_latency_.exchange(unit_latency, std::memory_order::relaxed) != unit_latency) {
             triggerAsyncUpdate();
         }
-        std::fill(to_update_correction_.begin(), to_update_correction_.end(), true);
     }
 
     void Controller::prepareCorrection() {
@@ -369,48 +349,39 @@ namespace zlp {
             break;
         }
         }
-        for (size_t lr = 0; lr < 4; ++lr) {
-            for (const size_t& i : correction_on_indices_[lr]) {
-                if (res_update_flags_[i]) {
-                    to_update_correction_[lr] = true;
-                }
+        bool needs_update = false;
+        for (const size_t& i : correction_on_total_) {
+            if (res_update_flags_[i]) {
+                needs_update = true;
+                res_update_flags_[i] = false;
             }
         }
-        for (size_t lr = 0; lr < 4; ++lr) {
-            for (const size_t& i : correction_on_indices_[lr]) {
-                if (res_update_flags_[i]) {
-                    res_update_flags_[i] = false;
-                }
+
+        if (needs_update) {
+            switch (c_filter_structure_) {
+            case kMatched: {
+                match_stereo_fir_.updateCorrection(match_calculator_.getCorrectionsReal(),
+                                                   match_calculator_.getCorrectionsImag(),
+                                                   correction_on_indices_);
+                break;
             }
-        }
-        for (size_t lr = 0; lr < 4; ++lr) {
-            if (to_update_correction_[lr]) {
-                to_update_correction_[lr] = false;
-                switch (c_filter_structure_) {
-                case kMatched: {
-                    match_corrections_[lr].updateCorrection(match_calculator_.getCorrectionsReal(),
-                        match_calculator_.getCorrectionsImag(),
-                                                            correction_on_indices_[lr + 1]);
-                    break;
-                }
-                case kMixed: {
-                    mixed_corrections_[lr].updateCorrection(mixed_calculator_.getCorrectionsReal(),
-                    mixed_calculator_.getCorrectionsImag(),
-                                                            correction_on_indices_[lr + 1]);
-                    break;
-                }
-                case kZero: {
-                    zero_corrections_[lr].updateCorrection(zero_calculator_.getCorrectionsReal(),
-                    zero_calculator_.getCorrectionsImag(),
-                                                           correction_on_indices_[lr + 1]);
-                    break;
-                }
-                case kMinimum:
-                case kSVF:
-                case kParallel: {
-                    break;
-                }
-                }
+            case kMixed: {
+                mixed_stereo_fir_.updateCorrection(mixed_calculator_.getCorrectionsReal(),
+                                                   mixed_calculator_.getCorrectionsImag(),
+                                                   correction_on_indices_);
+                break;
+            }
+            case kZero: {
+                zero_stereo_fir_.updateCorrection(zero_calculator_.getCorrectionsReal(),
+                                                  zero_calculator_.getCorrectionsImag(),
+                                                  correction_on_indices_);
+                break;
+            }
+            case kMinimum:
+            case kSVF:
+            case kParallel: {
+                break;
+            }
             }
         }
     }
@@ -686,27 +657,15 @@ namespace zlp {
             break;
         }
         case kMatched: {
-            if (c_solo_on_) {
-                processCorrections<true>(match_corrections_, main_pointers, num_samples);
-            } else {
-                processCorrections<bypass>(match_corrections_, main_pointers, num_samples);
-            }
+            processCorrections(match_stereo_fir_, main_pointers, num_samples, bypass || (c_solo_on_ && !bypass));
             break;
         }
         case kMixed: {
-            if (c_solo_on_) {
-                processCorrections<true>(mixed_corrections_, main_pointers, num_samples);
-            } else {
-                processCorrections<bypass>(mixed_corrections_, main_pointers, num_samples);
-            }
+            processCorrections(mixed_stereo_fir_, main_pointers, num_samples, bypass || (c_solo_on_ && !bypass));
             break;
         }
         case kZero: {
-            if (c_solo_on_) {
-                processCorrections<true>(zero_corrections_, main_pointers, num_samples);
-            } else {
-                processCorrections<bypass>(zero_corrections_, main_pointers, num_samples);
-            }
+            processCorrections(zero_stereo_fir_, main_pointers, num_samples, bypass || (c_solo_on_ && !bypass));
             break;
         }
         }
@@ -934,25 +893,27 @@ namespace zlp {
         }
     }
 
-    template <bool bypass, typename CorrectionArrayType>
-    void Controller::processCorrections(CorrectionArrayType& corrections, std::span<double*> main_pointers,
-                                        size_t num_samples) {
-        if (!correction_on_indices_[1].empty() || !correction_on_indices_[2].empty()) {
-            std::array<std::array<double*, 1>, 2> main_lr_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
-            corrections[0].template process<bypass>(main_lr_pointers[0], num_samples);
-            corrections[1].template process<bypass>(main_lr_pointers[1], num_samples);
-        }
+    template <typename ProcessorType>
+    void Controller::processCorrections(ProcessorType& processor, std::span<double*> main_pointers,
+                                        size_t num_samples, bool bypass) {
+        const bool has_stereo = !correction_on_indices_[0].empty();
+        const bool has_l = !correction_on_indices_[1].empty();
+        const bool has_r = !correction_on_indices_[2].empty();
+        const bool has_m = !correction_on_indices_[3].empty();
+        const bool has_s = !correction_on_indices_[4].empty();
 
-        if (!correction_on_indices_[3].empty() || !correction_on_indices_[4].empty()) {
-            std::array<std::array<double*, 1>, 2> main_ms_pointers{{{main_pointers[0]}, {main_pointers[1]}}};
+        const size_t mask = (has_stereo ? 16 : 0) | (has_l ? 8 : 0) | (has_r ? 4 : 0) | (has_m ? 2 : 0) | (has_s ? 1 : 0);
 
-            zldsp::splitter::InplaceMSSplitter<double>::split(main_pointers[0], main_pointers[1], num_samples);
-
-            corrections[2].template process<bypass>(main_ms_pointers[0], num_samples);
-            corrections[3].template process<bypass>(main_ms_pointers[1], num_samples);
-
-            zldsp::splitter::InplaceMSSplitter<double>::combine(main_pointers[0], main_pointers[1], num_samples);
-        }
+        auto dispatch = [&]<size_t... Is>(std::index_sequence<Is...>) {
+            using FuncType = void (*)(ProcessorType&, std::span<double*>, size_t, bool);
+            static constexpr FuncType table[] = {
+                [](ProcessorType& p, std::span<double*> m, size_t n, bool b) {
+                    p.template process<(Is & 16) != 0, (Is & 8) != 0, (Is & 4) != 0, (Is & 2) != 0, (Is & 1) != 0>(m, n, b);
+                }...
+            };
+            table[mask](processor, main_pointers, num_samples, bypass);
+        };
+        dispatch(std::make_index_sequence<32>{});
     }
 
     template <bool force>
