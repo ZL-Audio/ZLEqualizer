@@ -21,12 +21,14 @@
 namespace zlp {
     namespace hn = hwy::HWY_NAMESPACE;
 
-    template <typename FloatType>
+    template<typename FloatType>
     class StereoFIRProcessor {
     public:
-        StereoFIRProcessor(std::unique_ptr<zldsp::fft::RFFT<float>>& fft,
-                           size_t default_fft_order, size_t start_idx)
-            : fft_(fft), default_fft_order_(default_fft_order), start_idx_(start_idx) {
+        StereoFIRProcessor(std::unique_ptr<zldsp::fft::RFFT<float>> &fft,
+                           const size_t default_fft_order, const size_t start_idx)
+            : fft_(fft), fft_order_(0), fft_size_(0), num_bin_(0), hop_size_(0),
+              default_fft_order_(default_fft_order),
+              start_idx_(start_idx) {
         }
 
         void prepare(const double sample_rate) {
@@ -52,10 +54,18 @@ namespace zlp {
             fft_ = std::make_unique<zldsp::fft::RFFT<float>>(fft_order_);
 
             window1_.resize(fft_size_);
-            zldsp::fft::createPeriodicHanning<float>(window1_, 2.f / static_cast<float>(fft_size_));
-
             window2_.resize(fft_size_);
-            zldsp::fft::createPeriodicHanning<float>(window2_, kWindowCorrection);
+            window_bypass_.resize(fft_size_);
+            zldsp::fft::createPeriodicHanning<float>(window1_, 2.f / static_cast<float>(fft_size_));
+            const auto v_window2_scale = hn::Set(d, static_cast<float>(fft_size_) / 3.f);
+            const auto v_bypass_scale = hn::Set(d, static_cast<float>(fft_size_ * fft_size_) / 6.f);
+            for (size_t i = 0; i < fft_size_; i += lanes) {
+                const auto v_window1 = hn::Load(d, window1_.data() + i);
+                const auto v_window2 = hn::Mul(v_window1, v_window2_scale);
+                hn::Store(v_window2, d, window2_.data() + i);
+                const auto v_window_bypass = hn::Mul(hn::Mul(v_window1, v_window1), v_bypass_scale);
+                hn::Store(v_window_bypass, d, window_bypass_.data() + i);
+            }
 
             for (auto &fifo: input_fifo_) fifo.resize(fft_size_);
             for (auto &fifo: output_fifo_) fifo.resize(fft_size_);
@@ -104,8 +114,6 @@ namespace zlp {
                         zldsp::vector::copy(correction_imag_[type].data(), calculators_imag[idx].data(), num_bin_);
                         is_first = false;
                     } else {
-                        static constexpr hn::ScalableTag<float> d;
-                        static constexpr size_t lanes = hn::MaxLanes(d);
                         for (size_t i = 0; i < num_bin_ - 1; i += lanes) {
                             const auto t_real_v = hn::Load(d, calculators_real[idx].data() + i);
                             const auto t_imag_v = hn::Load(d, calculators_imag[idx].data() + i);
@@ -166,14 +174,16 @@ namespace zlp {
         [[nodiscard]] size_t getNumBin() const { return num_bin_; }
 
     private:
+        static constexpr hn::ScalableTag<float> d;
+        static constexpr size_t lanes = hn::MaxLanes(d);
+
         std::unique_ptr<zldsp::fft::RFFT<float>> &fft_;
-        zldsp::vector::aligned_vector<float> window1_, window2_;
+        zldsp::vector::aligned_vector<float> window1_, window2_, window_bypass_;
 
         size_t fft_order_, fft_size_, num_bin_, hop_size_;
         size_t default_fft_order_, start_idx_;
         size_t overlap_ = 4;
         static constexpr float kWindowCorrection = 2.0f / 3.0f;
-        static constexpr float kBypassCorrection = 1.0f / 4.0f;
 
         size_t count_ = 0;
         size_t pos_ = 0;
@@ -196,8 +206,8 @@ namespace zlp {
             }
 
             if (!bypass) {
+                multiplyWithWindow(fft_in_[0].data(), fft_in_[1].data(), window1_.data());
                 for (size_t chan = 0; chan < 2; ++chan) {
-                    zldsp::vector::multiply(fft_in_[chan].data(), window1_.data(), fft_size_);
                     fft_->forward(fft_in_[chan].data(), {fft_out_real_[chan].data(), fft_out_imag_[chan].data()}); // NOLINT
                 }
 
@@ -205,12 +215,10 @@ namespace zlp {
 
                 for (size_t chan = 0; chan < 2; ++chan) {
                     fft_->backward({fft_out_real_[chan].data(), fft_out_imag_[chan].data()}, fft_in_[chan].data()); // NOLINT
-                    zldsp::vector::multiply(fft_in_[chan].data(), window2_.data(), fft_size_);
                 }
+                multiplyWithWindow(fft_in_[0].data(), fft_in_[1].data(), window2_.data());
             } else {
-                for (size_t chan = 0; chan < 2; ++chan) {
-                    zldsp::vector::multiply(fft_in_[chan].data(), kBypassCorrection, fft_size_);
-                }
+                multiplyWithWindow(fft_in_[0].data(), fft_in_[1].data(), window_bypass_.data());
             }
 
             for (size_t chan = 0; chan < 2; ++chan) {
@@ -225,9 +233,6 @@ namespace zlp {
 
         template<bool has_stereo, bool has_l, bool has_r, bool has_m, bool has_s>
         void processSpectrum() {
-            static constexpr hn::ScalableTag<float> d;
-            static constexpr size_t lanes = hn::MaxLanes(d);
-
             for (size_t i = 0; i < num_bin_ - 1; i += lanes) {
                 auto l_real = hn::Load(d, fft_out_real_[0].data() + i);
                 auto l_imag = hn::Load(d, fft_out_imag_[0].data() + i);
@@ -375,6 +380,18 @@ namespace zlp {
                 fft_out_imag_[0].back() = 0.f;
                 fft_out_real_[1].back() = r_real;
                 fft_out_imag_[1].back() = 0.f;
+            }
+        }
+
+        void multiplyWithWindow(float * HWY_RESTRICT in1_ptr,
+                                float * HWY_RESTRICT in2_ptr,
+                                const float * HWY_RESTRICT window_ptr) const {
+            for (size_t i = 0; i < fft_size_; i += lanes) {
+                const auto v_window = hn::Load(d, window_ptr + i);
+                const auto v_in1 = hn::Load(d, in1_ptr + i);
+                const auto v_in2 = hn::Load(d, in2_ptr + i);
+                hn::Store(hn::Mul(v_window, v_in1), d, in1_ptr + i);
+                hn::Store(hn::Mul(v_window, v_in2), d, in2_ptr + i);
             }
         }
     };
