@@ -319,21 +319,22 @@ namespace zlp {
         bool to_update_correction_indices_{false};
         std::vector<size_t> correction_on_total_{};
         std::array<std::vector<size_t>, 5> correction_on_indices_{};
+        size_t correction_mask_{0};
         // filters for calculating prototype response and biquad response
         std::array<zldsp::filter::Ideal<float, kFilterSize>, kBandNum> res_ideals_{};
         std::array<zldsp::filter::TDF<float, kFilterSize>, kBandNum> res_tdfs_{};
         // match correction
         std::unique_ptr<zldsp::fft::RFFT<float>> match_fft_;
         zldsp::filter::MatchCalculator<kBandNum, kFilterSize> match_calculator_;
-        StereoFIRProcessor<double, 9, 2> match_stereo_fir_{match_fft_};
+        StereoFIRProcessor<double> match_stereo_fir_{match_fft_, 9, 2};
         // mixed correction
         std::unique_ptr<zldsp::fft::RFFT<float>> mixed_fft_;
         zldsp::filter::MixedCalculator<kBandNum, kFilterSize> mixed_calculator_;
-        StereoFIRProcessor<double, 10, 16> mixed_stereo_fir_{mixed_fft_};
+        StereoFIRProcessor<double> mixed_stereo_fir_{mixed_fft_, 10, 16};
         // linear phase (zero phase) correction
         std::unique_ptr<zldsp::fft::RFFT<float>> zero_fft_;
         zldsp::filter::ZeroCalculator<kBandNum, kFilterSize> zero_calculator_;
-        StereoFIRProcessor<double, 13, 0> zero_stereo_fir_{zero_fft_};
+        StereoFIRProcessor<double> zero_stereo_fir_{zero_fft_, 13, 0};
 
         // filter dynamic flags
         std::array<std::atomic<bool>, kBandNum> dynamic_on_{};
@@ -479,8 +480,7 @@ namespace zlp {
         template <bool is_pre>
         void processParallelOneBandPrePost(size_t i, std::span<double*> main_pointers, size_t num_samples);
 
-        template <typename ProcessorType>
-        void processCorrections(ProcessorType& processor, std::span<double*> main_pointers,
+        void processCorrections(StereoFIRProcessor<double>& processor, std::span<double*> main_pointers,
                                 size_t num_samples, bool bypass);
 
         template <bool force>

@@ -21,21 +21,23 @@
 namespace zlp {
     namespace hn = hwy::HWY_NAMESPACE;
 
-    template<typename FloatType, size_t kDefaultFFTOrder, size_t kStartIdx>
+    template <typename FloatType>
     class StereoFIRProcessor {
     public:
-        StereoFIRProcessor(std::unique_ptr<zldsp::fft::RFFT<float>> &fft) : fft_(fft) {
+        StereoFIRProcessor(std::unique_ptr<zldsp::fft::RFFT<float>>& fft,
+                           size_t default_fft_order, size_t start_idx)
+            : fft_(fft), default_fft_order_(default_fft_order), start_idx_(start_idx) {
         }
 
         void prepare(const double sample_rate) {
             if (sample_rate <= 50000) {
-                setOrder(kDefaultFFTOrder);
+                setOrder(default_fft_order_);
             } else if (sample_rate <= 100000) {
-                setOrder(kDefaultFFTOrder + 1);
+                setOrder(default_fft_order_ + 1);
             } else if (sample_rate <= 200000) {
-                setOrder(kDefaultFFTOrder + 2);
+                setOrder(default_fft_order_ + 2);
             } else {
-                setOrder(kDefaultFFTOrder + 3);
+                setOrder(default_fft_order_ + 3);
             }
             reset();
         }
@@ -123,7 +125,7 @@ namespace zlp {
                         correction_real_[type].back() = nyq_c_real * nyq_t_real - nyq_c_imag * nyq_t_imag;
                         correction_imag_[type].back() = nyq_c_real * nyq_t_imag + nyq_c_imag * nyq_t_real;
                     }
-                    for (size_t w_idx = kStartIdx; w_idx < num_bin_; ++w_idx) {
+                    for (size_t w_idx = start_idx_; w_idx < num_bin_; ++w_idx) {
                         const auto re = correction_real_[type][w_idx];
                         const auto im = correction_imag_[type][w_idx];
                         if (const auto abs_sqr = re * re + im * im; abs_sqr > 1e6f) {
@@ -168,6 +170,7 @@ namespace zlp {
         zldsp::vector::aligned_vector<float> window1_, window2_;
 
         size_t fft_order_, fft_size_, num_bin_, hop_size_;
+        size_t default_fft_order_, start_idx_;
         size_t overlap_ = 4;
         static constexpr float kWindowCorrection = 2.0f / 3.0f;
         static constexpr float kBypassCorrection = 1.0f / 4.0f;

@@ -308,6 +308,13 @@ namespace zlp {
             || !correction_on_indices_[2].empty();
         is_ms_on_ = !not_off_indices_[3].empty() || !not_off_indices_[4].empty() || !correction_on_indices_[3].empty()
             || !correction_on_indices_[4].empty();
+
+        correction_mask_ = (!correction_on_indices_[0].empty() ? 16 : 0) |
+                           (!correction_on_indices_[1].empty() ? 8 : 0) |
+                           (!correction_on_indices_[2].empty() ? 4 : 0) |
+                           (!correction_on_indices_[3].empty() ? 2 : 0) |
+                           (!correction_on_indices_[4].empty() ? 1 : 0);
+
         // get the latency for one correction
         int unit_latency = 0;
         if (c_filter_structure_ == kMatched) {
@@ -893,25 +900,16 @@ namespace zlp {
         }
     }
 
-    template <typename ProcessorType>
-    void Controller::processCorrections(ProcessorType& processor, std::span<double*> main_pointers,
+    void Controller::processCorrections(StereoFIRProcessor<double>& processor, std::span<double*> main_pointers,
                                         size_t num_samples, bool bypass) {
-        const bool has_stereo = !correction_on_indices_[0].empty();
-        const bool has_l = !correction_on_indices_[1].empty();
-        const bool has_r = !correction_on_indices_[2].empty();
-        const bool has_m = !correction_on_indices_[3].empty();
-        const bool has_s = !correction_on_indices_[4].empty();
-
-        const size_t mask = (has_stereo ? 16 : 0) | (has_l ? 8 : 0) | (has_r ? 4 : 0) | (has_m ? 2 : 0) | (has_s ? 1 : 0);
-
         auto dispatch = [&]<size_t... Is>(std::index_sequence<Is...>) {
-            using FuncType = void (*)(ProcessorType&, std::span<double*>, size_t, bool);
+            using FuncType = void (*)(StereoFIRProcessor<double>&, std::span<double*>, size_t, bool);
             static constexpr FuncType table[] = {
-                [](ProcessorType& p, std::span<double*> m, size_t n, bool b) {
+                [](StereoFIRProcessor<double>& p, std::span<double*> m, size_t n, bool b) {
                     p.template process<(Is & 16) != 0, (Is & 8) != 0, (Is & 4) != 0, (Is & 2) != 0, (Is & 1) != 0>(m, n, b);
                 }...
             };
-            table[mask](processor, main_pointers, num_samples, bypass);
+            table[correction_mask_](processor, main_pointers, num_samples, bypass);
         };
         dispatch(std::make_index_sequence<32>{});
     }
