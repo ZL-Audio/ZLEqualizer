@@ -227,6 +227,7 @@ namespace zlchore::eq_match {
                     const auto mse_l = calculateMSE<sol_size>(x_temp, data);
                     x_temp[i] = xi + kEps;
                     const auto mse_r = calculateMSE<sol_size>(x_temp, data);
+                    x_temp[i] = xi;
                     grad[i] = (mse_r - mse_l) / (2.0 * kEps);
                 }
             }
