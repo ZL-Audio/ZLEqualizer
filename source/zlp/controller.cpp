@@ -678,9 +678,11 @@ namespace zlp {
             break;
         }
         }
-        if (c_phase_flip_on_) {
-            for (size_t chan = 0; chan < 2; chan++) {
-                zldsp::vector::flip(main_pointers[chan], num_samples);
+        if constexpr (!bypass) {
+            if (c_phase_flip_on_) {
+                for (size_t chan = 0; chan < 2; chan++) {
+                    zldsp::vector::flip(main_pointers[chan], num_samples);
+                }
             }
         }
     }
