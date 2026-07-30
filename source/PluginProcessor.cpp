@@ -252,6 +252,9 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
     if (buffer.getNumSamples() == 0) {
         return; // ignore empty blocks
     }
+    if (update_channel_layout_per_call_) {
+        updateChannelLayout();
+    }
     const auto c_ext_side = ext_side_.load(std::memory_order::relaxed) > .5f;
     const auto num_samples = static_cast<size_t>(buffer.getNumSamples());
     switch (channel_layout_) {
