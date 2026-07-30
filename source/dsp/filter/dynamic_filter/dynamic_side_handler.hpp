@@ -112,7 +112,7 @@ namespace zldsp::filter {
                 }
                 // add RMS portion
                 for (size_t idx = 0; idx < num_samples; ++idx) {
-                    if (rms_buffer_.size() > rms_length_counts_) {
+                    if (rms_buffer_.size() >= rms_length_counts_) {
                         square_sum_ -= rms_buffer_.popFront();
                     }
                     const auto square = out[idx];
