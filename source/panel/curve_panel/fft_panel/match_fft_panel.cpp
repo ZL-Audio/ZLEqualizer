@@ -400,9 +400,10 @@ namespace zlpanel {
                 std::lock_guard lock{load_db_mutex_};
                 preset_dbs = preset_dbs_;
             }
-            zldsp::interpolation::SeqMakima<float> interpolator{
-                preset_freqs.data(), preset_dbs.data(), preset_freqs.size(), 0.f, 0.f};
             {
+                zldsp::interpolation::SeqMakima<float> interpolator{
+                    preset_freqs.data(), preset_dbs.data(), preset_freqs.size(), 0.f, 0.f};
+                interpolator.prepare();
                 std::lock_guard lock{save_db_mutex_};
                 interpolator.eval(freqs_.data(), dbs_[i].data(), kNumPoints);
             }
