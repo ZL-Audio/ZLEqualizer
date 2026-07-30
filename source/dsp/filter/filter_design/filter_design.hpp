@@ -273,8 +273,7 @@ namespace zldsp::filter::FilterDesign {
         const auto scale = std::pow(2, halfbw);
         const auto w1 = w0 / scale;
         const auto w2 = w0 * scale;
-        const auto f1 = w1 > 10.0 / 48000.0;
-        const auto f2 = w2 < 22000.0 / 48000.0;
+        const auto f1 = w1 > (1.0 / 48000.0), f2 = w2 < 0.99;
         const size_t number = n / 2;
         if (f1 && f2) {
             cache[0] = 3.0;
