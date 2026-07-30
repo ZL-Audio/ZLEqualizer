@@ -386,9 +386,6 @@ namespace zlpanel {
             std::abs(sample_rate - c_sample_rate_) > 1.0) {
             c_sample_rate_ = sample_rate;
             c_slider_max_ = freq_helper::getSliderMax(sample_rate);
-            if (sample_rate < 40000.0) {
-                return;
-            }
             fft_max_ = freq_helper::getFFTMax(sample_rate);
             for (auto& f : ideal_) {
                 f.prepare(sample_rate);

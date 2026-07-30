@@ -25,19 +25,26 @@ namespace zldsp::filter::FilterDesign {
         return arr;
     }();
 
+    inline size_t getFlatShelfFilterCount(const double fs) {
+        if (fs < 12500.0) {
+            return 5;
+        }
+        if (fs < 50000.0) {
+            return 6;
+        }
+        if (fs < 200000.0) {
+            return 7;
+        }
+        if (fs < 800000.0) {
+            return 8;
+        }
+        return 9;
+    }
+
     template <class Coeff>
     size_t updateFlatShelfCoeffs(const double freq, const double fs, const double g_dB,
                                  std::span<std::array<double, 5>> coeffs) {
-        size_t num_filters;
-        if (fs < 50000.0) {
-            num_filters = 6;
-        } else if (fs < 200000.0) {
-            num_filters = 7;
-        } else if (fs < 800000.0) {
-            num_filters = 8;
-        } else {
-            num_filters = 9;
-        }
+        const auto num_filters = getFlatShelfFilterCount(fs);
 
         const auto g_shelf_dB = g_dB * 0.5;
         const double g_linear = dbToGain(g_shelf_dB);
@@ -69,16 +76,7 @@ namespace zldsp::filter::FilterDesign {
 
     template <class Coeff>
     inline void updateFlatShelfDynamicCache(const double f, const double fs, double* cache) {
-        size_t num_filters;
-        if (fs < 50000.0) {
-            num_filters = 6;
-        } else if (fs < 200000.0) {
-            num_filters = 7;
-        } else if (fs < 800000.0) {
-            num_filters = 8;
-        } else {
-            num_filters = 9;
-        }
+        const auto num_filters = getFlatShelfFilterCount(fs);
         cache[0] = static_cast<double>(num_filters);
 
         const double freq_sq = f * f;

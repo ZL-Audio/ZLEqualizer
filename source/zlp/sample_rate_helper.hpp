@@ -9,20 +9,25 @@
 
 #pragma once
 
-#include <cmath>
+#include <cstddef>
 
-namespace zlpanel::freq_helper {
-    inline double getSliderMax(const double sample_rate) {
-        if (sample_rate >= 40000.0 && sample_rate < 50000.0) {
-            return 30000.0;
+namespace zlp {
+    inline size_t getScaledOrder(const double sample_rate, const size_t order_at_50_khz) {
+        if (sample_rate <= 12500.0) {
+            return order_at_50_khz - 2;
         }
-        return 0.49964 * sample_rate;
-    }
-
-    inline double getFFTMax(const double sample_rate) {
-        if (sample_rate >= 40000.0 && sample_rate < 50000.0) {
-            return 30000.0;
+        if (sample_rate <= 25000.0) {
+            return order_at_50_khz - 1;
         }
-        return 0.5 * sample_rate;
+        if (sample_rate <= 50000.0) {
+            return order_at_50_khz;
+        }
+        if (sample_rate <= 100000.0) {
+            return order_at_50_khz + 1;
+        }
+        if (sample_rate <= 200000.0) {
+            return order_at_50_khz + 2;
+        }
+        return order_at_50_khz + 3;
     }
 }

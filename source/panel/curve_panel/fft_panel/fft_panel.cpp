@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "fft_panel.hpp"
+#include "../../../zlp/sample_rate_helper.hpp"
 
 namespace zlpanel {
     FFTPanel::FFTPanel(PluginProcessor& p, zlgui::UIBase& base) :
@@ -119,16 +120,7 @@ namespace zlpanel {
         if (std::abs(c_sample_rate_ - sample_rate) > 0.1) {
             c_sample_rate_ = sample_rate;
             to_update_tilt_.signal();
-            int fft_order;
-            if (sample_rate <= 50000) {
-                fft_order = 12;
-            } else if (sample_rate <= 100000) {
-                fft_order = 13;
-            } else if (sample_rate <= 200000) {
-                fft_order = 14;
-            } else {
-                fft_order = 15;
-            }
+            const auto fft_order = static_cast<int>(zlp::getScaledOrder(sample_rate, 12));
             fft_size_ = 1 << fft_order;
             processor_.prepare(fft_order);
             for (auto& receiver : receivers_) {

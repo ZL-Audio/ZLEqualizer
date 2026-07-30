@@ -412,7 +412,7 @@ namespace zlp {
         // loudness matcher
         std::atomic<bool> loudness_matcher_on_{false};
         bool c_loudness_matcher_on_{false};
-        zldsp::loudness::LUFSMatcher<double, true> loudness_matcher_;
+        zldsp::loudness::LUFSMatcher<double> loudness_matcher_{true};
         // makeup gain
         zlchore::thread::Notifier to_update_makeup_{false};
         std::atomic<double> makeup_gain_linear_{};

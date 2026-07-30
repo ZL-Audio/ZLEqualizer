@@ -17,6 +17,7 @@
 
 #include "../dsp/fft/zldsp_fft_include.hpp"
 #include "../dsp/vector/vector.hpp"
+#include "sample_rate_helper.hpp"
 
 namespace zlp {
     namespace hn = hwy::HWY_NAMESPACE;
@@ -32,15 +33,7 @@ namespace zlp {
         }
 
         void prepare(const double sample_rate) {
-            if (sample_rate <= 50000) {
-                setOrder(default_fft_order_);
-            } else if (sample_rate <= 100000) {
-                setOrder(default_fft_order_ + 1);
-            } else if (sample_rate <= 200000) {
-                setOrder(default_fft_order_ + 2);
-            } else {
-                setOrder(default_fft_order_ + 3);
-            }
+            setOrder(zlp::getScaledOrder(sample_rate, default_fft_order_));
             reset();
         }
 

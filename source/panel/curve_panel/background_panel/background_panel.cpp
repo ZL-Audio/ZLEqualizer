@@ -21,7 +21,7 @@ namespace zlpanel {
 
     void BackgroundPanel::paint(juce::Graphics& g) {
         g.fillAll(base_.getBackgroundColour());
-        if (freq_max_ < 10000.0) {
+        if (freq_max_ <= 10.0) {
             return;
         }
         drawFreqs(g);
@@ -29,9 +29,6 @@ namespace zlpanel {
     }
 
     void BackgroundPanel::updateSampleRate(const double sample_rate) {
-        if (sample_rate < 40000.0) {
-            return;
-        }
         freq_max_ = freq_helper::getFFTMax(sample_rate);
         repaint();
     }

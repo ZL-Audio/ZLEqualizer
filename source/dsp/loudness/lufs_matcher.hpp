@@ -16,12 +16,18 @@ namespace zldsp::loudness {
     /**
      * an integrated matcher which matches the loudness of pre and post
      * @tparam FloatType the float type of input audio buffer
-     * @tparam kUseLowPass whether to use an extra lowpass filter at 22,000 Hz
      */
-    template <typename FloatType, bool kUseLowPass = false>
+    template <typename FloatType>
     class LUFSMatcher {
     public:
-        LUFSMatcher() = default;
+        /**
+         *
+         * @param use_low_pass whether to use an extra lowpass filter at 22,000 Hz
+         */
+        explicit LUFSMatcher(const bool use_low_pass = true) :
+            pre_loudness_meter_(use_low_pass),
+            post_loudness_meter_(use_low_pass) {
+        }
 
         void prepare(const double sample_rate, const size_t num_channels) {
             pre_loudness_meter_.prepare(sample_rate, num_channels);
@@ -72,7 +78,7 @@ namespace zldsp::loudness {
         }
 
     private:
-        LUFSMeter<FloatType, kUseLowPass> pre_loudness_meter_, post_loudness_meter_;
+        LUFSMeter<FloatType> pre_loudness_meter_, post_loudness_meter_;
         std::atomic<FloatType> loudness_diff_{FloatType(0)};
         double sample_rate_{48000}, current_count_{0};
     };
