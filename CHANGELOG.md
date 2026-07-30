@@ -19,10 +19,18 @@ BREAKING CHANGES
 Bug fixes
 
 - fix fir correction at nyquist for cascading filters
+- fix potential crash for double-precision mono side-chain
+- fix incorrect threshold for relative-on & learning-off dynamic
+- fix incorrect RMS dynamic after reset or sample-rate changes
+- fix phase-flip getting applied during global bypass
+- fix inconsistent high-order peak during static/dynamic
+- fix incorrect match FFT interpolation
+- fix suboptimal match FFT optimization process
 
 Other Changes
 
 - relax window size ratio constraints
+- support sample rate down to 10kHz
 
 ## 1.2.2
 
