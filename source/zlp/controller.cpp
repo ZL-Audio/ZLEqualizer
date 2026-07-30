@@ -841,9 +841,17 @@ namespace zlp {
                 dynamic_side_loudness_display_[i].store(side_current_loudness, std::memory_order::relaxed);
             }
             // update actual threshold if required
-            if (c_dynamic_th_relative_[i] || c_dynamic_th_learn_[i]) {
+            if (c_dynamic_th_learn_[i]) {
+                if (c_dynamic_th_relative_[i]) {
+                    dynamic_side_handlers_[i].setThreshold(
+                        hist_results_[1] - side_total_loudness + c_dynamic_threshold_[i]);
+                } else {
+                    dynamic_side_handlers_[i].setThreshold(
+                        hist_results_[1] + c_dynamic_threshold_[i]);
+                }
+            } else if (c_dynamic_th_relative_[i]) {
                 dynamic_side_handlers_[i].setThreshold(
-                    hist_results_[1] - side_total_loudness + c_dynamic_threshold_[i]);
+                        c_dynamic_threshold_[i] - side_total_loudness);
             }
         }
         // process the actual filter
