@@ -32,7 +32,9 @@ namespace zldsp::filter {
         void prepare(const double sample_rate, const double rms_max_length_seconds) {
             sample_rate_ = sample_rate;
             follower_.prepare(sample_rate);
+            follower_.reset(static_cast<FloatType>(0));
             rms_buffer_.setCapacity(static_cast<size_t>(std::round(rms_max_length_seconds * sample_rate_)));
+            square_sum_ = 0.0;
             setRMSLength(rms_length_seconds_);
         }
 
