@@ -18,7 +18,7 @@ BREAKING CHANGES
 
 Bug fixes
 
-- fix fir correction at nyquist for cascading filters
+- fix fir correction at Nyquist for cascading filters
 - fix potential crash for double-precision mono side-chain
 - fix incorrect threshold for relative-on & learning-off dynamic
 - fix incorrect RMS dynamic after reset or sample-rate changes

@@ -9,6 +9,6 @@
 
 #pragma once
 
-#include "zldsp_fft/src/zldsp_fft_rfft.hpp"
-#include "zldsp_fft/src/zldsp_fft_cfft.hpp"
+#include "../../../zldsp_fft/src/zldsp_fft_rfft.hpp"
+#include "../../../zldsp_fft/src/zldsp_fft_cfft.hpp"
 #include "zldsp_fft_window.hpp"
