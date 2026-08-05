@@ -188,17 +188,20 @@ namespace zlgui::slider {
                 label_.setBufferedToImage(true);
                 label_look_and_feel_.setFontScale(1.75f);
                 label_.setLookAndFeel(&label_look_and_feel_);
+                label_.setBorderSize(juce::BorderSize<int>{0});
             }
 
             label1_.setText(getDisplayValue(slider1_), juce::dontSendNotification);
             label_look_and_feel1_.setFontScale(1.5f);
             label1_.setJustificationType(juce::Justification::centredBottom);
             label1_.setLookAndFeel(&label_look_and_feel1_);
+            label1_.setBorderSize(juce::BorderSize<int>{0});
 
             if constexpr (kUseSecondSlider) {
                 label2_.setText(getDisplayValue(slider2_), juce::dontSendNotification);
                 label2_.setJustificationType(juce::Justification::centredTop);
                 label2_.setLookAndFeel(&label_look_and_feel1_);
+                label2_.setBorderSize(juce::BorderSize<int>{0});
             }
 
             for (auto& l : {&label_, &label1_, &label2_}) {
@@ -488,10 +491,20 @@ namespace zlgui::slider {
                 }
             }
 
-            editor.setJustification(juce::Justification::centred);
-            editor.setColour(juce::TextEditor::outlineColourId, base_.getTextColour());
+            if (l != nullptr) {
+                editor.setJustification(l->getJustificationType());
+            } else {
+                editor.setJustification(juce::Justification::centred);
+            }
+            editor.setIndents(2, 0);
+            editor.setBorder(juce::BorderSize<int>{0});
+            editor.setColour(juce::TextEditor::outlineColourId, juce::Colours::transparentBlack);
+            editor.setColour(juce::TextEditor::focusedOutlineColourId, base_.getTextColour().withAlpha(.5f));
             editor.setColour(juce::TextEditor::highlightedTextColourId, base_.getTextColour());
-            editor.applyFontToAllText(juce::FontOptions{base_.getFontSize() * kFontHuge});
+            
+            const juce::FontOptions font_opt{base_.getFontSize() * kFontHuge};
+            editor.setFont(font_opt);
+            editor.applyFontToAllText(font_opt);
             editor.applyColourToAllText(base_.getTextColour(), true);
         }
 

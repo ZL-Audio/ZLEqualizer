@@ -103,6 +103,7 @@ namespace zlgui::slider {
             text_.setJustificationType(juce::Justification::centred);
             text_look_and_feel_.setFontScale(font_scale_);
             text_.setLookAndFeel(&text_look_and_feel_);
+            text_.setBorderSize(juce::BorderSize<int>{0});
             text_.setInterceptsMouseClicks(false, false);
             text_.addListener(this);
             addAndMakeVisible(text_);
@@ -113,6 +114,7 @@ namespace zlgui::slider {
                 label_.setText(label_text, juce::dontSendNotification);
                 label_.setJustificationType(juce::Justification::centred);
                 label_.setLookAndFeel(&name_look_and_feel_);
+                label_.setBorderSize(juce::BorderSize<int>{0});
                 name_look_and_feel_.setFontScale(font_scale_);
                 label_.setInterceptsMouseClicks(false, false);
                 addAndMakeVisible(label_);
@@ -301,10 +303,21 @@ namespace zlgui::slider {
             editor.setInputRestrictions(0, permitted_characters_);
             text_.addMouseListener(this, true);
 
+            if constexpr (kUseName) {
+                text_.setVisible(true);
+                label_.setVisible(false);
+            }
+
             editor.setJustification(juce::Justification::centred);
-            editor.setColour(juce::TextEditor::outlineColourId, base_.getTextColour());
+            editor.setIndents(2, 0);
+            editor.setBorder(juce::BorderSize<int>{0});
+            editor.setColour(juce::TextEditor::outlineColourId, juce::Colours::transparentBlack);
+            editor.setColour(juce::TextEditor::focusedOutlineColourId, base_.getTextColour().withAlpha(.5f));
             editor.setColour(juce::TextEditor::highlightedTextColourId, base_.getTextColour());
-            editor.applyFontToAllText(juce::FontOptions{base_.getFontSize() * font_scale_});
+
+            const juce::FontOptions font_opt{base_.getFontSize() * font_scale_};
+            editor.setFont(font_opt);
+            editor.applyFontToAllText(font_opt);
             editor.applyColourToAllText(base_.getTextColour(), true);
         }
 

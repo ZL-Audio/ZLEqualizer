@@ -16,7 +16,8 @@
 namespace zlgui::label {
     class NameLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
-        explicit NameLookAndFeel(UIBase& base) : base_(base) {
+        explicit NameLookAndFeel(UIBase& base) :
+            base_(base) {
         }
 
         void drawLabel(juce::Graphics& g, juce::Label& label) override {
@@ -26,6 +27,20 @@ namespace zlgui::label {
             g.setColour(base_.getTextColour());
             g.setFont(base_.getFontSize() * font_scale_);
             g.drawText(label.getText(), label.getLocalBounds().toFloat(), label.getJustificationType());
+        }
+
+        void drawTextEditorOutline(juce::Graphics& g, const int width, const int height,
+                                   juce::TextEditor& textEditor) override {
+            if (textEditor.isEnabled()) {
+                const auto outline_thickness = juce::roundToInt(base_.getFontSize() * .2f);
+                if (textEditor.hasKeyboardFocus(true) && !textEditor.isReadOnly()) {
+                    g.setColour(textEditor.findColour(juce::TextEditor::focusedOutlineColourId));
+                    g.drawRect(0, 0, width, height, outline_thickness);
+                } else {
+                    g.setColour(textEditor.findColour(juce::TextEditor::outlineColourId));
+                    g.drawRect(0, 0, width, height, outline_thickness);
+                }
+            }
         }
 
         inline void setFontScale(const float x) { font_scale_ = x; }
