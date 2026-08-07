@@ -167,7 +167,7 @@ namespace zlp {
         [[nodiscard]] size_t getNumBin() const { return num_bin_; }
 
     private:
-        static constexpr hn::ScalableTag<float> d;
+        static constexpr hn::ScalableTag<float> d{};
         static constexpr size_t lanes = hn::MaxLanes(d);
 
         std::unique_ptr<zldsp::fft::RFFT<float>> &fft_;
