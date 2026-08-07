@@ -10,9 +10,12 @@ BREAKING CHANGES
 
 - raise the upper limit for the modulation speed of filter frequency
 - change the `State Variable` filter structure (proposed by Yuriy Ivantsov)
-    - now `State Variable` filters will have identical magnitude & phase response compared to `Minimum Phase`, but different modulation/dynamic behaviour
+  - now `State Variable` filters will have identical magnitude & phase response compared to `Minimum Phase`, but different modulation/dynamic behaviour
+- change the latency introduced by `Matched Phase`/`Mixed Phase`/`Zero Phase`
+  - now they will introduce a constant latency, regardless of whether L/R/M/S are used
+  - the response stays the same, the performance gets further improved
 - change several keyboard shortcuts
-  - now you adjust the keyboard shortcuts for different actions in `Control` setting panel
+  - now you can adjust the keyboard shortcuts for different actions in `Control` setting panel
   - now the default shortcut for solo status is `Right Click`
   - now the default shortcut for Right-click Panel is `Right Click` + `Alt/Option`
 
@@ -26,6 +29,7 @@ Bug fixes
 - fix inconsistent high-order peak during static/dynamic
 - fix incorrect match FFT interpolation
 - fix suboptimal match FFT optimization process
+- fix slider value editor display
 
 Other Changes
 
