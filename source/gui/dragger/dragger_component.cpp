@@ -61,8 +61,11 @@ namespace zlgui::dragger {
         const auto old_shift = shift;
         // apply sensitivity
         if (e.mods.isShiftDown()) {
-            shift.setX(shift.getX() * base_.getSensitivity(SensitivityIdx::kMouseDragFine));
-            shift.setY(shift.getY() * base_.getSensitivity(SensitivityIdx::kMouseDragFine));
+            shift.setX(shift.getX() * base_.getSensitivity(SensitivityIdx::kMouseDraggerFine));
+            shift.setY(shift.getY() * base_.getSensitivity(SensitivityIdx::kMouseDraggerFine));
+        } else {
+            shift.setX(shift.getX() * base_.getSensitivity(SensitivityIdx::kMouseDragger));
+            shift.setY(shift.getY() * base_.getSensitivity(SensitivityIdx::kMouseDragger));
         }
         if (e.mods.isCommandDown()) {
             if (e.mods.isLeftButtonDown()) {

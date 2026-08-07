@@ -77,7 +77,8 @@ namespace zlpanel {
     private:
         static constexpr float kBypassAlphaMultiplier = .75f;
         static constexpr float kDiffStereoAlphaMultiplier = .5f;
-        static constexpr float kDraggerSizeMultiplier = 1.4f;
+        static constexpr float kDraggerSizeMultiplier = 2.4f;
+        static constexpr float kDraggerPaddingMultiplier = 1.f;
 
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;

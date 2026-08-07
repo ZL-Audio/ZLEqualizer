@@ -31,14 +31,16 @@ namespace zlpanel {
         scale_panel_.setBufferedToImage(true);
         addAndMakeVisible(scale_panel_);
 
-        side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
+        side_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier,
+                               kDraggerScale * kDraggerPaddingMultiplier);
         side_dragger_.getButton().setToggleState(true, juce::sendNotificationSync);
         side_dragger_.getButton().addMouseListener(this, false);
         side_dragger_.setXYEnabled(true, false);
         side_dragger_.getLAF().setDraggerShape(zlgui::dragger::DraggerLookAndFeel::kRectangle);
         addChildComponent(side_dragger_);
 
-        target_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier);
+        target_dragger_.setScale(kDraggerScale * kDraggerSizeMultiplier,
+                                 kDraggerScale * kDraggerPaddingMultiplier);
         target_dragger_.getButton().setToggleState(true, juce::sendNotificationSync);
         target_dragger_.getButton().addMouseListener(this, false);
         target_dragger_.setXYEnabled(false, true);
@@ -48,7 +50,8 @@ namespace zlpanel {
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             draggers_[band].setBroughtToFrontOnMouseClick(true);
             draggers_[band].getButton().addMouseListener(this, false);
-            draggers_[band].setScale(kDraggerScale * kDraggerSizeMultiplier);
+            draggers_[band].setScale(kDraggerScale * kDraggerSizeMultiplier,
+                                     kDraggerScale * kDraggerPaddingMultiplier);
             draggers_[band].getButton().setBufferedToImage(true);
             draggers_[band].getLAF().setColour(base_.getColourMap1(band));
             draggers_[band].getLAF().setDraggerShape(zlgui::dragger::DraggerLookAndFeel::kRound);
@@ -404,7 +407,8 @@ namespace zlpanel {
                     const auto status = static_cast<int>(std::round(para->convertFrom0to1(para->getValue())));
                     if (status == static_cast<int>(zlp::FilterStatus::kOn)) {
                         para->beginChangeGesture();
-                        para->setValueNotifyingHost(para->convertTo0to1(static_cast<float>(zlp::FilterStatus::kBypass)));
+                        para->setValueNotifyingHost(
+                            para->convertTo0to1(static_cast<float>(zlp::FilterStatus::kBypass)));
                         para->endChangeGesture();
                     } else if (status == static_cast<int>(zlp::FilterStatus::kBypass)) {
                         para->beginChangeGesture();

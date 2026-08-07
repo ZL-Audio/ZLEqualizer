@@ -355,10 +355,10 @@ namespace zlgui::slider {
             int actual_drag_distance;
             if (is_shift_pressed_) {
                 actual_drag_distance = juce::roundToInt(
-                    static_cast<float>(drag_distance_) / base_.getSensitivity(SensitivityIdx::kMouseDragFine));
+                    static_cast<float>(drag_distance_) * 10.f / base_.getSensitivity(SensitivityIdx::kMouseSliderFine));
             } else {
                 actual_drag_distance = juce::roundToInt(
-                    static_cast<float>(drag_distance_) / base_.getSensitivity(SensitivityIdx::kMouseDrag));
+                    static_cast<float>(drag_distance_) / base_.getSensitivity(SensitivityIdx::kMouseSlider));
             }
             actual_drag_distance = std::max(actual_drag_distance, 1);
             slider_.setMouseDragSensitivity(actual_drag_distance);

@@ -62,28 +62,30 @@ namespace zlgui::dragger {
 
         void setDraggerShape(const DraggerShape s) { dragger_shape_ = s; }
 
-        void updatePaths(juce::Rectangle<float>& bound) {
+        void updatePaths(const juce::Rectangle<float>& bound) {
             outline_path_.clear();
             inner_path_.clear();
+            const auto padding = padding_scale_ * base_.getFontSize();
+            auto reduced_bound = bound.reduced(padding * .5f);
             switch (dragger_shape_) {
             case kRound: {
-                updateRoundPaths(bound);
+                updateRoundPaths(reduced_bound);
                 break;
             }
             case kRectangle: {
-                updateRectanglePaths(bound);
+                updateRectanglePaths(reduced_bound);
                 break;
             }
             case kUpDownArrow: {
-                updateUpDownArrowPaths(bound);
+                updateUpDownArrowPaths(reduced_bound);
                 break;
             }
             case kRightArrow: {
-                updateRightArrowPaths(bound);
+                updateRightArrowPaths(reduced_bound);
                 break;
             }
             case kLeftArrow: {
-                updateLeftArrowPaths(bound);
+                updateLeftArrowPaths(reduced_bound);
                 break;
             }
             }
@@ -147,6 +149,8 @@ namespace zlgui::dragger {
 
         void setLabelScale(const float x) { label_scale_ = x; }
 
+        void setPaddingScale(const float x) { padding_scale_ = x; }
+
         void setAlpha(const float a) {
             alpha_ = a;
             filling_colour_ = base_.getColourBlendedWithBackground(colour_, alpha_);
@@ -159,6 +163,7 @@ namespace zlgui::dragger {
         DraggerShape dragger_shape_{DraggerShape::kRound};
         juce::String label_;
         float label_scale_ = 1.f;
+        float padding_scale_ = 0.1f;
         float alpha_ = 1.f;
         UIBase& base_;
     };
