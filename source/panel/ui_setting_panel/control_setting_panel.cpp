@@ -60,7 +60,7 @@ namespace zlpanel {
         dragger_label_.setLookAndFeel(&name_laf_);
         addAndMakeVisible(dragger_label_);
         for (auto& s : sensitivity_sliders_) {
-            s.getSlider().setRange(0.0, 1.0, 0.01);
+            s.getSlider().setRange(0.01, 1.0, 0.01);
             addAndMakeVisible(s);
         }
         addAndMakeVisible(wheel_reverse_box_);

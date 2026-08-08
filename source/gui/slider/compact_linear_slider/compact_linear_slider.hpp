@@ -163,11 +163,7 @@ namespace zlgui::slider {
                 return;
             }
             slider_.mouseDown(event);
-            const auto currentShiftPressed = event.mods.isShiftDown();
-            if (currentShiftPressed != is_shift_pressed_) {
-                is_shift_pressed_ = currentShiftPressed;
-                updateDragDistance();
-            }
+            updateDragDistance(event.mods.isShiftDown());
         }
 
         void mouseDrag(const juce::MouseEvent& event) override {
@@ -232,7 +228,6 @@ namespace zlgui::slider {
 
         void setMouseDragSensitivity(const int x) {
             drag_distance_ = x;
-            updateDragDistance();
         }
 
         void setPrecision(const int x) {
@@ -259,7 +254,6 @@ namespace zlgui::slider {
         int precision_{4};
 
         int drag_distance_{10};
-        bool is_shift_pressed_{false};
 
         juce::String getDisplayValue(const juce::Slider& s) const {
             const auto value = s.getValue();
@@ -351,9 +345,9 @@ namespace zlgui::slider {
                 static_cast<float>(slider_.getNormalisableRange().convertTo0to1(slider_.getValue())));
         }
 
-        void updateDragDistance() {
+        void updateDragDistance(const bool is_shift_pressed) {
             int actual_drag_distance;
-            if (is_shift_pressed_) {
+            if (is_shift_pressed) {
                 actual_drag_distance = juce::roundToInt(
                     static_cast<float>(drag_distance_) * 10.f / base_.getSensitivity(SensitivityIdx::kMouseSliderFine));
             } else {

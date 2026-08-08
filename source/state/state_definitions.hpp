@@ -314,7 +314,7 @@ namespace zlstate {
     public:
         static constexpr auto kID = "wheel_sensitivity";
         static constexpr auto kName = "";
-        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        inline static const auto kRange = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
         static constexpr auto kDefaultV = 1.f;
     };
 
@@ -340,7 +340,7 @@ namespace zlstate {
     public:
         static constexpr auto kID = "slider_sensitivity";
         static constexpr auto kName = "";
-        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        inline static const auto kRange = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
         static constexpr auto kDefaultV = 1.f;
     };
 
@@ -356,7 +356,7 @@ namespace zlstate {
     public:
         static constexpr auto kID = "dragger_sensitivity";
         static constexpr auto kName = "";
-        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        inline static const auto kRange = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
         static constexpr auto kDefaultV = 1.f;
     };
 
@@ -372,7 +372,7 @@ namespace zlstate {
     public:
         static constexpr auto kID = "wheel_combobox_sensitivity";
         static constexpr auto kName = "";
-        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 1.f, 0.01f);
+        inline static const auto kRange = juce::NormalisableRange<float>(0.01f, 1.f, 0.01f);
         static constexpr auto kDefaultV = .5f;
     };
 
