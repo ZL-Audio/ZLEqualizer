@@ -577,7 +577,7 @@ namespace zlp {
             for (size_t chan = 0; chan < 2; chan++) {
                 pre_square_sum_ += zldsp::vector::sum_sqr(main_pointers[chan], num_samples);
             }
-            pre_square_sum_ = std::clamp(pre_square_sum_ / static_cast<double>(num_samples), 1e-3, 1e3);
+            pre_square_sum_ /= static_cast<double>(num_samples);
         }
         switch (c_filter_structure_) {
         case kMinimum:
@@ -612,9 +612,15 @@ namespace zlp {
             for (size_t chan = 0; chan < 2; chan++) {
                 post_square_sum += zldsp::vector::sum_sqr(main_pointers[chan], num_samples);
             }
-            post_square_sum = std::clamp(post_square_sum / static_cast<double>(num_samples), 1e-3, 1e3);
-            c_agc_gain_linear_ = std::sqrt(pre_square_sum_ / post_square_sum) / c_makeup_gain_linear_;
-            updateOutputGain();
+            post_square_sum /= static_cast<double>(num_samples);
+
+            constexpr double kMinAGCPower = 1e-12;
+            if (std::isfinite(pre_square_sum_) && std::isfinite(post_square_sum)
+                && pre_square_sum_ >= kMinAGCPower && post_square_sum >= kMinAGCPower) {
+                c_agc_gain_linear_ = std::clamp(
+                    std::sqrt(pre_square_sum_) / std::sqrt(post_square_sum), 1e-3, 1e3);
+                updateOutputGain();
+            }
         }
 
         output_gain_.process(main_pointers, num_samples);
