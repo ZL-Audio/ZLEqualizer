@@ -333,7 +333,7 @@ namespace zlp {
             "6 dB/oct", "12 dB/oct", "24 dB/oct", "36 dB/oct", "48 dB/oct", "72 dB/oct", "96 dB/oct"
         };
         static constexpr int kDefaultI = 1;
-        static constexpr std::array<size_t, 8> kOrderArray{1, 2, 4, 6, 8, 12, 16};
+        static constexpr std::array<size_t, 7> kOrderArray{1, 2, 4, 6, 8, 12, 16};
 
         static size_t convertToIdx(const size_t order) {
             switch (order) {
