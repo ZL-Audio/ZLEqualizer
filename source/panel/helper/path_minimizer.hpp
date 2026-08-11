@@ -10,12 +10,15 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include <cmath>
+#include <limits>
 #include <span>
 
 namespace zlpanel {
     template <int kIntTol = 10>
     class PathMinimizer {
     public:
+        static_assert(kIntTol >= 0, "PathMinimizer tolerance must not be negative");
         static constexpr float kTol = 0.01f * static_cast<float>(kIntTol);
 
         explicit PathMinimizer(juce::Path& path) : path_ref_(path) {
@@ -35,12 +38,12 @@ namespace zlpanel {
         }
 
         void lineTo(const float x, const float y) {
-            if (std::abs(x - start_x_) > kTol) {
+            if (std::abs(x - start_x_) > std::numeric_limits<float>::epsilon()) {
                 const auto w = (current_x_ - start_x_) / (x - start_x_);
                 if (std::abs((1.f - w) * start_y_ + w * y - current_y_) > kTol) {
                     path_ref_.lineTo(current_x_, current_y_);
-                    start_x_ = x;
-                    start_y_ = y;
+                    start_x_ = current_x_;
+                    start_y_ = current_y_;
                 }
             }
             current_x_ = x;
@@ -52,7 +55,10 @@ namespace zlpanel {
         }
 
         template <bool start = true, bool reverse = false>
-        void drawPath(std::span<float> xs, std::span<float> ys) {
+        void drawPath(const std::span<const float> xs, const std::span<const float> ys) {
+            if (xs.empty() || xs.size() != ys.size()) {
+                return;
+            }
             if constexpr (!reverse) {
                 startNewSubPath<start>(xs[0], ys[0]);
                 for (size_t i = 1; i < xs.size(); ++i) {
