@@ -37,6 +37,7 @@ namespace zlpanel {
         }
         setInterceptsMouseClicks(false, false);
         base_.getPanelValueTree().addListener(this);
+        collision_colour_ = base_.getColourByIdx(zlgui::kCollisionColour);
     }
 
     FFTPanel::~FFTPanel() {
@@ -334,7 +335,7 @@ namespace zlpanel {
             gradient.point1 = {0.f, 0.f};
             gradient.point2 = {width, 0.f};
             gradient.isRadial = false;
-            GradientMinimizer gradient_minimizer(gradient, base_.getColourByIdx(zlgui::kCollisionColour));
+            GradientMinimizer gradient_minimizer(gradient, collision_colour_);
             gradient_minimizer.start(0.f, 0.f);
             for (size_t i = 1; i < num_point_ - 1; ++i) {
                 gradient_minimizer.addColour(xs_[i] / width, coll_ps_[i]);

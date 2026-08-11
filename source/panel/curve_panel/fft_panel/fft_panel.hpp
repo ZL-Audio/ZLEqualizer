@@ -104,6 +104,7 @@ namespace zlpanel {
 
         zldsp::vector::aligned_vector<float> current_ps_{}, coll_ps_{};
         TriBuffer<juce::ColourGradient> gradient_;
+        juce::Colour collision_colour_;
 
         void runFFT(const juce::Thread& thread);
 
