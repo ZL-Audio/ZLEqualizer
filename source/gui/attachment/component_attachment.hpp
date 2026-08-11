@@ -18,5 +18,38 @@ namespace zlgui::attachment {
         virtual ~ComponentAttachment() = default;
 
         virtual void updateComponent() = 0;
+
+    protected:
+        class ParameterUpdateGuard {
+        public:
+            explicit ParameterUpdateGuard(bool& flag) noexcept
+                : flag_(flag), previous_value_(flag) {
+                flag_ = true;
+            }
+
+            ~ParameterUpdateGuard() {
+                flag_ = previous_value_;
+            }
+
+            ParameterUpdateGuard(const ParameterUpdateGuard&) = delete;
+            ParameterUpdateGuard& operator=(const ParameterUpdateGuard&) = delete;
+            ParameterUpdateGuard(ParameterUpdateGuard&&) = delete;
+            ParameterUpdateGuard& operator=(ParameterUpdateGuard&&) = delete;
+
+        private:
+            bool& flag_;
+            bool previous_value_;
+        };
+
+        [[nodiscard]] ParameterUpdateGuard beginParameterUpdate() noexcept {
+            return ParameterUpdateGuard{updating_from_parameter_};
+        }
+
+        bool isUpdatingFromParameter() const noexcept {
+            return updating_from_parameter_;
+        }
+
+    private:
+        bool updating_from_parameter_{false};
     };
 }

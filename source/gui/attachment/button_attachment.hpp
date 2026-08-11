@@ -52,6 +52,7 @@ namespace zlgui::attachment {
         void updateComponent() override {
             const auto current_flag = atomic_flag_.load(std::memory_order::relaxed);
             if (current_flag != button_.getToggleState()) {
+                const auto parameter_update = beginParameterUpdate();
                 button_.setToggleState(current_flag, notification_type_);
             }
         }
@@ -70,6 +71,9 @@ namespace zlgui::attachment {
         }
 
         void buttonStateChanged(juce::Button*) override {
+            if (isUpdatingFromParameter()) {
+                return;
+            }
             const auto normalized_value = static_cast<float>(button_.getToggleState());
             if (std::abs(normalized_value - parameter_ref_.getValue()) <= 1e-6f) {
                 return;

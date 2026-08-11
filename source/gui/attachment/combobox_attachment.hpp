@@ -53,6 +53,7 @@ namespace zlgui::attachment {
         void updateComponent() override {
             const auto current_index = atomic_index_.load(std::memory_order::relaxed);
             if (current_index != box_.getSelectedItemIndex()) {
+                const auto parameter_update = beginParameterUpdate();
                 box_.setSelectedItemIndex(current_index, notification_type_);
             }
         }
@@ -71,6 +72,9 @@ namespace zlgui::attachment {
         }
 
         void comboBoxChanged(juce::ComboBox*) override {
+            if (isUpdatingFromParameter()) {
+                return;
+            }
             const auto normalized_value = parameter_ref_.convertTo0to1(
                 static_cast<float>(box_.getSelectedItemIndex()));
             if (std::abs(normalized_value - parameter_ref_.getValue()) <= 1e-6f) {
