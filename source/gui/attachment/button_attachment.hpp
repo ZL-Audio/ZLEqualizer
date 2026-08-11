@@ -70,8 +70,12 @@ namespace zlgui::attachment {
         }
 
         void buttonStateChanged(juce::Button*) override {
+            const auto normalized_value = static_cast<float>(button_.getToggleState());
+            if (std::abs(normalized_value - parameter_ref_.getValue()) <= 1e-6f) {
+                return;
+            }
             parameter_ref_.beginChangeGesture();
-            parameter_ref_.setValueNotifyingHost(static_cast<float>(button_.getToggleState()));
+            parameter_ref_.setValueNotifyingHost(normalized_value);
             parameter_ref_.endChangeGesture();
         }
 

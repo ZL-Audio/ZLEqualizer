@@ -71,9 +71,13 @@ namespace zlgui::attachment {
         }
 
         void comboBoxChanged(juce::ComboBox*) override {
+            const auto normalized_value = parameter_ref_.convertTo0to1(
+                static_cast<float>(box_.getSelectedItemIndex()));
+            if (std::abs(normalized_value - parameter_ref_.getValue()) <= 1e-6f) {
+                return;
+            }
             parameter_ref_.beginChangeGesture();
-            parameter_ref_.setValueNotifyingHost(
-                parameter_ref_.convertTo0to1(static_cast<float>(box_.getSelectedItemIndex())));
+            parameter_ref_.setValueNotifyingHost(normalized_value);
             parameter_ref_.endChangeGesture();
         }
     };
