@@ -418,6 +418,7 @@ namespace zlp {
                 if (c_dynamic_th_relative_[i] != dynamic_th_relative_[i].load(std::memory_order::relaxed)) {
                     c_dynamic_th_relative_[i] = dynamic_th_relative_[i].load(std::memory_order::relaxed);
                     if (c_dynamic_th_learn_[i]) {
+                        histograms_[i].reset();
                         slow_histograms_[i].reset();
                         learned_thresholds_[i].store(-40.0, std::memory_order::relaxed);
                     }
