@@ -129,7 +129,13 @@ jobs:
       - name: Set additional env vars for next steps
         shell: bash
         run: |
-          echo "AAX_PATH=aax_releases/${{ matrix.name }}/${{ env.PRODUCT_NAME }}.aaxplugin" >> $GITHUB_ENV
+          aax_path="aax_releases/${{ matrix.name }}/${{ env.PRODUCT_NAME }}.aaxplugin"
+          if [[ -e "$aax_path" ]]; then
+            echo "AAX_PATH=$aax_path" >> $GITHUB_ENV
+          elif [[ "${{ matrix.have_aax }}" == "true" ]]; then
+            echo "Expected AAX artifact is missing: $aax_path" >&2
+            exit 1
+          fi
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
 
       - name: Check dependencies
@@ -202,9 +208,11 @@ jobs:
       - name: Generate WiX (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: bash
+        env:
+          WIX_ARCH: ${{ matrix.wix_arch }}
         run: |
           python3 -u packaging/packager_Windows_WiX.py
-          cat "packaging\installer.wxs"
+          cat "packaging/installer.wxs"
 
       - name: Generate Installer (Windows)
         if: ${{ runner.os == 'Windows' }}
@@ -242,25 +250,25 @@ jobs:
       attestations: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v7
-      with:
-        fetch-depth: 1
-        fetch-tags: true
-        ref: ${{ github.ref }}
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          fetch-tags: true
+          ref: ${{ github.ref }}
 
-    - name: Get Artifacts
-      uses: actions/download-artifact@v8
-      with: 
-        path: installers/
+      - name: Get Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: installers/
 
-    - name: Generate Signed Build Provenance Attestations
-      uses: actions/attest-build-provenance@v4
-      with:
-        subject-path: |
-          installers/*/*.msi
-          installers/*/*.zip
-          installers/*/*.dmg
+      - name: Generate Signed Build Provenance Attestations
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: |
+            installers/*/*.msi
+            installers/*/*.zip
+            installers/*/*.dmg
 
-    - name: Create Release
-      run: gh release create ${{ github.ref_name }} --prerelease installers/*/*.msi installers/*/*.zip installers/*/*.dmg
+      - name: Create Release
+        run: gh release create ${{ github.ref_name }} --prerelease installers/*/*.msi installers/*/*.zip installers/*/*.dmg

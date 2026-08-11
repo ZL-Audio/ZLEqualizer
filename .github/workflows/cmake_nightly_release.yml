@@ -182,9 +182,11 @@ jobs:
       - name: Generate WiX (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: bash
+        env:
+          WIX_ARCH: ${{ matrix.wix_arch }}
         run: |
           python3 -u packaging/packager_Windows_WiX.py
-          cat "packaging\installer.wxs"
+          cat "packaging/installer.wxs"
 
       - name: Generate Installer (Windows)
         if: ${{ runner.os == 'Windows' }}
@@ -221,48 +223,43 @@ jobs:
       attestations: write
 
     steps:
-    - name: Get Artifacts
-      uses: actions/download-artifact@v8
-      with:
-        path: "current_release"
+      - name: Get Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: "current_release"
 
-    - name: Checkout current repo
-      uses: actions/checkout@v7
-      with:
-        submodules: false
-        path: "current_repo"
+      - name: Checkout current repo
+        uses: actions/checkout@v7
+        with:
+          submodules: false
+          path: "current_repo"
 
-    - name: Download nightly-release repo
-      uses: actions/checkout@v7
-      with:
-        repository: "ZL-Audio/ZLNightlyRelease"
-        fetch-depth: 0
-        path: "release_repo"
-        ssh-key: ${{ secrets.SSH_NIGHTLY_RELEASE_DEPLOY_KEY }}
+      - name: Download nightly-release repo
+        uses: actions/checkout@v7
+        with:
+          repository: "ZL-Audio/ZLNightlyRelease"
+          fetch-depth: 0
+          path: "release_repo"
+          ssh-key: ${{ secrets.SSH_NIGHTLY_RELEASE_DEPLOY_KEY }}
 
-    - name: Remove old release assets
-      run: |
-        rm -rf "release_repo/${{ github.event.repository.name }}"
-        mkdir -p "release_repo/${{ github.event.repository.name }}"
-        ls "current_release/"
+      - name: Remove old release assets
+        run: |
+          rm -rf "release_repo/${{ github.event.repository.name }}"
+          mkdir -p "release_repo/${{ github.event.repository.name }}"
+          ls "current_release/"
 
-    - name: Move current release assets
-      run: |
-        mv -v "current_release"/* "release_repo/${{ github.event.repository.name }}/"
-        mv -v "current_repo/docs" "release_repo/${{ github.event.repository.name }}/docs"
-        mv -v "current_repo/assets" "release_repo/${{ github.event.repository.name }}/assets"
-        mv -v "current_repo/README.md" "release_repo/${{ github.event.repository.name }}/README.md"
-        mv -v "current_repo/LICENSE.md" "release_repo/${{ github.event.repository.name }}/LICENSE.md"
-        mv -v "current_repo/CHANGELOG.md" "release_repo/${{ github.event.repository.name }}/CHANGELOG.md"
+      - name: Move current release assets
+        run: |
+          mv -v "current_release"/* "release_repo/${{ github.event.repository.name }}/"
 
-    - name: Commit release repo
-      run: |
-        cd "release_repo"
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git checkout --orphan newBranch
-        git add -A
-        git commit -m "release"
-        git branch -D main
-        git branch -m main
-        git push -f origin main
+      - name: Commit release repo
+        run: |
+          cd "release_repo"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git checkout --orphan newBranch
+          git add -A
+          git commit -m "release"
+          git branch -D main
+          git branch -m main
+          git push -f origin main
