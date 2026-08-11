@@ -383,11 +383,11 @@ namespace zlgui {
         }
 
         float getSumEQCurveThickness() const {
-            return single_eq_curve_thickness_.load(std::memory_order::relaxed);
+            return sum_eq_curve_thickness_.load(std::memory_order::relaxed);
         }
 
         void setSumEQCurveThickness(const float x) {
-            single_eq_curve_thickness_.store(x, std::memory_order::relaxed);
+            sum_eq_curve_thickness_.store(x, std::memory_order::relaxed);
         }
 
         size_t getTooltipLangID() const {
