@@ -829,7 +829,7 @@ namespace zlp {
                                         std::memory_order::relaxed);
 
                 histograms_[i].setDecay(std::pow(hist_unit_decay_, static_cast<double>(num_samples)));
-                histograms_[i].push(side_current_loudness);
+                histograms_[i].push(side_current_loudness - side_total_loudness);
                 histograms_[i].getPercentiles(hist_percentiles_, hist_target_temp_, hist_results_);
                 dynamic_side_handlers_[i].setKnee<false>(
                     std::max(0.5 * (hist_results_[2] - hist_results_[0]), 5.0));
@@ -846,14 +846,14 @@ namespace zlp {
             if (c_dynamic_th_learn_[i]) {
                 if (c_dynamic_th_relative_[i]) {
                     dynamic_side_handlers_[i].setThreshold(
-                        hist_results_[1] - side_total_loudness + c_dynamic_threshold_[i]);
+                        hist_results_[1] + side_total_loudness + c_dynamic_threshold_[i]);
                 } else {
                     dynamic_side_handlers_[i].setThreshold(
                         hist_results_[1] + c_dynamic_threshold_[i]);
                 }
             } else if (c_dynamic_th_relative_[i]) {
                 dynamic_side_handlers_[i].setThreshold(
-                        c_dynamic_threshold_[i] - side_total_loudness);
+                        side_total_loudness + c_dynamic_threshold_[i]);
             }
         }
         // process the actual filter
