@@ -18,8 +18,8 @@
 #include "credit_panel.hpp"
 #include "ui_setting_components.hpp"
 #include "../../gui/label/name_look_and_feel.hpp"
-#include "../../gui/popup/panel_surface_background.hpp"
 #include "../../gui/scrolling/scrollable_viewport.hpp"
+#include "../background/panel_background.hpp"
 
 namespace zlpanel {
     class UISettingPanel final : public juce::Component {
@@ -47,7 +47,7 @@ namespace zlpanel {
         OtherUISettingPanel other_panel_;
         CreditPanel credit_panel_;
 
-        zlgui::popup::PanelSurfaceBackground background_;
+        PanelBackground background_;
         zlgui::label::NameLookAndFeel version_text_laf_;
         juce::Label version_text_;
         UISettingTabBar tab_bar_;

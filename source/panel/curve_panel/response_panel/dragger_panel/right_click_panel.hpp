@@ -13,8 +13,7 @@
 #include "../../../../gui/gui.hpp"
 #include "../../../helper/helper.hpp"
 #include "../../../multilingual/tooltip_helper.hpp"
-
-#include "../../../control_panel/control_background.hpp"
+#include "../../../background/panel_background.hpp"
 
 namespace zlpanel {
     class RightClickPanel final : public juce::Component {
@@ -52,7 +51,7 @@ namespace zlpanel {
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         juce::SelectedItemSet<size_t>& items_set_;
-        ControlBackground control_background_;
+        PanelBackground control_background_;
 
         juce::Rectangle<float> safe_area_{};
 

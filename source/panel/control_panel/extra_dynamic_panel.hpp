@@ -12,8 +12,8 @@
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../multilingual/tooltip_helper.hpp"
-
-#include "control_background.hpp"
+#include "../background/panel_background.hpp"
+#include "../helper/helper.hpp"
 
 namespace zlpanel {
     class ExtraDynamicPanel final : public juce::Component,
@@ -39,7 +39,7 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_;
 
-        ControlBackground control_background_;
+        PanelBackground control_background_;
 
         zlgui::label::NameLookAndFeel label_laf_;
 

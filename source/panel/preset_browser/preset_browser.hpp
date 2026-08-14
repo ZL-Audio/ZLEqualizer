@@ -1,11 +1,11 @@
 // Copyright (C) 2026 - zsliu98
-// This file is part of ZLEqualizer
+// This file is part of ZLSpectrumEqualizer
 //
-// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLSpectrumEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
 //
-// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+// ZLSpectrumEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License along with ZLSpectrumEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -20,7 +20,7 @@
 #include "preset_list.hpp"
 #include "rounded_text_editor.hpp"
 #include "warning_overlay.hpp"
-#include "../../gui/popup/panel_surface_background.hpp"
+#include "../background/panel_background.hpp"
 
 namespace zlpanel {
     class PresetBrowser final : public juce::Component,
@@ -49,7 +49,7 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         const juce::File presets_directory_;
 
-        zlgui::popup::PanelSurfaceBackground background_;
+        PanelBackground background_;
 
         std::unique_ptr<juce::Drawable> delete_drawable_;
         std::unique_ptr<juce::Drawable> close_drawable_;

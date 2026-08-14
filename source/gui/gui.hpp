@@ -21,8 +21,6 @@
 #include "colour_selector/colour_map_selector.hpp"
 #include "tooltip/tooltip.hpp"
 #include "resize_corner/resize_corner.hpp"
-#include "popup/panel_surface_background.hpp"
-#include "popup/popup_style.hpp"
 #include "scrolling/scrollable_viewport.hpp"
 #include "scrolling/styled_scroll_bar.hpp"
 #include "scrolling/virtualized_list.hpp"

@@ -13,8 +13,7 @@
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
 #include "../multilingual/tooltip_helper.hpp"
-
-#include "../control_panel/control_background.hpp"
+#include "../background/panel_background.hpp"
 
 namespace zlpanel {
     class AnalyzerLabel final : public juce::Component,
@@ -29,7 +28,7 @@ namespace zlpanel {
     private:
         zlgui::UIBase& base_;
 
-        ControlBackground control_background_;
+        PanelBackground control_background_;
 
         zlgui::label::NameLookAndFeel label_laf_;
         juce::Label analyzer_label_;

@@ -1,13 +1,16 @@
 // Copyright (C) 2026 - zsliu98
-// This file is part of ZLEqualizer
+// This file is part of ZLSpectrumEqualizer
 //
-// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLSpectrumEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
 //
-// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+// ZLSpectrumEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License along with ZLSpectrumEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
+
+#include <functional>
+#include <utility>
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -16,12 +19,17 @@
 namespace zlgui {
     class ClickTextButtonLookAndFeel final : public juce::LookAndFeel_V4 {
     public:
+        using BackgroundPainter = std::function<void(juce::Graphics&, juce::Button&, bool, bool)>;
+
         explicit ClickTextButtonLookAndFeel(UIBase& base) : base_(base) {
         }
 
-        void drawButtonBackground(juce::Graphics&, juce::Button&,
-                                  const juce::Colour&, bool, bool) override {
-            // g.fillAll(base_.getBackgroundColour());
+        void drawButtonBackground(juce::Graphics& g, juce::Button& button,
+                                  const juce::Colour&, const bool highlight,
+                                  const bool down) override {
+            if (background_painter_) {
+                background_painter_(g, button, highlight, down);
+            }
         }
 
         void drawButtonText(juce::Graphics& g, juce::TextButton& button,
@@ -45,10 +53,15 @@ namespace zlgui {
             font_scale_ = font_scale;
         }
 
+        void setBackgroundPainter(BackgroundPainter painter) {
+            background_painter_ = std::move(painter);
+        }
+
     private:
         UIBase& base_;
 
         float font_scale_{1.f};
         juce::Justification justification_{juce::Justification::centredLeft};
+        BackgroundPainter background_painter_;
     };
 }

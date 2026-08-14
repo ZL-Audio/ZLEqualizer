@@ -13,8 +13,7 @@
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
 #include "../../multilingual/tooltip_helper.hpp"
-
-#include "../../control_panel/control_background.hpp"
+#include "../../background/panel_background.hpp"
 
 namespace zlpanel {
     class AnalyzerPanel final : public juce::Component,
@@ -37,7 +36,7 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         zlgui::attachment::ComponentUpdater updater_;
 
-        ControlBackground control_background_;
+        PanelBackground control_background_;
 
         zlgui::button::ClickTextButton pre_button_;
         zlgui::attachment::ButtonAttachment<true> pre_attach_;

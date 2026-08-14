@@ -1,18 +1,18 @@
 // Copyright (C) 2026 - zsliu98
-// This file is part of ZLEqualizer
+// This file is part of ZLSpectrumEqualizer
 //
-// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLSpectrumEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
 //
-// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+// ZLSpectrumEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License along with ZLSpectrumEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "preset_browser.hpp"
 
 #include <algorithm>
 
 #include "BinaryData.h"
-#include "../../gui/popup/popup_style.hpp"
+#include "../helper/paint_selected_card.hpp"
 #include "preset_list_layout.hpp"
 
 namespace zlpanel {
@@ -35,7 +35,7 @@ namespace zlpanel {
         processor_(processor),
         base_(base),
         presets_directory_(getPresetsDirectory()),
-        background_(base, zlgui::popup::kBackgroundAlpha),
+        background_(base),
         delete_drawable_(juce::Drawable::createFromImageData(BinaryData::trash_svg,
                                                              BinaryData::trash_svgSize)),
         close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
@@ -182,12 +182,12 @@ namespace zlpanel {
         group_label_.setBorderSize({0, column_text_inset, 0, 0});
         preset_label_.setBorderSize({0, column_text_inset, 0, 0});
 
-        const juce::FontOptions editor_font{zlgui::popup::textFontSize(font_size)};
+        const juce::FontOptions editor_font{1.5f * font_size};
         for (auto* editor : {&search_editor_, &group_name_editor_, &preset_name_editor_}) {
             editor->setFont(editor_font);
             editor->applyFontToAllText(editor_font);
         }
-        const juce::FontOptions heading_font{zlgui::popup::textFontSize(font_size)};
+        const juce::FontOptions heading_font{1.5f * font_size};
         group_label_.setFont(heading_font);
         preset_label_.setFont(heading_font);
         group_list_.setRowHeight(row_height);

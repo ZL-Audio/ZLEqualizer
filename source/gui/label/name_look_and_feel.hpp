@@ -1,11 +1,11 @@
 // Copyright (C) 2026 - zsliu98
-// This file is part of ZLEqualizer
+// This file is part of ZLSpectrumEqualizer
 //
-// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLSpectrumEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
 //
-// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+// ZLSpectrumEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License along with ZLSpectrumEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -26,7 +26,12 @@ namespace zlgui::label {
             }
             g.setColour(base_.getTextColour());
             g.setFont(base_.getFontSize() * font_scale_);
-            g.drawText(label.getText(), label.getLocalBounds().toFloat(), label.getJustificationType());
+            if (maximum_number_of_lines_ > 1) {
+                g.drawFittedText(label.getText(), label.getLocalBounds(), label.getJustificationType(),
+                                 maximum_number_of_lines_, label.getMinimumHorizontalScale());
+            } else {
+                g.drawText(label.getText(), label.getLocalBounds().toFloat(), label.getJustificationType());
+            }
         }
 
         void drawTextEditorOutline(juce::Graphics& g, const int width, const int height,
@@ -45,9 +50,14 @@ namespace zlgui::label {
 
         inline void setFontScale(const float x) { font_scale_ = x; }
 
+        inline void setMaximumNumberOfLines(const int maximum_number_of_lines) {
+            maximum_number_of_lines_ = juce::jmax(1, maximum_number_of_lines);
+        }
+
     private:
         UIBase& base_;
 
         float font_scale_{kFontNormal};
+        int maximum_number_of_lines_{1};
     };
 }

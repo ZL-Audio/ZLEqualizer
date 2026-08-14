@@ -14,7 +14,7 @@
 #include "../helper/helper.hpp"
 #include "../multilingual/tooltip_helper.hpp"
 
-#include "control_background.hpp"
+#include "../background/panel_background.hpp"
 #include "../curve_panel/curve_panel.hpp"
 
 namespace zlpanel {
@@ -38,7 +38,7 @@ namespace zlpanel {
         zlgui::UIBase& base_;
         MatchFFTPanel& match_fft_panel_;
 
-        ControlBackground control_background_;
+        PanelBackground control_background_;
 
         const std::unique_ptr<juce::Drawable> save_drawable_;
         zlgui::button::ClickButton save_button_;
