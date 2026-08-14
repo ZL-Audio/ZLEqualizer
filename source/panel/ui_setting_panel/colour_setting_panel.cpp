@@ -19,9 +19,9 @@ namespace zlpanel {
         };
     }
 
-    ColourSettingPanel::ColourSettingPanel(PluginProcessor &p, zlgui::UIBase &base)
-        : pRef(p), base_(base), name_laf_(base),
-          c_map1_selector_(base), c_map2_selector_(base) {
+    ColourSettingPanel::ColourSettingPanel(PluginProcessor& p, zlgui::UIBase& base) :
+        pRef(p), base_(base), name_laf_(base),
+        c_map1_selector_(base), c_map2_selector_(base) {
         juce::ignoreUnused(pRef);
         if (!kSettingDirectory.isDirectory()) {
             const auto result = kSettingDirectory.createDirectory();
@@ -52,16 +52,6 @@ namespace zlpanel {
         c_map2_label_.setLookAndFeel(&name_laf_);
         addAndMakeVisible(c_map2_label_);
         addAndMakeVisible(c_map2_selector_);
-        import_label_.setText("Import Colours", juce::dontSendNotification);
-        import_label_.setJustificationType(juce::Justification::centred);
-        import_label_.setLookAndFeel(&name_laf_);
-        import_label_.addMouseListener(this, false);
-        addAndMakeVisible(import_label_);
-        export_label_.setText("Export Colours", juce::dontSendNotification);
-        export_label_.setJustificationType(juce::Justification::centred);
-        export_label_.setLookAndFeel(&name_laf_);
-        export_label_.addMouseListener(this, false);
-        addAndMakeVisible(export_label_);
     }
 
     ColourSettingPanel::~ColourSettingPanel() {
@@ -101,7 +91,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale * 3.f);
         const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
 
-        return padding * 13 + slider_height * 12;
+        return padding * 12 + slider_height * 11;
     }
 
     void ColourSettingPanel::resized() {
@@ -116,75 +106,20 @@ namespace zlpanel {
             selector_labels_[i].setBounds(local_bound.removeFromLeft(slider_width * 2));
             local_bound.removeFromLeft(padding);
             selectors_[i]->setBounds(local_bound);
-        } {
+        }
+        {
             bound.removeFromTop(padding);
             auto local_bound = bound.removeFromTop(slider_height);
             c_map1_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
             local_bound.removeFromLeft(padding);
             c_map1_selector_.setBounds(local_bound.removeFromLeft(slider_width * 4 + padding).reduced(0, padding / 3));
-        } {
+        }
+        {
             bound.removeFromTop(padding);
             auto local_bound = bound.removeFromTop(slider_height);
             c_map2_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
             local_bound.removeFromLeft(padding);
             c_map2_selector_.setBounds(local_bound.removeFromLeft(slider_width * 4 + padding).reduced(0, padding / 3));
-        } {
-            bound.removeFromTop(padding);
-            const auto label_width = bound.getWidth() / 2;
-            auto local_bound = bound.removeFromTop(slider_height);
-            import_label_.setBounds(local_bound.removeFromLeft(label_width));
-            export_label_.setBounds(local_bound.removeFromRight(label_width));
-        }
-    }
-
-    void ColourSettingPanel::mouseDown(const juce::MouseEvent &event) {
-        if (event.originalComponent == &import_label_) {
-            chooser_ = std::make_unique<juce::FileChooser>(
-                "Load the colour settings...", kSettingDirectory, "*.xml",
-                true, false, nullptr);
-            constexpr auto setting_open_flags = juce::FileBrowserComponent::openMode |
-                                                juce::FileBrowserComponent::canSelectFiles;
-            chooser_->launchAsync(setting_open_flags, [this](const juce::FileChooser &chooser) {
-                if (chooser.getResults().size() <= 0) { return; }
-                const juce::File settingFile(chooser.getResult());
-                if (const auto xml_input = juce::XmlDocument::parse(settingFile)) {
-                    for (size_t i = 0; i < 4; ++i) {
-                        if (const auto *xml_colour = xml_input->getChildByName(std::string(zlgui::kColourNames[i]))) {
-                            const juce::Colour colour = getIntColour(
-                                xml_colour->getIntAttribute("r"),
-                                xml_colour->getIntAttribute("g"),
-                                xml_colour->getIntAttribute("b"),
-                                static_cast<float>(xml_colour->getDoubleAttribute("o")));
-                            base_.setColourByIdx(static_cast<zlgui::ColourIdx>(i), colour);
-                        }
-                    }
-                    base_.saveToAPVTS();
-                    loadSetting();
-                }
-            });
-        } else if (event.originalComponent == &export_label_) {
-            chooser_ = std::make_unique<juce::FileChooser>(
-                "Save the colour settings...", kSettingDirectory.getChildFile("colour.xml"), "*.xml",
-                true, false, nullptr);
-            constexpr auto setting_save_flags = juce::FileBrowserComponent::saveMode |
-                                                juce::FileBrowserComponent::warnAboutOverwriting;
-            chooser_->launchAsync(setting_save_flags, [this](const juce::FileChooser &chooser) {
-                if (chooser.getResults().size() <= 0) { return; }
-                juce::File setting_file(chooser.getResult().withFileExtension("xml"));
-                if (setting_file.create()) {
-                    juce::XmlElement xml_output{"colour_setting"};
-                    for (size_t i = 0; i < 4; ++i) {
-                        auto *xml_colour = xml_output.createNewChildElement(std::string(zlgui::kColourNames[i]));
-                        juce::Colour colour = selectors_[i]->getColour();
-                        xml_colour->setAttribute("r", colour.getRed());
-                        xml_colour->setAttribute("g", colour.getGreen());
-                        xml_colour->setAttribute("b", colour.getBlue());
-                        xml_colour->setAttribute("o", colour.getFloatAlpha());
-                    }
-                    const auto result = xml_output.writeTo(setting_file);
-                    juce::ignoreUnused(result);
-                }
-            });
         }
     }
 }

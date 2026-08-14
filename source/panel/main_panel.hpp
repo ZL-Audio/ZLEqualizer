@@ -5,13 +5,14 @@
 //
 // ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU标志 General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
 #include "control_panel/control_panel.hpp"
 #include "control_panel/extra_dynamic_panel.hpp"
 #include "curve_panel/curve_panel.hpp"
+#include "preset_browser/preset_browser.hpp"
 #include "top_panel/top_panel.hpp"
 #include "ui_setting_panel/ui_setting_panel.hpp"
 
@@ -55,6 +56,7 @@ namespace zlpanel {
         ControlPanel control_panel_;
         ExtraDynamicPanel extra_dynamic_panel_;
         TopPanel top_panel_;
+        PresetBrowser preset_browser_;
         UISettingPanel ui_setting_panel_;
 
         zlgui::tooltip::TooltipLookAndFeel tooltip_laf_;

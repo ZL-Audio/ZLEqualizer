@@ -17,7 +17,7 @@
 
 //==============================================================================
 class PluginEditor final : public juce::AudioProcessorEditor,
-                           private juce::Timer,
+                           private juce::MultiTimer,
                            private juce::ValueTree::Listener,
                            private juce::AsyncUpdater {
 public:
@@ -52,13 +52,22 @@ private:
 
     std::unique_ptr<juce::VBlankAttachment> vblank_;
 
-    void timerCallback() override;
+    static constexpr int kVisibilityTimer = 0;
+    static constexpr int kPropertySaveTimer = 1;
+
+    static constexpr int kPropertySaveDelayMS = 1000;
+
+    void timerCallback(int timer_id) override;
 
     void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
 
     void handleAsyncUpdate() override;
 
     void updateIsShowing();
+
+    void schedulePropertySave();
+
+    void flushPendingPropertySave();
 
     static zlstate::Property& initProperty(PluginProcessor& p);
 

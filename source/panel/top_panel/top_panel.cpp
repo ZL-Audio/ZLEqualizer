@@ -26,6 +26,9 @@ namespace zlpanel {
                       tooltip_helper.getToolTipText(multilingual::kMixedPhase),
                       tooltip_helper.getToolTipText(multilingual::kZeroPhase)}),
         fstruct_attach_(fstruct_box_.getBox(), p.parameters_, zlp::PFilterStructure::kID, updater_),
+        preset_drawable_(juce::Drawable::createFromImageData(BinaryData::collections_bookmark_svg,
+                                                             BinaryData::collections_bookmark_svgSize)),
+        preset_button_(base, preset_drawable_.get(), nullptr, ""),
         bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
                                                              BinaryData::bypass_svgSize)),
         bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
@@ -53,6 +56,15 @@ namespace zlpanel {
         fstruct_box_.setAlpha(.5f);
         fstruct_box_.setBufferedToImage(true);
         addAndMakeVisible(fstruct_box_);
+
+        preset_button_.getButton().onClick = [this]() {
+            const auto panel_open = static_cast<float>(
+                base_.getPanelProperty(zlgui::PanelSettingIdx::kPresetBrowser));
+            base_.setPanelProperty(zlgui::PanelSettingIdx::kPresetBrowser, panel_open < .5f ? 1.f : 0.f);
+        };
+        preset_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
+        preset_button_.setBufferedToImage(true);
+        addAndMakeVisible(preset_button_);
 
         bypass_button_.setImageAlpha(1.f, 1.f, .5f, .75f);
         bypass_button_.setBufferedToImage(true);
@@ -104,6 +116,10 @@ namespace zlpanel {
         {
             const auto left_pad = bound.getX();
             const auto t_width = 6 * padding + 3 * (slider_width / 2) - left_pad;
+            bound.removeFromLeft(padding);
+            preset_button_.setBounds(bound.removeFromLeft(bound.getHeight()));
+            preset_button_.getButton().setEdgeIndent(static_cast<int>(std::round(font_size * .15f)));
+            bound.removeFromLeft(padding);
             analyzer_label_.setBounds(bound.getX(), 0, t_width, getHeight());
             bound.removeFromLeft(t_width);
         }

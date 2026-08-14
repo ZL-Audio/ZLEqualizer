@@ -7,22 +7,29 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "credit_panel.hpp"
+#pragma once
+
+#include <functional>
+
+#include "../../gui/scrolling/virtualized_list.hpp"
 
 namespace zlpanel {
-    CreditPanel::CreditPanel(zlgui::UIBase& base) :
-        base_(base) {
-    }
+    class GroupList final : public zlgui::scrolling::VirtualizedList {
+    public:
+        explicit GroupList(zlgui::UIBase& base);
 
-    void CreditPanel::paint(juce::Graphics& g) {
-        g.setColour(base_.getTextColour());
-        const auto padding = std::round(base_.getFontSize());
-        const auto bound = getLocalBounds().toFloat().reduced(2 * padding, padding);
-        const auto tl = getTipTextLayout(kText, bound.getWidth(), bound.getHeight());
-        tl.draw(g, bound);
-    }
+        void setGroups(const juce::StringArray& groups, const juce::String& selected_group);
 
-    int CreditPanel::getIdealHeight() const {
-        return static_cast<int>(std::ceil(base_.getFontSize() * 1.5f * 39.5));
-    }
+        std::function<void(const juce::String&)> onGroupSelected;
+
+    private:
+        juce::StringArray groups_;
+
+        void paintRow(juce::Graphics& g, int row, juce::Rectangle<int> bounds,
+                      bool selected, bool hovered) override;
+
+        void rowClicked(int row) override;
+
+        void rowDoubleClicked(int row) override;
+    };
 }

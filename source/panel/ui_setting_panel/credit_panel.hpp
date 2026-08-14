@@ -19,7 +19,7 @@ namespace zlpanel {
 
         void paint(juce::Graphics& g) override;
 
-        int getIdeatlHeight() const;
+        int getIdealHeight() const;
 
     private:
         zlgui::UIBase& base_;

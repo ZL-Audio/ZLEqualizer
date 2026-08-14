@@ -17,146 +17,116 @@ namespace zlpanel {
         control_panel_(p, base),
         other_panel_(p, base),
         credit_panel_(base),
-        save_drawable_(juce::Drawable::createFromImageData(BinaryData::save_svg, BinaryData::save_svgSize)),
-        close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg, BinaryData::close_svgSize)),
-        reset_drawable_(
-            juce::Drawable::createFromImageData(BinaryData::reset_settings_svg, BinaryData::reset_settings_svgSize)),
+        background_(base),
+        version_text_laf_(base),
+        version_text_({},
+                      juce::String(ZLEQUALIZER_CURRENT_VERSION) + " " + juce::String(ZLEQUALIZER_CURRENT_HASH)),
+        tab_bar_(base),
+        view_port_(base),
+        save_drawable_(juce::Drawable::createFromImageData(BinaryData::save_svg,
+                                                           BinaryData::save_svgSize)),
+        close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
+                                                            BinaryData::close_svgSize)),
+        reset_drawable_(juce::Drawable::createFromImageData(BinaryData::reset_settings_svg,
+                                                            BinaryData::reset_settings_svgSize)),
+        folder_open_drawable_(juce::Drawable::createFromImageData(BinaryData::folder_open_svg,
+                                                                  BinaryData::folder_open_svgSize)),
         save_button_(base_, save_drawable_.get()),
         close_button_(base_, close_drawable_.get()),
         reset_button_(base_, reset_drawable_.get()),
-        panel_name_laf_(base_),
-        label_laf_(base_) {
+        folder_open_button_(base_, folder_open_drawable_.get()) {
         juce::ignoreUnused(p_ref_);
-        setOpaque(true);
+        setOpaque(false);
+        setInterceptsMouseClicks(true, true);
         base_.setPanelProperty(zlgui::PanelSettingIdx::kUISettingPanel, false);
-        addAndMakeVisible(save_button_);
-        addAndMakeVisible(close_button_);
-        addAndMakeVisible(reset_button_);
-        view_port_.setScrollBarsShown(true, false,
-                                      true, false);
-        changeDisplayPanel();
+
+        background_.setBufferedToImage(true);
+        addAndMakeVisible(background_);
+        version_text_laf_.setFontScale(1.125f);
+        version_text_.setJustificationType(juce::Justification::centred);
+        version_text_.setLookAndFeel(&version_text_laf_);
+        version_text_.setAlpha(.45f);
+        version_text_.setInterceptsMouseClicks(false, false);
+        version_text_.setBufferedToImage(true);
+        addAndMakeVisible(version_text_);
+        addAndMakeVisible(tab_bar_);
         addAndMakeVisible(view_port_);
+
+        for (auto* button : {&save_button_, &reset_button_, &close_button_, &folder_open_button_}) {
+            button->setImageAlpha(.55f, 1.f);
+            button->setBufferedToImage(true);
+            addAndMakeVisible(button);
+        }
         save_button_.getButton().onClick = [this]() {
-            switch (current_panel_idx_) {
-            case kColourP: {
-                colour_panel_.saveSetting();
-                break;
-            }
-            case kControlP: {
-                control_panel_.saveSetting();
-                break;
-            }
-            case kOtherP: {
-                other_panel_.saveSetting();
-                break;
-            }
-            case kCreditP: {
-                break;
-            }
-            }
-            base_.setPanelProperty(zlgui::kUISettingChanged,
-                                   !static_cast<bool>(base_.getPanelProperty(zlgui::kUISettingChanged)));
+            saveCurrentPanel();
         };
         reset_button_.getButton().onClick = [this]() {
-            switch (current_panel_idx_) {
-            case kColourP: {
-                colour_panel_.resetSetting();
-                break;
-            }
-            case kControlP: {
-                control_panel_.resetSetting();
-                break;
-            }
-            case kOtherP: {
-                other_panel_.resetSetting();
-                break;
-            }
-            case kCreditP: {
-                break;
-            }
-            }
+            resetCurrentPanel();
         };
         close_button_.getButton().onClick = [this]() {
             base_.setPanelProperty(zlgui::PanelSettingIdx::kUISettingPanel, false);
         };
+        folder_open_button_.getButton().onClick = []() {
+            const juce::File ui_file =
+                juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                .getChildFile("ZL Audio").getChildFile(JucePlugin_Name).getChildFile("ui.xml");
+            if (ui_file.existsAsFile()) {
+                ui_file.revealToUser();
+            }
+        };
 
-        panel_name_laf_.setFontScale(1.5f);
-        panel_labels_[0].setText("Colour", juce::dontSendNotification);
-        panel_labels_[1].setText("Control", juce::dontSendNotification);
-        panel_labels_[2].setText("Other", juce::dontSendNotification);
-        panel_labels_[3].setText("Credit", juce::dontSendNotification);
-        for (auto& pL : panel_labels_) {
-            pL.setInterceptsMouseClicks(true, false);
-            pL.addMouseListener(this, false);
-            pL.setJustificationType(juce::Justification::centred);
-            pL.setLookAndFeel(&panel_name_laf_);
-            addAndMakeVisible(pL);
-        }
+        tab_bar_.onTabSelected = [this](const int index) {
+            view_positions_[static_cast<size_t>(current_panel_idx_)] = view_port_.getViewPosition();
+            current_panel_idx_ = static_cast<PanelIdx>(index);
+            changeDisplayPanel();
+        };
 
-        label_laf_.setFontScale(1.125f);
-        version_label_.setAlpha(.5f);
-        version_label_.setText(
-            juce::String(ZLEQUALIZER_CURRENT_VERSION) + " " + juce::String(ZLEQUALIZER_CURRENT_HASH),
-            juce::dontSendNotification);
-        version_label_.setJustificationType(juce::Justification::bottomLeft);
-        version_label_.setLookAndFeel(&label_laf_);
-        addAndMakeVisible(version_label_);
+        changeDisplayPanel();
     }
 
-    UISettingPanel::~UISettingPanel() = default;
-
-    void UISettingPanel::paint(juce::Graphics& g) {
-        g.fillAll(base_.getBackgroundColour());
-        auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight() * 1.25f);
-        base_.fillRoundedShadowRectangle(g, bound, 0.5f * base_.getFontSize(), {.blur_radius = 0.5f});
+    UISettingPanel::~UISettingPanel() {
+        view_port_.setViewedComponent(nullptr, 0);
+        version_text_.setLookAndFeel(nullptr);
     }
 
     void UISettingPanel::resized() {
-        auto bound = getLocalBounds().toFloat();
-        bound = bound.withSizeKeepingCentre(bound.getWidth() * .75f, bound.getHeight());
-        {
-            auto label_bound = bound.removeFromTop(base_.getFontSize() * 3.f);
-            const auto label_width = label_bound.getWidth() / static_cast<float>(panel_labels_.size());
-            for (auto& panel_label : panel_labels_) {
-                panel_label.setBounds(label_bound.removeFromLeft(label_width).toNearestInt());
-            }
-        }
+        view_positions_[static_cast<size_t>(current_panel_idx_)] = view_port_.getViewPosition();
 
-        colour_panel_.setBounds(0, 0,
-                                juce::roundToInt(bound.getWidth()),
-                                colour_panel_.getIdealHeight());
-        control_panel_.setBounds(0, 0,
-                                 juce::roundToInt(bound.getWidth()),
-                                 control_panel_.getIdealHeight());
-        other_panel_.setBounds(0, 0,
-                               juce::roundToInt(bound.getWidth()),
-                               other_panel_.getIdealHeight());
-        credit_panel_.setBounds(0, 0,
-                               juce::roundToInt(bound.getWidth()),
-                               credit_panel_.getIdeatlHeight());
-        other_panel_.setParentWidth(getWidth());
+        const auto font_size = base_.getFontSize();
+        const auto padding = juce::roundToInt(font_size * .72f);
+        const auto button_size = juce::roundToInt(font_size * 2.f);
+        const auto header_height = button_size;
+        const auto footer_height = button_size + padding;
+        const auto content_top_margin = juce::roundToInt(font_size * .36f);
 
-        view_port_.setBounds(bound.removeFromTop(bound.getHeight() * .9125f).toNearestInt());
+        auto bounds = getLocalBounds().reduced(padding);
+        auto header = bounds.removeFromTop(header_height);
+        auto footer = bounds.removeFromBottom(footer_height);
+        footer.removeFromTop(padding);
 
-        const auto left_bound = bound.removeFromLeft(
-            bound.getWidth() * .3333333f).withSizeKeepingCentre(
-            base_.getFontSize() * 2.f, base_.getFontSize() * 2.f);
-        const auto center_bound = bound.removeFromLeft(
-            bound.getWidth() * .5f).withSizeKeepingCentre(
-            base_.getFontSize() * 2.f, base_.getFontSize() * 2.f);
-        const auto right_bound = bound.withSizeKeepingCentre(
-            base_.getFontSize() * 1.95f, base_.getFontSize() * 1.95f);
-        save_button_.setBounds(left_bound.toNearestInt());
-        reset_button_.setBounds(center_bound.toNearestInt());
-        close_button_.setBounds(right_bound.toNearestInt());
+        tab_bar_.setBounds(header);
 
-        bound = getLocalBounds().toFloat();
-        bound = bound.removeFromBottom(2.f * base_.getFontSize());
-        bound = bound.removeFromLeft(bound.getWidth() * .125f);
-        bound.removeFromLeft(base_.getFontSize() * .25f);
-        bound.removeFromBottom(base_.getFontSize() * .0625f);
-        version_label_.setBounds(bound.toNearestInt());
+        bounds.removeFromTop(content_top_margin);
+        view_port_.setBounds(bounds);
+
+        const auto get_footer_cell = [&footer](const int index) {
+            const auto left = footer.getX() + footer.getWidth() * index / 5;
+            const auto right = footer.getX() + footer.getWidth() * (index + 1) / 5;
+            return juce::Rectangle<int>{left, footer.getY(), right - left, footer.getHeight()};
+        };
+        version_text_.setBounds(get_footer_cell(0));
+        folder_open_button_.setBounds(get_footer_cell(1).withSizeKeepingCentre(button_size, button_size));
+        folder_open_button_.getButton().setEdgeIndent(static_cast<int>(std::round(font_size * .175f)));
+        reset_button_.setBounds(get_footer_cell(2).withSizeKeepingCentre(button_size, button_size));
+        save_button_.setBounds(get_footer_cell(3).withSizeKeepingCentre(button_size, button_size));
+        close_button_.setBounds(get_footer_cell(4).withSizeKeepingCentre(button_size, button_size));
+
+        background_.setBounds(getLocalBounds());
+        background_.setSurfaceBounds({tab_bar_.getBounds(), view_port_.getBounds()});
+
+        const auto parent_width = getParentComponent() != nullptr ? getParentComponent()->getWidth() : getWidth();
+        other_panel_.setParentWidth(parent_width);
+        changeDisplayPanel();
     }
 
     void UISettingPanel::loadSetting() {
@@ -165,42 +135,102 @@ namespace zlpanel {
         other_panel_.loadSetting();
     }
 
-    void UISettingPanel::mouseDown(const juce::MouseEvent& event) {
-        for (size_t i = 0; i < panel_labels_.size(); ++i) {
-            if (event.originalComponent == &panel_labels_[i]) {
-                current_panel_idx_ = static_cast<PanelIdx>(i);
-                changeDisplayPanel();
-                return;
-            }
-        }
+    void UISettingPanel::flushPendingScroll() {
+        view_port_.flushPendingScroll();
+    }
+
+    int UISettingPanel::getIdealWidth() const {
+        return juce::roundToInt(base_.getFontSize() * 50.f);
+    }
+
+    int UISettingPanel::getIdealHeight() const {
+        return juce::roundToInt(base_.getFontSize() * 34.f);
     }
 
     void UISettingPanel::changeDisplayPanel() {
+        juce::Component* panel = nullptr;
+        auto ideal_height = 0;
         switch (current_panel_idx_) {
         case kColourP: {
-            view_port_.setViewedComponent(&colour_panel_, false);
+            panel = &colour_panel_;
+            ideal_height = colour_panel_.getIdealHeight();
             break;
         }
         case kControlP: {
-            view_port_.setViewedComponent(&control_panel_, false);
+            panel = &control_panel_;
+            ideal_height = control_panel_.getIdealHeight();
             break;
         }
         case kOtherP: {
-            view_port_.setViewedComponent(&other_panel_, false);
+            panel = &other_panel_;
+            ideal_height = other_panel_.getIdealHeight();
             break;
         }
         case kCreditP: {
-            view_port_.setViewedComponent(&credit_panel_, false);
+            panel = &credit_panel_;
+            ideal_height = credit_panel_.getIdealHeight();
             break;
         }
         }
+        tab_bar_.setSelectedIndex(static_cast<int>(current_panel_idx_));
+        view_port_.setViewedComponent(panel, ideal_height);
+        view_port_.setViewPosition(view_positions_[static_cast<size_t>(current_panel_idx_)]);
+        updateActionButtonStates();
+    }
+
+    void UISettingPanel::saveCurrentPanel() {
+        switch (current_panel_idx_) {
+        case kColourP:
+            colour_panel_.saveSetting();
+            break;
+        case kControlP:
+            control_panel_.saveSetting();
+            break;
+        case kOtherP:
+            other_panel_.saveSetting();
+            break;
+        case kCreditP:
+            return;
+        }
+        base_.setPanelProperty(zlgui::kUISettingChanged,
+                               !static_cast<bool>(base_.getPanelProperty(zlgui::kUISettingChanged)));
+    }
+
+    void UISettingPanel::resetCurrentPanel() {
+        switch (current_panel_idx_) {
+        case kColourP:
+            colour_panel_.resetSetting();
+            break;
+        case kControlP:
+            control_panel_.resetSetting();
+            break;
+        case kOtherP:
+            other_panel_.resetSetting();
+            break;
+        case kCreditP:
+            return;
+        }
+    }
+
+    void UISettingPanel::updateActionButtonStates() {
+        const auto enabled = current_panel_idx_ != kCreditP;
+        for (auto* button : {&save_button_, &reset_button_}) {
+            button->setAlpha(enabled ? 1.f : .25f);
+            button->setInterceptsMouseClicks(enabled, enabled);
+        }
+    }
+
+    void UISettingPanel::lookAndFeelChanged() {
+        background_.repaint();
+        version_text_.repaint();
+        tab_bar_.repaint();
+        view_port_.repaint();
+        repaint();
     }
 
     void UISettingPanel::visibilityChanged() {
         if (isVisible()) {
-            colour_panel_.loadSetting();
-            control_panel_.loadSetting();
-            other_panel_.loadSetting();
+            loadSetting();
         }
     }
 }

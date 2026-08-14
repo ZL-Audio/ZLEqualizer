@@ -9,6 +9,8 @@
 
 #include "property.hpp"
 
+#include "state_schema.hpp"
+
 namespace zlstate {
     Property::Property() {
     }
@@ -21,7 +23,21 @@ namespace zlstate {
         std::lock_guard<std::mutex> lock_guard{mutex_};
         if (checkCreateDirectory()) {
             if (const auto xml = juce::XmlDocument::parse(kUIPath); xml) {
-                apvts.replaceState(juce::ValueTree::fromXml(*xml));
+                const auto loaded_state = juce::ValueTree::fromXml(*xml);
+                if (!loaded_state.hasType(zlstate::schema::kUISettings) &&
+                    !loaded_state.hasType(zlstate::schema::legacy::kUISettings)) {
+                    return;
+                }
+
+                juce::ValueTree migrated_state(zlstate::schema::kUISettings);
+                migrated_state.copyPropertiesAndChildrenFrom(loaded_state, nullptr);
+                apvts.replaceState(migrated_state);
+
+                if (loaded_state.hasType(zlstate::schema::legacy::kUISettings)) {
+                    if (const auto migrated_xml = migrated_state.createXml(); migrated_xml) {
+                        migrated_xml->writeTo(kUIPath);
+                    }
+                }
             }
         }
     }

@@ -15,7 +15,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
     AudioProcessorEditor(&p),
     p_ref_(p),
     state_(dummy_processor_, nullptr,
-           juce::Identifier("ZLEqualizerState"),
+           juce::Identifier(zlstate::schema::kUISettings),
            zlstate::getStateParameterLayout()),
     property_(state_),
     base_(state_),
@@ -52,7 +52,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
     last_ui_height_.referTo(state_.getParameterAsValue(zlstate::PWindowH::kID));
     setSize(last_ui_width_.getValue(), last_ui_height_.getValue());
 
-    startTimerHz(1);
+    startTimer(kVisibilityTimer, 1000);
     updateIsShowing();
 
     base_.setPanelProperty(zlgui::kUISettingChanged, true);
@@ -63,8 +63,9 @@ PluginEditor::PluginEditor(PluginProcessor& p) :
 
 PluginEditor::~PluginEditor() {
     base_.getPanelValueTree().removeListener(this);
+    flushPendingPropertySave();
     vblank_.reset();
-    stopTimer();
+    stopTimer(kVisibilityTimer);
     p_ref_.getController().setEditorON(false);
 }
 
@@ -75,13 +76,20 @@ void PluginEditor::paint(juce::Graphics& g) {
 void PluginEditor::resized() {
     main_panel_.setBounds(getLocalBounds());
     if (!base_.getWindowSizeFix()) {
-        last_ui_width_ = std::clamp(getWidth(),
-                                    static_cast<int>(zlstate::PWindowW::kMinV),
-                                    static_cast<int>(zlstate::PWindowW::kMaxV));
-        last_ui_height_ = std::clamp(getHeight(),
-                                     static_cast<int>(zlstate::PWindowH::kMinV),
-                                     static_cast<int>(zlstate::PWindowH::kMaxV));
+        const auto width = std::clamp(getWidth(),
+                                      static_cast<int>(zlstate::PWindowW::kMinV),
+                                      static_cast<int>(zlstate::PWindowW::kMaxV));
+        const auto height = std::clamp(getHeight(),
+                                       static_cast<int>(zlstate::PWindowH::kMinV),
+                                       static_cast<int>(zlstate::PWindowH::kMaxV));
+        const bool size_changed = (width != static_cast<int>(last_ui_width_.getValue())) ||
+            (height != static_cast<int>(last_ui_height_.getValue()));
+        last_ui_width_ = width;
+        last_ui_height_ = height;
         triggerAsyncUpdate();
+        if (size_changed) {
+            schedulePropertySave();
+        }
     }
 }
 
@@ -100,16 +108,31 @@ void PluginEditor::minimisationStateChanged(bool) {
 void PluginEditor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) {
     if (base_.isPanelIdentifier(zlgui::kUISettingChanged, property)) {
         triggerAsyncUpdate();
+        schedulePropertySave();
     }
 }
 
 void PluginEditor::handleAsyncUpdate() {
     sendLookAndFeelChange();
-    property_.saveAPVTS(state_);
 }
 
-void PluginEditor::timerCallback() {
-    updateIsShowing();
+void PluginEditor::timerCallback(const int timer_id) {
+    if (timer_id == kVisibilityTimer) {
+        updateIsShowing();
+    } else if (timer_id == kPropertySaveTimer) {
+        flushPendingPropertySave();
+    }
+}
+
+void PluginEditor::schedulePropertySave() {
+    startTimer(kPropertySaveTimer, kPropertySaveDelayMS);
+}
+
+void PluginEditor::flushPendingPropertySave() {
+    if (isTimerRunning(kPropertySaveTimer)) {
+        stopTimer(kPropertySaveTimer);
+        property_.saveAPVTS(state_);
+    }
 }
 
 void PluginEditor::updateIsShowing() {

@@ -66,6 +66,7 @@ namespace zlgui {
         kMatchPanel,
         kSuggestedNumBand,
         kMaximumNumBand,
+        kPresetBrowser,
         kPanelSettingNum
     };
 
@@ -79,7 +80,8 @@ namespace zlgui {
         juce::Identifier("fft_frozen"),
         juce::Identifier("match_panel"),
         juce::Identifier("suggested_num_band"),
-        juce::Identifier("maximum_num_band")
+        juce::Identifier("maximum_num_band"),
+        juce::Identifier("preset_browser")
     };
 
     inline juce::Identifier kSoloIdentifier("solo_whole_idx");

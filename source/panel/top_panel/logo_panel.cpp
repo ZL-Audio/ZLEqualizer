@@ -11,7 +11,8 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    LogoPanel::LogoPanel(PluginProcessor&, zlgui::UIBase& base, multilingual::TooltipHelper& tooltip_helper) :
+    LogoPanel::LogoPanel(PluginProcessor&, zlgui::UIBase& base,
+                         const multilingual::TooltipHelper& tooltip_helper) :
         base_(base),
         brand_drawable_(juce::Drawable::createFromImageData(BinaryData::zlaudio_svg, BinaryData::zlaudio_svgSize)),
         logo_drawable_(juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize)) {
@@ -27,6 +28,8 @@ namespace zlpanel {
         temp_brand->replaceColour(juce::Colours::black, base_.getTextColour());
         temp_logo->replaceColour(juce::Colours::black, base_.getTextColour());
         temp_logo->replaceColour(juce::Colour::fromRGBA(0, 0, 0, 127), base_.getTextColour().withMultipliedAlpha(.5f));
+        temp_logo->replaceColour(juce::Colour::fromRGBA(0, 0, 0, 63), base_.getTextColour().withMultipliedAlpha(.25f));
+        temp_logo->replaceColour(juce::Colour::fromRGBA(0, 0, 0, 191), base_.getTextColour().withMultipliedAlpha(.75f));
 
         const auto padding = getPaddingSize(base_.getFontSize());
 
@@ -41,14 +44,15 @@ namespace zlpanel {
     }
 
     void LogoPanel::mouseEnter(const juce::MouseEvent&) {
-        setAlpha(1.f);
+        setAlpha(.75f);
     }
 
     void LogoPanel::mouseExit(const juce::MouseEvent&) {
         setAlpha(.5f);
     }
 
-    void LogoPanel::mouseDoubleClick(const juce::MouseEvent&) {
-        base_.setPanelProperty(zlgui::kUISettingPanel, true);
+    void LogoPanel::mouseDown(const juce::MouseEvent&) {
+        const auto panel_open = static_cast<float>(base_.getPanelProperty(zlgui::kUISettingPanel));
+        base_.setPanelProperty(zlgui::kUISettingPanel, panel_open < .5f ? 1.f : 0.f);
     }
 }

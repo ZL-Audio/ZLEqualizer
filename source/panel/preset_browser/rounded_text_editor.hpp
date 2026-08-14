@@ -9,28 +9,18 @@
 
 #pragma once
 
-#include "../../PluginProcessor.hpp"
-#include "../../gui/gui.hpp"
-#include "../helper/helper.hpp"
-#include "../multilingual/tooltip_helper.hpp"
+#include <juce_gui_basics/juce_gui_basics.h>
+
+#include "../../gui/interface_definitions.hpp"
 
 namespace zlpanel {
-    class LogoPanel final : public juce::Component,
-                            public juce::SettableTooltipClient {
+    class RoundedTextEditor final : public juce::TextEditor {
     public:
-        explicit LogoPanel(PluginProcessor& p, zlgui::UIBase& base,
-                           const multilingual::TooltipHelper& tooltip_helper);
+        explicit RoundedTextEditor(zlgui::UIBase& base);
+
+        void lookAndFeelChanged() override;
 
     private:
         zlgui::UIBase& base_;
-        std::unique_ptr<juce::Drawable> brand_drawable_, logo_drawable_;
-
-        void paint(juce::Graphics& g) override;
-
-        void mouseEnter(const juce::MouseEvent& event) override;
-
-        void mouseExit(const juce::MouseEvent& event) override;
-
-        void mouseDown(const juce::MouseEvent& event) override;
     };
 }

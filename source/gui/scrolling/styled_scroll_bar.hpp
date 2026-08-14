@@ -7,22 +7,28 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "credit_panel.hpp"
+#pragma once
 
-namespace zlpanel {
-    CreditPanel::CreditPanel(zlgui::UIBase& base) :
-        base_(base) {
-    }
+#include <memory>
 
-    void CreditPanel::paint(juce::Graphics& g) {
-        g.setColour(base_.getTextColour());
-        const auto padding = std::round(base_.getFontSize());
-        const auto bound = getLocalBounds().toFloat().reduced(2 * padding, padding);
-        const auto tl = getTipTextLayout(kText, bound.getWidth(), bound.getHeight());
-        tl.draw(g, bound);
-    }
+#include <juce_gui_basics/juce_gui_basics.h>
 
-    int CreditPanel::getIdealHeight() const {
-        return static_cast<int>(std::ceil(base_.getFontSize() * 1.5f * 39.5));
-    }
+#include "../interface_definitions.hpp"
+
+namespace zlgui::scrolling {
+    class StyledScrollBar final : public juce::ScrollBar {
+    public:
+        explicit StyledScrollBar(UIBase& base, bool is_vertical = true);
+
+        ~StyledScrollBar() override;
+
+        [[nodiscard]] static int getThickness(float font_size);
+
+        [[nodiscard]] static int getContentGap(float font_size);
+
+    private:
+        class LookAndFeel;
+
+        std::unique_ptr<LookAndFeel> look_and_feel_;
+    };
 }

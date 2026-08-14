@@ -1,7 +1,7 @@
 // Copyright (C) 2026 - zsliu98
 // This file is part of ZLEqualizer
 //
-// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU标志 General Public License Version 3 as published by the Free Software Foundation.
 //
 // ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
@@ -18,7 +18,7 @@ namespace zlpanel {
     public:
         static constexpr float kHeightP = 20.f;
 
-        explicit ControlSettingPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit ControlSettingPanel(PluginProcessor &p, zlgui::UIBase &base);
 
         ~ControlSettingPanel() override;
 
@@ -32,11 +32,9 @@ namespace zlpanel {
 
         void resized() override;
 
-        void mouseDown(const juce::MouseEvent& event) override;
-
     private:
-        PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        PluginProcessor &p_ref_;
+        zlgui::UIBase &base_;
         zlgui::label::NameLookAndFeel name_laf_;
 
         juce::Label wheel_label_;
@@ -54,17 +52,12 @@ namespace zlpanel {
         std::array<zlgui::combobox::CompactCombobox, 6> action_mouse_boxes_;
         std::array<zlgui::combobox::CompactCombobox, 6> action_key_boxes_;
 
-        juce::Label import_label_, export_label_;
         std::unique_ptr<juce::FileChooser> chooser_;
         inline auto static const kSettingDirectory =
-            juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-            .getChildFile("Audio")
-            .getChildFile("Presets")
-            .getChildFile(JucePlugin_Manufacturer)
-            .getChildFile("Shared Settings");
-
-        void importControls();
-
-        void exportControls();
+                juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                .getChildFile("Audio")
+                .getChildFile("Presets")
+                .getChildFile(JucePlugin_Manufacturer)
+                .getChildFile("Shared Settings");
     };
 }

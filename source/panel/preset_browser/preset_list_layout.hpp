@@ -7,22 +7,22 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "credit_panel.hpp"
+#pragma once
 
-namespace zlpanel {
-    CreditPanel::CreditPanel(zlgui::UIBase& base) :
-        base_(base) {
+#include <juce_gui_basics/juce_gui_basics.h>
+
+#include "../../gui/scrolling/virtualized_list.hpp"
+
+namespace zlpanel::preset_list_layout {
+    inline int contentInset(const float font_size) {
+        return juce::roundToInt(font_size * zlgui::scrolling::VirtualizedList::kDefaultContentInsetScale);
     }
 
-    void CreditPanel::paint(juce::Graphics& g) {
-        g.setColour(base_.getTextColour());
-        const auto padding = std::round(base_.getFontSize());
-        const auto bound = getLocalBounds().toFloat().reduced(2 * padding, padding);
-        const auto tl = getTipTextLayout(kText, bound.getWidth(), bound.getHeight());
-        tl.draw(g, bound);
+    inline int rowTextInset(const float font_size) {
+        return juce::roundToInt(font_size * .96f);
     }
 
-    int CreditPanel::getIdealHeight() const {
-        return static_cast<int>(std::ceil(base_.getFontSize() * 1.5f * 39.5));
+    inline int columnTextInset(const float font_size) {
+        return contentInset(font_size) + rowTextInset(font_size);
     }
 }

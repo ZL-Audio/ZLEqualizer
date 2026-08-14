@@ -7,22 +7,20 @@
 //
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
-#include "credit_panel.hpp"
+#pragma once
+
+#include <juce_audio_processors/juce_audio_processors.h>
 
 namespace zlpanel {
-    CreditPanel::CreditPanel(zlgui::UIBase& base) :
-        base_(base) {
-    }
+    class PresetJson final {
+    public:
+        static juce::Result write(const juce::File& file, const juce::MemoryBlock& processor_state);
 
-    void CreditPanel::paint(juce::Graphics& g) {
-        g.setColour(base_.getTextColour());
-        const auto padding = std::round(base_.getFontSize());
-        const auto bound = getLocalBounds().toFloat().reduced(2 * padding, padding);
-        const auto tl = getTipTextLayout(kText, bound.getWidth(), bound.getHeight());
-        tl.draw(g, bound);
-    }
+        static juce::Result read(const juce::File& file, juce::MemoryBlock& processor_state);
 
-    int CreditPanel::getIdealHeight() const {
-        return static_cast<int>(std::ceil(base_.getFontSize() * 1.5f * 39.5));
-    }
+    private:
+        static juce::var valueTreeToJson(const juce::ValueTree& tree);
+
+        static juce::Result jsonToValueTree(const juce::var& value, juce::ValueTree& tree);
+    };
 }

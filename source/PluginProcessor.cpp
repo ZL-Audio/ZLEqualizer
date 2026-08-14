@@ -10,6 +10,25 @@
 #include "PluginProcessor.hpp"
 #include "PluginEditor.hpp"
 
+namespace {
+    juce::ValueTree copyWithType(const juce::ValueTree& source, const juce::Identifier& type) {
+        if (!source.isValid()) {
+            return {};
+        }
+
+        juce::ValueTree result(type);
+        result.copyPropertiesAndChildrenFrom(source, nullptr);
+        return result;
+    }
+
+    juce::ValueTree getChildWithLegacyFallback(const juce::ValueTree& parent,
+                                               const juce::Identifier& type,
+                                               const juce::Identifier& legacy_type) {
+        const auto child = parent.getChildWithName(type);
+        return child.isValid() ? child : parent.getChildWithName(legacy_type);
+    }
+}
+
 //==============================================================================
 PluginProcessor::PluginProcessor() :
     AudioProcessor(BusesProperties()
@@ -19,10 +38,10 @@ PluginProcessor::PluginProcessor() :
         ),
     dummy_processor_(),
     parameters_(*this, nullptr,
-                juce::Identifier("ZLEqualizerParameters"),
+                juce::Identifier(zlstate::schema::kParameterState),
                 zlp::getParameterLayout()),
     parameters_NA_(dummy_processor_, nullptr,
-                   juce::Identifier("ZLEqualizerNAParameters"),
+                   juce::Identifier(zlstate::schema::kNonAutomatableState),
                    zlstate::getNAParameterLayout()),
     controller_(*this),
     chore_attachment_(*this, parameters_, controller_),
@@ -71,8 +90,7 @@ double PluginProcessor::getTailLengthSeconds() const {
 }
 
 int PluginProcessor::getNumPrograms() {
-    return 1; // NB: some hosts don't cope very well if you tell them there are 0 programs,
-    // so this should be at least 1, even if you're not really implementing programs.
+    return 1;
 }
 
 int PluginProcessor::getCurrentProgram() {
@@ -354,7 +372,7 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor() {
 }
 
 void PluginProcessor::getStateInformation(juce::MemoryBlock& dest_data) {
-    auto temp_tree = juce::ValueTree("ZLCompressorParaState");
+    auto temp_tree = juce::ValueTree(zlstate::schema::kProcessorState);
     temp_tree.appendChild(parameters_.copyState(), nullptr);
     temp_tree.appendChild(parameters_NA_.copyState(), nullptr);
     const std::unique_ptr<juce::XmlElement> xml(temp_tree.createXml());
@@ -363,11 +381,29 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock& dest_data) {
 
 void PluginProcessor::setStateInformation(const void* data, const int size_in_bytes) {
     std::unique_ptr<juce::XmlElement> xml_state(getXmlFromBinary(data, size_in_bytes));
-    if (xml_state != nullptr && xml_state->hasTagName("ZLCompressorParaState")) {
-        const auto temp_tree = juce::ValueTree::fromXml(*xml_state);
-        parameters_.replaceState(temp_tree.getChildWithName(parameters_.state.getType()));
-        parameters_NA_.replaceState(temp_tree.getChildWithName(parameters_NA_.state.getType()));
+    if (xml_state == nullptr ||
+        (!xml_state->hasTagName(zlstate::schema::kProcessorState) &&
+            !xml_state->hasTagName("ZLCompressorParaState"))) {
+        return;
     }
+
+    const auto temp_tree = juce::ValueTree::fromXml(*xml_state);
+    const auto parameter_state = getChildWithLegacyFallback(
+        temp_tree,
+        juce::Identifier(zlstate::schema::kParameterState),
+        juce::Identifier(zlstate::schema::legacy::kParameterState));
+    const auto non_automatable_state = getChildWithLegacyFallback(
+        temp_tree,
+        juce::Identifier(zlstate::schema::kNonAutomatableState),
+        juce::Identifier(zlstate::schema::legacy::kNonAutomatableState));
+    if (!parameter_state.isValid() || !non_automatable_state.isValid()) {
+        return;
+    }
+
+    parameters_.replaceState(copyWithType(parameter_state,
+                                          juce::Identifier(zlstate::schema::kParameterState)));
+    parameters_NA_.replaceState(copyWithType(non_automatable_state,
+                                             juce::Identifier(zlstate::schema::kNonAutomatableState)));
 }
 
 void PluginProcessor::updateChannelLayout() {
