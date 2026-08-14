@@ -42,10 +42,10 @@ namespace zlpanel {
 
         background_.setBufferedToImage(true);
         addAndMakeVisible(background_);
-        version_text_laf_.setFontScale(1.125f);
+        version_text_laf_.setFontScale(1.25f);
         version_text_.setJustificationType(juce::Justification::centred);
         version_text_.setLookAndFeel(&version_text_laf_);
-        version_text_.setAlpha(.45f);
+        version_text_.setAlpha(.5f);
         version_text_.setInterceptsMouseClicks(false, false);
         version_text_.setBufferedToImage(true);
         addAndMakeVisible(version_text_);
