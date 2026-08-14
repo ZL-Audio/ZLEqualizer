@@ -4,6 +4,28 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.3.1
+
+Bug fixes
+
+- fix unresponsive Linux UI
+- fix external side-chain button may not get updated display
+- fix potential race condition for FFT collision colour
+- fix potential redundant value notification of sliders/buttons/comboboxes
+- fix potential lagging caused by UI resizing
+
+New Features
+
+- add built-in preset manager (very early stage)
+
+Other Changes
+
+- adjust UI setting panel
+    - remove import/export functions
+    - add reveal folder button
+- adjust combobox UI
+
+
 ## 1.3.0
 
 BREAKING CHANGES
