@@ -341,10 +341,14 @@ namespace zlpanel {
             diffs
         };
         auto& match_result{match_result_.getWriter()};
-        match_result.num_band_ = optimizer.fit(
+        const auto num_band = optimizer.fit(
             match_result.filter_paras_, zlp::kBandNum, [&thread]() {
                 return thread.threadShouldExit();
             });
+        if (thread.threadShouldExit()) {
+            return;
+        }
+        match_result.num_band_ = num_band;
         match_result_.publish();
         triggerAsyncUpdate();
     }

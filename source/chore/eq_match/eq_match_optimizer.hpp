@@ -14,6 +14,8 @@
 #include "nlopt.hpp"
 #pragma GCC diagnostic pop
 
+#include <optional>
+
 #include "../../dsp/filter/ideal_filter/ideal.hpp"
 #include "../../dsp/vector/vector.hpp"
 
@@ -66,7 +68,14 @@ namespace zlchore::eq_match {
             size_t suggest_num_band = 0;
             double previous_mse = 1e6;
             for (size_t band = 0; band < num_band; ++band) {
-                const auto [para, mse] = addOneFilter(filter_types, filter_orders);
+                if (should_return()) {
+                    return suggest_num_band > 0 ? suggest_num_band : paras.size();
+                }
+                const auto result = addOneFilter(filter_types, filter_orders, should_return);
+                if (!result.has_value()) {
+                    return suggest_num_band > 0 ? suggest_num_band : paras.size();
+                }
+                const auto [para, mse] = *result;
                 paras.emplace_back(para);
                 const auto delta_mse = previous_mse - mse;
                 previous_mse = mse;
@@ -90,24 +99,37 @@ namespace zlchore::eq_match {
          * get the best filter for current diff and update the diff
          * @param filter_types all filter types
          * @param filter_orders all filter orders
+         * @param should_return
          * @return the best filter para and MSE
          */
-        std::tuple<zldsp::filter::FilterParameters, double> addOneFilter(
+        std::optional<std::tuple<zldsp::filter::FilterParameters, double>> addOneFilter(
             const std::span<zldsp::filter::FilterType> filter_types,
-            const std::span<size_t> filter_orders) {
+            const std::span<size_t> filter_orders,
+            const std::function<bool()>& should_return) {
             double best_mse = 1e6;
             zldsp::filter::FilterParameters best_para{};
             // find the best filter among all combinations of filter types and filter orders
             for (const auto& filter_type : filter_types) {
+                if (should_return()) {
+                    return std::nullopt;
+                }
                 const size_t sol_size{3};
                 filter_.setFilterType(filter_type);
                 for (const auto& filter_order : filter_orders) {
+                    if (should_return()) {
+                        return std::nullopt;
+                    }
                     filter_.setOrder(filter_order);
                     std::vector<double> sol(kInitSol.begin(), kInitSol.begin() + sol_size);
-                    fitFGQ(sol, kAlgos2);
-                    const auto mse = fitFGQ(sol, kAlgos1);
-                    if (mse < best_mse) {
-                        best_mse = mse;
+                    if (!fitFGQ(sol, kAlgos2, should_return).has_value()) {
+                        return std::nullopt;
+                    }
+                    const auto mse = fitFGQ(sol, kAlgos1, should_return);
+                    if (!mse.has_value()) {
+                        return std::nullopt;
+                    }
+                    if (*mse < best_mse) {
+                        best_mse = *mse;
                         best_para.filter_type = filter_type;
                         best_para.order = filter_order;
                         best_para.freq = std::exp(sol[0]);
@@ -115,6 +137,9 @@ namespace zlchore::eq_match {
                         best_para.q = std::exp(sol[2]);
                     }
                 }
+            }
+            if (should_return()) {
+                return std::nullopt;
             }
             // update diff with the best filter
             filter_.setFilterType(best_para.filter_type);
@@ -140,7 +165,7 @@ namespace zlchore::eq_match {
                     diffs_[i] -= std::log(res_[i]);
                 }
             }
-            return {best_para, best_mse};
+            return std::make_tuple(best_para, best_mse);
         }
 
     private:
@@ -173,6 +198,7 @@ namespace zlchore::eq_match {
             float* ws;
             float* diffs;
             float* res;
+            const std::function<bool()>* should_return;
         };
 
         /**
@@ -183,6 +209,9 @@ namespace zlchore::eq_match {
          */
         template <size_t sol_size>
         static double calculateMSE(const std::span<double> x, const OptFData* data) {
+            if ((*data->should_return)()) {
+                throw nlopt::forced_stop{};
+            }
             const auto filter = data->filter;
             if constexpr (sol_size >= 1) {
                 filter->setFreq(std::exp(x[0]));
@@ -241,14 +270,18 @@ namespace zlchore::eq_match {
          * @param algos a list of algorithms
          * @return
          */
-        double fitFGQ(std::vector<double>& sol,
-                      const std::span<const nlopt::algorithm> algos) {
-            OptFData data{ws_.size(), &filter_, ws_.data(), diffs_.data(), res_.data()};
+        std::optional<double> fitFGQ(std::vector<double>& sol,
+                                    const std::span<const nlopt::algorithm> algos,
+                                    const std::function<bool()>& should_return) {
+            OptFData data{ws_.size(), &filter_, ws_.data(), diffs_.data(), res_.data(), &should_return};
             double best_mse = 1e6;
             std::vector<double> best_sol{sol.begin(), sol.end()};
             const std::vector<double> lower_bound{lower_bound_.begin(), lower_bound_.begin() + sol.size()};
             const std::vector<double> upper_bound{upper_bound_.begin(), upper_bound_.begin() + sol.size()};
             for (const auto& algo : algos) {
+                if (should_return()) {
+                    return std::nullopt;
+                }
                 auto opt = nlopt::opt(algo, 3);
                 opt.set_min_objective(func<3>, &data);
                 opt.set_lower_bounds(lower_bound);
@@ -266,8 +299,14 @@ namespace zlchore::eq_match {
                         best_sol.assign(c_sol.begin(), c_sol.end());
                     }
                 }
+                catch (const nlopt::forced_stop&) {
+                    return std::nullopt;
+                }
                 catch (...) {
                 }
+            }
+            if (should_return()) {
+                return std::nullopt;
             }
             sol.assign(best_sol.begin(), best_sol.end());
             return best_mse;
