@@ -35,10 +35,9 @@ namespace zldsp::container {
 
         void setSize(const size_t x) {
             size_ = static_cast<unsigned long long>(x);
-            if (static_cast<unsigned long long>(x) < count_) {
-                while (!minmax_buffer_.isEmpty() && minmax_buffer_.getFront().second <= head_ - count_) {
-                    minmax_buffer_.popFront();
-                }
+            count_ = std::min(count_, size_);
+            while (!minmax_buffer_.isEmpty() && minmax_buffer_.getFront().second <= head_ - count_) {
+                minmax_buffer_.popFront();
             }
         }
 
