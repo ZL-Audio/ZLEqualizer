@@ -279,8 +279,6 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
     case kMain1Aux0: {
         main_pointers_[0] = buffer.getWritePointer(0);
         zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
-        side_pointers_[0] = side_buffer_[0].data();
-        side_pointers_[1] = side_buffer_[1].data();
         zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
         zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
         controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
@@ -290,12 +288,10 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
         main_pointers_[0] = buffer.getWritePointer(0);
         zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
         if (c_ext_side) {
-            side_pointers_[0] = buffer.getWritePointer(1);
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(1), num_samples);
         } else {
-            side_pointers_[0] = side_buffer_[0].data();
             zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
         }
-        side_pointers_[1] = side_buffer_[1].data();
         zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
         controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
         break;
@@ -304,11 +300,9 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
         main_pointers_[0] = buffer.getWritePointer(0);
         zldsp::vector::copy(main_pointers_[1], main_pointers_[0], num_samples);
         if (c_ext_side) {
-            side_pointers_[0] = buffer.getWritePointer(1);
-            side_pointers_[1] = buffer.getWritePointer(2);
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(1), num_samples);
+            zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(2), num_samples);
         } else {
-            side_pointers_[0] = side_buffer_[0].data();
-            side_pointers_[1] = side_buffer_[1].data();
             zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
             zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
         }
@@ -318,8 +312,6 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
     case kMain2Aux0: {
         main_pointers_[0] = buffer.getWritePointer(0);
         main_pointers_[1] = buffer.getWritePointer(1);
-        side_pointers_[0] = side_buffer_[0].data();
-        side_pointers_[1] = side_buffer_[1].data();
         zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
         zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
         controller_.template process<bypass>(main_pointers_, side_pointers_, num_samples);
@@ -329,12 +321,9 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
         main_pointers_[0] = buffer.getWritePointer(0);
         main_pointers_[1] = buffer.getWritePointer(1);
         if (c_ext_side) {
-            side_pointers_[0] = buffer.getWritePointer(2);
-            side_pointers_[1] = side_buffer_[1].data();
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
             zldsp::vector::copy(side_pointers_[1], side_pointers_[0], num_samples);
         } else {
-            side_pointers_[0] = side_buffer_[0].data();
-            side_pointers_[1] = side_buffer_[1].data();
             zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
             zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
         }
@@ -345,11 +334,9 @@ void PluginProcessor::processBlockInternal(juce::AudioBuffer<double>& buffer) {
         main_pointers_[0] = buffer.getWritePointer(0);
         main_pointers_[1] = buffer.getWritePointer(1);
         if (c_ext_side) {
-            side_pointers_[0] = buffer.getWritePointer(2);
-            side_pointers_[1] = buffer.getWritePointer(3);
+            zldsp::vector::copy(side_pointers_[0], buffer.getReadPointer(2), num_samples);
+            zldsp::vector::copy(side_pointers_[1], buffer.getReadPointer(3), num_samples);
         } else {
-            side_pointers_[0] = side_buffer_[0].data();
-            side_pointers_[1] = side_buffer_[1].data();
             zldsp::vector::copy(side_pointers_[0], main_pointers_[0], num_samples);
             zldsp::vector::copy(side_pointers_[1], main_pointers_[1], num_samples);
         }
