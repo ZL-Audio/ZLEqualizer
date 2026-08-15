@@ -43,6 +43,9 @@ namespace zldsp::delay {
         }
 
         void process(std::span<FloatType*> input, size_t num_samples) {
+            if (num_samples == 0) {
+                return;
+            }
             // write input samples to states
             const auto next_tail = (tail_ + static_cast<int>(num_samples)) % capacity_;
             if (next_tail > tail_) {
