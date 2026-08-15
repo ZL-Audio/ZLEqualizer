@@ -88,15 +88,19 @@ namespace zldsp::loudness {
             const auto total_sum = vector::sum(histogram_sums_.data(), histogram_sums_.size());
             const auto total_mean_square = total_sum / total_count;
             const auto total_lufs = FloatType(-0.691) + FloatType(10) * std::log10(total_mean_square);
-            if (total_lufs <= FloatType(-60)) {
+            if (total_lufs <= FloatType(-60) || total_lufs >= FloatType(9)) {
                 return total_lufs;
             } else {
                 const auto end_idx = static_cast<size_t>(std::round(-(total_lufs - FloatType(10)) * FloatType(10)));
                 const auto sub_count = vector::sum(histogram_.data(), end_idx);
                 const auto sub_sum = vector::sum(histogram_sums_.data(), end_idx);
-                const auto sub_mean_square = sub_sum / sub_count;
-                const auto sub_lufs = FloatType(-0.691) + FloatType(10) * std::log10(sub_mean_square);
-                return sub_lufs;
+                if (sub_count <= FloatType(0) || sub_sum <= FloatType(0)) {
+                    return total_lufs;
+                } else {
+                    const auto sub_mean_square = sub_sum / sub_count;
+                    const auto sub_lufs = FloatType(-0.691) + FloatType(10) * std::log10(sub_mean_square);
+                    return sub_lufs;
+                }
             }
         }
 
