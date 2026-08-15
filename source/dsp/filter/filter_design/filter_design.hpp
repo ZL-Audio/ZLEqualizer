@@ -257,7 +257,7 @@ namespace zldsp::filter::FilterDesign {
             n1 = updateShelfCoeffs<Coeff, kLowShelf>(n, start_idx, w2, g_dB, std::sqrt(2) / 2, coeffs);
         } else {
             const auto g_linear = std::exp2(g_dB * kDbToExp2);
-            coeffs[start_idx] = {1.0, 1.0, g_linear, g_linear, g_linear};
+            coeffs[start_idx] = Coeff::getIdentity(g_linear);
         }
         return n1 + n2;
     }
@@ -431,7 +431,7 @@ namespace zldsp::filter::FilterDesign {
             updateShelfGainLinear<Coeff, kLowShelf>(n, 0, g_linear_sqrt, cache + 1, coeffs);
         } else {
             const auto g_linear = g_linear_sqrt * g_linear_sqrt;
-            coeffs[0] = {1.0, 1.0, g_linear, g_linear, g_linear};
+            coeffs[0] = Coeff::getIdentity(g_linear);
         }
     }
 

@@ -14,6 +14,10 @@
 namespace zldsp::filter {
     class IvantsovCoeff {
     public:
+        static constexpr std::array<double, 5> getIdentity(const double gain) {
+            return {0.0, 0.0, gain, 0.0, 0.0};
+        }
+
         static std::array<double, 3> get1LowPass(double w0);
 
         static std::array<double, 3> get1HighPass(double w0);

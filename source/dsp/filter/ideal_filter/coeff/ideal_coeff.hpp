@@ -14,6 +14,10 @@
 namespace zldsp::filter {
     class IdealCoeff {
     public:
+        static constexpr std::array<double, 5> getIdentity(const double gain) {
+            return {1.0, 1.0, gain, gain, gain};
+        }
+
         static std::array<double, 3> get1LowPass(double w0);
 
         static std::array<double, 3> get1HighPass(double w0);
