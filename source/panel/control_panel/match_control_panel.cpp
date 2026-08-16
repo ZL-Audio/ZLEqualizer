@@ -11,6 +11,59 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
+    namespace {
+        juce::File getLegacyPresetDirectory() {
+            return juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                .getChildFile("Audio")
+                .getChildFile("Presets")
+                .getChildFile(JucePlugin_Manufacturer)
+                .getChildFile(JucePlugin_Name)
+                .getChildFile("Match Presets");
+        }
+
+        juce::Result ensureDirectoryExists(const juce::File& directory) {
+            if (directory.isDirectory()) {
+                return juce::Result::ok();
+            }
+
+            const auto parent = directory.getParentDirectory();
+            if (parent == directory) {
+                return juce::Result::fail("Could not find a parent directory");
+            }
+            if (const auto result = ensureDirectoryExists(parent); result.failed()) {
+                return result;
+            }
+
+            const auto result = directory.createDirectory();
+            return result.wasOk() || directory.isDirectory() ? juce::Result::ok() : result;
+        }
+
+        juce::Result migrateLegacyPresets(const juce::File& destination) {
+            const auto legacy = getLegacyPresetDirectory();
+            if (!legacy.isDirectory() || destination.exists()) {
+                return juce::Result::ok();
+            }
+
+            const auto parent = destination.getParentDirectory();
+            if (const auto result = ensureDirectoryExists(parent); result.failed()) {
+                return result;
+            }
+
+            const auto temporary = parent.getNonexistentChildFile(".Match Preset Migration", {}, false);
+            if (!legacy.copyDirectoryTo(temporary)) {
+                [[maybe_unused]] const auto flag = temporary.deleteRecursively();
+                return juce::Result::fail("Could not copy the existing match presets");
+            }
+            if (!temporary.moveFileTo(destination)) {
+                [[maybe_unused]] const auto flag = temporary.deleteRecursively();
+                return destination.isDirectory()
+                    ? juce::Result::ok()
+                    : juce::Result::fail("Could not finish moving the existing match presets");
+            }
+            return juce::Result::ok();
+        }
+    }
+
     MatchControlPanel::MatchControlPanel(PluginProcessor& p, zlgui::UIBase& base,
                                          MatchFFTPanel& match_fft_panel,
                                          const multilingual::TooltipHelper& tooltip_helper) :
@@ -50,11 +103,6 @@ namespace zlpanel {
         num_band_slider_("", base,
                          tooltip_helper.getToolTipText(multilingual::kEQMatchNumBand)) {
         juce::ignoreUnused(p_ref_);
-        // create the preset directory if not exists
-        if (!kPresetDirectory.isDirectory()) {
-            const auto f = kPresetDirectory.createDirectory();
-            juce::ignoreUnused(f);
-        }
 
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
@@ -241,6 +289,9 @@ namespace zlpanel {
         if (!isVisible()) {
             return;
         }
+        [[maybe_unused]] const auto migration_result = migrateLegacyPresets(kPresetDirectory);
+        [[maybe_unused]] const auto creation_result = ensureDirectoryExists(kPresetDirectory);
+
         draw_button_.getButton().setToggleState(true, juce::sendNotificationSync);
         match_fft_panel_.setDiffDrawOn(true);
         target_box_.getBox().setSelectedItemIndex(0, juce::dontSendNotification);

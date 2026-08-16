@@ -69,9 +69,7 @@ namespace zlpanel {
         std::unique_ptr<juce::FileChooser> chooser_;
         const juce::File kPresetDirectory =
             juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-            .getChildFile("Audio")
-            .getChildFile("Presets")
-            .getChildFile(JucePlugin_Manufacturer)
+            .getChildFile("ZL Audio")
             .getChildFile(JucePlugin_Name)
             .getChildFile("Match Presets");
         std::vector<float> preset_freqs_, preset_dbs_{};
