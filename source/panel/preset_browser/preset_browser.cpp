@@ -1,29 +1,84 @@
 // Copyright (C) 2026 - zsliu98
-// This file is part of ZLSpectrumEqualizer
+// This file is part of ZLEqualizer
 //
-// ZLSpectrumEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
+// ZLEqualizer is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License Version 3 as published by the Free Software Foundation.
 //
-// ZLSpectrumEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+// ZLEqualizer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License along with ZLSpectrumEqualizer. If not, see <https://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "preset_browser.hpp"
 
 #include <algorithm>
 
 #include "BinaryData.h"
-#include "../helper/paint_selected_card.hpp"
 #include "preset_list_layout.hpp"
 
 namespace zlpanel {
     namespace {
         juce::File getPresetsDirectory() {
             return juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                .getChildFile("ZL Audio")
+                .getChildFile(JucePlugin_Name)
+                .getChildFile("Presets");
+        }
+
+        juce::File getLegacyPresetsDirectory() {
+            return juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
                 .getChildFile("Audio")
                 .getChildFile("Presets")
                 .getChildFile(JucePlugin_Manufacturer)
                 .getChildFile(JucePlugin_Name)
                 .getChildFile("Presets");
+        }
+
+        juce::Result ensureDirectoryExists(const juce::File& directory) {
+            if (directory.isDirectory()) {
+                return juce::Result::ok();
+            }
+
+            const auto parent = directory.getParentDirectory();
+            if (parent == directory) {
+                return juce::Result::fail("Could not find a parent directory");
+            }
+            if (const auto result = ensureDirectoryExists(parent); result.failed()) {
+                return result;
+            }
+
+            const auto result = directory.createDirectory();
+            return result.wasOk() || directory.isDirectory() ? juce::Result::ok() : result;
+        }
+
+        juce::Result migrateLegacyPresets(const juce::File& destination) {
+            const auto legacy = getLegacyPresetsDirectory();
+            if (!legacy.isDirectory() || destination.exists()) {
+                return juce::Result::ok();
+            }
+
+            const auto parent = destination.getParentDirectory();
+            if (const auto result = ensureDirectoryExists(parent); result.failed()) {
+                return result;
+            }
+
+            const auto temporary = parent.getNonexistentChildFile(".Preset Migration", {}, false);
+            if (!legacy.copyDirectoryTo(temporary)) {
+                [[maybe_unused]] const auto flag = temporary.deleteRecursively();
+                return juce::Result::fail("Could not copy the existing presets");
+            }
+            if (!temporary.moveFileTo(destination)) {
+                [[maybe_unused]] const auto flag = temporary.deleteRecursively();
+                return destination.isDirectory()
+                    ? juce::Result::ok()
+                    : juce::Result::fail("Could not finish moving the existing presets");
+            }
+            return juce::Result::ok();
+        }
+
+        juce::String getDirectoryCreationError(const juce::String& message,
+                                               const juce::File& directory,
+                                               const juce::Result& result) {
+            return message + "\nReason: " + result.getErrorMessage() +
+                "\nPath: " + directory.getFullPathName();
         }
 
         bool isVisibleFileName(const juce::String& name) {
@@ -109,7 +164,6 @@ namespace zlpanel {
         base_.setPanelProperty(zlgui::PanelSettingIdx::kPresetBrowser, 0.f);
 
         applyColours();
-        refresh();
 
         setWantsKeyboardFocus(true);
     }
@@ -233,19 +287,22 @@ namespace zlpanel {
     }
 
     bool PresetBrowser::ensurePresetDirectory() {
-        if (!presets_directory_.isDirectory()) {
-            if (const auto result = presets_directory_.createDirectory(); result.failed()) {
-                showError("Could not create the preset directory.");
-                return false;
-            }
+        if (const auto result = migrateLegacyPresets(presets_directory_); result.failed()) {
+            showError(getDirectoryCreationError("Could not migrate the existing presets.",
+                                                getLegacyPresetsDirectory(), result));
+        }
+
+        if (const auto result = ensureDirectoryExists(presets_directory_); result.failed()) {
+            showError(getDirectoryCreationError("Could not create the preset directory.",
+                                                presets_directory_, result));
+            return false;
         }
 
         const auto user_directory = presets_directory_.getChildFile(kDefaultGroup);
-        if (!user_directory.isDirectory()) {
-            if (const auto result = user_directory.createDirectory(); result.failed()) {
-                showError("Could not create the User group.");
-                return false;
-            }
+        if (const auto result = ensureDirectoryExists(user_directory); result.failed()) {
+            showError(getDirectoryCreationError("Could not create the User group.",
+                                                user_directory, result));
+            return false;
         }
         return true;
     }
@@ -326,11 +383,10 @@ namespace zlpanel {
         }
 
         const auto directory = presets_directory_.getChildFile(legal_name);
-        if (!directory.isDirectory()) {
-            if (const auto result = directory.createDirectory(); result.failed()) {
-                showError("Could not create group \"" + legal_name + "\".");
-                return;
-            }
+        if (const auto result = ensureDirectoryExists(directory); result.failed()) {
+            showError(getDirectoryCreationError("Could not create group \"" + legal_name + "\".",
+                                                directory, result));
+            return;
         }
 
         selected_group_ = legal_name;
