@@ -154,9 +154,10 @@ namespace zlpanel {
 
     void ResponsePanel::updateFloatingPosition() {
         if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
+            const auto x = points_[band][0].load(std::memory_order::relaxed);
             dragger_panel_.getFloatPopPanel().updatePosition(
-            {points_[band][0].load(std::memory_order::relaxed),
-             points_[band][4].load(std::memory_order::relaxed)});
+                {x, points_[band][4].load(std::memory_order::relaxed)},
+                {x, points_[band][5].load(std::memory_order::relaxed)});
         }
     }
 

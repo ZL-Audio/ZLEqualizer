@@ -35,7 +35,8 @@ namespace zlpanel {
 
         int getIdealWidth() const;
 
-        void updatePosition(juce::Point<float> position);
+        void updatePosition(juce::Point<float> position,
+                            juce::Point<float> target_position);
 
         void setTargetVisible(bool is_target_visible);
 
@@ -50,6 +51,7 @@ namespace zlpanel {
 
         bool is_target_visible_{false};
         juce::Point<float> position_{};
+        juce::Point<float> target_position_{};
         juce::Point<float> upper_center_{};
         juce::Point<float> lower_center_{};
         juce::Point<float> left_center_{};
@@ -57,6 +59,7 @@ namespace zlpanel {
         float ideal_height_{}, ideal_width_{};
 
         float x_min_{}, x_max_{}, x_mid_{}, y_min_{}, y_max_{};
+        float floating_top_{}, floating_bottom_{};
         float y1_{}, y2_{}, y3_{};
 
         const std::unique_ptr<juce::Drawable> bypass_drawable_;

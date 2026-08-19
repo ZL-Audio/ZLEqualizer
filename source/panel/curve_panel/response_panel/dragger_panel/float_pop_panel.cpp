@@ -219,10 +219,14 @@ namespace zlpanel {
         }
     }
 
-    void FloatPopPanel::updatePosition(const juce::Point<float> position) {
+    void FloatPopPanel::updatePosition(const juce::Point<float> position,
+                                       const juce::Point<float> target_position) {
         if (std::abs(position.x - position_.x) > .01f
-            || std::abs(position.y - position_.y) > .01f) {
+            || std::abs(position.y - position_.y) > .01f
+            || std::abs(target_position.x - target_position_.x) > .01f
+            || std::abs(target_position.y - target_position_.y) > .01f) {
             position_ = position;
+            target_position_ = target_position;
             updateTransformation();
         }
     }
@@ -242,6 +246,8 @@ namespace zlpanel {
         x_max_ = bound.getWidth() - width * .5f;
         y_min_ = ideal_height_ * .5f;
         y_max_ = bound.getHeight() - height * .5f;
+        floating_top_ = bound.getY();
+        floating_bottom_ = bound.getBottom();
 
         y1_ = bound.getHeight() * .25f;
         y2_ = bound.getHeight() * .5f + .5f;
@@ -251,7 +257,17 @@ namespace zlpanel {
     }
 
     void FloatPopPanel::updateTransformation() {
-        if (is_target_visible_) {
+        const auto place_below = [this]() {
+            setTransform(juce::AffineTransform::translation(
+                std::clamp(position_.x, x_min_, x_max_) - upper_center_.x,
+                position_.y - upper_center_.y));
+        };
+        const auto place_above = [this]() {
+            setTransform(juce::AffineTransform::translation(
+                std::clamp(position_.x, x_min_, x_max_) - lower_center_.x,
+                position_.y - lower_center_.y));
+        };
+        const auto place_on_side = [this]() {
             if (position_.x < x_mid_) {
                 setTransform(juce::AffineTransform::translation(
                     position_.x - left_center_.x,
@@ -261,14 +277,33 @@ namespace zlpanel {
                     position_.x - right_center_.x,
                     std::clamp(position_.y, y_min_, y_max_) - right_center_.y));
             }
-        } else if (position_.y < y1_ || (position_.y > y2_ && position_.y < y3_)) {
-            setTransform(juce::AffineTransform::translation(
-                std::clamp(position_.x, x_min_, x_max_) - upper_center_.x,
-                position_.y - upper_center_.y));
+        };
+        const auto place_using_default_rule = [this, &place_below, &place_above]() {
+            if (position_.y < y1_ || (position_.y > y2_ && position_.y < y3_)) {
+                place_below();
+            } else {
+                place_above();
+            }
+        };
+
+        constexpr float target_position_epsilon = 1.f;
+        const auto target_y_delta = target_position_.y - position_.y;
+        if (!is_target_visible_ || std::abs(target_y_delta) <= target_position_epsilon) {
+            place_using_default_rule();
+        } else if (target_y_delta < 0.f) {
+            const auto popup_bottom = position_.y - upper_center_.y + ideal_height_;
+            if (popup_bottom <= floating_bottom_) {
+                place_below();
+            } else {
+                place_on_side();
+            }
         } else {
-            setTransform(juce::AffineTransform::translation(
-                std::clamp(position_.x, x_min_, x_max_) - lower_center_.x,
-                position_.y - lower_center_.y));
+            const auto popup_top = position_.y - lower_center_.y;
+            if (popup_top >= floating_top_) {
+                place_above();
+            } else {
+                place_on_side();
+            }
         }
     }
 
