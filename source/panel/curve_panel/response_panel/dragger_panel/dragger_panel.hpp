@@ -118,7 +118,9 @@ namespace zlpanel {
         float sample_rate_{0.f};
         std::atomic<float>& max_db_id_ref_;
         float c_max_db_id_{-1.f};
+        float max_db_{1.f};
         float solo_gain_at_drag_start_{0.f};
+        float solo_gain_drag_height_{1.f};
         bool solo_gain_drag_active_{false};
 
         zlgui::slider::SnappingSlider q_slider_;
@@ -149,8 +151,7 @@ namespace zlpanel {
 
         void startSoloGainDrag(const juce::Component* component);
 
-        juce::Point<float> updateSoloGain(size_t band, juce::Point<float> current,
-                                          juce::Point<float> next) const;
+        juce::Point<float> updateSoloGain(juce::Point<float> current, juce::Point<float> next) const;
 
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
 

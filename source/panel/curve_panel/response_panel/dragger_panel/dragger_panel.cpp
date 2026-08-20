@@ -25,6 +25,11 @@ namespace zlpanel {
         float_pop_panel_(p, base, tooltip_helper),
         max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
         q_slider_(base), slope_slider_(base) {
+        const auto max_db_idx = static_cast<size_t>(std::clamp(
+            static_cast<int>(std::round(max_db_id_ref_.load(std::memory_order::relaxed))),
+            0, static_cast<int>(zlstate::PEQMaxDB::kChoices.size() - 1)));
+        max_db_ = base_.getCurveDBScale(max_db_idx);
+
         mouse_event_panel_.addMouseListener(this, false);
         addAndMakeVisible(mouse_event_panel_);
 
@@ -113,8 +118,11 @@ namespace zlpanel {
         const auto max_db_id = max_db_id_ref_.load(std::memory_order::relaxed);
         if (std::abs(max_db_id - c_max_db_id_) > .1f) {
             c_max_db_id_ = max_db_id;
-            const auto max_db = base_.getCurveDBScale(static_cast<size_t>(std::round(c_max_db_id_)));
-            gain_range_ = juce::NormalisableRange<float>(-max_db, max_db, .01f);
+            const auto max_db_idx = static_cast<size_t>(std::clamp(
+                static_cast<int>(std::round(c_max_db_id_)),
+                0, static_cast<int>(zlstate::PEQMaxDB::kChoices.size() - 1)));
+            max_db_ = base_.getCurveDBScale(max_db_idx);
+            gain_range_ = juce::NormalisableRange<float>(-max_db_, max_db_, .01f);
             if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
                 updateDraggerAttachment(band);
                 updateTargetAttachment(band);
@@ -250,6 +258,7 @@ namespace zlpanel {
         bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
         bound.setWidth(bound.getWidth() * width_p);
         const auto side_bound = bound.removeFromBottom(base_.getFontSize() * kDraggerScale);
+        solo_gain_drag_height_ = std::max(bound.getHeight(), 1.f);
 
         switch (filter_types_[band]) {
         case zldsp::filter::kPeak: {
@@ -398,9 +407,7 @@ namespace zlpanel {
                             p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
                         updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
                                     dynamic_on ? 0.f : 1.f);
-                        const auto max_db_id = std::round(max_db_id_ref_.load(std::memory_order::relaxed));
-                        band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on,
-                                                      base_.getCurveDBScale(static_cast<size_t>(max_db_id)));
+                        band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on, max_db_);
                     }
                 }
 
@@ -498,9 +505,7 @@ namespace zlpanel {
                             p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
                         updateValue(p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + std::to_string(band)),
                                     dynamic_on ? 0.f : 1.f);
-                        const auto max_db_id = std::round(max_db_id_ref_.load(std::memory_order::relaxed));
-                        band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on,
-                                                      base_.getCurveDBScale(static_cast<size_t>(max_db_id)));
+                        band_helper::turnOnOffDynamic(p_ref_, band, !dynamic_on, max_db_);
                     }
                 }
 
@@ -584,14 +589,9 @@ namespace zlpanel {
         }
     }
 
-    juce::Point<float> DraggerPanel::updateSoloGain(const size_t band, const juce::Point<float> current,
+    juce::Point<float> DraggerPanel::updateSoloGain(const juce::Point<float> current,
                                                     const juce::Point<float> next) const {
-        const auto max_db_idx = static_cast<size_t>(std::clamp(
-            static_cast<int>(std::round(max_db_id_ref_.load(std::memory_order::relaxed))),
-            0, static_cast<int>(zlstate::PEQMaxDB::kChoices.size() - 1)));
-        const auto max_db = base_.getCurveDBScale(max_db_idx);
-        const auto drag_height = std::max(draggers_[band].getButtonArea().getHeight(), 1.f);
-        const auto db_per_pixel = 2.f * max_db / drag_height;
+        const auto db_per_pixel = 2.f * max_db_ / solo_gain_drag_height_;
         const auto gain = std::clamp(solo_gain_at_drag_start_ + (current.y - next.y) * db_per_pixel,
                                      zlp::PGain::kRange.start, zlp::PGain::kRange.end);
         p_ref_.getController().setSoloGain(gain);
@@ -610,18 +610,17 @@ namespace zlpanel {
         side_dragger_.setXYEnabled(true, false);
 
         if (solo_whole_idx < zlp::kBandNum) {
-            const auto update_solo_gain = [this, solo_whole_idx](const juce::Point<float> current,
-                                                                 const juce::Point<float> next) {
-                return updateSoloGain(solo_whole_idx, current, next);
+            const auto update_solo_gain = [this](const juce::Point<float> current,
+                                                 const juce::Point<float> next) {
+                return updateSoloGain(current, next);
             };
             draggers_[solo_whole_idx].check_center_ = update_solo_gain;
             draggers_[solo_whole_idx].setXYEnabled(true, true);
             target_dragger_.check_center_ = update_solo_gain;
         } else if (solo_whole_idx < 2 * zlp::kBandNum) {
-            const auto band = solo_whole_idx - zlp::kBandNum;
-            side_dragger_.check_center_ = [this, band](const juce::Point<float> current,
-                                                       const juce::Point<float> next) {
-                return updateSoloGain(band, current, next);
+            side_dragger_.check_center_ = [this](const juce::Point<float> current,
+                                                 const juce::Point<float> next) {
+                return updateSoloGain(current, next);
             };
             side_dragger_.setXYEnabled(true, true);
         }
