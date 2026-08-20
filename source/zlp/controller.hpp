@@ -210,6 +210,23 @@ namespace zlp {
             to_update_.signal();
         }
 
+        void setSoloGain(const double gain) {
+            solo_gain_db_.store(gain, std::memory_order::relaxed);
+            to_update_solo_gain_.signal();
+            to_update_.signal();
+        }
+
+        double getSoloGain() const {
+            return solo_gain_db_.load(std::memory_order::relaxed);
+        }
+
+        void resetSoloGain() {
+            solo_gain_db_.store(0., std::memory_order::relaxed);
+            to_reset_solo_gain_.signal();
+            to_update_solo_gain_.signal();
+            to_update_.signal();
+        }
+
         void setMakeupGain(const double gain) {
             makeup_gain_linear_.store(zldsp::chore::decibelsToGain(gain), std::memory_order::relaxed);
             to_update_makeup_.signal();
@@ -397,6 +414,10 @@ namespace zlp {
         bool c_solo_on_{false};
         bool c_solo_side_{false};
         size_t c_solo_idx_{0};
+        zlchore::thread::Notifier to_reset_solo_gain_{false};
+        zlchore::thread::Notifier to_update_solo_gain_{false};
+        std::atomic<double> solo_gain_db_{0.};
+        zldsp::gain::Gain<double> solo_gain_{};
         // static gain compensation
         zlchore::thread::Notifier to_update_output_{false};
         std::atomic<bool> sgc_on_{false};

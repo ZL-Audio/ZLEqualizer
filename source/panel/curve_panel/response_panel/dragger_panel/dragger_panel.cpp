@@ -253,7 +253,6 @@ namespace zlpanel {
 
         switch (filter_types_[band]) {
         case zldsp::filter::kPeak: {
-            draggers_[band].setXYEnabled(true, true);
             dragger_y_enabled_[band] = true;
             break;
         }
@@ -261,7 +260,6 @@ namespace zlpanel {
         case zldsp::filter::kHighShelf:
         case zldsp::filter::kTiltShelf:
         case zldsp::filter::kFlatTilt: {
-            draggers_[band].setXYEnabled(true, true);
             dragger_y_enabled_[band] = true;
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() * .5f);
             break;
@@ -272,11 +270,12 @@ namespace zlpanel {
         case zldsp::filter::kNotch:
         case zldsp::filter::kAllPass:
         default: {
-            draggers_[band].setXYEnabled(true, false);
             dragger_y_enabled_[band] = false;
             break;
         }
         }
+        const auto is_solo = base_.getSoloWholeIdx() == band;
+        draggers_[band].setXYEnabled(true, dragger_y_enabled_[band] || is_solo);
         draggers_[band].setButtonArea(bound);
         if (band == base_.getSelectedBand()) {
             target_dragger_.setButtonArea(bound);
@@ -337,6 +336,7 @@ namespace zlpanel {
     }
 
     void DraggerPanel::mouseDown(const juce::MouseEvent& event) {
+        solo_gain_drag_active_ = false;
         if (event.originalComponent == &mouse_event_panel_) {
             items_set_.deselectAll();
             lasso_component_.setVisible(true);
@@ -376,6 +376,8 @@ namespace zlpanel {
                 } else if (base_.isExitSoloTriggered(action_type, event.mods)) {
                     base_.setSoloWholeIdx(2 * zlp::kBandNum);
                 }
+
+                startSoloGainDrag(event.originalComponent);
 
                 if (base_.isRightClickTriggered(action_type, event.mods) && event.originalComponent == &(draggers_[
                     band].getButton())) {
@@ -426,6 +428,10 @@ namespace zlpanel {
     }
 
     void DraggerPanel::mouseUp(const juce::MouseEvent& event) {
+        if (solo_gain_drag_active_) {
+            p_ref_.getController().resetSoloGain();
+            solo_gain_drag_active_ = false;
+        }
         if (event.originalComponent == &mouse_event_panel_) {
             lasso_component_.endLasso();
             lasso_component_.setVisible(false);
@@ -470,6 +476,8 @@ namespace zlpanel {
                 } else if (base_.isExitSoloTriggered(action_type, event.mods)) {
                     base_.setSoloWholeIdx(2 * zlp::kBandNum);
                 }
+
+                startSoloGainDrag(event.originalComponent);
 
                 if (base_.isRightClickTriggered(action_type, event.mods) && event.originalComponent == &(draggers_[
                     band].getButton())) {
@@ -560,14 +568,62 @@ namespace zlpanel {
         }
     }
 
+    void DraggerPanel::startSoloGainDrag(const juce::Component* component) {
+        solo_gain_drag_active_ = false;
+        const auto solo_whole_idx = base_.getSoloWholeIdx();
+        if (solo_whole_idx < zlp::kBandNum) {
+            if (component == &draggers_[solo_whole_idx].getButton()
+                || component == &target_dragger_.getButton()) {
+                solo_gain_at_drag_start_ = static_cast<float>(p_ref_.getController().getSoloGain());
+                solo_gain_drag_active_ = true;
+            }
+        } else if (solo_whole_idx < 2 * zlp::kBandNum
+            && component == &side_dragger_.getButton()) {
+            solo_gain_at_drag_start_ = static_cast<float>(p_ref_.getController().getSoloGain());
+            solo_gain_drag_active_ = true;
+        }
+    }
+
+    juce::Point<float> DraggerPanel::updateSoloGain(const size_t band, const juce::Point<float> current,
+                                                    const juce::Point<float> next) const {
+        const auto max_db_idx = static_cast<size_t>(std::clamp(
+            static_cast<int>(std::round(max_db_id_ref_.load(std::memory_order::relaxed))),
+            0, static_cast<int>(zlstate::PEQMaxDB::kChoices.size() - 1)));
+        const auto max_db = base_.getCurveDBScale(max_db_idx);
+        const auto drag_height = std::max(draggers_[band].getButtonArea().getHeight(), 1.f);
+        const auto db_per_pixel = 2.f * max_db / drag_height;
+        const auto gain = std::clamp(solo_gain_at_drag_start_ + (current.y - next.y) * db_per_pixel,
+                                     zlp::PGain::kRange.start, zlp::PGain::kRange.end);
+        p_ref_.getController().setSoloGain(gain);
+        return {next.x, current.y};
+    }
+
     void DraggerPanel::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) {
         const auto solo_whole_idx = base_.getSoloWholeIdx();
         if (previous_solo_whole_idx_ < zlp::kBandNum) {
-            draggers_[previous_solo_whole_idx_].setXYEnabled(
-                true, dragger_y_enabled_[previous_solo_whole_idx_]);
+            draggers_[previous_solo_whole_idx_].check_center_ = nullptr;
+            draggers_[previous_solo_whole_idx_].setXYEnabled(true, dragger_y_enabled_[previous_solo_whole_idx_]);
         }
+        target_dragger_.check_center_ = nullptr;
+        target_dragger_.setXYEnabled(false, true);
+        side_dragger_.check_center_ = nullptr;
+        side_dragger_.setXYEnabled(true, false);
+
         if (solo_whole_idx < zlp::kBandNum) {
-            draggers_[solo_whole_idx].setXYEnabled(true, false);
+            const auto update_solo_gain = [this, solo_whole_idx](const juce::Point<float> current,
+                                                                 const juce::Point<float> next) {
+                return updateSoloGain(solo_whole_idx, current, next);
+            };
+            draggers_[solo_whole_idx].check_center_ = update_solo_gain;
+            draggers_[solo_whole_idx].setXYEnabled(true, true);
+            target_dragger_.check_center_ = update_solo_gain;
+        } else if (solo_whole_idx < 2 * zlp::kBandNum) {
+            const auto band = solo_whole_idx - zlp::kBandNum;
+            side_dragger_.check_center_ = [this, band](const juce::Point<float> current,
+                                                       const juce::Point<float> next) {
+                return updateSoloGain(band, current, next);
+            };
+            side_dragger_.setXYEnabled(true, true);
         }
         previous_solo_whole_idx_ = solo_whole_idx;
     }

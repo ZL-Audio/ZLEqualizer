@@ -74,6 +74,7 @@ namespace zlp {
             solo_pointers_[chan] = solo_buffers_[chan].data();
         }
         solo_filter_.prepare(sample_rate, 2, max_num_samples);
+        solo_gain_.prepare(sample_rate, max_num_samples, 0.5);
         if (c_solo_side_) {
             updateSoloFilter<true>(side_filter_paras_[c_solo_idx_]);
         } else {
@@ -168,7 +169,8 @@ namespace zlp {
             }
             to_update_lrms_.signal();
         }
-        if (to_update_solo_.check()) {
+        const auto solo_status_updated = to_update_solo_.check();
+        if (solo_status_updated) {
             // update solo status
             const auto solo_whole_idx = solo_whole_idx_.load(std::memory_order::relaxed);
             if (solo_whole_idx == 2 * kBandNum) {
@@ -186,6 +188,12 @@ namespace zlp {
                     updateSoloFilter<true>(side_filter_paras_[c_solo_idx_]);
                 }
             }
+        }
+        if (to_reset_solo_gain_.check() && (!c_solo_on_ || solo_status_updated)) {
+            solo_gain_.reset();
+        }
+        if (to_update_solo_gain_.check()) {
+            solo_gain_.setGainDecibels(solo_gain_db_.load(std::memory_order::relaxed));
         }
     }
 
@@ -661,6 +669,7 @@ namespace zlp {
             }
             }
             if constexpr (!bypass) {
+                solo_gain_.process(solo_pointers_, num_samples);
                 zldsp::vector::copy(main_pointers[0], solo_pointers_[0], num_samples);
                 zldsp::vector::copy(main_pointers[1], solo_pointers_[1], num_samples);
             }
