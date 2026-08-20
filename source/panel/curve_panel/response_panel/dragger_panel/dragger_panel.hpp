@@ -122,6 +122,7 @@ namespace zlpanel {
         float solo_gain_at_drag_start_{0.f};
         float solo_gain_drag_height_{1.f};
         bool solo_gain_drag_active_{false};
+        bool exit_solo_on_mouse_up_{false};
 
         zlgui::slider::SnappingSlider q_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> q_attachment_;
@@ -148,6 +149,10 @@ namespace zlpanel {
         void updateSideAttachment(size_t band);
 
         void updateSlopeAttachment();
+
+        bool isEnterSoloTriggered(zlgui::MouseActionType type, const juce::ModifierKeys& mods) const;
+
+        bool isExitSoloTriggered(zlgui::MouseActionType type, const juce::ModifierKeys& mods) const;
 
         void startSoloGainDrag(const juce::Component* component);
 

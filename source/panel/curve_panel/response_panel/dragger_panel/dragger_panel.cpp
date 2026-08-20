@@ -344,8 +344,27 @@ namespace zlpanel {
         slope_attachment_->updateComponent();
     }
 
+    bool DraggerPanel::isEnterSoloTriggered(const zlgui::MouseActionType type,
+                                            const juce::ModifierKeys& mods) const {
+        if (base_.isEnterSoloTriggered(type, mods)) {
+            return true;
+        }
+        return base_.getEnterSoloKey() == zlgui::KeyActionType::kNone && mods.isCommandDown()
+            && base_.isEnterSoloTriggered(type, mods.withoutFlags(juce::ModifierKeys::commandModifier));
+    }
+
+    bool DraggerPanel::isExitSoloTriggered(const zlgui::MouseActionType type,
+                                           const juce::ModifierKeys& mods) const {
+        if (base_.isExitSoloTriggered(type, mods)) {
+            return true;
+        }
+        return base_.getExitSoloKey() == zlgui::KeyActionType::kNone && mods.isCommandDown()
+            && base_.isExitSoloTriggered(type, mods.withoutFlags(juce::ModifierKeys::commandModifier));
+    }
+
     void DraggerPanel::mouseDown(const juce::MouseEvent& event) {
         solo_gain_drag_active_ = false;
+        exit_solo_on_mouse_up_ = false;
         if (event.originalComponent == &mouse_event_panel_) {
             items_set_.deselectAll();
             lasso_component_.setVisible(true);
@@ -375,14 +394,18 @@ namespace zlpanel {
                 || event.originalComponent == &(target_dragger_.getButton())
                 || event.originalComponent == &(side_dragger_.getButton())) {
 
-                if (base_.isEnterSoloTriggered(action_type, event.mods)) {
+                const auto enter_solo_triggered = isEnterSoloTriggered(action_type, event.mods);
+                const auto exit_solo_triggered = isExitSoloTriggered(action_type, event.mods);
+                exit_solo_on_mouse_up_ = exit_solo_triggered;
+
+                if (enter_solo_triggered) {
                     if (event.originalComponent == &(draggers_[band].getButton())
                         || event.originalComponent == &(target_dragger_.getButton())) {
                         base_.setSoloWholeIdx(band);
                     } else if (event.originalComponent == &(side_dragger_.getButton())) {
                         base_.setSoloWholeIdx(zlp::kBandNum + band);
                     }
-                } else if (base_.isExitSoloTriggered(action_type, event.mods)) {
+                } else if (exit_solo_triggered) {
                     base_.setSoloWholeIdx(2 * zlp::kBandNum);
                 }
 
@@ -445,16 +468,10 @@ namespace zlpanel {
             if (items_set_.getNumSelected() == 0) {
                 base_.setSelectedBand(zlp::kBandNum);
             }
-        } else {
-            if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum) {
-                auto action_type = event.mods.isRightButtonDown()
-                    ? zlgui::MouseActionType::kRightClick
-                    : zlgui::MouseActionType::kLeftClick;
-                if (base_.isExitSoloTriggered(action_type, event.mods)) {
-                    base_.setSoloWholeIdx(2 * zlp::kBandNum);
-                }
-            }
+        } else if (exit_solo_on_mouse_up_) {
+            base_.setSoloWholeIdx(2 * zlp::kBandNum);
         }
+        exit_solo_on_mouse_up_ = false;
     }
 
     void DraggerPanel::mouseDrag(const juce::MouseEvent& event) {
@@ -473,14 +490,14 @@ namespace zlpanel {
                 || event.originalComponent == &(target_dragger_.getButton())
                 || event.originalComponent == &(side_dragger_.getButton())) {
 
-                if (base_.isEnterSoloTriggered(action_type, event.mods)) {
+                if (isEnterSoloTriggered(action_type, event.mods)) {
                     if (event.originalComponent == &(draggers_[band].getButton())
                         || event.originalComponent == &(target_dragger_.getButton())) {
                         base_.setSoloWholeIdx(band);
                     } else if (event.originalComponent == &(side_dragger_.getButton())) {
                         base_.setSoloWholeIdx(zlp::kBandNum + band);
                     }
-                } else if (base_.isExitSoloTriggered(action_type, event.mods)) {
+                } else if (isExitSoloTriggered(action_type, event.mods)) {
                     base_.setSoloWholeIdx(2 * zlp::kBandNum);
                 }
 
