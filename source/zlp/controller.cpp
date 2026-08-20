@@ -189,7 +189,8 @@ namespace zlp {
                 }
             }
         }
-        if (to_reset_solo_gain_.check() && (!c_solo_on_ || solo_status_updated)) {
+        const auto solo_gain_reset_requested = to_reset_solo_gain_.check();
+        if (solo_status_updated || (solo_gain_reset_requested && !c_solo_on_)) {
             solo_gain_.reset();
         }
         if (to_update_solo_gain_.check()) {
