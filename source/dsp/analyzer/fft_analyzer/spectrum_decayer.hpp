@@ -20,7 +20,11 @@ namespace zldsp::analyzer {
         explicit SpectrumDecayer() = default;
 
         void prepare(const size_t fft_size) {
-            state_.resize(fft_size / 2 + 1);
+            prepareSpectrum(fft_size / 2 + 1);
+        }
+
+        void prepareSpectrum(const size_t spectrum_size) {
+            state_.resize(spectrum_size);
             std::ranges::fill(state_.begin(), state_.end(), -240.f);
         }
 

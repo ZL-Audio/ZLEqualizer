@@ -18,8 +18,8 @@
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_tilter.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_decayer.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_collision.hpp"
+#include "../../../dsp/analyzer/fft_analyzer/spectrum_blender.hpp"
 #include "../../../chore/thread/notifier.hpp"
-#include "../../../dsp/interpolation/interpolation.hpp"
 
 namespace zlpanel {
     class FFTPanel final : public juce::Component,
@@ -38,6 +38,12 @@ namespace zlpanel {
         void setRefreshRate(double refresh_rate);
 
     private:
+        static constexpr size_t kNumSources = 3;
+        static constexpr size_t kNumResolutions = 3;
+        static constexpr size_t kLowResolution = 0;
+        static constexpr size_t kMiddleResolution = 1;
+        static constexpr size_t kHighResolution = 2;
+
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
         std::atomic<float>& pre_ref_;
@@ -65,14 +71,12 @@ namespace zlpanel {
 
         bool skip_next_repaint_{false};
 
-        static constexpr size_t kInterSize = 64;
         std::vector<float> xs_{}, ys_{};
-        std::vector<float> inter_xs_{}, inter_ys_{};
-        std::unique_ptr<zldsp::interpolation::SeqMakima<float>> inter_;
-        std::array<TriBuffer<juce::Path>, 3> paths_;
+        std::vector<float> frequencies_{};
+        std::array<TriBuffer<juce::Path>, kNumSources> paths_;
 
         double c_sample_rate_{0.0};
-        int fft_size_{0};
+        int history_size_{0};
         size_t num_point_{0};
 
         std::atomic<float> width_{0.f}, height_{0.f};
@@ -92,15 +96,20 @@ namespace zlpanel {
 
         std::atomic<bool> is_fft_frozen_{false};
 
-        zldsp::analyzer::FFTAnalyzerProcessor processor_;
-        std::array<zldsp::analyzer::FFTAnalyzerReceiver, 3> receivers_{
-            zldsp::analyzer::FFTAnalyzerReceiver{processor_},
-            zldsp::analyzer::FFTAnalyzerReceiver{processor_},
-            zldsp::analyzer::FFTAnalyzerReceiver{processor_}
+        std::array<zldsp::analyzer::FFTAnalyzerProcessor, kNumResolutions> processors_;
+        std::array<zldsp::analyzer::FFTAnalyzerReceiver, kNumSources> receivers_{
+            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kLowResolution]},
+            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kLowResolution]},
+            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kLowResolution]}
         };
-        zldsp::analyzer::SpectrumSmoother smoother_;
+        std::array<zldsp::analyzer::SpectrumSmoother, kNumResolutions> smoothers_;
         zldsp::analyzer::SpectrumTilter tilter_;
-        std::array<zldsp::analyzer::SpectrumDecayer, 3> decayers_;
+        std::array<zldsp::analyzer::SpectrumDecayer, kNumSources> decayers_;
+
+        std::array<std::array<zldsp::vector::aligned_vector<float>, kNumResolutions>,
+                   kNumSources> resolution_spectra_;
+        std::array<zldsp::vector::aligned_vector<float>, kNumSources> spectra_;
+        std::array<float, kNumResolutions> noise_power_scales_{};
 
         zldsp::vector::aligned_vector<float> current_ps_{}, coll_ps_{};
         TriBuffer<juce::ColourGradient> gradient_;

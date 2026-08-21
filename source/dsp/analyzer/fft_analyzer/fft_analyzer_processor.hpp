@@ -31,6 +31,10 @@ namespace zldsp::analyzer {
             zldsp::fft::createPeriodicHanning(std::span{window_.data(), window_.size()});
             const auto scale = 2.f / static_cast<float>(fft_size);
             vector::multiply(window_.data(), scale, window_.size());
+            window_sqr_sum_ = 0.0;
+            for (const auto value : window_) {
+                window_sqr_sum_ += static_cast<double>(value) * static_cast<double>(value);
+            }
             fft_in_.resize(fft_size);
             fft_out_.resize(fft_size / 2 + 1);
         }
@@ -55,11 +59,16 @@ namespace zldsp::analyzer {
             return fft_in_.size();
         }
 
+        [[nodiscard]] double getWindowSqrSum() const {
+            return window_sqr_sum_;
+        }
+
     private:
         vector::aligned_vector<float> fft_in_;
         vector::aligned_vector<float> fft_out_;
 
         std::unique_ptr<zldsp::fft::RFFT<float>> fft_;
         vector::aligned_vector<float> window_;
+        double window_sqr_sum_{0.0};
     };
 }

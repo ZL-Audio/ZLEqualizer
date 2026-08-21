@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <cassert>
+#include <cmath>
 #include <span>
 
 #include "../../vector/vector.hpp"
@@ -19,7 +21,11 @@ namespace zldsp::analyzer {
         explicit SpectrumTilter() = default;
 
         void prepare(const size_t fft_size) {
-            tilt_shift_.resize(fft_size / 2 + 1);
+            prepareSpectrum(fft_size / 2 + 1);
+        }
+
+        void prepareSpectrum(const size_t spectrum_size) {
+            tilt_shift_.resize(spectrum_size);
         }
 
         void setTiltSlope(const double sample_rate, const double slope_per_oct) {
@@ -27,6 +33,16 @@ namespace zldsp::analyzer {
             for (size_t i = 1; i < tilt_shift_.size(); ++i) {
                 const auto freq = static_cast<double>(i) * delta;
                 tilt_shift_[i] = static_cast<float>(std::log2(freq / 1000.0) * slope_per_oct);
+            }
+            tilt_shift_[0] = tilt_shift_[1];
+        }
+
+        void setTiltSlope(const std::span<const float> frequencies, const double slope_per_oct) {
+            assert(frequencies.size() == tilt_shift_.size());
+            assert(frequencies.size() >= 2);
+            for (size_t i = 1; i < tilt_shift_.size(); ++i) {
+                tilt_shift_[i] = static_cast<float>(
+                    std::log2(static_cast<double>(frequencies[i]) / 1000.0) * slope_per_oct);
             }
             tilt_shift_[0] = tilt_shift_[1];
         }

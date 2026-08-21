@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <cassert>
+
 #include "fft_analyzer_processor.hpp"
 
 namespace zldsp::analyzer {
@@ -53,6 +55,7 @@ namespace zldsp::analyzer {
         void pull(const zldsp::container::FIFORange range,
                   const std::vector<std::vector<float>>& sample_fifo) {
             const auto num_ready = range.block_size1 + range.block_size2;
+            assert(num_ready <= static_cast<int>(processor_.getFFTSize()));
             const auto num_replace = static_cast<int>(processor_.getFFTSize()) - num_ready;
             if (!is_on_) { return; }
             for (size_t chan = 0; chan < circular_buffer_.size(); ++chan) {
@@ -81,38 +84,58 @@ namespace zldsp::analyzer {
          * @param stereo_type
          */
         void forward(const StereoType stereo_type) {
-            // run forward FFT & apply tilt
+            forward(processor_, stereo_type, abs_sqr_fft_buffer_);
+        }
+
+        /**
+         * Run a forward FFT over the newest samples in the receiver history.
+         * The supplied processor may use a smaller FFT than the processor that
+         * owns the history, allowing multiple resolutions to share one sample
+         * buffer.
+         * @param processor FFT processor to use
+         * @param stereo_type channel combination to analyze
+         * @param spectrum_abs_sqr destination squared-magnitude spectrum
+         */
+        void forward(FFTAnalyzerProcessor& processor, const StereoType stereo_type,
+                     const std::span<float> spectrum_abs_sqr) {
+            // run the FFT over the newest samples in the shared history
             if (!is_on_) { return; }
-            auto& fft_in{processor_.getFFTIn()};
-            auto& fft_out{processor_.getFFTOut()};
-            const auto& window{processor_.getWindow()};
+            const auto fft_size = processor.getFFTSize();
+            assert(!circular_buffer_.empty());
+            assert(fft_size <= circular_buffer_.front().size());
+            assert(spectrum_abs_sqr.size() == fft_size / 2 + 1);
+
+            const auto input_offset = circular_buffer_.front().size() - fft_size;
+            auto& fft_in{processor.getFFTIn()};
+            auto& fft_out{processor.getFFTOut()};
+            const auto& window{processor.getWindow()};
             if (circular_buffer_.size() != 2 || stereo_type == StereoType::kStereo) {
                 for (size_t chan = 0; chan < circular_buffer_.size(); ++chan) {
-                    vector::multiply(fft_in.data(), circular_buffer_[chan].data(),
+                    vector::multiply(fft_in.data(), circular_buffer_[chan].data() + input_offset,
                                      window.data(), window.size());
                     if (chan == 0) {
-                        processor_.forwardSqrMag(fft_in.data(), abs_sqr_fft_buffer_.data());
+                        processor.forwardSqrMag(fft_in.data(), spectrum_abs_sqr.data());
                     } else {
-                        processor_.forwardSqrMag(fft_in.data(), fft_out.data());
-                        vector::add(abs_sqr_fft_buffer_.data(), fft_out.data(), fft_out.size());
+                        processor.forwardSqrMag(fft_in.data(), fft_out.data());
+                        vector::add(spectrum_abs_sqr.data(), fft_out.data(), fft_out.size());
                     }
                 }
             } else {
                 if (stereo_type == StereoType::kLeft) {
-                    vector::multiply(fft_in.data(), circular_buffer_[0].data(),
+                    vector::multiply(fft_in.data(), circular_buffer_[0].data() + input_offset,
                                      window.data(), window.size());
                 } else if (stereo_type == StereoType::kRight) {
-                    vector::multiply(fft_in.data(), circular_buffer_[1].data(),
+                    vector::multiply(fft_in.data(), circular_buffer_[1].data() + input_offset,
                                      window.data(), window.size());
                 } else if (stereo_type == StereoType::kMid) {
                     static constexpr hn::ScalableTag<float> d;
                     static constexpr size_t lanes = hn::MaxLanes(d);
                     float* __restrict fft_in_ptr = fft_in.data();
-                    const float* __restrict in0_ptr = circular_buffer_[0].data();
-                    const float* __restrict in1_ptr = circular_buffer_[1].data();
+                    const float* __restrict in0_ptr = circular_buffer_[0].data() + input_offset;
+                    const float* __restrict in1_ptr = circular_buffer_[1].data() + input_offset;
                     const float* __restrict window_ptr = window.data();
                     const auto v_sqrt_over_2 = hn::Set(d, kSqrt2Over2);
-                    for (size_t j = 0; j < processor_.getFFTSize(); j += lanes) {
+                    for (size_t j = 0; j < fft_size; j += lanes) {
                         const auto v_in0 = hn::LoadU(d, in0_ptr + j);
                         const auto v_in1 = hn::LoadU(d, in1_ptr + j);
                         const auto v_window = hn::LoadU(d, window_ptr + j);
@@ -123,11 +146,11 @@ namespace zldsp::analyzer {
                     static constexpr hn::ScalableTag<float> d;
                     static constexpr size_t lanes = hn::MaxLanes(d);
                     float* __restrict fft_in_ptr = fft_in.data();
-                    const float* __restrict in0_ptr = circular_buffer_[0].data();
-                    const float* __restrict in1_ptr = circular_buffer_[1].data();
+                    const float* __restrict in0_ptr = circular_buffer_[0].data() + input_offset;
+                    const float* __restrict in1_ptr = circular_buffer_[1].data() + input_offset;
                     const float* __restrict window_ptr = window.data();
                     const auto v_sqrt_over_2 = hn::Set(d, kSqrt2Over2);
-                    for (size_t j = 0; j < processor_.getFFTSize(); j += lanes) {
+                    for (size_t j = 0; j < fft_size; j += lanes) {
                         const auto v_in0 = hn::LoadU(d, in0_ptr + j);
                         const auto v_in1 = hn::LoadU(d, in1_ptr + j);
                         const auto v_window = hn::LoadU(d, window_ptr + j);
@@ -135,7 +158,7 @@ namespace zldsp::analyzer {
                         hn::StoreU(hn::Mul(v_out, v_window), d, fft_in_ptr + j);
                     }
                 }
-                processor_.forwardSqrMag(fft_in.data(), abs_sqr_fft_buffer_.data());
+                processor.forwardSqrMag(fft_in.data(), spectrum_abs_sqr.data());
             }
         }
 
