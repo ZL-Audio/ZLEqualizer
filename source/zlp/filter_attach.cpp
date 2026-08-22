@@ -95,7 +95,9 @@ namespace zlp {
             side_filter_type_updater_.update(1.f);
         } else if (filter_type == zldsp::filter::kHighShelf) {
             side_filter_type_updater_.update(2.f);
-        } else if (filter_type == zldsp::filter::kFlatGain) {
+        } else if (filter_type == zldsp::filter::kFlatGain
+            || filter_type == zldsp::filter::kFlatTilt
+            || filter_type == zldsp::filter::kTiltShelf) {
             side_filter_type_updater_.update(static_cast<float>(PSideFilterType::kAllI));
         }
     }
@@ -105,7 +107,9 @@ namespace zlp {
         if (filter_type == zldsp::filter::kPeak
             || filter_type == zldsp::filter::kLowShelf
             || filter_type == zldsp::filter::kHighShelf
-            || filter_type == zldsp::filter::kFlatGain) {
+            || filter_type == zldsp::filter::kFlatGain
+            || filter_type == zldsp::filter::kFlatTilt
+            || filter_type == zldsp::filter::kTiltShelf) {
             const auto freq = static_cast<float>(empty_.getFreq());
             side_freq_updater_.update(freq);
         }
