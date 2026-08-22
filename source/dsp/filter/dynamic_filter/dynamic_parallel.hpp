@@ -80,7 +80,10 @@ namespace zldsp::filter {
                     }
                     }
                     if (this->filter_.getFilterNum() > 0) {
-                        const auto order = this->filter_.getFilterType() == kFlatTilt ? 0 : this->filter_.getOrder();
+                        const auto filter_type = this->filter_.getFilterType();
+                        const auto order = (filter_type == kFlatTilt || filter_type == kFlatGain)
+                                               ? 0
+                                               : this->filter_.getOrder();
                         if (order == 2) {
                             internalDynamicProcess<2, bypass, dynamic_bypass>(side_buffer, num_samples);
                         } else if (order == 1) {

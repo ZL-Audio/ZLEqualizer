@@ -80,7 +80,9 @@ namespace zldsp::filter {
                 }
                 // calculate portion using SIMD
                 handler_.process(side_buffer, num_samples);
-                const size_t gain_num = filter_.getOrder() < 3 ? 1 : filter_.getOrder() / 2;
+                const auto flat_filter = filter_.getFilterType() == kFlatTilt
+                    || filter_.getFilterType() == kFlatGain;
+                const size_t gain_num = flat_filter || filter_.getOrder() < 3 ? 1 : filter_.getOrder() / 2;
                 switch (handler_.getFollower().getSState()) {
                 case zldsp::compressor::SState::kOff: {
                     handler_.template processToGainLinear<zldsp::compressor::SState::kOff>(
@@ -102,7 +104,7 @@ namespace zldsp::filter {
                 }
                 }
                 if (filter_.getFilterNum() > 0) {
-                    const auto order = filter_.getFilterType() == kFlatTilt ? 0 : filter_.getOrder();
+                    const auto order = flat_filter ? 0 : filter_.getOrder();
                     if (order == 2) {
                         internalProcess<2, bypass, dynamic_bypass>(main_buffer, side_buffer, num_samples);
                     } else if (order == 1) {

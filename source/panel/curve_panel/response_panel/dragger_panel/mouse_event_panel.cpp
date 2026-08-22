@@ -135,6 +135,9 @@ namespace zlpanel {
     }
 
     void MouseEventPanel::mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) {
+        if (static_cast<int>(std::round(c_ftype_idx_)) == static_cast<int>(zldsp::filter::kFlatGain)) {
+            return;
+        }
         if (event.mods.isCommandDown()) {
             slope_slider_.mouseWheelMove(event, wheel);
         } else {

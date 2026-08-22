@@ -273,6 +273,10 @@ namespace zlpanel {
             bound = bound.withSizeKeepingCentre(bound.getWidth(), bound.getHeight() * .5f);
             break;
         }
+        case zldsp::filter::kFlatGain: {
+            dragger_y_enabled_[band] = true;
+            break;
+        }
         case zldsp::filter::kLowPass:
         case zldsp::filter::kHighPass:
         case zldsp::filter::kBandPass:
@@ -315,6 +319,20 @@ namespace zlpanel {
         side_dragger_attachment_ = std::make_unique<zlgui::attachment::DraggerAttachment<false, true>>(
             side_dragger_, p_ref_.parameters_,
             zlp::PSideFreq::kID + std::to_string(band), freq_range_, updater_);
+    }
+
+    bool DraggerPanel::isSideAll() const {
+        const auto band = base_.getSelectedBand();
+        if (band >= zlp::kBandNum) {
+            return false;
+        }
+        const auto* value = p_ref_.parameters_.getRawParameterValue(
+            zlp::PSideFilterType::kID + std::to_string(band));
+        if (value == nullptr) {
+            return false;
+        }
+        const auto side_type = static_cast<int>(std::round(value->load(std::memory_order::relaxed)));
+        return side_type == zlp::PSideFilterType::kAllI;
     }
 
     void DraggerPanel::updateSlopeAttachment() {
@@ -424,7 +442,8 @@ namespace zlpanel {
                     const auto gain_enabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
                         || (ftype == static_cast<int>(zldsp::filter::kLowShelf))
                         || (ftype == static_cast<int>(zldsp::filter::kHighShelf))
-                        || (ftype == static_cast<int>(zldsp::filter::kTiltShelf));
+                        || (ftype == static_cast<int>(zldsp::filter::kTiltShelf))
+                        || (ftype == static_cast<int>(zldsp::filter::kFlatGain));
                     if (gain_enabled) {
                         const auto dynamic_on = getValue(
                             p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
@@ -516,7 +535,8 @@ namespace zlpanel {
                     const auto gain_enabled = (ftype == static_cast<int>(zldsp::filter::kPeak))
                         || (ftype == static_cast<int>(zldsp::filter::kLowShelf))
                         || (ftype == static_cast<int>(zldsp::filter::kHighShelf))
-                        || (ftype == static_cast<int>(zldsp::filter::kTiltShelf));
+                        || (ftype == static_cast<int>(zldsp::filter::kTiltShelf))
+                        || (ftype == static_cast<int>(zldsp::filter::kFlatGain));
                     if (gain_enabled) {
                         const auto dynamic_on = getValue(
                             p_ref_.parameters_, zlp::PDynamicON::kID + std::to_string(band)) > .5f;
@@ -582,6 +602,14 @@ namespace zlpanel {
 
     void DraggerPanel::mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) {
         if (event.originalComponent != &mouse_event_panel_) {
+            const auto band = base_.getSelectedBand();
+            if ((event.originalComponent == &side_dragger_.getButton() && isSideAll())
+                || (band < zlp::kBandNum
+                    && filter_types_[band] == zldsp::filter::kFlatGain
+                    && (event.originalComponent == &draggers_[band].getButton()
+                        || event.originalComponent == &target_dragger_.getButton()))) {
+                return;
+            }
             if (event.mods.isCommandDown()) {
                 slope_slider_.mouseWheelMove(event, wheel);
             } else {
@@ -619,7 +647,8 @@ namespace zlpanel {
         const auto solo_whole_idx = base_.getSoloWholeIdx();
         if (previous_solo_whole_idx_ < zlp::kBandNum) {
             draggers_[previous_solo_whole_idx_].check_center_ = nullptr;
-            draggers_[previous_solo_whole_idx_].setXYEnabled(true, dragger_y_enabled_[previous_solo_whole_idx_]);
+            draggers_[previous_solo_whole_idx_].setXYEnabled(
+                true, dragger_y_enabled_[previous_solo_whole_idx_]);
         }
         target_dragger_.check_center_ = nullptr;
         target_dragger_.setXYEnabled(false, true);

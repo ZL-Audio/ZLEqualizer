@@ -320,7 +320,7 @@ namespace zlp {
             "Peak", "Low Shelf", "Low Pass",
             "High Shelf", "High Pass", "Notch",
             "Band Pass", "Tilt Shelf", "Flat Tilt",
-            "All Pass"
+            "All Pass", "Flat Gain"
         };
         static constexpr int kDefaultI = 0;
     };
@@ -500,8 +500,9 @@ namespace zlp {
         static constexpr auto kID = "side_filter_type";
         static constexpr auto kName = "Side Filter Type";
         inline static const auto kChoices = juce::StringArray{
-            "BP", "LP", "HP"
+            "BP", "LP", "HP", "AL"
         };
+        static constexpr int kAllI = 3;
         static constexpr int kDefaultI = 0;
     };
 

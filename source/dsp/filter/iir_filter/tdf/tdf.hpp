@@ -51,7 +51,9 @@ namespace zldsp::filter {
             if (this->current_filter_num_ == 0) {
                 return;
             }
-            const auto order = this->c_filter_type_ == kFlatTilt ? 0 : this->c_order_;
+            const auto order = (this->c_filter_type_ == kFlatTilt || this->c_filter_type_ == kFlatGain)
+                                   ? 0
+                                   : this->c_order_;
             if (this->c_freq_.isSmoothing() || this->c_gain_.isSmoothing() || this->c_q_.isSmoothing()) {
                 if (order == 2) {
                     processTDF<2, bypass, true>(buffer, num_samples);

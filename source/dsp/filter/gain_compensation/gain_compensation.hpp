@@ -114,6 +114,9 @@ namespace zldsp::filter {
         case kHighShelf: {
             return sgc_detail::getHighShelfGainCompensation(paras.freq, paras.gain);
         }
+        case kFlatGain: {
+            return -paras.gain;
+        }
         case kLowPass:
         case kHighPass:
         case kBandPass:

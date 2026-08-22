@@ -25,7 +25,7 @@ namespace zldsp::filter {
 
     enum FilterType {
         kPeak, kLowShelf, kLowPass, kHighShelf, kHighPass,
-        kNotch, kBandPass, kTiltShelf, kFlatTilt, kAllPass
+        kNotch, kBandPass, kTiltShelf, kFlatTilt, kAllPass, kFlatGain
     };
 
     enum FilterStructure {

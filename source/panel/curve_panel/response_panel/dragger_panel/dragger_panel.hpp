@@ -148,6 +148,8 @@ namespace zlpanel {
 
         void updateSideAttachment(size_t band);
 
+        [[nodiscard]] bool isSideAll() const;
+
         void updateSlopeAttachment();
 
         bool isEnterSoloTriggered(zlgui::MouseActionType type, const juce::ModifierKeys& mods) const;

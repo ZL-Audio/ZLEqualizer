@@ -43,8 +43,10 @@ namespace zlp {
                 side_empty_.setFilterType(zldsp::filter::kBandPass);
             } else if (value < 1.5f) {
                 side_empty_.setFilterType(zldsp::filter::kLowPass);
-            } else {
+            } else if (value < 2.5f) {
                 side_empty_.setFilterType(zldsp::filter::kHighPass);
+            } else {
+                side_empty_.setFilterType(zldsp::filter::kFlatGain);
             }
             update_flag_.signal();
             whole_update_flag_.signal();

@@ -238,16 +238,19 @@ namespace zlpanel {
             if (c_side_ftype_ < 0) {
                 return;
             }
-            if (c_side_ftype_ == 0 && slope_box_.getBox().getSelectedId() == 1) {
+            const auto is_band_pass = c_side_ftype_ == 0;
+            const auto is_all = c_side_ftype_ == zlp::PSideFilterType::kAllI;
+            if (is_band_pass && slope_box_.getBox().getSelectedId() == 1) {
                 slope_box_.getBox().setSelectedId(2, juce::sendNotificationSync);
             }
-            if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum && c_side_ftype_ != 0) {
+            if (const auto band = base_.getSelectedBand(); band < zlp::kBandNum && !is_band_pass) {
                 auto* para = p_ref_.parameters_.getParameter(zlp::PSideQ::kID + std::to_string(band));
                 updateValue(para, para->getDefaultValue());
             }
-            slope_box_.getBox().setItemEnabled(1, c_side_ftype_ != 0);
-            q_slider_.setEditable(c_side_ftype_ == 0);
-            q_label_.setAlpha(c_side_ftype_ == 0 ? 1.f : .5f);
+            slope_box_.getBox().setItemEnabled(1, !is_band_pass);
+            slope_box_.setEditable(!is_all);
+            q_slider_.setEditable(is_band_pass);
+            q_label_.setAlpha(is_band_pass ? 1.f : .5f);
         }
     }
 

@@ -317,8 +317,10 @@ namespace zlpanel {
                 side_empty_[band].setFilterType(zldsp::filter::kBandPass);
             } else if (value < 1.5f) {
                 side_empty_[band].setFilterType(zldsp::filter::kLowPass);
-            } else {
+            } else if (value < 2.5f) {
                 side_empty_[band].setFilterType(zldsp::filter::kHighPass);
+            } else {
+                side_empty_[band].setFilterType(zldsp::filter::kFlatGain);
             }
             to_update_side_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PSideOrder::kID)) {
@@ -524,7 +526,8 @@ namespace zlpanel {
     }
 
     float ResponsePanel::getButtonMag(const zldsp::filter::FilterParameters& para) {
-        if (para.filter_type == zldsp::filter::kPeak) {
+        if (para.filter_type == zldsp::filter::kPeak
+            || para.filter_type == zldsp::filter::kFlatGain) {
             return static_cast<float>(para.gain);
         } else if (para.filter_type == zldsp::filter::kLowShelf
             || para.filter_type == zldsp::filter::kHighShelf
@@ -571,16 +574,9 @@ namespace zlpanel {
                                    static_cast<float>(right_x));
         }
         case zldsp::filter::kTiltShelf:
-        case zldsp::filter::kFlatTilt: {
-            const auto fixed_q = std::sqrt(2.0) * 0.03125;
-            const auto bandwidth = para.freq / fixed_q;
-            const auto left_f = 0.5 * bandwidth * (std::sqrt(4.0 * fixed_q * fixed_q + 1.0) - 1.0);
-            const auto left_x = std::log(left_f / 10.0) * freq_to_x_scale;
-            const auto right_f = left_f + bandwidth;
-            const auto right_x = std::log(right_f / 10.0) * freq_to_x_scale;
-            return std::make_tuple(static_cast<float>(left_x),
-                                   static_cast<float>(center_x),
-                                   static_cast<float>(right_x));
+        case zldsp::filter::kFlatTilt:
+        case zldsp::filter::kFlatGain: {
+            return std::make_tuple(0.f, static_cast<float>(center_x), c_width_);
         }
         case zldsp::filter::kLowShelf:
         case zldsp::filter::kHighPass: {

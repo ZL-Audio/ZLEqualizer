@@ -47,6 +47,8 @@ namespace zlpanel {
                 juce::Drawable::createFromImageData(BinaryData::flatshelf_svg, BinaryData::flatshelf_svgSize));
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::allpass_svg, BinaryData::allpass_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::flatgain_svg, BinaryData::flatgain_svgSize));
             return icons;
         }(), base, "", {}),
         lr_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
