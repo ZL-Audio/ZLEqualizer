@@ -22,8 +22,8 @@ namespace zlpanel {
         solo_drawable_(juce::Drawable::createFromImageData(BinaryData::solo_svg, BinaryData::solo_svgSize)),
         solo_button_(base, solo_drawable_.get(), solo_drawable_.get(),
                      tooltip_helper.getToolTipText(multilingual::kBandSolo)),
-        close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
-                                                            BinaryData::close_svgSize)),
+        close_drawable_(juce::Drawable::createFromImageData(BinaryData::trash_svg,
+                                                            BinaryData::trash_svgSize)),
         close_button_(base, close_drawable_.get(), nullptr),
         ftype_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
             std::vector<std::unique_ptr<juce::Drawable>> icons;

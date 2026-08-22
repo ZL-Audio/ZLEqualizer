@@ -16,8 +16,8 @@ namespace zlpanel {
                                              const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         control_background_(base),
-        close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
-                                                            BinaryData::close_svgSize)),
+        close_drawable_(juce::Drawable::createFromImageData(BinaryData::trash_svg,
+                                                            BinaryData::trash_svgSize)),
         close_button_(base, close_drawable_.get(), nullptr,
                       tooltip_helper.getToolTipText(multilingual::kBandOff)),
         bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
@@ -136,7 +136,7 @@ namespace zlpanel {
                 const auto max_idx = std::round(p_ref_.parameters_NA_.getRawParameterValue(
                     zlstate::PEQMaxDB::kID)->load(std::memory_order::relaxed));
                 band_helper::turnOnOffDynamic(p_ref_, c_band, dynamic_button_.getToggleState(),
-                    base_.getCurveDBScale(static_cast<size_t>(max_idx)));
+                                              base_.getCurveDBScale(static_cast<size_t>(max_idx)));
             }
             if (!dynamic_button_.getToggleState() && base_.getSoloWholeIdx() < 2 * zlp::kBandNum) {
                 base_.setSoloWholeIdx(2 * zlp::kBandNum);
