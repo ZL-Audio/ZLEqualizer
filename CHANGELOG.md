@@ -4,6 +4,32 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.4.0
+
+BREAKING CHANGES
+
+- fix incorrect default/link side-filter type for `Tilt Shelf` and `Flat Tilt`
+- fix incorrect fresh rate reported by internal refresh handler
+  - you may notice the FFT analyzer decays in a different speed after the fix
+  - you may need to re-adjust FFT `Speed` in UI settings
+
+Bug fixes
+
+- fix preset folder permission issue on macOS
+- fix floating window position when dynamic is ON
+- fix solo shortcuts regarding right-click
+
+New Features
+
+- add `Flat Gain` filter type
+- add gain adjustment during solo
+  - to fix the gain as zero, press `Ctrl/Command` during right-click dragging
+
+Other Changes
+
+- change filter close button to trash icon
+- improve FFT analyzer precision
+
 ## 1.3.1
 
 Bug fixes
