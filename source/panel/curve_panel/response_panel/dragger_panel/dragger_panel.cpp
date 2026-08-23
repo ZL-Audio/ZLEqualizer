@@ -367,8 +367,9 @@ namespace zlpanel {
         if (base_.isEnterSoloTriggered(type, mods)) {
             return true;
         }
-        return base_.getEnterSoloKey() == zlgui::KeyActionType::kNone && mods.isCommandDown()
-            && base_.isEnterSoloTriggered(type, mods.withoutFlags(juce::ModifierKeys::commandModifier));
+        constexpr auto drag_modifiers = juce::ModifierKeys::commandModifier | juce::ModifierKeys::shiftModifier;
+        return base_.getEnterSoloKey() == zlgui::KeyActionType::kNone
+            && base_.isEnterSoloTriggered(type, mods.withoutFlags(drag_modifiers));
     }
 
     bool DraggerPanel::isExitSoloTriggered(const zlgui::MouseActionType type,
@@ -376,8 +377,9 @@ namespace zlpanel {
         if (base_.isExitSoloTriggered(type, mods)) {
             return true;
         }
-        return base_.getExitSoloKey() == zlgui::KeyActionType::kNone && mods.isCommandDown()
-            && base_.isExitSoloTriggered(type, mods.withoutFlags(juce::ModifierKeys::commandModifier));
+        constexpr auto drag_modifiers = juce::ModifierKeys::commandModifier | juce::ModifierKeys::shiftModifier;
+        return base_.getExitSoloKey() == zlgui::KeyActionType::kNone
+            && base_.isExitSoloTriggered(type, mods.withoutFlags(drag_modifiers));
     }
 
     void DraggerPanel::mouseDown(const juce::MouseEvent& event) {

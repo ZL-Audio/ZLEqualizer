@@ -90,11 +90,16 @@ namespace zlgui::dragger {
         current_pos_ = button_area_.getConstrainedPoint(current_pos_);
         // shift global position accordingly
         const auto actual_shift = current_pos_ - old_current_pos;
+        // consume pointer motion on a locked axis so it is not replayed when the axis is unlocked.
         if (std::abs(shift.x) > 1e-10f) {
             global_pos_.x += actual_shift.x / shift.x * old_shift.x;
+        } else {
+            global_pos_.x += old_shift.x;
         }
         if (std::abs(shift.y) > 1e-10f) {
             global_pos_.y += actual_shift.y / shift.y * old_shift.y;
+        } else {
+            global_pos_.y += old_shift.y;
         }
         // update x/y portion
         x_portion_ = (current_pos_.getX() - button_area_.getX()) / button_area_.getWidth();
