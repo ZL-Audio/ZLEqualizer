@@ -22,7 +22,7 @@ namespace zlpanel {
 
         void paint(juce::Graphics& g) override;
 
-        void setMaxIdx(int eq_max_idx, int fft_min_idx);
+        void setScaleIdx(int eq_max_idx, int fft_top_idx, int fft_min_idx);
 
         float getUnitHeight() const;
 
@@ -32,6 +32,7 @@ namespace zlpanel {
         zlgui::UIBase& base_;
 
         int c_eq_max_idx_{-1};
+        int c_fft_top_idx_{-1};
         int c_fft_min_idx_{-1};
     };
 }

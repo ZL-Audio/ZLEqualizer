@@ -34,9 +34,19 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox eq_max_box_;
         zlgui::attachment::ComboBoxAttachment<true> eq_max_attach_;
 
+        zlgui::combobox::CompactCombobox fft_top_box_;
+        zlgui::attachment::ComboBoxAttachment<true> fft_top_attach_;
+
         zlgui::combobox::CompactCombobox fft_min_box_;
         zlgui::attachment::ComboBoxAttachment<true> fft_min_attach_;
 
+        int c_fft_top_idx_{-1};
+        bool use_wide_layout_{false};
+
         float getUnitHeight() const;
+
+        void updateFFTMinChoices(int fft_top_idx);
+
+        void updateWideLayout(int fft_top_idx, int fft_min_idx);
     };
 }

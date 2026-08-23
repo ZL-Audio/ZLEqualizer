@@ -24,6 +24,7 @@ New Features
 - add `Flat Gain` filter type
 - add gain adjustment during solo
   - to fix the gain as zero, press `Ctrl/Command` during right-click dragging
+- add FFT decibel scale maximum selection
 
 Other Changes
 

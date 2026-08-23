@@ -120,6 +120,17 @@ namespace zlstate {
         static constexpr int kDefaultI = 1;
     };
 
+    class PFFTTopDB : public ChoiceParameters<PFFTTopDB> {
+    public:
+        static constexpr auto kID = "fft_top_db";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "6", "0", "-6", "-12", "-18", "-24", "-36"
+        };
+        static constexpr std::array kDBs = {6.f, 0.f, -6.f, -12.f, -18.f, -24.f, -36.f};
+        static constexpr int kDefaultI = 1;
+    };
+
     class PFFTMinDB : public ChoiceParameters<PFFTMinDB> {
     public:
         static constexpr auto kID = "fft_min_db";
@@ -246,7 +257,7 @@ namespace zlstate {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getNAParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(PEQMaxDB::get(), PFFTMinDB::get(),
+        layout.add(PEQMaxDB::get(), PFFTTopDB::get(), PFFTMinDB::get(),
                    PFFTPreON::get(), PFFTPostON::get(), PFFTSideON::get(),
                    PFFTSmoothOCTValue::get(), PFFTSmoothERBValue::get(),PFFTSmoothType::get(),
                    PFFTSpeed::get(), PFFTTilt::get(),

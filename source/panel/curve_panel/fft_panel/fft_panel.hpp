@@ -53,8 +53,11 @@ namespace zlpanel {
         std::atomic<float>& coll_ref_;
         std::atomic<float>& coll_strength_ref_;
 
-        std::atomic<float> &fft_min_db_idx_ref_;
-        float c_fft_min_db_{0.f};
+        std::atomic<float>& fft_top_db_idx_ref_;
+        float c_fft_top_db_{0.f};
+
+        std::atomic<float>& fft_min_db_idx_ref_;
+        float c_fft_range_db_{0.f};
 
         std::atomic<float> &fft_speed_idx_ref_;
         int fft_speed_idx_{zlstate::PFFTSpeed::kDefaultI};

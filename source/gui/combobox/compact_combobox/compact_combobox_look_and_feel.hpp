@@ -189,6 +189,8 @@ namespace zlgui::combobox {
 
         void setLabelJustification(const juce::Justification j) { label_justification_ = j; }
 
+        void setAlignLabel(const bool should_align) { align_label_ = should_align; }
+
         void setItemJustification(const juce::Justification j) { item_justification_ = j; }
 
         void setPadding(const float padding) { padding_ = padding; }

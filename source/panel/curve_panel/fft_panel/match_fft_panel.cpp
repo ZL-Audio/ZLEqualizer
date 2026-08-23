@@ -15,6 +15,7 @@ namespace zlpanel {
     MatchFFTPanel::MatchFFTPanel(PluginProcessor& p, zlgui::UIBase& base) :
         p_ref_(p),
         base_(base),
+        fft_top_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTTopDB::kID)),
         fft_min_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTMinDB::kID)),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
         fft_smooth_oct_value_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTSmoothOCTValue::kID)),
@@ -225,11 +226,17 @@ namespace zlpanel {
         if (fft_size_ <= 0) {
             return;
         }
-        // update min db
-        const auto min_db = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(std::round(
+        // update analyzer db range
+        const auto top_db = zlstate::PFFTTopDB::kDBs[static_cast<size_t>(std::round(
+            fft_top_db_idx_ref_.load(std::memory_order::relaxed)))];
+        if (std::abs(top_db - c_fft_top_db_) > .1f) {
+            c_fft_top_db_ = top_db;
+            to_update_ys_para_.signal();
+        }
+        const auto range_db = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(std::round(
             fft_min_db_idx_ref_.load(std::memory_order::relaxed)))];
-        if (std::abs(min_db - c_fft_min_db_) > .1f) {
-            c_fft_min_db_ = min_db;
+        if (std::abs(range_db - c_fft_range_db_) > .1f) {
+            c_fft_range_db_ = range_db;
             to_update_ys_para_.signal();
         }
         // update smooth
@@ -275,8 +282,8 @@ namespace zlpanel {
             const auto bottom_area_height = getBottomAreaHeight(font_size);
             const auto h0 = font_size * kDraggerScale;
             const auto h1 = height - static_cast<float>(bottom_area_height) - h0;
-            y_k_ = (h1 - h0) / c_fft_min_db_;
-            y_b_ = h0;
+            y_k_ = (h1 - h0) / c_fft_range_db_;
+            y_b_ = h0 - c_fft_top_db_ * y_k_;
         }
         // update curve para
         const auto eq_max_db = base_.getCurveDBScale(static_cast<size_t>(std::round(

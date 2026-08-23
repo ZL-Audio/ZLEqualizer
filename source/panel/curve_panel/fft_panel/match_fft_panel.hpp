@@ -76,8 +76,11 @@ namespace zlpanel {
 
         std::atomic<SideMode> side_mode_{SideMode::kSide};
 
+        std::atomic<float>& fft_top_db_idx_ref_;
+        float c_fft_top_db_{0.f};
+
         std::atomic<float>& fft_min_db_idx_ref_;
-        float c_fft_min_db_{0.f};
+        float c_fft_range_db_{0.f};
 
         std::atomic<float>& eq_max_db_idx_ref_;
         float c_eq_max_db_{0.f};
