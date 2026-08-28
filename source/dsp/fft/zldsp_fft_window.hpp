@@ -14,6 +14,30 @@
 #include "../../../zldsp_fft/src/common/zldsp_fft_common_math.hpp"
 
 namespace zldsp::fft {
+    namespace window_detail {
+#if defined(__APPLE__)
+
+        inline double cospi(const double x) {
+            return __cospi(x);
+        }
+
+        inline double sinpi(const double x) {
+            return __sinpi(x);
+        }
+
+#else
+
+        inline double cospi(const double x) {
+            return std::cos(x * std::numbers::pi_v<double>);
+        }
+
+        inline double sinpi(const double x) {
+            return std::sin(x * std::numbers::pi_v<double>);
+        }
+
+#endif
+    }
+
     /**
      * create periodic Hanning window
      * @tparam F
@@ -23,7 +47,7 @@ namespace zldsp::fft {
     void createPeriodicHanning(std::span<F> window) {
         const double two_over_n = 2.0 / static_cast<double>(window.size());
         for (size_t i = 0; i < window.size(); ++i) {
-            window[i] = static_cast<F>(0.5 * (1.0 - common::math::cospi(static_cast<double>(i) * two_over_n)));
+            window[i] = static_cast<F>(0.5 * (1.0 - window_detail::cospi(static_cast<double>(i) * two_over_n)));
         }
     }
 
@@ -37,7 +61,7 @@ namespace zldsp::fft {
     void createPeriodicHanning(std::span<F> window, const F scale) {
         const double two_over_n = 2.0 / static_cast<double>(window.size());
         for (size_t i = 0; i < window.size(); ++i) {
-            window[i] = scale * static_cast<F>(0.5 * (1.0 - common::math::cospi(static_cast<double>(i) * two_over_n)));
+            window[i] = scale * static_cast<F>(0.5 * (1.0 - window_detail::cospi(static_cast<double>(i) * two_over_n)));
         }
     }
 }
