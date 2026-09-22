@@ -248,6 +248,9 @@ namespace zlpanel {
                                   side_points_[band][2].load(std::memory_order::relaxed),
                                   ideal_[band].getParas().filter_type == zldsp::filter::kAllPass,
                                   ideal_[band].getParas().order == 1);
+                to_update_base_y_flags_[band] = false;
+                to_update_target_y_flags_[band] = false;
+                to_update_side_y_flags_[band] = false;
                 if (threadShouldExit()) {
                     break;
                 }
@@ -257,6 +260,7 @@ namespace zlpanel {
                                on_lr_indices_[lr],
                                xs_, c_k_, c_b_,
                                dynamic_mags_);
+                to_update_lr_flags_[lr] = false;
                 if (threadShouldExit()) {
                     break;
                 }
@@ -433,12 +437,12 @@ namespace zlpanel {
         }
         // update db update flags
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            to_update_base_y_flags_[band] = to_update_base_y_flags_[band]
-                || to_update_empty_flags_[band].check();
-            to_update_target_y_flags_[band] = to_update_base_y_flags_[band]
-                || to_update_target_gain_flags_[band].check();
-            to_update_side_y_flags_[band] = to_update_base_y_flags_[band]
-                || to_update_side_empty_flags_[band].check();
+            const auto empty_changed = to_update_empty_flags_[band].check();
+            const auto target_gain_changed = to_update_target_gain_flags_[band].check();
+            const auto side_changed = to_update_side_empty_flags_[band].check();
+            to_update_base_y_flags_[band] = to_update_base_y_flags_[band] || empty_changed;
+            to_update_target_y_flags_[band] = to_update_base_y_flags_[band] || target_gain_changed;
+            to_update_side_y_flags_[band] = to_update_base_y_flags_[band] || side_changed;
             const auto lr = c_lr_modes_[band];
             to_update_lr_flags_[static_cast<size_t>(lr)] = to_update_lr_flags_[static_cast<size_t>(lr)]
                 || to_update_base_y_flags_[band] || c_dynamic_ons_[band];

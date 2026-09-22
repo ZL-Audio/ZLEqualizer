@@ -151,9 +151,15 @@ namespace zlpanel {
         if (to_update_target) {
             next_target_fill.clear();
             if (filter_status != zlp::FilterStatus::kOff && !is_all_pass) {
-                zldsp::vector::fma(temp_db_.data(), target_mag.data(), k, b, temp_db_.size());
                 // draw target fill
-                next_target_fill = next_base_path;
+                if (to_update_base) {
+                    next_target_fill = next_base_path;
+                } else {
+                    zldsp::vector::fma(temp_db_.data(), base_mag.data(), k, b, temp_db_.size());
+                    PathMinimizer<1> base_minimizer{next_target_fill};
+                    base_minimizer.drawPath<true, false>(xs, std::span(temp_db_));
+                }
+                zldsp::vector::fma(temp_db_.data(), target_mag.data(), k, b, temp_db_.size());
                 PathMinimizer<1> minimizer{next_target_fill};
                 minimizer.drawPath<false, true>(xs, std::span(temp_db_));
                 next_target_fill.closeSubPath();
