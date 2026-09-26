@@ -36,21 +36,21 @@ namespace zlpanel {
             if (diff <= 0.0) {
                 if (diff < 0.0) {
                     time_stamp_ = time_stamp;
-                    resetPendingMode();
+                    resetPendingUpdate();
                     call_count_ = 0;
                 }
                 return false;
             }
             time_stamp_ = time_stamp;
-            // do not interpret a pause or suspension as a new display refresh rate.
+            // do not interpret a pause or suspension as a new display refresh rate
             const auto discontinuity_threshold = std::max(
                 kMinDiscontinuitySeconds,
-                committed_vblank_period_ > 0.0
-                ? committed_vblank_period_ * kDiscontinuityPeriodCount
+                average_vblank_period_ > 0.0
+                ? average_vblank_period_ * kDiscontinuityPeriodCount
                 : 0.0);
-            // handle discountinuity
+            // handle discontinuity
             if (diff > discontinuity_threshold) {
-                resetPendingMode();
+                resetPendingUpdate();
                 call_count_ = 0;
                 return true;
             }
@@ -67,34 +67,34 @@ namespace zlpanel {
 
         [[nodiscard]] double getActualRefreshRate() const {
             // use the target rate until the first vblank period is measured
-            if (committed_vblank_period_ <= 0.0) {
+            if (average_vblank_period_ <= 0.0) {
                 return target_refresh_rate_;
             }
-            // calculate the rate from the committed period and fixed call count
-            return 1.0 / committed_vblank_period_ / static_cast<double>(vblank_count_per_tick_);
+            // calculate the rate from the averaged period and fixed call count
+            return 1.0 / average_vblank_period_ / static_cast<double>(vblank_count_per_tick_);
         }
 
     private:
-        static constexpr double kModeChangeConfirmationSeconds = 1.0;
+        static constexpr double kDivisorChangeConfirmationSeconds = 2.0;
+        static constexpr size_t kMeasurementCallbackCount = 32;
 
         static constexpr double kMinDiscontinuitySeconds = 0.25;
         static constexpr double kDiscontinuityPeriodCount = 8.0;
 
-        static constexpr double kPeriodMatchTolerance = 0.15;
-        static constexpr double kDivisorSnapTolerance = 0.05;
-        static constexpr double kCommittedPeriodSmoothing = 0.05;
-        static constexpr double kPendingPeriodSmoothing = 0.10;
+        static constexpr double kDivisorSnapTolerance = 0.10;
 
         const double target_refresh_rate_;
 
         bool has_time_stamp_{false};
         double time_stamp_{0.0};
 
-        double committed_vblank_period_{0.0};
-        double pending_vblank_period_{0.0};
-        double pending_mode_start_time_{0.0};
+        double average_vblank_period_{0.0};
+        double interval_sum_{0.0};
+        size_t interval_count_{0};
+        double pending_divisor_start_time_{0.0};
 
         size_t vblank_count_per_tick_{1};
+        size_t pending_vblank_count_per_tick_{0};
         size_t call_count_{0};
 
         [[nodiscard]] static double sanitizeTargetRefreshRate(const double target_refresh_rate) {
@@ -103,74 +103,44 @@ namespace zlpanel {
                 : 1.0;
         }
 
-        void resetPendingMode() {
-            pending_vblank_period_ = 0.0;
-            pending_mode_start_time_ = 0.0;
+        void resetPendingUpdate() {
+            interval_sum_ = 0.0;
+            interval_count_ = 0;
+            pending_vblank_count_per_tick_ = 0;
+            pending_divisor_start_time_ = 0.0;
         }
 
         void updateVBlankPeriod(const double interval, const double time_stamp) {
-            // use the first valid interval as the initial vblank period
-            if (committed_vblank_period_ <= 0.0) {
-                commitVBlankPeriod(interval);
+            const auto first_interval = average_vblank_period_ <= 0.0;
+            interval_sum_ += interval;
+            ++interval_count_;
+            if (!first_interval && interval_count_ < kMeasurementCallbackCount) {
                 return;
             }
-            // normalize intervals enlarged by missed/coalesced callbacks
-            const auto multiple = std::max(1LL, std::llround(interval / committed_vblank_period_));
-            const auto observed_period = interval / static_cast<double>(multiple);
-            // smooth observations that belong to the committed display mode
-            if (periodsMatch(observed_period, committed_vblank_period_)) {
-                committed_vblank_period_ += kCommittedPeriodSmoothing * (observed_period - committed_vblank_period_);
-                // a direct callback rejects any pending display mode change
-                if (multiple == 1) {
-                    resetPendingMode();
-                } else {
-                    updatePendingMode(interval, time_stamp);
-                }
-                return;
-            }
-            // track an interval that may belong to a different display mode
-            updatePendingMode(interval, time_stamp);
-        }
+            // average a bounded group of callbacks so old fluctuations cannot linger
+            average_vblank_period_ = interval_sum_ / static_cast<double>(interval_count_);
+            interval_sum_ = 0.0;
+            interval_count_ = 0;
 
-        [[nodiscard]] static bool periodsMatch(const double lhs, const double rhs) {
-            return std::abs(lhs / rhs - 1.0) <= kPeriodMatchTolerance;
-        }
-
-        void updatePendingMode(const double interval, const double time_stamp) {
-            // start a new display mode candidate
-            if (pending_vblank_period_ <= 0.0) {
-                pending_vblank_period_ = interval;
-                pending_mode_start_time_ = time_stamp;
+            // keep estimates near an integer on the same divider
+            const auto ratio = 1.0 / average_vblank_period_ / target_refresh_rate_;
+            const auto candidate = std::max<size_t>(1, static_cast<size_t>(
+                                                       std::floor(ratio + kDivisorSnapTolerance)));
+            if (first_interval) {
+                vblank_count_per_tick_ = candidate;
+            }
+            if (candidate == vblank_count_per_tick_) {
+                resetPendingUpdate();
                 return;
             }
-            // normalize missed/coalesced callbacks within the candidate mode
-            const auto multiple = std::max(1LL, std::llround(interval / pending_vblank_period_));
-            const auto observed_period = interval / static_cast<double>(multiple);
-            // restart confirmation when the observation does not match the candidate
-            if (!periodsMatch(observed_period, pending_vblank_period_)) {
-                pending_vblank_period_ = interval;
-                pending_mode_start_time_ = time_stamp;
-                return;
+            // confirm the divider before changing the fixed callback count
+            if (candidate != pending_vblank_count_per_tick_) {
+                pending_vblank_count_per_tick_ = candidate;
+                pending_divisor_start_time_ = time_stamp;
+            } else if (time_stamp - pending_divisor_start_time_ >= kDivisorChangeConfirmationSeconds) {
+                vblank_count_per_tick_ = candidate;
+                resetPendingUpdate();
             }
-            pending_vblank_period_ += kPendingPeriodSmoothing * (observed_period - pending_vblank_period_);
-            // commit only after the candidate remains stable for the confirmation time
-            if (time_stamp - pending_mode_start_time_ >= kModeChangeConfirmationSeconds) {
-                commitVBlankPeriod(pending_vblank_period_);
-            }
-        }
-
-        void commitVBlankPeriod(const double vblank_period) {
-            committed_vblank_period_ = vblank_period;
-            // snap estimates close to an exact target multiple
-            auto ratio = 1.0 / committed_vblank_period_ / target_refresh_rate_;
-            const auto nearest_integer = std::round(ratio);
-            if (std::abs(ratio - nearest_integer) <= kDivisorSnapTolerance) {
-                ratio = nearest_integer;
-            }
-            // select and lock the number of vblank calls per tick
-            vblank_count_per_tick_ = std::max<size_t>(1, static_cast<size_t>(std::floor(ratio)));
-            call_count_ = 0;
-            resetPendingMode();
         }
     };
 }
