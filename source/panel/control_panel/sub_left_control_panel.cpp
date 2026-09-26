@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "sub_left_control_panel.hpp"
+#include "../helper/combobox_helper.hpp"
 #include "BinaryData.h"
 
 namespace zlpanel {
@@ -117,7 +118,10 @@ namespace zlpanel {
 
         const auto popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::upwards);
-        slope_box_.getLAF().setItemJustification(juce::Justification::centredRight);
+        const auto box_alignment = combobox_helper::getAlignment(base_.getComboboxAlignment());
+        ftype_box_.getLAF().setItemAlignment(box_alignment);
+        stereo_box_.getLAF().setItemAlignment(box_alignment);
+        slope_box_.getLAF().setAlignment(zlgui::combobox::Alignment::kRight);
         for (auto& box : {&ftype_box_, &slope_box_, &stereo_box_}) {
             box->setScrollEnabled(true);
             box->getLAF().setOption(popup_option);

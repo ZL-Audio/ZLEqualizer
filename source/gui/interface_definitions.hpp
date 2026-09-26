@@ -384,6 +384,14 @@ namespace zlgui {
             fft_extra_speed_.store(x, std::memory_order::relaxed);
         }
 
+        size_t getComboboxAlignment() const {
+            return combobox_alignment_.load(std::memory_order::relaxed);
+        }
+
+        void setComboboxAlignment(const size_t x) {
+            combobox_alignment_.store(x, std::memory_order::relaxed);
+        }
+
         float getSingleEQCurveThickness() const {
             return single_eq_curve_thickness_.load(std::memory_order::relaxed);
         }
@@ -616,6 +624,7 @@ namespace zlgui {
         float rotary_drag_sensitivity_{1.f};
         std::atomic<size_t> fft_quality_{zlstate::PFFTQuality::kDefaultI};
         std::atomic<float> fft_extra_tilt_{0.f}, fft_extra_speed_{1.f};
+        std::atomic<size_t> combobox_alignment_{zlstate::PComboboxAlignment::kDefaultI};
         std::atomic<float> single_eq_curve_thickness_{1.f}, sum_eq_curve_thickness_{1.f};
         size_t tooltip_lang_id_{1};
 

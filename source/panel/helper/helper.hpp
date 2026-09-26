@@ -15,6 +15,7 @@
 #include "panel_constants.hpp"
 #include "refresh_handler.hpp"
 #include "juce_parameter_value.hpp"
+#include "combobox_helper.hpp"
 #include "band_helper.hpp"
 #include "freq_helper.hpp"
 #include "tri_buffer.hpp"

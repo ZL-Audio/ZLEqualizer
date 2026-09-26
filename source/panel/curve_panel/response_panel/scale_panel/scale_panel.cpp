@@ -35,8 +35,7 @@ namespace zlpanel {
         fft_top_box_.setAlpha(kFFTAlpha);
         fft_top_box_.getLAF().setFontScale(1.25f);
         fft_top_box_.getLAF().setOption(top_popup_option);
-        fft_top_box_.getLAF().setLabelJustification(juce::Justification::centredRight);
-        fft_top_box_.getLAF().setAlignLabel(false);
+        fft_top_box_.getLAF().setAlignment(zlgui::combobox::Alignment::kRightPadding);
         addAndMakeVisible(fft_top_box_);
 
         const auto fft_popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
@@ -45,8 +44,7 @@ namespace zlpanel {
         fft_min_box_.setAlpha(kFFTAlpha);
         fft_min_box_.getLAF().setFontScale(1.25f);
         fft_min_box_.getLAF().setOption(fft_popup_option);
-        fft_min_box_.getLAF().setLabelJustification(juce::Justification::centredRight);
-        fft_min_box_.getLAF().setAlignLabel(false);
+        fft_min_box_.getLAF().setAlignment(zlgui::combobox::Alignment::kRightPadding);
         addAndMakeVisible(fft_min_box_);
 
         const auto eq_popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
@@ -54,8 +52,7 @@ namespace zlpanel {
         eq_max_box_.setScrollEnabled(true);
         eq_max_box_.getLAF().setFontScale(1.25f);
         eq_max_box_.getLAF().setOption(eq_popup_option);
-        eq_max_box_.getLAF().setLabelJustification(juce::Justification::centredRight);
-        eq_max_box_.getLAF().setAlignLabel(false);
+        eq_max_box_.getLAF().setLabelAlignment(zlgui::combobox::Alignment::kRightPadding);
         addAndMakeVisible(eq_max_box_);
 
         setInterceptsMouseClicks(false, true);
@@ -79,9 +76,7 @@ namespace zlpanel {
         const auto fft_min_box_width = static_cast<int>(std::floor(layout.floor_control_width));
         fft_top_box_.setBounds(0, 0, fft_top_box_width, box_height);
         fft_min_box_.setBounds(0, 0, fft_min_box_width, box_height);
-        const auto eq_box_bound = juce::Rectangle<int>(0, 0,
-                                                       eq_box_width,
-                                                       box_height);
+        const auto eq_box_bound = juce::Rectangle<int>(0, 0, eq_box_width, box_height);
         eq_max_box_.setBounds(eq_box_bound);
 
         const auto unit_height = getUnitHeight();

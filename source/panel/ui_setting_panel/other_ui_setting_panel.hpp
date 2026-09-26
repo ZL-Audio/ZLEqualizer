@@ -42,6 +42,8 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox fft_quality_box_;
         juce::Label fft_label_;
         zlgui::slider::CompactLinearSlider<true, true, true> fft_tilt_slider_, fft_speed_slider_;
+        juce::Label combobox_alignment_label_;
+        zlgui::combobox::CompactCombobox combobox_alignment_box_;
         juce::Label curve_thick_label_;
         zlgui::slider::CompactLinearSlider<true, true, true> single_curve_slider_, sum_curve_slider_;
         juce::Label tooltip_label_;

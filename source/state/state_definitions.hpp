@@ -457,6 +457,15 @@ namespace zlstate {
         static constexpr auto kDefaultV = 1.f;
     };
 
+    class PComboboxAlignment : public ChoiceParameters<PComboboxAlignment> {
+    public:
+        static constexpr auto kID = "combobox_alignment";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{"Left", "Center", "Right"};
+        enum { kLeft, kCenter, kRight };
+        static constexpr int kDefaultI = kCenter;
+    };
+
     class PSingleEQCurveThickness : public FloatParameters<PSingleEQCurveThickness> {
     public:
         static constexpr auto kID = "single_eq_curve_thickness";
@@ -726,6 +735,7 @@ namespace zlstate {
                    PSliderDoubleClickFunc::get(),
                    PTargetRefreshSpeed::get(),
                    PFFTQuality::get(), PFFTExtraTilt::get(), PFFTExtraSpeed::get(),
+                   PComboboxAlignment::get(),
                    PSingleEQCurveThickness::get(), PSumEQCurveThickness::get(),
                    PTooltipLang::get(),
                    PCurveDBScale0::get(), PCurveDBScale1::get(), PCurveDBScale2::get());

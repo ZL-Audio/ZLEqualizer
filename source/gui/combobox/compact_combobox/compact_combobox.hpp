@@ -25,8 +25,6 @@ namespace zlgui::combobox {
 
         ~CompactCombobox() override;
 
-        void paint(juce::Graphics& g) override;
-
         void resized() override;
 
         void mouseUp(const juce::MouseEvent& event) override;
@@ -54,6 +52,11 @@ namespace zlgui::combobox {
 
         inline CompactComboboxLookAndFeel& getLAF() {
             return box_laf_;
+        }
+
+        // Maximum option-text width in pixels, cached by resized().
+        [[nodiscard]] float getMaxTextWidth() const noexcept {
+            return box_laf_.getMaxTextWidth();
         }
 
         void setScrollEnabled(const bool is_scroll_enabled) {

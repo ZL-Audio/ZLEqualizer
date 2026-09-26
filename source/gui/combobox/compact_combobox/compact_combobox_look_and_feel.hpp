@@ -14,6 +14,14 @@
 #include "../../interface_definitions.hpp"
 
 namespace zlgui::combobox {
+    enum class Alignment {
+        kLeft,
+        kCenter,
+        kRight,
+        kLeftPadding,
+        kRightPadding,
+    };
+
     class CompactComboboxLookAndFeel : public juce::LookAndFeel_V4 {
     public:
         explicit CompactComboboxLookAndFeel(UIBase& base, bool align_label = true) :
@@ -51,9 +59,11 @@ namespace zlgui::combobox {
         void drawLabel(juce::Graphics& g, juce::Label& label) override {
             g.setColour(base_.getTextColour());
             g.setFont(base_.getFontSize() * font_scale_);
-            const auto bound = label.getLocalBounds().toFloat().reduced(
-                align_label_ ? padding_ : 0.f, 0.f);
-            g.drawText(label.getText(), bound, label_justification_);
+            const auto label_bound = label.getLocalBounds().toFloat();
+            const auto bound = align_label_
+                ? getTextBounds(label_bound, label_alignment_, label_padding_)
+                : label_bound;
+            g.drawText(label.getText(), bound, getJustification(label_alignment_));
         }
 
         void drawPopupMenuBackground(juce::Graphics& g, const int width, const int height) override {
@@ -99,8 +109,8 @@ namespace zlgui::combobox {
             if (icon == nullptr) {
                 g.setColour(base_.getTextColour().withAlpha(alpha));
                 g.setFont(base_.getFontSize() * font_scale_);
-                const auto bound = area.toFloat().reduced(padding_, 0.f);
-                g.drawText(text, bound, item_justification_);
+                const auto bound = getTextBounds(area.toFloat(), item_alignment_, item_padding_);
+                g.drawText(text, bound, getJustification(item_alignment_));
             } else {
                 const auto fig = icon->createCopy();
                 fig->replaceColour(juce::Colours::black, base_.getTextColour());
@@ -118,7 +128,7 @@ namespace zlgui::combobox {
 
         inline void setFontScale(const float x) { font_scale_ = x; }
 
-        float getFontScale() const { return font_scale_; }
+        [[nodiscard]] float getFontScale() const { return font_scale_; }
 
         void setOption(const juce::PopupMenu::Options& x) { option_ = x; }
 
@@ -139,8 +149,8 @@ namespace zlgui::combobox {
                 option = option.withMinimumWidth(box.getWidth());
             }
             return option.withTargetComponent(&box)
-                         .withInitiallySelectedItem(box.getSelectedId())
-                         .withStandardItemHeight(label.getHeight());
+                .withInitiallySelectedItem(box.getSelectedId())
+                .withStandardItemHeight(label.getHeight());
         }
 
         void preparePopupMenuWindow(juce::Component& new_window) override {
@@ -149,10 +159,11 @@ namespace zlgui::combobox {
             }
             popup_uses_opaque_fallback_ = new_window.isOpaque();
 
-            if (popup_target_ == nullptr) {
+            if (popup_target_ == nullptr || popup_placement_known_) {
                 return;
             }
 
+            alignPopupMenuWindow(new_window);
             const auto target_bounds = popup_target_->getScreenBounds();
             const auto popup_bounds = new_window.getScreenBounds();
             const auto distance_below = std::abs(popup_bounds.getY() - target_bounds.getBottom());
@@ -164,7 +175,7 @@ namespace zlgui::combobox {
         }
 
         void drawPopupMenuColumnSeparatorWithOptions(juce::Graphics& g, const juce::Rectangle<int>& bounds,
-            const juce::PopupMenu::Options&) override {
+                                                     const juce::PopupMenu::Options&) override {
             auto bound = bounds.toFloat();
             bound = bound.withSizeKeepingCentre(bound.getWidth() * .5f, bound.getHeight());
 
@@ -187,13 +198,23 @@ namespace zlgui::combobox {
 
         void setBoxAlpha(const float x) { box_alpha_ = x; }
 
-        void setLabelJustification(const juce::Justification j) { label_justification_ = j; }
+        void setAlignment(const Alignment alignment, const float padding = 0.f) {
+            setLabelAlignment(alignment, padding);
+            setItemAlignment(alignment, padding);
+        }
+
+        void setLabelAlignment(const Alignment alignment, const float padding = 0.f) {
+            label_alignment_ = alignment;
+            label_padding_ = std::max(0.f, padding);
+            align_label_ = true;
+        }
+
+        void setItemAlignment(const Alignment alignment, const float padding = 0.f) {
+            item_alignment_ = alignment;
+            item_padding_ = std::max(0.f, padding);
+        }
 
         void setAlignLabel(const bool should_align) { align_label_ = should_align; }
-
-        void setItemJustification(const juce::Justification j) { item_justification_ = j; }
-
-        void setPadding(const float padding) { padding_ = padding; }
 
         void setIcons(const std::vector<std::unique_ptr<juce::Drawable>>& icons) {
             for (size_t i = 0; i < icons.size(); ++i) {
@@ -206,10 +227,87 @@ namespace zlgui::combobox {
             item_height_ = height;
         }
 
+        void updateTextWidth(const juce::ComboBox& box) {
+            const juce::Font font{juce::FontOptions(base_.getFontSize() * font_scale_)};
+            max_text_width_ = 0.f;
+            const auto num_items = box.getNumItems();
+            for (int i = 0; i < num_items; ++i) {
+                max_text_width_ = std::max(max_text_width_,
+                                           juce::GlyphArrangement::getStringWidth(font, box.getItemText(i)));
+            }
+        }
+
+        [[nodiscard]] float getMaxTextWidth() const noexcept {
+            return max_text_width_;
+        }
+
     private:
         static constexpr float kHoverAlpha{.045f};
         static constexpr float kSelectedAlpha{.105f};
         static constexpr float kSurfaceTint{.125f};
+
+        void alignPopupMenuWindow(juce::Component& window) const {
+            auto* parent = window.getParentComponent();
+            if (parent == nullptr) {
+                return;
+            }
+
+            auto available = parent->getLocalBounds().toFloat();
+            if (const auto* display = juce::Desktop::getInstance().getDisplays().getDisplayForRect(
+                    popup_target_->getScreenBounds())) {
+                const auto insets = display->safeAreaInsets;
+                const juce::BorderSize<float> safe_border(static_cast<float>(insets.getTop()),
+                                                         static_cast<float>(insets.getLeft()),
+                                                         static_cast<float>(insets.getBottom()),
+                                                         static_cast<float>(insets.getRight()));
+                const auto screen_area = display->userBounds.getIntersection(
+                    safe_border.subtractedFrom(display->logicalBounds));
+                available = available.getIntersection(parent->getLocalArea(nullptr, screen_area));
+            }
+
+            const auto popup = parent->getLocalArea(&window, window.getLocalBounds().toFloat());
+            if (available.isEmpty() || popup.getWidth() > available.getWidth()) {
+                return;
+            }
+
+            const auto target = parent->getLocalArea(popup_target_, popup_target_->getLocalBounds().toFloat());
+            const auto x = juce::jlimit(available.getX(), available.getRight() - popup.getWidth(), target.getX());
+            // JUCE restores its saved bounds when scrolling; a transform keeps this correction intact.
+            window.setTransform(window.getTransform().translated(x - popup.getX(), 0.f));
+        }
+
+        [[nodiscard]] static Alignment getAlignment(const juce::Justification justification) {
+            if (justification.testFlags(juce::Justification::horizontallyCentred)) {
+                return Alignment::kCenter;
+            }
+            return justification.testFlags(juce::Justification::right) ? Alignment::kRight : Alignment::kLeft;
+        }
+
+        [[nodiscard]] static juce::Justification getJustification(const Alignment alignment) {
+            switch (alignment) {
+            case Alignment::kLeft:
+            case Alignment::kLeftPadding:
+                return juce::Justification::centredLeft;
+            case Alignment::kRight:
+            case Alignment::kRightPadding:
+                return juce::Justification::centredRight;
+            case Alignment::kCenter:
+                return juce::Justification::centred;
+            }
+            return juce::Justification::centred;
+        }
+
+        [[nodiscard]] juce::Rectangle<float> getTextBounds(const juce::Rectangle<float> bounds,
+                                                           const Alignment alignment, const float padding) const {
+            if (alignment == Alignment::kLeftPadding || alignment == Alignment::kRightPadding) {
+                return bounds.reduced(juce::jlimit(0.f, bounds.getWidth() * .5f, padding), 0.f);
+            }
+            if (max_text_width_ <= 0.f || alignment == Alignment::kCenter) {
+                return bounds;
+            }
+            const auto inset = std::max(0.f, (bounds.getWidth() - max_text_width_) * .5f);
+            return alignment == Alignment::kLeft ? bounds.withTrimmedLeft(inset) : bounds.withTrimmedRight(inset);
+        }
 
         [[nodiscard]] juce::Colour getPopupSurfaceColour() const {
             return base_.getColourBlendedWithBackground(base_.getTextColour(), kSurfaceTint);
@@ -231,9 +329,10 @@ namespace zlgui::combobox {
 
         int item_width_{0}, item_height_{0};
         float font_scale_{1.5f}, box_alpha_{0.f};
-        float padding_{0.f};
-        juce::Justification label_justification_{juce::Justification::centred};
-        juce::Justification item_justification_{juce::Justification::centred};
+        float max_text_width_{0.f};
+        Alignment label_alignment_{Alignment::kCenter};
+        Alignment item_alignment_{Alignment::kCenter};
+        float label_padding_{0.f}, item_padding_{0.f};
         juce::PopupMenu::Options option_{};
         juce::Component::SafePointer<juce::ComboBox> popup_target_;
         bool popup_placement_known_{false};

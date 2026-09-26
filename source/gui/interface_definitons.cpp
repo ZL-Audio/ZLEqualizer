@@ -272,6 +272,7 @@ namespace zlgui {
         fft_quality_.store(static_cast<size_t>(std::round(loadPara(zlstate::PFFTQuality::kID))));
         fft_extra_tilt_.store(loadPara(zlstate::PFFTExtraTilt::kID));
         fft_extra_speed_.store(loadPara(zlstate::PFFTExtraSpeed::kID));
+        combobox_alignment_.store(static_cast<size_t>(std::round(loadPara(zlstate::PComboboxAlignment::kID))));
         single_eq_curve_thickness_.store(loadPara(zlstate::PSingleEQCurveThickness::kID));
         sum_eq_curve_thickness_.store(loadPara(zlstate::PSumEQCurveThickness::kID));
         tooltip_lang_id_ = static_cast<size_t>(std::round(loadPara(zlstate::PTooltipLang::kID)));
@@ -336,6 +337,8 @@ namespace zlgui {
         savePara(zlstate::PFFTQuality::kID, static_cast<float>(fft_quality_.load(std::memory_order::relaxed)));
         savePara(zlstate::PFFTExtraTilt::kID, fft_extra_tilt_.load(std::memory_order::relaxed));
         savePara(zlstate::PFFTExtraSpeed::kID, fft_extra_speed_.load(std::memory_order::relaxed));
+        savePara(zlstate::PComboboxAlignment::kID,
+                 static_cast<float>(combobox_alignment_.load(std::memory_order::relaxed)));
         savePara(zlstate::PSingleEQCurveThickness::kID, single_eq_curve_thickness_.load(std::memory_order::relaxed));
         savePara(zlstate::PSumEQCurveThickness::kID, sum_eq_curve_thickness_.load(std::memory_order::relaxed));
         savePara(zlstate::PTooltipLang::kID, static_cast<float>(tooltip_lang_id_));

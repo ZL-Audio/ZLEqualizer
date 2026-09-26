@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "analyzer_panel.hpp"
+#include "../../helper/combobox_helper.hpp"
 #include "BinaryData.h"
 
 namespace zlpanel {
@@ -91,6 +92,10 @@ namespace zlpanel {
             addAndMakeVisible(b);
         }
 
+        const auto box_alignment = combobox_helper::getAlignment(base_.getComboboxAlignment());
+        speed_box_.getLAF().setItemAlignment(box_alignment);
+        slope_box_.getLAF().setAlignment(zlgui::combobox::Alignment::kRight);
+        smooth_type_box_.getLAF().setItemAlignment(box_alignment);
         for (auto& c : {&speed_box_, &slope_box_, &smooth_type_box_}) {
             c->setBufferedToImage(true);
             addAndMakeVisible(c);
