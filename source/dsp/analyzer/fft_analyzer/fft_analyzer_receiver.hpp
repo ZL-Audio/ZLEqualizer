@@ -30,8 +30,19 @@ namespace zldsp::analyzer {
          * @param num_channels number of channels
          */
         void prepare(const size_t num_channels) {
+            prepare(num_channels, processor_.getFFTSize());
+        }
+
+        /**
+         * Prepare a shared history large enough for every requested FFT size.
+         */
+        void prepare(const size_t num_channels, const size_t history_size) {
+            assert(history_size >= processor_.getFFTSize());
             abs_sqr_fft_buffer_.resize(processor_.getFFTSize() / 2 + 1);
             circular_buffer_.resize(num_channels);
+            for (auto& buffer : circular_buffer_) {
+                buffer.resize(history_size);
+            }
             states_.resize(num_channels);
             reset();
         }
@@ -41,7 +52,6 @@ namespace zldsp::analyzer {
          */
         void reset() {
             for (size_t chan = 0; chan < circular_buffer_.size(); ++chan) {
-                circular_buffer_[chan].resize(processor_.getFFTSize());
                 std::ranges::fill(circular_buffer_[chan], 0.f);
             }
             std::ranges::fill(states_, 0.f);
@@ -54,10 +64,12 @@ namespace zldsp::analyzer {
          */
         void pull(const zldsp::container::FIFORange range,
                   const std::vector<std::vector<float>>& sample_fifo) {
-            const auto num_ready = range.block_size1 + range.block_size2;
-            assert(num_ready <= static_cast<int>(processor_.getFFTSize()));
-            const auto num_replace = static_cast<int>(processor_.getFFTSize()) - num_ready;
             if (!is_on_) { return; }
+            assert(!circular_buffer_.empty());
+            const auto num_ready = range.block_size1 + range.block_size2;
+            const auto history_size = static_cast<int>(circular_buffer_.front().size());
+            assert(num_ready <= history_size);
+            const auto num_replace = history_size - num_ready;
             for (size_t chan = 0; chan < circular_buffer_.size(); ++chan) {
                 auto& circular_buffer{circular_buffer_[chan]};
                 auto y = circular_buffer.back();
@@ -89,9 +101,8 @@ namespace zldsp::analyzer {
 
         /**
          * Run a forward FFT over the newest samples in the receiver history.
-         * The supplied processor may use a smaller FFT than the processor that
-         * owns the history, allowing multiple resolutions to share one sample
-         * buffer.
+         * The supplied processor may use any FFT size that fits in the prepared
+         * history, allowing multiple resolutions to share one sample buffer.
          * @param processor FFT processor to use
          * @param stereo_type channel combination to analyze
          * @param spectrum_abs_sqr destination squared-magnitude spectrum

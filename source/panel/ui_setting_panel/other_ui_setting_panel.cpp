@@ -14,6 +14,7 @@ namespace zlpanel {
         p_ref_(p),
         base_(base), name_laf_(base),
         refresh_rate_box_(zlstate::PTargetRefreshSpeed::kChoices, base),
+        fft_quality_box_(zlstate::PFFTQuality::kChoices, base),
         fft_tilt_slider_("Tilt", base),
         fft_speed_slider_("Speed", base),
         single_curve_slider_("Single", base),
@@ -34,6 +35,12 @@ namespace zlpanel {
         refresh_rate_label_.setLookAndFeel(&name_laf_);
         addAndMakeVisible(refresh_rate_label_);
         addAndMakeVisible(refresh_rate_box_);
+
+        fft_quality_label_.setText("FFT Quality", juce::dontSendNotification);
+        fft_quality_label_.setJustificationType(juce::Justification::centredRight);
+        fft_quality_label_.setLookAndFeel(&name_laf_);
+        addAndMakeVisible(fft_quality_label_);
+        addAndMakeVisible(fft_quality_box_);
 
         fft_label_.setText("FFT", juce::dontSendNotification);
         fft_label_.setJustificationType(juce::Justification::centredRight);
@@ -98,6 +105,7 @@ namespace zlpanel {
 
     void OtherUISettingPanel::loadSetting() {
         refresh_rate_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getRefreshRateID()));
+        fft_quality_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getFFTQuality()));
         fft_tilt_slider_.getSlider().setValue(static_cast<double>(base_.getFFTExtraTilt()));
         fft_speed_slider_.getSlider().setValue(static_cast<double>(base_.getFFTExtraSpeed()));
         single_curve_slider_.getSlider().setValue(base_.getSingleEQCurveThickness());
@@ -115,6 +123,7 @@ namespace zlpanel {
 
     void OtherUISettingPanel::saveSetting() {
         base_.setRefreshRateID(static_cast<size_t>(refresh_rate_box_.getBox().getSelectedItemIndex()));
+        base_.setFFTQuality(static_cast<size_t>(fft_quality_box_.getBox().getSelectedItemIndex()));
         base_.setFFTExtraTilt(static_cast<float>(fft_tilt_slider_.getSlider().getValue()));
         base_.setFFTExtraSpeed(static_cast<float>(fft_speed_slider_.getSlider().getValue()));
         base_.setSingleEQCurveThickness(static_cast<float>(single_curve_slider_.getSlider().getValue()));
@@ -137,7 +146,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale * 3.f);
         const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
 
-        return 8 * padding + 7 * slider_height;
+        return 9 * padding + 8 * slider_height;
     }
 
     void OtherUISettingPanel::resized() {
@@ -152,6 +161,13 @@ namespace zlpanel {
             refresh_rate_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
             local_bound.removeFromLeft(padding);
             refresh_rate_box_.setBounds(local_bound.removeFromLeft(slider_width).reduced(0, padding / 3));
+        }
+        {
+            bound.removeFromTop(padding);
+            auto local_bound = bound.removeFromTop(slider_height);
+            fft_quality_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
+            local_bound.removeFromLeft(padding);
+            fft_quality_box_.setBounds(local_bound.removeFromLeft(slider_width).reduced(0, padding / 3));
         }
         {
             bound.removeFromTop(padding);

@@ -19,6 +19,7 @@
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_decayer.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_collision.hpp"
 #include "../../../dsp/analyzer/fft_analyzer/spectrum_blender.hpp"
+#include "../../../dsp/interpolation/seq_makima.hpp"
 #include "../../../chore/thread/notifier.hpp"
 
 namespace zlpanel {
@@ -43,6 +44,7 @@ namespace zlpanel {
         static constexpr size_t kLowResolution = 0;
         static constexpr size_t kMiddleResolution = 1;
         static constexpr size_t kHighResolution = 2;
+        static constexpr size_t kInterSize = 64;
 
         PluginProcessor& p_ref_;
         zlgui::UIBase& base_;
@@ -76,9 +78,12 @@ namespace zlpanel {
 
         std::vector<float> xs_{}, ys_{};
         std::vector<float> frequencies_{};
+        std::array<float, kInterSize + 2> inter_xs_{}, inter_ys_{};
+        std::unique_ptr<zldsp::interpolation::SeqMakima<float>> inter_;
         std::array<TriBuffer<juce::Path>, kNumSources> paths_;
 
         double c_sample_rate_{0.0};
+        bool c_high_quality_{false};
         int history_size_{0};
         size_t num_point_{0};
 
@@ -101,9 +106,9 @@ namespace zlpanel {
 
         std::array<zldsp::analyzer::FFTAnalyzerProcessor, kNumResolutions> processors_;
         std::array<zldsp::analyzer::FFTAnalyzerReceiver, kNumSources> receivers_{
-            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kLowResolution]},
-            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kLowResolution]},
-            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kLowResolution]}
+            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kMiddleResolution]},
+            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kMiddleResolution]},
+            zldsp::analyzer::FFTAnalyzerReceiver{processors_[kMiddleResolution]}
         };
         std::array<zldsp::analyzer::SpectrumSmoother, kNumResolutions> smoothers_;
         zldsp::analyzer::SpectrumTilter tilter_;

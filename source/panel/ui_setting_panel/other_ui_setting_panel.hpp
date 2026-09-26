@@ -38,6 +38,8 @@ namespace zlpanel {
 
         juce::Label refresh_rate_label_;
         zlgui::combobox::CompactCombobox refresh_rate_box_;
+        juce::Label fft_quality_label_;
+        zlgui::combobox::CompactCombobox fft_quality_box_;
         juce::Label fft_label_;
         zlgui::slider::CompactLinearSlider<true, true, true> fft_tilt_slider_, fft_speed_slider_;
         juce::Label curve_thick_label_;

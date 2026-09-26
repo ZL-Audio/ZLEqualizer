@@ -432,6 +432,15 @@ namespace zlstate {
         static constexpr int kDefaultI = 3;
     };
 
+    class PFFTQuality : public ChoiceParameters<PFFTQuality> {
+    public:
+        static constexpr auto kID = "fft_quality";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{"Normal", "High"};
+        enum { kNormal, kHigh };
+        static constexpr int kDefaultI = kNormal;
+    };
+
     class PFFTExtraTilt : public FloatParameters<PFFTExtraTilt> {
     public:
         static constexpr auto kID = "fft_extra_tilt";
@@ -716,7 +725,7 @@ namespace zlstate {
                    PRotaryStyle::get(), PRotaryDragSensitivity::get(),
                    PSliderDoubleClickFunc::get(),
                    PTargetRefreshSpeed::get(),
-                   PFFTExtraTilt::get(), PFFTExtraSpeed::get(),
+                   PFFTQuality::get(), PFFTExtraTilt::get(), PFFTExtraSpeed::get(),
                    PSingleEQCurveThickness::get(), PSumEQCurveThickness::get(),
                    PTooltipLang::get(),
                    PCurveDBScale0::get(), PCurveDBScale1::get(), PCurveDBScale2::get());

@@ -360,6 +360,14 @@ namespace zlgui {
             refresh_rate_id_.store(x, std::memory_order::relaxed);
         }
 
+        size_t getFFTQuality() const {
+            return fft_quality_.load(std::memory_order::relaxed);
+        }
+
+        void setFFTQuality(const size_t x) {
+            fft_quality_.store(x, std::memory_order::relaxed);
+        }
+
         float getFFTExtraTilt() const {
             return fft_extra_tilt_.load(std::memory_order::relaxed);
         }
@@ -606,6 +614,7 @@ namespace zlgui {
         size_t rotary_style_id_{0};
         std::atomic<size_t> refresh_rate_id_{2};
         float rotary_drag_sensitivity_{1.f};
+        std::atomic<size_t> fft_quality_{zlstate::PFFTQuality::kDefaultI};
         std::atomic<float> fft_extra_tilt_{0.f}, fft_extra_speed_{1.f};
         std::atomic<float> single_eq_curve_thickness_{1.f}, sum_eq_curve_thickness_{1.f};
         size_t tooltip_lang_id_{1};
