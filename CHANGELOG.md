@@ -4,6 +4,21 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.4.1
+
+Bug fixes
+
+- fix Linux combobox & text editor interaction issue
+
+New Features
+
+- add customized combobox alignment
+- add customized FFT quality
+
+Other Changes
+
+- change the default FFT quality to `Normal` to prevent lags
+
 ## 1.4.0
 
 BREAKING CHANGES
