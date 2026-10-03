@@ -55,7 +55,19 @@ namespace zlpanel {
     }
 
     void PianoRollPanel::updateBand() {
-        updateBands();
+        if (!piano_roll_visible_) {
+            endGesture();
+            return;
+        }
+        const auto selected = base_.getSelectedBand();
+        if (drag_band_ < bands_.size() && drag_band_ != selected) {
+            endGesture();
+        }
+        if (selected < bands_.size()) {
+            updateSingleBand(selected);
+        }
+        bands_panel_.setSelectedBand(selected);
+        updateNote();
     }
 
     void PianoRollPanel::updateSampleRate(const double sample_rate) {
@@ -88,24 +100,7 @@ namespace zlpanel {
         }
         // poll existing atomics on the message thread; unchanged bands need no geometry or repaint work
         for (size_t band = 0; band < bands_.size(); ++band) {
-            auto& state = bands_[band];
-            if (state.status->load(std::memory_order::relaxed) <= .5f || last_note_ < first_note_) {
-                band_notes_[band] = -1;
-                continue;
-            }
-            const auto frequency = state.frequency->load(std::memory_order::relaxed);
-            if (!std::isfinite(frequency)) {
-                band_notes_[band] = -1;
-                continue;
-            }
-            if (force || !juce::exactlyEqual(frequency, state.cached_frequency) || band_notes_[band] < 0) {
-                state.cached_frequency = frequency;
-                const auto clamped = std::clamp(static_cast<double>(frequency), piano_roll_helper::kMinFrequency,
-                                                slider_max_);
-                band_notes_[band] = std::clamp(
-                    static_cast<int>(std::round(piano_roll_helper::frequencyToNote(clamped))),
-                    first_note_, last_note_);
-            }
+            updateBandState(band, force);
         }
         const auto selected = base_.getSelectedBand();
         if (drag_band_ < bands_.size() && (drag_band_ != selected || band_notes_[drag_band_] < 0)) {
@@ -113,6 +108,35 @@ namespace zlpanel {
         }
         bands_panel_.setBands(band_notes_, selected, geometry_changed);
         updateNote();
+    }
+
+    void PianoRollPanel::updateBandState(const size_t band, const bool force) {
+        auto& state = bands_[band];
+        if (state.status->load(std::memory_order::relaxed) <= .5f || last_note_ < first_note_) {
+            band_notes_[band] = -1;
+            return;
+        }
+        const auto frequency = state.frequency->load(std::memory_order::relaxed);
+        if (!std::isfinite(frequency)) {
+            band_notes_[band] = -1;
+            return;
+        }
+        if (force || !juce::exactlyEqual(frequency, state.cached_frequency) || band_notes_[band] < 0) {
+            state.cached_frequency = frequency;
+            const auto clamped = std::clamp(static_cast<double>(frequency), piano_roll_helper::kMinFrequency,
+                                            slider_max_);
+            band_notes_[band] = std::clamp(
+                static_cast<int>(std::round(piano_roll_helper::frequencyToNote(clamped))),
+                first_note_, last_note_);
+        }
+    }
+
+    void PianoRollPanel::updateSingleBand(const size_t band) {
+        updateBandState(band);
+        if (drag_band_ == band && (band != base_.getSelectedBand() || band_notes_[band] < 0)) {
+            endGesture();
+        }
+        bands_panel_.setBand(band, band_notes_[band]);
     }
 
     void PianoRollPanel::updateHover(const juce::Point<float> point) {
@@ -155,18 +179,21 @@ namespace zlpanel {
         if (!piano_roll_visible_ || !event.mods.isLeftButtonDown()) {
             return;
         }
-        updateBands();
         updateHover(event.position);
         const auto band = bands_panel_.getBandAt(event.position);
         if (band >= bands_.size()) {
             return;
         }
+        updateSingleBand(band);
+        if (band_notes_[band] < 0) {
+            return;
+        }
         base_.setSelectedBand(band);
-        updateBands();
+        bands_panel_.setSelectedBand(band);
         if (event.getNumberOfClicks() < 2) {
             drag_band_ = band;
             const auto frequency = std::clamp(
-                static_cast<double>(bands_[band].frequency->load(std::memory_order::relaxed)),
+                static_cast<double>(bands_[band].cached_frequency),
                 piano_roll_helper::kMinFrequency, slider_max_);
             drag_x_ = keys_panel_.noteToX(piano_roll_helper::frequencyToNote(frequency));
             pointer_x_ = event.position.x;
@@ -179,13 +206,21 @@ namespace zlpanel {
         if (drag_band_ >= bands_.size()) {
             return;
         }
-        updateBands();
+        if (!piano_roll_visible_ || drag_band_ != base_.getSelectedBand()) {
+            endGesture();
+            updateBand();
+            return;
+        }
+        const auto band = drag_band_;
+        updateSingleBand(band);
         if (drag_band_ >= bands_.size()) {
+            updateNote();
             return;
         }
         const auto shift = event.position.x - pointer_x_;
         pointer_x_ = event.position.x;
         if (event.mods.isCommandDown() || std::abs(shift) < 1e-7f) {
+            updateNote();
             return;
         }
         const auto sensitivity = base_.getSensitivity(event.mods.isShiftDown()
@@ -197,17 +232,17 @@ namespace zlpanel {
         drag_x_ = std::clamp(drag_x_ + shift * sensitivity, first_x, last_x);
         const auto note = std::clamp(static_cast<int>(std::round(keys_panel_.xToNote(drag_x_))), first_note_,
                                      last_note_);
-        auto* parameter = bands_[drag_band_].parameter;
+        auto* parameter = bands_[band].parameter;
         const auto value = parameter->convertTo0to1(static_cast<float>(piano_roll_helper::noteToFrequency(note)));
         if (std::abs(value - parameter->getValue()) > 1e-7f) {
             parameter->setValueNotifyingHost(value);
+            updateSingleBand(band);
         }
-        updateBands();
+        updateNote();
     }
 
     void PianoRollPanel::mouseUp(const juce::MouseEvent& event) {
         endGesture();
-        updateBands();
         updateHover(event.position);
     }
 
@@ -243,7 +278,8 @@ namespace zlpanel {
         auto* status = p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + suffix);
         updateValue(status, status->convertTo0to1(static_cast<float>(zlp::FilterStatus::kOn)));
         base_.setSelectedBand(band);
-        updateBands();
+        updateSingleBand(band);
+        bands_panel_.setSelectedBand(band);
         updateHover(event.position);
     }
 

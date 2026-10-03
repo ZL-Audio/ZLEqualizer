@@ -21,6 +21,10 @@ namespace zlpanel {
 
         void setBands(const std::array<int, zlp::kBandNum>& notes, size_t selected, bool geometry_changed = false);
 
+        void setBand(size_t band, int note);
+
+        void setSelectedBand(size_t selected);
+
         size_t getBandAt(juce::Point<float> point) const;
 
     private:
@@ -29,6 +33,8 @@ namespace zlpanel {
         std::array<int, zlp::kBandNum> notes_;
         std::array<juce::RectangleList<float>, zlp::kBandNum> regions_;
         size_t selected_{zlp::kBandNum};
+
+        void updateRegion(size_t band);
 
         void lookAndFeelChanged() override;
     };

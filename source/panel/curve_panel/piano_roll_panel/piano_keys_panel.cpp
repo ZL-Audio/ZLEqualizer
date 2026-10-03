@@ -31,14 +31,15 @@ namespace zlpanel {
         }
         const auto width = bound.getWidth();
         const auto last_note = first_note_ + static_cast<int>(keys_.size()) - 1;
-        const auto thickness = std::max(1.f, std::round(base_.getFontSize() * .06f));
+        const auto thickness = std::max(.5f, base_.getFontSize() * .06f);
         juce::RectangleList<float> black_keys, lines;
         for (auto note = first_note_; note <= last_note; ++note) {
+            const auto key_bound = getKey(note)->bounds;
             if (piano_roll_helper::isBlackKey(note)) {
-                black_keys.add(getBlackKeyBounds(note).toNearestInt().toFloat());
+                black_keys.add(key_bound);
             } else {
-                const auto x = getWhiteKeyBounds(note).getRight();
-                lines.add(juce::Rectangle<float>(std::round(x - thickness * .5f), 0.f,
+                const auto x = key_bound.getRight();
+                lines.add(juce::Rectangle<float>(x - thickness * .5f, 0.f,
                                                  thickness, bound.getHeight()));
             }
         }
@@ -89,14 +90,17 @@ namespace zlpanel {
             return -1;
         }
         const auto position = xToNote(point.x);
-        const auto nearest = static_cast<int>(std::round(position));
-        if (piano_roll_helper::isBlackKey(nearest) && getBlackKeyBounds(nearest).contains(point)) {
-            return getKey(nearest) != nullptr ? nearest : -1;
-        }
         const auto white_index = static_cast<int>(std::floor((position + kWhiteKeyOffset) / kWhiteKeyWidth));
         const auto pitch_index = (white_index % 7 + 7) % 7;
         const auto octave = (white_index - pitch_index) / 7;
         const auto note = octave * 12 + kWhiteNotes[static_cast<size_t>(pitch_index)];
+        for (const auto neighbour : {note - 1, note + 1}) {
+            if (piano_roll_helper::isBlackKey(neighbour)) {
+                if (const auto* key = getKey(neighbour); key != nullptr && key->bounds.contains(point)) {
+                    return neighbour;
+                }
+            }
+        }
         return getKey(note) != nullptr ? note : -1;
     }
 
@@ -109,7 +113,8 @@ namespace zlpanel {
     }
 
     juce::Rectangle<float> PianoKeysPanel::getBlackKeyBounds(const int note) const {
-        return {noteToX(note) - note_width_ * .4f, 0.f, note_width_ * .8f,
+        const auto centre = getWhiteKeyBounds(note - 1).getRight();
+        return {centre - note_width_ * .4f, 0.f, note_width_ * .8f,
                 static_cast<float>(getHeight()) * .6f};
     }
 

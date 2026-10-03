@@ -76,6 +76,10 @@ namespace zlpanel {
 
         void updateBands(bool force = false, bool geometry_changed = false);
 
+        void updateBandState(size_t band, bool force = false);
+
+        void updateSingleBand(size_t band);
+
         void updateHover(juce::Point<float> point);
 
         void updateNote();

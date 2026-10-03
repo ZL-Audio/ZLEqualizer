@@ -38,29 +38,62 @@ namespace zlpanel {
     void PianoBandPanel::setBands(const std::array<int, zlp::kBandNum>& notes, const size_t selected,
                                  const bool geometry_changed) {
         if (notes_ == notes && !geometry_changed) {
-            if (selected_ != selected) {
-                for (const auto band : {selected_, selected}) {
-                    if (band < regions_.size()) {
-                        repaint(regions_[band].getBounds().getSmallestIntegerContainer().expanded(1));
-                    }
-                }
-                selected_ = selected;
-            }
+            setSelectedBand(selected);
             return;
         }
-        juce::Rectangle<float> dirty;
-        for (const auto& region : regions_) {
-            dirty = dirty.getUnion(region.getBounds());
-        }
+        const auto old_notes = notes_;
         notes_ = notes;
-        selected_ = selected;
+        std::array<bool, zlp::kBandNum> changed{};
         for (size_t band = 0; band < notes_.size(); ++band) {
-            auto& region = regions_[band];
-            region.clear();
-            const auto* key = notes_[band] >= 0 ? keys_.getKey(notes_[band]) : nullptr;
-            if (key == nullptr) {
-                continue;
+            if (geometry_changed) {
+                changed[band] = true;
+            } else if (old_notes[band] != notes_[band]) {
+                changed[band] = true;
+                for (size_t other = 0; other < notes_.size(); ++other) {
+                    if (notes_[other] >= 0
+                        && (notes_[other] == old_notes[band] || notes_[other] == notes_[band])) {
+                        changed[other] = true;
+                    }
+                }
             }
+        }
+        for (size_t band = 0; band < notes_.size(); ++band) {
+            if (changed[band]) {
+                updateRegion(band);
+            }
+        }
+        setSelectedBand(selected);
+    }
+
+    void PianoBandPanel::setBand(const size_t band, const int note) {
+        if (notes_[band] == note) {
+            return;
+        }
+        const auto old_note = notes_[band];
+        notes_[band] = note;
+        for (size_t other = 0; other < notes_.size(); ++other) {
+            if (other == band || (notes_[other] >= 0 && (notes_[other] == old_note || notes_[other] == note))) {
+                updateRegion(other);
+            }
+        }
+    }
+
+    void PianoBandPanel::setSelectedBand(const size_t selected) {
+        if (selected_ != selected) {
+            for (const auto band : {selected_, selected}) {
+                if (band < regions_.size() && !regions_[band].isEmpty()) {
+                    repaint(regions_[band].getBounds().getSmallestIntegerContainer().expanded(1));
+                }
+            }
+            selected_ = selected;
+        }
+    }
+
+    void PianoBandPanel::updateRegion(const size_t band) {
+        auto& region = regions_[band];
+        const auto old_bound = region.getBounds();
+        region.clear();
+        if (const auto* key = notes_[band] >= 0 ? keys_.getKey(notes_[band]) : nullptr) {
             size_t count = 0, position = 0;
             for (size_t other = 0; other < notes_.size(); ++other) {
                 if (notes_[other] == notes_[band]) {
@@ -73,9 +106,14 @@ namespace zlpanel {
             auto section = key->bounds.withY(key->bounds.getY() + static_cast<float>(position) * height);
             section.setHeight(height);
             key->region.getIntersectionWith(section, region);
-            dirty = dirty.getUnion(region.getBounds());
         }
-        repaint(dirty.getSmallestIntegerContainer().expanded(1));
+        if (!old_bound.isEmpty()) {
+            repaint(old_bound.getSmallestIntegerContainer().expanded(1));
+        }
+        const auto new_bound = region.getBounds();
+        if (!new_bound.isEmpty() && new_bound != old_bound) {
+            repaint(new_bound.getSmallestIntegerContainer().expanded(1));
+        }
     }
 
     size_t PianoBandPanel::getBandAt(const juce::Point<float> point) const {
