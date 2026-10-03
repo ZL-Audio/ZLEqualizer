@@ -104,20 +104,14 @@ namespace zlpanel {
             init_values[2] = 0.f;
         }
 
-        if (event.position.y > height - padding) {
-            init_values[1] = static_cast<float>(zldsp::filter::FilterType::kNotch);
-        } else if (freq < 20.f && std::abs(y_portion) < .2f) {
-            init_values[1] = static_cast<float>(zldsp::filter::FilterType::kHighPass);
-        } else if (freq > 10000.f && std::abs(y_portion) < .2f) {
-            init_values[1] = static_cast<float>(zldsp::filter::FilterType::kLowPass);
-        } else if (freq < 40.f) {
-            init_values[1] = static_cast<float>(zldsp::filter::FilterType::kLowShelf);
+        const auto filter_type = event.position.y > height - padding
+            ? zldsp::filter::FilterType::kNotch
+            : band_helper::getInitialFilterType(freq, y_portion);
+        init_values[1] = static_cast<float>(filter_type);
+        if (filter_type == zldsp::filter::FilterType::kLowShelf
+            || filter_type == zldsp::filter::FilterType::kHighShelf) {
             init_values[5] = std::clamp(y_portion * 2.f, -1.f, 1.f) * max_db;
-        } else if (freq > 6250.f) {
-            init_values[1] = static_cast<float>(zldsp::filter::FilterType::kHighShelf);
-            init_values[5] = std::clamp(y_portion * 2.f, -1.f, 1.f) * max_db;
-        } else {
-            init_values[1] = static_cast<float>(zldsp::filter::FilterType::kPeak);
+        } else if (filter_type == zldsp::filter::FilterType::kPeak) {
             init_values[5] = std::clamp(y_portion, -1.f, 1.f) * max_db;
         }
 

@@ -9,38 +9,46 @@
 
 #pragma once
 
-#include "../../../PluginProcessor.hpp"
+#include <vector>
+
 #include "../../../gui/gui.hpp"
-#include "../../helper/helper.hpp"
-#include "../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
-    class BackgroundPanel final : public juce::Component {
+    class PianoKeysPanel final : public juce::Component {
     public:
-        explicit BackgroundPanel(PluginProcessor& p, zlgui::UIBase& base,
-                                 const multilingual::TooltipHelper& tooltip_helper);
+        struct Key {
+            juce::Rectangle<float> bounds;
+            juce::RectangleList<float> region;
+        };
+
+        explicit PianoKeysPanel(zlgui::UIBase& base);
 
         void paint(juce::Graphics& g) override;
 
+        void resized() override;
+
         void updateSampleRate(double sample_rate);
 
-        void setFrequencyLabelsVisible(bool visible);
+        const Key* getKey(int note) const;
+
+        int getNoteAt(juce::Point<float> point) const;
+
+        float noteToX(double note) const;
+
+        double xToNote(float x) const;
 
     private:
-        static constexpr std::array kFreqValues = {
-            20.f, 50.f, 100.f, 200.f, 500.f, 1000.f, 2000.f, 5000.f,
-            10000.f, 20000.f, 50000.f, 100000.f
-        };
-
         zlgui::UIBase& base_;
-        double freq_max_{0.};
-        bool frequency_labels_visible_{true};
+        double fft_max_{0.};
+        float a4_x_{0.f}, note_width_{0.f};
+        int first_note_{0};
+        std::vector<Key> keys_;
 
-        juce::Colour grid_colour_;
+        juce::Rectangle<float> getBlackKeyBounds(int note) const;
 
-        void drawFreqs(juce::Graphics& g) const;
+        juce::Rectangle<float> getWhiteKeyBounds(int note) const;
 
-        void drawDBs(juce::Graphics& g) const;
+        void updateGeometry();
 
         void lookAndFeelChanged() override;
     };

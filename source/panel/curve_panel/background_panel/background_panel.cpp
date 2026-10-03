@@ -33,6 +33,13 @@ namespace zlpanel {
         repaint();
     }
 
+    void BackgroundPanel::setFrequencyLabelsVisible(const bool visible) {
+        if (frequency_labels_visible_ != visible) {
+            frequency_labels_visible_ = visible;
+            repaint();
+        }
+    }
+
     void BackgroundPanel::drawFreqs(juce::Graphics& g) const {
         auto bound = getLocalBounds().toFloat();
         const auto full_width = bound.getWidth();
@@ -67,6 +74,9 @@ namespace zlpanel {
         gradient.addColour(1.0, base_.getBackgroundColour().withAlpha(1.f));
         g.setGradientFill(gradient);
         g.fillRect(getLocalBounds());
+        if (!frequency_labels_visible_) {
+            return;
+        }
         // draw freq labels
         g.setColour(base_.getTextColour().withAlpha(.5f));
         g.setFont(base_.getFontSize() * 1.25f);

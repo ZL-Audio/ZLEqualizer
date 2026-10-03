@@ -15,6 +15,7 @@
 #include "response_panel/response_panel.hpp"
 #include "output_panel/output_panel.hpp"
 #include "analyzer_panel/analyzer_panel.hpp"
+#include "piano_roll_panel/piano_roll_panel.hpp"
 
 namespace zlpanel {
     class CurvePanel final : public juce::Component,
@@ -67,7 +68,11 @@ namespace zlpanel {
         ScalePanel scale_panel_;
         OutputPanel output_panel_;
         AnalyzerPanel analyzer_panel_;
+        PianoRollPanel piano_roll_panel_;
+        bool piano_roll_visible_{false};
         std::atomic<bool> is_match_on_{false};
+
+        void updatePianoRollVisibility();
 
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };

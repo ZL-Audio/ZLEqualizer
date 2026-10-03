@@ -9,10 +9,28 @@
 
 #pragma once
 
+#include <cmath>
+
 #include "../../PluginProcessor.hpp"
 #include "juce_parameter_value.hpp"
 
 namespace zlpanel::band_helper {
+    inline zldsp::filter::FilterType getInitialFilterType(const float frequency, const float gain_portion = 0.f) {
+        if (frequency < 20.f && std::abs(gain_portion) < .2f) {
+            return zldsp::filter::FilterType::kHighPass;
+        }
+        if (frequency > 10000.f && std::abs(gain_portion) < .2f) {
+            return zldsp::filter::FilterType::kLowPass;
+        }
+        if (frequency < 40.f) {
+            return zldsp::filter::FilterType::kLowShelf;
+        }
+        if (frequency > 6250.f) {
+            return zldsp::filter::FilterType::kHighShelf;
+        }
+        return zldsp::filter::FilterType::kPeak;
+    }
+
     inline size_t findOffBand(PluginProcessor& p) {
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
             if (getValue(p.parameters_, zlp::PFilterStatus::kID + std::to_string(band)) < .1f) {

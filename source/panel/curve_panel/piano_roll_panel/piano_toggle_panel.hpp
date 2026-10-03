@@ -11,37 +11,23 @@
 
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
-#include "../../helper/helper.hpp"
-#include "../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
-    class BackgroundPanel final : public juce::Component {
+    class PianoTogglePanel final : public juce::Component {
     public:
-        explicit BackgroundPanel(PluginProcessor& p, zlgui::UIBase& base,
-                                 const multilingual::TooltipHelper& tooltip_helper);
+        explicit PianoTogglePanel(PluginProcessor& p, zlgui::UIBase& base);
 
         void paint(juce::Graphics& g) override;
 
-        void updateSampleRate(double sample_rate);
+        void resized() override;
 
-        void setFrequencyLabelsVisible(bool visible);
+        void repaintCallBack();
 
     private:
-        static constexpr std::array kFreqValues = {
-            20.f, 50.f, 100.f, 200.f, 500.f, 1000.f, 2000.f, 5000.f,
-            10000.f, 20000.f, 50000.f, 100000.f
-        };
-
         zlgui::UIBase& base_;
-        double freq_max_{0.};
-        bool frequency_labels_visible_{true};
-
-        juce::Colour grid_colour_;
-
-        void drawFreqs(juce::Graphics& g) const;
-
-        void drawDBs(juce::Graphics& g) const;
-
-        void lookAndFeelChanged() override;
+        std::unique_ptr<juce::Drawable> drawable_;
+        zlgui::button::ClickButton button_;
+        zlgui::attachment::ComponentUpdater updater_;
+        zlgui::attachment::ButtonAttachment<true> attachment_;
     };
 }
