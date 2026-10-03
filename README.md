@@ -51,6 +51,10 @@ cmake --build Builds --config Release
 
 After building, the plugins should have been copied to the corresponding folders. If you want to disable the copy process, you can pass `-DZL_JUCE_COPY_PLUGIN=FALSE`, find the binary folders under `Builds/ZLEqualizer_artefacts/Release` and copy them manually.
 
+## AI Transparency
+
+From October 2026, LLMs assist across various stages of this project's development. All code, documentation, and design choices are either authored or reviewed by the maintainer, who takes full responsibility for the quality, safety, and licensing of the final output.
+
 ## License
 
 ZL Equalizer is licensed under AGPLv3, as found in the [LICENSE.md](LICENSE.md) file. However, the [logo of ZL Audio](assets/zlaudio.svg) and the [logo of ZL Equalizer](assets/logo.svg) are not covered by this license.
