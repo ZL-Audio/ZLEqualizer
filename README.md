@@ -53,7 +53,7 @@ After building, the plugins should have been copied to the corresponding folders
 
 ## AI Transparency
 
-From October 2026, LLMs assist across various stages of this project's development. All code, documentation, and design choices are either authored or reviewed by the maintainer, who takes full responsibility for the quality, safety, and licensing of the final output.
+Since October 2026, LLMs have assisted across various stages of this project's development. All code, documentation, and design choices are either authored or reviewed by the maintainer, who takes full responsibility for the quality, safety, and licensing of the final output.
 
 ## License
 
@@ -79,12 +79,14 @@ Yuriy Ivantsov. *On the Ideal Bilinear and Biquadratic Digital Filter*. (2025).
 
 Yuriy Ivantsov. *On the State Space of a Linear Digital Filter*. (2025).
 
+Cleve Moler. [*Makima Piecewise Cubic Interpolation*](https://blogs.mathworks.com/cleve/2019/04/29/makima-piecewise-cubic-interpolation/). MathWorks Blogs. (2019).
+
+Nigel Redmon. *Cascading filters*. (2016).
+
+___
+
 Martin Vicanek. *Matched One-Pole Digital Shelving Filters*. (2019).
 
 Martin Vicanek. *Matched Second Order Digital Filters*. (2016).
 
-Nigel Redmon. *Cascading filters*. (2016).
-
 Aaron Wishnick. *Time-Varying Filters for Musical Applications*. DAFx. (2014).
-
-Cleve Moler. [*Makima Piecewise Cubic Interpolation*](https://blogs.mathworks.com/cleve/2019/04/29/makima-piecewise-cubic-interpolation/). MathWorks Blogs. (2019).
