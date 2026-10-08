@@ -16,6 +16,8 @@ namespace zlpanel {
                            multilingual::TooltipHelper& tooltip_helper) :
         Thread("curve_panel"),
         base_(base),
+        value_display_on_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PValueDisplayON::kID)),
+        eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
         background_panel_(p, base, tooltip_helper),
         fft_panel_(p, base),
         response_panel_(p, base, tooltip_helper),
@@ -23,7 +25,8 @@ namespace zlpanel {
         scale_panel_(p, base, tooltip_helper),
         output_panel_(p, base, tooltip_helper),
         analyzer_panel_(p, base, tooltip_helper),
-        piano_roll_panel_(p, base) {
+        piano_roll_panel_(p, base),
+        value_note_panel_(base) {
         background_panel_.setBufferedToImage(true);
         addAndMakeVisible(background_panel_);
         addAndMakeVisible(fft_panel_);
@@ -36,6 +39,7 @@ namespace zlpanel {
         addChildComponent(analyzer_panel_);
         addAndMakeVisible(piano_roll_panel_);
         piano_roll_panel_.addMouseListener(this, true);
+        addChildComponent(value_note_panel_);
         updatePianoRollVisibility();
         setInterceptsMouseClicks(false, true);
         base_.getPanelValueTree().addListener(this);
@@ -85,6 +89,11 @@ namespace zlpanel {
 
         const auto footer_height = piano_roll_helper::getHeight(font_size);
         piano_roll_panel_.setBounds(bound.withTop(bound.getBottom() - footer_height));
+        const auto value_width = static_cast<int>(std::round(base_.getFontSize() * 4.5f));
+        const auto value_height = footer_height * 2;
+        value_note_panel_.setBounds(bound.getRight() - value_width, bound.getBottom() - value_height,
+                                    value_width, value_height);
+        updateValueNotePanel(true);
     }
 
     void CurvePanel::mouseDown(const juce::MouseEvent&) {
@@ -104,14 +113,19 @@ namespace zlpanel {
         output_panel_.repaintCallBackSlow();
         analyzer_panel_.repaintCallBackSlow();
         scale_panel_.repaintCallBackSlow();
+        updateValueNotePanel();
     }
 
     void CurvePanel::updateBand() {
         response_panel_.updateBand();
         piano_roll_panel_.updateBand();
+        updateValueNotePanel();
     }
 
     void CurvePanel::updateSampleRate(const double sample_rate) {
+        fft_max_ = freq_helper::getFFTMax(sample_rate);
+        frequency_max_ = std::max(10.0, std::min(freq_helper::getSliderMax(sample_rate),
+                                               static_cast<double>(zlp::PFreq::kRange.end)));
         background_panel_.updateSampleRate(sample_rate);
         response_panel_.updateSampleRate(sample_rate);
         piano_roll_panel_.updateSampleRate(sample_rate);
@@ -123,7 +137,70 @@ namespace zlpanel {
         if (piano_roll_visible_ != visible) {
             piano_roll_visible_ = visible;
             background_panel_.setFrequencyLabelsVisible(!visible);
+            updateValueNotePanel();
         }
+    }
+
+    void CurvePanel::updateValueNotePanel(const bool force) {
+        ValueNoteState state;
+        state.show_values = value_display_on_ref_.load(std::memory_order::relaxed) > .5f;
+        state.piano_visible = piano_roll_panel_.isPianoRollVisible();
+        if (state.show_values) {
+            const auto source = juce::Desktop::getInstance().getMainMouseSource();
+            const auto* component = source.getComponentUnderMouse();
+            if (component != nullptr && (component == this || isParentOf(component))) {
+                state.dragging = source.isDragging()
+                    && (piano_roll_panel_.getDraggedBandValues(state.frequency, state.gain)
+                        || response_panel_.getDraggedBandValues(component, state.frequency, state.gain));
+                if (state.dragging) {
+                    state.mouse_over = true;
+                } else {
+                    state.position = getLocalPoint(nullptr, source.getScreenPosition());
+                    state.mouse_over = getLocalBounds().toFloat().contains(state.position) && fft_max_ > 10.0;
+                }
+            }
+        }
+        const auto over_piano = !state.dragging && state.mouse_over && state.piano_visible
+            && piano_roll_panel_.getBounds().toFloat().contains(state.position);
+        if (state.piano_visible && (!state.show_values || over_piano)) {
+            state.note = piano_roll_panel_.getDisplayNote();
+            if (state.show_values) {
+                state.frequency = piano_roll_panel_.getDisplayFrequency();
+            }
+        } else if (state.mouse_over && !state.dragging) {
+            const auto db_idx = static_cast<size_t>(std::clamp(
+                static_cast<int>(std::round(eq_max_db_idx_ref_.load(std::memory_order::relaxed))),
+                0, static_cast<int>(zlstate::PEQMaxDB::kChoices.size() - 1)));
+            state.max_db = base_.getCurveDBScale(db_idx);
+        }
+        if (!force && value_note_state_ == state) {
+            return;
+        }
+        value_note_state_ = state;
+
+        value_note_panel_.setVisible(state.show_values ? state.mouse_over : state.piano_visible);
+        if (!value_note_panel_.isVisible()) {
+            return;
+        }
+
+        auto mode = state.show_values ? ValueNotePanel::Mode::kFrequencyGain : ValueNotePanel::Mode::kNote;
+        auto frequency = state.frequency;
+        auto gain = state.gain;
+        if (state.show_values && !state.dragging) {
+            mode = over_piano ? ValueNotePanel::Mode::kFrequencyNote : ValueNotePanel::Mode::kFrequencyGain;
+            if (!over_piano || frequency <= 0.) {
+                frequency = piano_roll_helper::xToFrequency(state.position.x, static_cast<float>(getWidth()), fft_max_);
+            }
+            frequency = std::clamp(frequency, 10.0, frequency_max_);
+            if (!over_piano) {
+                const auto font_size = base_.getFontSize();
+                const auto plot_height = static_cast<float>(getHeight() - getBottomAreaHeight(font_size));
+                const auto padding = font_size * kDraggerScale;
+                gain = std::clamp((plot_height - 2.f * state.position.y)
+                                     / std::max(plot_height - 2.f * padding, 1.f), -1.f, 1.f) * state.max_db;
+            }
+        }
+        value_note_panel_.setValues(mode, state.piano_visible, frequency, gain, state.note);
     }
 
     void CurvePanel::startThreads() {

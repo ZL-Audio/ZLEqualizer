@@ -16,6 +16,7 @@
 #include "output_panel/output_panel.hpp"
 #include "analyzer_panel/analyzer_panel.hpp"
 #include "piano_roll_panel/piano_roll_panel.hpp"
+#include "value_note_panel/value_note_panel.hpp"
 
 namespace zlpanel {
     class CurvePanel final : public juce::Component,
@@ -60,7 +61,25 @@ namespace zlpanel {
         }
 
     private:
+        struct ValueNoteState {
+            bool show_values{false}, piano_visible{false}, mouse_over{false}, dragging{false};
+            juce::Point<float> position;
+            int note{-1};
+            double frequency{0.};
+            float gain{0.f}, max_db{0.f};
+
+            bool operator==(const ValueNoteState& other) const {
+                return show_values == other.show_values && piano_visible == other.piano_visible
+                    && mouse_over == other.mouse_over && dragging == other.dragging
+                    && position == other.position && note == other.note
+                    && juce::exactlyEqual(frequency, other.frequency) && juce::exactlyEqual(gain, other.gain)
+                    && juce::exactlyEqual(max_db, other.max_db);
+            }
+        };
+
         zlgui::UIBase& base_;
+        std::atomic<float>& value_display_on_ref_;
+        std::atomic<float>& eq_max_db_idx_ref_;
         BackgroundPanel background_panel_;
         FFTPanel fft_panel_;
         ResponsePanel response_panel_;
@@ -69,10 +88,15 @@ namespace zlpanel {
         OutputPanel output_panel_;
         AnalyzerPanel analyzer_panel_;
         PianoRollPanel piano_roll_panel_;
+        ValueNotePanel value_note_panel_;
+        ValueNoteState value_note_state_;
+        double fft_max_{0.}, frequency_max_{10.};
         bool piano_roll_visible_{false};
         std::atomic<bool> is_match_on_{false};
 
         void updatePianoRollVisibility();
+
+        void updateValueNotePanel(bool force = false);
 
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };

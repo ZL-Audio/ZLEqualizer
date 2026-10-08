@@ -41,6 +41,8 @@ namespace zlpanel {
 
         void turnMatchON(bool match_on);
 
+        bool getDraggedBandValues(const juce::Component* component, double& frequency, float& gain);
+
     private:
         static constexpr std::array kIDs{
             zlp::PFilterStatus::kID, zlp::PLRMode::kID,

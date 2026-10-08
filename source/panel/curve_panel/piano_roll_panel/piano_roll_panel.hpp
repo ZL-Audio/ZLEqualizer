@@ -13,7 +13,6 @@
 #include "../../../gui/gui.hpp"
 #include "piano_keys_panel.hpp"
 #include "piano_band_panel.hpp"
-#include "piano_note_panel.hpp"
 #include "piano_toggle_panel.hpp"
 
 namespace zlpanel {
@@ -51,6 +50,12 @@ namespace zlpanel {
 
         bool isPianoRollVisible() const { return piano_roll_visible_; }
 
+        int getDisplayNote() const { return display_note_; }
+
+        double getDisplayFrequency() const { return display_frequency_; }
+
+        bool getDraggedBandValues(double& frequency, float& gain) const;
+
     private:
         struct BandState {
             juce::RangedAudioParameter* parameter{};
@@ -64,13 +69,14 @@ namespace zlpanel {
         std::atomic<float>& piano_roll_on_ref_;
         PianoKeysPanel keys_panel_;
         PianoBandPanel bands_panel_;
-        PianoNotePanel note_panel_;
         PianoTogglePanel toggle_panel_;
         std::array<BandState, zlp::kBandNum> bands_{};
         std::array<int, zlp::kBandNum> band_notes_{};
         size_t drag_band_{zlp::kBandNum};
         double slider_max_{0.};
         int first_note_{0}, last_note_{-1}, hovered_note_{-1};
+        int display_note_{-1};
+        double hovered_frequency_{0.}, display_frequency_{0.};
         float drag_x_{0.f}, pointer_x_{0.f};
         bool piano_roll_visible_{false};
 

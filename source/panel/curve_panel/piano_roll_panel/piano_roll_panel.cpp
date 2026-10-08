@@ -16,7 +16,7 @@ namespace zlpanel {
     PianoRollPanel::PianoRollPanel(PluginProcessor& p, zlgui::UIBase& base) :
         p_ref_(p), base_(base),
         piano_roll_on_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PPianoRollON::kID)),
-        keys_panel_(base), bands_panel_(base, keys_panel_), note_panel_(base), toggle_panel_(p, base) {
+        keys_panel_(base), bands_panel_(base, keys_panel_), toggle_panel_(p, base) {
         band_notes_.fill(-1);
         for (size_t band = 0; band < bands_.size(); ++band) {
             const auto suffix = std::to_string(band);
@@ -26,7 +26,6 @@ namespace zlpanel {
         }
         addChildComponent(keys_panel_);
         addChildComponent(bands_panel_);
-        addChildComponent(note_panel_);
         toggle_panel_.setAlwaysOnTop(true);
         addAndMakeVisible(toggle_panel_);
         repaintCallBack();
@@ -40,10 +39,7 @@ namespace zlpanel {
         const auto bound = getLocalBounds();
         keys_panel_.setBounds(bound);
         bands_panel_.setBounds(bound);
-        const auto edge_width = std::min(bound.getWidth(), std::max(
-            static_cast<int>(std::round(base_.getFontSize() * 3.75f)),
-            bound.getHeight() + bound.getHeight() / 2));
-        note_panel_.setBounds(bound.withLeft(bound.getRight() - edge_width));
+        const auto edge_width = static_cast<int>(std::round(base_.getFontSize() * 3.75f));
         toggle_panel_.setBounds(bound.withWidth(edge_width));
         endGesture();
         updateBands(true, true);
@@ -87,7 +83,6 @@ namespace zlpanel {
             piano_roll_visible_ = visible;
             keys_panel_.setVisible(visible);
             bands_panel_.setVisible(visible);
-            note_panel_.setVisible(visible);
             hovered_note_ = -1;
         }
         updateBands(changed, changed);
@@ -140,18 +135,32 @@ namespace zlpanel {
     }
 
     void PianoRollPanel::updateHover(const juce::Point<float> point) {
-        hovered_note_ = piano_roll_visible_ ? keys_panel_.getNoteAt(point) : -1;
+        const auto note = piano_roll_visible_ ? keys_panel_.getNoteAt(point) : -1;
+        if (hovered_note_ != note) {
+            hovered_note_ = note;
+            hovered_frequency_ = note >= 0 ? piano_roll_helper::noteToFrequency(note) : 0.;
+        }
         updateNote();
     }
 
     void PianoRollPanel::updateNote() {
-        auto note = hovered_note_;
-        if (drag_band_ < bands_.size()) {
-            note = band_notes_[drag_band_];
-        } else if (note < 0 && base_.getSelectedBand() < bands_.size()) {
-            note = band_notes_[base_.getSelectedBand()];
+        display_note_ = hovered_note_;
+        display_frequency_ = display_note_ >= 0 ? hovered_frequency_ : 0.;
+        const auto band = drag_band_ < bands_.size() ? drag_band_
+            : display_note_ < 0 ? base_.getSelectedBand() : bands_.size();
+        if (band < bands_.size()) {
+            display_note_ = band_notes_[band];
+            display_frequency_ = display_note_ >= 0 ? bands_[band].cached_frequency : 0.;
         }
-        note_panel_.setNote(note);
+    }
+
+    bool PianoRollPanel::getDraggedBandValues(double& frequency, float& gain) const {
+        if (drag_band_ >= bands_.size() || bands_[drag_band_].status->load(std::memory_order::relaxed) <= .5f) {
+            return false;
+        }
+        frequency = bands_[drag_band_].frequency->load(std::memory_order::relaxed);
+        gain = getValue(p_ref_.parameters_, zlp::PGain::kID + std::to_string(drag_band_));
+        return std::isfinite(frequency) && std::isfinite(gain);
     }
 
     void PianoRollPanel::endGesture() {

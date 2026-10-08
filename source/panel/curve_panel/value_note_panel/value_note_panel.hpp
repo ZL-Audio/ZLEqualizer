@@ -12,18 +12,26 @@
 #include "../../../gui/gui.hpp"
 
 namespace zlpanel {
-    class PianoNotePanel final : public juce::Component {
+    class ValueNotePanel final : public juce::Component {
     public:
-        explicit PianoNotePanel(zlgui::UIBase& base);
+        enum class Mode { kNote, kFrequencyGain, kFrequencyNote };
+
+        explicit ValueNotePanel(zlgui::UIBase& base);
 
         void paint(juce::Graphics& g) override;
 
-        void setNote(int note);
+        void resized() override;
+
+        void setValues(Mode mode, bool piano_visible, double frequency, float gain, int note);
 
     private:
         zlgui::UIBase& base_;
+        Mode mode_{Mode::kNote};
+        bool piano_visible_{false};
+        int frequency_tenths_{-1}, gain_hundredths_{0};
         int note_{-1};
-        juce::String text_;
+        juce::String first_text_, second_text_;
+        juce::ColourGradient gradient_;
 
         void lookAndFeelChanged() override;
     };

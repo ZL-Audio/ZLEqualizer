@@ -67,6 +67,29 @@ namespace zlpanel {
         p_ref_.parameters_.removeParameterListener(zlp::PGainScale::kID, this);
     }
 
+    bool ResponsePanel::getDraggedBandValues(const juce::Component* component, double& frequency, float& gain) {
+        auto band = base_.getSelectedBand();
+        const auto target = band < zlp::kBandNum && component == &dragger_panel_.getTargetDragger().getButton();
+        const auto side = band < zlp::kBandNum && component == &dragger_panel_.getSideDragger().getButton();
+        if (!target && !side) {
+            for (band = 0; band < zlp::kBandNum; ++band) {
+                if (component == &dragger_panel_.getDragger(band).getButton()) {
+                    break;
+                }
+            }
+        }
+        if (band >= zlp::kBandNum) {
+            return false;
+        }
+        const auto suffix = std::to_string(band);
+        if (getValue(p_ref_.parameters_, zlp::PFilterStatus::kID + suffix) <= .5f) {
+            return false;
+        }
+        frequency = getValue(p_ref_.parameters_, (side ? zlp::PSideFreq::kID : zlp::PFreq::kID) + suffix);
+        gain = getValue(p_ref_.parameters_, (target ? zlp::PTargetGain::kID : zlp::PGain::kID) + suffix);
+        return std::isfinite(frequency) && std::isfinite(gain);
+    }
+
     void ResponsePanel::paint(juce::Graphics& g) {
         const auto should_alpha = static_cast<float>(base_.getPanelProperty(zlgui::kCurveShouldTransparent)) > .5f;
         if (should_alpha) {
