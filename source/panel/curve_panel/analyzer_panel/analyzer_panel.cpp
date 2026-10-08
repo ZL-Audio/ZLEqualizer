@@ -78,7 +78,17 @@ namespace zlpanel {
         strength_slider_("", base,
                          tooltip_helper.getToolTipText(multilingual::kFFTCollisionStrength)),
         strength_attach_(strength_slider_.getSlider(), p.parameters_NA_,
-                         zlstate::PCollisionStrength::kID, updater_) {
+                         zlstate::PCollisionStrength::kID, updater_),
+        value_drawable_(juce::Drawable::createFromImageData(BinaryData::dline_123_svg,
+                                                            BinaryData::dline_123_svgSize)),
+        value_button_(base, value_drawable_.get(), value_drawable_.get()),
+        value_attach_(value_button_.getButton(), p.parameters_NA_,
+                      zlstate::PValueDisplayON::kID, updater_),
+        meter_drawable_(juce::Drawable::createFromImageData(BinaryData::dline_meter_svg,
+                                                            BinaryData::dline_meter_svgSize)),
+        meter_button_(base, meter_drawable_.get(), meter_drawable_.get()),
+        meter_attach_(meter_button_.getButton(), p.parameters_NA_,
+                      zlstate::PMeterDisplayON::kID, updater_) {
 
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
@@ -119,7 +129,7 @@ namespace zlpanel {
         lr_box_.setBufferedToImage(true);
         addAndMakeVisible(lr_box_);
 
-        for (auto& b : {&freeze_button_, &collision_button_}) {
+        for (auto& b : {&freeze_button_, &collision_button_, &value_button_, &meter_button_}) {
             b->setImageAlpha(.5f, .75f, 1.f, 1.f);
             b->setBufferedToImage(true);
             addAndMakeVisible(b);
@@ -156,7 +166,7 @@ namespace zlpanel {
         const auto padding = getPaddingSize(font_size);
         const auto button_height = getButtonSize(font_size);
 
-        return 7 * padding + 6 * button_height;
+        return 8 * padding + 7 * button_height;
     }
 
     void AnalyzerPanel::resized() {
@@ -208,6 +218,14 @@ namespace zlpanel {
             t_bound.removeFromRight(padding);
             strength_label_.setBounds(t_bound);
         }
+        bound.removeFromTop(padding);
+        {
+            auto row = bound.removeFromTop(button_height);
+            const auto width = (row.getWidth() - padding) / 2;
+            value_button_.setBounds(row.removeFromLeft(width));
+            meter_button_.setBounds(row.removeFromRight(width));
+        }
+
         const auto dragging_distance = getSliderDraggingDistance(font_size);
         strength_slider_.setMouseDragSensitivity(dragging_distance);
     }

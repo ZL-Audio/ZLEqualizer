@@ -76,6 +76,14 @@ namespace zlpanel {
         zlgui::slider::CompactLinearSlider<false, false, false> strength_slider_;
         zlgui::attachment::SliderAttachment<true> strength_attach_;
 
+        const std::unique_ptr<juce::Drawable> value_drawable_;
+        zlgui::button::ClickButton value_button_;
+        zlgui::attachment::ButtonAttachment<true> value_attach_;
+
+        const std::unique_ptr<juce::Drawable> meter_drawable_;
+        zlgui::button::ClickButton meter_button_;
+        zlgui::attachment::ButtonAttachment<true> meter_attach_;
+
         void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier& property) override;
     };
 }
