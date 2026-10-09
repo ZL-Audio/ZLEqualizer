@@ -23,6 +23,7 @@ namespace zlpanel {
         response_panel_(p, base, tooltip_helper),
         match_fft_panel_(p, base),
         scale_panel_(p, base, tooltip_helper),
+        top_panel_(p, base, tooltip_helper),
         output_panel_(p, base, tooltip_helper),
         analyzer_panel_(p, base, tooltip_helper),
         piano_roll_panel_(p, base),
@@ -35,6 +36,8 @@ namespace zlpanel {
         response_panel_.addMouseListener(this, true);
         scale_panel_.setBufferedToImage(false);
         addChildComponent(scale_panel_);
+        top_panel_.setBufferedToImage(true);
+        addAndMakeVisible(top_panel_);
         addChildComponent(output_panel_);
         addChildComponent(analyzer_panel_);
         addAndMakeVisible(piano_roll_panel_);
@@ -71,21 +74,31 @@ namespace zlpanel {
         const auto bound = getLocalBounds();
         const auto font_size = base_.getFontSize();
         background_panel_.setBounds(bound);
-        fft_panel_.setBounds(bound);
-        response_panel_.setBounds(bound);
-        match_fft_panel_.setBounds(bound);
+
+        if (fft_panel_.getBounds() == bound) {
+            fft_panel_.resized();
+        } else {
+            fft_panel_.setBounds(bound);
+        }
+
+        const auto plot_bound = bound.withTrimmedTop(top_panel_.getIdealHeight());
+        top_panel_.setBounds(bound.withHeight(top_panel_.getIdealHeight()));
+        response_panel_.setBounds(plot_bound);
+        match_fft_panel_.setBounds(plot_bound);
 
         const auto padding = getPaddingSize(font_size);
         const auto output_width = output_panel_.getIdealWidth();
         const auto output_height = output_panel_.getIdealHeight();
-        output_panel_.setBounds(bound.getWidth() - output_width - 2 * padding, 0, output_width, output_height);
+        output_panel_.setBounds(bound.getWidth() - output_width - 2 * padding, plot_bound.getY(),
+                                output_width, output_height);
 
         const auto analyzer_width = analyzer_panel_.getIdealWidth();
         const auto analyzer_height = analyzer_panel_.getIdealHeight();
-        analyzer_panel_.setBounds(getButtonSize(font_size) + 2 * padding, 0,
+        analyzer_panel_.setBounds(getButtonSize(font_size) + 2 * padding, plot_bound.getY(),
                                   analyzer_width, analyzer_height);
 
-        scale_panel_.setBounds(bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
+        scale_panel_.setBounds(plot_bound.withLeft(bound.getWidth() - scale_panel_.getIdealWidth()));
+        top_panel_.setScaleGradientWidth(scale_panel_.getGradientWidth());
 
         const auto footer_height = piano_roll_helper::getHeight(font_size);
         piano_roll_panel_.setBounds(bound.withTop(bound.getBottom() - footer_height));
@@ -113,6 +126,8 @@ namespace zlpanel {
         output_panel_.repaintCallBackSlow();
         analyzer_panel_.repaintCallBackSlow();
         scale_panel_.repaintCallBackSlow();
+        top_panel_.setScaleGradientWidth(scale_panel_.getGradientWidth());
+        top_panel_.repaintCallbackSlow();
         updateValueNotePanel();
     }
 
@@ -156,7 +171,7 @@ namespace zlpanel {
                     state.mouse_over = true;
                 } else {
                     state.position = getLocalPoint(nullptr, source.getScreenPosition());
-                    state.mouse_over = getLocalBounds().toFloat().contains(state.position) && fft_max_ > 10.0;
+                    state.mouse_over = response_panel_.getBounds().toFloat().contains(state.position) && fft_max_ > 10.0;
                 }
             }
         }
@@ -194,9 +209,10 @@ namespace zlpanel {
             frequency = std::clamp(frequency, 10.0, frequency_max_);
             if (!over_piano) {
                 const auto font_size = base_.getFontSize();
-                const auto plot_height = static_cast<float>(getHeight() - getBottomAreaHeight(font_size));
+                const auto plot_height = static_cast<float>(response_panel_.getHeight() - getBottomAreaHeight(font_size));
+                const auto plot_y = state.position.y - static_cast<float>(response_panel_.getY());
                 const auto padding = font_size * kDraggerScale;
-                gain = std::clamp((plot_height - 2.f * state.position.y)
+                gain = std::clamp((plot_height - 2.f * plot_y)
                                      / std::max(plot_height - 2.f * padding, 1.f), -1.f, 1.f) * state.max_db;
             }
         }

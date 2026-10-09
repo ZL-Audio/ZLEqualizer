@@ -94,12 +94,34 @@ namespace zlpanel {
     }
 
     void TopPanel::paint(juce::Graphics& g) {
-        g.fillAll(base_.getBackgroundColour());
+        const auto bound = getLocalBounds().toFloat();
+        juce::ColourGradient gradient;
+        gradient.point1 = bound.getTopLeft();
+        gradient.point2 = bound.getBottomLeft();
+        gradient.addColour(0.0, base_.getBackgroundColour().withAlpha(1.f));
+        gradient.addColour(1.0, juce::Colours::transparentBlack);
+        g.setGradientFill(gradient);
+        g.fillRect(bound);
+
+        const auto scale_bound = bound.withLeft(bound.getRight() - scale_gradient_width_);
+        const juce::ColourGradient scale_gradient(base_.getBackgroundColour().withAlpha(0.f),
+                                                  scale_bound.getTopLeft(),
+                                                  base_.getBackgroundColour().withAlpha(1.f),
+                                                  scale_bound.getTopRight(), false);
+        g.setGradientFill(scale_gradient);
+        g.fillRect(scale_bound);
+    }
+
+    void TopPanel::setScaleGradientWidth(const float width) {
+        if (!juce::exactlyEqual(scale_gradient_width_, width)) {
+            scale_gradient_width_ = width;
+            repaint();
+        }
     }
 
     int TopPanel::getIdealHeight() const {
         const auto font_size = base_.getFontSize();
-        return 2 * (getPaddingSize(font_size) / 2) + getButtonSize(font_size);
+        return getTopPanelHeight(font_size);
     }
 
     void TopPanel::resized() {

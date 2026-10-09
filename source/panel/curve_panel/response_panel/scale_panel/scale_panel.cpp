@@ -63,6 +63,11 @@ namespace zlpanel {
             base_.getFontSize() * scale_panel_layout::getContentWidthUnits(true));
     }
 
+    float ScalePanel::getGradientWidth() const {
+        return scale_panel_layout::getMetrics(
+            static_cast<float>(getWidth()), base_.getFontSize(), use_wide_layout_).content_width;
+    }
+
     void ScalePanel::resized() {
         scale_label_panel_.setBounds(getLocalBounds());
 

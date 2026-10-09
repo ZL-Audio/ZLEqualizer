@@ -17,7 +17,6 @@ namespace zlpanel {
         curve_panel_(p, base, tooltip_helper_),
         control_panel_(p, base, curve_panel_.getMatchFFTPanel(), tooltip_helper_),
         extra_dynamic_panel_(p, base, tooltip_helper_),
-        top_panel_(p, base, tooltip_helper_),
         preset_browser_(p, base),
         ui_setting_panel_(p, base_),
         tooltip_laf_(base_) {
@@ -38,7 +37,6 @@ namespace zlpanel {
         addAndMakeVisible(control_panel_);
         extra_dynamic_panel_.setBufferedToImage(true);
         addChildComponent(extra_dynamic_panel_);
-        addAndMakeVisible(top_panel_);
         addChildComponent(ui_setting_panel_);
         preset_browser_.setBufferedToImage(true);
         addChildComponent(preset_browser_);
@@ -81,8 +79,11 @@ namespace zlpanel {
                                         control_bound.getY() - extra_dynamic_height,
                                         extra_dynamic_width, extra_dynamic_height});
 
-        top_panel_.setBounds(bound.removeFromTop(top_panel_.getIdealHeight()));
-        curve_panel_.setBounds(bound);
+        if (curve_panel_.getBounds() == bound) {
+            curve_panel_.resized();
+        } else {
+            curve_panel_.setBounds(bound);
+        }
 
         const auto padding = getPaddingSize(font_size);
         const auto setting_width = juce::jmax(0, juce::jmin(ui_setting_panel_.getIdealWidth(),
@@ -159,7 +160,6 @@ namespace zlpanel {
         extra_dynamic_panel_.repaintCallBackSlow();
         control_panel_.repaintCallBackSlow();
         curve_panel_.repaintCallBackSlow();
-        top_panel_.repaintCallbackSlow();
     }
 
     void MainPanel::startThreads() {

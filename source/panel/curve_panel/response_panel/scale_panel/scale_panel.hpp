@@ -19,6 +19,8 @@ namespace zlpanel {
 
         int getIdealWidth() const;
 
+        float getGradientWidth() const;
+
         void resized() override;
 
         void repaintCallBackSlow();

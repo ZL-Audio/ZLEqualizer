@@ -318,8 +318,9 @@ namespace zlpanel {
             c_height_ = height_.load(std::memory_order::relaxed);
             const auto font_size = font_size_.load(std::memory_order::relaxed);
             const auto bottom_area_height = getBottomAreaHeight(font_size);
-            const auto height0 = font_size * kDraggerScale;
-            const auto height1 = c_height_ - static_cast<float>(bottom_area_height) - height0;
+            const auto padding = font_size * kDraggerScale;
+            const auto height0 = static_cast<float>(getTopPanelHeight(font_size)) + padding;
+            const auto height1 = c_height_ - static_cast<float>(bottom_area_height) - padding;
             y_k_ = (height1 - height0) / c_fft_range_db_;
             y_b_ = height0 - c_fft_top_db_ * y_k_;
         }

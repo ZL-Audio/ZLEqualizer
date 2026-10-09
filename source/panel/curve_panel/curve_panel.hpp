@@ -17,6 +17,7 @@
 #include "analyzer_panel/analyzer_panel.hpp"
 #include "piano_roll_panel/piano_roll_panel.hpp"
 #include "value_note_panel/value_note_panel.hpp"
+#include "../top_panel/top_panel.hpp"
 
 namespace zlpanel {
     class CurvePanel final : public juce::Component,
@@ -85,6 +86,7 @@ namespace zlpanel {
         ResponsePanel response_panel_;
         MatchFFTPanel match_fft_panel_;
         ScalePanel scale_panel_;
+        TopPanel top_panel_;
         OutputPanel output_panel_;
         AnalyzerPanel analyzer_panel_;
         PianoRollPanel piano_roll_panel_;

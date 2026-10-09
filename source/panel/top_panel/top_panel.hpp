@@ -27,10 +27,13 @@ namespace zlpanel {
 
         void repaintCallbackSlow();
 
+        void setScaleGradientWidth(float width);
+
     private:
         PluginProcessor& p_ref_;
         zlgui::UIBase &base_;
         zlgui::attachment::ComponentUpdater updater_;
+        float scale_gradient_width_{0.f};
         LogoPanel logo_panel_;
         OutputLabel output_label_;
         AnalyzerLabel analyzer_label_;

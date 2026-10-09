@@ -58,15 +58,13 @@ namespace zlpanel {
         }
         g.setColour(grid_colour_);
         g.fillRectList(rect_list);
-        // draw top and bottom gradient
+        // The header supplies the top fade; keep the footer fade here.
         juce::ColourGradient gradient;
         gradient.point1 = juce::Point<float>(bound.getX(), bound.getY());
         gradient.point2 = juce::Point<float>(bound.getX(), bound.getBottom());
         gradient.isRadial = false;
         gradient.clearColours();
-        gradient.addColour(0.0, base_.getBackgroundColour().withAlpha(1.f));
-        gradient.addColour(base_.getFontSize() / bound.getHeight(),
-                           base_.getBackgroundColour().withAlpha(0.f));
+        gradient.addColour(0.0, base_.getBackgroundColour().withAlpha(0.f));
         gradient.addColour(1.f - 2.f * base_.getFontSize() / bound.getHeight(),
                            base_.getBackgroundColour().withAlpha(0.f));
         gradient.addColour(1.f - base_.getFontSize() / bound.getHeight(),
@@ -99,14 +97,14 @@ namespace zlpanel {
     }
 
     void BackgroundPanel::drawDBs(juce::Graphics& g) const {
-        const auto bound = getLocalBounds().toFloat();
+        const auto bound = getLocalBounds().withTrimmedTop(getTopPanelHeight(base_.getFontSize())).toFloat();
         const auto thickness = base_.getFontSize() * 0.1f;
-        auto y0 = base_.getFontSize() - thickness * .5f;
+        auto y0 = bound.getY() + base_.getFontSize() * kDraggerScale - thickness * .5f;
         const auto unit_height = (bound.getHeight() - 2.f * base_.getFontSize() * kDraggerScale
             - static_cast<float>(getBottomAreaHeight(base_.getFontSize()))) / 6.f;
 
         juce::RectangleList<float> rect_list;
-        while (y0 + thickness < bound.getHeight() - base_.getFontSize() * 3.f) {
+        while (y0 + thickness < bound.getBottom() - base_.getFontSize() * 3.f) {
             rect_list.add(0.f, y0, bound.getWidth(), thickness);
             y0 += unit_height;
         }
