@@ -17,6 +17,7 @@
 #include "analyzer_panel/analyzer_panel.hpp"
 #include "piano_roll_panel/piano_roll_panel.hpp"
 #include "value_note_panel/value_note_panel.hpp"
+#include "meter_panel/meter_panel.hpp"
 #include "../top_panel/top_panel.hpp"
 
 namespace zlpanel {
@@ -80,6 +81,7 @@ namespace zlpanel {
 
         zlgui::UIBase& base_;
         std::atomic<float>& value_display_on_ref_;
+        std::atomic<float>& meter_display_on_ref_;
         std::atomic<float>& eq_max_db_idx_ref_;
         BackgroundPanel background_panel_;
         FFTPanel fft_panel_;
@@ -91,6 +93,7 @@ namespace zlpanel {
         AnalyzerPanel analyzer_panel_;
         PianoRollPanel piano_roll_panel_;
         ValueNotePanel value_note_panel_;
+        MeterPanel meter_panel_;
         ValueNoteState value_note_state_;
         double fft_max_{0.}, frequency_max_{10.};
         bool piano_roll_visible_{false};

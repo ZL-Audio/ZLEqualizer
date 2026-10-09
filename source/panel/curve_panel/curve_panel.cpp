@@ -17,6 +17,7 @@ namespace zlpanel {
         Thread("curve_panel"),
         base_(base),
         value_display_on_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PValueDisplayON::kID)),
+        meter_display_on_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PMeterDisplayON::kID)),
         eq_max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
         background_panel_(p, base, tooltip_helper),
         fft_panel_(p, base),
@@ -27,7 +28,8 @@ namespace zlpanel {
         output_panel_(p, base, tooltip_helper),
         analyzer_panel_(p, base, tooltip_helper),
         piano_roll_panel_(p, base),
-        value_note_panel_(base) {
+        value_note_panel_(base),
+        meter_panel_(p, base) {
         background_panel_.setBufferedToImage(true);
         addAndMakeVisible(background_panel_);
         addAndMakeVisible(fft_panel_);
@@ -43,6 +45,8 @@ namespace zlpanel {
         addAndMakeVisible(piano_roll_panel_);
         piano_roll_panel_.addMouseListener(this, true);
         addChildComponent(value_note_panel_);
+        addAndMakeVisible(meter_panel_);
+        meter_panel_.setVisible(meter_display_on_ref_.load(std::memory_order::relaxed) > .5f);
         updatePianoRollVisibility();
         setInterceptsMouseClicks(false, true);
         base_.getPanelValueTree().addListener(this);
@@ -59,20 +63,41 @@ namespace zlpanel {
     }
 
     void CurvePanel::run() {
+        bool meter_was_on{false};
         while (!threadShouldExit()) {
             const auto flag = wait(-1);
             juce::ignoreUnused(flag);
+            if (threadShouldExit()) {
+                return;
+            }
+            const auto meter_on = meter_display_on_ref_.load(std::memory_order::relaxed) > .5f;
+            auto* meter = meter_on ? &meter_panel_.getDisplayPanel() : nullptr;
+            if (meter_on && !meter_was_on) {
+                meter->reset();
+            }
+            meter_was_on = meter_on;
             if (is_match_on_.load(std::memory_order::relaxed)) {
-                match_fft_panel_.run(*this);
+                match_fft_panel_.run(*this, meter);
             } else {
-                fft_panel_.run(*this);
+                fft_panel_.run(*this, meter);
+            }
+            if (meter != nullptr && !threadShouldExit()) {
+                meter->run(juce::Time::getMillisecondCounterHiRes() * .001);
             }
         }
     }
 
     void CurvePanel::resized() {
-        const auto bound = getLocalBounds();
+        auto bound = getLocalBounds();
         const auto font_size = base_.getFontSize();
+        if (meter_panel_.isVisible()) {
+            const auto meter_bound = bound.removeFromRight(meter_panel_.getIdealWidth());
+            if (meter_panel_.getBounds() == meter_bound) {
+                meter_panel_.resized();
+            } else {
+                meter_panel_.setBounds(meter_bound);
+            }
+        }
         background_panel_.setBounds(bound);
 
         if (fft_panel_.getBounds() == bound) {
@@ -122,6 +147,14 @@ namespace zlpanel {
     }
 
     void CurvePanel::repaintCallBackSlow() {
+        const auto meter_visible = meter_display_on_ref_.load(std::memory_order::relaxed) > .5f;
+        if (meter_visible != meter_panel_.isVisible()) {
+            meter_panel_.setVisible(meter_visible);
+            resized();
+        }
+        if (meter_visible) {
+            meter_panel_.repaintCallBackSlow();
+        }
         response_panel_.repaintCallBackSlow();
         output_panel_.repaintCallBackSlow();
         analyzer_panel_.repaintCallBackSlow();
@@ -204,7 +237,8 @@ namespace zlpanel {
         if (state.show_values && !state.dragging) {
             mode = over_piano ? ValueNotePanel::Mode::kFrequencyNote : ValueNotePanel::Mode::kFrequencyGain;
             if (!over_piano || frequency <= 0.) {
-                frequency = piano_roll_helper::xToFrequency(state.position.x, static_cast<float>(getWidth()), fft_max_);
+                frequency = piano_roll_helper::xToFrequency(state.position.x,
+                                                            static_cast<float>(response_panel_.getWidth()), fft_max_);
             }
             frequency = std::clamp(frequency, 10.0, frequency_max_);
             if (!over_piano) {

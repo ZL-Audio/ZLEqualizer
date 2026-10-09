@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "match_fft_panel.hpp"
+#include "../meter_panel/meter_display_panel.hpp"
 #include "../../../dsp/filter/ideal_filter/ideal.hpp"
 #include "../../../zlp/sample_rate_helper.hpp"
 
@@ -52,7 +53,7 @@ namespace zlpanel {
                      {thickness * 1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
     }
 
-    void MatchFFTPanel::run(const juce::Thread& thread) {
+    void MatchFFTPanel::run(const juce::Thread& thread, MeterDisplayPanel* meter_panel) {
         if (to_reset_analyzer_.check()) {
             for (auto& accu : accumulators_) {
                 accu.reset();
@@ -63,7 +64,7 @@ namespace zlpanel {
             to_update_drawing_.signal();
         }
         if (match_phase_.load(std::memory_order::relaxed) == MatchPhase::kAnalyze) {
-            runAnalyze(thread);
+            runAnalyze(thread, meter_panel);
         } else {
             runMatch(thread);
             match_phase_.store(MatchPhase::kAnalyze, std::memory_order::release);
@@ -144,7 +145,7 @@ namespace zlpanel {
         match_limit_.store(match_limit, std::memory_order::relaxed);
     }
 
-    void MatchFFTPanel::runAnalyze(const juce::Thread& thread) {
+    void MatchFFTPanel::runAnalyze(const juce::Thread& thread, MeterDisplayPanel* meter_panel) {
         juce::ScopedNoDenormals noDenormals;
         auto& sender{p_ref_.getController().getAnalyzerSender()};
         if (!sender.getLock().try_lock()) {
@@ -209,7 +210,17 @@ namespace zlpanel {
         }
         // receiver pull data
         auto& fifo{sender.getAbstractFIFO()};
-        auto num_read = fifo.getNumReady() / 4 * 3;
+        const auto num_ready = fifo.getNumReady();
+        auto num_read = num_ready / 4 * 3;
+        // meter the consumed samples before trimming the FFT history
+        if (meter_panel != nullptr) {
+            // include the final samples when playback stops
+            if (num_read == 0) {
+                num_read = num_ready;
+            }
+            meter_panel->pull(fifo.prepareToRead(num_read),
+                              sender.getSampleFIFOs()[0], sender.getSampleFIFOs()[1]);
+        }
         if (num_read > fft_size_) {
             (void)fifo.prepareToRead(num_read - fft_size_);
             fifo.finishRead(num_read - fft_size_);

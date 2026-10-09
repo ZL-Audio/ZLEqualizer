@@ -23,6 +23,8 @@
 #include "../../../chore/thread/notifier.hpp"
 
 namespace zlpanel {
+    class MeterDisplayPanel;
+
     class FFTPanel final : public juce::Component,
                            private juce::ValueTree::Listener {
     public:
@@ -32,7 +34,7 @@ namespace zlpanel {
 
         void paint(juce::Graphics& g) override;
 
-        void run(const juce::Thread& thread);
+        void run(const juce::Thread& thread, MeterDisplayPanel* meter_panel);
 
         void resized() override;
 
@@ -123,7 +125,7 @@ namespace zlpanel {
         TriBuffer<juce::ColourGradient> gradient_;
         juce::Colour collision_colour_;
 
-        void runFFT(const juce::Thread& thread);
+        void runFFT(const juce::Thread& thread, MeterDisplayPanel* meter_panel);
 
         void lookAndFeelChanged() override;
 

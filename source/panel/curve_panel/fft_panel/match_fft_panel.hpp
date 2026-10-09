@@ -22,6 +22,8 @@
 #include "../../../chore/thread/notifier.hpp"
 
 namespace zlpanel {
+    class MeterDisplayPanel;
+
     class MatchFFTPanel final : public juce::Component,
                                 private juce::AsyncUpdater,
                                 private juce::Timer {
@@ -42,7 +44,7 @@ namespace zlpanel {
 
         void paint(juce::Graphics& g) override;
 
-        void run(const juce::Thread& thread);
+        void run(const juce::Thread& thread, MeterDisplayPanel* meter_panel);
 
         void resized() override;
 
@@ -156,7 +158,7 @@ namespace zlpanel {
 
         zlchore::thread::Notifier to_reset_analyzer_{};
 
-        void runAnalyze(const juce::Thread& thread);
+        void runAnalyze(const juce::Thread& thread, MeterDisplayPanel* meter_panel);
 
         void runMatch(const juce::Thread& thread);
 
