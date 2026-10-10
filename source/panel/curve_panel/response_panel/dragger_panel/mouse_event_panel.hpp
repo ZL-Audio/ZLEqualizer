@@ -32,11 +32,13 @@ namespace zlpanel {
 
         void mouseEnter(const juce::MouseEvent& event) override;
 
-        void mouseMove(const juce::MouseEvent& event) override;
+        void mouseExit(const juce::MouseEvent& event) override;
 
         void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override;
 
         void mouseDrag(const juce::MouseEvent&) override;
+
+        void modifierKeysChanged(const juce::ModifierKeys& modifiers) override;
 
         void visibilityChanged() override;
 
@@ -65,6 +67,8 @@ namespace zlpanel {
 
         std::atomic<float>& fft_freeze_ref_;
         bool is_shift_down_{false};
+        bool shift_press_armed_{false};
+        bool always_freeze_{false};
         bool c_fft_freeze_{false};
         bool is_fft_frozen_{false};
         bool has_mouse_position_{false};

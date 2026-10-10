@@ -25,17 +25,16 @@ namespace zlpanel {
         setFFTFreeze(false);
     }
 
-    void MouseEventPanel::mouseEnter(const juce::MouseEvent&) {
+    void MouseEventPanel::mouseEnter(const juce::MouseEvent& event) {
+        is_shift_down_ = event.mods.isShiftDown();
+        shift_press_armed_ = false;
         if (q_attachment_) {
             q_attachment_->updateComponent();
         }
     }
 
-    void MouseEventPanel::mouseMove(const juce::MouseEvent& event) {
-        if (event.mods.isShiftDown() != is_shift_down_) {
-            is_shift_down_ = ! is_shift_down_;
-            updateFFTFreeze();
-        }
+    void MouseEventPanel::mouseExit(const juce::MouseEvent&) {
+        shift_press_armed_ = false;
     }
 
     void MouseEventPanel::mouseDown(const juce::MouseEvent& event) {
@@ -59,8 +58,27 @@ namespace zlpanel {
         stopTimer();
     }
 
+    void MouseEventPanel::modifierKeysChanged(const juce::ModifierKeys& modifiers) {
+        const auto shift_down = modifiers.isShiftDown();
+        if (shift_down != is_shift_down_) {
+            is_shift_down_ = shift_down;
+            if (shift_down) {
+                shift_press_armed_ = c_fft_freeze_ && isMouseOver(false);
+            } else {
+                if (shift_press_armed_ && c_fft_freeze_ && isMouseOver(false)) {
+                    always_freeze_ = !always_freeze_;
+                    mouse_idle_updates_ = 0;
+                    setFFTFreeze(always_freeze_);
+                }
+                shift_press_armed_ = false;
+            }
+        }
+        juce::Component::modifierKeysChanged(modifiers);
+    }
+
     void MouseEventPanel::visibilityChanged() {
         if (!isShowing()) {
+            shift_press_armed_ = false;
             has_mouse_position_ = false;
             setFFTFreeze(false);
         }
@@ -192,6 +210,8 @@ namespace zlpanel {
 
     void MouseEventPanel::updateFFTFreeze() {
         if (!c_fft_freeze_) {
+            shift_press_armed_ = false;
+            always_freeze_ = false;
             has_mouse_position_ = false;
             setFFTFreeze(false);
             return;
@@ -208,7 +228,7 @@ namespace zlpanel {
         has_mouse_position_ = true;
         last_mouse_screen_position_ = screen_position;
 
-        setFFTFreeze(is_shift_down_ || mouse_idle_updates_ >= kFFTFreezeIdleUpdates);
+        setFFTFreeze(always_freeze_ || mouse_idle_updates_ >= kFFTFreezeIdleUpdates);
     }
 
     void MouseEventPanel::setFFTFreeze(const bool should_freeze) {
