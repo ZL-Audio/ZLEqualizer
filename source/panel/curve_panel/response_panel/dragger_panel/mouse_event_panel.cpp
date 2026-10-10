@@ -21,29 +21,21 @@ namespace zlpanel {
     }
 
     MouseEventPanel::~MouseEventPanel() {
-        stopTimer(0);
-        stopTimer(1);
-        base_.setPanelProperty(zlgui::kCurveShouldTransparent, 0.f);
+        stopTimer();
+        setFFTFreeze(false);
     }
 
     void MouseEventPanel::mouseEnter(const juce::MouseEvent&) {
-        if (c_fft_freeze_) {
-            startTimer(1, 2000);
-        }
         if (q_attachment_) {
             q_attachment_->updateComponent();
         }
     }
 
-    void MouseEventPanel::mouseMove(const juce::MouseEvent&) {
-        turnOffFFTFreeze();
-        if (c_fft_freeze_) {
-            startTimer(1, 2000);
+    void MouseEventPanel::mouseMove(const juce::MouseEvent& event) {
+        if (event.mods.isShiftDown() != is_shift_down_) {
+            is_shift_down_ = ! is_shift_down_;
+            updateFFTFreeze();
         }
-    }
-
-    void MouseEventPanel::mouseExit(const juce::MouseEvent&) {
-        turnOffFFTFreeze();
     }
 
     void MouseEventPanel::mouseDown(const juce::MouseEvent& event) {
@@ -59,16 +51,23 @@ namespace zlpanel {
 
         if (event.mods.isLeftButtonDown()) {
             right_click_panel_.setVisible(false);
-            startTimer(0, 200);
+            startTimer(200);
         }
     }
 
     void MouseEventPanel::mouseDrag(const juce::MouseEvent&) {
-        stopTimer(0);
+        stopTimer();
+    }
+
+    void MouseEventPanel::visibilityChanged() {
+        if (!isShowing()) {
+            has_mouse_position_ = false;
+            setFFTFreeze(false);
+        }
     }
 
     void MouseEventPanel::mouseDoubleClick(const juce::MouseEvent& event) {
-        stopTimer(0);
+        stopTimer();
         const auto action_type = event.mods.isRightButtonDown()
             ? zlgui::MouseActionType::kRightDoubleClick
             : zlgui::MouseActionType::kLeftDoubleClick;
@@ -147,13 +146,8 @@ namespace zlpanel {
                 updateSlopeAttachment();
             }
         }
-        const auto fft_freeze = fft_freeze_ref_.load(std::memory_order::relaxed);
-        if ((fft_freeze > .5f) != c_fft_freeze_) {
-            c_fft_freeze_ = fft_freeze > .5f;
-            if (!c_fft_freeze_) {
-                turnOffFFTFreeze();
-            }
-        }
+        c_fft_freeze_ = fft_freeze_ref_.load(std::memory_order::relaxed) > .5f;
+        updateFFTFreeze();
         updater_.updateComponents();
     }
 
@@ -176,15 +170,9 @@ namespace zlpanel {
         slider_max_ = static_cast<float>(freq_helper::getSliderMax(sample_rate));
     }
 
-    void MouseEventPanel::timerCallback(const int timer_ID) {
-        if (timer_ID == 0) {
-            base_.setSelectedBand(zlp::kBandNum);
-            stopTimer(0);
-        } else if (timer_ID == 1) {
-            base_.setPanelProperty(zlgui::PanelSettingIdx::kFFTFrozen, 1.f);
-            base_.setPanelProperty(zlgui::kCurveShouldTransparent, 1.f);
-            stopTimer(1);
-        }
+    void MouseEventPanel::timerCallback() {
+        base_.setSelectedBand(zlp::kBandNum);
+        stopTimer();
     }
 
     void MouseEventPanel::updateSlopeAttachment() {
@@ -202,11 +190,32 @@ namespace zlpanel {
         }
     }
 
-    void MouseEventPanel::turnOffFFTFreeze() {
-        stopTimer(1);
-        base_.setPanelProperty(zlgui::PanelSettingIdx::kFFTFrozen, 0.f);
-        if (static_cast<float>(base_.getPanelProperty(zlgui::kCurveShouldTransparent)) > .5f) {
-            base_.setPanelProperty(zlgui::kCurveShouldTransparent, 0.f);
+    void MouseEventPanel::updateFFTFreeze() {
+        if (!c_fft_freeze_) {
+            has_mouse_position_ = false;
+            setFFTFreeze(false);
+            return;
+        }
+
+        const auto source = juce::Desktop::getInstance().getMainMouseSource();
+        const auto screen_position = source.getScreenPosition();
+
+        if (!has_mouse_position_ || screen_position != last_mouse_screen_position_) {
+            mouse_idle_updates_ = 0;
+        } else if (mouse_idle_updates_ < kFFTFreezeIdleUpdates) {
+            ++mouse_idle_updates_;
+        }
+        has_mouse_position_ = true;
+        last_mouse_screen_position_ = screen_position;
+
+        setFFTFreeze(is_shift_down_ || mouse_idle_updates_ >= kFFTFreezeIdleUpdates);
+    }
+
+    void MouseEventPanel::setFFTFreeze(const bool should_freeze) {
+        if (is_fft_frozen_ != should_freeze) {
+            is_fft_frozen_ = should_freeze;
+            base_.setPanelProperty(zlgui::PanelSettingIdx::kFFTFrozen, should_freeze ? 1.f : 0.f);
+            base_.setPanelProperty(zlgui::kCurveShouldTransparent, should_freeze ? 1.f : 0.f);
         }
     }
 }

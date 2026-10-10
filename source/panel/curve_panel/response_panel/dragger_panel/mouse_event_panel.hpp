@@ -18,7 +18,7 @@
 
 namespace zlpanel {
     class MouseEventPanel final : public juce::Component,
-                                  private juce::MultiTimer {
+                                  private juce::Timer {
     public:
         explicit MouseEventPanel(PluginProcessor& p, zlgui::UIBase& base,
                                  const multilingual::TooltipHelper& tooltip_helper,
@@ -34,11 +34,11 @@ namespace zlpanel {
 
         void mouseMove(const juce::MouseEvent& event) override;
 
-        void mouseExit(const juce::MouseEvent& event) override;
-
         void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& wheel) override;
 
         void mouseDrag(const juce::MouseEvent&) override;
+
+        void visibilityChanged() override;
 
         void updateBand();
 
@@ -47,6 +47,8 @@ namespace zlpanel {
         void repaintCallbackSlow();
 
     private:
+        static constexpr int kFFTFreezeIdleUpdates{20};
+
         static constexpr std::array kInitIDs{
             zlp::PFilterStatus::kID, zlp::PFilterType::kID, zlp::PLRMode::kID,
             zlp::POrder::kID,
@@ -62,7 +64,12 @@ namespace zlpanel {
         size_t previous_band_{zlp::kBandNum};
 
         std::atomic<float>& fft_freeze_ref_;
+        bool is_shift_down_{false};
         bool c_fft_freeze_{false};
+        bool is_fft_frozen_{false};
+        bool has_mouse_position_{false};
+        juce::Point<float> last_mouse_screen_position_{};
+        int mouse_idle_updates_{0};
 
         float fft_max_{0.f};
         float slider_max_{0.f};
@@ -75,9 +82,11 @@ namespace zlpanel {
         zlgui::slider::SnappingSlider slope_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> slope_attachment_;
 
-        void timerCallback(int timer_ID) override;
+        void timerCallback() override;
 
-        void turnOffFFTFreeze();
+        void updateFFTFreeze();
+
+        void setFFTFreeze(bool should_freeze);
 
         void updateSlopeAttachment();
     };
