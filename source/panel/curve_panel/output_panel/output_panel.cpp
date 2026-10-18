@@ -48,6 +48,23 @@ namespace zlpanel {
                       tooltip_helper.getToolTipText(multilingual::kPhaseFlip)),
         phase_attach_(phase_button_.getButton(), p.parameters_,
                       zlp::PPhaseFlip::kID, updater_),
+        stereo_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
+            std::vector<std::unique_ptr<juce::Drawable>> icons;
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::stereo_svg, BinaryData::stereo_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::left_svg, BinaryData::left_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::right_svg, BinaryData::right_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::mid_svg, BinaryData::mid_svgSize));
+            icons.emplace_back(
+                juce::Drawable::createFromImageData(BinaryData::side_svg, BinaryData::side_svgSize));
+            return icons;
+        }(), base, tooltip_helper.getToolTipText(multilingual::kBandStereoMode),
+                    {"Stereo", "Left", "Right", "Mid", "Side"}),
+        stereo_attach_(stereo_box_.getBox(), p.parameters_,
+                       zlp::POutputStereo::kID, updater_),
         lookahead_label_("", "Lookahead"),
         lookahead_slider_("", base,
                           tooltip_helper.getToolTipText(multilingual::kLookahead)),
@@ -96,6 +113,12 @@ namespace zlpanel {
             b->setBufferedToImage(true);
             addAndMakeVisible(b);
         }
+
+        stereo_box_.setComponentID(zlp::POutputStereo::kID);
+        stereo_box_.getLAF().setOption(juce::PopupMenu::Options().withPreferredPopupDirection(
+            juce::PopupMenu::Options::PopupDirection::downwards));
+        stereo_box_.setBufferedToImage(true);
+        addAndMakeVisible(stereo_box_);
 
         lookahead_label_.setLookAndFeel(&name_laf_);
         lookahead_label_.setJustificationType(juce::Justification::centredRight);
@@ -153,15 +176,21 @@ namespace zlpanel {
         }
         bound.removeFromTop(padding);
         {
-            auto t_bound = bound.removeFromTop(button_height);
-            const auto h_padding = (t_bound.getWidth() - 4 * button_height) / 3;
-            sgc_button_.setBounds(t_bound.removeFromLeft(button_height));
-            t_bound.removeFromLeft(h_padding);
-            lm_button_.setBounds(t_bound.removeFromLeft(button_height));
-            t_bound.removeFromLeft(h_padding);
-            phase_button_.setBounds(t_bound.removeFromRight(button_height));
-            t_bound.removeFromRight(h_padding);
-            agc_button_.setBounds(t_bound.removeFromRight(button_height));
+            const auto row = bound.removeFromTop(button_height);
+            const auto step = static_cast<float>(row.getWidth() - button_height) / 4.f;
+            const auto get_control_bounds = [row, step, button_height](const int index) {
+                return row.withWidth(button_height).translated(
+                    static_cast<int>(std::round(static_cast<float>(index) * step)), 0);
+            };
+            sgc_button_.setBounds(get_control_bounds(0));
+            lm_button_.setBounds(get_control_bounds(1));
+            agc_button_.setBounds(get_control_bounds(2));
+            phase_button_.setBounds(get_control_bounds(3));
+            const auto stereo_box_bound = get_control_bounds(4).reduced(
+                static_cast<int>(std::round(font_size * .1f)));
+
+            stereo_box_.getLAF().setIconSize(static_cast<float>(stereo_box_bound.getHeight()));
+            stereo_box_.setBounds(stereo_box_bound.expanded(padding, 0));
         }
         bound.removeFromTop(padding);
         {

@@ -64,6 +64,9 @@ namespace zlpanel {
         zlgui::button::ClickButton phase_button_;
         zlgui::attachment::ButtonAttachment<true> phase_attach_;
 
+        zlgui::combobox::CompactCombobox stereo_box_;
+        zlgui::attachment::ComboBoxAttachment<true> stereo_attach_;
+
         juce::Label lookahead_label_;
         zlgui::slider::CompactLinearSlider<false, false, false> lookahead_slider_;
         zlgui::attachment::SliderAttachment<true> lookahead_attach_;

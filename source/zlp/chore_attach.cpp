@@ -40,6 +40,8 @@ namespace zlp {
             controller_.setPhaseFlipON(value > .5f);
         } else if (parameter_ID == PLookahead::kID) {
             controller_.setDelay(static_cast<double>(value) * 0.001);
+        } else if (parameter_ID == POutputStereo::kID) {
+            controller_.setOutputStereo(static_cast<FilterStereo>(std::round(value)));
         }
     }
 }

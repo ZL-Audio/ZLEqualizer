@@ -48,7 +48,8 @@ namespace zlgui::combobox {
             if (!icons_.empty() && box.getSelectedItemIndex() >= 0) {
                 const auto fig = icons_[static_cast<size_t>(box.getSelectedItemIndex())]->createCopy();
                 fig->replaceColour(juce::Colours::black, base_.getTextColour());
-                fig->drawWithin(g, box.getLocalBounds().toFloat(), juce::RectanglePlacement::centred, 1.f);
+                fig->drawWithin(g, getIconBounds(box.getLocalBounds().toFloat()),
+                                juce::RectanglePlacement::centred, 1.f);
             }
         }
 
@@ -114,7 +115,7 @@ namespace zlgui::combobox {
             } else {
                 const auto fig = icon->createCopy();
                 fig->replaceColour(juce::Colours::black, base_.getTextColour());
-                fig->drawWithin(g, area.toFloat(), juce::RectanglePlacement::centred, alpha);
+                fig->drawWithin(g, getIconBounds(area.toFloat()), juce::RectanglePlacement::centred, alpha);
             }
         }
 
@@ -227,6 +228,8 @@ namespace zlgui::combobox {
             item_height_ = height;
         }
 
+        void setIconSize(const float size) { icon_size_ = size; }
+
         void updateTextWidth(const juce::ComboBox& box) {
             const juce::Font font{juce::FontOptions(base_.getFontSize() * font_scale_)};
             max_text_width_ = 0.f;
@@ -309,6 +312,14 @@ namespace zlgui::combobox {
             return alignment == Alignment::kLeft ? bounds.withTrimmedLeft(inset) : bounds.withTrimmedRight(inset);
         }
 
+        [[nodiscard]] juce::Rectangle<float> getIconBounds(const juce::Rectangle<float> bounds) const {
+            if (icon_size_ <= 0.f) {
+                return bounds;
+            }
+            return bounds.withSizeKeepingCentre(std::min(bounds.getWidth(), icon_size_),
+                                                std::min(bounds.getHeight(), icon_size_));
+        }
+
         [[nodiscard]] juce::Colour getPopupSurfaceColour() const {
             return base_.getColourBlendedWithBackground(base_.getTextColour(), kSurfaceTint);
         }
@@ -328,6 +339,7 @@ namespace zlgui::combobox {
         }
 
         int item_width_{0}, item_height_{0};
+        float icon_size_{0.f};
         float font_scale_{1.5f}, box_alpha_{0.f};
         float max_text_width_{0.f};
         Alignment label_alignment_{Alignment::kCenter};

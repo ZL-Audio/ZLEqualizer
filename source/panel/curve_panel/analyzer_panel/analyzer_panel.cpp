@@ -206,8 +206,10 @@ namespace zlpanel {
             t_bound.removeFromLeft(h_padding / 2);
             freeze_button_.setBounds(t_bound.removeFromLeft(button_height));
             t_bound.removeFromLeft(h_padding);
-            const auto lr_box_bound = t_bound.removeFromLeft(button_height);
-            lr_box_.setBounds(lr_box_bound.reduced(static_cast<int>(std::round(base_.getFontSize() * .1f))));
+            const auto lr_box_bound = t_bound.removeFromLeft(button_height).reduced(
+                static_cast<int>(std::round(font_size * .1f)));
+            lr_box_.getLAF().setIconSize(static_cast<float>(lr_box_bound.getHeight()));
+            lr_box_.setBounds(lr_box_bound.expanded(padding, 0));
             t_bound.removeFromRight(h_padding / 2);
             collision_button_.setBounds(t_bound.removeFromRight(button_height));
         }

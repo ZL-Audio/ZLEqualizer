@@ -262,6 +262,12 @@ namespace zlp {
             to_update_.signal();
         }
 
+        void setOutputStereo(const FilterStereo stereo) {
+            output_stereo_.store(stereo, std::memory_order::relaxed);
+            to_update_output_.signal();
+            to_update_.signal();
+        }
+
         void setDelay(const double delay_second) {
             delay_second_.store(delay_second, std::memory_order::relaxed);
             to_update_delay_.signal();
@@ -443,6 +449,9 @@ namespace zlp {
         // phase flip
         std::atomic<bool> phase_flip_on_{false};
         bool c_phase_flip_on_{false};
+        // final output stereo selection
+        std::atomic<FilterStereo> output_stereo_{FilterStereo::kStereo};
+        FilterStereo c_output_stereo_{FilterStereo::kStereo};
         // lookahead
         std::atomic<double> delay_second_{0.};
         zlchore::thread::Notifier to_update_delay_{false};

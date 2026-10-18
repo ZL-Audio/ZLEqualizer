@@ -10,6 +10,44 @@
 #include "controller.hpp"
 
 namespace zlp {
+    namespace {
+        namespace hn = hwy::HWY_NAMESPACE;
+
+        template <FilterStereo stereo>
+        HWY_INLINE void processOutputMS(double* HWY_RESTRICT left, double* HWY_RESTRICT right,
+                                        const size_t num_samples, const double gain) {
+            static_assert(stereo == FilterStereo::kMid || stereo == FilterStereo::kSide);
+            static constexpr hn::ScalableTag<double> d;
+            static constexpr size_t lanes = hn::MaxLanes(d);
+            const auto v_gain = hn::Set(d, gain);
+            size_t i = 0;
+            for (; i + lanes <= num_samples; i += lanes) {
+                const auto l = hn::LoadU(d, left + i);
+                const auto r = hn::LoadU(d, right + i);
+                if constexpr (stereo == FilterStereo::kMid) {
+                    const auto mid = hn::Mul(v_gain, hn::Add(l, r));
+                    hn::StoreU(mid, d, left + i);
+                    hn::StoreU(mid, d, right + i);
+                } else {
+                    const auto side = hn::Mul(v_gain, hn::Sub(l, r));
+                    hn::StoreU(side, d, left + i);
+                    hn::StoreU(hn::Neg(side), d, right + i);
+                }
+            }
+            for (; i < num_samples; ++i) {
+                if constexpr (stereo == FilterStereo::kMid) {
+                    const auto mid = gain * (left[i] + right[i]);
+                    left[i] = mid;
+                    right[i] = mid;
+                } else {
+                    const auto side = gain * (left[i] - right[i]);
+                    left[i] = side;
+                    right[i] = -side;
+                }
+            }
+        }
+    }
+
     Controller::Controller(juce::AudioProcessor& processor) :
         p_ref_(processor) {
         not_off_total_.reserve(kBandNum);
@@ -500,6 +538,7 @@ namespace zlp {
             updateOutputGain();
         }
         c_phase_flip_on_ = phase_flip_on_.load(std::memory_order_relaxed);
+        c_output_stereo_ = output_stereo_.load(std::memory_order::relaxed);
         if (to_update_makeup_.check()) {
             c_makeup_gain_linear_ = makeup_gain_linear_.load(std::memory_order::relaxed);
             updateOutputGain();
@@ -696,11 +735,40 @@ namespace zlp {
             break;
         }
         }
+        // phase flip and output stereo process
         if constexpr (!bypass) {
-            if (c_phase_flip_on_) {
-                for (size_t chan = 0; chan < 2; chan++) {
-                    zldsp::vector::flip(main_pointers[chan], num_samples);
+            const double ms_gain = c_phase_flip_on_ ? -0.5 : 0.5;
+            switch (c_output_stereo_) {
+            case FilterStereo::kStereo: {
+                if (c_phase_flip_on_) {
+                    for (size_t chan = 0; chan < 2; ++chan) {
+                        zldsp::vector::flip(main_pointers[chan], num_samples);
+                    }
                 }
+                break;
+            }
+            case FilterStereo::kLeft: {
+                if (c_phase_flip_on_) {
+                    zldsp::vector::flip(main_pointers[0], num_samples);
+                }
+                std::memset(main_pointers[1], 0, num_samples * sizeof(double));
+                break;
+            }
+            case FilterStereo::kRight: {
+                std::memset(main_pointers[0], 0, num_samples * sizeof(double));
+                if (c_phase_flip_on_) {
+                    zldsp::vector::flip(main_pointers[1], num_samples);
+                }
+                break;
+            }
+            case FilterStereo::kMid: {
+                processOutputMS<FilterStereo::kMid>(main_pointers[0], main_pointers[1], num_samples, ms_gain);
+                break;
+            }
+            case FilterStereo::kSide: {
+                processOutputMS<FilterStereo::kSide>(main_pointers[0], main_pointers[1], num_samples, ms_gain);
+                break;
+            }
             }
         }
     }

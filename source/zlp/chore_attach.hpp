@@ -28,7 +28,7 @@ namespace zlp {
         static constexpr std::array kIDs{
             PFilterStructure::kID, POutputGain::kID,
             PStaticGain::kID, PAutoGain::kID,
-            PPhaseFlip::kID, PLookahead::kID
+            PPhaseFlip::kID, PLookahead::kID, POutputStereo::kID
         };
 
         void parameterChanged(const juce::String& parameter_ID, float value) override;

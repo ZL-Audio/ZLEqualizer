@@ -192,9 +192,10 @@ namespace zlp {
     template <class T>
     class ChoiceParameters {
     public:
-        static std::unique_ptr<juce::AudioParameterChoice> get(const bool automate = true) {
+        static std::unique_ptr<juce::AudioParameterChoice> get(const bool automate = true,
+                                                             const int version_hint = kVersionHint) {
             auto attributes = juce::AudioParameterChoiceAttributes().withAutomatable(automate).withLabel(T::kName);
-            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::kID, kVersionHint),
+            return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(T::kID, version_hint),
                                                                 T::kName, T::kChoices, T::kDefaultI, attributes);
         }
 
@@ -291,6 +292,14 @@ namespace zlp {
             "Off", "On"
         };
         static constexpr int kDefaultI = 0;
+    };
+
+    class POutputStereo : public ChoiceParameters<POutputStereo> {
+    public:
+        static constexpr auto kID = "total_output_stereo";
+        static constexpr auto kName = "Output Stereo";
+        inline static const auto kChoices = juce::StringArray{"Stereo", "Left", "Right", "Mid", "Side"};
+        static constexpr int kDefaultI = FilterStereo::kStereo;
     };
 
     class PLookahead : public FloatParameters<PLookahead> {
@@ -538,7 +547,7 @@ namespace zlp {
         layout.add(PFilterStructure::get(), PExtSide::get(), PBypass::get(),
                    POutputGain::get(), PGainScale::get(),
                    PAutoGain::get(), PStaticGain::get(), PPhaseFlip::get(),
-                   PLookahead::get());
+                   PLookahead::get(), POutputStereo::get());
         for (size_t i = 0; i < kBandNum; ++i) {
             const auto suffix = std::to_string(i);
             layout.add(PFilterStatus::get(suffix),
