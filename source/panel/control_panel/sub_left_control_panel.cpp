@@ -17,25 +17,22 @@ namespace zlpanel {
                                              const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         control_background_(base),
-        close_drawable_(juce::Drawable::createFromImageData(BinaryData::trash_svg,
-                                                            BinaryData::trash_svgSize)),
-        close_button_(base, close_drawable_.get(), nullptr,
-                      tooltip_helper.getToolTipText(multilingual::kBandOff)),
-        bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
-                                                             BinaryData::bypass_svgSize)),
-        bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
-                       tooltip_helper.getToolTipText(multilingual::kBandBypass)),
+        close_button_(base,
+                      juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize),
+                      false, tooltip_helper.getToolTipText(multilingual::kBandOff)),
+        bypass_button_(base,
+                       juce::Drawable::createFromImageData(BinaryData::bypass_svg, BinaryData::bypass_svgSize),
+                       true, tooltip_helper.getToolTipText(multilingual::kBandBypass)),
         label_laf_(base),
         freq_label_("", "FREQ"),
         gain_label_("", "GAIN"),
         q_label_("", "Q"),
-        left_drawable_(juce::Drawable::createFromImageData(BinaryData::left_arrow_svg,
-                                                           BinaryData::left_arrow_svgSize)),
-        left_button_(base, left_drawable_.get(), nullptr),
+        left_button_(base,
+                     juce::Drawable::createFromImageData(BinaryData::left_arrow_svg, BinaryData::left_arrow_svgSize)),
         band_label_("", ""),
-        right_drawable_(juce::Drawable::createFromImageData(BinaryData::right_arrow_svg,
-                                                            BinaryData::right_arrow_svgSize)),
-        right_button_(base, right_drawable_.get(), nullptr),
+        right_button_(base,
+                      juce::Drawable::createFromImageData(
+                          BinaryData::right_arrow_svg, BinaryData::right_arrow_svgSize)),
         ftype_box_(zlp::PFilterType::kChoices, base,
                    tooltip_helper.getToolTipText(multilingual::kBandType)),
         slope_box_(juce::StringArray{
@@ -47,10 +44,9 @@ namespace zlpanel {
                     tooltip_helper.getToolTipText(multilingual::kBandStereoMode)),
         q_slider_("", base,
                   tooltip_helper.getToolTipText(multilingual::kBandQ), 1.25f),
-        dynamic_drawable_(juce::Drawable::createFromImageData(BinaryData::dynamic_svg,
-                                                              BinaryData::dynamic_svgSize)),
-        dynamic_button_(base, dynamic_drawable_.get(), dynamic_drawable_.get(),
-                        tooltip_helper.getToolTipText(multilingual::kBandDynamic)) {
+        dynamic_button_(base,
+                        juce::Drawable::createFromImageData(BinaryData::dynamic_svg, BinaryData::dynamic_svgSize),
+                        true, tooltip_helper.getToolTipText(multilingual::kBandDynamic)) {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
 

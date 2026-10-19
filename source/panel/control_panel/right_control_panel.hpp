@@ -42,26 +42,20 @@ namespace zlpanel {
 
         PanelBackground control_background_;
 
-        const std::unique_ptr<juce::Drawable> bypass_drawable_;
         zlgui::button::ClickButton bypass_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> bypass_attachment_;
 
-        const std::unique_ptr<juce::Drawable> auto_drawable_;
         zlgui::button::ClickButton auto_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> auto_attachment_;
 
-        const std::unique_ptr<juce::Drawable> relative_drawable_;
         zlgui::button::ClickButton relative_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> relative_attachment_;
 
-        const std::unique_ptr<juce::Drawable> swap_drawable_;
         zlgui::button::ClickButton swap_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> swap_attachment_;
 
-        const std::unique_ptr<juce::Drawable> extra_drawable_;
         zlgui::button::ClickButton extra_button_;
 
-        const std::unique_ptr<juce::Drawable> link_drawable_;
         zlgui::button::ClickButton link_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> link_attachment_;
 

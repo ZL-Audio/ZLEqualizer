@@ -45,11 +45,20 @@ namespace zlgui::combobox {
                 g.setColour(base_.getTextColour().withAlpha(kHoverAlpha * box_alpha_));
                 g.fillRoundedRectangle(box_bound, corner_size);
             }
-            if (!icons_.empty() && box.getSelectedItemIndex() >= 0) {
-                const auto fig = icons_[static_cast<size_t>(box.getSelectedItemIndex())]->createCopy();
-                fig->replaceColour(juce::Colours::black, base_.getTextColour());
-                fig->drawWithin(g, getIconBounds(box.getLocalBounds().toFloat()),
-                                juce::RectanglePlacement::centred, 1.f);
+            const auto selected_id = box.getSelectedId();
+            if (selected_id != 0) {
+                for (juce::PopupMenu::MenuItemIterator it(*box.getRootMenu(), true); it.next();) {
+                    const auto& item = it.getItem();
+                    if (item.itemID == selected_id) {
+                        if (item.image != nullptr) {
+                            const auto fig = item.image->createCopy();
+                            fig->replaceColour(juce::Colours::black, base_.getTextColour());
+                            fig->drawWithin(g, getIconBounds(box.getLocalBounds().toFloat()),
+                                            juce::RectanglePlacement::centred, 1.f);
+                        }
+                        break;
+                    }
+                }
             }
         }
 
@@ -217,12 +226,6 @@ namespace zlgui::combobox {
 
         void setAlignLabel(const bool should_align) { align_label_ = should_align; }
 
-        void setIcons(const std::vector<std::unique_ptr<juce::Drawable>>& icons) {
-            for (size_t i = 0; i < icons.size(); ++i) {
-                icons_.emplace_back(icons[i]->createCopy());
-            }
-        }
-
         void setItemSize(const int width, const int height) {
             item_width_ = width;
             item_height_ = height;
@@ -275,7 +278,6 @@ namespace zlgui::combobox {
 
             const auto target = parent->getLocalArea(popup_target_, popup_target_->getLocalBounds().toFloat());
             const auto x = juce::jlimit(available.getX(), available.getRight() - popup.getWidth(), target.getX());
-            // JUCE restores its saved bounds when scrolling; a transform keeps this correction intact.
             window.setTransform(window.getTransform().translated(x - popup.getX(), 0.f));
         }
 
@@ -354,7 +356,5 @@ namespace zlgui::combobox {
 
         UIBase& base_;
         bool align_label_{true};
-
-        std::vector<std::unique_ptr<juce::Drawable>> icons_;
     };
 }

@@ -25,7 +25,6 @@ namespace zlpanel {
 
     private:
         zlgui::UIBase& base_;
-        std::unique_ptr<juce::Drawable> drawable_;
         zlgui::button::ClickButton button_;
         zlgui::attachment::ComponentUpdater updater_;
         zlgui::attachment::ButtonAttachment<true> attachment_;

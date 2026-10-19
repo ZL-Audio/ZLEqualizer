@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "../../interface_definitions.hpp"
@@ -17,11 +19,11 @@ namespace zlgui::button {
     class ClickButton final : public juce::Component {
     public:
         explicit ClickButton(UIBase& base,
-                             juce::Drawable* normal_image = nullptr,
-                             juce::Drawable* normal_on_image = nullptr,
+                             std::unique_ptr<juce::Drawable> normal_image = nullptr,
+                             std::unique_ptr<juce::Drawable> normal_on_image = nullptr,
                              const juce::String& tooltip_text = "")
-            : base_(base), normal_(normal_image), normal_on_(normal_on_image) {
-            if (normal_on_image != nullptr) {
+            : base_(base), normal_(std::move(normal_image)), normal_on_(std::move(normal_on_image)) {
+            if (normal_on_ != nullptr) {
                 button_.setToggleable(true);
                 button_.setClickingTogglesState(true);
             }
@@ -36,6 +38,17 @@ namespace zlgui::button {
             setInterceptsMouseClicks(false, true);
         }
 
+        // use the same drawable for both toggle states
+        ClickButton(UIBase& base, std::unique_ptr<juce::Drawable> image,
+                    const bool toggleable, const juce::String& tooltip_text = "")
+            : ClickButton(base, std::move(image), nullptr, tooltip_text) {
+            if (toggleable && normal_ != nullptr) {
+                use_normal_for_on_ = true;
+                button_.setToggleable(true);
+                button_.setClickingTogglesState(true);
+            }
+        }
+
         ~ClickButton() override = default;
 
         void resized() override {
@@ -46,20 +59,31 @@ namespace zlgui::button {
         inline juce::DrawableButton& getButton() { return button_; }
 
         void updateImages() {
+            std::unique_ptr<juce::Drawable> normal_img, normal_on_img, over_img, over_on_img;
             if (normal_ != nullptr) {
-                normal_img_ = normal_->createCopy();
-                over_img_ = normal_->createCopy();
-                normal_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour().withAlpha(alpha_));
-                over_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour().withAlpha(over_alpha_));
+                const auto normal_colour = base_.getTextColour().withAlpha(alpha_);
+                const auto over_colour = base_.getTextColour().withAlpha(over_alpha_);
+                normal_img = normal_->createCopy();
+                normal_img->replaceColour(juce::Colour(0, 0, 0), normal_colour);
+                if (over_colour != normal_colour) {
+                    over_img = normal_->createCopy();
+                    over_img->replaceColour(juce::Colour(0, 0, 0), over_colour);
+                }
             }
-            if (normal_on_ != nullptr) {
-                normal_on_img_ = normal_on_->createCopy();
-                over_on_img_ = normal_on_->createCopy();
-                normal_on_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour().withAlpha(on_alpha_));
-                over_on_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour().withAlpha(on_over_alpha_));
+            const auto* on_source = use_normal_for_on_ ? normal_.get() : normal_on_.get();
+            if (on_source != nullptr) {
+                const auto normal_on_colour = base_.getTextColour().withAlpha(on_alpha_);
+                const auto over_on_colour = base_.getTextColour().withAlpha(on_over_alpha_);
+                normal_on_img = on_source->createCopy();
+                normal_on_img->replaceColour(juce::Colour(0, 0, 0), normal_on_colour);
+                if (over_on_colour != normal_on_colour) {
+                    over_on_img = on_source->createCopy();
+                    over_on_img->replaceColour(juce::Colour(0, 0, 0), over_on_colour);
+                }
             }
-            button_.setImages(normal_img_.get(), over_img_.get(), nullptr, nullptr,
-                              normal_on_img_.get(), over_on_img_.get(), nullptr, nullptr);
+            // the button keeps its own copies of these temporary render images
+            button_.setImages(normal_img.get(), over_img.get(), nullptr, nullptr,
+                              normal_on_img.get(), over_on_img.get(), nullptr, nullptr);
         }
 
         void setImageAlpha(const float alpha, const float over_alpha,
@@ -77,10 +101,9 @@ namespace zlgui::button {
     private:
         zlgui::UIBase& base_;
         juce::DrawableButton button_{"", juce::DrawableButton::ImageFitted};
-        juce::Drawable *normal_ = nullptr, *normal_on_ = nullptr;
+        std::unique_ptr<juce::Drawable> normal_, normal_on_;
+        bool use_normal_for_on_{false};
         float alpha_{.5f}, over_alpha_{1.f}, on_alpha_{1.f}, on_over_alpha_{1.f};
-
-        std::unique_ptr<juce::Drawable> normal_img_, normal_on_img_, over_img_, over_on_img_;
 
         void lookAndFeelChanged() override {
             updateImages();

@@ -9,6 +9,8 @@
 
 #include "compact_combobox.hpp"
 
+#include <utility>
+
 namespace zlgui::combobox {
     CompactCombobox::CompactCombobox(const juce::StringArray& choices,
                                      UIBase& base, const juce::String& tooltip_text,
@@ -26,7 +28,7 @@ namespace zlgui::combobox {
                 item.tooltipText = item_labels[static_cast<size_t>(i)];
                 item.isEnabled = true;
                 item.isTicked = false;
-                menu->addItem(item);
+                menu->addItem(std::move(item));
             }
         }
 
@@ -43,7 +45,7 @@ namespace zlgui::combobox {
         }
     }
 
-    CompactCombobox::CompactCombobox(const std::vector<std::unique_ptr<juce::Drawable>>& icons,
+    CompactCombobox::CompactCombobox(std::vector<std::unique_ptr<juce::Drawable>> icons,
                                      UIBase& base,
                                      const juce::String& tooltip_text,
                                      const std::vector<juce::String>& item_labels) :
@@ -59,11 +61,9 @@ namespace zlgui::combobox {
             }
             item.isEnabled = true;
             item.isTicked = false;
-            item.image = icons[i]->createCopy();
-            menu->addItem(item);
+            item.image = std::move(icons[i]);
+            menu->addItem(std::move(item));
         }
-
-        box_laf_.setIcons(icons);
 
         combo_box_.setScrollWheelEnabled(false);
         combo_box_.setInterceptsMouseClicks(false, false);

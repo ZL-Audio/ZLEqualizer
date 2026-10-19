@@ -18,7 +18,8 @@ namespace zlgui::button {
     class CompactButton final : public juce::Component {
     public:
         explicit CompactButton(const juce::String& labelText, UIBase& base,
-                               const juce::String& tooltip_text);
+                               const juce::String& tooltip_text,
+                               std::unique_ptr<juce::Drawable> drawable = nullptr);
 
         ~CompactButton() override;
 
@@ -33,7 +34,7 @@ namespace zlgui::button {
             button_.setInterceptsMouseClicks(x, false);
         }
 
-        inline void setDrawable(juce::Drawable* x) { laf_.setDrawable(x); }
+        inline void setDrawable(std::unique_ptr<juce::Drawable> x) { laf_.setDrawable(std::move(x)); }
 
         CompactButtonLookAndFeel& getLAF() { return laf_; }
 

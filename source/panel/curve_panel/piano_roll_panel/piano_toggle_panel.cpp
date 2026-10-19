@@ -13,8 +13,9 @@
 namespace zlpanel {
     PianoTogglePanel::PianoTogglePanel(PluginProcessor& p, zlgui::UIBase& base) :
         base_(base),
-        drawable_(juce::Drawable::createFromImageData(BinaryData::piano_svg, BinaryData::piano_svgSize)),
-        button_(base, drawable_.get(), drawable_.get()),
+        button_(base,
+                juce::Drawable::createFromImageData(BinaryData::piano_svg, BinaryData::piano_svgSize),
+                true),
         attachment_(button_.getButton(), p.parameters_NA_, zlstate::PPianoRollON::kID, updater_) {
         button_.getButton().onStateChange = [this]() {
             repaint();

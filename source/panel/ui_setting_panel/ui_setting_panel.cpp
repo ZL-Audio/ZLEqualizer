@@ -23,18 +23,16 @@ namespace zlpanel {
                       juce::String(ZLEQUALIZER_CURRENT_VERSION) + " " + juce::String(ZLEQUALIZER_CURRENT_HASH)),
         tab_bar_(base),
         view_port_(base),
-        save_drawable_(juce::Drawable::createFromImageData(BinaryData::save_svg,
-                                                           BinaryData::save_svgSize)),
-        close_drawable_(juce::Drawable::createFromImageData(BinaryData::close_svg,
-                                                            BinaryData::close_svgSize)),
-        reset_drawable_(juce::Drawable::createFromImageData(BinaryData::reset_settings_svg,
-                                                            BinaryData::reset_settings_svgSize)),
-        folder_open_drawable_(juce::Drawable::createFromImageData(BinaryData::folder_open_svg,
-                                                                  BinaryData::folder_open_svgSize)),
-        save_button_(base_, save_drawable_.get()),
-        close_button_(base_, close_drawable_.get()),
-        reset_button_(base_, reset_drawable_.get()),
-        folder_open_button_(base_, folder_open_drawable_.get()) {
+        save_button_(base_,
+                     juce::Drawable::createFromImageData(BinaryData::save_svg, BinaryData::save_svgSize)),
+        close_button_(base_,
+                      juce::Drawable::createFromImageData(BinaryData::close_svg, BinaryData::close_svgSize)),
+        reset_button_(base_,
+                      juce::Drawable::createFromImageData(
+                          BinaryData::reset_settings_svg, BinaryData::reset_settings_svgSize)),
+        folder_open_button_(base_,
+                            juce::Drawable::createFromImageData(
+                                BinaryData::folder_open_svg, BinaryData::folder_open_svgSize)) {
         juce::ignoreUnused(p_ref_);
         setOpaque(false);
         setInterceptsMouseClicks(true, true);

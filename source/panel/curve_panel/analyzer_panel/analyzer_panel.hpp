@@ -60,14 +60,12 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox smooth_type_box_;
         zlgui::attachment::ComboBoxAttachment<true> smooth_type_attach_;
 
-        const std::unique_ptr<juce::Drawable> freeze_drawable_;
         zlgui::button::ClickButton freeze_button_;
         zlgui::attachment::ButtonAttachment<true> freeze_attach_;
 
         zlgui::combobox::CompactCombobox lr_box_;
         zlgui::attachment::ComboBoxAttachment<true> lr_attachment_;
 
-        const std::unique_ptr<juce::Drawable> collision_drawable_;
         zlgui::button::ClickButton collision_button_;
         zlgui::attachment::ButtonAttachment<true> collision_attach_;
 
@@ -76,11 +74,9 @@ namespace zlpanel {
         zlgui::slider::CompactLinearSlider<false, false, false> strength_slider_;
         zlgui::attachment::SliderAttachment<true> strength_attach_;
 
-        const std::unique_ptr<juce::Drawable> value_drawable_;
         zlgui::button::ClickButton value_button_;
         zlgui::attachment::ButtonAttachment<true> value_attach_;
 
-        const std::unique_ptr<juce::Drawable> meter_drawable_;
         zlgui::button::ClickButton meter_button_;
         zlgui::attachment::ButtonAttachment<true> meter_attach_;
 

@@ -41,18 +41,14 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox fstruct_box_;
         zlgui::attachment::ComboBoxAttachment<true> fstruct_attach_;
 
-        const std::unique_ptr<juce::Drawable> preset_drawable_;
         zlgui::button::ClickButton preset_button_;
 
-        const std::unique_ptr<juce::Drawable> bypass_drawable_;
         zlgui::button::ClickButton bypass_button_;
         zlgui::attachment::ButtonAttachment<true> bypass_attach_;
 
-        const std::unique_ptr<juce::Drawable> ext_drawable_;
         zlgui::button::ClickButton ext_button_;
         zlgui::attachment::ButtonAttachment<true> ext_attach_;
 
-        const std::unique_ptr<juce::Drawable> match_drawable_;
         zlgui::button::ClickButton match_button_;
     };
 }

@@ -51,9 +51,6 @@ namespace zlpanel {
 
         PanelBackground background_;
 
-        std::unique_ptr<juce::Drawable> delete_drawable_;
-        std::unique_ptr<juce::Drawable> close_drawable_;
-        std::unique_ptr<juce::Drawable> folder_open_drawable_;
         zlgui::button::ClickButton delete_group_button_;
         zlgui::button::ClickButton delete_preset_button_;
         zlgui::button::ClickButton close_button_;

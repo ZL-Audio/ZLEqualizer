@@ -62,14 +62,11 @@ namespace zlpanel {
         float floating_top_{}, floating_bottom_{};
         float y1_{}, y2_{}, y3_{};
 
-        const std::unique_ptr<juce::Drawable> bypass_drawable_;
         zlgui::button::ClickButton bypass_button_;
         std::atomic<float>* filter_status_ptr_{nullptr};
 
-        const std::unique_ptr<juce::Drawable> solo_drawable_;
         zlgui::button::ClickButton solo_button_;
 
-        const std::unique_ptr<juce::Drawable> close_drawable_;
         zlgui::button::ClickButton close_button_;
 
         zlgui::combobox::CompactCombobox ftype_box_;

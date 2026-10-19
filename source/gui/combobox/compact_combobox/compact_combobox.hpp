@@ -19,7 +19,7 @@ namespace zlgui::combobox {
                         const juce::String& tooltip_text = "",
                         const std::vector<juce::String>& item_labels = {});
 
-        CompactCombobox(const std::vector<std::unique_ptr<juce::Drawable>>& icons, UIBase& base,
+        CompactCombobox(std::vector<std::unique_ptr<juce::Drawable>> icons, UIBase& base,
                         const juce::String& tooltip_text = "",
                         const std::vector<juce::String>& item_labels = {});
 
@@ -54,7 +54,6 @@ namespace zlgui::combobox {
             return box_laf_;
         }
 
-        // Maximum option-text width in pixels, cached by resized().
         [[nodiscard]] float getMaxTextWidth() const noexcept {
             return box_laf_.getMaxTextWidth();
         }

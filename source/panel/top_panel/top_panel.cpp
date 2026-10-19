@@ -27,23 +27,20 @@ namespace zlpanel {
                       tooltip_helper.getToolTipText(multilingual::kMixedPhase),
                       tooltip_helper.getToolTipText(multilingual::kZeroPhase)}),
         fstruct_attach_(fstruct_box_.getBox(), p.parameters_, zlp::PFilterStructure::kID, updater_),
-        preset_drawable_(juce::Drawable::createFromImageData(BinaryData::collections_bookmark_svg,
-                                                             BinaryData::collections_bookmark_svgSize)),
-        preset_button_(base, preset_drawable_.get(), nullptr, ""),
-        bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
-                                                             BinaryData::bypass_svgSize)),
-        bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
-                       tooltip_helper.getToolTipText(multilingual::kBypass)),
+        preset_button_(base,
+                       juce::Drawable::createFromImageData(
+                           BinaryData::collections_bookmark_svg, BinaryData::collections_bookmark_svgSize)),
+        bypass_button_(base,
+                       juce::Drawable::createFromImageData(BinaryData::bypass_svg, BinaryData::bypass_svgSize),
+                       true, tooltip_helper.getToolTipText(multilingual::kBypass)),
         bypass_attach_(bypass_button_.getButton(), p.parameters_, zlp::PBypass::kID, updater_),
-        ext_drawable_(juce::Drawable::createFromImageData(BinaryData::externalside_svg,
-                                                          BinaryData::externalside_svgSize)),
-        ext_button_(base, ext_drawable_.get(), ext_drawable_.get(),
-                    tooltip_helper.getToolTipText(multilingual::kExternalSideChain)),
+        ext_button_(base,
+                    juce::Drawable::createFromImageData(BinaryData::externalside_svg, BinaryData::externalside_svgSize),
+                    true, tooltip_helper.getToolTipText(multilingual::kExternalSideChain)),
         ext_attach_(ext_button_.getButton(), p.parameters_, zlp::PExtSide::kID, updater_),
-        match_drawable_(juce::Drawable::createFromImageData(BinaryData::match_svg,
-                                                            BinaryData::match_svgSize)),
-        match_button_(base, match_drawable_.get(), match_drawable_.get(),
-                      tooltip_helper.getToolTipText(multilingual::kEQMatch)) {
+        match_button_(base,
+                      juce::Drawable::createFromImageData(BinaryData::match_svg, BinaryData::match_svgSize),
+                      true, tooltip_helper.getToolTipText(multilingual::kEQMatch)) {
         logo_panel_.setBufferedToImage(true);
         addAndMakeVisible(logo_panel_);
 

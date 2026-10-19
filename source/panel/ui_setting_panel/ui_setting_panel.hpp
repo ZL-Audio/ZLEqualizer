@@ -53,7 +53,6 @@ namespace zlpanel {
         UISettingTabBar tab_bar_;
         zlgui::scrolling::ScrollableViewport view_port_;
 
-        const std::unique_ptr<juce::Drawable> save_drawable_, close_drawable_, reset_drawable_, folder_open_drawable_;
         zlgui::button::ClickButton save_button_, close_button_, reset_button_, folder_open_button_;
 
         std::array<double, 4> view_positions_{};

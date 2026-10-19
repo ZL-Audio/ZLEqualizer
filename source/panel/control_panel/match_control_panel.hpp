@@ -40,10 +40,8 @@ namespace zlpanel {
 
         PanelBackground control_background_;
 
-        const std::unique_ptr<juce::Drawable> save_drawable_;
         zlgui::button::ClickButton save_button_;
 
-        const std::unique_ptr<juce::Drawable> draw_drawable_;
         zlgui::button::ClickButton draw_button_;
 
         zlgui::combobox::CompactCombobox target_box_;
@@ -61,7 +59,6 @@ namespace zlpanel {
 
         zlgui::combobox::CompactCombobox limit_combobox_;
 
-        const std::unique_ptr<juce::Drawable> start_drawable_;
         zlgui::button::ClickButton fit_start_button_;
 
         zlgui::slider::CompactLinearSlider<false, false, false> num_band_slider_;

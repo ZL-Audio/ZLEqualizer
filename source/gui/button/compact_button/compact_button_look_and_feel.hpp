@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "../../interface_definitions.hpp"
@@ -69,8 +71,8 @@ namespace zlgui {
 
         inline void setDepth(const float x) { button_depth_ = x; }
 
-        inline void setDrawable(juce::Drawable* x) {
-            drawable_ = x;
+        inline void setDrawable(std::unique_ptr<juce::Drawable> x) {
+            drawable_ = std::move(x);
             updateImages();
         }
 
@@ -86,6 +88,8 @@ namespace zlgui {
             if (drawable_ != nullptr) {
                 internal_img_ = drawable_->createCopy();
                 internal_img_->replaceColour(juce::Colour(0, 0, 0), base_.getTextColour());
+            } else {
+                internal_img_.reset();
             }
         }
 
@@ -96,7 +100,7 @@ namespace zlgui {
 
         bool reverse_{false}, with_shadow_{true};
         float button_depth_{0.f}, shrink_scale_{1.f}, scale_{1.f};
-        juce::Drawable* drawable_ = nullptr;
+        std::unique_ptr<juce::Drawable> drawable_;
         std::unique_ptr<juce::Drawable> internal_img_;
     };
 }

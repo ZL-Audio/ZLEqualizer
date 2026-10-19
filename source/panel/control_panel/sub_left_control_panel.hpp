@@ -46,10 +46,8 @@ namespace zlpanel {
 
         PanelBackground control_background_;
 
-        const std::unique_ptr<juce::Drawable> close_drawable_;
         zlgui::button::ClickButton close_button_;
 
-        const std::unique_ptr<juce::Drawable> bypass_drawable_;
         zlgui::button::ClickButton bypass_button_;
         std::atomic<float>* filter_status_ptr_{nullptr};
 
@@ -59,12 +57,10 @@ namespace zlpanel {
         juce::Label gain_label_;
         juce::Label q_label_;
 
-        const std::unique_ptr<juce::Drawable> left_drawable_;
         zlgui::button::ClickButton left_button_;
 
         juce::Label band_label_;
 
-        const std::unique_ptr<juce::Drawable> right_drawable_;
         zlgui::button::ClickButton right_button_;
 
         zlgui::combobox::CompactCombobox ftype_box_;
@@ -79,7 +75,6 @@ namespace zlpanel {
         zlgui::slider::TwoValueRotarySlider<false, false, false> q_slider_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> q_attachment_;
 
-        const std::unique_ptr<juce::Drawable> dynamic_drawable_;
         zlgui::button::ClickButton dynamic_button_;
         std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> dynamic_attachment_;
     };

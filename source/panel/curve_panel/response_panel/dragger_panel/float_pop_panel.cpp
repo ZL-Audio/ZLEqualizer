@@ -15,16 +15,14 @@ namespace zlpanel {
                                  const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         control_background_(base, .25f),
-        bypass_drawable_(juce::Drawable::createFromImageData(BinaryData::bypass_svg,
-                                                             BinaryData::bypass_svgSize)),
-        bypass_button_(base, bypass_drawable_.get(), bypass_drawable_.get(),
-                       tooltip_helper.getToolTipText(multilingual::kBandBypass)),
-        solo_drawable_(juce::Drawable::createFromImageData(BinaryData::solo_svg, BinaryData::solo_svgSize)),
-        solo_button_(base, solo_drawable_.get(), solo_drawable_.get(),
-                     tooltip_helper.getToolTipText(multilingual::kBandSolo)),
-        close_drawable_(juce::Drawable::createFromImageData(BinaryData::trash_svg,
-                                                            BinaryData::trash_svgSize)),
-        close_button_(base, close_drawable_.get(), nullptr),
+        bypass_button_(base,
+                       juce::Drawable::createFromImageData(BinaryData::bypass_svg, BinaryData::bypass_svgSize),
+                       true, tooltip_helper.getToolTipText(multilingual::kBandBypass)),
+        solo_button_(base,
+                     juce::Drawable::createFromImageData(BinaryData::solo_svg, BinaryData::solo_svgSize),
+                     true, tooltip_helper.getToolTipText(multilingual::kBandSolo)),
+        close_button_(base,
+                      juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize)),
         ftype_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
             std::vector<std::unique_ptr<juce::Drawable>> icons;
             icons.emplace_back(
