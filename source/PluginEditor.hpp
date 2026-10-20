@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "state/ui_state.hpp"
+
 #include "PluginProcessor.hpp"
 
 #include "panel/main_panel.hpp"
@@ -47,7 +49,7 @@ private:
     zlstate::Property property_;
     juce::Value last_ui_width_, last_ui_height_;
 
-    zlgui::UIBase base_;
+    zlgui::UIState base_;
     zlpanel::MainPanel main_panel_;
 
     std::unique_ptr<juce::VBlankAttachment> vblank_;

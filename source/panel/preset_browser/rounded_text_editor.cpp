@@ -10,15 +10,15 @@
 #include "rounded_text_editor.hpp"
 
 namespace zlpanel {
-    RoundedTextEditor::RoundedTextEditor(zlgui::UIBase& base) : base_(base) {
+    RoundedTextEditor::RoundedTextEditor(zlgui::UIState& base) : base_(base) {
         lookAndFeelChanged();
     }
 
     void RoundedTextEditor::lookAndFeelChanged() {
         setColour(backgroundColourId, juce::Colours::transparentBlack);
-        setColour(textColourId, base_.getTextColour());
-        setColour(highlightColourId, base_.getTextColour().withAlpha(.22f));
-        setColour(highlightedTextColourId, base_.getTextColour());
+        setColour(textColourId, base_.gui.getTextColour());
+        setColour(highlightColourId, base_.gui.getTextColour().withAlpha(.22f));
+        setColour(highlightedTextColourId, base_.gui.getTextColour());
         setColour(outlineColourId, juce::Colours::transparentBlack);
         setColour(focusedOutlineColourId, juce::Colours::transparentBlack);
         setBorder(juce::BorderSize<int>(0));

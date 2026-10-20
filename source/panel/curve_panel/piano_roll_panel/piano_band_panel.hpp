@@ -9,13 +9,15 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "piano_keys_panel.hpp"
 #include "../../../zlp/zlp_definitions.hpp"
 
 namespace zlpanel {
     class PianoBandPanel final : public juce::Component {
     public:
-        PianoBandPanel(zlgui::UIBase& base, const PianoKeysPanel& keys);
+        PianoBandPanel(zlgui::UIState& base, const PianoKeysPanel& keys);
 
         void paint(juce::Graphics& g) override;
 
@@ -28,7 +30,7 @@ namespace zlpanel {
         size_t getBandAt(juce::Point<float> point) const;
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         const PianoKeysPanel& keys_;
         std::array<int, zlp::kBandNum> notes_;
         std::array<juce::RectangleList<float>, zlp::kBandNum> regions_;

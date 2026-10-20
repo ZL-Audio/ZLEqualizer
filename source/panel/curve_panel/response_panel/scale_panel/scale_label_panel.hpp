@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../../state/ui_state.hpp"
+
 #include "../../../../PluginProcessor.hpp"
 #include "../../../../gui/gui.hpp"
 #include "../../../helper/helper.hpp"
@@ -17,7 +19,7 @@
 namespace zlpanel {
     class ScaleLabelPanel final : public juce::Component {
     public:
-        explicit ScaleLabelPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit ScaleLabelPanel(PluginProcessor& p, zlgui::UIState& base,
                                  const multilingual::TooltipHelper& tooltip_helper);
 
         void paint(juce::Graphics& g) override;
@@ -29,7 +31,7 @@ namespace zlpanel {
     private:
         static constexpr float kFFTAlpha = .5f;
 
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
 
         int c_eq_max_idx_{-1};
         int c_fft_top_idx_{-1};

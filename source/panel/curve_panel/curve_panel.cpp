@@ -12,7 +12,7 @@
 
 namespace zlpanel {
     CurvePanel::CurvePanel(PluginProcessor& p,
-                           zlgui::UIBase& base,
+                           zlgui::UIState& base,
                            multilingual::TooltipHelper& tooltip_helper) :
         Thread("curve_panel"),
         base_(base),
@@ -89,7 +89,7 @@ namespace zlpanel {
 
     void CurvePanel::resized() {
         auto bound = getLocalBounds();
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         if (meter_panel_.isVisible()) {
             const auto meter_bound = bound.removeFromRight(meter_panel_.getIdealWidth());
             if (meter_panel_.getBounds() == meter_bound) {
@@ -127,7 +127,7 @@ namespace zlpanel {
 
         const auto footer_height = piano_roll_helper::getHeight(font_size);
         piano_roll_panel_.setBounds(bound.withTop(bound.getBottom() - footer_height));
-        const auto value_width = static_cast<int>(std::round(base_.getFontSize() * 4.5f));
+        const auto value_width = static_cast<int>(std::round(base_.gui.getFontSize() * 4.5f));
         const auto value_height = footer_height * 2;
         value_note_panel_.setBounds(bound.getRight() - value_width, bound.getBottom() - value_height,
                                     value_width, value_height);
@@ -242,7 +242,7 @@ namespace zlpanel {
             }
             frequency = std::clamp(frequency, 10.0, frequency_max_);
             if (!over_piano) {
-                const auto font_size = base_.getFontSize();
+                const auto font_size = base_.gui.getFontSize();
                 const auto plot_height = static_cast<float>(response_panel_.getHeight() - getBottomAreaHeight(font_size));
                 const auto plot_y = state.position.y - static_cast<float>(response_panel_.getY());
                 const auto padding = font_size * kDraggerScale;

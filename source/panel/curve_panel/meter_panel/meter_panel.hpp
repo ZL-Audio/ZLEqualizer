@@ -9,13 +9,15 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "meter_background_panel.hpp"
 #include "meter_display_panel.hpp"
 
 namespace zlpanel {
     class MeterPanel final : public juce::Component {
     public:
-        explicit MeterPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit MeterPanel(PluginProcessor& p, zlgui::UIState& base);
 
         ~MeterPanel() override;
 
@@ -30,7 +32,7 @@ namespace zlpanel {
         void repaintCallBackSlow();
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
 
         MeterBackgroundPanel meter_background_panel_;
         MeterDisplayPanel meter_display_panel_;

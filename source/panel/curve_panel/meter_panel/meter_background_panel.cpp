@@ -12,15 +12,15 @@
 #include "../../helper/panel_constants.hpp"
 
 namespace zlpanel {
-    MeterBackgroundPanel::MeterBackgroundPanel(PluginProcessor&, zlgui::UIBase& base) :
+    MeterBackgroundPanel::MeterBackgroundPanel(PluginProcessor&, zlgui::UIState& base) :
         base_(base) {
         setInterceptsMouseClicks(false, false);
     }
 
     void MeterBackgroundPanel::paint(juce::Graphics& g) {
         auto bound = getLocalBounds().toFloat();
-        g.fillAll(base_.getBackgroundColour());
-        const auto font_size = base_.getFontSize();
+        g.fillAll(base_.gui.getBackgroundColour());
+        const auto font_size = base_.gui.getFontSize();
         bound.removeFromTop(static_cast<float>(getTopPanelHeight(font_size)));
 
         const auto thickness = font_size * .1f;
@@ -30,7 +30,7 @@ namespace zlpanel {
         if (unit_height <= 0.f) {
             return;
         }
-        g.setColour(base_.getTextColour().withAlpha(.1f));
+        g.setColour(base_.gui.getTextColour().withAlpha(.1f));
         for (auto y = bound.getY() + padding - thickness * .5f;
              y + thickness < bound.getBottom() - font_size * 3.f; y += unit_height) {
             const auto rect = juce::Rectangle<float>({bound.getX(), y, bound.getWidth(), thickness});

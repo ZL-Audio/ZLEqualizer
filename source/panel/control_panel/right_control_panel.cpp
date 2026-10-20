@@ -13,49 +13,49 @@
 
 namespace zlpanel {
     RightControlPanel::RightControlPanel(PluginProcessor& p,
-                                         zlgui::UIBase& base,
+                                         zlgui::UIState& base,
                                          const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         control_background_(base),
-        bypass_button_(base,
+        bypass_button_(base.gui,
                        juce::Drawable::createFromImageData(BinaryData::bypass_svg, BinaryData::bypass_svgSize),
                        true, tooltip_helper.getToolTipText(multilingual::kBandDynamicBypass)),
-        auto_button_(base,
+        auto_button_(base.gui,
                      juce::Drawable::createFromImageData(BinaryData::circle_a_svg, BinaryData::circle_a_svgSize),
                      true, tooltip_helper.getToolTipText(multilingual::kBandDynamicAuto)),
-        relative_button_(base,
+        relative_button_(base.gui,
                          juce::Drawable::createFromImageData(BinaryData::circle_r_svg, BinaryData::circle_r_svgSize),
                          true, tooltip_helper.getToolTipText(multilingual::kBandDynamicRelative)),
-        swap_button_(base,
+        swap_button_(base.gui,
                      juce::Drawable::createFromImageData(BinaryData::shuffle_svg, BinaryData::shuffle_svgSize),
                      true, tooltip_helper.getToolTipText(multilingual::kBandSideSwap)),
-        extra_button_(base,
+        extra_button_(base.gui,
                       juce::Drawable::createFromImageData(BinaryData::up_arrow_svg, BinaryData::up_arrow_svgSize),
                       true),
-        link_button_(base,
+        link_button_(base.gui,
                      juce::Drawable::createFromImageData(BinaryData::link_svg, BinaryData::link_svgSize),
                      true, tooltip_helper.getToolTipText(multilingual::kBandDynamicSideLink)),
-        ftype_box_(zlp::PSideFilterType::kChoices, base,
+        ftype_box_(zlp::PSideFilterType::kChoices, base.gui,
                    tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFilterType)),
         slope_box_(juce::StringArray{
                        "6 dB/oct", "12 dB/oct", "24 dB/oct", "36 dB/oct",
                        "48 dB/oct", "72 dB/oct", "96 dB/oct"
-                   }, base,
+                   }, base.gui,
                    tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFilterSlope)),
-        th_slider_("Threshold", base,
+        th_slider_("Threshold", base.gui,
                    tooltip_helper.getToolTipText(multilingual::kBandDynamicThreshold)),
-        knee_slider_("Knee", base,
+        knee_slider_("Knee", base.gui,
                      tooltip_helper.getToolTipText(multilingual::kBandDynamicThreshold)),
-        attack_slider_("Attack", base,
+        attack_slider_("Attack", base.gui,
                        tooltip_helper.getToolTipText(multilingual::kBandDynamicAttack)),
-        release_slider_("Release", base,
+        release_slider_("Release", base.gui,
                         tooltip_helper.getToolTipText(multilingual::kBandDynamicRelease)),
-        label_laf_(base),
+        label_laf_(base.gui),
         freq_label_("", "FREQ"),
         q_label_("", "Q"),
-        freq_slider_("", base,
+        freq_slider_("", base.gui,
                      tooltip_helper.getToolTipText(multilingual::kBandDynamicSideFreq)),
-        q_slider_("", base,
+        q_slider_("", base.gui,
                   tooltip_helper.getToolTipText(multilingual::kBandDynamicSideQ)) {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
@@ -98,7 +98,7 @@ namespace zlpanel {
 
         const auto popup_option =
             juce::PopupMenu::Options().withPreferredPopupDirection(juce::PopupMenu::Options::PopupDirection::upwards);
-        const auto box_alignment = combobox_helper::getAlignment(base_.getComboboxAlignment());
+        const auto box_alignment = combobox_helper::getAlignment(base_.gui.getComboboxAlignment());
         ftype_box_.getLAF().setItemAlignment(box_alignment);
         slope_box_.getLAF().setAlignment(zlgui::combobox::Alignment::kRight);
         for (auto& box : {&ftype_box_, &slope_box_}) {
@@ -152,7 +152,7 @@ namespace zlpanel {
     }
 
     int RightControlPanel::getIdealWidth() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto slider_width = getSliderWidth(font_size);
         const auto small_slider_width = getSmallSliderWidth(font_size);
         const auto padding = getPaddingSize(font_size);
@@ -161,12 +161,12 @@ namespace zlpanel {
     }
 
     void RightControlPanel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto slider_width = getSliderWidth(font_size);
         const auto slider_height = getSliderHeight(font_size);
         const auto button_height = getButtonSize(font_size);
         const auto small_slider_width = getSmallSliderWidth(font_size);
-        const auto label_height = juce::roundToInt(base_.getFontSize() * 1.5f) + 1;
+        const auto label_height = juce::roundToInt(base_.gui.getFontSize() * 1.5f) + 1;
         const auto padding = getPaddingSize(font_size);
 
         auto bound = getLocalBounds();

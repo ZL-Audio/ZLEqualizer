@@ -9,13 +9,15 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "sub_left_control_panel.hpp"
 #include "../helper/freq_note.hpp"
 
 namespace zlpanel {
     class LeftControlPanel final : public juce::Component {
     public:
-        explicit LeftControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit LeftControlPanel(PluginProcessor& p, zlgui::UIState& base,
                                   const multilingual::TooltipHelper& tooltip_helper);
 
         ~LeftControlPanel() override;
@@ -34,7 +36,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         zlgui::attachment::ComponentUpdater updater_;
 
         SubLeftControlPanel sub_left_control_panel_;

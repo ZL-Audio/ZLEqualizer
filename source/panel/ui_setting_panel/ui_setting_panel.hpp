@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 
@@ -24,7 +26,7 @@
 namespace zlpanel {
     class UISettingPanel final : public juce::Component {
     public:
-        explicit UISettingPanel(PluginProcessor &p, zlgui::UIBase &base);
+        explicit UISettingPanel(PluginProcessor &p, zlgui::UIState &base);
 
         ~UISettingPanel() override;
 
@@ -40,7 +42,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor &p_ref_;
-        zlgui::UIBase &base_;
+        zlgui::UIState &base_;
 
         ColourSettingPanel colour_panel_;
         ControlSettingPanel control_panel_;

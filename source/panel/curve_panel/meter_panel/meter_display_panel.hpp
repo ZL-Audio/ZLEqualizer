@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../helper/helper.hpp"
 #include "../../../dsp/analyzer/mag_analyzer/mag_receiver_base.hpp"
@@ -17,7 +19,7 @@
 namespace zlpanel {
     class MeterDisplayPanel final : public juce::Component {
     public:
-        explicit MeterDisplayPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit MeterDisplayPanel(PluginProcessor& p, zlgui::UIState& base);
 
         void paint(juce::Graphics& g) override;
 
@@ -41,7 +43,7 @@ namespace zlpanel {
             std::array<juce::Rectangle<float>, 2> pre{}, out{}, arrow{};
         };
 
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         MeterTopPanel meter_top_panel_;
         std::atomic<float>& fft_top_db_idx_ref_;
         std::atomic<float>& fft_min_db_idx_ref_;

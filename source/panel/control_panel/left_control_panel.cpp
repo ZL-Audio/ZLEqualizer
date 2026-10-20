@@ -11,14 +11,14 @@
 
 namespace zlpanel {
     LeftControlPanel::LeftControlPanel(PluginProcessor& p,
-                                       zlgui::UIBase& base,
+                                       zlgui::UIState& base,
                                        const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         sub_left_control_panel_(p, base, tooltip_helper),
         max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
-        freq_slider_("", base,
+        freq_slider_("", base.gui,
                      tooltip_helper.getToolTipText(multilingual::kBandFreq), 1.25f),
-        gain_slider_("", base,
+        gain_slider_("", base.gui,
                      tooltip_helper.getToolTipText(multilingual::kBandGain), 1.25f) {
         sub_left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(sub_left_control_panel_);
@@ -42,7 +42,7 @@ namespace zlpanel {
         auto bound = getLocalBounds();
         sub_left_control_panel_.setBounds(bound);
 
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto slider_width = getSliderWidth(font_size);
         const auto button_height = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
@@ -140,7 +140,7 @@ namespace zlpanel {
     }
 
     void LeftControlPanel::updateGainSliderDraggingDistance() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         if (c_max_db_idx_ < .5f) {
             gain_slider_.setMouseDragSensitivity(
                 static_cast<int>(std::round(5.f * font_size * kSliderDraggingDistanceScale)));

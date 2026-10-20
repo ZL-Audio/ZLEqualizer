@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
@@ -17,7 +19,7 @@
 namespace zlpanel {
     class BackgroundPanel final : public juce::Component {
     public:
-        explicit BackgroundPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit BackgroundPanel(PluginProcessor& p, zlgui::UIState& base,
                                  const multilingual::TooltipHelper& tooltip_helper);
 
         void paint(juce::Graphics& g) override;
@@ -32,7 +34,7 @@ namespace zlpanel {
             10000.f, 20000.f, 50000.f, 100000.f
         };
 
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         double freq_max_{0.};
         bool frequency_labels_visible_{true};
 

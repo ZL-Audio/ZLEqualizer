@@ -12,13 +12,13 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    TopPanel::TopPanel(PluginProcessor& p, zlgui::UIBase& base,
+    TopPanel::TopPanel(PluginProcessor& p, zlgui::UIState& base,
                        multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         logo_panel_(p, base, tooltip_helper),
         output_label_(p, base),
         analyzer_label_(p, base),
-        fstruct_box_(zlp::PFilterStructure::kChoices, base,
+        fstruct_box_(zlp::PFilterStructure::kChoices, base.gui,
                      tooltip_helper.getToolTipText(multilingual::kFilterStructure),
                      {tooltip_helper.getToolTipText(multilingual::kMinimumPhase),
                       tooltip_helper.getToolTipText(multilingual::kStateVariable),
@@ -27,18 +27,18 @@ namespace zlpanel {
                       tooltip_helper.getToolTipText(multilingual::kMixedPhase),
                       tooltip_helper.getToolTipText(multilingual::kZeroPhase)}),
         fstruct_attach_(fstruct_box_.getBox(), p.parameters_, zlp::PFilterStructure::kID, updater_),
-        preset_button_(base,
+        preset_button_(base.gui,
                        juce::Drawable::createFromImageData(
                            BinaryData::collections_bookmark_svg, BinaryData::collections_bookmark_svgSize)),
-        bypass_button_(base,
+        bypass_button_(base.gui,
                        juce::Drawable::createFromImageData(BinaryData::bypass_svg, BinaryData::bypass_svgSize),
                        true, tooltip_helper.getToolTipText(multilingual::kBypass)),
         bypass_attach_(bypass_button_.getButton(), p.parameters_, zlp::PBypass::kID, updater_),
-        ext_button_(base,
+        ext_button_(base.gui,
                     juce::Drawable::createFromImageData(BinaryData::externalside_svg, BinaryData::externalside_svgSize),
                     true, tooltip_helper.getToolTipText(multilingual::kExternalSideChain)),
         ext_attach_(ext_button_.getButton(), p.parameters_, zlp::PExtSide::kID, updater_),
-        match_button_(base,
+        match_button_(base.gui,
                       juce::Drawable::createFromImageData(BinaryData::match_svg, BinaryData::match_svgSize),
                       true, tooltip_helper.getToolTipText(multilingual::kEQMatch)) {
         logo_panel_.setBufferedToImage(true);
@@ -50,7 +50,7 @@ namespace zlpanel {
         analyzer_label_.setBufferedToImage(true);
         addAndMakeVisible(analyzer_label_);
 
-        const auto box_alignment = combobox_helper::getAlignment(base_.getComboboxAlignment());
+        const auto box_alignment = combobox_helper::getAlignment(base_.gui.getComboboxAlignment());
         fstruct_box_.getLAF().setItemAlignment(box_alignment);
         fstruct_box_.setScrollEnabled(true);
         fstruct_box_.setAlpha(.5f);
@@ -95,15 +95,15 @@ namespace zlpanel {
         juce::ColourGradient gradient;
         gradient.point1 = bound.getTopLeft();
         gradient.point2 = bound.getBottomLeft();
-        gradient.addColour(0.0, base_.getBackgroundColour().withAlpha(1.f));
+        gradient.addColour(0.0, base_.gui.getBackgroundColour().withAlpha(1.f));
         gradient.addColour(1.0, juce::Colours::transparentBlack);
         g.setGradientFill(gradient);
         g.fillRect(bound);
 
         const auto scale_bound = bound.withLeft(bound.getRight() - scale_gradient_width_);
-        const juce::ColourGradient scale_gradient(base_.getBackgroundColour().withAlpha(0.f),
+        const juce::ColourGradient scale_gradient(base_.gui.getBackgroundColour().withAlpha(0.f),
                                                   scale_bound.getTopLeft(),
-                                                  base_.getBackgroundColour().withAlpha(1.f),
+                                                  base_.gui.getBackgroundColour().withAlpha(1.f),
                                                   scale_bound.getTopRight(), false);
         g.setGradientFill(scale_gradient);
         g.fillRect(scale_bound);
@@ -117,12 +117,12 @@ namespace zlpanel {
     }
 
     int TopPanel::getIdealHeight() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         return getTopPanelHeight(font_size);
     }
 
     void TopPanel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = getPaddingSize(font_size);
         const auto slider_width = getSliderWidth(font_size);
         const auto small_slider_width = getSmallSliderWidth(font_size);

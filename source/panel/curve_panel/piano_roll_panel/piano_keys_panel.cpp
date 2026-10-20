@@ -19,7 +19,7 @@ namespace zlpanel {
         constexpr double kWhiteKeyOffset = 4.0 / 7.0;
     }
 
-    PianoKeysPanel::PianoKeysPanel(zlgui::UIBase& base) : base_(base) {
+    PianoKeysPanel::PianoKeysPanel(zlgui::UIState& base) : base_(base) {
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
     }
@@ -31,7 +31,7 @@ namespace zlpanel {
         }
         const auto width = bound.getWidth();
         const auto last_note = first_note_ + static_cast<int>(keys_.size()) - 1;
-        const auto thickness = std::max(.5f, base_.getFontSize() * .06f);
+        const auto thickness = std::max(.5f, base_.gui.getFontSize() * .06f);
         juce::RectangleList<float> black_keys, lines;
         for (auto note = first_note_; note <= last_note; ++note) {
             const auto key_bound = getKey(note)->bounds;
@@ -55,10 +55,10 @@ namespace zlpanel {
         white_keys.subtract(black_keys);
         white_keys.subtract(lines);
 
-        const auto top_fade = std::max(2.f, std::min(bound.getHeight(), base_.getFontSize() * .65f));
-        const auto white_colour = base_.getBackgroundColour().interpolatedWith(juce::Colours::white, .6f);
-        const auto black_colour = base_.getBackgroundColour().interpolatedWith(juce::Colours::black, .65f);
-        const auto line_colour = base_.getBackgroundColour().interpolatedWith(base_.getTextColour(), .3f);
+        const auto top_fade = std::max(2.f, std::min(bound.getHeight(), base_.gui.getFontSize() * .65f));
+        const auto white_colour = base_.gui.getBackgroundColour().interpolatedWith(juce::Colours::white, .6f);
+        const auto black_colour = base_.gui.getBackgroundColour().interpolatedWith(juce::Colours::black, .65f);
+        const auto line_colour = base_.gui.getBackgroundColour().interpolatedWith(base_.gui.getTextColour(), .3f);
         const auto draw_region = [&](const juce::RectangleList<float>& region, const juce::Colour colour) {
             g.setGradientFill({colour.withAlpha(0.f), 0.f, 1.f,
                                colour.withMultipliedAlpha(.8f), 0.f, top_fade, false});
@@ -139,7 +139,7 @@ namespace zlpanel {
         first_note_ = static_cast<int>(std::floor(xToNote(0.f))) - 1;
         const auto last_note = static_cast<int>(std::ceil(xToNote(width))) + 1;
         keys_.resize(static_cast<size_t>(last_note - first_note_ + 1));
-        const auto thickness = std::max(.5f, base_.getFontSize() * .06f);
+        const auto thickness = std::max(.5f, base_.gui.getFontSize() * .06f);
         const auto interior = getLocalBounds().toFloat().reduced(thickness);
         for (auto note = first_note_; note <= last_note; ++note) {
             auto& key = keys_[static_cast<size_t>(note - first_note_)];

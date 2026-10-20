@@ -10,6 +10,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "../interface_definitions.hpp"
 
 namespace zlgui::tooltip {
     class TooltipWindow final : public juce::TooltipWindow {
@@ -19,8 +20,19 @@ namespace zlgui::tooltip {
             setInterceptsMouseClicks(false, false);
         }
 
+        TooltipWindow(UIBase& base, Component* parent_component, const int milliseconds_before_appears = 700)
+            : TooltipWindow(parent_component, milliseconds_before_appears) {
+            base_ = &base;
+        }
+
         juce::String getTipFor(Component& c) override {
+            if (base_ != nullptr && base_->getTooltipLangID() == 0) {
+                return {};
+            }
             return juce::TooltipWindow::getTipFor(c);
         }
+
+    private:
+        UIBase* base_{nullptr};
     };
 }

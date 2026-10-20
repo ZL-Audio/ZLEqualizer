@@ -11,7 +11,7 @@
 
 namespace zlpanel {
     DraggerPanel::DraggerPanel(PluginProcessor& p,
-                               zlgui::UIBase& base,
+                               zlgui::UIState& base,
                                const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
         right_click_panel_(p, base, tooltip_helper),
@@ -19,12 +19,12 @@ namespace zlpanel {
         scale_panel_(p, base, tooltip_helper),
         lasso_band_updater_(p, base),
         items_set_(base.getSelectedBandSet()),
-        draggers_(make_dragger_array(base, std::make_index_sequence<zlp::kBandNum>())),
-        target_dragger_(base),
-        side_dragger_(base),
+        draggers_(make_dragger_array(base.gui, std::make_index_sequence<zlp::kBandNum>())),
+        target_dragger_(base.gui),
+        side_dragger_(base.gui),
         float_pop_panel_(p, base, tooltip_helper),
         max_db_id_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
-        q_slider_(base), slope_slider_(base) {
+        q_slider_(base.gui), slope_slider_(base.gui) {
         const auto max_db_idx = static_cast<size_t>(std::clamp(
             static_cast<int>(std::round(max_db_id_ref_.load(std::memory_order::relaxed))),
             0, static_cast<int>(zlstate::PEQMaxDB::kChoices.size() - 1)));
@@ -58,7 +58,7 @@ namespace zlpanel {
             draggers_[band].setScale(kDraggerScale * kDraggerSizeMultiplier,
                                      kDraggerScale * kDraggerPaddingMultiplier);
             draggers_[band].getButton().setBufferedToImage(true);
-            draggers_[band].getLAF().setColour(base_.getColourMap1(band));
+            draggers_[band].getLAF().setColour(base_.gui.getColourMap1(band));
             draggers_[band].getLAF().setDraggerShape(zlgui::dragger::DraggerLookAndFeel::kRound);
             addChildComponent(draggers_[band]);
         }
@@ -102,7 +102,7 @@ namespace zlpanel {
             float_pop_panel_.setBounds({0, 0, float_width, float_height});
 
             auto bound = getLocalBounds().toFloat();
-            bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
+            bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.gui.getFontSize())));
             float_pop_panel_.updateFloatingBound(bound);
             right_click_panel_.setSafeArea(bound);
         }
@@ -159,8 +159,8 @@ namespace zlpanel {
             target_dragger_.setVisible(is_dynamic_on_[band]);
             side_dragger_.setVisible(is_dynamic_on_[band]);
 
-            target_dragger_.getLAF().setColour(base_.getColourMap1(band));
-            side_dragger_.getLAF().setColour(base_.getColourMap1(band));
+            target_dragger_.getLAF().setColour(base_.gui.getColourMap1(band));
+            side_dragger_.getLAF().setColour(base_.gui.getColourMap1(band));
 
             updateDraggerBound(band);
             updateDraggerAttachment(band);
@@ -241,12 +241,12 @@ namespace zlpanel {
 
     void DraggerPanel::lookAndFeelChanged() {
         for (size_t band = 0; band < zlp::kBandNum; ++band) {
-            draggers_[band].getLAF().setColour(base_.getColourMap1(band));
+            draggers_[band].getLAF().setColour(base_.gui.getColourMap1(band));
         }
         lasso_component_.setColour(juce::LassoComponent<size_t>::lassoFillColourId,
-                                   base_.getTextColour().withMultipliedAlpha(.125f));
+                                   base_.gui.getTextColour().withMultipliedAlpha(.125f));
         lasso_component_.setColour(juce::LassoComponent<size_t>::lassoOutlineColourId,
-                                   base_.getTextColour().withMultipliedAlpha(.15f));
+                                   base_.gui.getTextColour().withMultipliedAlpha(.15f));
     }
 
     void DraggerPanel::updateDraggerBound(const size_t band) {
@@ -254,10 +254,10 @@ namespace zlpanel {
         const auto slider_max = freq_helper::getSliderMax(sample_rate_);
         auto bound = getLocalBounds().toFloat();
         const auto width_p = kFFTSizeOverWidth * static_cast<float>(std::log(slider_max * .1) / std::log(fft_max * .1));
-        bound.removeFromTop(base_.getFontSize() * kDraggerScale);
-        bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
+        bound.removeFromTop(base_.gui.getFontSize() * kDraggerScale);
+        bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.gui.getFontSize())));
         bound.setWidth(bound.getWidth() * width_p);
-        const auto side_bound = bound.removeFromBottom(base_.getFontSize() * kDraggerScale);
+        const auto side_bound = bound.removeFromBottom(base_.gui.getFontSize() * kDraggerScale);
         solo_gain_drag_height_ = std::max(bound.getHeight(), 1.f);
 
         switch (filter_types_[band]) {

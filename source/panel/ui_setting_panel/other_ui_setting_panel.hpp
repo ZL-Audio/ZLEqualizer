@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 #include "../helper/panel_constants.hpp"
@@ -17,7 +19,7 @@ namespace zlpanel {
     class OtherUISettingPanel final : public juce::Component,
                                       private juce::ComboBox::Listener {
     public:
-        explicit OtherUISettingPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit OtherUISettingPanel(PluginProcessor& p, zlgui::UIState& base);
 
         void loadSetting();
 
@@ -33,7 +35,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         zlgui::label::NameLookAndFeel name_laf_;
 
         juce::Label refresh_rate_label_;

@@ -12,7 +12,7 @@
 #include "../../../zlp/sample_rate_helper.hpp"
 
 namespace zlpanel {
-    FFTPanel::FFTPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    FFTPanel::FFTPanel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p),
         base_(base),
         pre_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTPreON::kID)),
@@ -67,7 +67,7 @@ namespace zlpanel {
             g.fillPath(paths_[0].getReader());
         }
         if (is_on[1]) {
-            const auto thickness = base_.getFontSize() * .2f;
+            const auto thickness = base_.gui.getFontSize() * .2f;
             g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPostColour).withAlpha(1.f));
             g.strokePath(paths_[1].getReader(),
                          {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
@@ -95,7 +95,7 @@ namespace zlpanel {
         }
         width_.store(bound.getWidth());
         height_.store(bound.getHeight());
-        font_size_.store(base_.getFontSize());
+        font_size_.store(base_.gui.getFontSize());
 
         skip_next_repaint_ = true;
         to_update_xs_para_.signal();

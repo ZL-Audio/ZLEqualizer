@@ -49,7 +49,7 @@ namespace zlgui::dragger {
 
         float getYPortion() const;
 
-        void setScale(const float scale, const float padding_scale) {
+        void setScale(const float scale, const float padding_scale = 0.f) {
             scale_ = scale;
             dragger_laf_.setPaddingScale(padding_scale);
         }

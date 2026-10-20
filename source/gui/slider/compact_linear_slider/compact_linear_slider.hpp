@@ -53,7 +53,7 @@ namespace zlgui::slider {
                 bound = bound.withWidth(value_ * bound.getWidth());
                 g.saveState();
                 g.reduceClipRegion(mask_);
-                g.setColour(base_.getTextHideColour());
+                g.setColour(base_.getTextColour().withAlpha(0.25f));
                 g.fillRect(bound);
                 g.restoreState();
             }
@@ -259,6 +259,9 @@ namespace zlgui::slider {
             const auto value = s.getValue();
             if (value_formatter_) {
                 return value_formatter_(value);
+            }
+            if (std::abs(value) < 1e-5) {
+                return {"0"};
             }
             const bool append_k = precision_ >= 4 ? std::abs(value) >= 10000.0 : std::abs(value) >= 1000.0;
             const auto display_value = append_k ? value * 0.001 : value;

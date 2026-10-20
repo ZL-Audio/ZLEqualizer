@@ -10,7 +10,7 @@
 #include "piano_band_panel.hpp"
 
 namespace zlpanel {
-    PianoBandPanel::PianoBandPanel(zlgui::UIBase& base, const PianoKeysPanel& keys) : base_(base), keys_(keys) {
+    PianoBandPanel::PianoBandPanel(zlgui::UIState& base, const PianoKeysPanel& keys) : base_(base), keys_(keys) {
         notes_.fill(-1);
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
@@ -21,14 +21,14 @@ namespace zlpanel {
             if (regions_[band].isEmpty()) {
                 continue;
             }
-            g.setColour(base_.getColourMap1(band).withAlpha(1.f));
+            g.setColour(base_.gui.getColourMap1(band).withAlpha(1.f));
             g.fillRectList(regions_[band]);
         }
         if (selected_ < regions_.size()) {
             const auto& region = regions_[selected_];
             const auto bound = region.getBounds();
-            const auto underline = bound.withTop(bound.getBottom() - std::max(1.f, base_.getFontSize() * .08f));
-            g.setColour(base_.getTextColour().withAlpha(1.f));
+            const auto underline = bound.withTop(bound.getBottom() - std::max(1.f, base_.gui.getFontSize() * .08f));
+            g.setColour(base_.gui.getTextColour().withAlpha(1.f));
             for (const auto& rectangle : region) {
                 g.fillRect(rectangle.getIntersection(underline));
             }

@@ -11,7 +11,7 @@
 
 namespace zlpanel {
     BackgroundPanel::BackgroundPanel(PluginProcessor& p,
-                                     zlgui::UIBase& base,
+                                     zlgui::UIState& base,
                                      const multilingual::TooltipHelper& tooltip_helper) :
         base_(base) {
         juce::ignoreUnused(p, tooltip_helper);
@@ -20,7 +20,7 @@ namespace zlpanel {
     }
 
     void BackgroundPanel::paint(juce::Graphics& g) {
-        g.fillAll(base_.getBackgroundColour());
+        g.fillAll(base_.gui.getBackgroundColour());
         if (freq_max_ <= 10.0) {
             return;
         }
@@ -45,7 +45,7 @@ namespace zlpanel {
         const auto full_width = bound.getWidth();
         bound.setWidth(bound.getWidth() * kFFTSizeOverWidth);
         // draw freq grid
-        const auto thickness = base_.getFontSize() * 0.1f;
+        const auto thickness = base_.gui.getFontSize() * 0.1f;
         juce::RectangleList<float> rect_list;
         for (const auto& freq : kFreqValues) {
             const auto p = std::log(static_cast<double>(freq) * .1) / std::log(freq_max_ * .1);
@@ -64,26 +64,26 @@ namespace zlpanel {
         gradient.point2 = juce::Point<float>(bound.getX(), bound.getBottom());
         gradient.isRadial = false;
         gradient.clearColours();
-        gradient.addColour(0.0, base_.getBackgroundColour().withAlpha(0.f));
-        gradient.addColour(1.f - 2.f * base_.getFontSize() / bound.getHeight(),
-                           base_.getBackgroundColour().withAlpha(0.f));
-        gradient.addColour(1.f - base_.getFontSize() / bound.getHeight(),
-                           base_.getBackgroundColour().withAlpha(1.f));
-        gradient.addColour(1.0, base_.getBackgroundColour().withAlpha(1.f));
+        gradient.addColour(0.0, base_.gui.getBackgroundColour().withAlpha(0.f));
+        gradient.addColour(1.f - 2.f * base_.gui.getFontSize() / bound.getHeight(),
+                           base_.gui.getBackgroundColour().withAlpha(0.f));
+        gradient.addColour(1.f - base_.gui.getFontSize() / bound.getHeight(),
+                           base_.gui.getBackgroundColour().withAlpha(1.f));
+        gradient.addColour(1.0, base_.gui.getBackgroundColour().withAlpha(1.f));
         g.setGradientFill(gradient);
         g.fillRect(getLocalBounds());
         if (!frequency_labels_visible_) {
             return;
         }
         // draw freq labels
-        g.setColour(base_.getTextColour().withAlpha(.5f));
-        g.setFont(base_.getFontSize() * 1.25f);
-        const auto label_y0 = bound.getBottom() - base_.getFontSize() * 1.15f;
-        const auto label_height = base_.getFontSize() * 1.1f;
+        g.setColour(base_.gui.getTextColour().withAlpha(.5f));
+        g.setFont(base_.gui.getFontSize() * 1.25f);
+        const auto label_y0 = bound.getBottom() - base_.gui.getFontSize() * 1.15f;
+        const auto label_height = base_.gui.getFontSize() * 1.1f;
         for (const auto& freq : kFreqValues) {
             const auto label = freq < 1000.f ? juce::String(freq) : juce::String(std::round(freq * 0.001f)) + "K";
             const auto label_width = freq < 20000.f
-                ? base_.getFontSize() * 3.f
+                ? base_.gui.getFontSize() * 3.f
                 : juce::GlyphArrangement::getStringWidth(g.getCurrentFont(), label) * 1.1f;
             const auto p = std::log(static_cast<double>(freq) * .1) / std::log(freq_max_ * .1);
             const auto rect = juce::Rectangle(static_cast<float>(p) * bound.getWidth() - label_width * .5f, label_y0,
@@ -97,14 +97,14 @@ namespace zlpanel {
     }
 
     void BackgroundPanel::drawDBs(juce::Graphics& g) const {
-        const auto bound = getLocalBounds().withTrimmedTop(getTopPanelHeight(base_.getFontSize())).toFloat();
-        const auto thickness = base_.getFontSize() * 0.1f;
-        auto y0 = bound.getY() + base_.getFontSize() * kDraggerScale - thickness * .5f;
-        const auto unit_height = (bound.getHeight() - 2.f * base_.getFontSize() * kDraggerScale
-            - static_cast<float>(getBottomAreaHeight(base_.getFontSize()))) / 6.f;
+        const auto bound = getLocalBounds().withTrimmedTop(getTopPanelHeight(base_.gui.getFontSize())).toFloat();
+        const auto thickness = base_.gui.getFontSize() * 0.1f;
+        auto y0 = bound.getY() + base_.gui.getFontSize() * kDraggerScale - thickness * .5f;
+        const auto unit_height = (bound.getHeight() - 2.f * base_.gui.getFontSize() * kDraggerScale
+            - static_cast<float>(getBottomAreaHeight(base_.gui.getFontSize()))) / 6.f;
 
         juce::RectangleList<float> rect_list;
-        while (y0 + thickness < bound.getBottom() - base_.getFontSize() * 3.f) {
+        while (y0 + thickness < bound.getBottom() - base_.gui.getFontSize() * 3.f) {
             rect_list.add(0.f, y0, bound.getWidth(), thickness);
             y0 += unit_height;
         }
@@ -114,7 +114,7 @@ namespace zlpanel {
 
     void BackgroundPanel::lookAndFeelChanged() {
         const auto grid_colour = base_.getColourByIdx(zlgui::ColourIdx::kGridColour);
-        const auto background_colour = base_.getBackgroundColour();
+        const auto background_colour = base_.gui.getBackgroundColour();
         const auto alpha = grid_colour.getFloatAlpha();
         grid_colour_ = juce::Colour::fromFloatRGBA(
             grid_colour.getFloatRed() * alpha + background_colour.getFloatRed() * (1.f - alpha),

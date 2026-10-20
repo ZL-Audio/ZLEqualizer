@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include <vector>
 
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -18,14 +20,14 @@
 namespace zlpanel {
     class PanelBackground final : public juce::Component {
     public:
-        explicit PanelBackground(zlgui::UIBase& base, float shadow_alpha = .5f);
+        explicit PanelBackground(zlgui::UIState& base, float shadow_alpha = .5f);
 
         void paint(juce::Graphics& g) override;
 
         void setSurfaceBounds(std::vector<juce::Rectangle<int>> bounds);
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         const float shadow_alpha_;
         std::vector<juce::Rectangle<int>> surface_bounds_;
         bool paints_surfaces_ = false;

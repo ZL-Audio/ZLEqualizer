@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
@@ -17,7 +19,7 @@
 namespace zlpanel {
     class SinglePanel final : public juce::Component {
     public:
-        explicit SinglePanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit SinglePanel(PluginProcessor& p, zlgui::UIState& base,
                              std::vector<size_t>& not_off_indices);
 
         void paintSameStereo(juce::Graphics& g);
@@ -54,7 +56,7 @@ namespace zlpanel {
         static constexpr float kThickMultiplier = 1.15f;
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         std::vector<size_t>& not_off_indices_;
 
         std::atomic<float> center_y_{0.f};

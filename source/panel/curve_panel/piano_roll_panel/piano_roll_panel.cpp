@@ -13,7 +13,7 @@
 #include "../../helper/piano_roll_helper.hpp"
 
 namespace zlpanel {
-    PianoRollPanel::PianoRollPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    PianoRollPanel::PianoRollPanel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p), base_(base),
         piano_roll_on_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PPianoRollON::kID)),
         keys_panel_(base), bands_panel_(base, keys_panel_), toggle_panel_(p, base) {
@@ -39,7 +39,7 @@ namespace zlpanel {
         const auto bound = getLocalBounds();
         keys_panel_.setBounds(bound);
         bands_panel_.setBounds(bound);
-        const auto edge_width = static_cast<int>(std::round(base_.getFontSize() * 3.75f));
+        const auto edge_width = static_cast<int>(std::round(base_.gui.getFontSize() * 3.75f));
         toggle_panel_.setBounds(bound.withWidth(edge_width));
         endGesture();
         updateBands(true, true);
@@ -232,7 +232,7 @@ namespace zlpanel {
             updateNote();
             return;
         }
-        const auto sensitivity = base_.getSensitivity(event.mods.isShiftDown()
+        const auto sensitivity = base_.gui.getSensitivity(event.mods.isShiftDown()
             ? zlgui::kMouseDraggerFine
             : zlgui::kMouseDragger);
         const auto first_x = keys_panel_.noteToX(first_note_);

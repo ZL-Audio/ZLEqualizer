@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 #include "../helper/panel_constants.hpp"
@@ -18,7 +20,7 @@ namespace zlpanel {
     public:
         static constexpr float kHeightP = 56.f;
 
-        explicit ColourSettingPanel(PluginProcessor &p, zlgui::UIBase &base);
+        explicit ColourSettingPanel(PluginProcessor &p, zlgui::UIState &base);
 
         ~ColourSettingPanel() override;
 
@@ -34,7 +36,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor &pRef;
-        zlgui::UIBase &base_;
+        zlgui::UIState &base_;
         zlgui::label::NameLookAndFeel name_laf_;
 
         static constexpr size_t kNumSelectors = static_cast<size_t>(zlgui::ColourIdx::kColourNum);

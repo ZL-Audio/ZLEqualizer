@@ -11,17 +11,17 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    FloatPopPanel::FloatPopPanel(PluginProcessor& p, zlgui::UIBase& base,
+    FloatPopPanel::FloatPopPanel(PluginProcessor& p, zlgui::UIState& base,
                                  const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         control_background_(base, .25f),
-        bypass_button_(base,
+        bypass_button_(base.gui,
                        juce::Drawable::createFromImageData(BinaryData::bypass_svg, BinaryData::bypass_svgSize),
                        true, tooltip_helper.getToolTipText(multilingual::kBandBypass)),
-        solo_button_(base,
+        solo_button_(base.gui,
                      juce::Drawable::createFromImageData(BinaryData::solo_svg, BinaryData::solo_svgSize),
                      true, tooltip_helper.getToolTipText(multilingual::kBandSolo)),
-        close_button_(base,
+        close_button_(base.gui,
                       juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize)),
         ftype_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
             std::vector<std::unique_ptr<juce::Drawable>> icons;
@@ -48,7 +48,7 @@ namespace zlpanel {
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::flatgain_svg, BinaryData::flatgain_svgSize));
             return icons;
-        }(), base, "", {}),
+        }(), base.gui, "", {}),
         lr_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
             std::vector<std::unique_ptr<juce::Drawable>> icons;
             icons.emplace_back(
@@ -62,8 +62,8 @@ namespace zlpanel {
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::side_svg, BinaryData::side_svgSize));
             return icons;
-        }(), base, "", {}),
-        freq_slider_("", base) {
+        }(), base.gui, "", {}),
+        freq_slider_("", base.gui) {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
 
@@ -140,8 +140,8 @@ namespace zlpanel {
     void FloatPopPanel::resized() {
         control_background_.setBounds(getLocalBounds());
 
-        const auto padding = getPaddingSize(base_.getFontSize());
-        const auto button_size = getButtonSize(base_.getFontSize());
+        const auto padding = getPaddingSize(base_.gui.getFontSize());
+        const auto button_size = getButtonSize(base_.gui.getFontSize());
         auto bound = getLocalBounds().reduced(padding);
 
         auto top_bound = bound.removeFromTop(button_size);
@@ -201,14 +201,14 @@ namespace zlpanel {
     }
 
     int FloatPopPanel::getIdealWidth() const {
-        const auto padding = getPaddingSize(base_.getFontSize());
-        const auto button_size = getButtonSize(base_.getFontSize());
+        const auto padding = getPaddingSize(base_.gui.getFontSize());
+        const auto button_size = getButtonSize(base_.gui.getFontSize());
         return 3 * button_size + 4 * padding;
     }
 
     int FloatPopPanel::getIdealHeight() const {
-        const auto padding = getPaddingSize(base_.getFontSize());
-        const auto button_size = getButtonSize(base_.getFontSize());
+        const auto padding = getPaddingSize(base_.gui.getFontSize());
+        const auto button_size = getButtonSize(base_.gui.getFontSize());
         return 2 * button_size + 3 * padding;
     }
 
@@ -234,10 +234,10 @@ namespace zlpanel {
     void FloatPopPanel::updateFloatingBound(const juce::Rectangle<float> bound) {
         const auto width = ideal_width_;
         const auto height = ideal_height_;
-        const auto padding = base_.getFontSize() * kPaddingScale * 1.5f;
+        const auto padding = base_.gui.getFontSize() * kPaddingScale * 1.5f;
 
-        upper_center_ = {width * .5f, -base_.getFontSize()};
-        lower_center_ = {width * .5f, height + base_.getFontSize()};
+        upper_center_ = {width * .5f, -base_.gui.getFontSize()};
+        lower_center_ = {width * .5f, height + base_.gui.getFontSize()};
         left_center_ = {-padding, ideal_height_ * .5f};
         right_center_ = {width + padding, ideal_height_ * .5f};
 

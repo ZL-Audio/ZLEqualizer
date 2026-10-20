@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../../state/ui_state.hpp"
+
 #include "../../../../PluginProcessor.hpp"
 #include "../../../../gui/gui.hpp"
 #include "../../../helper/helper.hpp"
@@ -17,7 +19,7 @@
 namespace zlpanel {
     class LassoBandUpdater final : private juce::AudioProcessorValueTreeState::Listener {
     public:
-        explicit LassoBandUpdater(PluginProcessor& p, zlgui::UIBase& base);
+        explicit LassoBandUpdater(PluginProcessor& p, zlgui::UIState& base);
 
         ~LassoBandUpdater() override;
 
@@ -62,7 +64,7 @@ namespace zlpanel {
         std::array<std::array<float, zlp::kBandNum>, kShiftIDs.size()> shift_values_when_selected_{};
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         juce::SelectedItemSet<size_t>& items_set_;
         size_t previous_band_{zlp::kBandNum};
 

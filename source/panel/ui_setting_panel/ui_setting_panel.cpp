@@ -11,26 +11,26 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    UISettingPanel::UISettingPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    UISettingPanel::UISettingPanel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p), base_(base),
         colour_panel_(p, base),
         control_panel_(p, base),
         other_panel_(p, base),
         credit_panel_(base),
         background_(base),
-        version_text_laf_(base),
+        version_text_laf_(base.gui),
         version_text_({},
                       juce::String(ZLEQUALIZER_CURRENT_VERSION) + " " + juce::String(ZLEQUALIZER_CURRENT_HASH)),
         tab_bar_(base),
-        view_port_(base),
-        save_button_(base_,
+        view_port_(base.gui),
+        save_button_(base_.gui,
                      juce::Drawable::createFromImageData(BinaryData::save_svg, BinaryData::save_svgSize)),
-        close_button_(base_,
+        close_button_(base_.gui,
                       juce::Drawable::createFromImageData(BinaryData::close_svg, BinaryData::close_svgSize)),
-        reset_button_(base_,
+        reset_button_(base_.gui,
                       juce::Drawable::createFromImageData(
                           BinaryData::reset_settings_svg, BinaryData::reset_settings_svgSize)),
-        folder_open_button_(base_,
+        folder_open_button_(base_.gui,
                             juce::Drawable::createFromImageData(
                                 BinaryData::folder_open_svg, BinaryData::folder_open_svgSize)) {
         juce::ignoreUnused(p_ref_);
@@ -90,7 +90,7 @@ namespace zlpanel {
     void UISettingPanel::resized() {
         view_positions_[static_cast<size_t>(current_panel_idx_)] = view_port_.getViewPosition();
 
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = juce::roundToInt(font_size * .72f);
         const auto button_size = juce::roundToInt(font_size * 2.f);
         const auto header_height = button_size;
@@ -138,11 +138,11 @@ namespace zlpanel {
     }
 
     int UISettingPanel::getIdealWidth() const {
-        return juce::roundToInt(base_.getFontSize() * 50.f);
+        return juce::roundToInt(base_.gui.getFontSize() * 50.f);
     }
 
     int UISettingPanel::getIdealHeight() const {
-        return juce::roundToInt(base_.getFontSize() * 34.f);
+        return juce::roundToInt(base_.gui.getFontSize() * 34.f);
     }
 
     void UISettingPanel::changeDisplayPanel() {

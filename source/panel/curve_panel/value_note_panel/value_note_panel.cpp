@@ -11,7 +11,7 @@
 #include "../../helper/freq_note.hpp"
 
 namespace zlpanel {
-    ValueNotePanel::ValueNotePanel(zlgui::UIBase& base) :
+    ValueNotePanel::ValueNotePanel(zlgui::UIState& base) :
         base_(base) {
         setInterceptsMouseClicks(false, false);
         setBufferedToImage(true);
@@ -25,9 +25,9 @@ namespace zlpanel {
         }
         g.setGradientFill(gradient_);
         g.fillRect(second_bound);
-        g.setColour(base_.getTextColour());
-        g.setFont(juce::FontOptions(base_.getFontSize() * 1.25f));
-        const auto padding = base_.getFontSize() * .2f;
+        g.setColour(base_.gui.getTextColour());
+        g.setFont(juce::FontOptions(base_.gui.getFontSize() * 1.25f));
+        const auto padding = base_.gui.getFontSize() * .2f;
         g.drawText(first_text_, first_bound.reduced(padding, 0.f), juce::Justification::centredRight);
         if (mode_ != Mode::kNote) {
             g.drawText(second_text_, second_bound.reduced(padding, 0.f), juce::Justification::centredRight);
@@ -38,7 +38,7 @@ namespace zlpanel {
         auto bound = getLocalBounds().toFloat();
         const auto second_bound = bound.removeFromBottom(bound.getHeight() * .5f);
         gradient_ = juce::ColourGradient{juce::Colours::transparentBlack, 0.f, second_bound.getY(),
-                                         base_.getBackgroundColour(), second_bound.getRight(), second_bound.getY(),
+                                         base_.gui.getBackgroundColour(), second_bound.getRight(), second_bound.getY(),
                                          false};
     }
 

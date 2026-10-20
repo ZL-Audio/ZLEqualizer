@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include <functional>
 
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -21,7 +23,7 @@
 namespace zlpanel {
     class WarningOverlay final : public juce::Component {
     public:
-        explicit WarningOverlay(zlgui::UIBase& base);
+        explicit WarningOverlay(zlgui::UIState& base);
 
         ~WarningOverlay() override;
 
@@ -39,7 +41,7 @@ namespace zlpanel {
         void hide();
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         PanelBackground background_;
         zlgui::label::NameLookAndFeel message_laf_;
         juce::Label message_label_;

@@ -19,9 +19,9 @@ namespace zlpanel {
         };
     }
 
-    ColourSettingPanel::ColourSettingPanel(PluginProcessor& p, zlgui::UIBase& base) :
-        pRef(p), base_(base), name_laf_(base),
-        c_map1_selector_(base), c_map2_selector_(base) {
+    ColourSettingPanel::ColourSettingPanel(PluginProcessor& p, zlgui::UIState& base) :
+        pRef(p), base_(base), name_laf_(base.gui),
+        c_map1_selector_(base.gui), c_map2_selector_(base.gui) {
         juce::ignoreUnused(pRef);
         if (!kSettingDirectory.isDirectory()) {
             const auto result = kSettingDirectory.createDirectory();
@@ -38,7 +38,7 @@ namespace zlpanel {
             addAndMakeVisible(selector_labels_[i]);
 
             selectors_[i] = std::make_unique<zlgui::colour_selector::ColourOpacitySelector>(
-                base, *this, i > 1,
+                base.gui, *this, i > 1,
                 12.f, 10.f, kSliderWidthScale, kSliderWidthScale);
             addAndMakeVisible(*selectors_[i]);
         }
@@ -64,16 +64,16 @@ namespace zlpanel {
         for (size_t i = 0; i < kNumSelectors; ++i) {
             selectors_[i]->setColour(base_.getColourByIdx(static_cast<zlgui::ColourIdx>(i)));
         }
-        c_map1_selector_.getBox().setSelectedId(static_cast<int>(base_.getCMap1Idx()) + 1);
-        c_map2_selector_.getBox().setSelectedId(static_cast<int>(base_.getCMap2Idx()) + 1);
+        c_map1_selector_.getBox().setSelectedId(static_cast<int>(base_.gui.getCMap1Idx()) + 1);
+        c_map2_selector_.getBox().setSelectedId(static_cast<int>(base_.gui.getCMap2Idx()) + 1);
     }
 
     void ColourSettingPanel::saveSetting() {
         for (size_t i = 0; i < kNumSelectors; ++i) {
             base_.setColourByIdx(static_cast<zlgui::ColourIdx>(i), selectors_[i]->getColour());
         }
-        base_.setCMap1Idx(static_cast<size_t>(c_map1_selector_.getBox().getSelectedId() - 1));
-        base_.setCMap2Idx(static_cast<size_t>(c_map2_selector_.getBox().getSelectedId() - 1));
+        base_.gui.setCMap1Idx(static_cast<size_t>(c_map1_selector_.getBox().getSelectedId() - 1));
+        base_.gui.setCMap2Idx(static_cast<size_t>(c_map2_selector_.getBox().getSelectedId() - 1));
         base_.saveToAPVTS();
     }
 
@@ -88,17 +88,17 @@ namespace zlpanel {
     }
 
     int ColourSettingPanel::getIdealHeight() const {
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale * 3.f);
-        const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
+        const auto padding = juce::roundToInt(base_.gui.getFontSize() * kPaddingScale * 3.f);
+        const auto slider_height = juce::roundToInt(base_.gui.getFontSize() * kSliderHeightScale);
 
         return padding * 12 + slider_height * 11;
     }
 
     void ColourSettingPanel::resized() {
         auto bound = getLocalBounds();
-        const auto padding = juce::roundToInt(base_.getFontSize() * kPaddingScale * 3.f);
-        const auto slider_width = juce::roundToInt(base_.getFontSize() * kSliderWidthScale);
-        const auto slider_height = juce::roundToInt(base_.getFontSize() * kSliderHeightScale);
+        const auto padding = juce::roundToInt(base_.gui.getFontSize() * kPaddingScale * 3.f);
+        const auto slider_width = juce::roundToInt(base_.gui.getFontSize() * kSliderWidthScale);
+        const auto slider_height = juce::roundToInt(base_.gui.getFontSize() * kSliderHeightScale);
 
         for (size_t i = 0; i < kNumSelectors; ++i) {
             bound.removeFromTop(padding);

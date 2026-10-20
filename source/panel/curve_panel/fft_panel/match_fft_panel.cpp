@@ -13,7 +13,7 @@
 #include "../../../zlp/sample_rate_helper.hpp"
 
 namespace zlpanel {
-    MatchFFTPanel::MatchFFTPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    MatchFFTPanel::MatchFFTPanel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p),
         base_(base),
         fft_top_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTTopDB::kID)),
@@ -41,14 +41,14 @@ namespace zlpanel {
         for (size_t i = 0; i < 3; i++) {
             paths_[i].pull();
         }
-        const auto thickness = base_.getFontSize() * .2f;
+        const auto thickness = base_.gui.getFontSize() * .2f;
         g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kPreColour).withAlpha(.75f));
         g.strokePath(paths_[0].getReader(),
                      {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
         g.setColour(base_.getColourByIdx(zlgui::ColourIdx::kSideColour).withAlpha(.75f));
         g.strokePath(paths_[1].getReader(),
                      {thickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
-        g.setColour(base_.getTextColour());
+        g.setColour(base_.gui.getTextColour());
         g.strokePath(paths_[2].getReader(),
                      {thickness * 1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
     }
@@ -78,7 +78,7 @@ namespace zlpanel {
         }
         width_.store(bound.getWidth());
         height_.store(bound.getHeight());
-        font_size_.store(base_.getFontSize());
+        font_size_.store(base_.gui.getFontSize());
 
         to_update_xs_para_.signal();
         to_update_ys_para_.signal();
@@ -579,7 +579,7 @@ namespace zlpanel {
         // update drawing x scaling (to dB)
         {
             const auto height = static_cast<float>(getHeight());
-            const auto font_size = base_.getFontSize();
+            const auto font_size = base_.gui.getFontSize();
             const auto h = height - static_cast<float>(getBottomAreaHeight(font_size));
             const auto padding = font_size * kDraggerScale;
             const auto h0 = h * .5f;

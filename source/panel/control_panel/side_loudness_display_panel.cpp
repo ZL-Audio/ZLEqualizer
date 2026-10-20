@@ -10,7 +10,7 @@
 #include "side_loudness_display_panel.hpp"
 
 namespace zlpanel {
-    SideLoudnessDisplayPanel::SideLoudnessDisplayPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    SideLoudnessDisplayPanel::SideLoudnessDisplayPanel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p), base_(base) {
         setInterceptsMouseClicks(false, false);
     }
@@ -61,7 +61,7 @@ namespace zlpanel {
         gradient_.clearColours();
         gradient_.point1 = {0.f, 0.f};
         gradient_.point2 = {bound.getWidth(), 0.f};
-        const auto colour = base_.getColourBlendedWithBackground(base_.getTextColour(), .5f);
+        const auto colour = base_.gui.getColourBlendedWithBackground(base_.gui.getTextColour(), .5f);
         gradient_.addColour(0.f, colour.withAlpha(0.f));
         gradient_.addColour(.1f, colour);
         gradient_.addColour(1.f, colour);

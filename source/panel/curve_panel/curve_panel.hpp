@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "background_panel/background_panel.hpp"
 #include "fft_panel/fft_panel.hpp"
 #include "fft_panel/match_fft_panel.hpp"
@@ -25,7 +27,7 @@ namespace zlpanel {
                              private juce::ValueTree::Listener,
                              private juce::Thread {
     public:
-        explicit CurvePanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit CurvePanel(PluginProcessor& p, zlgui::UIState& base,
                             multilingual::TooltipHelper& tooltip_helper);
 
         ~CurvePanel() override;
@@ -79,7 +81,7 @@ namespace zlpanel {
             }
         };
 
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         std::atomic<float>& value_display_on_ref_;
         std::atomic<float>& meter_display_on_ref_;
         std::atomic<float>& eq_max_db_idx_ref_;

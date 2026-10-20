@@ -26,7 +26,7 @@ namespace zlgui::combobox {
     public:
         explicit CompactComboboxLookAndFeel(UIBase& base, bool align_label = true) :
             base_(base), align_label_(align_label) {
-            setColour(juce::PopupMenu::backgroundColourId, base_.getBackgroundInactiveColour());
+            setColour(juce::PopupMenu::backgroundColourId, base_.getBackgroundColour().withAlpha(0.8f));
         }
 
         void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown, int, int, int, int,

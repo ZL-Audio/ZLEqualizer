@@ -9,13 +9,15 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 
 namespace zlpanel {
     class PianoTogglePanel final : public juce::Component {
     public:
-        explicit PianoTogglePanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit PianoTogglePanel(PluginProcessor& p, zlgui::UIState& base);
 
         void paint(juce::Graphics& g) override;
 
@@ -24,7 +26,7 @@ namespace zlpanel {
         void repaintCallBack();
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         zlgui::button::ClickButton button_;
         zlgui::attachment::ComponentUpdater updater_;
         zlgui::attachment::ButtonAttachment<true> attachment_;

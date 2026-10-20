@@ -11,7 +11,7 @@
 #include "../../../dsp/chore/decibels.hpp"
 
 namespace zlpanel {
-    MeterDisplayPanel::MeterDisplayPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    MeterDisplayPanel::MeterDisplayPanel(PluginProcessor& p, zlgui::UIState& base) :
         base_(base),
         meter_top_panel_(base),
         fft_top_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTTopDB::kID)),
@@ -38,7 +38,7 @@ namespace zlpanel {
 
     void MeterDisplayPanel::resized() {
         auto bound = getLocalBounds();
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = getPaddingSize(font_size);
         meter_top_panel_.setBounds(bound.removeFromTop(getTopPanelHeight(font_size) - padding / 2));
         bound.removeFromTop(padding / 2);
@@ -171,6 +171,6 @@ namespace zlpanel {
     }
 
     void MeterDisplayPanel::lookAndFeelChanged() {
-        pending_font_size_.store(base_.getFontSize(), std::memory_order::relaxed);
+        pending_font_size_.store(base_.gui.getFontSize(), std::memory_order::relaxed);
     }
 }

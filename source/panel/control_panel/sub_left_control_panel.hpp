@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
@@ -18,7 +20,7 @@
 namespace zlpanel {
     class SubLeftControlPanel final : public juce::Component {
     public:
-        explicit SubLeftControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit SubLeftControlPanel(PluginProcessor& p, zlgui::UIState& base,
                                      const multilingual::TooltipHelper& tooltip_helper);
 
         ~SubLeftControlPanel() override;
@@ -41,7 +43,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         zlgui::attachment::ComponentUpdater updater_;
 
         PanelBackground control_background_;

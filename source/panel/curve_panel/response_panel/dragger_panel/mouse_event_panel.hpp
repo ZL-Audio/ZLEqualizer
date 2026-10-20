@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../../state/ui_state.hpp"
+
 #include "../../../../PluginProcessor.hpp"
 #include "../../../../gui/gui.hpp"
 #include "../../../helper/helper.hpp"
@@ -20,7 +22,7 @@ namespace zlpanel {
     class MouseEventPanel final : public juce::Component,
                                   private juce::Timer {
     public:
-        explicit MouseEventPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit MouseEventPanel(PluginProcessor& p, zlgui::UIState& base,
                                  const multilingual::TooltipHelper& tooltip_helper,
                                  RightClickPanel &right_click_panel);
 
@@ -59,7 +61,7 @@ namespace zlpanel {
         };
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         zlgui::attachment::ComponentUpdater updater_{};
         RightClickPanel &right_click_panel_;
 

@@ -11,12 +11,12 @@
 
 namespace zlpanel {
     MouseEventPanel::MouseEventPanel(PluginProcessor& p,
-                                     zlgui::UIBase& base,
+                                     zlgui::UIState& base,
                                      const multilingual::TooltipHelper& tooltip_helper,
                                      RightClickPanel& right_click_panel) :
         p_ref_(p), base_(base), right_click_panel_(right_click_panel),
         fft_freeze_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PFFTFreezeON::kID)),
-        q_slider_(base), slope_slider_(base) {
+        q_slider_(base.gui), slope_slider_(base.gui) {
         juce::ignoreUnused(tooltip_helper);
     }
 
@@ -102,12 +102,12 @@ namespace zlpanel {
             return;
         }
 
-        const auto padding = base_.getFontSize() * kDraggerScale;
+        const auto padding = base_.gui.getFontSize() * kDraggerScale;
         const auto width = static_cast<float>(getLocalBounds().getWidth());
         const auto x_portion = event.position.x / (width * kFFTSizeOverWidth);
         const auto freq = std::clamp(std::exp(x_portion * std::log(fft_max_ * 0.1f)) * 10.f, 10.f, slider_max_);
 
-        const auto height = static_cast<float>(getLocalBounds().getHeight() - getBottomAreaHeight(base_.getFontSize()));
+        const auto height = static_cast<float>(getLocalBounds().getHeight() - getBottomAreaHeight(base_.gui.getFontSize()));
         const auto y_portion = (height - 2 * event.position.y) / (height - 2 * padding);
         const auto max_db = base_.getCurveDBScale(static_cast<size_t>(std::round(
             getValue(p_ref_.parameters_NA_, zlstate::PEQMaxDB::kID))));

@@ -10,7 +10,7 @@
 #include "main_panel.hpp"
 
 namespace zlpanel {
-    MainPanel::MainPanel(PluginProcessor& p, zlgui::UIBase& base, const multilingual::TooltipLanguage language) :
+    MainPanel::MainPanel(PluginProcessor& p, zlgui::UIState& base, const multilingual::TooltipLanguage language) :
         p_ref_(p), base_(base),
         tooltip_helper_(language),
         refresh_handler_(zlstate::PTargetRefreshSpeed::kRates[base_.getRefreshRateID()]),
@@ -19,10 +19,10 @@ namespace zlpanel {
         extra_dynamic_panel_(p, base, tooltip_helper_),
         preset_browser_(p, base),
         ui_setting_panel_(p, base_),
-        tooltip_laf_(base_) {
+        tooltip_laf_(base_.gui) {
         juce::ignoreUnused(base_);
 
-        if (base_.getTooltipLangID() != 0) {
+        if (base_.gui.getTooltipLangID() != 0) {
             tooltip_window_ = std::make_unique<zlgui::tooltip::TooltipWindow>(&curve_panel_);
             tooltip_window_->setLookAndFeel(&tooltip_laf_);
             tooltip_window_->setOpaque(false);
@@ -59,14 +59,14 @@ namespace zlpanel {
         // calculate actual font size
         const auto max_font_size = static_cast<float>(bound.getWidth()) * kFontSizeOverWidth;
         const auto min_font_size = max_font_size * .25f;
-        const auto font_size = base_.getFontMode() == 0
-            ? max_font_size * base_.getFontScale()
-            : std::clamp(base_.getStaticFontSize(), min_font_size, max_font_size);
-        base_.setFontSize(font_size);
+        const auto font_size = base_.gui.getFontMode() == 0
+            ? max_font_size * base_.gui.getFontScale()
+            : std::clamp(base_.gui.getStaticFontSize(), min_font_size, max_font_size);
+        base_.gui.setFontSize(font_size);
         const auto main_bound = bound;
         // set control panel bound
         auto control_bound = bound;
-        control_bound.removeFromBottom(getBottomPadding(base_.getFontSize()));
+        control_bound.removeFromBottom(getBottomPadding(base_.gui.getFontSize()));
         control_bound = control_bound.removeFromBottom(control_panel_.getIdealHeight());
         control_bound = control_bound.withSizeKeepingCentre(control_panel_.getIdealWidth(), control_bound.getHeight());
         control_panel_.setBounds(control_bound);

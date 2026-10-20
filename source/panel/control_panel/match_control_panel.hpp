@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
@@ -21,7 +23,7 @@ namespace zlpanel {
     class MatchControlPanel final : public juce::Component,
                                     private juce::ValueTree::Listener {
     public:
-        explicit MatchControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit MatchControlPanel(PluginProcessor& p, zlgui::UIState& base,
                                    MatchFFTPanel& match_fft_panel,
                                    const multilingual::TooltipHelper& tooltip_helper);
 
@@ -35,7 +37,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         MatchFFTPanel& match_fft_panel_;
 
         PanelBackground control_background_;

@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
@@ -19,14 +21,14 @@ namespace zlpanel {
     class AnalyzerLabel final : public juce::Component,
                                 private juce::ValueTree::Listener {
     public:
-        explicit AnalyzerLabel(PluginProcessor&, zlgui::UIBase& base);
+        explicit AnalyzerLabel(PluginProcessor&, zlgui::UIState& base);
 
         ~AnalyzerLabel() override;
 
         void resized() override;
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
 
         PanelBackground control_background_;
 

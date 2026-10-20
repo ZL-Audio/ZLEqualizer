@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "logo_panel.hpp"
 #include "output_label.hpp"
 #include "analyzer_label.hpp"
@@ -16,7 +18,7 @@
 namespace zlpanel {
     class TopPanel final : public juce::Component {
     public:
-        explicit TopPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit TopPanel(PluginProcessor& p, zlgui::UIState& base,
                           multilingual::TooltipHelper& tooltip_helper);
 
         void paint(juce::Graphics& g) override;
@@ -31,7 +33,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase &base_;
+        zlgui::UIState &base_;
         zlgui::attachment::ComponentUpdater updater_;
         float scale_gradient_width_{0.f};
         LogoPanel logo_panel_;

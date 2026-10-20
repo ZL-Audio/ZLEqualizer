@@ -11,9 +11,9 @@
 #include "../helper/helper.hpp"
 
 namespace zlpanel {
-    WarningOverlay::WarningOverlay(zlgui::UIBase& base) :
-        base_(base), background_(base), message_laf_(base),
-        cancel_button_(base, "Cancel"), confirm_button_(base) {
+    WarningOverlay::WarningOverlay(zlgui::UIState& base) :
+        base_(base), background_(base), message_laf_(base.gui),
+        cancel_button_(base.gui, "Cancel"), confirm_button_(base.gui) {
         setOpaque(false);
         setInterceptsMouseClicks(true, true);
         setWantsKeyboardFocus(true);
@@ -37,8 +37,8 @@ namespace zlpanel {
                                                             const bool highlighted,
                                                             const bool down) {
                 auto colour = is_confirm && destructive_
-                                  ? base_.getColourMap1(0).withAlpha(.75f)
-                                  : base_.getTextColour().withAlpha(.08f);
+                                  ? base_.gui.getColourMap1(0).withAlpha(.75f)
+                                  : base_.gui.getTextColour().withAlpha(.08f);
                 if (highlighted) {
                     colour = colour.brighter(.08f);
                 }
@@ -47,7 +47,7 @@ namespace zlpanel {
                 }
                 g.setColour(colour);
                 g.fillRoundedRectangle(painted_button.getLocalBounds().toFloat(),
-                                       base_.getFontSize() * .4f);
+                                       base_.gui.getFontSize() * .4f);
             });
             addAndMakeVisible(button);
         };
@@ -62,17 +62,17 @@ namespace zlpanel {
     }
 
     void WarningOverlay::paint(juce::Graphics& g) {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = getPaddingSize(font_size);
         const auto bound = getLocalBounds().reduced(padding);
         juce::Path path;
         path.addRoundedRectangle(bound.toFloat(), static_cast<float>(padding));
-        g.setColour(base_.getBackgroundColour().withAlpha(.85f));
+        g.setColour(base_.gui.getBackgroundColour().withAlpha(.85f));
         g.fillPath(path);
     }
 
     void WarningOverlay::resized() {
-        const auto padding = getPaddingSize(base_.getFontSize());
+        const auto padding = getPaddingSize(base_.gui.getFontSize());
         background_.setBounds(getCardBounds().expanded(padding));
         message_label_.setBounds(getMessageBounds());
         cancel_button_.setBounds(getCancelBounds());
@@ -116,16 +116,16 @@ namespace zlpanel {
     }
 
     juce::Rectangle<int> WarningOverlay::getCardBounds() const {
-        const auto padding = juce::roundToInt(base_.getFontSize() * 1.5f);
+        const auto padding = juce::roundToInt(base_.gui.getFontSize() * 1.5f);
         const auto available_width = juce::jmax(0, getWidth() - 2 * padding);
         const auto available_height = juce::jmax(0, getHeight() - 2 * padding);
-        const auto width = juce::jmin(available_width, juce::roundToInt(base_.getFontSize() * 28.f));
-        const auto height = juce::jmin(available_height, juce::roundToInt(base_.getFontSize() * 8.5f));
+        const auto width = juce::jmin(available_width, juce::roundToInt(base_.gui.getFontSize() * 28.f));
+        const auto height = juce::jmin(available_height, juce::roundToInt(base_.gui.getFontSize() * 8.5f));
         return getLocalBounds().withSizeKeepingCentre(width, height);
     }
 
     juce::Rectangle<int> WarningOverlay::getCancelBounds() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = juce::roundToInt(font_size);
         const auto button_width = juce::roundToInt(font_size * 6.5f);
         const auto button_height = juce::roundToInt(font_size * 2.15f);
@@ -135,7 +135,7 @@ namespace zlpanel {
     }
 
     juce::Rectangle<int> WarningOverlay::getConfirmBounds() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = juce::roundToInt(font_size);
         const auto button_width = juce::roundToInt(font_size * 6.5f);
         const auto button_height = juce::roundToInt(font_size * 2.15f);
@@ -144,7 +144,7 @@ namespace zlpanel {
     }
 
     juce::Rectangle<int> WarningOverlay::getMessageBounds() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = juce::roundToInt(font_size);
         const auto button_height = juce::roundToInt(font_size * 2.15f);
         auto card = getCardBounds().reduced(padding);

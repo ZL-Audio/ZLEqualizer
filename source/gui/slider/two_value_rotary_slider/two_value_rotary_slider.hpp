@@ -49,8 +49,8 @@ namespace zlgui::slider {
                 bounds = bounds.withSizeKeepingCentre(diameter, diameter);
                 juce::Path mask;
                 mask.addPieSegment(bounds, kStartAngle - juce::MathConstants<float>::pi * 1.5f,
-                                     kEndAngle - juce::MathConstants<float>::pi * 1.5f,
-                                     0);
+                                   kEndAngle - juce::MathConstants<float>::pi * 1.5f,
+                                   0);
                 g.saveState();
                 g.reduceClipRegion(mask);
                 // draw knob background
@@ -77,7 +77,7 @@ namespace zlgui::slider {
             void paint(juce::Graphics& g) override {
                 g.saveState();
                 g.reduceClipRegion(mask_);
-                g.setColour(base_.getTextHideColour());
+                g.setColour(base_.getTextColour().withAlpha(0.25f));
                 g.fillPath(filling1_);
                 // fill the pie segment between two values
                 if constexpr (kUseSecondSlider) {
@@ -362,8 +362,8 @@ namespace zlgui::slider {
             if constexpr (kUseName) {
                 const auto bound_size = std::min(bound.getWidth(), bound.getHeight());
                 const auto label_bound = bound.withSizeKeepingCentre(
-                    static_cast<int>(std::round(static_cast<float>(bound_size * 0.7f))),
-                    static_cast<int>(std::round(static_cast<float>(bound_size * 0.6f))));
+                    static_cast<int>(std::round(static_cast<float>(bound_size) * 0.7f)),
+                    static_cast<int>(std::round(static_cast<float>(bound_size) * 0.6f)));
                 label_.setBounds(label_bound);
             }
 
@@ -410,6 +410,12 @@ namespace zlgui::slider {
 
         void setPrecision(const int x) {
             precision_ = x;
+        }
+
+        void setNameLayout(const float font_scale, const int maximum_lines) {
+            label_look_and_feel_.setFontScale(font_scale);
+            label_look_and_feel_.setMaximumNumberOfLines(maximum_lines);
+            label_.repaint();
         }
 
     private:
@@ -495,7 +501,7 @@ namespace zlgui::slider {
             editor.setColour(juce::TextEditor::outlineColourId, juce::Colours::transparentBlack);
             editor.setColour(juce::TextEditor::focusedOutlineColourId, base_.getTextColour().withAlpha(.5f));
             editor.setColour(juce::TextEditor::highlightedTextColourId, base_.getTextColour());
-            
+
             const juce::FontOptions font_opt{base_.getFontSize() * kFontHuge};
             editor.setFont(font_opt);
             editor.applyFontToAllText(font_opt);

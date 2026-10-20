@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
@@ -17,7 +19,7 @@
 namespace zlpanel {
     class SideLoudnessDisplayPanel final : public juce::Component {
     public:
-        explicit SideLoudnessDisplayPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit SideLoudnessDisplayPanel(PluginProcessor& p, zlgui::UIState& base);
 
         void paint(juce::Graphics& g) override;
 
@@ -31,7 +33,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         std::atomic<float>* dynamic_on_{};
         std::atomic<float>* dynamic_learn_on_{};
         float loudness_{0.f};

@@ -10,7 +10,7 @@
 #include "solo_panel.hpp"
 
 namespace zlpanel {
-    SoloPanel::SoloPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    SoloPanel::SoloPanel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p), base_(base) {
         base_.setSoloWholeIdx(2 * zlp::kBandNum);
         base_.getSoloWholeIdxTree().addListener(this);
@@ -24,7 +24,7 @@ namespace zlpanel {
 
     void SoloPanel::paint(juce::Graphics& g) {
         const auto bound = getLocalBounds().toFloat();
-        g.setColour(base_.getBackgroundColour().withAlpha(.625f));
+        g.setColour(base_.gui.getBackgroundColour().withAlpha(.625f));
         if (x_left_ > 0.f) {
             g.fillRect(juce::Rectangle<float>{0.f, 0.f, x_left_, bound.getHeight()});
         }

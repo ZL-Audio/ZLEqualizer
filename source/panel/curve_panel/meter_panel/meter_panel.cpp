@@ -10,7 +10,7 @@
 #include "meter_panel.hpp"
 
 namespace zlpanel {
-    MeterPanel::MeterPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    MeterPanel::MeterPanel(PluginProcessor& p, zlgui::UIState& base) :
         base_(base),
         meter_background_panel_(p, base),
         meter_display_panel_(p, base) {
@@ -24,7 +24,7 @@ namespace zlpanel {
     MeterPanel::~MeterPanel() = default;
 
     int MeterPanel::getIdealWidth() const {
-        return juce::roundToInt(base_.getFontSize() * 3.f);
+        return juce::roundToInt(base_.gui.getFontSize() * 3.f);
     }
 
     void MeterPanel::resized() {

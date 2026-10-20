@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
@@ -28,7 +30,7 @@ namespace zlpanel {
     class FFTPanel final : public juce::Component,
                            private juce::ValueTree::Listener {
     public:
-        explicit FFTPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit FFTPanel(PluginProcessor& p, zlgui::UIState& base);
 
         ~FFTPanel() override;
 
@@ -49,7 +51,7 @@ namespace zlpanel {
         static constexpr size_t kInterSize = 64;
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         std::atomic<float>& pre_ref_;
         std::atomic<float>& post_ref_;
         std::atomic<float>& side_ref_;

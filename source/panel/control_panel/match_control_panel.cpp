@@ -64,40 +64,40 @@ namespace zlpanel {
         }
     }
 
-    MatchControlPanel::MatchControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+    MatchControlPanel::MatchControlPanel(PluginProcessor& p, zlgui::UIState& base,
                                          MatchFFTPanel& match_fft_panel,
                                          const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
         match_fft_panel_(match_fft_panel),
         control_background_(base),
-        save_button_(base,
+        save_button_(base.gui,
                      juce::Drawable::createFromImageData(BinaryData::save_svg, BinaryData::save_svgSize),
                      false, tooltip_helper.getToolTipText(multilingual::kEQMatchSave)),
-        draw_button_(base,
+        draw_button_(base.gui,
                      juce::Drawable::createFromImageData(BinaryData::draw_svg, BinaryData::draw_svgSize),
                      true, tooltip_helper.getToolTipText(multilingual::kEQMatchDiffDraw)),
-        target_box_({"Side", "Preset", "Flat", "Balanced", "Natural"}, base,
+        target_box_({"Side", "Preset", "Flat", "Balanced", "Natural"}, base.gui,
                     tooltip_helper.getToolTipText(multilingual::kEQMatchTarget),
                     {tooltip_helper.getToolTipText(multilingual::kEQMatchTargetSide),
                      tooltip_helper.getToolTipText(multilingual::kEQMatchTargetPreset),
                      tooltip_helper.getToolTipText(multilingual::kEQMatchTargetFlat),
                      tooltip_helper.getToolTipText(multilingual::kEQMatchTargetBalanced),
                      tooltip_helper.getToolTipText(multilingual::kEQMatchTargetNatural)}),
-        label_laf_(base),
+        label_laf_(base.gui),
         shift_label_("", "Shift"),
-        shift_slider_("", base,
+        shift_slider_("", base.gui,
                       tooltip_helper.getToolTipText(multilingual::kEQMatchDiffShift)),
         scale_label_("", "Scale"),
-        scale_slider_("", base,
+        scale_slider_("", base.gui,
                       tooltip_helper.getToolTipText(multilingual::kEQMatchDiffSmooth)),
         slope_label_("", "Slope"),
-        slope_slider_("", base,
+        slope_slider_("", base.gui,
                       tooltip_helper.getToolTipText(multilingual::kEQMatchDiffSlope)),
-        limit_combobox_({"6 dB", "12 dB", "30 dB", "Inf"}, base, ""),
-        fit_start_button_(base,
+        limit_combobox_({"6 dB", "12 dB", "30 dB", "Inf"}, base.gui, ""),
+        fit_start_button_(base.gui,
                           juce::Drawable::createFromImageData(BinaryData::start_svg, BinaryData::start_svgSize),
                           false, tooltip_helper.getToolTipText(multilingual::kEQMatchFit)),
-        num_band_slider_("", base,
+        num_band_slider_("", base.gui,
                          tooltip_helper.getToolTipText(multilingual::kEQMatchNumBand)) {
         juce::ignoreUnused(p_ref_);
 
@@ -210,7 +210,7 @@ namespace zlpanel {
     }
 
     int MatchControlPanel::getIdealHeight() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto button_size = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
 
@@ -218,7 +218,7 @@ namespace zlpanel {
     }
 
     int MatchControlPanel::getIdealWidth() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto small_slider_width = getSmallSliderWidth(font_size);
         const auto button_size = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
@@ -227,7 +227,7 @@ namespace zlpanel {
     }
 
     void MatchControlPanel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto small_slider_width = getSmallSliderWidth(font_size);
         const auto box_height = getBoxHeight(font_size);
         const auto button_size = getButtonSize(font_size);

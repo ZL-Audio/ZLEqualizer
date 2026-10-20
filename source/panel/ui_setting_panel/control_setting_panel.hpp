@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../gui/gui.hpp"
 #include "../../PluginProcessor.hpp"
 #include "../helper/panel_constants.hpp"
@@ -18,7 +20,7 @@ namespace zlpanel {
     public:
         static constexpr float kHeightP = 20.f;
 
-        explicit ControlSettingPanel(PluginProcessor &p, zlgui::UIBase &base);
+        explicit ControlSettingPanel(PluginProcessor &p, zlgui::UIState &base);
 
         ~ControlSettingPanel() override;
 
@@ -34,7 +36,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor &p_ref_;
-        zlgui::UIBase &base_;
+        zlgui::UIState &base_;
         zlgui::label::NameLookAndFeel name_laf_;
 
         juce::Label wheel_label_;

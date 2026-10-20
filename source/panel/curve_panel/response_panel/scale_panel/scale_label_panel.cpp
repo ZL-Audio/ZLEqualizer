@@ -12,7 +12,7 @@
 
 namespace zlpanel {
     ScaleLabelPanel::ScaleLabelPanel(PluginProcessor& p,
-                                     zlgui::UIBase& base,
+                                     zlgui::UIState& base,
                                      const multilingual::TooltipHelper& tooltip_helper) :
         base_(base) {
         juce::ignoreUnused(p, tooltip_helper);
@@ -29,25 +29,25 @@ namespace zlpanel {
         const auto fft_range = zlstate::PFFTMinDB::kDBs[static_cast<size_t>(c_fft_min_idx_)];
         const auto use_wide_layout = scale_panel_layout::usesThreeDigitFloor(fft_top, fft_range);
         const auto layout = scale_panel_layout::getMetrics(
-            full_bound.getWidth(), base_.getFontSize(), use_wide_layout);
+            full_bound.getWidth(), base_.gui.getFontSize(), use_wide_layout);
         const auto bound = full_bound.withLeft(full_bound.getRight() - layout.content_width);
         juce::ColourGradient gradient;
         gradient.point1 = juce::Point<float>(bound.getX(), bound.getY());
         gradient.point2 = juce::Point<float>(bound.getRight(), bound.getY());
         gradient.isRadial = false;
         gradient.clearColours();
-        gradient.addColour(0.0, base_.getBackgroundColour().withAlpha(0.f));
-        gradient.addColour(1.0, base_.getBackgroundColour().withAlpha(1.f));
+        gradient.addColour(0.0, base_.gui.getBackgroundColour().withAlpha(0.f));
+        gradient.addColour(1.0, base_.gui.getBackgroundColour().withAlpha(1.f));
         g.setGradientFill(gradient);
         g.fillRect(bound);
         // calculate values
         const auto unit_height = getUnitHeight();
-        const float label_height = base_.getFontSize() * 1.1f;
-        const float y0 = base_.getFontSize() * kDraggerScale - label_height * .5f;
+        const float label_height = base_.gui.getFontSize() * 1.1f;
+        const float y0 = base_.gui.getFontSize() * kDraggerScale - label_height * .5f;
 
         const auto eq_unit = base_.getCurveDBScale(static_cast<size_t>(c_eq_max_idx_)) / 3.f;
         const auto fft_unit = fft_range / 6.f;
-        g.setFont(base_.getFontSize() * 1.25f);
+        g.setFont(base_.gui.getFontSize() * 1.25f);
 
         // draw eq labels and fft labels
         for (int i = 1; i < 7; ++i) {
@@ -60,13 +60,13 @@ namespace zlpanel {
             fft_label_bound.removeFromRight(layout.right_padding);
             if (i != 6) {
                 const auto fft_value = std::round(fft_top + static_cast<float>(i) * fft_unit);
-                g.setColour(base_.getTextColour().withAlpha(kFFTAlpha));
+                g.setColour(base_.gui.getTextColour().withAlpha(kFFTAlpha));
                 g.drawText(juce::String(fft_value), fft_label_bound,
                            juce::Justification::centredRight, false);
             }
             const auto eq_value = (3.f - static_cast<float>(i)) * eq_unit;
             if (std::abs(std::round(eq_value) - eq_value) < 0.01f) {
-                g.setColour(base_.getTextColour());
+                g.setColour(base_.gui.getTextColour());
                 g.drawText(juce::String(static_cast<int>(std::round(eq_value))), eq_label_bound,
                            juce::Justification::centredRight, false);
             }
@@ -75,7 +75,7 @@ namespace zlpanel {
         for (int i = 7; i < 12; ++i) {
             auto fft_label_bound = juce::Rectangle<float>(
                 bound.getX(), y0 + static_cast<float>(i) * unit_height, bound.getWidth(), label_height);
-            if (fft_label_bound.getBottom() > full_bound.getHeight() - base_.getFontSize() * 3.f) {
+            if (fft_label_bound.getBottom() > full_bound.getHeight() - base_.gui.getFontSize() * 3.f) {
                 break;
             }
             if (use_wide_layout) {
@@ -83,7 +83,7 @@ namespace zlpanel {
             }
             fft_label_bound.removeFromRight(layout.right_padding);
             const auto fft_value = std::round(fft_top + static_cast<float>(i) * fft_unit);
-            g.setColour(base_.getTextColour().withAlpha(kFFTAlpha));
+            g.setColour(base_.gui.getTextColour().withAlpha(kFFTAlpha));
             g.drawText(juce::String(fft_value), fft_label_bound, juce::Justification::centredRight);
         }
     }
@@ -99,7 +99,7 @@ namespace zlpanel {
 
     float ScaleLabelPanel::getUnitHeight() const {
         const auto bound = getLocalBounds().toFloat();
-        return (bound.getHeight() - 2.f * base_.getFontSize() * kDraggerScale
-            - static_cast<float>(getBottomAreaHeight(base_.getFontSize()))) / 6.f;
+        return (bound.getHeight() - 2.f * base_.gui.getFontSize() * kDraggerScale
+            - static_cast<float>(getBottomAreaHeight(base_.gui.getFontSize()))) / 6.f;
     }
 }

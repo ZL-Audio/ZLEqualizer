@@ -21,6 +21,8 @@ namespace zlgui::colour_selector {
         explicit ColourSelector(zlgui::UIBase& base, juce::Component& parent,
                                 float width_s = 12.f, float height_s = 10.f);
 
+        ~ColourSelector() override;
+
         void paint(juce::Graphics& g) override;
 
         void mouseDown(const juce::MouseEvent& event) override;
@@ -44,7 +46,10 @@ namespace zlgui::colour_selector {
         zlgui::CallOutBoxLAF laf_;
         juce::Component& parent_ref_;
         float selector_width_s_, selector_height_s_;
+        juce::Component::SafePointer<juce::ColourSelector> active_selector_;
+        juce::Component::SafePointer<juce::CallOutBox> callout_box_;
 
+        void closePopup();
         void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
         juce::Colour colour_ = juce::Colours::red;

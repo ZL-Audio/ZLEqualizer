@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../helper/helper.hpp"
@@ -18,11 +20,11 @@ namespace zlpanel {
     class LogoPanel final : public juce::Component,
                             public juce::SettableTooltipClient {
     public:
-        explicit LogoPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit LogoPanel(PluginProcessor& p, zlgui::UIState& base,
                            const multilingual::TooltipHelper& tooltip_helper);
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         std::unique_ptr<juce::Drawable> brand_drawable_, logo_drawable_;
 
         void paint(juce::Graphics& g) override;

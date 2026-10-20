@@ -12,40 +12,40 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    AnalyzerPanel::AnalyzerPanel(PluginProcessor& p, zlgui::UIBase& base,
+    AnalyzerPanel::AnalyzerPanel(PluginProcessor& p, zlgui::UIState& base,
                                  const multilingual::TooltipHelper& tooltip_helper) :
         base_(base),
         control_background_(base),
-        pre_button_(base, "Pre",
+        pre_button_(base.gui, "Pre",
                     tooltip_helper.getToolTipText(multilingual::kFFTPre)),
         pre_attach_(pre_button_.getButton(), p.parameters_NA_,
                     zlstate::PFFTPreON::kID, updater_),
-        post_button_(base, "Post",
+        post_button_(base.gui, "Post",
                      tooltip_helper.getToolTipText(multilingual::kFFTPost)),
         post_attach_(post_button_.getButton(), p.parameters_NA_,
                      zlstate::PFFTPostON::kID, updater_),
-        side_button_(base, "Side",
+        side_button_(base.gui, "Side",
                      tooltip_helper.getToolTipText(multilingual::kFFTSide)),
         side_attach_(side_button_.getButton(), p.parameters_NA_,
                      zlstate::PFFTSideON::kID, updater_),
-        speed_box_(zlstate::PFFTSpeed::kChoices, base,
+        speed_box_(zlstate::PFFTSpeed::kChoices, base.gui,
                    tooltip_helper.getToolTipText(multilingual::kFFTSpeed)),
         speed_attach_(speed_box_.getBox(), p.parameters_NA_,
                       zlstate::PFFTSpeed::kID, updater_),
-        slope_box_(zlstate::PFFTTilt::kChoices, base,
+        slope_box_(zlstate::PFFTTilt::kChoices, base.gui,
                    tooltip_helper.getToolTipText(multilingual::kFFTSlope)),
         slope_attach_(slope_box_.getBox(), p.parameters_NA_,
                       zlstate::PFFTTilt::kID, updater_),
-        smooth_oct_value_box_(zlstate::PFFTSmoothOCTValue::kChoices, base, ""),
+        smooth_oct_value_box_(zlstate::PFFTSmoothOCTValue::kChoices, base.gui, ""),
         smooth_oct_value_attach_(smooth_oct_value_box_.getBox(), p.parameters_NA_,
                                  zlstate::PFFTSmoothOCTValue::kID, updater_),
-        smooth_erb_value_box_(zlstate::PFFTSmoothERBValue::kChoices, base, ""),
+        smooth_erb_value_box_(zlstate::PFFTSmoothERBValue::kChoices, base.gui, ""),
         smooth_erb_value_attach_(smooth_erb_value_box_.getBox(), p.parameters_NA_,
                                  zlstate::PFFTSmoothERBValue::kID, updater_),
-        smooth_type_box_(zlstate::PFFTSmoothType::kChoices, base, ""),
+        smooth_type_box_(zlstate::PFFTSmoothType::kChoices, base.gui, ""),
         smooth_type_attach_(smooth_type_box_.getBox(), p.parameters_NA_,
                             zlstate::PFFTSmoothType::kID, updater_),
-        freeze_button_(base,
+        freeze_button_(base.gui,
                        juce::Drawable::createFromImageData(BinaryData::freeze_svg, BinaryData::freeze_svgSize),
                        true, tooltip_helper.getToolTipText(multilingual::kFFTFreeze)),
         freeze_attach_(freeze_button_.getButton(), p.parameters_NA_,
@@ -63,26 +63,26 @@ namespace zlpanel {
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::side_svg, BinaryData::side_svgSize));
             return icons;
-        }(), base, "", {}),
+        }(), base.gui, "", {}),
         lr_attachment_(lr_box_.getBox(), p.parameters_NA_,
                        zlstate::PFFTStereo::kID, updater_),
-        collision_button_(base,
+        collision_button_(base.gui,
                           juce::Drawable::createFromImageData(BinaryData::collision_svg, BinaryData::collision_svgSize),
                           true, tooltip_helper.getToolTipText(multilingual::kFFTCollision)),
         collision_attach_(collision_button_.getButton(), p.parameters_NA_,
                           zlstate::PCollisionON::kID, updater_),
-        label_laf_(base),
+        label_laf_(base.gui),
         strength_label_("", "Strength"),
-        strength_slider_("", base,
+        strength_slider_("", base.gui,
                          tooltip_helper.getToolTipText(multilingual::kFFTCollisionStrength)),
         strength_attach_(strength_slider_.getSlider(), p.parameters_NA_,
                          zlstate::PCollisionStrength::kID, updater_),
-        value_button_(base,
+        value_button_(base.gui,
                       juce::Drawable::createFromImageData(BinaryData::dline_123_svg, BinaryData::dline_123_svgSize),
                       true),
         value_attach_(value_button_.getButton(), p.parameters_NA_,
                       zlstate::PValueDisplayON::kID, updater_),
-        meter_button_(base,
+        meter_button_(base.gui,
                       juce::Drawable::createFromImageData(BinaryData::dline_meter_svg, BinaryData::dline_meter_svgSize),
                       true),
         meter_attach_(meter_button_.getButton(), p.parameters_NA_,
@@ -100,7 +100,7 @@ namespace zlpanel {
             addAndMakeVisible(b);
         }
 
-        const auto box_alignment = combobox_helper::getAlignment(base_.getComboboxAlignment());
+        const auto box_alignment = combobox_helper::getAlignment(base_.gui.getComboboxAlignment());
         speed_box_.getLAF().setItemAlignment(box_alignment);
         slope_box_.getLAF().setAlignment(zlgui::combobox::Alignment::kRight);
         smooth_type_box_.getLAF().setItemAlignment(box_alignment);
@@ -152,7 +152,7 @@ namespace zlpanel {
     }
 
     int AnalyzerPanel::getIdealWidth() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = getPaddingSize(font_size);
         const auto slider_width = getSliderWidth(font_size);
 
@@ -160,7 +160,7 @@ namespace zlpanel {
     }
 
     int AnalyzerPanel::getIdealHeight() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = getPaddingSize(font_size);
         const auto button_height = getButtonSize(font_size);
 
@@ -168,7 +168,7 @@ namespace zlpanel {
     }
 
     void AnalyzerPanel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto button_height = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
 

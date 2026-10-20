@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "piano_keys_panel.hpp"
@@ -18,7 +20,7 @@
 namespace zlpanel {
     class PianoRollPanel final : public juce::Component {
     public:
-        explicit PianoRollPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit PianoRollPanel(PluginProcessor& p, zlgui::UIState& base);
 
         ~PianoRollPanel() override;
 
@@ -65,7 +67,7 @@ namespace zlpanel {
         };
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         std::atomic<float>& piano_roll_on_ref_;
         PianoKeysPanel keys_panel_;
         PianoBandPanel bands_panel_;

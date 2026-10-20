@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../../state/ui_state.hpp"
+
 #include "mouse_event_panel.hpp"
 #include "../scale_panel/scale_panel.hpp"
 #include "float_pop_panel.hpp"
@@ -21,7 +23,7 @@ namespace zlpanel {
                                private juce::LassoSource<size_t>,
                                private juce::ChangeListener {
     public:
-        explicit DraggerPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit DraggerPanel(PluginProcessor& p, zlgui::UIState& base,
                               const multilingual::TooltipHelper& tooltip_helper);
 
         ~DraggerPanel() override;
@@ -81,7 +83,7 @@ namespace zlpanel {
         static constexpr float kDraggerPaddingMultiplier = 1.f;
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         zlgui::attachment::ComponentUpdater updater_{};
 
         RightClickPanel right_click_panel_;

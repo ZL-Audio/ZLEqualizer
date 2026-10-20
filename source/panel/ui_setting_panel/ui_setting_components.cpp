@@ -11,22 +11,22 @@
 #include "../helper/paint_selected_card.hpp"
 
 namespace zlpanel {
-    UISettingTabBar::UISettingTabBar(zlgui::UIBase& base) : base_(base) {
+    UISettingTabBar::UISettingTabBar(zlgui::UIState& base) : base_(base) {
         setMouseCursor(juce::MouseCursor::PointingHandCursor);
         setWantsKeyboardFocus(true);
     }
 
     void UISettingTabBar::paint(juce::Graphics& g) {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         g.setFont(juce::FontOptions{1.5f * font_size});
 
         for (auto index = 0; index < static_cast<int>(tab_names_.size()); ++index) {
             const auto selected = index == selected_index_;
             const auto hovered = index == hovered_index_;
             const auto tab_bounds = getTabBounds(index);
-            paintSelectableCard(g, tab_bounds, base_.getTextColour(), font_size, selected, hovered);
+            paintSelectableCard(g, tab_bounds, base_.gui.getTextColour(), font_size, selected, hovered);
 
-            g.setColour(base_.getTextColour().withAlpha(selected ? .95f : .62f));
+            g.setColour(base_.gui.getTextColour().withAlpha(selected ? .95f : .62f));
             g.drawFittedText(tab_names_[static_cast<size_t>(index)],
                              tab_bounds.reduced(juce::roundToInt(font_size * .5f), 0),
                              juce::Justification::centred, 1);

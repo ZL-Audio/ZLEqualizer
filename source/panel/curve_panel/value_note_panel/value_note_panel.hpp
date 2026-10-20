@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../gui/gui.hpp"
 
 namespace zlpanel {
@@ -16,7 +18,7 @@ namespace zlpanel {
     public:
         enum class Mode { kNote, kFrequencyGain, kFrequencyNote };
 
-        explicit ValueNotePanel(zlgui::UIBase& base);
+        explicit ValueNotePanel(zlgui::UIState& base);
 
         void paint(juce::Graphics& g) override;
 
@@ -25,7 +27,7 @@ namespace zlpanel {
         void setValues(Mode mode, bool piano_visible, double frequency, float gain, int note);
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         Mode mode_{Mode::kNote};
         bool piano_visible_{false};
         int frequency_tenths_{-1}, gain_hundredths_{0};

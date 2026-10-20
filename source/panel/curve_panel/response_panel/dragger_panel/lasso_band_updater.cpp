@@ -12,7 +12,7 @@
 #include "../scale_panel/scale_label_panel.hpp"
 
 namespace zlpanel {
-    LassoBandUpdater::LassoBandUpdater(PluginProcessor& p, zlgui::UIBase& base) :
+    LassoBandUpdater::LassoBandUpdater(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p), base_(base),
         items_set_(base.getSelectedBandSet()) {
         for (size_t band = 0; band < zlp::kBandNum; ++band) {

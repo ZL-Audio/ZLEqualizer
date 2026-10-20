@@ -12,17 +12,17 @@
 
 namespace zlpanel {
     ScalePanel::ScalePanel(PluginProcessor& p,
-                           zlgui::UIBase& base,
+                           zlgui::UIState& base,
                            const multilingual::TooltipHelper& tooltip_helper) :
         base_(base), updater_(),
         scale_label_panel_(p, base, tooltip_helper),
         eq_max_box_({juce::String(static_cast<int>(base_.getCurveDBScale(0))),
                      juce::String(static_cast<int>(base_.getCurveDBScale(1))),
-                     juce::String(static_cast<int>(base_.getCurveDBScale(2)))}, base),
+                     juce::String(static_cast<int>(base_.getCurveDBScale(2)))}, base.gui),
         eq_max_attach_(eq_max_box_.getBox(), p.parameters_NA_, zlstate::PEQMaxDB::kID, updater_),
-        fft_top_box_(zlstate::PFFTTopDB::kChoices, base),
+        fft_top_box_(zlstate::PFFTTopDB::kChoices, base.gui),
         fft_top_attach_(fft_top_box_.getBox(), p.parameters_NA_, zlstate::PFFTTopDB::kID, updater_),
-        fft_min_box_(zlstate::PFFTMinDB::kChoices, base),
+        fft_min_box_(zlstate::PFFTMinDB::kChoices, base.gui),
         fft_min_attach_(fft_min_box_.getBox(), p.parameters_NA_, zlstate::PFFTMinDB::kID, updater_) {
         juce::ignoreUnused(tooltip_helper);
 
@@ -60,12 +60,12 @@ namespace zlpanel {
 
     int ScalePanel::getIdealWidth() const {
         return juce::roundToInt(
-            base_.getFontSize() * scale_panel_layout::getContentWidthUnits(true));
+            base_.gui.getFontSize() * scale_panel_layout::getContentWidthUnits(true));
     }
 
     float ScalePanel::getGradientWidth() const {
         return scale_panel_layout::getMetrics(
-            static_cast<float>(getWidth()), base_.getFontSize(), use_wide_layout_).content_width;
+            static_cast<float>(getWidth()), base_.gui.getFontSize(), use_wide_layout_).content_width;
     }
 
     void ScalePanel::resized() {
@@ -73,9 +73,9 @@ namespace zlpanel {
 
         const auto bound = getLocalBounds().toFloat();
         const auto layout = scale_panel_layout::getMetrics(
-            bound.getWidth(), base_.getFontSize(), use_wide_layout_);
+            bound.getWidth(), base_.gui.getFontSize(), use_wide_layout_);
         const auto content_bound = bound.withLeft(bound.getRight() - layout.content_width);
-        const auto box_height = static_cast<int>(std::round(base_.getFontSize() * 1.3f));
+        const auto box_height = static_cast<int>(std::round(base_.gui.getFontSize() * 1.3f));
         const auto eq_box_width = static_cast<int>(layout.eq_column_width);
         const auto fft_top_box_width = static_cast<int>(std::floor(layout.fft_column_width));
         const auto fft_min_box_width = static_cast<int>(std::floor(layout.floor_control_width));
@@ -87,13 +87,13 @@ namespace zlpanel {
         const auto unit_height = getUnitHeight();
         eq_max_box_.setTransform(juce::AffineTransform::translation(
             content_bound.getX(),
-            base_.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
+            base_.gui.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
         fft_top_box_.setTransform(juce::AffineTransform::translation(
             content_bound.getRight() - static_cast<float>(fft_top_box_width) - layout.right_padding,
-            base_.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
+            base_.gui.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
         fft_min_box_.setTransform(juce::AffineTransform::translation(
             content_bound.getRight() - static_cast<float>(fft_min_box_width) - layout.right_padding,
-            6.f * unit_height + base_.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
+            6.f * unit_height + base_.gui.getFontSize() * kDraggerScale - .5f * static_cast<float>(box_height)));
     }
 
     void ScalePanel::repaintCallBackSlow() {
@@ -109,8 +109,8 @@ namespace zlpanel {
 
     float ScalePanel::getUnitHeight() const {
         const auto bound = getLocalBounds().toFloat();
-        return (bound.getHeight() - 2.f * base_.getFontSize() * kDraggerScale
-            - static_cast<float>(getBottomAreaHeight(base_.getFontSize()))) / 6.f;
+        return (bound.getHeight() - 2.f * base_.gui.getFontSize() * kDraggerScale
+            - static_cast<float>(getBottomAreaHeight(base_.gui.getFontSize()))) / 6.f;
     }
 
     void ScalePanel::updateFFTMinChoices(const int fft_top_idx) {

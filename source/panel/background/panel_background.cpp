@@ -18,23 +18,23 @@ namespace zlpanel {
         constexpr auto kSurfaceTint = .05f;
     }
 
-    PanelBackground::PanelBackground(zlgui::UIBase& base, const float shadow_alpha) :
+    PanelBackground::PanelBackground(zlgui::UIState& base, const float shadow_alpha) :
         base_(base), shadow_alpha_(shadow_alpha) {
         setInterceptsMouseClicks(false, false);
         setAlpha(.9f);
     }
 
     void PanelBackground::paint(juce::Graphics& g) {
-        const auto padding = getPaddingSize(base_.getFontSize());
+        const auto padding = getPaddingSize(base_.gui.getFontSize());
         const auto bound = getLocalBounds().reduced(padding);
         juce::Path path;
         path.addRoundedRectangle(bound.toFloat(), static_cast<float>(padding));
 
-        const juce::DropShadow shadow{base_.getTextColour().withAlpha(shadow_alpha_), padding, {0, 0}};
+        const juce::DropShadow shadow{base_.gui.getTextColour().withAlpha(shadow_alpha_), padding, {0, 0}};
         shadow.drawForPath(g, path);
-        const auto background = base_.getBackgroundColour();
+        const auto background = base_.gui.getBackgroundColour();
         g.setColour(paints_surfaces_
-                        ? background.interpolatedWith(base_.getTextColour(), kSurfaceTint)
+                        ? background.interpolatedWith(base_.gui.getTextColour(), kSurfaceTint)
                         : background);
         g.fillPath(path);
 

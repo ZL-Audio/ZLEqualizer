@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
@@ -17,7 +19,7 @@
 namespace zlpanel {
     class SumPanel final : public juce::Component {
     public:
-        explicit SumPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit SumPanel(PluginProcessor& p, zlgui::UIState& base);
 
         void paintSameStereo(juce::Graphics& g);
 
@@ -37,7 +39,7 @@ namespace zlpanel {
         static constexpr float kDiffStereoAlphaMultiplier = .25f;
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
 
         std::array<TriBuffer<juce::Path>, 5> paths_{};
 

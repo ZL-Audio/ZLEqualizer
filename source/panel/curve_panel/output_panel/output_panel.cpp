@@ -11,35 +11,35 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    OutputPanel::OutputPanel(PluginProcessor& p, zlgui::UIBase& base,
+    OutputPanel::OutputPanel(PluginProcessor& p, zlgui::UIState& base,
                              const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base), updater_(),
         control_background_(base),
-        name_laf_(base),
+        name_laf_(base.gui),
         gain_label_("", "GAIN"),
         scale_label_("", "SCALE"),
-        gain_slider_("", base_,
+        gain_slider_("", base_.gui,
                      tooltip_helper.getToolTipText(multilingual::kOutputGain), 1.25f),
         gain_attach_(gain_slider_.getSlider1(), p.parameters_,
                      zlp::POutputGain::kID, updater_),
-        scale_slider_("", base,
+        scale_slider_("", base.gui,
                       tooltip_helper.getToolTipText(multilingual::kGainScale), 1.25f),
         scale_attach_(scale_slider_.getSlider1(), p.parameters_,
                       zlp::PGainScale::kID, updater_),
-        sgc_button_(base,
+        sgc_button_(base.gui,
                     juce::Drawable::createFromImageData(BinaryData::dline_s_svg, BinaryData::dline_s_svgSize),
                     true, tooltip_helper.getToolTipText(multilingual::kStaticGC)),
         sgc_attach_(sgc_button_.getButton(), p.parameters_,
                     zlp::PStaticGain::kID, updater_),
-        lm_button_(base,
+        lm_button_(base.gui,
                    juce::Drawable::createFromImageData(BinaryData::dline_l_svg, BinaryData::dline_l_svgSize),
                    true, tooltip_helper.getToolTipText(multilingual::kLoudnessGC)),
-        agc_button_(base,
+        agc_button_(base.gui,
                     juce::Drawable::createFromImageData(BinaryData::dline_a_svg, BinaryData::dline_a_svgSize),
                     true, tooltip_helper.getToolTipText(multilingual::kAutoGC)),
         agc_attach_(agc_button_.getButton(), p.parameters_,
                     zlp::PAutoGain::kID, updater_),
-        phase_button_(base,
+        phase_button_(base.gui,
                       juce::Drawable::createFromImageData(BinaryData::phase_svg, BinaryData::phase_svgSize),
                       true, tooltip_helper.getToolTipText(multilingual::kPhaseFlip)),
         phase_attach_(phase_button_.getButton(), p.parameters_,
@@ -57,12 +57,12 @@ namespace zlpanel {
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::side_svg, BinaryData::side_svgSize));
             return icons;
-        }(), base, tooltip_helper.getToolTipText(multilingual::kBandStereoMode),
+        }(), base.gui, tooltip_helper.getToolTipText(multilingual::kBandStereoMode),
                     {"Stereo", "Left", "Right", "Mid", "Side"}),
         stereo_attach_(stereo_box_.getBox(), p.parameters_,
                        zlp::POutputStereo::kID, updater_),
         lookahead_label_("", "Lookahead"),
-        lookahead_slider_("", base,
+        lookahead_slider_("", base.gui,
                           tooltip_helper.getToolTipText(multilingual::kLookahead)),
         lookahead_attach_(lookahead_slider_.getSlider(), p.parameters_,
                           zlp::PLookahead::kID, updater_) {
@@ -135,14 +135,14 @@ namespace zlpanel {
     }
 
     int OutputPanel::getIdealWidth() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto slider_width = getSliderWidth(font_size);
         const auto padding = getPaddingSize(font_size);
         return 5 * padding + 2 * slider_width;
     }
 
     int OutputPanel::getIdealHeight() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto slider_width = getSliderWidth(font_size);
         const auto button_height = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
@@ -150,7 +150,7 @@ namespace zlpanel {
     }
 
     void OutputPanel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto slider_width = getSliderWidth(font_size);
         const auto button_height = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);

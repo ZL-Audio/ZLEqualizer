@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 #include "../../helper/helper.hpp"
@@ -38,7 +40,7 @@ namespace zlpanel {
             kAnalyze, kMatch
         };
 
-        explicit MatchFFTPanel(PluginProcessor& p, zlgui::UIBase& base);
+        explicit MatchFFTPanel(PluginProcessor& p, zlgui::UIState& base);
 
         ~MatchFFTPanel() override;
 
@@ -74,7 +76,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
 
         std::atomic<SideMode> side_mode_{SideMode::kSide};
 

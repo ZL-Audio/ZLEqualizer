@@ -10,16 +10,16 @@
 #include "right_click_panel.hpp"
 
 namespace zlpanel {
-    RightClickPanel::RightClickPanel(PluginProcessor& p, zlgui::UIBase& base,
+    RightClickPanel::RightClickPanel(PluginProcessor& p, zlgui::UIState& base,
                                      const multilingual::TooltipHelper&) :
         p_ref_(p), base_(base),
         items_set_(base.getSelectedBandSet()),
         control_background_(base, .25f),
-        invert_button_(base, "Invert Gain"),
-        lr_split_button_(base, "Split L/R"),
-        ms_split_button_(base, "Split M/S"),
-        copy_button_(base, "Copy"),
-        paste_button_(base, "Paste") {
+        invert_button_(base.gui, "Invert Gain"),
+        lr_split_button_(base.gui, "Split L/R"),
+        ms_split_button_(base.gui, "Split M/S"),
+        copy_button_(base.gui, "Copy"),
+        paste_button_(base.gui, "Paste") {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
         addAndMakeVisible(mouse_event_eater_);
@@ -55,7 +55,7 @@ namespace zlpanel {
     }
 
     int RightClickPanel::getIdealWidth() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = getPaddingSize(font_size);
         const auto slider_width = getSliderWidth(font_size);
 
@@ -63,7 +63,7 @@ namespace zlpanel {
     }
 
     int RightClickPanel::getIdealHeight() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = getPaddingSize(font_size);
         const auto button_height = getButtonSize(font_size);
 
@@ -71,7 +71,7 @@ namespace zlpanel {
     }
 
     void RightClickPanel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = getPaddingSize(font_size);
         const auto button_height = getButtonSize(font_size);
 

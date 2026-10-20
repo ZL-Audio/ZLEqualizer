@@ -12,7 +12,7 @@
 namespace zlgui::colour_selector {
     ColourMapSelector::ColourMapSelector(zlgui::UIBase& base, const float box_width)
         : base_(base),
-          map_box_(zlstate::PColourMapIdx::kChoices, base_),
+          map_box_(base_.getColourMapNames(), base_),
           map_box_width_p_(box_width) {
         addAndMakeVisible(map_box_);
         map_box_.getBox().addListener(this);
@@ -26,7 +26,7 @@ namespace zlgui::colour_selector {
         g.fillRect(bound);
         bound = bound.withSizeKeepingCentre(bound.getWidth() - base_.getFontSize() * .375f,
                                             bound.getHeight() - base_.getFontSize() * .375f);
-        const auto& current_colour_map = zlgui::kColourMaps[static_cast<size_t>(map_box_.getBox().getSelectedId() - 1)];
+        const auto& current_colour_map = base_.getColourMap(static_cast<size_t>(map_box_.getBox().getSelectedId() - 1));
         const auto single_colour_map_width = bound.getWidth() / static_cast<float>(current_colour_map.size());
         for (const auto& colour : current_colour_map) {
             g.setColour(colour);

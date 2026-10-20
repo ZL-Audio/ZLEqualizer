@@ -10,18 +10,18 @@
 #include "meter_top_panel.hpp"
 
 namespace zlpanel {
-    MeterTopPanel::MeterTopPanel(zlgui::UIBase& base) :
+    MeterTopPanel::MeterTopPanel(zlgui::UIState& base) :
         base_(base) {
         setInterceptsMouseClicks(false, false);
     }
 
     void MeterTopPanel::paint(juce::Graphics& g) {
         auto bound = getLocalBounds().toFloat();
-        g.setColour(base_.getBackgroundColour().withAlpha(.5f));
+        g.setColour(base_.gui.getBackgroundColour().withAlpha(.5f));
         g.fillRect(bound);
 
-        g.setFont(base_.getFontSize());
-        g.setColour(base_.getTextColour());
+        g.setFont(base_.gui.getFontSize());
+        g.setColour(base_.gui.getTextColour());
         if (out_value_ > -120.f) {
             g.drawText(formatValue(out_value_), bound, juce::Justification::centred, false);
         }

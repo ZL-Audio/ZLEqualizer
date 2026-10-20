@@ -11,17 +11,17 @@
 
 namespace zlpanel {
     ExtraDynamicPanel::ExtraDynamicPanel(PluginProcessor& p,
-                                         zlgui::UIBase& base,
+                                         zlgui::UIState& base,
                                          const multilingual::TooltipHelper&) :
         p_ref_(p), base_(base),
         control_background_(base),
-        label_laf_(base),
+        label_laf_(base.gui),
         rms_length_label_("", "Length"),
-        rms_length_slider_("", base),
+        rms_length_slider_("", base.gui),
         rms_mix_label_("", "Mix"),
-        rms_mix_slider_("", base),
+        rms_mix_slider_("", base.gui),
         dyn_smooth_label_("", "Smooth"),
-        dyn_smooth_slider_("", base) {
+        dyn_smooth_slider_("", base.gui) {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
 
@@ -49,12 +49,12 @@ namespace zlpanel {
     }
 
     int ExtraDynamicPanel::getIdealHeight() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         return getButtonSize(font_size) + getPaddingSize(font_size);
     }
 
     int ExtraDynamicPanel::getIdealWidth() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto slider_width = getSliderWidth(font_size);
         const auto small_slider_width = getSmallSliderWidth(font_size);
         const auto padding = getPaddingSize(font_size);
@@ -63,7 +63,7 @@ namespace zlpanel {
     }
 
     void ExtraDynamicPanel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto slider_width = getSmallSliderWidth(font_size);
         const auto padding = getPaddingSize(font_size);
 

@@ -10,7 +10,7 @@
 #include "control_panel.hpp"
 
 namespace zlpanel {
-    ControlPanel::ControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+    ControlPanel::ControlPanel(PluginProcessor& p, zlgui::UIState& base,
                                MatchFFTPanel& match_fft_panel,
                                const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
@@ -45,7 +45,7 @@ namespace zlpanel {
     }
 
     int ControlPanel::getIdealHeight() const {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto box_height = getBoxHeight(font_size);
         const auto button_height = getButtonSize(font_size);
         const auto padding = getPaddingSize(font_size);
@@ -54,7 +54,7 @@ namespace zlpanel {
     }
 
     void ControlPanel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         auto bound = getLocalBounds();
         const auto padding = getPaddingSize(font_size);
 

@@ -9,12 +9,14 @@
 
 #pragma once
 
+#include "../../../../state/ui_state.hpp"
+
 #include "scale_label_panel.hpp"
 
 namespace zlpanel {
     class ScalePanel final : public juce::Component {
     public:
-        explicit ScalePanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit ScalePanel(PluginProcessor& p, zlgui::UIState& base,
                             const multilingual::TooltipHelper& tooltip_helper);
 
         int getIdealWidth() const;
@@ -28,7 +30,7 @@ namespace zlpanel {
     private:
         static constexpr float kFFTAlpha = .5f;
 
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         zlgui::attachment::ComponentUpdater updater_;
 
         ScaleLabelPanel scale_label_panel_;

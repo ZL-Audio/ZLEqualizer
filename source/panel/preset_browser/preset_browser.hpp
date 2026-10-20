@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include <vector>
 
 #include "../../PluginProcessor.hpp"
@@ -26,7 +28,7 @@ namespace zlpanel {
     class PresetBrowser final : public juce::Component,
                                 private juce::ValueTree::Listener {
     public:
-        explicit PresetBrowser(PluginProcessor& processor, zlgui::UIBase& base);
+        explicit PresetBrowser(PluginProcessor& processor, zlgui::UIState& base);
 
         ~PresetBrowser() override;
 
@@ -46,7 +48,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& processor_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         const juce::File presets_directory_;
 
         PanelBackground background_;

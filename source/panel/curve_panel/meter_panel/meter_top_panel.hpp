@@ -9,19 +9,21 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../gui/gui.hpp"
 
 namespace zlpanel {
     class MeterTopPanel final : public juce::Component {
     public:
-        explicit MeterTopPanel(zlgui::UIBase& base);
+        explicit MeterTopPanel(zlgui::UIState& base);
 
         void paint(juce::Graphics& g) override;
 
         void updateValue(float out_value);
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
 
         float out_value_{-240.f};
 

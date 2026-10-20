@@ -9,5 +9,6 @@
 
 #pragma once
 
+#include "click_combobox/click_combobox.hpp"
 #include "compact_combobox/compact_combobox.hpp"
 #include "../attachment/combobox_attachment.hpp"

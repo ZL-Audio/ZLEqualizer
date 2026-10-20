@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "single_panel.hpp"
 #include "sum_panel.hpp"
 #include "dragger_panel/dragger_panel.hpp"
@@ -20,7 +22,7 @@ namespace zlpanel {
                                 public juce::Thread,
                                 private juce::AudioProcessorValueTreeState::Listener {
     public:
-        explicit ResponsePanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit ResponsePanel(PluginProcessor& p, zlgui::UIState& base,
                                const multilingual::TooltipHelper& tooltip_helper);
 
         ~ResponsePanel() override;
@@ -55,7 +57,7 @@ namespace zlpanel {
         static constexpr size_t kNumPoints = 400;
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
 
         std::array<std::atomic<float>, zlp::kBandNum> original_base_gains_{};
         std::array<std::atomic<float>, zlp::kBandNum> original_target_gains_{};

@@ -10,15 +10,15 @@
 #include "output_label.hpp"
 
 namespace zlpanel {
-    OutputLabel::OutputLabel(PluginProcessor& p, zlgui::UIBase& base) :
+    OutputLabel::OutputLabel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p), base_(base),
         control_background_(base),
-        label_laf_(base),
+        label_laf_(base.gui),
         scale_ref_(*p.parameters_.getRawParameterValue(zlp::PGainScale::kID)),
-        gain_slider_(base_, ""),
+        gain_slider_(base_.gui, ""),
         gain_attach_(gain_slider_, p.parameters_,
                      zlp::POutputGain::kID, updater_),
-        scale_slider_(base_, ""),
+        scale_slider_(base_.gui, ""),
         scale_attach_(scale_slider_, p.parameters_,
                       zlp::PGainScale::kID, updater_) {
         base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, 0.);
@@ -52,7 +52,7 @@ namespace zlpanel {
     }
 
     void OutputLabel::resized() {
-        const auto font_size = base_.getFontSize();
+        const auto font_size = base_.gui.getFontSize();
         const auto padding = 2 * getPaddingSize(font_size);
         auto bound = getLocalBounds();
         control_background_.setBounds(0, -padding, bound.getWidth(), bound.getHeight() + padding + padding / 4);

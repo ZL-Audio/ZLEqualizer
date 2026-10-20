@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include <array>
 #include <functional>
 
@@ -19,7 +21,7 @@
 namespace zlpanel {
     class UISettingTabBar final : public juce::Component {
     public:
-        explicit UISettingTabBar(zlgui::UIBase& base);
+        explicit UISettingTabBar(zlgui::UIState& base);
 
         void paint(juce::Graphics& g) override;
 
@@ -38,7 +40,7 @@ namespace zlpanel {
         std::function<void(int)> onTabSelected;
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         const std::array<juce::String, 4> tab_names_{"Colour", "Control", "Other", "Credit"};
         int selected_index_{0};
         int hovered_index_{-1};

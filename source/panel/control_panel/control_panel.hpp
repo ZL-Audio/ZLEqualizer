@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "left_control_panel.hpp"
 #include "right_control_panel.hpp"
 #include "match_control_panel.hpp"
@@ -18,7 +20,7 @@ namespace zlpanel {
     class ControlPanel final : public juce::Component,
                                private juce::ValueTree::Listener {
     public:
-        explicit ControlPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit ControlPanel(PluginProcessor& p, zlgui::UIState& base,
                               MatchFFTPanel& match_fft_panel,
                               const multilingual::TooltipHelper& tooltip_helper);
 
@@ -40,7 +42,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
 
         juce::Component mouse_event_eater_;
         LeftControlPanel left_control_panel_;

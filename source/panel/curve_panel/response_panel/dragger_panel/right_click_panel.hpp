@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../../state/ui_state.hpp"
+
 #include "../../../../PluginProcessor.hpp"
 #include "../../../../gui/gui.hpp"
 #include "../../../helper/helper.hpp"
@@ -18,7 +20,7 @@
 namespace zlpanel {
     class RightClickPanel final : public juce::Component {
     public:
-        explicit RightClickPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit RightClickPanel(PluginProcessor& p, zlgui::UIState& base,
                                  const multilingual::TooltipHelper& tooltip_helper);
 
         int getIdealWidth() const;
@@ -49,7 +51,7 @@ namespace zlpanel {
         };
 
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         juce::SelectedItemSet<size_t>& items_set_;
         PanelBackground control_background_;
 

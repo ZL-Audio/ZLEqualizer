@@ -10,7 +10,7 @@
 #include "sum_panel.hpp"
 
 namespace zlpanel {
-    SumPanel::SumPanel(PluginProcessor& p, zlgui::UIBase& base) :
+    SumPanel::SumPanel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p), base_(base) {
         juce::ignoreUnused(p_ref_);
         temp_db_.resize(kNumPoints);
@@ -23,7 +23,7 @@ namespace zlpanel {
             paths_[i].pull();
             auto& path{paths_[i].getReader()};
             if (!path.isEmpty() && is_same_stereo_[i]) {
-                g.setColour(base_.getColourMap2(i));
+                g.setColour(base_.gui.getColourMap2(i));
                 g.strokePath(path, juce::PathStrokeType(curve_thickness_,
                                                         juce::PathStrokeType::curved,
                                                         juce::PathStrokeType::butt));
@@ -37,7 +37,7 @@ namespace zlpanel {
             paths_[i].pull();
             auto& path{paths_[i].getReader()};
             if (!path.isEmpty() && !is_same_stereo_[i]) {
-                g.setColour(base_.getColourMap2(i).withAlpha(kDiffStereoAlphaMultiplier));
+                g.setColour(base_.gui.getColourMap2(i).withAlpha(kDiffStereoAlphaMultiplier));
                 g.strokePath(path, juce::PathStrokeType(curve_thickness_,
                                                         juce::PathStrokeType::curved,
                                                         juce::PathStrokeType::butt));
@@ -104,6 +104,6 @@ namespace zlpanel {
     }
 
     void SumPanel::lookAndFeelChanged() {
-        curve_thickness_ = base_.getFontSize() * .275f * base_.getSumEQCurveThickness();
+        curve_thickness_ = base_.gui.getFontSize() * .275f * base_.getSumEQCurveThickness();
     }
 }

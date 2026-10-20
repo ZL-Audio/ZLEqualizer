@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "../../gui/interface_definitions.hpp"
@@ -16,11 +18,11 @@
 namespace zlpanel {
     class RoundedTextEditor final : public juce::TextEditor {
     public:
-        explicit RoundedTextEditor(zlgui::UIBase& base);
+        explicit RoundedTextEditor(zlgui::UIState& base);
 
         void lookAndFeelChanged() override;
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
     };
 }

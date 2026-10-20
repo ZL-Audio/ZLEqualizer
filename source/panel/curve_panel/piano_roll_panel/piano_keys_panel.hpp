@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include <vector>
 
 #include "../../../gui/gui.hpp"
@@ -21,7 +23,7 @@ namespace zlpanel {
             juce::RectangleList<float> region;
         };
 
-        explicit PianoKeysPanel(zlgui::UIBase& base);
+        explicit PianoKeysPanel(zlgui::UIState& base);
 
         void paint(juce::Graphics& g) override;
 
@@ -38,7 +40,7 @@ namespace zlpanel {
         double xToNote(float x) const;
 
     private:
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         double fft_max_{0.};
         float a4_x_{0.f}, note_width_{0.f};
         int first_note_{0};

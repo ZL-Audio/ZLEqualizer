@@ -16,8 +16,8 @@ namespace zlgui::colour_selector {
             : selector_(selectorFlags,
                         juce::roundToInt(base.getFontSize() * 0.5f),
                         juce::roundToInt(base.getFontSize() * 0.33f)),
-              base_(base) {
-            selector_.setColour(juce::ColourSelector::ColourIds::backgroundColourId, base_.getBackgroundColour());
+              padding_(base.getFontSize() * .5f) {
+            selector_.setColour(juce::ColourSelector::ColourIds::backgroundColourId, base.getBackgroundColour());
             addAndMakeVisible(selector_);
         }
 
@@ -28,8 +28,8 @@ namespace zlgui::colour_selector {
         void resized() override {
             auto bound = getLocalBounds().toFloat();
             bound = bound.withSizeKeepingCentre(
-                bound.getWidth() - base_.getFontSize() * .5f,
-                bound.getHeight() - base_.getFontSize() * .5f);
+                bound.getWidth() - padding_,
+                bound.getHeight() - padding_);
             selector_.setBounds(bound.toNearestInt());
         }
 
@@ -37,13 +37,33 @@ namespace zlgui::colour_selector {
 
     private:
         juce::ColourSelector selector_;
-        zlgui::UIBase& base_;
+        const float padding_;
     };
 
     ColourSelector::ColourSelector(zlgui::UIBase& base, juce::Component& parent,
                                    const float width_s, const float height_s)
         : base_(base), laf_(base_), parent_ref_(parent),
           selector_width_s_(width_s), selector_height_s_(height_s) {
+    }
+
+    ColourSelector::~ColourSelector() {
+        closePopup();
+    }
+
+    void ColourSelector::closePopup() {
+        if (active_selector_ != nullptr) {
+            active_selector_->removeChangeListener(this);
+            active_selector_ = nullptr;
+        }
+        if (auto* box = callout_box_.getComponent()) {
+            box->exitModalState(0);
+            box->setVisible(false);
+            if (auto* parent = box->getParentComponent()) {
+                parent->removeChildComponent(box);
+            }
+            box->setLookAndFeel(nullptr);
+            callout_box_ = nullptr;
+        }
     }
 
     void ColourSelector::paint(juce::Graphics& g) {
@@ -59,15 +79,18 @@ namespace zlgui::colour_selector {
 
     void ColourSelector::mouseDown(const juce::MouseEvent& event) {
         juce::ignoreUnused(event);
+        closePopup();
         auto colour_selector = std::make_unique<SelectorBox>(
             juce::ColourSelector::ColourSelectorOptions::showColourspace, base_);
         colour_selector->getSelector().setCurrentColour(colour_);
         colour_selector->getSelector().addChangeListener(this);
+        active_selector_ = &colour_selector->getSelector();
         colour_selector->setSize(juce::roundToInt(selector_width_s_ * base_.getFontSize()),
                                  juce::roundToInt(selector_height_s_ * base_.getFontSize()));
         auto& box = juce::CallOutBox::launchAsynchronously(std::move(colour_selector),
                                                            parent_ref_.getLocalArea(this, getLocalBounds()),
                                                            &parent_ref_);
+        callout_box_ = &box;
         box.setLookAndFeel(&laf_);
         box.setArrowSize(0);
         box.sendLookAndFeelChange();

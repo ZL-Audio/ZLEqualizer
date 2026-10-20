@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../../state/ui_state.hpp"
+
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
 
@@ -16,7 +18,7 @@ namespace zlpanel {
     class SoloPanel final : public juce::Component,
     private juce::ValueTree::Listener {
     public:
-        explicit SoloPanel(PluginProcessor& p, zlgui::UIBase &base);
+        explicit SoloPanel(PluginProcessor& p, zlgui::UIState &base);
 
         ~SoloPanel() override;
 
@@ -30,7 +32,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase &base_;
+        zlgui::UIState &base_;
 
         bool c_solo_side_{false};
 

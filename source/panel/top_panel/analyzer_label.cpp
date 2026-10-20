@@ -10,10 +10,10 @@
 #include "analyzer_label.hpp"
 
 namespace zlpanel {
-    AnalyzerLabel::AnalyzerLabel(PluginProcessor&, zlgui::UIBase& base) :
+    AnalyzerLabel::AnalyzerLabel(PluginProcessor&, zlgui::UIState& base) :
         base_(base),
         control_background_(base),
-        label_laf_(base) {
+        label_laf_(base.gui) {
         control_background_.setInterceptsMouseClicks(false, false);
         addChildComponent(control_background_);
 
@@ -39,7 +39,7 @@ namespace zlpanel {
     }
 
     void AnalyzerLabel::resized() {
-        const auto padding = 2 * getPaddingSize(base_.getFontSize());
+        const auto padding = 2 * getPaddingSize(base_.gui.getFontSize());
         const auto bound = getLocalBounds();
         control_background_.setBounds(0, -padding, bound.getWidth(), bound.getHeight() + padding + padding / 4);
         analyzer_label_.setBounds(bound);

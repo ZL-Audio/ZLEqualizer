@@ -50,7 +50,7 @@ namespace zlpanel {
         if (show_groups_) {
             auto group_bounds = text_bounds.removeFromRight(juce::jmin(text_bounds.getWidth() / 3,
                                                                        juce::roundToInt(font_size * 10.f)));
-            g.setColour(base_.getTextHideColour());
+            g.setColour(base_.getTextColour().withAlpha(0.25f));
             g.drawFittedText(preset.group, group_bounds, juce::Justification::centredRight, 1);
             text_bounds.removeFromRight(juce::roundToInt(font_size * .5f));
         }

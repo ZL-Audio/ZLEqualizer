@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "../../state/ui_state.hpp"
+
 #include "../../PluginProcessor.hpp"
 #include "../../gui/gui.hpp"
 #include "../multilingual/tooltip_helper.hpp"
@@ -19,7 +21,7 @@ namespace zlpanel {
     class ExtraDynamicPanel final : public juce::Component,
                                     private juce::ValueTree::Listener {
     public:
-        explicit ExtraDynamicPanel(PluginProcessor& p, zlgui::UIBase& base,
+        explicit ExtraDynamicPanel(PluginProcessor& p, zlgui::UIState& base,
                                    const multilingual::TooltipHelper& tooltip_helper);
 
         ~ExtraDynamicPanel() override;
@@ -36,7 +38,7 @@ namespace zlpanel {
 
     private:
         PluginProcessor& p_ref_;
-        zlgui::UIBase& base_;
+        zlgui::UIState& base_;
         zlgui::attachment::ComponentUpdater updater_;
 
         PanelBackground control_background_;

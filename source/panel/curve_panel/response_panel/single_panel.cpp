@@ -11,7 +11,7 @@
 
 namespace zlpanel {
     SinglePanel::SinglePanel(PluginProcessor& p,
-                             zlgui::UIBase& base,
+                             zlgui::UIState& base,
                              std::vector<size_t>& not_off_indices) :
         p_ref_(p), base_(base),
         not_off_indices_(not_off_indices) {
@@ -56,9 +56,9 @@ namespace zlpanel {
 
     void SinglePanel::resized() {
         auto bound = getLocalBounds().toFloat();
-        bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.getFontSize())));
+        bound.removeFromBottom(static_cast<float>(getBottomAreaHeight(base_.gui.getFontSize())));
         center_y_.store(bound.getHeight() * .5f, std::memory_order::relaxed);
-        side_y_ = bound.getHeight() - base_.getFontSize() * kDraggerScale * .5f;
+        side_y_ = bound.getHeight() - base_.gui.getFontSize() * kDraggerScale * .5f;
         lookAndFeelChanged();
     }
 
@@ -92,8 +92,8 @@ namespace zlpanel {
         }
         base_stroke_alpha_[band] = multiplier;
 
-        const auto band_colour = base_.getColourMap1(band);
-        base_stroke_colour_[band] = base_.getColourBlendedWithBackground(band_colour, multiplier);
+        const auto band_colour = base_.gui.getColourMap1(band);
+        base_stroke_colour_[band] = base_.gui.getColourBlendedWithBackground(band_colour, multiplier);
 
         is_same_stereo_[band] = is_same_stereo;
     }
@@ -185,7 +185,7 @@ namespace zlpanel {
 
     template <bool thick>
     void SinglePanel::drawBand(juce::Graphics& g, const size_t band) {
-        const auto colour = base_.getColourMap1(band);
+        const auto colour = base_.gui.getColourMap1(band);
         if (base_fill_alpha_[band] > 0.01f) {
             g.setColour(colour.withAlpha(base_fill_alpha_[band]));
             base_fills_[band].pull();
@@ -228,6 +228,6 @@ namespace zlpanel {
     }
 
     void SinglePanel::lookAndFeelChanged() {
-        curve_thickness_ = base_.getFontSize() * .175f * base_.getSingleEQCurveThickness();
+        curve_thickness_ = base_.gui.getFontSize() * .175f * base_.getSingleEQCurveThickness();
     }
 }

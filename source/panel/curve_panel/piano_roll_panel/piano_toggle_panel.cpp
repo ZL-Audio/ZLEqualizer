@@ -11,9 +11,9 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    PianoTogglePanel::PianoTogglePanel(PluginProcessor& p, zlgui::UIBase& base) :
+    PianoTogglePanel::PianoTogglePanel(PluginProcessor& p, zlgui::UIState& base) :
         base_(base),
-        button_(base,
+        button_(base.gui,
                 juce::Drawable::createFromImageData(BinaryData::piano_svg, BinaryData::piano_svgSize),
                 true),
         attachment_(button_.getButton(), p.parameters_NA_, zlstate::PPianoRollON::kID, updater_) {
@@ -29,7 +29,7 @@ namespace zlpanel {
     void PianoTogglePanel::paint(juce::Graphics& g) {
         if (button_.getToggleState()) {
             const auto bound = getLocalBounds().toFloat();
-            const auto colour = base_.getBackgroundColour();
+            const auto colour = base_.gui.getBackgroundColour();
             const juce::ColourGradient gradient(colour, 0.f, 0.f,
                                                 colour.withAlpha(0.f), bound.getRight(), 0.f, false);
             g.setGradientFill(gradient);
@@ -40,7 +40,7 @@ namespace zlpanel {
     void PianoTogglePanel::resized() {
         const auto bound = getLocalBounds();
         button_.setBounds(bound.withWidth(bound.getHeight()));
-        button_.getButton().setEdgeIndent(static_cast<int>(std::round(base_.getFontSize() * .2f)));
+        button_.getButton().setEdgeIndent(static_cast<int>(std::round(base_.gui.getFontSize() * .2f)));
     }
 
     void PianoTogglePanel::repaintCallBack() {

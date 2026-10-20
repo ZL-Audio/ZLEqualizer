@@ -9,145 +9,16 @@
 
 #pragma once
 
-#include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "../state/state_definitions.hpp"
+#include <array>
+#include <atomic>
+#include <iomanip>
+#include <sstream>
+#include <utility>
+#include <vector>
 
 namespace zlgui {
-    enum class MouseActionType {
-        kLeftClick,
-        kRightClick,
-        kLeftDoubleClick,
-        kRightDoubleClick,
-    };
-
-    enum class KeyActionType {
-        kNone,
-        kCmdCtrl,
-        kShift,
-        kAlt,
-    };
-
-    enum ColourIdx {
-        kTextColour,
-        kBackgroundColour,
-        kShadowColour,
-        kGlowColour,
-        kGridColour,
-        kPreColour,
-        kPostColour,
-        kSideColour,
-        kCollisionColour,
-        kColourNum
-    };
-
-    enum SensitivityIdx {
-        kMouseWheel,
-        kMouseWheelFine,
-        kMouseSlider,
-        kMouseSliderFine,
-        kMouseDragger,
-        kMouseDraggerFine,
-        kMouseWheelCombobox,
-        kSensitivityNum
-    };
-
-    static constexpr std::array<std::string_view, kColourNum> kColourNames = zlstate::kColourNames;
-
-    enum PanelSettingIdx {
-        kUISettingPanel,
-        kUISettingChanged,
-        kCurveShouldTransparent,
-        kOutputPanel,
-        kAnalyzerPanel,
-        kDynamicExtraPanel,
-        kFFTFrozen,
-        kMatchPanel,
-        kSuggestedNumBand,
-        kMaximumNumBand,
-        kPresetBrowser,
-        kPanelSettingNum
-    };
-
-    inline std::array kPanelSettingIdentifiers{
-        juce::Identifier("ui_setting_panel"),
-        juce::Identifier("ui_setting_changed"),
-        juce::Identifier("curve_should_transparent"),
-        juce::Identifier("output_panel"),
-        juce::Identifier("analyzer_panel"),
-        juce::Identifier("dynamic_extra_panel"),
-        juce::Identifier("fft_frozen"),
-        juce::Identifier("match_panel"),
-        juce::Identifier("suggested_num_band"),
-        juce::Identifier("maximum_num_band"),
-        juce::Identifier("preset_browser")
-    };
-
-    inline juce::Identifier kSoloIdentifier("solo_whole_idx");
-
-    static constexpr size_t kColorMap1Size = 10;
-    static constexpr size_t kColorMap2Size = 6;
-
-    inline std::array kColourMaps = {
-        std::vector<juce::Colour>{
-            juce::Colour(31, 118, 179),
-            juce::Colour(254, 127, 14),
-            juce::Colour(44, 160, 44),
-            juce::Colour(214, 39, 39),
-            juce::Colour(147, 102, 189),
-            juce::Colour(140, 86, 74),
-            juce::Colour(219, 81, 177),
-            juce::Colour(127, 127, 127),
-            juce::Colour(188, 189, 33),
-            juce::Colour(23, 189, 206)
-        },
-        std::vector<juce::Colour>{
-            juce::Colour(214, 126, 65),
-            juce::Colour(6, 134, 247),
-            juce::Colour(211, 95, 211),
-            juce::Colour(23, 198, 197),
-            juce::Colour(107, 152, 66),
-            juce::Colour(107, 161, 172),
-            juce::Colour(40, 148, 73),
-            juce::Colour(128, 128, 128),
-            juce::Colour(91, 90, 245),
-            juce::Colour(232, 65, 48)
-        },
-        std::vector<juce::Colour>{
-            juce::Colour(76, 114, 176),
-            juce::Colour(85, 168, 104),
-            juce::Colour(196, 78, 82),
-            juce::Colour(129, 114, 178),
-            juce::Colour(255, 196, 0),
-            juce::Colour(100, 181, 205),
-        },
-        std::vector<juce::Colour>{
-            juce::Colour(179, 141, 79),
-            juce::Colour(170, 87, 151),
-            juce::Colour(59, 177, 173),
-            juce::Colour(126, 141, 77),
-            juce::Colour(51, 70, 139),
-            juce::Colour(155, 74, 50),
-        },
-        std::vector<juce::Colour>{
-            juce::Colour(0, 63, 255),
-            juce::Colour(3, 237, 58),
-            juce::Colour(232, 0, 11),
-            juce::Colour(138, 43, 226),
-            juce::Colour(255, 196, 0),
-            juce::Colour(0, 215, 255),
-        },
-        std::vector<juce::Colour>{
-            juce::Colour(225, 162, 0),
-            juce::Colour(253, 19, 198),
-            juce::Colour(0, 231, 220),
-            juce::Colour(114, 209, 26),
-            juce::Colour(46, 105, 255),
-            juce::Colour(255, 49, 9)
-        }
-    };
-
     static constexpr float kFontTiny = 0.5f;
     static constexpr float kFontSmall = 0.75f;
     static constexpr float kFontNormal = 1.0f;
@@ -198,13 +69,48 @@ namespace zlgui {
         }
     }
 
+    enum SensitivityIdx {
+        kMouseWheel,
+        kMouseWheelFine,
+        kMouseSlider,
+        kMouseSliderFine,
+        kMouseDragger,
+        kMouseDraggerFine,
+        kMouseWheelCombobox,
+        kSensitivityNum
+    };
+
+    enum class ThemeColour {
+        kText,
+        kBackground,
+        kShadow,
+        kGlow,
+        kCount
+    };
+
     class UIBase {
     public:
         juce::ReferenceCountedObjectPtr<juce::Typeface> font_;
 
-        explicit UIBase(juce::AudioProcessorValueTreeState& apvts) :
-            state(apvts) {
-            loadFromAPVTS();
+        UIBase(std::vector<std::vector<juce::Colour>> colour_maps, juce::StringArray colour_map_names) :
+            colour_maps_(std::move(colour_maps)), colour_map_names_(std::move(colour_map_names)) {
+            jassert(colour_maps_.size() == static_cast<size_t>(colour_map_names_.size()));
+        }
+
+        juce::Colour getThemeColour(const ThemeColour idx) const {
+            return theme_colours_[static_cast<size_t>(idx)];
+        }
+
+        void setThemeColour(const ThemeColour idx, const juce::Colour colour) {
+            theme_colours_[static_cast<size_t>(idx)] = colour;
+        }
+
+        const juce::StringArray& getColourMapNames() const {
+            return colour_map_names_;
+        }
+
+        const std::vector<juce::Colour>& getColourMap(const size_t idx) const {
+            return colour_maps_[idx];
         }
 
         void setFontMode(const size_t font_mode) {
@@ -240,24 +146,12 @@ namespace zlgui {
         }
 
         juce::Colour getTextColour() const {
-            return custom_colours_[static_cast<size_t>(kTextColour)];
-        }
-
-        juce::Colour getTextInactiveColour() const {
-            return getTextColour().withAlpha(0.5f);
-        }
-
-        juce::Colour getTextHideColour() const {
-            return getTextColour().withAlpha(0.25f);
+            return getThemeColour(ThemeColour::kText);
         }
 
         juce::Colour getBackgroundColour() const {
-            return custom_colours_[static_cast<size_t>(kBackgroundColour)];
+            return getThemeColour(ThemeColour::kBackground);
         }
-
-        juce::Colour getBackgroundInactiveColour() const { return getBackgroundColour().withAlpha(0.8f); }
-
-        juce::Colour getBackgroundHideColour() const { return getBackgroundColour().withAlpha(0.5f); }
 
         juce::Colour getColourBlendedWithBackground(const juce::Colour colour, const float alpha) const {
             const auto background_color = getBackgroundColour();
@@ -269,20 +163,80 @@ namespace zlgui {
         }
 
         juce::Colour getDarkShadowColour() const {
-            return custom_colours_[static_cast<size_t>(kShadowColour)];
+            return getThemeColour(ThemeColour::kShadow);
         }
 
         juce::Colour getBrightShadowColour() const {
-            return custom_colours_[static_cast<size_t>(kGlowColour)];
+            return getThemeColour(ThemeColour::kGlow);
         }
 
         juce::Colour getColourMap1(const size_t idx) const {
-            return kColourMaps[colour_map1_idx_][idx % kColourMaps[colour_map1_idx_].size()];
+            return colour_maps_[colour_map1_idx_][idx % colour_maps_[colour_map1_idx_].size()];
         }
 
         juce::Colour getColourMap2(const size_t idx) const {
-            return kColourMaps[colour_map2_idx_][idx % kColourMaps[colour_map2_idx_].size()];
+            return colour_maps_[colour_map2_idx_][idx % colour_maps_[colour_map2_idx_].size()];
         }
+
+        float getSensitivity(const SensitivityIdx idx) const {
+            return wheel_sensitivity_[static_cast<size_t>(idx)];
+        }
+
+        void setSensitivity(const float v, const SensitivityIdx idx) {
+            wheel_sensitivity_[static_cast<size_t>(idx)] = v;
+        }
+
+        size_t getRotaryStyleID() const {
+            return rotary_style_id_;
+        }
+
+        juce::Slider::SliderStyle getRotaryStyle() const {
+            return kRotaryStyles[rotary_style_id_];
+        }
+
+        void setRotaryStyleID(const size_t x) {
+            rotary_style_id_ = x;
+        }
+
+        float getRotaryDragSensitivity() const {
+            return rotary_drag_sensitivity_;
+        }
+
+        void setRotaryDragSensitivity(const float x) {
+            rotary_drag_sensitivity_ = x;
+        }
+
+        size_t getComboboxAlignment() const {
+            return combobox_alignment_.load(std::memory_order::relaxed);
+        }
+
+        void setComboboxAlignment(const size_t x) {
+            combobox_alignment_.store(x, std::memory_order::relaxed);
+        }
+
+        size_t getTooltipLangID() const {
+            return tooltip_lang_id_.load(std::memory_order::relaxed);
+        }
+
+        void setTooltipLandID(const size_t x) {
+            tooltip_lang_id_.store(x, std::memory_order::relaxed);
+        }
+
+        bool getIsMouseWheelShiftReverse() const { return is_mouse_wheel_shift_reverse_.load(); }
+
+        void setIsMouseWheelShiftReverse(const bool x) { is_mouse_wheel_shift_reverse_.store(x); }
+
+        bool getIsSliderDoubleClickOpenEditor() const { return is_slider_double_click_open_editor_.load(); }
+
+        void setIsSliderDoubleClickOpenEditor(const bool x) { is_slider_double_click_open_editor_.store(x); }
+
+        size_t getCMap1Idx() const { return colour_map1_idx_; }
+
+        void setCMap1Idx(const size_t x) { colour_map1_idx_ = x; }
+
+        size_t getCMap2Idx() const { return colour_map2_idx_; }
+
+        void setCMap2Idx(const size_t x) { colour_map2_idx_ = x; }
 
         static juce::Rectangle<float> getRoundedShadowRectangleArea(juce::Rectangle<float> box_bounds,
                                                                     float corner_size,
@@ -316,352 +270,29 @@ namespace zlgui {
                                                       float corner_size,
                                                       const FillShadowEllipseArgs& margs) const;
 
-        juce::Colour getColourByIdx(ColourIdx idx) const {
-            return custom_colours_[static_cast<size_t>(idx)];
-        }
-
-        void setColourByIdx(const ColourIdx idx, const juce::Colour colour) {
-            custom_colours_[static_cast<size_t>(idx)] = colour;
-        }
-
-        float getSensitivity(const SensitivityIdx idx) const {
-            return wheel_sensitivity_[static_cast<size_t>(idx)];
-        }
-
-        void setSensitivity(const float v, const SensitivityIdx idx) {
-            wheel_sensitivity_[static_cast<size_t>(idx)] = v;
-        }
-
-        size_t getRotaryStyleID() const {
-            return rotary_style_id_;
-        }
-
-        juce::Slider::SliderStyle getRotaryStyle() const {
-            return zlstate::PRotaryStyle::styles[rotary_style_id_];
-        }
-
-        void setRotaryStyleID(const size_t x) {
-            rotary_style_id_ = x;
-        }
-
-        float getRotaryDragSensitivity() const {
-            return rotary_drag_sensitivity_;
-        }
-
-        void setRotaryDragSensitivity(const float x) {
-            rotary_drag_sensitivity_ = x;
-        }
-
-        size_t getRefreshRateID() const {
-            return refresh_rate_id_.load(std::memory_order::relaxed);
-        }
-
-        void setRefreshRateID(const size_t x) {
-            refresh_rate_id_.store(x, std::memory_order::relaxed);
-        }
-
-        size_t getFFTQuality() const {
-            return fft_quality_.load(std::memory_order::relaxed);
-        }
-
-        void setFFTQuality(const size_t x) {
-            fft_quality_.store(x, std::memory_order::relaxed);
-        }
-
-        float getFFTExtraTilt() const {
-            return fft_extra_tilt_.load(std::memory_order::relaxed);
-        }
-
-        void setFFTExtraTilt(const float x) {
-            fft_extra_tilt_.store(x, std::memory_order::relaxed);
-        }
-
-        float getFFTExtraSpeed() const {
-            return fft_extra_speed_.load(std::memory_order::relaxed);
-        }
-
-        void setFFTExtraSpeed(const float x) {
-            fft_extra_speed_.store(x, std::memory_order::relaxed);
-        }
-
-        size_t getComboboxAlignment() const {
-            return combobox_alignment_.load(std::memory_order::relaxed);
-        }
-
-        void setComboboxAlignment(const size_t x) {
-            combobox_alignment_.store(x, std::memory_order::relaxed);
-        }
-
-        float getSingleEQCurveThickness() const {
-            return single_eq_curve_thickness_.load(std::memory_order::relaxed);
-        }
-
-        void setSingleEQCurveThickness(const float x) {
-            single_eq_curve_thickness_.store(x, std::memory_order::relaxed);
-        }
-
-        float getSumEQCurveThickness() const {
-            return sum_eq_curve_thickness_.load(std::memory_order::relaxed);
-        }
-
-        void setSumEQCurveThickness(const float x) {
-            sum_eq_curve_thickness_.store(x, std::memory_order::relaxed);
-        }
-
-        size_t getTooltipLangID() const {
-            return tooltip_lang_id_;
-        }
-
-        void setTooltipLandID(const size_t x) {
-            tooltip_lang_id_ = x;
-        }
-
-        void loadFromAPVTS();
-
-        void saveToAPVTS() const;
-
-        bool getIsMouseWheelShiftReverse() const { return is_mouse_wheel_shift_reverse_.load(); }
-
-        void setIsMouseWheelShiftReverse(const bool x) { is_mouse_wheel_shift_reverse_.store(x); }
-
-        bool getIsSliderDoubleClickOpenEditor() const { return is_slider_double_click_open_editor_.load(); }
-
-        void setIsSliderDoubleClickOpenEditor(const bool x) { is_slider_double_click_open_editor_.store(x); }
-
-        size_t getCMap1Idx() const { return colour_map1_idx_; }
-
-        void setCMap1Idx(const size_t x) { colour_map1_idx_ = x; }
-
-        size_t getCMap2Idx() const { return colour_map2_idx_; }
-
-        void setCMap2Idx(const size_t x) { colour_map2_idx_ = x; }
-
-        void setIsEditorShowing(const bool x) { is_editor_showing_ = x; }
-
-        bool getIsEditorShowing() const { return is_editor_showing_; }
-
-        juce::ValueTree& getPanelValueTree() { return panel_value_tree_; }
-
-        void setWindowSizeFix(const bool f) { window_size_fix_ = f; }
-
-        bool getWindowSizeFix() const { return window_size_fix_; }
-
-        void setCurveDBScales(const std::array<float, 3> scales) {
-            curve_db_scales_[0].store(scales[0], std::memory_order::relaxed);
-            curve_db_scales_[1].store(scales[1], std::memory_order::relaxed);
-            curve_db_scales_[2].store(scales[2], std::memory_order::relaxed);
-        }
-
-        auto getCurveDBScale(const size_t idx) const {
-            return curve_db_scales_[idx].load(std::memory_order::relaxed);
-        }
-
-        bool isPanelIdentifier(const PanelSettingIdx idx, const juce::Identifier& identifier) const {
-            return identifier == kPanelSettingIdentifiers[static_cast<size_t>(idx)];
-        }
-
-        juce::var getPanelProperty(const PanelSettingIdx idx) const {
-            return panel_value_tree_.getProperty(kPanelSettingIdentifiers[static_cast<size_t>(idx)]);
-        }
-
-        void setPanelProperty(const PanelSettingIdx idx, const juce::var& v) {
-            panel_value_tree_.setProperty(kPanelSettingIdentifiers[idx], v, nullptr);
-        }
-
-        juce::ValueTree& getSoloWholeIdxTree() { return solo_whole_idx_tree_; }
-
-        size_t getSoloWholeIdx() const {
-            return static_cast<size_t>(static_cast<int>(solo_whole_idx_tree_.getProperty(kSoloIdentifier)));
-        }
-
-        void setSoloWholeIdx(const size_t idx) {
-            solo_whole_idx_tree_.setProperty(kSoloIdentifier, static_cast<int>(idx), nullptr);
-        }
-
-        size_t getSelectedBand() const { return selected_band_; }
-
-        void setSelectedBand(const size_t x) { selected_band_ = x; }
-
-        juce::SelectedItemSet<size_t>& getSelectedBandSet() { return selected_band_set_; }
-
-        bool checkMouseKeyMatch(MouseActionType action_type, const juce::ModifierKeys& mods,
-                                MouseActionType mouse_option, KeyActionType key_option) const;
-
-        bool isEnterSoloTriggered(const MouseActionType type, const juce::ModifierKeys& mods) const {
-            return checkMouseKeyMatch(type, mods, enter_solo_mouse_, enter_solo_key_);
-        }
-
-        bool isExitSoloTriggered(const MouseActionType type, const juce::ModifierKeys& mods) const {
-            return checkMouseKeyMatch(type, mods, exit_solo_mouse_, exit_solo_key_);
-        }
-
-        bool isRightClickTriggered(const MouseActionType type, const juce::ModifierKeys& mods) const {
-            return checkMouseKeyMatch(type, mods, right_click_menu_mouse_, right_click_menu_key_);
-        }
-
-        bool isToggleDynamicTriggered(const MouseActionType type, const juce::ModifierKeys& mods) const {
-            return checkMouseKeyMatch(type, mods, toggle_dynamic_mouse_, toggle_dynamic_key_);
-        }
-
-        bool isToggleBypassTriggered(const MouseActionType type, const juce::ModifierKeys& mods) const {
-            return checkMouseKeyMatch(type, mods, toggle_bypass_mouse_, toggle_bypass_key_);
-        }
-
-        bool isDeleteBandTriggered(const MouseActionType type, const juce::ModifierKeys& mods) const {
-            return checkMouseKeyMatch(type, mods, delete_band_mouse_, delete_band_key_);
-        }
-
-        MouseActionType getEnterSoloMouse() const {
-            return enter_solo_mouse_;
-        }
-
-        void setEnterSoloMouse(const MouseActionType x) {
-            enter_solo_mouse_ = x;
-        }
-
-        KeyActionType getEnterSoloKey() const {
-            return enter_solo_key_;
-        }
-
-        void setEnterSoloKey(const KeyActionType x) {
-            enter_solo_key_ = x;
-        }
-
-        MouseActionType getExitSoloMouse() const {
-            return exit_solo_mouse_;
-        }
-
-        void setExitSoloMouse(const MouseActionType x) {
-            exit_solo_mouse_ = x;
-        }
-
-        KeyActionType getExitSoloKey() const {
-            return exit_solo_key_;
-        }
-
-        void setExitSoloKey(const KeyActionType x) {
-            exit_solo_key_ = x;
-        }
-
-        MouseActionType getContextMenuMouse() const {
-            return right_click_menu_mouse_;
-        }
-
-        void setContextMenuMouse(const MouseActionType x) {
-            right_click_menu_mouse_ = x;
-        }
-
-        KeyActionType getContextMenuKey() const {
-            return right_click_menu_key_;
-        }
-
-        void setContextMenuKey(const KeyActionType x) {
-            right_click_menu_key_ = x;
-        }
-
-        MouseActionType getToggleDynamicMouse() const {
-            return toggle_dynamic_mouse_;
-        }
-
-        void setToggleDynamicMouse(const MouseActionType x) {
-            toggle_dynamic_mouse_ = x;
-        }
-
-        KeyActionType getToggleDynamicKey() const {
-            return toggle_dynamic_key_;
-        }
-
-        void setToggleDynamicKey(const KeyActionType x) {
-            toggle_dynamic_key_ = x;
-        }
-
-        MouseActionType getToggleBypassMouse() const {
-            return toggle_bypass_mouse_;
-        }
-
-        void setToggleBypassMouse(const MouseActionType x) {
-            toggle_bypass_mouse_ = x;
-        }
-
-        KeyActionType getToggleBypassKey() const {
-            return toggle_bypass_key_;
-        }
-
-        void setToggleBypassKey(const KeyActionType x) {
-            toggle_bypass_key_ = x;
-        }
-
-        MouseActionType getDeleteBandMouse() const {
-            return delete_band_mouse_;
-        }
-
-        void setDeleteBandMouse(const MouseActionType x) {
-            delete_band_mouse_ = x;
-        }
-
-        KeyActionType getDeleteBandKey() const {
-            return delete_band_key_;
-        }
-
-        void setDeleteBandKey(const KeyActionType x) {
-            delete_band_key_ = x;
-        }
-
     private:
-        juce::AudioProcessorValueTreeState& state;
-        juce::ValueTree panel_value_tree_{"panel_setting_tree"};
-        juce::ValueTree solo_whole_idx_tree_{"solo_whole_idx_tree"};
-
         float font_size_{0.f};
         size_t font_mode_{0};
         float font_scale_{9.f};
         float static_font_size_{0.f};
-        bool window_size_fix_{false};
-        std::array<juce::Colour, kColourNum> custom_colours_;
-        std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, 0.12f, 1.f, .25f, 1.f, .25f, .5f};
+        std::array<juce::Colour, static_cast<size_t>(ThemeColour::kCount)> theme_colours_;
+        std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, .12f, 1.f, .25f, 1.f, .25f, .5f};
         size_t rotary_style_id_{0};
-        std::atomic<size_t> refresh_rate_id_{2};
         float rotary_drag_sensitivity_{1.f};
-        std::atomic<size_t> fft_quality_{zlstate::PFFTQuality::kDefaultI};
-        std::atomic<float> fft_extra_tilt_{0.f}, fft_extra_speed_{1.f};
-        std::atomic<size_t> combobox_alignment_{zlstate::PComboboxAlignment::kDefaultI};
-        std::atomic<float> single_eq_curve_thickness_{1.f}, sum_eq_curve_thickness_{1.f};
-        size_t tooltip_lang_id_{1};
-
+        std::atomic<size_t> combobox_alignment_{1};
+        std::atomic<size_t> tooltip_lang_id_{1};
         std::atomic<bool> is_mouse_wheel_shift_reverse_{false};
         std::atomic<bool> is_slider_double_click_open_editor_{false};
-        bool is_editor_showing_{false};
+        size_t colour_map1_idx_{1};
+        size_t colour_map2_idx_{5};
+        const std::vector<std::vector<juce::Colour>> colour_maps_;
+        const juce::StringArray colour_map_names_;
 
-        size_t colour_map1_idx_{zlstate::PColourMapIdx::kDefaultDark};
-        size_t colour_map2_idx_{zlstate::PColourMapIdx::kSeabornBrightDark};
-
-        std::array<std::atomic<float>, 3> curve_db_scales_{6.f, 12.f, 30.f};
-
-        size_t selected_band_{zlstate::kBandNum};
-        juce::SelectedItemSet<size_t> selected_band_set_;
-
-        MouseActionType enter_solo_mouse_{MouseActionType::kRightClick};
-        KeyActionType enter_solo_key_{KeyActionType::kNone};
-        MouseActionType exit_solo_mouse_{MouseActionType::kRightClick};
-        KeyActionType exit_solo_key_{KeyActionType::kNone};
-        MouseActionType right_click_menu_mouse_{MouseActionType::kRightClick};
-        KeyActionType right_click_menu_key_{KeyActionType::kAlt};
-        MouseActionType toggle_dynamic_mouse_{MouseActionType::kLeftDoubleClick};
-        KeyActionType toggle_dynamic_key_{KeyActionType::kCmdCtrl};
-        MouseActionType toggle_bypass_mouse_{MouseActionType::kLeftClick};
-        KeyActionType toggle_bypass_key_{KeyActionType::kAlt};
-        MouseActionType delete_band_mouse_{MouseActionType::kRightDoubleClick};
-        KeyActionType delete_band_key_{KeyActionType::kAlt};
-
-        float loadPara(const std::string& id) const {
-            return state.getRawParameterValue(id)->load(std::memory_order::relaxed);
-        }
-
-        void savePara(const std::string& id, const float x) const {
-            const auto para = state.getParameter(id);
-            para->beginChangeGesture();
-            para->setValueNotifyingHost(para->convertTo0to1(x));
-            para->endChangeGesture();
-        }
+        static constexpr std::array kRotaryStyles{
+            juce::Slider::Rotary,
+            juce::Slider::RotaryHorizontalDrag,
+            juce::Slider::RotaryVerticalDrag,
+            juce::Slider::RotaryHorizontalVerticalDrag
+        };
     };
 }
