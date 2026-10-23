@@ -121,6 +121,9 @@ namespace zlgui::attachment {
         }
 
         void updateComponent() override {
+            if (!checkUpdate()) {
+                return;
+            }
             const auto current_value = atomic_value_.load(std::memory_order::relaxed);
             if (std::abs(current_value - slider_.getValue()) > 1e-6f) {
                 const auto parameter_update = beginParameterUpdate();
@@ -138,7 +141,7 @@ namespace zlgui::attachment {
 
         void parameterChanged(const juce::String&, const float new_value) override {
             atomic_value_.store(new_value, std::memory_order::relaxed);
-            updater_ref_.getFlag().signal();
+            signalUpdate(updater_ref_.getFlag());
         }
 
         void sliderValueChanged(juce::Slider*) override {

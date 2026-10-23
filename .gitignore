@@ -10,6 +10,7 @@ CTestTestfile.cmake
 _deps
 **/.DS_Store
 VERSION
+BUGS.md
 
 # It's nice to have the Builds folder exist, to remind us where it is
 Builds/*

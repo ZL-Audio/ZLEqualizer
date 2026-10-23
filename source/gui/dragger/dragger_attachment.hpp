@@ -47,6 +47,9 @@ namespace zlgui::attachment {
 
         void updateComponent() override {
             if constexpr (kUpdateFromAPVTS) {
+                if (!checkUpdate()) {
+                    return;
+                }
                 const auto new_p = normalisable_range_.convertTo0to1(atomic_.load(std::memory_order::relaxed));
                 if constexpr (kXAttach) {
                     if (std::abs(dragger_.getXPortion() - new_p) > 0.001f) {
@@ -73,7 +76,7 @@ namespace zlgui::attachment {
         void parameterChanged(const juce::String&, const float value) override {
             if constexpr (kUpdateFromAPVTS) {
                 atomic_.store(value, std::memory_order::relaxed);
-                updater_ref_.getFlag().signal();
+                signalUpdate(updater_ref_.getFlag());
             }
         }
 

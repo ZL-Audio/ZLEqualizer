@@ -12,6 +12,8 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include "../../chore/thread/notifier.hpp"
+
 namespace zlgui::attachment {
     class ComponentAttachment {
     public:
@@ -20,6 +22,15 @@ namespace zlgui::attachment {
         virtual void updateComponent() = 0;
 
     protected:
+        void signalUpdate(zlchore::thread::Notifier& updater_flag) {
+            update_flag_.signal();
+            updater_flag.signal();
+        }
+
+        bool checkUpdate() {
+            return update_flag_.check();
+        }
+
         class ParameterUpdateGuard {
         public:
             explicit ParameterUpdateGuard(bool& flag) noexcept
@@ -50,6 +61,7 @@ namespace zlgui::attachment {
         }
 
     private:
+        zlchore::thread::Notifier update_flag_;
         bool updating_from_parameter_{false};
     };
 }

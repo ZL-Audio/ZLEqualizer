@@ -17,6 +17,14 @@ namespace zlgui::slider {
         explicit SnappingSlider(UIBase& base, const juce::String& name = "") : juce::Slider(name), base_(base) {
         }
 
+        void setValueWithGesture(const double value) {
+            const auto new_value = getNormalisableRange().snapToLegalValue(value);
+            if (!juce::approximatelyEqual(new_value, getValue())) {
+                juce::Slider::ScopedDragNotification drag_notification{*this};
+                setValue(new_value, juce::sendNotificationSync);
+            }
+        }
+
         void mouseDrag(const juce::MouseEvent& event) override {
             if (is_dragging_enabled_) {
                 juce::Slider::mouseDrag(event);

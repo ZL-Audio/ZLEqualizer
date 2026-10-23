@@ -152,9 +152,6 @@ namespace zlgui::slider {
         }
 
         void mouseUp(const juce::MouseEvent& event) override {
-            if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown() || event.mods.isRightButtonDown()) {
-                return;
-            }
             slider_.mouseUp(event);
         }
 
@@ -333,7 +330,7 @@ namespace zlgui::slider {
                 actual_value = ctext.getDoubleValue() * k;
             }
 
-            slider_.setValue(actual_value, juce::sendNotificationAsync);
+            slider_.setValueWithGesture(actual_value);
             if constexpr (kUseName) {
                 if (!isMouseOver(true)) {
                     text_.setVisible(false);

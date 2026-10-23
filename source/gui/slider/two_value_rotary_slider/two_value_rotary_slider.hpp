@@ -256,12 +256,8 @@ namespace zlgui::slider {
         }
 
         void mouseUp(const juce::MouseEvent& event) override {
-            if (event.getNumberOfClicks() > 1 || event.mods.isCommandDown()) {
-                return;
-            }
-            if (event.mods.isLeftButtonDown()) {
-                slider1_.mouseUp(event);
-            } else if (show_slider2_ && event.mods.isRightButtonDown()) {
+            slider1_.mouseUp(event);
+            if constexpr (kUseSecondSlider) {
                 slider2_.mouseUp(event);
             }
         }
@@ -523,11 +519,11 @@ namespace zlgui::slider {
             }
 
             if (l == &label1_) {
-                slider1_.setValue(actual_value, juce::sendNotificationAsync);
+                slider1_.setValueWithGesture(actual_value);
             }
             if constexpr (kUseSecondSlider) {
                 if (l == &label2_) {
-                    slider2_.setValue(actual_value, juce::sendNotificationAsync);
+                    slider2_.setValueWithGesture(actual_value);
                 }
             }
             if constexpr (kUseName) {
