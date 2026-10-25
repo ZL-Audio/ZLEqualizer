@@ -115,27 +115,9 @@ jobs:
           cat .env # show us the config
           cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
 
-      - name: Download AAX from Pre-release
-        if: matrix.have_aax
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.AAX_RELEASE_PAT }}
-        run: |
-          mkdir -p "aax_releases"
-          gh release download ${{ env.PROJECT_NAME }} --repo "ZL-Audio/ZLAAX" --pattern "${{ matrix.name }}.zip" --dir "temp_dl"
-          unzip -q "temp_dl/${{ matrix.name }}.zip" -d "aax_releases"
-          ls -R aax_releases/
-
       - name: Set additional env vars for next steps
         shell: bash
         run: |
-          aax_path="aax_releases/${{ matrix.name }}/${{ env.PRODUCT_NAME }}.aaxplugin"
-          if [[ -e "$aax_path" ]]; then
-            echo "AAX_PATH=$aax_path" >> $GITHUB_ENV
-          elif [[ "${{ matrix.have_aax }}" == "true" ]]; then
-            echo "Expected AAX artifact is missing: $aax_path" >&2
-            exit 1
-          fi
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
 
       - name: Check dependencies
