@@ -46,7 +46,6 @@ namespace zlpanel {
         zlgui::combobox::CompactCombobox wheel_reverse_box_;
         juce::Label rotary_style_label_;
         zlgui::combobox::CompactCombobox rotary_style_box_;
-        zlgui::slider::CompactLinearSlider<true, true, true> rotary_drag_sensitivity_slider_;
         juce::Label slider_double_click_label_;
         zlgui::combobox::CompactCombobox slider_double_click_box_;
 

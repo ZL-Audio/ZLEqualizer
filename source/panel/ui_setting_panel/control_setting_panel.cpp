@@ -26,7 +26,6 @@ namespace zlpanel {
         },
         wheel_reverse_box_(zlstate::PWheelShiftReverse::kChoices, base.gui),
         rotary_style_box_(zlstate::PRotaryStyle::kChoices, base.gui),
-        rotary_drag_sensitivity_slider_("Distance", base.gui),
         slider_double_click_box_(zlstate::PSliderDoubleClickFunc::kChoices, base.gui),
         action_mouse_boxes_{
             zlgui::combobox::CompactCombobox(zlstate::PEnterSoloMouse::kChoices, base.gui),
@@ -76,9 +75,6 @@ namespace zlpanel {
         rotary_style_label_.setLookAndFeel(&name_laf_);
         addAndMakeVisible(rotary_style_label_);
         addAndMakeVisible(rotary_style_box_);
-        rotary_drag_sensitivity_slider_.getSlider().setRange(2.0, 32.0, 0.01);
-        rotary_drag_sensitivity_slider_.getSlider().setDoubleClickReturnValue(true, 10.0);
-        addAndMakeVisible(rotary_drag_sensitivity_slider_);
         slider_double_click_label_.setText("Slider Double Click", juce::dontSendNotification);
         slider_double_click_label_.setJustificationType(juce::Justification::centredRight);
         slider_double_click_label_.setLookAndFeel(&name_laf_);
@@ -110,7 +106,6 @@ namespace zlpanel {
         }
         wheel_reverse_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.gui.getIsMouseWheelShiftReverse()));
         rotary_style_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.gui.getRotaryStyleID()));
-        rotary_drag_sensitivity_slider_.getSlider().setValue(static_cast<double>(base_.gui.getRotaryDragSensitivity()));
         slider_double_click_box_.getBox().setSelectedItemIndex(
             static_cast<int>(base_.gui.getIsSliderDoubleClickOpenEditor()));
         action_mouse_boxes_[0].getBox().setSelectedItemIndex(static_cast<int>(base_.getEnterSoloMouse()));
@@ -134,7 +129,6 @@ namespace zlpanel {
         }
         base_.gui.setIsMouseWheelShiftReverse(static_cast<bool>(wheel_reverse_box_.getBox().getSelectedItemIndex()));
         base_.gui.setRotaryStyleID(static_cast<size_t>(rotary_style_box_.getBox().getSelectedItemIndex()));
-        base_.gui.setRotaryDragSensitivity(static_cast<float>(rotary_drag_sensitivity_slider_.getSlider().getValue()));
         base_.gui.setIsSliderDoubleClickOpenEditor(
             static_cast<bool>(slider_double_click_box_.getBox().getSelectedItemIndex()));
         base_.setEnterSoloMouse(
@@ -215,8 +209,6 @@ namespace zlpanel {
             rotary_style_label_.setBounds(local_bound.removeFromLeft(slider_width * kLabelWidth));
             local_bound.removeFromLeft(padding);
             rotary_style_box_.setBounds(local_bound.removeFromLeft(2 * slider_width).reduced(0, padding / 3));
-            local_bound.removeFromLeft(padding);
-            rotary_drag_sensitivity_slider_.setBounds(local_bound.removeFromLeft(slider_width));
         }
         {
             bound.removeFromTop(padding);

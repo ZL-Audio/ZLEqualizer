@@ -425,14 +425,6 @@ namespace zlstate {
         };
     };
 
-    class PRotaryDragSensitivity : public FloatParameters<PRotaryDragSensitivity> {
-    public:
-        static constexpr auto kID = "rotary_drag_sensitivity";
-        static constexpr auto kName = "";
-        inline static const auto kRange = juce::NormalisableRange<float>(2.f, 32.f, 0.01f);
-        static constexpr auto kDefaultV = 10.f;
-    };
-
     class PSliderDoubleClickFunc : public ChoiceParameters<PSliderDoubleClickFunc> {
     public:
         static constexpr auto kID = "slider_double_click_func";
@@ -753,7 +745,7 @@ namespace zlstate {
                    PSliderSensitivity::get(), PSliderFineSensitivity::get(),
                    PDraggerSensitivity::get(), PDraggerFineSensitivity::get(),
                    PWheelComboboxSensitivity::get(),
-                   PRotaryStyle::get(), PRotaryDragSensitivity::get(),
+                   PRotaryStyle::get(),
                    PSliderDoubleClickFunc::get(),
                    PTargetRefreshSpeed::get(),
                    PFFTQuality::get(), PFFTExtraTilt::get(), PFFTExtraSpeed::get(),

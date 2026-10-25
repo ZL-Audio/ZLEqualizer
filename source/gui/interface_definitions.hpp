@@ -198,14 +198,6 @@ namespace zlgui {
             rotary_style_id_ = x;
         }
 
-        float getRotaryDragSensitivity() const {
-            return rotary_drag_sensitivity_;
-        }
-
-        void setRotaryDragSensitivity(const float x) {
-            rotary_drag_sensitivity_ = x;
-        }
-
         size_t getComboboxAlignment() const {
             return combobox_alignment_.load(std::memory_order::relaxed);
         }
@@ -278,7 +270,6 @@ namespace zlgui {
         std::array<juce::Colour, static_cast<size_t>(ThemeColour::kCount)> theme_colours_;
         std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, .12f, 1.f, .25f, 1.f, .25f, .5f};
         size_t rotary_style_id_{0};
-        float rotary_drag_sensitivity_{1.f};
         std::atomic<size_t> combobox_alignment_{1};
         std::atomic<size_t> tooltip_lang_id_{1};
         std::atomic<bool> is_mouse_wheel_shift_reverse_{false};

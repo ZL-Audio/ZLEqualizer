@@ -32,8 +32,8 @@ namespace zlgui::slider {
         }
 
         void mouseWheelMove(const juce::MouseEvent& event, const juce::MouseWheelDetails& w) override {
+            if (!isScrollWheelEnabled() || event.mods.isAnyMouseButtonDown()) { return; }
             // avoid duplicate mousewheel events
-            if (!isScrollWheelEnabled()) { return; }
             if (event.eventTime == last_wheel_time_) { return; }
             last_wheel_time_ = event.eventTime;
             // apply shift reverse
