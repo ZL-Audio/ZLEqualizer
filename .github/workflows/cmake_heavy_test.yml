@@ -3,22 +3,18 @@ name: macOS/Windows/Linux Heavy Test
 on:
   workflow_dispatch:
 
-# When pushing new commits, cancel any running builds on that branch
+# Cancel older runs of this workflow on the same ref.
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 env:
-  BUILD_TYPE: Release
-  BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DISPLAY: :0 # linux pluginval needs this
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  SCCACHE_GHA_ENABLED: true
-  SCCACHE_CACHE_MULTIARCH: 1
 
 jobs:
   build_and_test:
@@ -31,59 +27,33 @@ jobs:
           - name: Linux
             os: ubuntu-latest
             pluginval-binary: ./pluginval
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="AVX2"
+            formats: VST3
+            simd: AVX2
           - name: macOS
             os: macos-latest
             pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="NEON"
+            formats: VST3
+            simd: NEON
           - name: Windows
             os: windows-latest
-            wix_arch: x64
             vcvars_script: vcvars64.bat
             pluginval-binary: ./pluginval.exe
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="AVX2"
+            formats: VST3
+            simd: AVX2
 
     steps:
-      - name: Set up Clang (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x ./llvm.sh
-          sudo ./llvm.sh 21
-
-      - name: Install Deps (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libfreetype-dev libfontconfig1-dev libxi-dev xvfb ninja-build
-          sudo /usr/bin/Xvfb $DISPLAY &
-
       - name: Checkout code
         uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Configure and Build (Linux & macOS)
-        if: runner.os != 'Windows'
-        shell: bash
-        run: |
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
-
-      - name: Configure and Build (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set VS_PATH=%%i
-          call "%VS_PATH%\VC\Auxiliary\Build\${{ matrix.vcvars_script }}"
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
-
-      - name: Read in .env from CMake # see GitHubENV.cmake
-        shell: bash
-        run: |
-          cat .env # show us the config
-          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+      - name: Configure and Build
+        uses: ./.github/actions/build
+        with:
+          formats: ${{ matrix.formats }}
+          simd: ${{ matrix.simd }}
+          vcvars-script: ${{ matrix.vcvars_script }}
 
       - name: Pluginval setup
         shell: bash

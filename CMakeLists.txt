@@ -8,8 +8,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-includes")
 include(GitVersion)
 include(PamplejuceVersion)
 
-# Configures universal binaries and decides which version of macOS to support
-include(PamplejuceMacOS)
+# Keep local builds and CI on macOS 12 or newer, including reused build directories.
+if (CMAKE_HOST_APPLE)
+    if (NOT CMAKE_OSX_DEPLOYMENT_TARGET OR CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS "12.0")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum macOS version" FORCE)
+    endif ()
+    # XcodePrettify enables schemes only for the plugin targets.
+    set(CMAKE_XCODE_GENERATE_SCHEME OFF)
+endif ()
 
 # Change me!
 # This is the internal name of the project and the name of JUCE's shared code "target"
@@ -116,6 +122,7 @@ juce_add_plugin("${PROJECT_NAME}"
         PLUGIN_CODE "${PLUGIN_CODE}"
         FORMATS "${FORMATS}"
         LV2URI "${LV2URI}"
+        LV2_PLUGIN_CLASS ParaEQPlugin
 
         IS_SYNTH FALSE
         NEEDS_MIDI_INPUT FALSE
@@ -147,19 +154,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND (WITH_ADDRESS_SANITIZER OR WITH_THREA
             endif ()
         endif ()
     endforeach ()
-endif ()
-
-# Add LV2 tags
-if ("LV2" IN_LIST FORMATS)
-    set(LV2_TARGET "${PROJECT_NAME}_LV2")
-    set(LV2_SHORT_TAGS eq paraeq)
-    find_package(Python3 REQUIRED COMPONENTS Interpreter)
-    set(PATCH_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/packaging/patch_lv2.py")
-    add_custom_command(TARGET ${LV2_TARGET} POST_BUILD
-            COMMAND Python3::Interpreter "${PATCH_SCRIPT}" "$<TARGET_FILE_DIR:${LV2_TARGET}>" ${LV2_SHORT_TAGS}
-            COMMENT "Running Python script to patch LV2 tags: ${LV2_SHORT_TAGS}..."
-            VERBATIM
-    )
 endif ()
 
 # This lets us use our code in both the JUCE targets and our Test target
@@ -194,7 +188,11 @@ target_compile_definitions(SharedCode
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_USE_FLAC=0
         JUCE_USE_OGGVORBIS=0
+        JUCE_USE_OPUS=0
         JUCE_USE_WEBP=0
+        JUCE_USE_MP3AUDIOFORMAT=0
+        JUCE_USE_LAME_AUDIO_FORMAT=0
+        JUCE_USE_WINDOWS_MEDIA_FORMAT=0
 
         # lets the app known if we're Debug or Release
         CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
@@ -234,6 +232,7 @@ set(ZL_HWY_STATIC_TARGET "NONE" CACHE STRING "Target architecture for static dis
 if (ZL_HWY_STATIC_TARGET STREQUAL "NONE")
     message(FATAL_ERROR "ZL_HWY_STATIC_TARGET must be set: SSE2/SEE42/AVX2/NEON/LSX/LASX.")
 endif ()
+set(HWY_ENABLE_CONTRIB OFF CACHE BOOL "Disable highway contrib library" FORCE)
 set(HWY_ENABLE_EXAMPLES OFF CACHE BOOL "Disable highway examples" FORCE)
 set(HWY_ENABLE_TESTS OFF CACHE BOOL "Disable highway tests" FORCE)
 set(HWY_COMPILE_ONLY_STATIC ON CACHE BOOL "Force highway static dispatch" FORCE)

@@ -31,8 +31,6 @@ namespace zlpanel {
 
         void resized() override;
 
-        bool keyPressed(const juce::KeyPress& key) override;
-
         void show(const juce::String& message, const juce::String& action, bool destructive,
                   std::function<void()> on_confirm);
 

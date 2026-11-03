@@ -175,7 +175,7 @@ def main():
 
         output.write('        <MediaTemplate EmbedCab="yes" />\n')
 
-        icon_path = "packaging/icon.ico"
+        icon_path = "packaging/installer.ico"
         if os.path.isfile(icon_path):
             output.write(
                 f'        <Icon Id="AppIcon.ico" SourceFile="{escape_xml(icon_path)}" />\n'

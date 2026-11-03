@@ -3,17 +3,15 @@ name: Nightly Release
 on:
   workflow_dispatch:
 
-# When pushing new commits, cancel any running builds on that branch
+# Cancel older runs of this workflow on the same ref.
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 env:
-  BUILD_TYPE: Release
-  BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DISPLAY: :0 # linux pluginval needs this
   HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -27,94 +25,70 @@ jobs:
       matrix:
         include:
           - name: Linux-x86-64
-            os: ubuntu-22.04
-            app_suffix: ""
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="SSE2"
+            os: ubuntu-24.04
+            formats: VST3;LV2;Standalone
+            simd: SSE2
           - name: Linux-x86-64-AVX2
-            os: ubuntu-22.04
-            app_suffix: ""
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="AVX2"
+            os: ubuntu-24.04
+            formats: VST3;LV2;Standalone
+            simd: AVX2
           - name: Linux-arm64
-            os: ubuntu-22.04-arm
-            app_suffix: ""
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
+            os: ubuntu-24.04-arm
+            formats: VST3;LV2;Standalone
+            simd: NEON
           - name: macOS-x86-64
-            os: macos-26
-            app_suffix: ".app"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="x86_64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_HWY_STATIC_TARGET="SSE4"
+            os: xcode-27
+            architecture: x86_64
+            formats: VST3;AU;Standalone
+            simd: SSE4
           - name: macOS-arm64
-            os: macos-26
-            app_suffix: ".app"
-            cmake_extra_flags: -DCMAKE_OSX_ARCHITECTURES="arm64" -DZL_JUCE_FORMATS="VST3;AU;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
+            os: xcode-27
+            architecture: arm64
+            formats: VST3;AU;Standalone
+            simd: NEON
           - name: Windows-x86-64
             os: windows-2025
             wix_arch: x64
             vcvars_script: vcvars64.bat
-            app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="SSE2"
+            formats: VST3;LV2;Standalone
+            simd: SSE2
           - name: Windows-x86-64-AVX2
             os: windows-2025
             wix_arch: x64
             vcvars_script: vcvars64.bat
-            app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="AVX2"
+            formats: VST3;LV2;Standalone
+            simd: AVX2
           - name: Windows-arm64
             os: windows-11-vs2026-arm
             wix_arch: arm64
             vcvars_script: vcvarsarm64.bat
-            app_suffix: ".exe"
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DZL_JUCE_FORMATS="VST3;LV2;Standalone" -DZL_HWY_STATIC_TARGET="NEON"
+            formats: VST3;LV2;Standalone
+            simd: NEON
 
     steps:
-      - name: Set up Clang (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x ./llvm.sh
-          sudo ./llvm.sh 21
-
-      - name: Install Deps (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libfreetype-dev libfontconfig1-dev libxi-dev ninja-build
-          sudo /usr/bin/Xvfb $DISPLAY &
-
       - name: Checkout code
         uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Configure and Build (Linux & macOS)
-        if: runner.os != 'Windows'
-        shell: bash
-        run: |
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
-
-      - name: Configure and Build (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set VS_PATH=%%i
-          call "%VS_PATH%\VC\Auxiliary\Build\${{ matrix.vcvars_script }}"
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
-
-      - name: Read in .env from CMake # see GitHubENV.cmake
-        shell: bash
-        run: |
-          cat .env # show us the config
-          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+      - name: Configure and Build
+        uses: ./.github/actions/build
+        with:
+          formats: ${{ matrix.formats }}
+          simd: ${{ matrix.simd }}
+          architecture: ${{ matrix.architecture }}
+          vcvars-script: ${{ matrix.vcvars_script }}
 
       - name: Set additional env vars for next steps
         shell: bash
         run: |
           echo "ARTIFACT_NAME=${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-${{ matrix.name }}" >> $GITHUB_ENV
 
-      - name: Check dependencies
+      - name: Check VST3 dependencies and compatibility
         shell: bash
-        run: python3 -u packaging/check_dependency.py
+        run: |
+          python3 -u packaging/check_dependency.py
 
       - name: Import Certificates (macOS)
         uses: apple-actions/import-codesign-certs@v7 # only exists as a tag right now
@@ -131,6 +105,7 @@ jobs:
           python3 -u packaging/packager_macOS.py
         env:
           DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
+          MACOS_ARCH: ${{ matrix.architecture }}
 
       - name: Sign Final Package (macOS)
         if: ${{ (runner.os == 'macOS') && (env.APPLE_INSTALLER_DEV != '') }}

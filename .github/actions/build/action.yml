@@ -1,0 +1,90 @@
+name: Build CMake project
+description: Set up the platform toolchain, build, and import plugin artifact paths.
+
+inputs:
+  formats:
+    description: Semicolon-separated JUCE plugin formats.
+    required: true
+  simd:
+    description: Highway static target (SSE2, SSE4, AVX2, or NEON).
+    required: true
+  architecture:
+    description: Optional explicit macOS architecture; empty uses the compiler default.
+    default: ''
+  build-type:
+    description: CMake configuration.
+    default: Release
+  build-dir:
+    description: Build directory relative to source-dir.
+    default: Builds
+  source-dir:
+    description: Source directory relative to the workspace.
+    default: .
+  clang-version:
+    description: Linux LLVM version to install and use for C and C++.
+    default: '21'
+  macos-deployment-target:
+    description: Minimum macOS version passed explicitly to CMake.
+    default: '12.0'
+  sanitizer:
+    description: Sanitizer selection (none, address, or thread).
+    default: none
+  vcvars-script:
+    description: Visual Studio environment script for Windows builds.
+    default: vcvars64.bat
+  linux-extra-packages:
+    description: Additional space-separated apt packages.
+    default: ''
+  cmake-extra-args:
+    description: Additional CMake arguments, one complete argument per line; no shell quoting.
+    default: ''
+  setup-environment:
+    description: Install Linux dependencies and start Xvfb; disable for a second build in the same job.
+    default: 'true'
+  import-env:
+    description: Export BUILD_TYPE, BUILD_DIR and the source .env for subsequent workflow steps.
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Clang and dependencies (Linux)
+      if: runner.os == 'Linux' && inputs.setup-environment == 'true'
+      shell: bash
+      env:
+        BUILD_CLANG_VERSION: ${{ inputs.clang-version }}
+        BUILD_EXTRA_PACKAGES: ${{ inputs.linux-extra-packages }}
+      run: |
+        wget -O "$RUNNER_TEMP/zl-plugin-llvm.sh" https://apt.llvm.org/llvm.sh
+        chmod +x "$RUNNER_TEMP/zl-plugin-llvm.sh"
+        sudo "$RUNNER_TEMP/zl-plugin-llvm.sh" "$BUILD_CLANG_VERSION"
+        sudo apt-get update
+        packages=(libasound2-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev
+                  libxinerama-dev libxrandr-dev libxrender-dev libfreetype-dev
+                  libfontconfig1-dev libxi-dev xvfb ninja-build)
+        read -r -a extra_packages <<< "$BUILD_EXTRA_PACKAGES"
+        sudo apt-get install -y "${packages[@]}" "${extra_packages[@]}"
+        sudo /usr/bin/Xvfb "$DISPLAY" > "$RUNNER_TEMP/zl-plugin-xvfb.log" 2>&1 &
+
+    - name: Configure and build (Linux and macOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      env:
+        ZL_BUILD_SETTINGS: ${{ toJSON(inputs) }}
+        BUILD_ACTION_PATH: ${{ github.action_path }}
+      run: python3 "$BUILD_ACTION_PATH/build.py"
+
+    - name: Configure and build (Windows)
+      if: runner.os == 'Windows'
+      shell: cmd
+      env:
+        ZL_BUILD_SETTINGS: ${{ toJSON(inputs) }}
+        BUILD_ACTION_PATH: ${{ github.action_path }}
+        BUILD_VCVARS_SCRIPT: ${{ inputs.vcvars-script }}
+      run: |
+        set "VS_PATH="
+        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set "VS_PATH=%%i"
+        if not defined VS_PATH exit /b 1
+        call "%VS_PATH%\VC\Auxiliary\Build\%BUILD_VCVARS_SCRIPT%"
+        if errorlevel 1 exit /b 1
+        python "%BUILD_ACTION_PATH%\build.py"

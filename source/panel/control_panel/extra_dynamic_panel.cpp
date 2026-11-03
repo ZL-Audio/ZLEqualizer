@@ -91,14 +91,20 @@ namespace zlpanel {
             const auto band_s = std::to_string(base_.getSelectedBand());
             rms_length_attach_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 rms_length_slider_.getSlider(), p_ref_.parameters_, zlp::PDynamicRMSLength::kID + band_s, updater_);
+            rms_length_slider_.setComponentID(zlp::PDynamicRMSLength::kID + band_s);
             rms_mix_attach_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 rms_mix_slider_.getSlider(), p_ref_.parameters_, zlp::PDynamicRMSMix::kID + band_s, updater_);
+            rms_mix_slider_.setComponentID(zlp::PDynamicRMSMix::kID + band_s);
             dyn_smooth_attach_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 dyn_smooth_slider_.getSlider(), p_ref_.parameters_, zlp::PDynamicSmooth::kID + band_s, updater_);
+            dyn_smooth_slider_.setComponentID(zlp::PDynamicSmooth::kID + band_s);
         } else {
             rms_length_attach_.reset();
             rms_mix_attach_.reset();
             dyn_smooth_attach_.reset();
+            rms_length_slider_.setComponentID("");
+            rms_mix_slider_.setComponentID("");
+            dyn_smooth_slider_.setComponentID("");
         }
     }
 

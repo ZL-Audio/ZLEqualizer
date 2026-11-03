@@ -177,6 +177,7 @@ namespace zlpanel {
                 lr_box_.getBox(), p_ref_.parameters_, zlp::PLRMode::kID + band_s, updater_);
             freq_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 freq_slider_.getSlider(), p_ref_.parameters_, zlp::PFreq::kID + band_s, updater_);
+            freq_slider_.setComponentID(zlp::PFreq::kID + band_s);
             freq_attachment_->updateComponent();
             freq_slider_.updateDisplayValue();
             filter_status_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterStatus::kID + band_s);
@@ -185,6 +186,7 @@ namespace zlpanel {
             ftype_attachment_.reset();
             lr_attachment_.reset();
             freq_attachment_.reset();
+            freq_slider_.setComponentID("");
             filter_status_ptr_ = nullptr;
         }
         setVisible(base_.getSelectedBand() < zlp::kBandNum);

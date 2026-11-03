@@ -3,17 +3,15 @@ name: Sanitizer
 on:
   workflow_dispatch:
 
-# When pushing new commits, cancel any running builds on that branch
+# Cancel older runs of this workflow on the same ref.
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 env:
-  BUILD_TYPE: RelWithDebugInfo
-  BUILD_DIR: Builds
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DISPLAY: :0
   HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -28,65 +26,48 @@ jobs:
         include:
           - name: macOS Address Sanitizer
             os: macos-latest
-            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebugInfo/pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF -DZL_JUCE_FORMATS="VST3;AU" -DZL_HWY_STATIC_TARGET="NEON"
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebInfo/pluginval.app/Contents/MacOS/pluginval
+            sanitizer: address
+            formats: VST3;AU
+            simd: NEON
             pluginval_disabled: Plugin state restoration
           - name: macOS Thread Sanitizer
             os: macos-latest
-            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebugInfo/pluginval.app/Contents/MacOS/pluginval
-            cmake_extra_flags: -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DZL_JUCE_FORMATS="VST3;AU" -DZL_HWY_STATIC_TARGET="NEON"
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebInfo/pluginval.app/Contents/MacOS/pluginval
+            sanitizer: thread
+            formats: VST3;AU
+            simd: NEON
             pluginval_disabled: Plugin state restoration
           - name: Linux Address Sanitizer
             os: ubuntu-latest
-            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebugInfo/pluginval
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DWITH_ADDRESS_SANITIZER=ON -DWITH_THREAD_SANITIZER=OFF -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="AVX2"
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebInfo/pluginval
+            sanitizer: address
+            formats: VST3
+            simd: AVX2
             pluginval_disabled: Plugin state restoration
           - name: Linux Thread Sanitizer
             os: ubuntu-latest
-            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebugInfo/pluginval
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DWITH_ADDRESS_SANITIZER=OFF -DWITH_THREAD_SANITIZER=ON -DZL_JUCE_FORMATS="VST3" -DZL_HWY_STATIC_TARGET="AVX2"
+            pluginval-binary: ./pluginval/Builds/pluginval_artefacts/RelWithDebInfo/pluginval
+            sanitizer: thread
+            formats: VST3
+            simd: AVX2
             pluginval_disabled: Plugin state restoration,Background thread state
 
     steps:
-      - name: Set up Clang (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x ./llvm.sh
-          sudo ./llvm.sh 21
-
-      - name: Install Deps (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update && sudo apt install -y libasound2-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libfreetype-dev libfontconfig1-dev libxi-dev xvfb ninja-build ladspa-sdk
-          sudo /usr/bin/Xvfb $DISPLAY &
-
       - name: Checkout code
         uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Configure and Build (Linux & macOS)
-        if: runner.os != 'Windows'
-        shell: bash
-        run: |
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
-
-      - name: Configure and Build (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          call ${{ matrix.vcvars64_path }}
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
-
-      - name: Read in .env from CMake # see GitHubENV.cmake
-        shell: bash
-        run: |
-          cat .env # show us the config
-          cat .env >> $GITHUB_ENV # pull in our PRODUCT_NAME, etc
+      - name: Configure and Build
+        uses: ./.github/actions/build
+        with:
+          formats: ${{ matrix.formats }}
+          simd: ${{ matrix.simd }}
+          build-type: RelWithDebInfo
+          sanitizer: ${{ matrix.sanitizer }}
+          linux-extra-packages: ladspa-sdk
 
       - name: Checkout pluginval code
         uses: actions/checkout@v7
@@ -97,11 +78,17 @@ jobs:
 
       - name: Configure and Build Pluginval (Linux & macOS)
         if: runner.os != 'Windows'
-        shell: bash
-        working-directory: ./pluginval
-        run: |
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} -DPLUGINVAL_VST3_VALIDATOR=OFF
-          cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
+        uses: ./.github/actions/build
+        with:
+          source-dir: pluginval
+          build-dir: ${{ env.BUILD_DIR }}
+          build-type: ${{ env.BUILD_TYPE }}
+          formats: ${{ matrix.formats }}
+          simd: ${{ matrix.simd }}
+          sanitizer: ${{ matrix.sanitizer }}
+          cmake-extra-args: -DPLUGINVAL_VST3_VALIDATOR=OFF
+          setup-environment: 'false'
+          import-env: 'false'
 
       - name: Setup Pluginval random seed
         id: setup_seed

@@ -98,7 +98,7 @@ namespace zlpanel {
 
     void MainPanel::repaintCallBack(const double time_stamp) {
         if (refresh_handler_.tick(time_stamp)) {
-            if (time_stamp - previous_time_stamp_ > 0.1) {
+            if (time_stamp < previous_time_stamp_ || time_stamp - previous_time_stamp_ > 0.1) {
                 previous_time_stamp_ = time_stamp;
                 repaintCallBackSlow();
             }

@@ -16,7 +16,6 @@ namespace zlpanel {
         cancel_button_(base.gui, "Cancel"), confirm_button_(base.gui) {
         setOpaque(false);
         setInterceptsMouseClicks(true, true);
-        setWantsKeyboardFocus(true);
 
         addAndMakeVisible(background_);
         message_laf_.setFontScale(zlgui::kFontHuge);
@@ -77,18 +76,6 @@ namespace zlpanel {
         message_label_.setBounds(getMessageBounds());
         cancel_button_.setBounds(getCancelBounds());
         confirm_button_.setBounds(getConfirmBounds());
-    }
-
-    bool WarningOverlay::keyPressed(const juce::KeyPress& key) {
-        if (key == juce::KeyPress::escapeKey) {
-            hide();
-            return true;
-        }
-        if (key == juce::KeyPress::returnKey) {
-            confirm();
-            return true;
-        }
-        return false;
     }
 
     void WarningOverlay::show(const juce::String& message, const juce::String& action,

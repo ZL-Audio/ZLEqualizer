@@ -121,6 +121,7 @@ namespace zlpanel {
         lookahead_label_.setBufferedToImage(true);
         addAndMakeVisible(lookahead_label_);
 
+        lookahead_slider_.setComponentID(zlp::PLookahead::kID);
         lookahead_slider_.getSlider().setSliderSnapsToMousePosition(false);
         lookahead_slider_.setBufferedToImage(true);
         addAndMakeVisible(lookahead_slider_);
