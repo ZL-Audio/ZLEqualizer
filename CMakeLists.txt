@@ -230,7 +230,7 @@ target_link_libraries(SharedCode INTERFACE nlopt)
 # add highway
 set(ZL_HWY_STATIC_TARGET "NONE" CACHE STRING "Target architecture for static dispatch")
 if (ZL_HWY_STATIC_TARGET STREQUAL "NONE")
-    message(FATAL_ERROR "ZL_HWY_STATIC_TARGET must be set: SSE2/SEE42/AVX2/NEON/LSX/LASX.")
+    message(FATAL_ERROR "ZL_HWY_STATIC_TARGET must be set: SSE2/SSE4/AVX2/NEON/LSX/LASX.")
 endif ()
 set(HWY_ENABLE_CONTRIB OFF CACHE BOOL "Disable highway contrib library" FORCE)
 set(HWY_ENABLE_EXAMPLES OFF CACHE BOOL "Disable highway examples" FORCE)
