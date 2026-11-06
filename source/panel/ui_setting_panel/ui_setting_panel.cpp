@@ -20,7 +20,7 @@ namespace zlpanel {
         background_(base),
         version_text_laf_(base.gui),
         version_text_({},
-                      juce::String(ZLEQUALIZER_CURRENT_VERSION) + " " + juce::String(ZLEQUALIZER_CURRENT_HASH)),
+                      juce::String(ZL_PLUGIN_CURRENT_VERSION) + " " + juce::String(ZL_PLUGIN_CURRENT_HASH)),
         tab_bar_(base),
         view_port_(base.gui),
         save_button_(base_.gui,

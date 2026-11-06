@@ -1,44 +1,46 @@
-# Read version from git tag and write it to VERSION file
-find_package(Git)
+# Resolve build metadata before project() uses CURRENT_VERSION.
+set(CURRENT_VERSION "0.0.0")
+set(CURRENT_HASH "0000000")
+find_package(Git QUIET)
 
-if (GIT_EXECUTABLE)
-    # Generate a git-describe version string from Git repository tags
+if (Git_FOUND)
     execute_process(
-            COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+            COMMAND "${GIT_EXECUTABLE}" describe --tags --abbrev=0
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             OUTPUT_VARIABLE GIT_DESCRIBE_VERSION
             RESULT_VARIABLE GIT_DESCRIBE_ERROR_CODE
             OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
     )
-    if (NOT GIT_DESCRIBE_ERROR_CODE)
-        set(FOOBAR_VERSION ${GIT_DESCRIBE_VERSION})
-        message(STATUS "Using the version \"${FOOBAR_VERSION}\".")
+    if (GIT_DESCRIBE_ERROR_CODE STREQUAL "0")
+        string(REGEX REPLACE "^v" "" CURRENT_VERSION "${GIT_DESCRIBE_VERSION}")
+    else ()
+        message(STATUS "No Git version tag found; using ${CURRENT_VERSION}.")
     endif ()
+
     execute_process(
-            COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
+            COMMAND "${GIT_EXECUTABLE}" log -1 --format=%h
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             OUTPUT_VARIABLE GIT_CURRENT_HASH
             RESULT_VARIABLE GIT_HASH_ERROR_CODE
             OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
     )
-    if (NOT GIT_HASH_ERROR_CODE)
-        set(FOOBAR_HASH ${GIT_CURRENT_HASH})
+    if (GIT_HASH_ERROR_CODE STREQUAL "0")
+        set(CURRENT_HASH "${GIT_CURRENT_HASH}")
+    else ()
+        message(STATUS "No Git commit found; using ${CURRENT_HASH}.")
     endif ()
+else ()
+    message(STATUS "Git not found; using default version and hash.")
 endif ()
 
-if (NOT DEFINED FOOBAR_VERSION)
-    set(FOOBAR_VERSION 0.0.0)
-    message(STATUS "Failed to determine VERSION from Git tags. Using default version \"${FOOBAR_VERSION}\".")
-endif ()
-if (NOT DEFINED FOOBAR_HASH)
-  set(FOOBAR_HASH "0000000")
-  message(STATUS "Failed to determine HASH from Git logs. Using default hash \"${FOOBAR_HASH}\".")
-endif ()
+string(REGEX MATCH "^[0-9]+" MAJOR_VERSION "${CURRENT_VERSION}")
+message(STATUS "Plugin version: ${CURRENT_VERSION} (${CURRENT_HASH})")
 
-string(REPLACE "v" "" FOOBAR_VERSION_WITHOUT_V "${FOOBAR_VERSION}")
-
-file(WRITE VERSION "${FOOBAR_VERSION_WITHOUT_V}")
-
-add_definitions(-DZLEQUALIZER_CURRENT_VERSION="${FOOBAR_VERSION_WITHOUT_V}")
-
-add_definitions(-DZLEQUALIZER_CURRENT_HASH="${FOOBAR_HASH}")
+# Keep the generated VERSION file available to packaging tools.
+file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" "${CURRENT_VERSION}")
+add_compile_definitions(
+        ZL_PLUGIN_CURRENT_VERSION="${CURRENT_VERSION}"
+        ZL_PLUGIN_CURRENT_HASH="${CURRENT_HASH}"
+)
