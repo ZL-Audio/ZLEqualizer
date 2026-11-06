@@ -8,6 +8,7 @@
 // You should have received a copy of the GNU Affero General Public License along with ZLEqualizer. If not, see <https://www.gnu.org/licenses/>.
 
 #include "match_control_panel.hpp"
+#include "match_preset_csv.hpp"
 #include "BinaryData.h"
 
 namespace zlpanel {
@@ -120,8 +121,10 @@ namespace zlpanel {
             const auto mode = static_cast<MatchFFTPanel::SideMode>(target_box_.getBox().getSelectedItemIndex());
             if (mode == MatchFFTPanel::SideMode::kPreset) {
                 loadFromPreset();
+            } else {
+                target_mode_ = mode;
+                match_fft_panel_.setSideMode(mode);
             }
-            match_fft_panel_.setSideMode(mode);
         };
         target_box_.setBufferedToImage(true);
         addAndMakeVisible(target_box_);
@@ -292,6 +295,7 @@ namespace zlpanel {
         draw_button_.getButton().setToggleState(true, juce::sendNotificationSync);
         match_fft_panel_.setDiffDrawOn(true);
         target_box_.getBox().setSelectedItemIndex(0, juce::dontSendNotification);
+        target_mode_ = MatchFFTPanel::SideMode::kSide;
         match_fft_panel_.setSideMode(MatchFFTPanel::SideMode::kSide);
         shift_slider_.getSlider().setValue(0.0, juce::sendNotificationSync);
         match_fft_panel_.setDiffShift(0.f);
@@ -333,35 +337,28 @@ namespace zlpanel {
         constexpr auto settingOpenFlags = juce::FileBrowserComponent::openMode |
             juce::FileBrowserComponent::canSelectFiles;
         chooser_->launchAsync(settingOpenFlags, [this](const juce::FileChooser& chooser) {
+            // keep the current target until the preset is validated
+            target_box_.getBox().setSelectedItemIndex(static_cast<int>(target_mode_),
+                                                     juce::dontSendNotification);
             if (chooser.getResults().size() <= 0) { return; }
             const juce::File preset_file(chooser.getResult());
-            if (!preset_file.existsAsFile()) { return; }
-            if (juce::FileInputStream input(preset_file); input.openedOk()) {
-                preset_freqs_.resize(0);
-                preset_dbs_.resize(0);
-                while (!input.isExhausted()) {
-                    const auto line = input.readNextLine().toStdString();
-                    try {
-                        const size_t comma_pos = line.find(',');
-                        if (comma_pos == std::string::npos) {
-                            break;
-                        }
-                        std::string freq_str = line.substr(0, comma_pos);
-                        std::string db_str = line.substr(comma_pos + 1);
-                        float freq = std::stof(freq_str);
-                        float db = std::stof(db_str);
-                        preset_freqs_.emplace_back(freq);
-                        preset_dbs_.emplace_back(db);
-                    }
-                    catch (const std::exception& e) {
-                        break;
-                    }
-                }
-                if (preset_freqs_.size() < 2) {
-                    return;
-                }
-                match_fft_panel_.loadFromPreset(preset_freqs_, preset_dbs_);
+            juce::FileInputStream input(preset_file);
+            if (!input.openedOk()) {
+                return;
             }
+            const auto contents = input.readEntireStreamAsString().toStdString();
+            if (input.getStatus().failed()) {
+                return;
+            }
+            std::istringstream csv{contents};
+            if (!match_preset_csv::parse(csv, preset_freqs_, preset_dbs_)) {
+                return;
+            }
+            match_fft_panel_.loadFromPreset(preset_freqs_, preset_dbs_);
+            target_mode_ = MatchFFTPanel::SideMode::kPreset;
+            target_box_.getBox().setSelectedItemIndex(static_cast<int>(target_mode_),
+                                                     juce::dontSendNotification);
+            match_fft_panel_.setSideMode(target_mode_);
         });
     }
 

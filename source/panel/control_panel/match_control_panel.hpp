@@ -65,6 +65,8 @@ namespace zlpanel {
 
         zlgui::slider::CompactLinearSlider<false, false, false> num_band_slider_;
 
+        MatchFFTPanel::SideMode target_mode_{MatchFFTPanel::SideMode::kSide};
+
         std::unique_ptr<juce::FileChooser> chooser_;
         const juce::File kPresetDirectory =
             juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
