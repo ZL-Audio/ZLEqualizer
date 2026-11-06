@@ -202,7 +202,7 @@ namespace zldsp::filter {
             }
         }
 
-        void cacheDynPara() {
+        void cacheDynPara() override {
             cacheDyn(this->c_filter_type_, this->c_order_, this->c_freq_.getTarget(),
                      this->sample_rate_, this->c_q_.getTarget());
         }

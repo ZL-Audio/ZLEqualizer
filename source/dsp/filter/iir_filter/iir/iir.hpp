@@ -35,6 +35,7 @@ namespace zldsp::filter {
             c_q_.prepare(sample_rate, 0.001);
             c_freq_.setCurrentAndTarget(c_freq_.getTarget());
             updateCoeffs();
+            cacheDynPara();
         }
 
         /**
@@ -155,6 +156,11 @@ namespace zldsp::filter {
          * update filter coefficients
          */
         virtual void updateCoeffs() = 0;
+
+        /**
+         * refresh dynamic coefficients' sample-rate-dependent parameters
+         */
+        virtual void cacheDynPara() = 0;
 
         [[nodiscard]] size_t getFilterNum() const {
             return current_filter_num_;
