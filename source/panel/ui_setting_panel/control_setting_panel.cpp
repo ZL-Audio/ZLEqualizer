@@ -156,6 +156,39 @@ namespace zlpanel {
     }
 
     void ControlSettingPanel::resetSetting() {
+        constexpr std::array sensitivity_defaults{
+            zlstate::PWheelSensitivity::kDefaultV,
+            zlstate::PWheelFineSensitivity::kDefaultV,
+            zlstate::PSliderSensitivity::kDefaultV,
+            zlstate::PSliderFineSensitivity::kDefaultV,
+            zlstate::PDraggerSensitivity::kDefaultV,
+            zlstate::PDraggerFineSensitivity::kDefaultV,
+            zlstate::PWheelComboboxSensitivity::kDefaultV
+        };
+        for (size_t i = 0; i < sensitivity_sliders_.size(); ++i) {
+            sensitivity_sliders_[i].getSlider().setValue(sensitivity_defaults[i], juce::dontSendNotification);
+        }
+        wheel_reverse_box_.getBox().setSelectedItemIndex(zlstate::PWheelShiftReverse::kDefaultI,
+                                                         juce::dontSendNotification);
+        rotary_style_box_.getBox().setSelectedItemIndex(zlstate::PRotaryStyle::kDefaultI,
+                                                        juce::dontSendNotification);
+        slider_double_click_box_.getBox().setSelectedItemIndex(zlstate::PSliderDoubleClickFunc::kDefaultI,
+                                                               juce::dontSendNotification);
+        constexpr std::array mouse_defaults{
+            zlstate::PEnterSoloMouse::kDefaultI, zlstate::PExitSoloMouse::kDefaultI,
+            zlstate::PRightClickMenuMouse::kDefaultI, zlstate::PToggleDynamicMouse::kDefaultI,
+            zlstate::PToggleBypassMouse::kDefaultI, zlstate::PDeleteBandMouse::kDefaultI
+        };
+        constexpr std::array key_defaults{
+            zlstate::PEnterSoloKey::kDefaultI, zlstate::PExitSoloKey::kDefaultI,
+            zlstate::PRightClickMenuKey::kDefaultI, zlstate::PToggleDynamicKey::kDefaultI,
+            zlstate::PToggleBypassKey::kDefaultI, zlstate::PDeleteBandKey::kDefaultI
+        };
+        for (size_t i = 0; i < action_mouse_boxes_.size(); ++i) {
+            action_mouse_boxes_[i].getBox().setSelectedItemIndex(mouse_defaults[i], juce::dontSendNotification);
+            action_key_boxes_[i].getBox().setSelectedItemIndex(key_defaults[i], juce::dontSendNotification);
+        }
+        saveSetting();
     }
 
     int ControlSettingPanel::getIdealHeight() const {

@@ -149,6 +149,24 @@ namespace zlpanel {
     }
 
     void OtherUISettingPanel::resetSetting() {
+        base_.setRefreshRateID(zlstate::PTargetRefreshSpeed::kDefaultI);
+        base_.setFFTQuality(zlstate::PFFTQuality::kDefaultI);
+        base_.setFFTExtraTilt(zlstate::PFFTExtraTilt::kDefaultV);
+        base_.setFFTExtraSpeed(zlstate::PFFTExtraSpeed::kDefaultV);
+        base_.gui.setComboboxAlignment(zlstate::PComboboxAlignment::kDefaultI);
+        base_.setSingleEQCurveThickness(zlstate::PSingleEQCurveThickness::kDefaultV);
+        base_.setSumEQCurveThickness(zlstate::PSumEQCurveThickness::kDefaultV);
+        base_.gui.setTooltipLandID(zlstate::PTooltipLang::kDefaultI);
+        base_.gui.setFontMode(zlstate::PFontMode::kDefaultI);
+        base_.gui.setFontScale(zlstate::PFontScale::kDefaultV);
+        // the slider range may exclude the default font size
+        base_.gui.setStaticFontSize(zlstate::PStaticFontSize::kDefaultV);
+        base_.setCurveDBScales({zlstate::PCurveDBScale0::kDefaultV,
+                                zlstate::PCurveDBScale1::kDefaultV,
+                                zlstate::PCurveDBScale2::kDefaultV});
+        base_.setWindowSizeFix(zlstate::PWindowSizeFix::kDefaultI != 0);
+        base_.saveToAPVTS();
+        loadSetting();
     }
 
     int OtherUISettingPanel::getIdealHeight() const {
