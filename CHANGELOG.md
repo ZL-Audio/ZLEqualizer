@@ -4,6 +4,33 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 # Changelog
 
+## 1.4.2
+
+### Bug Fixes
+
+- fix resetting `Control` and `Other` UI settings
+- fix potential crashes when closing the plugin window with the color picker open
+- fix automatically keyboard focus grabbing
+- fix incorrect display of slider values near zero
+- fix incorrect dynamic filter behavior after sample-rate changes
+
+### New Features
+
+- add a piano roll with note snapping and double-click band creation
+- add optional frequency, gain, and note readouts
+- add input/output peak meters
+- add output channel selection: `Stereo`, `Left`, `Right`, `Mid`, and `Side`
+- add a `Shift` shortcut to lock/unlock FFT freeze when freeze mode is enabled
+
+### Improvements
+
+- improve FFT performance and display stability
+- improve automatic FFT freeze behavior
+
+### Others
+
+- raise the minimum supported macOS version to macOS 12
+
 ## 1.4.1
 
 Bug fixes
