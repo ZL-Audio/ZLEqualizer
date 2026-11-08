@@ -48,6 +48,24 @@ namespace zldsp::filter {
             double p1, p2, d;
         };
 
+        inline std::array<double, 5> make_coefficients(const PhiPair& alpha, const PhiPair& beta,
+                                                       const double gain = 1.0) {
+            const auto inv_d = 1.0 / beta.d;
+            const auto scale = gain * inv_d;
+            return {beta.p1 * inv_d, beta.p2 * inv_d,
+                    alpha.d * scale, alpha.p1 * scale, alpha.p2 * scale};
+        }
+
+        inline std::array<double, 3> get_shelf(const double alpha_w2, const double beta_w2,
+                                               const double gain) {
+            const auto alpha_root = std::sqrt(alpha_w2 + kSigmaSq);
+            const auto beta_root = std::sqrt(beta_w2 + kSigmaSq);
+            const auto inv_d = 1.0 / (kPi + beta_root);
+            const auto scale = gain * inv_d;
+            return {(kPi - beta_root) * inv_d,
+                    (kPi + alpha_root) * scale, (kPi - alpha_root) * scale};
+        }
+
         inline double get_wrapping_w2(const double w0) {
             if (w0 <= kSplineWA) {
                 const auto pi_fc_fs = kPi * w0;
@@ -75,8 +93,7 @@ namespace zldsp::filter {
             const auto pi_sq_term = kPi * sq_term;
 
             const auto d = kPiSq + pi_sq_term + v;
-            const auto d_inv = 1.0 / d;
-            return {(kTwoPiSq - 2.0 * v) * d_inv, (kPiSq - pi_sq_term + v) * d_inv, d};
+            return {kTwoPiSq - 2.0 * v, kPiSq - pi_sq_term + v, d};
         }
 
         inline PhiPair get_phi_notch_sq(const double w2) {
@@ -87,11 +104,10 @@ namespace zldsp::filter {
             const auto pi_sq_term = kPi * sq_term;
 
             const auto d = kPiSq + pi_sq_term + v;
-            const auto d_inv = 1.0 / d;
-            return {(kTwoPiSq - 2.0 * v) * d_inv, (kPiSq - pi_sq_term + v) * d_inv, d};
+            return {kTwoPiSq - 2.0 * v, kPiSq - pi_sq_term + v, d};
         }
 
-        inline PhiPair get_phi_peak(const double g, const double *cache) {
+        inline PhiPair get_phi_peak(const double g, const double* cache) {
             const auto kappa = cache[0] * g + cache[1];
             const auto v = std::sqrt(std::abs(cache[2] * g + cache[3]));
 
@@ -99,8 +115,7 @@ namespace zldsp::filter {
             const auto pi_sq_term = kPi * sq_term;
 
             const auto d = kPiSq + pi_sq_term + v;
-            const auto d_inv = 1.0 / d;
-            return {(kTwoPiSq - 2.0 * v) * d_inv, (kPiSq - pi_sq_term + v) * d_inv, d};
+            return {kTwoPiSq - 2.0 * v, kPiSq - pi_sq_term + v, d};
         }
 
         inline PhiPair get_phi_shelf(const double h, const double* cache) {
@@ -111,8 +126,7 @@ namespace zldsp::filter {
             const auto pi_sq_term = kPi * sq_term;
 
             const auto d = kPiSq + pi_sq_term + v;
-            const auto d_inv = 1.0 / d;
-            return {(kTwoPiSq - 2.0 * v) * d_inv, (kPiSq - pi_sq_term + v) * d_inv, d};
+            return {kTwoPiSq - 2.0 * v, kPiSq - pi_sq_term + v, d};
         }
     }
 
@@ -120,19 +134,22 @@ namespace zldsp::filter {
         const auto w2 = get_wrapping_w2(w0);
         const auto beta = get_phi(w2);
         const auto factor = (1.0 / (1.0 + kPhi0)) * (1.0 + beta);
+
         return {beta, factor, factor * kPhi0};
     }
 
     std::array<double, 3> IvantsovCoeff::get1HighPass(const double w0) {
         const auto w2 = get_wrapping_w2(w0);
-        const auto beta = get_phi(get_wrapping_w2(w0));
+        const auto beta = get_phi(w2);
         const auto factor = (std::sqrt(w2) / (2.0 * kPi)) * (1.0 + beta);
+
         return {beta, factor, -factor};
     }
 
     std::array<double, 3> IvantsovCoeff::get1AllPass(const double w0) {
         const auto w2 = get_wrapping_w2(w0);
         const auto beta = get_phi(w2);
+
         return {beta, beta, 1.0};
     }
 
@@ -140,20 +157,14 @@ namespace zldsp::filter {
         const auto w2 = get_wrapping_w2(w0);
         const auto g_linear = std::exp2(g * kDbToExp2);
 
-        const auto alpha = get_phi(w2 / g_linear);
-        const auto beta = get_phi(w2 * g_linear);
-        const auto factor = (g_linear / (1.0 + alpha)) * (1.0 + beta);
-        return {beta, factor, factor * alpha};
+        return get_shelf(w2 / g_linear, w2 * g_linear, g_linear);
     }
 
     std::array<double, 3> IvantsovCoeff::get1HighShelf(const double w0, const double g) {
         const auto w2 = get_wrapping_w2(w0);
         const auto g_linear = std::exp2(g * kDbToExp2);
 
-        const auto alpha = get_phi(w2 * g_linear);
-        const auto beta = get_phi(w2 / g_linear);
-        const auto factor = (1.0 / (1.0 + alpha)) * (1.0 + beta);
-        return {beta, factor, factor * alpha};
+        return get_shelf(w2 * g_linear, w2 / g_linear, 1.0);
     }
 
     std::array<double, 3> IvantsovCoeff::get1TiltShelf(const double w0, const double g) {
@@ -161,10 +172,7 @@ namespace zldsp::filter {
         const auto g_half = std::exp2(g * kDbToExp2Sqrt);
         const auto g_linear = g_half * g_half;
 
-        const auto alpha = get_phi(w2 * g_linear);
-        const auto beta = get_phi(w2 / g_linear);
-        const auto factor = ((1.0 / g_half) / (1.0 + alpha)) * (1.0 + beta);
-        return {beta, factor, factor * alpha};
+        return get_shelf(w2 * g_linear, w2 / g_linear, 1.0 / g_half);
     }
 
     void IvantsovCoeff::update1ShelfDynamicCache(const double w0, double* cache) {
@@ -175,20 +183,14 @@ namespace zldsp::filter {
         const auto w2 = cache[0];
         const auto g_linear = g_linear_sqrt * g_linear_sqrt;
 
-        const auto alpha = get_phi(w2 / g_linear);
-        const auto beta = get_phi(w2 * g_linear);
-        const auto factor = (g_linear / (1.0 + alpha)) * (1.0 + beta);
-        return {beta, factor, factor * alpha};
+        return get_shelf(w2 / g_linear, w2 * g_linear, g_linear);
     }
 
     std::array<double, 3> IvantsovCoeff::get1HighShelfWithCache(const double g_linear_sqrt, const double* cache) {
         const auto w2 = cache[0];
         const auto g_linear = g_linear_sqrt * g_linear_sqrt;
 
-        const auto alpha = get_phi(w2 * g_linear);
-        const auto beta = get_phi(w2 / g_linear);
-        const auto factor = (1.0 / (1.0 + alpha)) * (1.0 + beta);
-        return {beta, factor, factor * alpha};
+        return get_shelf(w2 * g_linear, w2 / g_linear, 1.0);
     }
 
     std::array<double, 3> IvantsovCoeff::get1TiltShelfWithCache(const double g_linear_sqrt, const double* cache) {
@@ -196,46 +198,53 @@ namespace zldsp::filter {
         const auto g_half = g_linear_sqrt;
         const auto g_linear = g_half * g_half;
 
-        const auto alpha = get_phi(w2 * g_linear);
-        const auto beta = get_phi(w2 / g_linear);
-        const auto factor = ((1.0 / g_half) / (1.0 + alpha)) * (1.0 + beta);
-        return {beta, factor, factor * alpha};
+        return get_shelf(w2 * g_linear, w2 / g_linear, 1.0 / g_half);
     }
 
     std::array<double, 5> IvantsovCoeff::get2LowPass(const double w0, const double q) {
         const auto w2 = get_wrapping_w2(w0);
         const auto phi = get_phi_sq(w2, 1.0 / (4.0 * q * q));
-        const auto factor = kLpGScalar * (1.0 + phi.p1 + phi.p2);
-        return {phi.p1, phi.p2, factor, factor * kLpA1, factor * kLpA2};
+        const auto inv_d = 1.0 / phi.d;
+        const auto factor = (kLpGScalar * kFourPiSq) * inv_d;
+
+        return {phi.p1 * inv_d, phi.p2 * inv_d, factor, factor * kLpA1, factor * kLpA2};
     }
 
     std::array<double, 5> IvantsovCoeff::get2HighPass(const double w0, const double q) {
         const auto w2 = get_wrapping_w2(w0);
         const auto phi = get_phi_sq(w2, 1.0 / (4.0 * q * q));
-        const auto factor = w2 / phi.d;
-        return {phi.p1, phi.p2, factor, factor * -2.0, factor};
+        const auto inv_d = 1.0 / phi.d;
+        const auto factor = w2 * inv_d;
+
+        return {phi.p1 * inv_d, phi.p2 * inv_d, factor, factor * -2.0, factor};
     }
 
     std::array<double, 5> IvantsovCoeff::get2BandPass(const double w0, const double q) {
         const auto w2 = get_wrapping_w2(w0);
         const auto zeta = 1.0 / (2.0 * q);
         const auto phi = get_phi_sq(w2, zeta * zeta);
-        const auto factor = (std::sqrt(w2) * zeta * kBpGMultiplier) / phi.d;
-        return {phi.p1, phi.p2, factor, factor * kBpA1, factor * kBpA2};
+        const auto inv_d = 1.0 / phi.d;
+        const auto factor = (std::sqrt(w2) * zeta * kBpGMultiplier) * inv_d;
+
+        return {phi.p1 * inv_d, phi.p2 * inv_d, factor, factor * kBpA1, factor * kBpA2};
     }
 
     std::array<double, 5> IvantsovCoeff::get2AllPass(const double w0, const double q) {
         const auto w2 = get_wrapping_w2(w0);
         const auto phi = get_phi_sq(w2, 1.0 / (4.0 * q * q));
-        return {phi.p1, phi.p2, phi.p2, phi.p1, 1.0};
+        const auto inv_d = 1.0 / phi.d;
+        const auto p1 = phi.p1 * inv_d;
+        const auto p2 = phi.p2 * inv_d;
+
+        return {p1, p2, p2, p1, 1.0};
     }
 
     std::array<double, 5> IvantsovCoeff::get2Notch(const double w0, const double q) {
         const auto w2 = get_wrapping_w2(w0);
         const auto alpha = get_phi_notch_sq(w2);
         const auto beta = get_phi_sq(w2, 1.0 / (4.0 * q * q));
-        const auto factor = alpha.d / beta.d;
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+
+        return make_coefficients(alpha, beta);
     }
 
     std::array<double, 5> IvantsovCoeff::get2Peak(const double w0, const double g, const double q) {
@@ -244,8 +253,8 @@ namespace zldsp::filter {
         const auto g_linear = std::exp2(g * kDbToExp2);
         const auto alpha = get_phi_sq(w2, zeta2 * g_linear);
         const auto beta = get_phi_sq(w2, zeta2 / g_linear);
-        const auto factor = alpha.d / beta.d;
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+
+        return make_coefficients(alpha, beta);
     }
 
     std::array<double, 5> IvantsovCoeff::get2LowShelf(const double w0, const double g, const double q) {
@@ -254,8 +263,8 @@ namespace zldsp::filter {
         const auto g_half = std::exp2(g * kDbToExp2Sqrt);
         const auto alpha = get_phi_sq(w2 / g_half, zeta2);
         const auto beta = get_phi_sq(w2 * g_half, zeta2);
-        double factor = (g_half * g_half) * (alpha.d / beta.d);
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+
+        return make_coefficients(alpha, beta, g_half * g_half);
     }
 
     std::array<double, 5> IvantsovCoeff::get2HighShelf(const double w0, const double g, const double q) {
@@ -264,8 +273,8 @@ namespace zldsp::filter {
         const auto g_half = std::exp2(g * kDbToExp2Sqrt);
         const auto alpha = get_phi_sq(w2 * g_half, zeta2);
         const auto beta = get_phi_sq(w2 / g_half, zeta2);
-        const auto factor = alpha.d / beta.d;
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+
+        return make_coefficients(alpha, beta);
     }
 
     std::array<double, 5> IvantsovCoeff::get2TiltShelf(const double w0, const double g, const double q) {
@@ -275,8 +284,8 @@ namespace zldsp::filter {
         const auto inv_g_half = 1.0 / g_half;
         const auto alpha = get_phi_sq(w2 * g_half, zeta2);
         const auto beta = get_phi_sq(w2 * inv_g_half, zeta2);
-        const auto factor = inv_g_half * (alpha.d / beta.d);
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+
+        return make_coefficients(alpha, beta, inv_g_half);
     }
 
     void IvantsovCoeff::update2PeakDynamicCache(const double w0, const double q, double* cache) {
@@ -292,8 +301,8 @@ namespace zldsp::filter {
         const auto g_linear = g_linear_sqrt * g_linear_sqrt;
         const auto alpha = get_phi_peak(g_linear, cache);
         const auto beta = get_phi_peak(1.0 / g_linear, cache);
-        const auto factor = alpha.d / beta.d;
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+
+        return make_coefficients(alpha, beta);
     }
 
     void IvantsovCoeff::update2ShelfDynamicCache(const double w0, const double q, double* cache) {
@@ -309,16 +318,14 @@ namespace zldsp::filter {
         const auto alpha = get_phi_shelf(1.0 / g_linear_sqrt, cache);
         const auto beta = get_phi_shelf(g_linear_sqrt, cache);
 
-        const auto factor = g_linear * (alpha.d / beta.d);
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+        return make_coefficients(alpha, beta, g_linear);
     }
 
     std::array<double, 5> IvantsovCoeff::get2HighShelfWithCache(const double g_linear_sqrt, const double* cache) {
         const auto alpha = get_phi_shelf(g_linear_sqrt, cache);
         const auto beta = get_phi_shelf(1.0 / g_linear_sqrt, cache);
 
-        const auto factor = alpha.d / beta.d;
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+        return make_coefficients(alpha, beta);
     }
 
     std::array<double, 5> IvantsovCoeff::get2TiltShelfWithCache(const double g_linear_sqrt, const double* cache) {
@@ -326,7 +333,6 @@ namespace zldsp::filter {
         const auto alpha = get_phi_shelf(g_linear_sqrt, cache);
         const auto beta = get_phi_shelf(inv_g_linear_sqrt, cache);
 
-        const auto factor = inv_g_linear_sqrt * (alpha.d / beta.d);
-        return {beta.p1, beta.p2, factor, factor * alpha.p1, factor * alpha.p2};
+        return make_coefficients(alpha, beta, inv_g_linear_sqrt);
     }
 }

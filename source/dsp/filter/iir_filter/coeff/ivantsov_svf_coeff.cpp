@@ -64,9 +64,14 @@ namespace zldsp::filter {
             }
         }
 
-        inline double get_phi(const double w2) {
-            const auto root = std::sqrt(w2 + kSigmaSq);
-            return (kPi - root) / (kPi + root);
+        inline double get_first_order_d(const double w2) {
+            return kPi + std::sqrt(w2 + kSigmaSq);
+        }
+
+        inline std::array<double, 3> get_shelf(const double alpha_w2, const double beta_w2,
+                                               const double gain) {
+            return {gain * get_first_order_d(alpha_w2) * kInvTwoPi,
+                    (2.0 * kPi) / get_first_order_d(beta_w2), gain};
         }
 
         struct PhaseCore {
@@ -115,51 +120,36 @@ namespace zldsp::filter {
 
     std::array<double, 3> IvantsovSVFCoeff::get1LowPass(const double w0) {
         const auto w2 = get_wrapping_w2(w0);
-        const auto beta = get_phi(w2);
 
-        return {kLpC0, 1.0 + beta, 1.0};
+        return {kLpC0, (2.0 * kPi) / get_first_order_d(w2), 1.0};
     }
 
     std::array<double, 3> IvantsovSVFCoeff::get1HighPass(const double w0) {
         const auto w2 = get_wrapping_w2(w0);
-        const auto beta = get_phi(w2);
-
         const auto c0 = std::sqrt(w2) * kInvTwoPi;
 
-        return {c0, 1.0 + beta, 0.0};
+        return {c0, (2.0 * kPi) / get_first_order_d(w2), 0.0};
     }
 
     std::array<double, 3> IvantsovSVFCoeff::get1AllPass(const double w0) {
         const auto w2 = get_wrapping_w2(w0);
-        const auto beta = get_phi(w2);
+        const auto root = std::sqrt(w2 + kSigmaSq);
 
-        const auto c1 = 1.0 + beta;
-
-        return {beta / c1, c1, 1.0};
+        return {(kPi - root) * kInvTwoPi, (2.0 * kPi) / (kPi + root), 1.0};
     }
 
     std::array<double, 3> IvantsovSVFCoeff::get1LowShelf(const double w0, const double g) {
         const auto w2 = get_wrapping_w2(w0);
         const auto g_linear = std::exp2(g * kDbToExp2);
 
-        const auto alpha = get_phi(w2 / g_linear);
-        const auto beta = get_phi(w2 * g_linear);
-
-        const double c0 = g_linear / (1.0 + alpha);
-
-        return {c0, 1.0 + beta, g_linear};
+        return get_shelf(w2 / g_linear, w2 * g_linear, g_linear);
     }
 
     std::array<double, 3> IvantsovSVFCoeff::get1HighShelf(const double w0, const double g) {
         const auto w2 = get_wrapping_w2(w0);
         const auto g_linear = std::exp2(g * kDbToExp2);
 
-        const auto alpha = get_phi(w2 * g_linear);
-        const auto beta = get_phi(w2 / g_linear);
-
-        const double c0 = 1.0 / (1.0 + alpha);
-
-        return {c0, 1.0 + beta, 1.0};
+        return get_shelf(w2 * g_linear, w2 / g_linear, 1.0);
     }
 
     std::array<double, 3> IvantsovSVFCoeff::get1TiltShelf(const double w0, const double g) {
@@ -168,12 +158,7 @@ namespace zldsp::filter {
         const auto g_linear = g_half * g_half;
         const auto inv_g_half = 1.0 / g_half;
 
-        const auto alpha = get_phi(w2 * g_linear);
-        const auto beta = get_phi(w2 / g_linear);
-
-        const double c0 = inv_g_half / (1.0 + alpha);
-
-        return {c0, 1.0 + beta, inv_g_half};
+        return get_shelf(w2 * g_linear, w2 / g_linear, inv_g_half);
     }
 
     void IvantsovSVFCoeff::update1ShelfDynamicCache(const double w0, double* cache) {
@@ -184,24 +169,14 @@ namespace zldsp::filter {
         const auto w2 = cache[0];
         const auto g_linear = g_linear_sqrt * g_linear_sqrt;
 
-        const auto alpha = get_phi(w2 / g_linear);
-        const auto beta = get_phi(w2 * g_linear);
-
-        const double c0 = g_linear / (1.0 + alpha);
-
-        return {c0, 1.0 + beta, g_linear};
+        return get_shelf(w2 / g_linear, w2 * g_linear, g_linear);
     }
 
     std::array<double, 3> IvantsovSVFCoeff::get1HighShelfWithCache(const double g_linear_sqrt, const double* cache) {
         const auto w2 = cache[0];
         const auto g_linear = g_linear_sqrt * g_linear_sqrt;
 
-        const auto alpha = get_phi(w2 * g_linear);
-        const auto beta = get_phi(w2 / g_linear);
-
-        const double c0 = 1.0 / (1.0 + alpha);
-
-        return {c0, 1.0 + beta, 1.0};
+        return get_shelf(w2 * g_linear, w2 / g_linear, 1.0);
     }
 
     std::array<double, 3> IvantsovSVFCoeff::get1TiltShelfWithCache(const double g_linear_sqrt, const double* cache) {
@@ -210,12 +185,7 @@ namespace zldsp::filter {
         const auto g_linear = g_half * g_half;
         const auto inv_g_half = 1.0 / g_half;
 
-        const auto alpha = get_phi(w2 * g_linear);
-        const auto beta = get_phi(w2 / g_linear);
-
-        const double c0 = inv_g_half / (1.0 + alpha);
-
-        return {c0, 1.0 + beta, inv_g_half};
+        return get_shelf(w2 * g_linear, w2 / g_linear, inv_g_half);
     }
 
     std::array<double, 5> IvantsovSVFCoeff::get2LowPass(const double w0, const double q) {

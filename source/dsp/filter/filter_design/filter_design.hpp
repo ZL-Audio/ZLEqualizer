@@ -110,6 +110,18 @@ namespace zldsp::filter::FilterDesign {
             }
             return 1;
         }
+        if (n == 2) {
+            if constexpr (filter_type == kLowPass) {
+                coeffs[start_idx] = Coeff::get2LowPass(w0, q0);
+            }
+            if constexpr (filter_type == kHighPass) {
+                coeffs[start_idx] = Coeff::get2HighPass(w0, q0);
+            }
+            if constexpr (filter_type == kAllPass) {
+                coeffs[start_idx] = Coeff::get2AllPass(w0, q0);
+            }
+            return 1;
+        }
         const size_t number = n / 2;
         const auto theta0 = pi / static_cast<double>(number) / 4;
         const auto scale = std::pow(std::sqrt(2.0) * q0, 1 / static_cast<double>(number));
@@ -206,10 +218,8 @@ namespace zldsp::filter::FilterDesign {
                                 std::span<std::array<double, 5>> coeffs) {
         if (n < 2) { return 0; }
         const size_t number = n / 2;
-        const auto halfbw = std::asinh(0.5 / q0) / std::log(2);
-        const auto w = w0 / std::pow(2, halfbw);
         const auto g = dbToGain(-6 / static_cast<double>(n));
-        const auto _q = std::sqrt(1 - g * g) * w * w0 / g / (w0 * w0 - w * w);
+        const auto _q = q0 * std::sqrt(1 - g * g) / g;
 
         const auto single_coeff = Coeff::get2BandPass(w0, _q);
         for (size_t i = 0; i < n / 2; ++i) {
@@ -224,10 +234,8 @@ namespace zldsp::filter::FilterDesign {
                              std::span<std::array<double, 5>> coeffs) {
         if (n < 2) { return 0; }
         const size_t number = n / 2;
-        const auto halfbw = std::asinh(0.5 / q0) / std::log(2);
-        const auto w = w0 / std::pow(2, halfbw);
         const auto g = dbToGain(-6 / static_cast<double>(n));
-        const auto _q = g * w * w0 / std::sqrt((1 - g * g)) / (w0 * w0 - w * w);
+        const auto _q = q0 * g / std::sqrt(1 - g * g);
 
         const auto single_coeff = Coeff::get2Notch(w0, _q);
         for (size_t i = 0; i < n / 2; ++i) {

@@ -24,6 +24,7 @@ LICENSE and CODE are available at [https://github.com/ZL-Audio/ZLEqualizer](http
 
 ### Improvements
 
+- improve dynamic filter and automated filter performance
 - improve FFT performance and display stability
 - improve automatic FFT freeze behavior
 
