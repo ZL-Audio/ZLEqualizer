@@ -3,10 +3,10 @@ name: Nightly Release
 on:
   workflow_dispatch:
 
-# Cancel older runs of this workflow on the same ref.
+# Serialize nightly runs across refs so a newer run cannot interrupt publication.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: nightly-build-${{ github.event.repository.name }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -143,6 +143,7 @@ jobs:
         with:
           name: ${{ matrix.name }}
           path: "${{ env.ARTIFACT_NAME }}.dmg"
+          if-no-files-found: error
 
       - name: Install WiX v5 (Windows)
         if: ${{ runner.os == 'Windows' }}
@@ -176,6 +177,7 @@ jobs:
         with:
           name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.msi"
+          if-no-files-found: error
 
       - name: Generate Zip (Linux)
         if: ${{ runner.os == 'Linux' }}
@@ -188,53 +190,12 @@ jobs:
         with:
           name: ${{ matrix.name }}
           path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
+          if-no-files-found: error
 
   nightly_release:
-    runs-on: ubuntu-latest
     needs: build_and_test
-    permissions:
-      contents: write
-      id-token: write
-      attestations: write
-
-    steps:
-      - name: Get Artifacts
-        uses: actions/download-artifact@v8
-        with:
-          path: "current_release"
-
-      - name: Checkout current repo
-        uses: actions/checkout@v7
-        with:
-          submodules: false
-          path: "current_repo"
-
-      - name: Download nightly-release repo
-        uses: actions/checkout@v7
-        with:
-          repository: "ZL-Audio/ZLNightlyRelease"
-          fetch-depth: 0
-          path: "release_repo"
-          ssh-key: ${{ secrets.SSH_NIGHTLY_RELEASE_DEPLOY_KEY }}
-
-      - name: Remove old release assets
-        run: |
-          rm -rf "release_repo/${{ github.event.repository.name }}"
-          mkdir -p "release_repo/${{ github.event.repository.name }}"
-          ls "current_release/"
-
-      - name: Move current release assets
-        run: |
-          mv -v "current_release"/* "release_repo/${{ github.event.repository.name }}/"
-
-      - name: Commit release repo
-        run: |
-          cd "release_repo"
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git checkout --orphan newBranch
-          git add -A
-          git commit -m "release"
-          git branch -D main
-          git branch -m main
-          git push -f origin main
+    uses: ZL-Audio/ZLNightlyRelease/.github/workflows/release.yml@main
+    with:
+      tag: ${{ github.event.repository.name }}
+    secrets:
+      NIGHTLY_RELEASE_TOKEN: ${{ secrets.NIGHTLY_RELEASE_TOKEN }}
