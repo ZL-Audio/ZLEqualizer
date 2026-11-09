@@ -123,14 +123,9 @@ namespace zldsp::filter::FilterDesign {
             return 1;
         }
         const size_t number = n / 2;
-        const auto theta0 = pi / static_cast<double>(number) / 4;
-        const auto scale = std::pow(std::sqrt(2.0) * q0, 1 / static_cast<double>(number));
-        const auto rescale_base = std::log10(std::sqrt(2.0) * q0) / std::pow(static_cast<double>(n), 1.5) * 12;
+        const PassQDistribution distribution(n, q0);
         for (size_t i = 0; i < number; i++) {
-            const auto centered = static_cast<double>(i) - static_cast<double>(number) / 2 + 0.5;
-            const auto rescale = centered * rescale_base;
-            const auto theta = theta0 * static_cast<double>(2 * i + 1);
-            const auto qs = 1.0 / 2.0 / std::cos(theta) * scale * std::pow(2, rescale);
+            const auto qs = distribution.get(i);
             if constexpr (filter_type == kLowPass) {
                 coeffs[i + start_idx] = Coeff::get2LowPass(w0, qs);
             }
@@ -176,22 +171,19 @@ namespace zldsp::filter::FilterDesign {
         }
         const size_t number = n / 2;
         const auto _g = g_dB / static_cast<double>(number);
-        const auto theta0 = pi / static_cast<double>(number) / 4;
-        const auto scale = std::pow(std::sqrt(2.0) * q0, 1 / static_cast<double>(number));
-        const auto rescale_base = std::log10(std::sqrt(2.0) * q0) / std::pow(static_cast<double>(n), 1.5) * 12;
+        // Every section uses the same cutoff and gain during this update.
+        const auto context = Coeff::get2ShelfContext(w0, _g);
+        const PassQDistribution distribution(n, q0);
         for (size_t i = 0; i < number; i++) {
-            const auto centered = static_cast<double>(i) - static_cast<double>(number) / 2 + 0.5;
-            const auto rescale = centered * rescale_base;
-            const auto theta = theta0 * static_cast<double>(2 * i + 1);
-            const auto _q = 1.0 / 2.0 / std::cos(theta) * scale * std::pow(2, rescale);
+            const auto _q = distribution.get(i);
             if constexpr (filter_type == kLowShelf) {
-                coeffs[i + start_idx] = Coeff::get2LowShelf(w0, _g, _q);
+                coeffs[i + start_idx] = Coeff::get2LowShelf(context, _q);
             }
             if constexpr (filter_type == kHighShelf) {
-                coeffs[i + start_idx] = Coeff::get2HighShelf(w0, _g, _q);
+                coeffs[i + start_idx] = Coeff::get2HighShelf(context, _q);
             }
             if constexpr (filter_type == kTiltShelf) {
-                coeffs[i + start_idx] = Coeff::get2TiltShelf(w0, _g, _q);
+                coeffs[i + start_idx] = Coeff::get2TiltShelf(context, _q);
             }
         }
         return number;
@@ -200,14 +192,9 @@ namespace zldsp::filter::FilterDesign {
     template <class Coeff>
     inline void updateShelfDynamicCache(const size_t n, const double w0, const double q0, double* cache) {
         const size_t number = n / 2;
-        const auto theta0 = pi / static_cast<double>(number) / 4;
-        const auto scale = std::pow(std::sqrt(2.0) * q0, 1 / static_cast<double>(number));
-        const auto rescale_base = std::log10(std::sqrt(2.0) * q0) / std::pow(static_cast<double>(n), 1.5) * 12;
+        const PassQDistribution distribution(n, q0);
         for (size_t i = 0; i < number; i++) {
-            const auto centered = static_cast<double>(i) - static_cast<double>(number) / 2 + 0.5;
-            const auto rescale = centered * rescale_base;
-            const auto theta = theta0 * static_cast<double>(2 * i + 1);
-            const auto _q = 1.0 / 2.0 / std::cos(theta) * scale * std::pow(2, rescale);
+            const auto _q = distribution.get(i);
             Coeff::update2ShelfDynamicCache(w0, _q, cache + (i * 3));
         }
     }
@@ -340,6 +327,11 @@ namespace zldsp::filter::FilterDesign {
             return updateBandPassCoeffs<Coeff>(n, 0, w0, q0, coeffs);
         case kAllPass:
             return updatePassCoeffs<Coeff, kAllPass>(n, 0, w0, q0, coeffs);
+#if ZL_ENABLE_SCALED_PASS
+        case kScaledLowPass:
+        case kScaledHighPass:
+            return 0;
+#endif
         default:
             return 0;
         }
@@ -380,6 +372,10 @@ namespace zldsp::filter::FilterDesign {
         case kFlatGain:
         case kLowPass:
         case kHighPass:
+#if ZL_ENABLE_SCALED_PASS
+        case kScaledLowPass:
+        case kScaledHighPass:
+#endif
         case kNotch:
         case kBandPass:
         case kAllPass:
@@ -508,6 +504,10 @@ namespace zldsp::filter::FilterDesign {
         }
         case kLowPass:
         case kHighPass:
+#if ZL_ENABLE_SCALED_PASS
+        case kScaledLowPass:
+        case kScaledHighPass:
+#endif
         case kNotch:
         case kBandPass:
         case kAllPass:

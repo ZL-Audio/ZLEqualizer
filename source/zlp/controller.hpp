@@ -73,6 +73,15 @@ namespace zlp {
             to_update_.signal();
         }
 
+#if ZL_ENABLE_SCALED_PASS
+        void setScale(const size_t idx, const double scale) {
+            if (!std::isfinite(scale)) { return; }
+            scales_[idx].store(std::clamp(scale, 0.0, 1.0), std::memory_order::relaxed);
+            empty_update_flags_[idx].signal();
+            to_update_.signal();
+        }
+#endif
+
         void setLRMS(const size_t idx, const FilterStereo filter_stereo) {
             lrms_[idx].store(filter_stereo, std::memory_order::relaxed);
             to_update_lrms_.signal();
@@ -304,6 +313,10 @@ namespace zlp {
         std::array<zlchore::thread::Notifier, kBandNum> side_empty_update_flags_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> filter_paras_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> side_filter_paras_{};
+#if ZL_ENABLE_SCALED_PASS
+        std::array<std::atomic<double>, kBandNum> scales_ = make_array_of<std::atomic<double>, kBandNum>(1.0);
+        std::array<double, kBandNum> c_scales_{};
+#endif
         // dynamic handlers
         std::array<zldsp::filter::DynamicSideHandler<double>, kBandNum> dynamic_side_handlers_
             = make_array_of<zldsp::filter::DynamicSideHandler<double>, kBandNum>();

@@ -13,7 +13,11 @@
 
 #include "../../../vector/vector.hpp"
 #include "../iir/iir.hpp"
+#if ZL_ENABLE_SCALED_PASS
+#include "../../scaled_pass/state.hpp"
+#endif
 #include "../tdf/tdf_base.hpp"
+#include "../coeff/ivantsov_coeff.hpp"
 
 namespace zldsp::filter {
     /**
@@ -22,19 +26,25 @@ namespace zldsp::filter {
      * @tparam kFilterSize the number of cascading filters
      */
     template <typename FloatType, size_t kFilterSize>
-    class Parallel final : public IIR<kFilterSize> {
+    class Parallel final : public IIR<kFilterSize, IvantsovCoeff> {
     public:
         Parallel() :
-            IIR<kFilterSize>() {
+            IIR<kFilterSize, IvantsovCoeff>() {
         }
 
         void reset() override {
+#if ZL_ENABLE_SCALED_PASS
+            scaled_state_.reset();
+#endif
             std::ranges::fill(s1s_, static_cast<FloatType>(0));
             std::ranges::fill(s2s_, static_cast<FloatType>(0));
         }
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) override {
-            IIR<kFilterSize>::prepareSampleRate(sample_rate);
+            IIR<kFilterSize, IvantsovCoeff>::prepareSampleRate(sample_rate);
+#if ZL_ENABLE_SCALED_PASS
+            scaled_state_.prepare(num_channels);
+#endif
             s1s_.assign(num_channels * kFilterSize, static_cast<FloatType>(0));
             s2s_.assign(num_channels * kFilterSize, static_cast<FloatType>(0));
             parallel_buffers_.resize(num_channels);
@@ -55,10 +65,8 @@ namespace zldsp::filter {
             if (this->current_filter_num_ == 0) {
                 return;
             }
-            const auto order = (this->c_filter_type_ == kFlatTilt || this->c_filter_type_ == kFlatGain)
-                                   ? 0
-                                   : this->c_order_;
-            if (this->c_freq_.isSmoothing() || this->c_gain_.isSmoothing() || this->c_q_.isSmoothing()) {
+            const auto order = this->getProcessingOrder();
+            if (this->isSmoothing()) {
                 if (should_be_parallel_) {
                     if (order == 2) {
                         processParallel<2, bypass, true, true>(buffer, num_samples);
@@ -101,9 +109,7 @@ namespace zldsp::filter {
         void processParallel(std::span<FloatType*> buffer, const size_t num_samples) {
             for (size_t i = 0; i < num_samples; ++i) {
                 if constexpr (smooth) {
-                    this->c_freq_.getNext();
-                    this->c_gain_.getNext();
-                    this->c_q_.getNext();
+                    this->advanceSmoothing();
                     updateCoeffs();
                 }
                 for (size_t channel = 0; channel < buffer.size(); ++channel) {
@@ -122,9 +128,15 @@ namespace zldsp::filter {
 
         template <int order>
         FloatType processSample(const size_t channel, FloatType sample) {
+#if ZL_ENABLE_SCALED_PASS
+            if (isScaledPass(this->c_filter_type_)) {
+                return static_cast<FloatType>(scaled_state_.process(this->getScaledCoefficients(), channel,
+                                                                    static_cast<double>(sample)));
+            }
+#endif
             const size_t channel_offset = channel * kFilterSize;
             if constexpr (order == 1) {
-                const auto& coeff{IIR<kFilterSize>::coeffs_[0]};
+                const auto& coeff{IIR<kFilterSize, IvantsovCoeff>::coeffs_[0]};
                 auto& s1{s1s_[channel_offset]};
                 const auto output = sample * coeff[2] + s1;
                 s1 = (sample * coeff[3]) - (output * coeff[0]);
@@ -132,7 +144,7 @@ namespace zldsp::filter {
                 return sample;
             }
             if constexpr (order == 2) {
-                const auto& coeff{IIR<kFilterSize>::coeffs_[0]};
+                const auto& coeff{IIR<kFilterSize, IvantsovCoeff>::coeffs_[0]};
                 auto& s1{s1s_[channel_offset]};
                 auto& s2{s2s_[channel_offset]};
                 const auto output = sample * coeff[2] + s1;
@@ -142,7 +154,7 @@ namespace zldsp::filter {
                 return sample;
             }
             for (size_t filter_idx = 0; filter_idx < this->current_filter_num_; ++filter_idx) {
-                const auto& coeff{IIR<kFilterSize>::coeffs_[filter_idx]};
+                const auto& coeff{IIR<kFilterSize, IvantsovCoeff>::coeffs_[filter_idx]};
                 auto& s1{s1s_[channel_offset + filter_idx]};
                 auto& s2{s2s_[channel_offset + filter_idx]};
                 const auto output = sample * coeff[2] + s1;
@@ -196,9 +208,7 @@ namespace zldsp::filter {
                 parallel_multiplier_ = static_cast<FloatType>(dbToGain(this->c_gain_.getCurrent()) - 1.0);
             } else {
                 should_be_parallel_ = false;
-                this->current_filter_num_ = FilterDesign::updateCoeffs<IvantsovCoeff>(this->c_filter_type_, this->c_order_,
-                                                                              next_freq, this->sample_rate_,
-                                                                              next_gain, next_q, this->coeffs_);
+                this->designCoeffs();
             }
         }
 
@@ -234,6 +244,9 @@ namespace zldsp::filter {
         }
 
     private:
+#if ZL_ENABLE_SCALED_PASS
+        scaled_pass::State<false> scaled_state_{};
+#endif
         std::vector<FloatType> s1s_{};
         std::vector<FloatType> s2s_{};
         std::vector<std::vector<FloatType>> parallel_buffers_;

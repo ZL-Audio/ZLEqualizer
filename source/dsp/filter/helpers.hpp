@@ -9,6 +9,10 @@
 
 #pragma once
 
+#ifndef ZL_ENABLE_SCALED_PASS
+#define ZL_ENABLE_SCALED_PASS 1
+#endif
+
 #include <cmath>
 #include <array>
 #include <numeric>
@@ -25,8 +29,35 @@ namespace zldsp::filter {
 
     enum FilterType {
         kPeak, kLowShelf, kLowPass, kHighShelf, kHighPass,
-        kNotch, kBandPass, kTiltShelf, kFlatTilt, kAllPass, kFlatGain
+        kNotch, kBandPass, kTiltShelf, kFlatTilt, kAllPass, kFlatGain,
+#if ZL_ENABLE_SCALED_PASS
+        kScaledLowPass, kScaledHighPass
+#endif
     };
+
+#if ZL_ENABLE_SCALED_PASS
+    inline constexpr bool isScaledPass(const FilterType type) {
+        return type == kScaledLowPass || type == kScaledHighPass;
+    }
+#endif
+
+    inline constexpr bool isLowPass(const FilterType type) {
+#if ZL_ENABLE_SCALED_PASS
+        if (type == kScaledLowPass) { return true; }
+#endif
+        return type == kLowPass;
+    }
+
+    inline constexpr bool isHighPass(const FilterType type) {
+#if ZL_ENABLE_SCALED_PASS
+        if (type == kScaledHighPass) { return true; }
+#endif
+        return type == kHighPass;
+    }
+
+    inline constexpr bool isPass(const FilterType type) {
+        return isLowPass(type) || isHighPass(type);
+    }
 
     enum FilterStructure {
         kIIR, kSVF, kParallel
@@ -55,4 +86,26 @@ namespace zldsp::filter {
         const auto scale = std::pow(2, bw / 2);
         return {w0 / scale, w0 * scale};
     }
+
+    class PassQDistribution {
+    public:
+        PassQDistribution(const size_t order, const double q) :
+            number_(static_cast<double>(order / 2)), q_(q) {
+            if (order > 2) {
+                theta_ = pi / number_ / 4.0;
+                scale_ = std::pow(std::sqrt(2.0) * q, 1.0 / number_);
+                rescale_ = std::log10(std::sqrt(2.0) * q) / std::pow(static_cast<double>(order), 1.5) * 12.0;
+            }
+        }
+
+        double get(const size_t i) const {
+            if (number_ <= 1.0) { return q_; }
+            const auto centered = static_cast<double>(i) - number_ / 2.0 + 0.5;
+            return 1.0 / 2.0 / std::cos(theta_ * static_cast<double>(2 * i + 1))
+                   * scale_ * std::pow(2.0, centered * rescale_);
+        }
+
+    private:
+        double number_, q_, theta_{}, scale_{}, rescale_{};
+    };
 }

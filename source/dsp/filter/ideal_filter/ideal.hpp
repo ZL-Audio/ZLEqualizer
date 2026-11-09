@@ -9,9 +9,13 @@
 
 #pragma once
 
+#include <algorithm>
 #include "ideal_base.hpp"
 #include "coeff/ideal_coeff.hpp"
 #include "../filter_design/filter_design.hpp"
+#if ZL_ENABLE_SCALED_PASS
+#include "../scaled_pass/design.hpp"
+#endif
 #include "../../chore/decibels.hpp"
 
 namespace zldsp::filter {
@@ -25,6 +29,10 @@ namespace zldsp::filter {
     public:
         Ideal() = default;
 
+        /**
+         * set the sample rate used to calculate the prototype response
+         * @param sample_rate a finite, positive sample rate in Hz
+         */
         void prepare(const double sample_rate) {
             sample_rate_ = sample_rate;
         }
@@ -38,6 +46,21 @@ namespace zldsp::filter {
             updateCoeffs();
         }
 
+#if ZL_ENABLE_SCALED_PASS
+        /**
+         * set the magnitude scale of a scaled low/high-pass filter
+         * @param scale a finite magnitude scale in [0, 1]
+         */
+        void setScale(const double scale) {
+            c_scale_ = scale;
+        }
+
+        [[nodiscard]] double getScale() const { return c_scale_; }
+
+        [[nodiscard]] const scaled_pass::Coefficients& getScaledCoefficients() const {
+            return scaled_design_.getCoefficients();
+        }
+#endif
         void setFreq(const double freq) {
             c_freq_ = freq;
         }
@@ -79,10 +102,19 @@ namespace zldsp::filter {
         }
 
         void updateCoeffs() {
-            current_filter_num_ = updateIIRCoeffs(c_filter_type_, c_order_,
-                                                  c_freq_, sample_rate_,
-                                                  c_gain_, c_q_,
-                                                  coeffs_);
+#if ZL_ENABLE_SCALED_PASS
+            if (isScaledPass(c_filter_type_)) {
+                scaled_design_.update(c_filter_type_, c_order_, c_freq_, sample_rate_, c_q_, c_scale_);
+                current_filter_num_ = scaled_design_.getCoefficients().size();
+                return;
+            }
+#endif
+            current_filter_num_ = FilterDesign::updateCoeffs<IdealCoeff>(
+                c_filter_type_, c_order_, c_freq_, sample_rate_, c_gain_, c_q_, coeffs_);
+        }
+
+        bool usesFirstOrderSections() const {
+            return c_filter_type_ == kFlatTilt || (c_order_ == 1 && c_filter_type_ != kFlatGain);
         }
 
         FloatType getCenterMagnitudeSquare(FloatType w) const {
@@ -93,13 +125,28 @@ namespace zldsp::filter {
         }
 
         void updateMagnitudeSquare(std::span<FloatType> ws, std::span<FloatType> gains) const {
+#if ZL_ENABLE_SCALED_PASS
+            if (isScaledPass(c_filter_type_)) {
+                for (size_t i = 0; i < ws.size(); ++i) {
+                    gains[i] = static_cast<FloatType>(scaled_pass::getIdealMagnitudeSquare(
+                        scaled_design_.getCoefficients(), static_cast<double>(ws[i])));
+                }
+                return;
+            }
+#endif
             if (current_filter_num_ == 0) {
                 std::fill(gains.begin(), gains.end(), static_cast<FloatType>(1.0));
                 return;
             }
-            IdealBase<FloatType>::template updateMagnitudeSquare<true>(coeffs_[0], ws, gains);
-            for (size_t i = 1; i < current_filter_num_; ++i) {
-                IdealBase<FloatType>::template updateMagnitudeSquare<false>(coeffs_[i], ws, gains);
+            std::ranges::fill(gains, static_cast<FloatType>(1.0));
+            for (size_t i = 0; i < current_filter_num_; ++i) {
+                if (usesFirstOrderSections()) {
+                    const auto& c = coeffs_[i];
+                    IdealBase<FloatType>::template updateMagnitudeSquare<false>(
+                        std::array<double, 3>{c[0], c[2], c[3]}, ws, gains);
+                } else {
+                    IdealBase<FloatType>::template updateMagnitudeSquare<false>(coeffs_[i], ws, gains);
+                }
             }
         }
 
@@ -116,6 +163,10 @@ namespace zldsp::filter {
         }
 
     protected:
+#if ZL_ENABLE_SCALED_PASS
+        scaled_pass::Designer<IdealCoeff> scaled_design_{};
+        double c_scale_{1.0};
+#endif
         std::array<std::array<double, 5>, kFilterSize> coeffs_{};
         size_t current_filter_num_{1};
         double c_gain_{0.0}, c_q_{0.707}, c_freq_{1000.0};
@@ -124,10 +175,5 @@ namespace zldsp::filter {
 
         double sample_rate_{48000.0};
 
-        static size_t updateIIRCoeffs(const FilterType filter_type, const size_t n,
-                                      const double f, const double fs, const double g0, const double q0,
-                                      std::array<std::array<double, 5>, kFilterSize>& coeffs) {
-            return FilterDesign::updateCoeffs<IdealCoeff>(filter_type, n, f, fs, g0, q0, coeffs);
-        }
     };
 }

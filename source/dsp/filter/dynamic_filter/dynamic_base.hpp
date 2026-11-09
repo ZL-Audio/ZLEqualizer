@@ -74,9 +74,10 @@ namespace zldsp::filter {
                     filter_.template setGain<true>(handler_.getBaseGain());
                     filter_.updateCoeffs();
                 }
-                // make sure that freq & q are update to date
+                // apply frequency and Q targets and refresh the section layout
                 if (filter_.isFreqQSmoothing()) {
                     filter_.skipSmooth();
+                    filter_.updateCoeffs();
                 }
                 // calculate portion using SIMD
                 handler_.process(side_buffer, num_samples);

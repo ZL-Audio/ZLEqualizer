@@ -73,10 +73,18 @@ namespace zlp {
         for (size_t i = 0; i < kBandNum; ++i) {
             filter_paras_[i] = emptys_[i].getParas();
             side_filter_paras_[i] = side_emptys_[i].getParas();
+#if ZL_ENABLE_SCALED_PASS
+            c_scales_[i] = scales_[i].load(std::memory_order_relaxed);
+#endif
         }
 
         for (size_t i = 0; i < kBandNum; ++i) {
             dynamic_side_handlers_[i].prepare(sample_rate, 41. / 1000.);
+#if ZL_ENABLE_SCALED_PASS
+            tdf_filters_[i].getFilter().setScale<true>(c_scales_[i]);
+            svf_filters_[i].getFilter().setScale<true>(c_scales_[i]);
+            parallel_filters_[i].getFilter().setScale<true>(c_scales_[i]);
+#endif
             tdf_filters_[i].prepare(sample_rate, 2, max_num_samples);
             tdf_filters_[i].getFilter().updateParas(filter_paras_[i]);
             svf_filters_[i].prepare(sample_rate, 2, max_num_samples);
@@ -86,6 +94,10 @@ namespace zlp {
             side_filters_[i].prepare(sample_rate, 2, max_num_samples);
             side_filters_[i].updateParas(side_filter_paras_[i]);
             res_ideals_[i].prepare(sample_rate);
+#if ZL_ENABLE_SCALED_PASS
+            res_ideals_[i].setScale(c_scales_[i]);
+            res_tdfs_[i].setScale<true>(c_scales_[i]);
+#endif
             res_tdfs_[i].prepare(sample_rate, 1, 0);
         }
         match_stereo_fir_.prepare(sample_rate);
@@ -243,6 +255,9 @@ namespace zlp {
             if (empty_update_flags_[i].check()) {
                 const auto filter_type = filter_paras_[i].filter_type;
                 filter_paras_[i] = emptys_[i].getParas();
+#if ZL_ENABLE_SCALED_PASS
+                c_scales_[i] = scales_[i].load(std::memory_order_relaxed);
+#endif
                 if (c_sgc_on_) {
                     to_update_sgc = true;
                     sgc_values_[i] = zldsp::filter::getGainCompensation(filter_paras_[i]);
@@ -259,16 +274,25 @@ namespace zlp {
                     current_gains_[i].store(filter_paras_[i].gain, std::memory_order::relaxed);
                 }
                 if (c_filter_structure_ == kSVF) {
+#if ZL_ENABLE_SCALED_PASS
+                    svf_filters_[i].getFilter().setScale(c_scales_[i]);
+#endif
                     svf_filters_[i].getFilter().updateParas(filter_paras_[i]);
                     if (c_dynamic_on_[i]) {
                         svf_filters_[i].getFilter().cacheDynPara();
                     }
                 } else if (c_filter_structure_ == kParallel) {
+#if ZL_ENABLE_SCALED_PASS
+                    parallel_filters_[i].getFilter().setScale(c_scales_[i]);
+#endif
                     parallel_filters_[i].getFilter().updateParas(filter_paras_[i]);
                     if (c_dynamic_on_[i]) {
                         parallel_filters_[i].getFilter().cacheDynPara();
                     }
                 } else {
+#if ZL_ENABLE_SCALED_PASS
+                    tdf_filters_[i].getFilter().setScale(c_scales_[i]);
+#endif
                     tdf_filters_[i].getFilter().updateParas(filter_paras_[i]);
                     if (c_dynamic_on_[i]) {
                         tdf_filters_[i].getFilter().cacheDynPara();
@@ -382,6 +406,10 @@ namespace zlp {
     void Controller::prepareCorrection() {
         for (const auto& idx : correction_on_total_) {
             if (res_update_flags_[idx]) {
+#if ZL_ENABLE_SCALED_PASS
+                res_tdfs_[idx].setScale<true>(c_scales_[idx]);
+                res_ideals_[idx].setScale(c_scales_[idx]);
+#endif
                 res_tdfs_[idx].forceUpdate(filter_paras_[idx]);
                 res_ideals_[idx].forceUpdate(filter_paras_[idx]);
             }
@@ -450,8 +478,7 @@ namespace zlp {
             }
             if (side_empty_update_flags_[i].check()) {
                 auto side_para = side_emptys_[i].getParas();
-                if (side_para.filter_type == zldsp::filter::kLowPass
-                    || side_para.filter_type == zldsp::filter::kHighPass) {
+                if (zldsp::filter::isPass(side_para.filter_type)) {
                     side_para.q = std::sqrt(2.0) * .5;
                 }
                 side_filter_paras_[i] = side_para;
@@ -1038,12 +1065,18 @@ namespace zlp {
             break;
         }
         case zldsp::filter::kLowShelf:
+#if ZL_ENABLE_SCALED_PASS
+        case zldsp::filter::kScaledHighPass:
+#endif
         case zldsp::filter::kHighPass: {
             paras.q = std::sqrt(2.0) * 0.5;
             paras.filter_type = c_solo_side_ ? zldsp::filter::kHighPass : zldsp::filter::kLowPass;
             break;
         }
         case zldsp::filter::kHighShelf:
+#if ZL_ENABLE_SCALED_PASS
+        case zldsp::filter::kScaledLowPass:
+#endif
         case zldsp::filter::kLowPass: {
             paras.q = std::sqrt(2.0) * 0.5;
             paras.filter_type = c_solo_side_ ? zldsp::filter::kLowPass : zldsp::filter::kHighPass;

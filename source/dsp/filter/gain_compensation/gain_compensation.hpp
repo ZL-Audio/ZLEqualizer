@@ -119,6 +119,10 @@ namespace zldsp::filter {
         }
         case kLowPass:
         case kHighPass:
+#if ZL_ENABLE_SCALED_PASS
+        case kScaledLowPass:
+        case kScaledHighPass:
+#endif
         case kBandPass:
         case kNotch:
         case kTiltShelf:

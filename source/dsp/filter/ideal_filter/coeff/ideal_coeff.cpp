@@ -81,27 +81,42 @@ namespace zldsp::filter {
         return {w0 / A / q, w02, 1, w0 * A / q, w02};
     }
 
-    std::array<double, 5> IdealCoeff::get2TiltShelf(double w0, const double g, const double q) {
+    IdealCoeff::ShelfContext IdealCoeff::get2ShelfContext(double w0, const double g) {
         w0 = w0 * ppi;
-        const auto A = std::exp2(g * kDbToExp2Sqrt);;
-        const auto Awq = std::sqrt(A) * w0 / q;
-        const auto w02 = w0 * w0;
+        const auto A = std::exp2(g * kDbToExp2Sqrt);
+        return {w0 * w0, A, std::sqrt(A) * w0};
+    }
+
+    std::array<double, 5> IdealCoeff::get2TiltShelf(const double w0, const double g, const double q) {
+        return get2TiltShelf(get2ShelfContext(w0, g), q);
+    }
+
+    std::array<double, 5> IdealCoeff::get2TiltShelf(const ShelfContext& context, const double q) {
+        const auto A = context.gain_sqrt;
+        const auto Awq = context.damping_scale / q;
+        const auto w02 = context.w2;
         return {Awq, A * w02, A, Awq, w02};
     }
 
-    std::array<double, 5> IdealCoeff::get2LowShelf(double w0, const double g, const double q) {
-        w0 = w0 * ppi;
-        const auto A = std::exp2(g * kDbToExp2Sqrt);;
-        const auto Awq = std::sqrt(A) * w0 / q;
-        const auto w02 = w0 * w0;
+    std::array<double, 5> IdealCoeff::get2LowShelf(const double w0, const double g, const double q) {
+        return get2LowShelf(get2ShelfContext(w0, g), q);
+    }
+
+    std::array<double, 5> IdealCoeff::get2LowShelf(const ShelfContext& context, const double q) {
+        const auto A = context.gain_sqrt;
+        const auto Awq = context.damping_scale / q;
+        const auto w02 = context.w2;
         return {Awq / A, w02 / A, 1.0, Awq, A * w02};
     }
 
-    std::array<double, 5> IdealCoeff::get2HighShelf(double w0, const double g, const double q) {
-        w0 = w0 * ppi;
-        const auto A = std::exp2(g * kDbToExp2Sqrt);
-        const auto Awq = std::sqrt(A) * w0 / q;
-        const auto w02 = w0 * w0;
+    std::array<double, 5> IdealCoeff::get2HighShelf(const double w0, const double g, const double q) {
+        return get2HighShelf(get2ShelfContext(w0, g), q);
+    }
+
+    std::array<double, 5> IdealCoeff::get2HighShelf(const ShelfContext& context, const double q) {
+        const auto A = context.gain_sqrt;
+        const auto Awq = context.damping_scale / q;
+        const auto w02 = context.w2;
         return {Awq, A * w02, A * A, A * Awq, A * w02};
     }
 }

@@ -12,12 +12,68 @@
 #include <span>
 #include <array>
 #include <complex>
+#include <numbers>
 #include "../../vector/highway_import.hpp"
 
 namespace zldsp::filter {
     template <typename FloatType>
     class IdealBase {
     public:
+        template <bool replace = true>
+        static void updateMagnitudeSquare(const std::array<double, 3>& coeff,
+                                          std::span<const FloatType> ws,
+                                          std::span<FloatType> res_mag_sqr) {
+            for (size_t i = 0; i < ws.size(); ++i) {
+                const auto w2 = static_cast<double>(ws[i]) * static_cast<double>(ws[i]);
+                const auto gain = static_cast<FloatType>((coeff[1] * coeff[1] * w2 + coeff[2] * coeff[2])
+                                                         / (w2 + coeff[0] * coeff[0]));
+                if constexpr (replace) { res_mag_sqr[i] = gain; }
+                else { res_mag_sqr[i] *= gain; }
+            }
+        }
+
+        template <bool replace = true>
+        static void updateResponse(const std::array<double, 3>& coeff,
+                                   std::span<const FloatType> ws,
+                                   std::span<FloatType> res_real, std::span<FloatType> res_imag) {
+            namespace hn = hwy::HWY_NAMESPACE;
+            static constexpr hn::ScalableTag<FloatType> d;
+            static constexpr size_t lanes = hn::MaxLanes(d);
+            const auto a2 = static_cast<FloatType>(coeff[0] * coeff[0]);
+            const auto b1 = static_cast<FloatType>(coeff[1]);
+            const auto b0a = static_cast<FloatType>(coeff[2] * coeff[0]);
+            const auto imaginary = static_cast<FloatType>(coeff[1] * coeff[0] - coeff[2]);
+            const auto va2 = hn::Set(d, a2), vb1 = hn::Set(d, b1);
+            const auto vb0a = hn::Set(d, b0a), vi = hn::Set(d, imaginary);
+            size_t i = 0;
+            for (; i + lanes <= ws.size(); i += lanes) {
+                const auto w = hn::LoadU(d, ws.data() + i), w2 = hn::Mul(w, w);
+                const auto den = hn::Add(w2, va2);
+                const auto hr = hn::Div(hn::MulAdd(vb1, w2, vb0a), den);
+                const auto hi = hn::Div(hn::Mul(vi, w), den);
+                if constexpr (replace) {
+                    hn::StoreU(hr, d, res_real.data() + i);
+                    hn::StoreU(hi, d, res_imag.data() + i);
+                } else {
+                    const auto rr = hn::LoadU(d, res_real.data() + i), ri = hn::LoadU(d, res_imag.data() + i);
+                    hn::StoreU(hn::Sub(hn::Mul(rr, hr), hn::Mul(ri, hi)), d, res_real.data() + i);
+                    hn::StoreU(hn::MulAdd(rr, hi, hn::Mul(ri, hr)), d, res_imag.data() + i);
+                }
+            }
+            for (; i < ws.size(); ++i) {
+                const auto w = ws[i], w2 = w * w, den = w2 + a2;
+                const auto hr = (b1 * w2 + b0a) / den, hi = imaginary * w / den;
+                if constexpr (replace) {
+                    res_real[i] = hr;
+                    res_imag[i] = hi;
+                } else {
+                    const auto rr = res_real[i], ri = res_imag[i];
+                    res_real[i] = rr * hr - ri * hi;
+                    res_imag[i] = rr * hi + ri * hr;
+                }
+            }
+        }
+
         template <bool replace = true>
         static void updateMagnitudeSquare(const std::array<double, 5>& coeff,
                                           std::span<const FloatType> ws,

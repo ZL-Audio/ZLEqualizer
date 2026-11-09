@@ -10,10 +10,19 @@
 #pragma once
 
 #include <array>
+#include "ivantsov_common.hpp"
 
 namespace zldsp::filter {
     class IvantsovCoeff {
     public:
+        using ShelfContext = ivantsov::ShelfContext;
+
+        static std::array<double, 3> get1PassFromW2(double w2, bool hp);
+
+        static std::array<double, 5> get2PassFromW2(double w2, bool hp, double q);
+
+        static std::array<double, 5> getPeakFromW2(double w2, double gain, double q);
+
         static constexpr std::array<double, 5> getIdentity(const double gain) {
             return {0.0, 0.0, gain, 0.0, 0.0};
         }
@@ -55,6 +64,14 @@ namespace zldsp::filter {
         static std::array<double, 5> get2LowShelf(double w0, double g, double q);
 
         static std::array<double, 5> get2HighShelf(double w0, double g, double q);
+
+        static ShelfContext get2ShelfContext(double w0, double g);
+
+        static std::array<double, 5> get2LowShelf(const ShelfContext& context, double q);
+
+        static std::array<double, 5> get2HighShelf(const ShelfContext& context, double q);
+
+        static std::array<double, 5> get2TiltShelf(const ShelfContext& context, double q);
 
         static void update2PeakDynamicCache(double w0, double q, double* cache);
 

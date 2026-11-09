@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <array>
 #include <numbers>
 #include <vector>
 #include <span>
@@ -21,6 +22,55 @@ namespace zldsp::filter {
     template <typename FloatType>
     class TDFBase {
     public:
+        // first-order coefficients: pole increment, b0, numerator sum
+        template <bool replace = true>
+        static void updateResponse(const std::array<double, 3>& coeff,
+                                   std::span<const FloatType> wi_real, std::span<const FloatType> wi_imag,
+                                   std::span<FloatType> res_real, std::span<FloatType> res_imag) {
+            static constexpr hn::ScalableTag<FloatType> d;
+            static constexpr size_t lanes = hn::MaxLanes(d);
+            const auto delta = static_cast<FloatType>(coeff[0]);
+            const auto b0 = static_cast<FloatType>(coeff[1]);
+            const auto sum = static_cast<FloatType>(coeff[2]);
+            const auto vd = hn::Set(d, delta), vd1 = hn::Set(d, delta - static_cast<FloatType>(1));
+            const auto vb0 = hn::Set(d, b0), vsum = hn::Set(d, sum), vb1 = hn::Set(d, sum - b0);
+            const auto one = hn::Set(d, static_cast<FloatType>(1));
+            size_t i = 0;
+            for (; i + lanes <= wi_real.size(); i += lanes) {
+                const auto wr = hn::LoadU(d, wi_real.data() + i), wi = hn::LoadU(d, wi_imag.data() + i);
+                const auto minus = hn::Sub(one, wr);
+                const auto nr = hn::MulAdd(vb0, minus, hn::Mul(vsum, wr));
+                const auto ni = hn::Mul(vb1, wi);
+                const auto dr = hn::MulAdd(vd, wr, minus), di = hn::Mul(vd1, wi);
+                const auto den = hn::MulAdd(dr, dr, hn::Mul(di, di));
+                const auto hr = hn::Div(hn::MulAdd(nr, dr, hn::Mul(ni, di)), den);
+                const auto hi = hn::Div(hn::Sub(hn::Mul(ni, dr), hn::Mul(nr, di)), den);
+                if constexpr (replace) {
+                    hn::StoreU(hr, d, res_real.data() + i);
+                    hn::StoreU(hi, d, res_imag.data() + i);
+                } else {
+                    const auto rr = hn::LoadU(d, res_real.data() + i), ri = hn::LoadU(d, res_imag.data() + i);
+                    hn::StoreU(hn::Sub(hn::Mul(rr, hr), hn::Mul(ri, hi)), d, res_real.data() + i);
+                    hn::StoreU(hn::MulAdd(rr, hi, hn::Mul(ri, hr)), d, res_imag.data() + i);
+                }
+            }
+            for (; i < wi_real.size(); ++i) {
+                const auto minus = static_cast<FloatType>(1) - wi_real[i];
+                const auto nr = b0 * minus + sum * wi_real[i], ni = (sum - b0) * wi_imag[i];
+                const auto dr = minus + delta * wi_real[i], di = (delta - static_cast<FloatType>(1)) * wi_imag[i];
+                const auto den = dr * dr + di * di;
+                const auto hr = (nr * dr + ni * di) / den, hi = (ni * dr - nr * di) / den;
+                if constexpr (replace) {
+                    res_real[i] = hr;
+                    res_imag[i] = hi;
+                } else {
+                    const auto rr = res_real[i], ri = res_imag[i];
+                    res_real[i] = rr * hr - ri * hi;
+                    res_imag[i] = rr * hi + ri * hr;
+                }
+            }
+        }
+
         template <bool replace = true>
         static void updateResponse(const std::array<double, 5>& coeff,
                                    std::span<const FloatType> wi_real, std::span<const FloatType> wi_imag,

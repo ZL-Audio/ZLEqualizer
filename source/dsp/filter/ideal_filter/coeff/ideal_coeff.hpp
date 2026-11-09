@@ -14,6 +14,10 @@
 namespace zldsp::filter {
     class IdealCoeff {
     public:
+        struct ShelfContext {
+            double w2, gain_sqrt, damping_scale;
+        };
+
         static constexpr std::array<double, 5> getIdentity(const double gain) {
             return {1.0, 1.0, gain, gain, gain};
         }
@@ -47,6 +51,14 @@ namespace zldsp::filter {
         static std::array<double, 5> get2LowShelf(double w0, double g, double q);
 
         static std::array<double, 5> get2HighShelf(double w0, double g, double q);
+
+        static ShelfContext get2ShelfContext(double w0, double g);
+
+        static std::array<double, 5> get2LowShelf(const ShelfContext& context, double q);
+
+        static std::array<double, 5> get2HighShelf(const ShelfContext& context, double q);
+
+        static std::array<double, 5> get2TiltShelf(const ShelfContext& context, double q);
 
         static std::array<double, 5> pack1stOrder(const std::array<double, 3>& coeff, const double makeup_gain = 1.0) {
             return {coeff[0], 0.0, coeff[1] * makeup_gain, coeff[2] * makeup_gain, 0.0};

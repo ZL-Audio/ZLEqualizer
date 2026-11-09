@@ -35,9 +35,6 @@ namespace zldsp::filter {
     private:
         std::vector<float> decays_{};
 
-        void prepareCorrection(const size_t) override {
-        }
-
         void updateCorrection(const size_t idx) override {
             auto& proto_real{CorrectionCalculator<kFilterNum, kFilterSize>::proto_real_};
             auto& proto_imag{CorrectionCalculator<kFilterNum, kFilterSize>::proto_imag_};
