@@ -50,6 +50,8 @@ namespace zlp {
     }
 
     class Controller final : private juce::AsyncUpdater {
+        static_assert(ZL_ENABLE_FILTER_SCALED_PASS != 0, "zlp::Controller requires ZL_ENABLE_FILTER_SCALED_PASS to be enabled.");
+
     public:
         static constexpr size_t kFilterSize = 16;
 
@@ -73,14 +75,22 @@ namespace zlp {
             to_update_.signal();
         }
 
-#if ZL_ENABLE_SCALED_PASS
-        void setScale(const size_t idx, const double scale) {
-            if (!std::isfinite(scale)) { return; }
-            scales_[idx].store(std::clamp(scale, 0.0, 1.0), std::memory_order::relaxed);
+        void setPassScaleON(const size_t idx, const bool pass_scale_on) {
+            pass_scale_on_[idx].store(pass_scale_on, std::memory_order::relaxed);
             empty_update_flags_[idx].signal();
             to_update_.signal();
         }
-#endif
+
+        /**
+         * set the magnitude scale of a band's scaled low/high-pass filter
+         * @param idx the band index
+         * @param scale a finite magnitude scale in [0, 1]
+         */
+        void setScale(const size_t idx, const double scale) {
+            scales_[idx].store(scale, std::memory_order::relaxed);
+            empty_update_flags_[idx].signal();
+            to_update_.signal();
+        }
 
         void setLRMS(const size_t idx, const FilterStereo filter_stereo) {
             lrms_[idx].store(filter_stereo, std::memory_order::relaxed);
@@ -313,10 +323,9 @@ namespace zlp {
         std::array<zlchore::thread::Notifier, kBandNum> side_empty_update_flags_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> filter_paras_{};
         std::array<zldsp::filter::FilterParameters, kBandNum> side_filter_paras_{};
-#if ZL_ENABLE_SCALED_PASS
+        std::array<std::atomic<bool>, kBandNum> pass_scale_on_{};
         std::array<std::atomic<double>, kBandNum> scales_ = make_array_of<std::atomic<double>, kBandNum>(1.0);
         std::array<double, kBandNum> c_scales_{};
-#endif
         // dynamic handlers
         std::array<zldsp::filter::DynamicSideHandler<double>, kBandNum> dynamic_side_handlers_
             = make_array_of<zldsp::filter::DynamicSideHandler<double>, kBandNum>();
@@ -483,6 +492,8 @@ namespace zlp {
         void prepareOneBandDynamics(size_t i);
 
         void prepareLRMS();
+
+        void updateFilterParameters(size_t i);
 
         void prepareFilters();
 

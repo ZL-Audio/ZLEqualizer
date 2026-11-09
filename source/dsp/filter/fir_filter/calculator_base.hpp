@@ -65,7 +65,7 @@ namespace zldsp::filter {
                 std::ranges::fill(corrections_imag_[i], 0.f);
                 auto& ideal{ideals[i]};
                 auto& tdf{tdfs[i]};
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
                 if (isScaledPass(ideal.getFilterType())) {
                     const auto& proto = ideal.getScaledCoefficients();
                     const auto& digital = tdf.getScaledCoefficients();

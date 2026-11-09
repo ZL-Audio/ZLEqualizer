@@ -13,7 +13,7 @@
 
 #include "../../../vector/vector.hpp"
 #include "../iir/iir.hpp"
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
 #include "../../scaled_pass/state.hpp"
 #endif
 #include "../tdf/tdf_base.hpp"
@@ -33,7 +33,7 @@ namespace zldsp::filter {
         }
 
         void reset() override {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             scaled_state_.reset();
 #endif
             std::ranges::fill(s1s_, static_cast<FloatType>(0));
@@ -42,7 +42,7 @@ namespace zldsp::filter {
 
         void prepare(const double sample_rate, const size_t num_channels, const size_t max_num_samples) override {
             IIR<kFilterSize, IvantsovCoeff>::prepareSampleRate(sample_rate);
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             scaled_state_.prepare(num_channels);
 #endif
             s1s_.assign(num_channels * kFilterSize, static_cast<FloatType>(0));
@@ -128,7 +128,7 @@ namespace zldsp::filter {
 
         template <int order>
         FloatType processSample(const size_t channel, FloatType sample) {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(this->c_filter_type_)) {
                 return static_cast<FloatType>(scaled_state_.process(this->getScaledCoefficients(), channel,
                                                                     static_cast<double>(sample)));
@@ -244,7 +244,7 @@ namespace zldsp::filter {
         }
 
     private:
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         scaled_pass::State<false> scaled_state_{};
 #endif
         std::vector<FloatType> s1s_{};

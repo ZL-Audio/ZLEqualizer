@@ -9,8 +9,8 @@
 
 #pragma once
 
-#ifndef ZL_ENABLE_SCALED_PASS
-#define ZL_ENABLE_SCALED_PASS 1
+#ifndef ZL_ENABLE_FILTER_SCALED_PASS
+#define ZL_ENABLE_FILTER_SCALED_PASS 1
 #endif
 
 #include <cmath>
@@ -30,26 +30,26 @@ namespace zldsp::filter {
     enum FilterType {
         kPeak, kLowShelf, kLowPass, kHighShelf, kHighPass,
         kNotch, kBandPass, kTiltShelf, kFlatTilt, kAllPass, kFlatGain,
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         kScaledLowPass, kScaledHighPass
 #endif
     };
 
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
     inline constexpr bool isScaledPass(const FilterType type) {
         return type == kScaledLowPass || type == kScaledHighPass;
     }
 #endif
 
     inline constexpr bool isLowPass(const FilterType type) {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         if (type == kScaledLowPass) { return true; }
 #endif
         return type == kLowPass;
     }
 
     inline constexpr bool isHighPass(const FilterType type) {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         if (type == kScaledHighPass) { return true; }
 #endif
         return type == kHighPass;
@@ -98,7 +98,7 @@ namespace zldsp::filter {
             }
         }
 
-        double get(const size_t i) const {
+        [[nodiscard]] double get(const size_t i) const {
             if (number_ <= 1.0) { return q_; }
             const auto centered = static_cast<double>(i) - number_ / 2.0 + 0.5;
             return 1.0 / 2.0 / std::cos(theta_ * static_cast<double>(2 * i + 1))

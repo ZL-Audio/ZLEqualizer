@@ -74,6 +74,10 @@ namespace zlp {
             if (side_link_.load(std::memory_order::relaxed) > .5f) {
                 updateSideQ();
             }
+        } else if (parameter_ID.startsWith(PPassScaleON::kID)) {
+            controller_.setPassScaleON(idx_, value > .5f);
+        } else if (parameter_ID.startsWith(PPassScaleV::kID)) {
+            controller_.setScale(idx_, static_cast<double>(value) / 100.0);
         } else if (parameter_ID.startsWith(PSideLink::kID)) {
             if (value > .5f) {
                 updateSideFilterType();

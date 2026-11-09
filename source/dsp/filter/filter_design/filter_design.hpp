@@ -327,7 +327,7 @@ namespace zldsp::filter::FilterDesign {
             return updateBandPassCoeffs<Coeff>(n, 0, w0, q0, coeffs);
         case kAllPass:
             return updatePassCoeffs<Coeff, kAllPass>(n, 0, w0, q0, coeffs);
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         case kScaledLowPass:
         case kScaledHighPass:
             return 0;
@@ -372,7 +372,7 @@ namespace zldsp::filter::FilterDesign {
         case kFlatGain:
         case kLowPass:
         case kHighPass:
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         case kScaledLowPass:
         case kScaledHighPass:
 #endif
@@ -504,7 +504,7 @@ namespace zldsp::filter::FilterDesign {
         }
         case kLowPass:
         case kHighPass:
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         case kScaledLowPass:
         case kScaledHighPass:
 #endif

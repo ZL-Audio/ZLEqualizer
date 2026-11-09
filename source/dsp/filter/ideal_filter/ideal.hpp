@@ -13,7 +13,7 @@
 #include "ideal_base.hpp"
 #include "coeff/ideal_coeff.hpp"
 #include "../filter_design/filter_design.hpp"
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
 #include "../scaled_pass/design.hpp"
 #endif
 #include "../../chore/decibels.hpp"
@@ -46,7 +46,7 @@ namespace zldsp::filter {
             updateCoeffs();
         }
 
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         /**
          * set the magnitude scale of a scaled low/high-pass filter
          * @param scale a finite magnitude scale in [0, 1]
@@ -102,7 +102,7 @@ namespace zldsp::filter {
         }
 
         void updateCoeffs() {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(c_filter_type_)) {
                 scaled_design_.update(c_filter_type_, c_order_, c_freq_, sample_rate_, c_q_, c_scale_);
                 current_filter_num_ = scaled_design_.getCoefficients().size();
@@ -125,7 +125,7 @@ namespace zldsp::filter {
         }
 
         void updateMagnitudeSquare(std::span<FloatType> ws, std::span<FloatType> gains) const {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(c_filter_type_)) {
                 for (size_t i = 0; i < ws.size(); ++i) {
                     gains[i] = static_cast<FloatType>(scaled_pass::getIdealMagnitudeSquare(
@@ -163,7 +163,7 @@ namespace zldsp::filter {
         }
 
     protected:
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         scaled_pass::Designer<IdealCoeff> scaled_design_{};
         double c_scale_{1.0};
 #endif

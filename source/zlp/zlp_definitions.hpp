@@ -406,6 +406,21 @@ namespace zlp {
         static constexpr auto kDefaultV = 0.707f;
     };
 
+    class PPassScaleON : public BoolParameters<PPassScaleON> {
+    public:
+        static constexpr auto kID = "pass_scale_on";
+        static constexpr auto kName = "Pass Scale ON";
+        static constexpr auto kDefaultV = false;
+    };
+
+    class PPassScaleV : public FloatParameters<PPassScaleV> {
+    public:
+        static constexpr auto kID = "pass_scale_v";
+        static constexpr auto kName = "Pass Scale (%)";
+        inline static const auto kRange = juce::NormalisableRange<float>(0.f, 100.f, .1f);
+        static constexpr auto kDefaultV = 100.f;
+    };
+
     class PDynamicON : public BoolParameters<PDynamicON> {
     public:
         static constexpr auto kID = "dynamic_on";
@@ -564,6 +579,10 @@ namespace zlp {
                        PDynamicRMSLength::get(suffix), PDynamicRMSMix::get(suffix), PDynamicSmooth::get(suffix),
                        PSideFilterType::get(suffix), PSideOrder::get(suffix),
                        PSideFreq::get(suffix), PSideQ::get(suffix));
+        }
+        for (size_t i = 0; i < kBandNum; ++i) {
+            const auto suffix = std::to_string(i);
+            layout.add(PPassScaleON::get(suffix), PPassScaleV::get(suffix));
         }
         return layout;
     }

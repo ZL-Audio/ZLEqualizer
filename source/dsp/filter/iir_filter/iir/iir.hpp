@@ -10,7 +10,7 @@
 #pragma once
 
 #include "../../filter_design/filter_design.hpp"
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
 #include "../../scaled_pass/design.hpp"
 #endif
 #include "../../../chore/smoothed_value.hpp"
@@ -40,7 +40,7 @@ namespace zldsp::filter {
             c_freq_.prepare(sample_rate, 0.01);
             c_gain_.prepare(sample_rate, 0.001);
             c_q_.prepare(sample_rate, 0.001);
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             c_scale_.prepare(sample_rate, 0.01);
             c_scale_.setCurrentAndTarget(c_scale_.getTarget());
 #endif
@@ -54,7 +54,7 @@ namespace zldsp::filter {
          * @return
          */
         void forceUpdate(const FilterParameters& paras) {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             const auto reset_state = (isScaledPass(c_filter_type_) || isScaledPass(paras.filter_type))
                 && (c_filter_type_ != paras.filter_type || c_order_ != paras.order);
 #endif
@@ -63,11 +63,11 @@ namespace zldsp::filter {
             c_freq_.setCurrentAndTarget(paras.freq);
             c_gain_.setCurrentAndTarget(paras.gain);
             c_q_.setCurrentAndTarget(paras.q);
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             c_scale_.setCurrentAndTarget(c_scale_.getTarget());
 #endif
             updateCoeffs();
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (reset_state) { reset(); }
 #endif
         }
@@ -139,7 +139,7 @@ namespace zldsp::filter {
             return c_q_.getTarget();
         }
 
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         /**
          * set the magnitude scale of a scaled low/high-pass filter
          * @param scale a finite magnitude scale in [0, 1]
@@ -162,7 +162,7 @@ namespace zldsp::filter {
         [[nodiscard]] double getScale() const { return c_scale_.getTarget(); }
 #endif
         [[nodiscard]] bool isSmoothing() const {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(c_filter_type_) && c_scale_.isSmoothing()) { return true; }
 #endif
             return c_freq_.isSmoothing() || c_gain_.isSmoothing() || c_q_.isSmoothing();
@@ -172,7 +172,7 @@ namespace zldsp::filter {
             c_freq_.getNext();
             c_gain_.getNext();
             c_q_.getNext();
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(c_filter_type_)) {
                 c_scale_.getNext();
                 if (!c_scale_.isSmoothing()) { c_scale_.setCurrentAndTarget(c_scale_.getTarget()); }
@@ -180,7 +180,7 @@ namespace zldsp::filter {
 #endif
         }
 
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         const scaled_pass::Coefficients& getScaledCoefficients() const {
             return scaled_design_.getCoefficients();
         }
@@ -194,7 +194,7 @@ namespace zldsp::filter {
             c_freq_.setCurrentAndTarget(c_freq_.getTarget());
             c_gain_.setCurrentAndTarget(c_gain_.getTarget());
             c_q_.setCurrentAndTarget(c_q_.getTarget());
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             c_scale_.setCurrentAndTarget(c_scale_.getTarget());
 #endif
         }
@@ -204,7 +204,7 @@ namespace zldsp::filter {
          * @param filter_type
          */
         void setFilterType(const FilterType filter_type) {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (c_filter_type_ != filter_type && (isScaledPass(c_filter_type_) || isScaledPass(filter_type))) {
                 reset();
             }
@@ -221,7 +221,7 @@ namespace zldsp::filter {
          * @param order
          */
         void setOrder(const size_t order) {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (c_order_ != order && isScaledPass(c_filter_type_)) { reset(); }
 #endif
             c_order_ = order;
@@ -251,14 +251,14 @@ namespace zldsp::filter {
 
     protected:
         size_t getProcessingOrder() const {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(c_filter_type_)) { return 0; }
 #endif
             return c_filter_type_ == kFlatTilt || c_filter_type_ == kFlatGain ? 0 : c_order_;
         }
 
         void designCoeffs() {
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(c_filter_type_)) {
                 scaled_design_.update(c_filter_type_, c_order_, c_freq_.getCurrent(), sample_rate_,
                                       c_q_.getCurrent(), c_scale_.getCurrent());
@@ -271,7 +271,7 @@ namespace zldsp::filter {
                 c_gain_.getCurrent(), c_q_.getCurrent(), coeffs_);
         }
 
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         scaled_pass::Designer<Coeff> scaled_design_{};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kLin> c_scale_{1.0};
 #endif

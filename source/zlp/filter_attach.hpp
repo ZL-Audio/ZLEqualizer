@@ -40,7 +40,7 @@ namespace zlp {
 
         static constexpr std::array kIDs{
             PFilterStatus::kID, PFilterType::kID, POrder::kID, PLRMode::kID,
-            PFreq::kID, PGain::kID, PQ::kID,
+            PFreq::kID, PGain::kID, PQ::kID, PPassScaleON::kID, PPassScaleV::kID,
             PSideLink::kID,
         };
 

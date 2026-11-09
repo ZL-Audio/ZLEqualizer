@@ -119,7 +119,7 @@ namespace zldsp::filter {
         }
         case kLowPass:
         case kHighPass:
-#if ZL_ENABLE_SCALED_PASS
+#if ZL_ENABLE_FILTER_SCALED_PASS
         case kScaledLowPass:
         case kScaledHighPass:
 #endif
