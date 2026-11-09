@@ -330,6 +330,12 @@ namespace zlpanel {
         } else if (parameter_ID.startsWith(zlp::PQ::kID)) {
             empty_[band].setQ(value);
             to_update_empty_flags_[band].signal();
+        } else if (parameter_ID.startsWith(zlp::PPassScaleON::kID)) {
+            pass_scale_ons_[band].store(value > .5f, std::memory_order::relaxed);
+            to_update_empty_flags_[band].signal();
+        } else if (parameter_ID.startsWith(zlp::PPassScaleV::kID)) {
+            pass_scales_[band].store(static_cast<double>(value) / 100.0, std::memory_order::relaxed);
+            to_update_empty_flags_[band].signal();
         } else if (parameter_ID.startsWith(zlp::PDynamicON::kID)) {
             dynamic_ons_[band].store(value > .5f, std::memory_order::relaxed);
             to_update_dynamic_ons_.signal();
@@ -478,6 +484,14 @@ namespace zlpanel {
                 if (to_update_base_y_flags_[band]) {
                     auto para = empty_[band].getParas();
                     para.freq = std::min(para.freq, c_slider_max_);
+                    if (pass_scale_ons_[band].load(std::memory_order::relaxed)) {
+                        if (para.filter_type == zldsp::filter::kLowPass) {
+                            para.filter_type = zldsp::filter::kScaledLowPass;
+                        } else if (para.filter_type == zldsp::filter::kHighPass) {
+                            para.filter_type = zldsp::filter::kScaledHighPass;
+                        }
+                    }
+                    ideal_[band].setScale(pass_scales_[band].load(std::memory_order::relaxed));
                     ideal_[band].forceUpdate(para);
                     ideal_[band].updateMagnitudeSquare(ws_, base_mags_[band]);
                     zldsp::vector::sqr_mag_to_db(base_mags_[band].data(), base_mags_[band].size());
@@ -606,10 +620,12 @@ namespace zlpanel {
             return std::make_tuple(0.f, static_cast<float>(center_x), c_width_);
         }
         case zldsp::filter::kLowShelf:
+        case zldsp::filter::kScaledHighPass:
         case zldsp::filter::kHighPass: {
             return std::make_tuple(0.f, static_cast<float>(center_x), static_cast<float>(center_x));
         }
         case zldsp::filter::kHighShelf:
+        case zldsp::filter::kScaledLowPass:
         case zldsp::filter::kLowPass: {
             return std::make_tuple(static_cast<float>(center_x), static_cast<float>(center_x), c_width_);
         }

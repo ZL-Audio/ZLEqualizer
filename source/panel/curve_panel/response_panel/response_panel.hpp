@@ -49,6 +49,7 @@ namespace zlpanel {
         static constexpr std::array kIDs{
             zlp::PFilterStatus::kID, zlp::PLRMode::kID,
             zlp::PFilterType::kID, zlp::POrder::kID, zlp::PFreq::kID, zlp::PGain::kID, zlp::PQ::kID,
+            zlp::PPassScaleON::kID, zlp::PPassScaleV::kID,
             zlp::PDynamicON::kID,
             zlp::PTargetGain::kID,
             zlp::PSideFilterType::kID, zlp::PSideOrder::kID, zlp::PSideFreq::kID, zlp::PSideQ::kID
@@ -101,6 +102,8 @@ namespace zlpanel {
         std::array<zldsp::vector::aligned_vector<float>, 5> sum_mags_;
 
         std::array<zldsp::filter::Empty, zlp::kBandNum> empty_{};
+        std::array<std::atomic<bool>, zlp::kBandNum> pass_scale_ons_{};
+        std::array<std::atomic<double>, zlp::kBandNum> pass_scales_{};
         std::array<zlchore::thread::Notifier, zlp::kBandNum> to_update_empty_flags_{};
         std::array<std::atomic<float>, zlp::kBandNum> target_gains_{};
         std::array<zlchore::thread::Notifier, zlp::kBandNum> to_update_target_gain_flags_{};
