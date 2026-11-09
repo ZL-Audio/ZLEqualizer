@@ -52,6 +52,10 @@ namespace zlpanel {
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> gain_attachment_;
         std::unique_ptr<zlgui::attachment::SliderAttachment<true>> target_gain_attachment_;
 
+        zlgui::slider::TwoValueRotarySlider<false, false, false> pass_scale_slider_;
+        std::unique_ptr<zlgui::attachment::SliderAttachment<true>> pass_scale_attachment_;
+        std::atomic<float>* pass_scale_on_ptr_{nullptr};
+
         std::atomic<float>* ftype_ptr_{nullptr};
         int c_ftype_{-1};
 

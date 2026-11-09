@@ -178,8 +178,7 @@ namespace zlpanel {
             }
             for (size_t band = 0; band < zlp::kBandNum; ++band) {
                 const auto band_s = std::to_string(band);
-                auto* status_para = p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + band_s);
-                updateValue(status_para, 0.f);
+                band_helper::turnOffBand(p_ref_, band);
                 auto* stereo_para = p_ref_.parameters_.getParameter(zlp::PLRMode::kID + band_s);
                 updateValue(stereo_para, 0.f);
                 auto* dynamic_para = p_ref_.parameters_.getParameter(zlp::PDynamicON::kID + band_s);

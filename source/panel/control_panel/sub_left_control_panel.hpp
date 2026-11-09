@@ -39,6 +39,8 @@ namespace zlpanel {
 
         void enableGain(bool f);
 
+        void showPassScale(bool f);
+
         void enableQ(bool f);
 
     private:
@@ -58,6 +60,9 @@ namespace zlpanel {
         juce::Label freq_label_;
         juce::Label gain_label_;
         juce::Label q_label_;
+
+        zlgui::button::ClickTextButton pass_scale_button_;
+        std::unique_ptr<zlgui::attachment::ButtonAttachment<true>> pass_scale_attachment_;
 
         zlgui::button::ClickButton left_button_;
 

@@ -27,6 +27,7 @@ namespace zlpanel {
         freq_label_("", "FREQ"),
         gain_label_("", "GAIN"),
         q_label_("", "Q"),
+        pass_scale_button_(base.gui, "SCALE"),
         left_button_(base.gui,
                      juce::Drawable::createFromImageData(BinaryData::left_arrow_svg, BinaryData::left_arrow_svgSize)),
         band_label_("", ""),
@@ -85,6 +86,12 @@ namespace zlpanel {
             l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
+
+        pass_scale_button_.getButton().setClickingTogglesState(true);
+        pass_scale_button_.getLAF().setFontScale(1.5f);
+        pass_scale_button_.getLAF().setJustification(juce::Justification::centred);
+        pass_scale_button_.setBufferedToImage(true);
+        addChildComponent(pass_scale_button_);
 
         left_button_.setBufferedToImage(true);
         addAndMakeVisible(left_button_);
@@ -174,6 +181,7 @@ namespace zlpanel {
         q_label_.setBounds(top_bound.removeFromRight(slider_width));
         top_bound.removeFromRight(padding);
         gain_label_.setBounds(top_bound.removeFromRight(slider_width));
+        pass_scale_button_.setBounds(gain_label_.getBounds());
         top_bound.removeFromRight(padding);
         freq_label_.setBounds(top_bound.removeFromRight(slider_width));
         top_bound.removeFromRight(padding);
@@ -230,6 +238,10 @@ namespace zlpanel {
             dynamic_attachment_ = std::make_unique<zlgui::attachment::ButtonAttachment<true>>(
                 dynamic_button_.getButton(), p_ref_.parameters_, zlp::PDynamicON::kID + band_s, updater_,
                 juce::dontSendNotification);
+            pass_scale_attachment_ = std::make_unique<zlgui::attachment::ButtonAttachment<true>>(
+                pass_scale_button_.getButton(), p_ref_.parameters_, zlp::PPassScaleON::kID + band_s, updater_,
+                juce::dontSendNotification);
+            pass_scale_button_.getButton().setComponentID(zlp::PPassScaleON::kID + band_s);
             band_label_.setText(band_s, juce::dontSendNotification);
             filter_status_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterStatus::kID + band_s);
         } else {
@@ -238,6 +250,7 @@ namespace zlpanel {
             stereo_attachment_.reset();
             q_attachment_.reset();
             dynamic_attachment_.reset();
+            pass_scale_attachment_.reset();
             band_label_.setText("", juce::dontSendNotification);
             filter_status_ptr_ = nullptr;
         }
@@ -265,5 +278,10 @@ namespace zlpanel {
     void SubLeftControlPanel::enableQ(const bool f) {
         q_slider_.setEditable(f);
         q_label_.setAlpha(f ? 1.f : .5f);
+    }
+
+    void SubLeftControlPanel::showPassScale(const bool f) {
+        gain_label_.setVisible(!f);
+        pass_scale_button_.setVisible(f);
     }
 }

@@ -678,9 +678,7 @@ namespace zlpanel {
     void MatchFFTPanel::updateMatchFilters(const MatchResult& match_result) {
         const auto num_band = std::min(match_result.num_band_, match_result.filter_paras_.size());
         for (size_t band = num_band; band < zlp::kBandNum; ++band) {
-            const auto band_s = std::to_string(band);
-            auto* status_para = p_ref_.parameters_.getParameter(zlp::PFilterStatus::kID + band_s);
-            updateValue(status_para, 0.f);
+            band_helper::turnOffBand(p_ref_, band);
         }
         for (size_t band = 0; band < num_band; ++band) {
             const auto band_s = std::to_string(band);

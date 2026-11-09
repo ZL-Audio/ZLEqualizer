@@ -19,7 +19,8 @@ namespace zlpanel {
         freq_slider_("", base.gui,
                      tooltip_helper.getToolTipText(multilingual::kBandFreq), 1.25f),
         gain_slider_("", base.gui,
-                     tooltip_helper.getToolTipText(multilingual::kBandGain), 1.25f) {
+                     tooltip_helper.getToolTipText(multilingual::kBandGain), 1.25f),
+        pass_scale_slider_("", base.gui, "", 1.25f) {
         sub_left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(sub_left_control_panel_);
 
@@ -28,6 +29,8 @@ namespace zlpanel {
         addAndMakeVisible(freq_slider_);
         gain_slider_.setShowSlider2(false);
         addAndMakeVisible(gain_slider_);
+        pass_scale_slider_.setEditable(false);
+        addChildComponent(pass_scale_slider_);
 
         setInterceptsMouseClicks(false, true);
     }
@@ -53,9 +56,11 @@ namespace zlpanel {
         freq_slider_.setBounds(bound.removeFromLeft(slider_width));
         bound.removeFromLeft(padding);
         gain_slider_.setBounds(bound.removeFromLeft(slider_width));
+        pass_scale_slider_.setBounds(gain_slider_.getBounds());
 
         const auto dragging_distance = getSliderDraggingDistance(font_size);
         freq_slider_.setMouseDragSensitivity(dragging_distance);
+        pass_scale_slider_.setMouseDragSensitivity(dragging_distance);
         updateGainSliderDraggingDistance();
     }
 
@@ -81,11 +86,20 @@ namespace zlpanel {
                 gain_slider_.setEditable(gain_enabled);
                 sub_left_control_panel_.enableGain(gain_enabled);
 
+                const auto show_pass_scale = (ftype == static_cast<int>(zldsp::filter::kLowPass))
+                    || (ftype == static_cast<int>(zldsp::filter::kHighPass));
+                gain_slider_.setVisible(!show_pass_scale);
+                pass_scale_slider_.setVisible(show_pass_scale);
+                sub_left_control_panel_.showPassScale(show_pass_scale);
+
                 const auto slope_enabled = (c_ftype_ != zldsp::filter::kFlatTilt)
                     && (c_ftype_ != zldsp::filter::kFlatGain);
                 sub_left_control_panel_.enableSlope(slope_enabled);
                 sub_left_control_panel_.enableQ(slope_enabled && c_slope_ != 0);
             }
+        }
+        if (pass_scale_on_ptr_ != nullptr) {
+            pass_scale_slider_.setEditable(pass_scale_on_ptr_->load(std::memory_order::relaxed) > .5f);
         }
         const auto max_db_idx = max_db_idx_ref_.load(std::memory_order::relaxed);
         if (std::abs(max_db_idx - c_max_db_idx_) > .1f) {
@@ -104,6 +118,11 @@ namespace zlpanel {
                 gain_slider_.getSlider1(), p_ref_.parameters_, zlp::PGain::kID + band_s, updater_);
             target_gain_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
                 gain_slider_.getSlider2(), p_ref_.parameters_, zlp::PTargetGain::kID + band_s, updater_);
+            pass_scale_attachment_ = std::make_unique<zlgui::attachment::SliderAttachment<true>>(
+                pass_scale_slider_.getSlider1(), p_ref_.parameters_, zlp::PPassScaleV::kID + band_s, updater_);
+            pass_scale_slider_.setComponentID(zlp::PPassScaleV::kID + band_s);
+            pass_scale_slider_.visibilityChanged();
+            pass_scale_on_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PPassScaleON::kID + band_s);
             updateGainSliderComponentID();
             gain_slider_.visibilityChanged();
             ftype_ptr_ = p_ref_.parameters_.getRawParameterValue(zlp::PFilterType::kID + band_s);
@@ -112,6 +131,8 @@ namespace zlpanel {
             freq_attachment_.reset();
             gain_attachment_.reset();
             target_gain_attachment_.reset();
+            pass_scale_attachment_.reset();
+            pass_scale_on_ptr_ = nullptr;
             ftype_ptr_ = nullptr;
             slope_ptr_ = nullptr;
         }

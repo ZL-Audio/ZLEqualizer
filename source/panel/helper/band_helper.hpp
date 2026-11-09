@@ -88,15 +88,21 @@ namespace zlpanel::band_helper {
         }
     }
 
+    inline void turnOffBand(PluginProcessor& p, const size_t band) {
+        const auto band_s = std::to_string(band);
+        updateValue(p.parameters_.getParameter(zlp::PPassScaleON::kID + band_s), 0.f);
+        updateValue(p.parameters_.getParameter(zlp::PFilterStatus::kID + band_s), 0.f);
+    }
+
     inline void turnOffBand(PluginProcessor& p, const size_t band, juce::SelectedItemSet<size_t>& items_set) {
         if (items_set.isSelected(band)) {
             const auto band_array = items_set.getItemArray();
             for (const size_t& b : band_array) {
-                updateValue(p.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(b)), 0.f);
+                turnOffBand(p, b);
             }
             items_set.deselectAll();
         } else {
-            updateValue(p.parameters_.getParameter(zlp::PFilterStatus::kID + std::to_string(band)), 0.f);
+            turnOffBand(p, band);
         }
     }
 
