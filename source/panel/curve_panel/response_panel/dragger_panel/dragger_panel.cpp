@@ -282,6 +282,8 @@ namespace zlpanel {
         case zldsp::filter::kBandPass:
         case zldsp::filter::kNotch:
         case zldsp::filter::kAllPass:
+        case zldsp::filter::kScaledLowPass:
+        case zldsp::filter::kScaledHighPass:
         default: {
             dragger_y_enabled_[band] = false;
             break;
