@@ -17,7 +17,7 @@ namespace zldsp::filter::scaled_pass {
     struct Coverage {
         double min_cutoff{10.0}, max_cutoff{160000.0};
         double min_frequency{10.0}, max_frequency{};
-        double tail_error{0.005}, spacing{1.0};
+        double tail_error{0.005}, spacing{2.0};
     };
 
     namespace detail {
