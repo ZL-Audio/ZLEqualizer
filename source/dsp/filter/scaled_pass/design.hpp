@@ -65,9 +65,12 @@ namespace zldsp::filter::scaled_pass {
                 native_count = order == 1 ? 1 : order / 2;
                 knee_count = 0;
                 family_count = 0;
+                auto root = std::exp(-0.5 * step);
+                const auto ratio = std::exp(-step);
                 for (std::size_t k = 0; k < order + tail_count; ++k) {
-                    roots[k] = std::exp(-step * (static_cast<double>(k) + 0.5));
-                    nodes[k] = roots[k] * roots[k];
+                    roots[k] = root;
+                    nodes[k] = root * root;
+                    root *= ratio;
                 }
                 last_root = roots[tail_count - 1];
 
