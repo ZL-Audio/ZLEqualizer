@@ -13,11 +13,11 @@
 #include "../helpers.hpp"
 
 namespace zldsp::filter::FilterDesign {
-    static constexpr std::array<double, 9> flat_freq = {
-        10.0, 40.0, 160.0, 640.0, 2560.0, 10240.0, 40960.0, 163840.0, 655360.0
+    static constexpr std::array<double, 11> flat_freq = {
+        2.5, 10.0, 40.0, 160.0, 640.0, 2560.0, 10240.0, 40960.0, 163840.0, 655360.0, 2621440.0
     };
 
-    static constexpr std::array<double, 9> inv_flat_freq_sqr = []() {
+    static constexpr std::array<double, flat_freq.size()> inv_flat_freq_sqr = []() {
         std::array<double, flat_freq.size()> arr{};
         for (size_t i = 0; i < flat_freq.size(); ++i) {
             arr[i] = 1.0 / (flat_freq[i] * flat_freq[i]);
@@ -27,18 +27,18 @@ namespace zldsp::filter::FilterDesign {
 
     inline size_t getFlatShelfFilterCount(const double fs) {
         if (fs < 12500.0) {
-            return 5;
-        }
-        if (fs < 50000.0) {
-            return 6;
-        }
-        if (fs < 200000.0) {
             return 7;
         }
-        if (fs < 800000.0) {
+        if (fs < 50000.0) {
             return 8;
         }
-        return 9;
+        if (fs < 200000.0) {
+            return 9;
+        }
+        if (fs < 800000.0) {
+            return 10;
+        }
+        return flat_freq.size();
     }
 
     template <class Coeff>

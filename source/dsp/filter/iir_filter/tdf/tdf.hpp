@@ -124,6 +124,16 @@ namespace zldsp::filter {
                 sample = output;
                 return sample;
             }
+            if (this->c_filter_type_ == kFlatTilt) {
+                for (size_t filter_idx = 0; filter_idx < this->current_filter_num_; ++filter_idx) {
+                    const auto& coeff{IIR<kFilterSize, IvantsovCoeff>::coeffs_[filter_idx]};
+                    auto& s1{s1s_[channel_offset + filter_idx]};
+                    const auto output = sample * coeff[2] + s1;
+                    s1 = (sample * coeff[3]) - (output * coeff[0]);
+                    sample = output;
+                }
+                return sample;
+            }
             for (size_t filter_idx = 0; filter_idx < this->current_filter_num_; ++filter_idx) {
                 const auto& coeff{IIR<kFilterSize, IvantsovCoeff>::coeffs_[filter_idx]};
                 auto& s1{s1s_[channel_offset + filter_idx]};
