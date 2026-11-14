@@ -10,7 +10,8 @@
 #include "output_label.hpp"
 
 namespace zlpanel {
-    OutputLabel::OutputLabel(PluginProcessor& p, zlgui::UIState& base) :
+    OutputLabel::OutputLabel(PluginProcessor& p, zlgui::UIState& base,
+                             const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
         control_background_(base),
         label_laf_(base.gui),
@@ -21,6 +22,7 @@ namespace zlpanel {
         scale_slider_(base_.gui, ""),
         scale_attach_(scale_slider_, p.parameters_,
                       zlp::PGainScale::kID, updater_) {
+        setTooltip(tooltip_helper.getToolTipText(multilingual::kOutputOpen));
         base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, 0.);
 
         control_background_.setInterceptsMouseClicks(false, false);

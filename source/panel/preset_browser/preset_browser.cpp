@@ -86,20 +86,25 @@ namespace zlpanel {
         }
     }
 
-    PresetBrowser::PresetBrowser(PluginProcessor& processor, zlgui::UIState& base) :
+    PresetBrowser::PresetBrowser(PluginProcessor& processor, zlgui::UIState& base,
+                                 const multilingual::TooltipHelper& tooltip_helper) :
         processor_(processor),
         base_(base),
         presets_directory_(getPresetsDirectory()),
         background_(base),
         delete_group_button_(base.gui,
-                             juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize)),
+                             juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize),
+                             false, tooltip_helper.getToolTipText(multilingual::kPresetGroupDelete)),
         delete_preset_button_(base.gui,
-                              juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize)),
+                              juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize),
+                              false, tooltip_helper.getToolTipText(multilingual::kPresetDelete)),
         close_button_(base.gui,
-                      juce::Drawable::createFromImageData(BinaryData::close_svg, BinaryData::close_svgSize)),
+                      juce::Drawable::createFromImageData(BinaryData::close_svg, BinaryData::close_svgSize),
+                      false, tooltip_helper.getToolTipText(multilingual::kPresetClose)),
         folder_open_button_(base.gui,
                             juce::Drawable::createFromImageData(
-                                BinaryData::folder_open_svg, BinaryData::folder_open_svgSize)),
+                                BinaryData::folder_open_svg, BinaryData::folder_open_svgSize),
+                            false, tooltip_helper.getToolTipText(multilingual::kPresetFolder)),
         group_label_({}, "Groups"),
         preset_label_({}, "Presets"),
         search_editor_(base),
@@ -577,9 +582,6 @@ namespace zlpanel {
         const auto should_be_visible = static_cast<float>(
             base_.getPanelProperty(zlgui::PanelSettingIdx::kPresetBrowser)) > .5f;
         setVisible(should_be_visible);
-        if (should_be_visible) {
-            toFront(false);
-        }
     }
 
     const PresetEntry* PresetBrowser::getSelectedPreset() const {

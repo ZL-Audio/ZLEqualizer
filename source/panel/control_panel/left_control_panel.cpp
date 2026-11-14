@@ -20,7 +20,8 @@ namespace zlpanel {
                      tooltip_helper.getToolTipText(multilingual::kBandFreq), 1.25f),
         gain_slider_("", base.gui,
                      tooltip_helper.getToolTipText(multilingual::kBandGain), 1.25f),
-        pass_scale_slider_("", base.gui, "", 1.25f) {
+        pass_scale_slider_("", base.gui,
+                           tooltip_helper.getToolTipText(multilingual::kBandPassScale), 1.25f) {
         sub_left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(sub_left_control_panel_);
 

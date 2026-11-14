@@ -13,11 +13,13 @@
 
 #include "../../../PluginProcessor.hpp"
 #include "../../../gui/gui.hpp"
+#include "../../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
     class PianoTogglePanel final : public juce::Component {
     public:
-        explicit PianoTogglePanel(PluginProcessor& p, zlgui::UIState& base);
+        explicit PianoTogglePanel(PluginProcessor& p, zlgui::UIState& base,
+                                  const multilingual::TooltipHelper& tooltip_helper);
 
         void paint(juce::Graphics& g) override;
 

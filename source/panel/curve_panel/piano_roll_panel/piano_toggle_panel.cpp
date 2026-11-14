@@ -11,11 +11,12 @@
 #include "BinaryData.h"
 
 namespace zlpanel {
-    PianoTogglePanel::PianoTogglePanel(PluginProcessor& p, zlgui::UIState& base) :
+    PianoTogglePanel::PianoTogglePanel(PluginProcessor& p, zlgui::UIState& base,
+                                       const multilingual::TooltipHelper& tooltip_helper) :
         base_(base),
         button_(base.gui,
                 juce::Drawable::createFromImageData(BinaryData::piano_svg, BinaryData::piano_svgSize),
-                true),
+                true, tooltip_helper.getToolTipText(multilingual::kPianoRoll)),
         attachment_(button_.getButton(), p.parameters_NA_, zlstate::PPianoRollON::kID, updater_) {
         button_.getButton().onStateChange = [this]() {
             repaint();

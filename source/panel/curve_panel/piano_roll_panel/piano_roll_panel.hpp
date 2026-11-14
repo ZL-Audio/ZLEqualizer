@@ -20,7 +20,8 @@
 namespace zlpanel {
     class PianoRollPanel final : public juce::Component {
     public:
-        explicit PianoRollPanel(PluginProcessor& p, zlgui::UIState& base);
+        explicit PianoRollPanel(PluginProcessor& p, zlgui::UIState& base,
+                                const multilingual::TooltipHelper& tooltip_helper);
 
         ~PianoRollPanel() override;
 

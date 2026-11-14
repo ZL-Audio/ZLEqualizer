@@ -72,4 +72,12 @@ namespace zlpanel::multilingual {
         }
         }
     }
+
+    static_assert(en::kTexts.size() == static_cast<size_t>(kLabelNum) + 1, "en tooltip count mismatch");
+    static_assert(zh_Hans::kTexts.size() == static_cast<size_t>(kLabelNum) + 1, "zh_Hans tooltip count mismatch");
+    static_assert(zh_Hant::kTexts.size() == static_cast<size_t>(kLabelNum) + 1, "zh_Hant tooltip count mismatch");
+    static_assert(it::kTexts.size() == static_cast<size_t>(kLabelNum) + 1, "it tooltip count mismatch");
+    static_assert(ja::kTexts.size() == static_cast<size_t>(kLabelNum) + 1, "ja tooltip count mismatch");
+    static_assert(de::kTexts.size() == static_cast<size_t>(kLabelNum) + 1, "de tooltip count mismatch");
+    static_assert(es::kTexts.size() == static_cast<size_t>(kLabelNum) + 1, "es tooltip count mismatch");
 }

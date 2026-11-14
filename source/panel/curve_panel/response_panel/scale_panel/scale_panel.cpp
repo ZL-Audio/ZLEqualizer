@@ -18,13 +18,15 @@ namespace zlpanel {
         scale_label_panel_(p, base, tooltip_helper),
         eq_max_box_({juce::String(static_cast<int>(base_.getCurveDBScale(0))),
                      juce::String(static_cast<int>(base_.getCurveDBScale(1))),
-                     juce::String(static_cast<int>(base_.getCurveDBScale(2)))}, base.gui),
+                     juce::String(static_cast<int>(base_.getCurveDBScale(2)))},
+                    base.gui, tooltip_helper.getToolTipText(multilingual::kScaleEQMaxDB)),
         eq_max_attach_(eq_max_box_.getBox(), p.parameters_NA_, zlstate::PEQMaxDB::kID, updater_),
-        fft_top_box_(zlstate::PFFTTopDB::kChoices, base.gui),
+        fft_top_box_(zlstate::PFFTTopDB::kChoices, base.gui,
+                     tooltip_helper.getToolTipText(multilingual::kScaleFFTTopDB)),
         fft_top_attach_(fft_top_box_.getBox(), p.parameters_NA_, zlstate::PFFTTopDB::kID, updater_),
-        fft_min_box_(zlstate::PFFTMinDB::kChoices, base.gui),
+        fft_min_box_(zlstate::PFFTMinDB::kChoices, base.gui,
+                     tooltip_helper.getToolTipText(multilingual::kScaleFFTMinDB)),
         fft_min_attach_(fft_min_box_.getBox(), p.parameters_NA_, zlstate::PFFTMinDB::kID, updater_) {
-        juce::ignoreUnused(tooltip_helper);
 
         scale_label_panel_.setBufferedToImage(true);
         addAndMakeVisible(scale_label_panel_);

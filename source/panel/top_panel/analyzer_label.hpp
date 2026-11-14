@@ -19,9 +19,11 @@
 
 namespace zlpanel {
     class AnalyzerLabel final : public juce::Component,
+                                public juce::SettableTooltipClient,
                                 private juce::ValueTree::Listener {
     public:
-        explicit AnalyzerLabel(PluginProcessor&, zlgui::UIState& base);
+        explicit AnalyzerLabel(PluginProcessor&, zlgui::UIState& base,
+                               const multilingual::TooltipHelper& tooltip_helper);
 
         ~AnalyzerLabel() override;
 

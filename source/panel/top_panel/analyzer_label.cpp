@@ -10,10 +10,12 @@
 #include "analyzer_label.hpp"
 
 namespace zlpanel {
-    AnalyzerLabel::AnalyzerLabel(PluginProcessor&, zlgui::UIState& base) :
+    AnalyzerLabel::AnalyzerLabel(PluginProcessor&, zlgui::UIState& base,
+                                 const multilingual::TooltipHelper& tooltip_helper) :
         base_(base),
         control_background_(base),
         label_laf_(base.gui) {
+        setTooltip(tooltip_helper.getToolTipText(multilingual::kAnalyzerOpen));
         control_background_.setInterceptsMouseClicks(false, false);
         addChildComponent(control_background_);
 

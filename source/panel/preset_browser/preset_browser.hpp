@@ -23,12 +23,14 @@
 #include "rounded_text_editor.hpp"
 #include "warning_overlay.hpp"
 #include "../background/panel_background.hpp"
+#include "../multilingual/tooltip_helper.hpp"
 
 namespace zlpanel {
     class PresetBrowser final : public juce::Component,
                                 private juce::ValueTree::Listener {
     public:
-        explicit PresetBrowser(PluginProcessor& processor, zlgui::UIState& base);
+        explicit PresetBrowser(PluginProcessor& processor, zlgui::UIState& base,
+                               const multilingual::TooltipHelper& tooltip_helper);
 
         ~PresetBrowser() override;
 

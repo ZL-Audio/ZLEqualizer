@@ -58,8 +58,9 @@ namespace zlpanel {
         PresetBrowser preset_browser_;
         UISettingPanel ui_setting_panel_;
 
+        juce::Component tooltip_target_;
         zlgui::tooltip::TooltipLookAndFeel tooltip_laf_;
-        std::unique_ptr<zlgui::tooltip::TooltipWindow> tooltip_window_;
+        zlgui::tooltip::TooltipWindow tooltip_window_;
 
         size_t c_band_{zlp::kBandNum};
         double c_sample_rate_{0.};

@@ -13,10 +13,11 @@
 #include "../../helper/piano_roll_helper.hpp"
 
 namespace zlpanel {
-    PianoRollPanel::PianoRollPanel(PluginProcessor& p, zlgui::UIState& base) :
+    PianoRollPanel::PianoRollPanel(PluginProcessor& p, zlgui::UIState& base,
+                                   const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
         piano_roll_on_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PPianoRollON::kID)),
-        keys_panel_(base), bands_panel_(base, keys_panel_), toggle_panel_(p, base) {
+        keys_panel_(base), bands_panel_(base, keys_panel_), toggle_panel_(p, base, tooltip_helper) {
         band_notes_.fill(-1);
         for (size_t band = 0; band < bands_.size(); ++band) {
             const auto suffix = std::to_string(band);

@@ -19,9 +19,11 @@
 
 namespace zlpanel {
     class OutputLabel final : public juce::Component,
+                              public juce::SettableTooltipClient,
                               private juce::ValueTree::Listener {
     public:
-        explicit OutputLabel(PluginProcessor& p, zlgui::UIState& base);
+        explicit OutputLabel(PluginProcessor& p, zlgui::UIState& base,
+                             const multilingual::TooltipHelper& tooltip_helper);
 
         ~OutputLabel() override;
 

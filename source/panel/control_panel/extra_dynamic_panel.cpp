@@ -12,16 +12,19 @@
 namespace zlpanel {
     ExtraDynamicPanel::ExtraDynamicPanel(PluginProcessor& p,
                                          zlgui::UIState& base,
-                                         const multilingual::TooltipHelper&) :
+                                         const multilingual::TooltipHelper& tooltip_helper) :
         p_ref_(p), base_(base),
         control_background_(base),
         label_laf_(base.gui),
         rms_length_label_("", "Length"),
-        rms_length_slider_("", base.gui),
+        rms_length_slider_("", base.gui,
+                           tooltip_helper.getToolTipText(multilingual::kBandDynamicRMSLength)),
         rms_mix_label_("", "Mix"),
-        rms_mix_slider_("", base.gui),
+        rms_mix_slider_("", base.gui,
+                        tooltip_helper.getToolTipText(multilingual::kBandDynamicRMSMix)),
         dyn_smooth_label_("", "Smooth"),
-        dyn_smooth_slider_("", base.gui) {
+        dyn_smooth_slider_("", base.gui,
+                           tooltip_helper.getToolTipText(multilingual::kBandDynamicSmooth)) {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
 

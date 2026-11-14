@@ -22,7 +22,8 @@ namespace zlpanel {
                      juce::Drawable::createFromImageData(BinaryData::solo_svg, BinaryData::solo_svgSize),
                      true, tooltip_helper.getToolTipText(multilingual::kBandSolo)),
         close_button_(base.gui,
-                      juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize)),
+                      juce::Drawable::createFromImageData(BinaryData::trash_svg, BinaryData::trash_svgSize),
+                      false, tooltip_helper.getToolTipText(multilingual::kBandOff)),
         ftype_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
             std::vector<std::unique_ptr<juce::Drawable>> icons;
             icons.emplace_back(
@@ -48,7 +49,7 @@ namespace zlpanel {
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::flatgain_svg, BinaryData::flatgain_svgSize));
             return icons;
-        }(), base.gui, "", {}),
+        }(), base.gui, tooltip_helper.getToolTipText(multilingual::kBandType), {}),
         lr_box_([]() -> std::vector<std::unique_ptr<juce::Drawable>> {
             std::vector<std::unique_ptr<juce::Drawable>> icons;
             icons.emplace_back(
@@ -62,8 +63,8 @@ namespace zlpanel {
             icons.emplace_back(
                 juce::Drawable::createFromImageData(BinaryData::side_svg, BinaryData::side_svgSize));
             return icons;
-        }(), base.gui, "", {}),
-        freq_slider_("", base.gui) {
+        }(), base.gui, tooltip_helper.getToolTipText(multilingual::kBandStereoMode), {}),
+        freq_slider_("", base.gui, tooltip_helper.getToolTipText(multilingual::kBandFreq)) {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
 

@@ -11,6 +11,7 @@
 
 namespace zlpanel::multilingual {
     enum TooltipLabel {
+        // band basic controls
         kBandBypass,
         kBandSolo,
         kBandType,
@@ -21,6 +22,12 @@ namespace zlpanel::multilingual {
         kBandQ,
         kBandDynamic,
         kBandOff,
+        kBandPrev,
+        kBandNext,
+        kBandPassScaleOn,
+        kBandPassScale,
+
+        // band dynamic controls
         kBandDynamicBypass,
         kBandDynamicAuto,
         kBandDynamicRelative,
@@ -34,10 +41,34 @@ namespace zlpanel::multilingual {
         kBandDynamicSideFilterSlope,
         kBandDynamicSideFreq,
         kBandDynamicSideQ,
+        kBandDynamicExtra,
+        kBandDynamicRMSLength,
+        kBandDynamicRMSMix,
+        kBandDynamicSmooth,
 
+        // top controls
+        kPluginLogo,
+        kPresetOpen,
+        kAnalyzerOpen,
+        kOutputOpen,
+        kFilterStructure,
+        kMinimumPhase,
+        kStateVariable,
+        kParallel,
+        kMatchedPhase,
+        kMixedPhase,
+        kZeroPhase,
         kBypass,
         kExternalSideChain,
+        kEQMatch,
 
+        // preset browser
+        kPresetFolder,
+        kPresetGroupDelete,
+        kPresetDelete,
+        kPresetClose,
+
+        // output controls
         kOutputGain,
         kGainScale,
         kStaticGC,
@@ -46,27 +77,30 @@ namespace zlpanel::multilingual {
         kPhaseFlip,
         kLookahead,
 
+        // analyzer controls
         kFFTPre,
         kFFTPost,
         kFFTSide,
         kFFTSpeed,
         kFFTSlope,
+        kFFTSmoothValue,
+        kFFTSmoothType,
         kFFTFreeze,
+        kFFTStereo,
         kFFTCollision,
         kFFTCollisionStrength,
+        kFFTValue,
+        kFFTMeter,
 
-        kFilterStructure,
-        kMinimumPhase,
-        kStateVariable,
-        kParallel,
-        kMatchedPhase,
-        kMixedPhase,
-        kZeroPhase,
+        // curve scale & piano roll
+        kScaleEQMaxDB,
+        kScaleFFTTopDB,
+        kScaleFFTMinDB,
+        kPianoRoll,
 
-        kPluginLogo,
-
-        kEQMatch,
+        // eq match controls
         kEQMatchSave,
+        kEQMatchDiffDraw,
         kEQMatchTarget,
         kEQMatchTargetSide,
         kEQMatchTargetFlat,
@@ -76,11 +110,13 @@ namespace zlpanel::multilingual {
         kEQMatchDiffShift,
         kEQMatchDiffSmooth,
         kEQMatchDiffSlope,
+        kEQMatchLimit,
         kEQMatchFit,
         kEQMatchNumBand,
         kEQMatchNotification1,
         kEQMatchNotification2,
         kEQMatchNotification3,
-        kEQMatchDiffDraw
+
+        kLabelNum
     };
 }

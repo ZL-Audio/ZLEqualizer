@@ -27,7 +27,7 @@ namespace zlpanel {
         top_panel_(p, base, tooltip_helper),
         output_panel_(p, base, tooltip_helper),
         analyzer_panel_(p, base, tooltip_helper),
-        piano_roll_panel_(p, base),
+        piano_roll_panel_(p, base, tooltip_helper),
         value_note_panel_(base),
         meter_panel_(p, base) {
         background_panel_.setBufferedToImage(true);
