@@ -5,9 +5,22 @@ if (MSVC)
             "$<$<CONFIG:Release>:/fp:precise>"
             /Zc:__cplusplus
     )
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        target_compile_options(SharedCode INTERFACE
+                "$<$<CONFIG:Release,RelWithDebInfo>:/clang:-ffp-contract=fast-honor-pragmas>"
+        )
+    endif ()
 else ()
-    # Apply the same floating-point optimizations to both release configurations.
     target_compile_options(SharedCode INTERFACE
-            "$<$<CONFIG:Release,RelWithDebInfo>:-O3;-ffp-contract=fast;-fno-signed-zeros;-freciprocal-math>"
+            "$<$<CONFIG:Release,RelWithDebInfo>:-O3;-fno-signed-zeros;-freciprocal-math>"
     )
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        target_compile_options(SharedCode INTERFACE
+                "$<$<CONFIG:Release,RelWithDebInfo>:-ffp-contract=fast-honor-pragmas>"
+        )
+    else ()
+        target_compile_options(SharedCode INTERFACE
+                "$<$<CONFIG:Release,RelWithDebInfo>:-ffp-contract=fast>"
+        )
+    endif ()
 endif ()
