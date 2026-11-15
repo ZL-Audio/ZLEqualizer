@@ -27,7 +27,7 @@ namespace zlpanel {
         zlgui::UIState& base_;
 
         static constexpr auto kText =
-            "ZL Equalizer is Free and Open-source. ZL Equalizer is licensed under AGPLv3, except for the logo of ZL Audio and the logo of ZL Equalizer. You can obtain the corresponding source code at https://github.com/ZL-Audio/ZLEqualizer or https://gitee.com/ZL-Audio/ZLEqualizer.\n\n"
+            u8"ZL Equalizer is Free and Open-source. ZL Equalizer is licensed under AGPLv3, except for the logo of ZL Audio and the logo of ZL Equalizer. You can obtain the corresponding source code at https://github.com/ZL-Audio/ZLEqualizer or https://gitee.com/ZL-Audio/ZLEqualizer.\n\n"
             "Copyright (c) 2023-2026 [zsliu98](https://github.com/zsliu98)\n\n"
             "JUCE framework from [JUCE](https://github.com/juce-framework/JUCE)\n\n"
             "JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)\n\n"
@@ -36,6 +36,7 @@ namespace zlpanel {
             "[Material Symbols](https://github.com/google/material-design-icons) by [Google](https://github.com/google)\n\n"
             "[inter](https://github.com/rsms/inter) by [The Inter Project Authors](https://github.com/rsms/inter)\n\n"
             "Yuriy Ivantsov. On the ideal bilinear and biquadratic digital filter. (2025).\n\n"
+            "Tom\u00e1s Oliveira e Silva. Rational Orthonormal Functions on the Unit Circle and on the Imaginary Axis, with Applications in System Identification. (1999).\n\n"
             "Martin Vicanek. Matched One-Pole Digital Shelving Filters. (2019).\n\n"
             "Martin Vicanek. Matched Second Order Digital Filters. (2016).\n\n"
             "Nigel Redmon. Cascading filters. (2016).\n\n"

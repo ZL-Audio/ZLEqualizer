@@ -79,6 +79,8 @@ Yuriy Ivantsov. *On the Ideal Bilinear and Biquadratic Digital Filter*. (2025).
 
 Yuriy Ivantsov. *On the State Space of a Linear Digital Filter*. (2025).
 
+Tomás Oliveira e Silva. [*Rational Orthonormal Functions on the Unit Circle and on the Imaginary Axis, with Applications in System Identification*](https://sweet.ua.pt/tos/bib/8.2.pdf). (1999).
+
 Cleve Moler. [*Makima Piecewise Cubic Interpolation*](https://blogs.mathworks.com/cleve/2019/04/29/makima-piecewise-cubic-interpolation/). MathWorks Blogs. (2019).
 
 Nigel Redmon. *Cascading filters*. (2016).
