@@ -133,8 +133,7 @@ namespace zldsp::filter::scaled_pass {
                         root = plan.roots[k] * shift;
                     } else if (t < static_cast<double>(tail_count) + 1.0) {
                         const auto s = static_cast<double>(tail_count) + 1.0 - t;
-                        const auto polynomial = (5.0 - 2.0 * plan.step) +
-                            (2.0 * plan.step - 4.0) * s;
+                        const auto polynomial = (5.0 - 2.0 * plan.step) + (2.0 * plan.step - 4.0) * s;
                         root = plan.last_root * s * s * std::sqrt(polynomial);
                     }
                     roots[k] = root;
@@ -208,8 +207,9 @@ namespace zldsp::filter::scaled_pass {
          * @param sample_rate a positive sample rate in Hz supporting the configured response coverage
          * @param q a positive Q value
          * @param scale the magnitude scale in [0, 1]
+         * @return whether any response coefficients changed
          */
-        void update(const FilterType type, const size_t order, const double frequency,
+        bool update(const FilterType type, const size_t order, const double frequency,
                     const double sample_rate, const double q, const double scale) {
             const auto hp = isHighPass(type);
             const auto same = std::equal_to<double>{};
@@ -268,6 +268,7 @@ namespace zldsp::filter::scaled_pass {
             sample_rate_ = sample_rate;
             q_ = q;
             type_ = type;
+            return frequency_changed || scale_changed || native_changed;
         }
 
         const Coefficients& getCoefficients() const { return coefficients_; }

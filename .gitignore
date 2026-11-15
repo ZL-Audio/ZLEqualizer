@@ -14,6 +14,8 @@ NOTES.md
 BUGS.md
 chat.md
 chat*.md
+chat
+chat/*
 
 # It's nice to have the Builds folder exist, to remind us where it is
 Builds/*

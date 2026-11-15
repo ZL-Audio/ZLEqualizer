@@ -130,7 +130,7 @@ namespace zldsp::filter {
         FloatType processSample(const size_t channel, FloatType sample) {
 #if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(this->c_filter_type_)) {
-                return static_cast<FloatType>(scaled_state_.process(this->getScaledCoefficients(), channel,
+                return static_cast<FloatType>(scaled_state_.process(this->getScaledProcessingCoefficients(), channel,
                                                                     static_cast<double>(sample)));
             }
 #endif
@@ -255,7 +255,7 @@ namespace zldsp::filter {
 
     private:
 #if ZL_ENABLE_FILTER_SCALED_PASS
-        scaled_pass::State<false> scaled_state_{};
+        scaled_pass::State scaled_state_{};
 #endif
         std::vector<FloatType> s1s_{};
         std::vector<FloatType> s2s_{};

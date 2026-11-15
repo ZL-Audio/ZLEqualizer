@@ -9,9 +9,12 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "../../filter_design/filter_design.hpp"
 #if ZL_ENABLE_FILTER_SCALED_PASS
 #include "../../scaled_pass/design.hpp"
+#include "../../scaled_pass/normalized.hpp"
 #endif
 #include "../../../chore/smoothed_value.hpp"
 
@@ -184,6 +187,15 @@ namespace zldsp::filter {
         const scaled_pass::Coefficients& getScaledCoefficients() const {
             return scaled_design_.getCoefficients();
         }
+
+        const scaled_pass::NormalizedCoefficients& getScaledProcessingCoefficients() {
+            if (scaled_processing_dirty_) {
+                scaled_processing_.update<std::is_same_v<Coeff, IvantsovSVFCoeff>>(
+                    scaled_design_.getCoefficients());
+                scaled_processing_dirty_ = false;
+            }
+            return scaled_processing_;
+        }
 #endif
 
         [[nodiscard]] bool isFreqQSmoothing() const {
@@ -260,8 +272,10 @@ namespace zldsp::filter {
         void designCoeffs() {
 #if ZL_ENABLE_FILTER_SCALED_PASS
             if (isScaledPass(c_filter_type_)) {
-                scaled_design_.update(c_filter_type_, c_order_, c_freq_.getCurrent(), sample_rate_,
-                                      c_q_.getCurrent(), c_scale_.getCurrent());
+                if (scaled_design_.update(c_filter_type_, c_order_, c_freq_.getCurrent(), sample_rate_,
+                                          c_q_.getCurrent(), c_scale_.getCurrent())) {
+                    scaled_processing_dirty_ = true;
+                }
                 current_filter_num_ = scaled_design_.getCoefficients().size();
                 return;
             }
@@ -273,6 +287,8 @@ namespace zldsp::filter {
 
 #if ZL_ENABLE_FILTER_SCALED_PASS
         scaled_pass::Designer<Coeff> scaled_design_{};
+        scaled_pass::NormalizedCoefficients scaled_processing_{};
+        bool scaled_processing_dirty_{true};
         zldsp::chore::SmoothedValue<double, zldsp::chore::kLin> c_scale_{1.0};
 #endif
         std::array<std::array<double, 5>, kFilterSize> coeffs_{};
