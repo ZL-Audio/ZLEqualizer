@@ -84,7 +84,7 @@ namespace zlpanel::multilingual::en {
         "Selects the tilt slope of the spectrum analyzer.",
         "Selects the frequency smoothing width of the spectrum analyzer.",
         "Selects the frequency smoothing mode.\nOCT: constant fractional-octave smoothing.\nERB: equivalent rectangular bandwidth smoothing.",
-        "Toggles spectrum freezing when hovering the pointer over the analyzer.",
+        "Toggles spectrum freezing when holding the pointer still over the analyzer. When enabled, you can also toggle freezing via Shift.",
         "Selects the stereo channel mode displayed by the spectrum analyzer.",
         "Toggles frequency collision detection.",
         "Adjusts the collision detection strength.",

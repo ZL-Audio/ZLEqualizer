@@ -84,7 +84,7 @@ namespace zlpanel::multilingual::de {
         "Wählt die Neigung (Tilt) des Spektrumanalysators aus.",
         "Wählt die Frequenzglättungsbreite des Spektrumanalysators aus.",
         "Wählt den Modus der Frequenzglättung aus.\nOCT: konstante Oktavbruchteil-Glättung.\nERB: Glättung nach äquivalenter Rechteckbandbreite.",
-        "Aktiviert/deaktiviert das Einfrieren des Spektrums beim Überfahren des Analyzers mit dem Mauszeiger.",
+        "Aktiviert/deaktiviert das Einfrieren des Spektrums beim Stillhalten des Mauszeigers über dem Analyzer. Wenn aktiviert, kann das Einfrieren auch über Shift umgeschaltet werden.",
         "Wählt den vom Spektrumanalysator angezeigten Stereo-Kanalmodus aus.",
         "Aktiviert/deaktiviert die Erkennung von Frequenzkollisionen.",
         "Regelt die Stärke der Kollisionserkennung.",

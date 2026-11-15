@@ -84,7 +84,7 @@ namespace zlpanel::multilingual::es {
         "Selecciona la pendiente de inclinación (tilt) del analizador de espectro.",
         "Selecciona el ancho de suavizado frecuencial del analizador de espectro.",
         "Selecciona el modo de suavizado frecuencial.\nOCT: suavizado por fracción de octava constante.\nERB: suavizado por ancho de banda rectangular equivalente.",
-        "Activa/desactiva la congelación del espectro al pasar el puntero sobre el analizador.",
+        "Activa/desactiva la congelación del espectro al mantener el puntero quieto sobre el analizador. Cuando está activado, también puede alternar la congelación mediante Shift.",
         "Selecciona el modo de canal estéreo mostrado por el analizador de espectro.",
         "Activa/desactiva la detección de colisiones de frecuencia.",
         "Ajusta la intensidad de la detección de colisiones.",

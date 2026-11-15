@@ -87,7 +87,7 @@ namespace zlpanel::multilingual::it {
         "Seleziona la pendenza di inclinazione (tilt) dell'analizzatore di spettro.",
         "Seleziona l'ampiezza di smussamento in frequenza dell'analizzatore di spettro.",
         "Seleziona la modalità di smussamento in frequenza.\nOCT: smussamento costante per frazioni di ottava.\nERB: smussamento per larghezza di banda rettangolare equivalente.",
-        "Attiva/disattiva il congelamento dello spettro al passaggio del puntatore sull'analizzatore.",
+        "Attiva/disattiva il congelamento dello spettro quando si tiene fermo il puntatore sull'analizzatore. Quando abilitato, puoi anche attivare/disattivare il congelamento tramite Shift.",
         "Seleziona la modalità del canale stereo visualizzata dall'analizzatore di spettro.",
         "Attiva/disattiva il rilevamento delle collisioni di frequenza.",
         "Regola l'intensità del rilevamento delle collisioni.",
