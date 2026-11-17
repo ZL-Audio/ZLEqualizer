@@ -69,7 +69,11 @@ namespace zldsp::filter::scaled_pass {
                 }
                 if (buffer.size() == 2) {
                     // channel buffers must not overlap
-                    processFixed<2, bypass>(coefficients, buffer, num_samples);
+                    if (num_samples >= 8) {
+                        processFixed<2, bypass, 8>(coefficients, buffer, num_samples);
+                    } else {
+                        processFixed<2, bypass>(coefficients, buffer, num_samples);
+                    }
                     return;
                 }
             }
@@ -84,17 +88,17 @@ namespace zldsp::filter::scaled_pass {
         }
 
     private:
-        // reuse rotations and local state for two chronological samples per section
+        // reuse rotations and local state across chronological frames in each section
         // each sample keeps the scalar recurrence and output-tap accumulation order
-        template <size_t kChannels, bool bypass, typename FloatType>
+        template <size_t kChannels, bool bypass, size_t kFrames = 2, typename FloatType>
         void processFixed(const NormalizedCoefficients& coefficients, std::span<FloatType*> buffer,
                           const size_t num_samples) {
             std::array<double*, kChannels> states;
             for (size_t ch = 0; ch < kChannels; ++ch) { states[ch] = states_.data() + ch * kMaxStates; }
             size_t n = 0;
-            for (; n + 1 < num_samples; n += 2) {
-                std::array<std::array<double, kChannels>, 2> samples, outputs;
-                for (size_t frame = 0; frame < 2; ++frame) {
+            for (; n + kFrames <= num_samples; n += kFrames) {
+                std::array<std::array<double, kChannels>, kFrames> samples, outputs;
+                for (size_t frame = 0; frame < kFrames; ++frame) {
                     for (size_t ch = 0; ch < kChannels; ++ch) {
                         samples[frame][ch] = static_cast<double>(buffer[ch][n + frame]);
                         outputs[frame][ch] = coefficients.taps[0] * samples[frame][ch];
@@ -106,7 +110,7 @@ namespace zldsp::filter::scaled_pass {
                     const auto tap = coefficients.taps[k + 1];
                     std::array<double, kChannels> s;
                     for (size_t ch = 0; ch < kChannels; ++ch) { s[ch] = states[ch][k]; }
-                    for (size_t frame = 0; frame < 2; ++frame) {
+                    for (size_t frame = 0; frame < kFrames; ++frame) {
                         for (size_t ch = 0; ch < kChannels; ++ch) {
                             outputs[frame][ch] += tap * s[ch];
                             const auto next = rotation.sine * s[ch] - rotation.cosine * samples[frame][ch];
@@ -125,7 +129,7 @@ namespace zldsp::filter::scaled_pass {
                         s1[ch] = states[ch][k];
                         s2[ch] = states[ch][k + 1];
                     }
-                    for (size_t frame = 0; frame < 2; ++frame) {
+                    for (size_t frame = 0; frame < kFrames; ++frame) {
                         for (size_t ch = 0; ch < kChannels; ++ch) {
                             outputs[frame][ch] += tap1 * s1[ch] + tap2 * s2[ch];
                             const auto v = c.sine * samples[frame][ch] + c.cosine * s1[ch];
@@ -141,17 +145,26 @@ namespace zldsp::filter::scaled_pass {
                     k += 2;
                 }
                 if constexpr (!bypass) {
-                    for (size_t frame = 0; frame < 2; ++frame) {
+                    for (size_t frame = 0; frame < kFrames; ++frame) {
                         for (size_t ch = 0; ch < kChannels; ++ch) {
                             buffer[ch][n + frame] = static_cast<FloatType>(outputs[frame][ch]);
                         }
                     }
                 }
             }
-            for (; n < num_samples; ++n) {
-                for (size_t ch = 0; ch < kChannels; ++ch) {
-                    const auto output = process(coefficients, ch, static_cast<double>(buffer[ch][n]));
-                    if constexpr (!bypass) { buffer[ch][n] = static_cast<FloatType>(output); }
+            if constexpr (kFrames > 2) {
+                // retain paired processing for the remaining stereo frames
+                if (n < num_samples) {
+                    std::array<FloatType*, kChannels> tail;
+                    for (size_t ch = 0; ch < kChannels; ++ch) { tail[ch] = buffer[ch] + n; }
+                    processFixed<kChannels, bypass>(coefficients, std::span<FloatType*>(tail), num_samples - n);
+                }
+            } else {
+                for (; n < num_samples; ++n) {
+                    for (size_t ch = 0; ch < kChannels; ++ch) {
+                        const auto output = process(coefficients, ch, static_cast<double>(buffer[ch][n]));
+                        if constexpr (!bypass) { buffer[ch][n] = static_cast<FloatType>(output); }
+                    }
                 }
             }
         }

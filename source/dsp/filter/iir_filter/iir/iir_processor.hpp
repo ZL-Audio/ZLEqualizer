@@ -45,7 +45,8 @@ namespace zldsp::filter {
                     processSingleFixed<1, bypass, multiply>(coeff, s1s, s2s, buffer, num_samples, multiplier);
                     return true;
                 }
-                if (buffer.size() == 2 && buffer[0] != buffer[1]) {
+                if (buffer.size() == 2) {
+                    // channel buffers must not overlap
                     processSingleFixed<2, bypass, multiply>(coeff, s1s, s2s, buffer, num_samples, multiplier);
                     return true;
                 }
@@ -235,7 +236,8 @@ namespace zldsp::filter {
                     if (buffer.size() == 1) {
                         return processSingleDynamic<type, 1>(cache, coeffs[0], s1s, s2s, buffer, gains, num_samples);
                     }
-                    if (buffer.size() == 2 && buffer[0] != buffer[1]) {
+                    if (buffer.size() == 2) {
+                        // channel buffers must not overlap
                         return processSingleDynamic<type, 2>(cache, coeffs[0], s1s, s2s, buffer, gains, num_samples);
                     }
                 }
