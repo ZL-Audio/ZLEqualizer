@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "../iir/iir.hpp"
+#include "../iir/iir_processor.hpp"
 #if ZL_ENABLE_FILTER_SCALED_PASS
 #include "../../scaled_pass/state.hpp"
 #endif
@@ -81,6 +82,22 @@ namespace zldsp::filter {
 
         template <int order, bool bypass = false, bool smooth = false>
         void processSVF(std::span<FloatType*> buffer, const size_t num_samples) {
+#if ZL_ENABLE_FILTER_SCALED_PASS
+            if constexpr (order == 0 && !smooth) {
+                if (isScaledPass(this->c_filter_type_)) {
+                    if (num_samples > 0 && !buffer.empty()) {
+                        scaled_state_.template processBlock<bypass>(
+                            this->getScaledProcessingCoefficients(), buffer, num_samples);
+                    }
+                    return;
+                }
+            }
+#endif
+            if constexpr (order == 2 && !smooth) {
+                if (this->getProcessingOrder() == 2 && this->current_filter_num_ == 1
+                    && IIRProcessor<kFilterSize, IvantsovSVFCoeff>::template processSingle<bypass>(
+                        this->coeffs_[0], s1s_.data(), s2s_.data(), buffer, num_samples)) { return; }
+            }
             for (size_t i = 0; i < num_samples; ++i) {
                 if constexpr (smooth) {
                     this->advanceSmoothing();
@@ -171,6 +188,19 @@ namespace zldsp::filter {
         void updateGainLinear(const FloatType g_linear_sqrt) {
             FilterDesign::updateGainLinear<IvantsovSVFCoeff>(this->c_filter_type_, this->c_order_,
                                                              g_linear_sqrt, this->cache_.data(), this->coeffs_);
+        }
+
+        /**
+         * process complete SIMD chunks with dynamic gain
+         * @param buffer
+         * @param gains the linear square-root gain values
+         * @param num_samples
+         * @return the number of processed samples; the caller handles the remainder
+         */
+        size_t processGainLinearChunks(std::span<FloatType*> buffer, const FloatType* gains, const size_t num_samples) {
+            return IIRProcessor<kFilterSize, IvantsovSVFCoeff>::processGainLinearChunks(
+                this->c_filter_type_, this->c_order_, this->current_filter_num_, this->cache_.data(), this->coeffs_,
+                s1s_.data(), s2s_.data(), buffer, gains, num_samples);
         }
 
     private:

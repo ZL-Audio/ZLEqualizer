@@ -13,6 +13,7 @@
 
 #include "../../../vector/vector.hpp"
 #include "../iir/iir.hpp"
+#include "../iir/iir_processor.hpp"
 #if ZL_ENABLE_FILTER_SCALED_PASS
 #include "../../scaled_pass/state.hpp"
 #endif
@@ -107,6 +108,24 @@ namespace zldsp::filter {
 
         template <int order, bool bypass = false, bool smooth = false, bool is_parallel = false>
         void processParallel(std::span<FloatType*> buffer, const size_t num_samples) {
+#if ZL_ENABLE_FILTER_SCALED_PASS
+            if constexpr (order == 0 && !smooth && !is_parallel) {
+                if (isScaledPass(this->c_filter_type_)) {
+                    if (num_samples > 0 && !buffer.empty()) {
+                        scaled_state_.template processBlock<bypass>(
+                            this->getScaledProcessingCoefficients(), buffer, num_samples);
+                    }
+                    return;
+                }
+            }
+#endif
+            if constexpr (order == 2 && !smooth) {
+                if (this->getProcessingOrder() == 2 && this->current_filter_num_ == 1
+                    && IIRProcessor<kFilterSize, IvantsovCoeff>::template processSingle<bypass, is_parallel>(
+                        this->coeffs_[0], s1s_.data(), s2s_.data(), buffer, num_samples, parallel_multiplier_)) {
+                    return;
+                }
+            }
             for (size_t i = 0; i < num_samples; ++i) {
                 if constexpr (smooth) {
                     this->advanceSmoothing();
@@ -117,7 +136,8 @@ namespace zldsp::filter {
                         processSample<order>(channel, buffer[channel][i]);
                     } else {
                         if constexpr (is_parallel) {
-                            buffer[channel][i] = processSample<order>(channel, buffer[channel][i]) * parallel_multiplier_;
+                            buffer[channel][i] = processSample<order>(channel, buffer[channel][i]) *
+                                parallel_multiplier_;
                         } else {
                             buffer[channel][i] = processSample<order>(channel, buffer[channel][i]);
                         }
@@ -200,21 +220,23 @@ namespace zldsp::filter {
             const auto next_q = this->c_q_.getCurrent();
             if (this->c_filter_type_ == kPeak && this->c_order_ <= 4) {
                 should_be_parallel_ = true;
-                this->current_filter_num_ = FilterDesign::updateCoeffs<IvantsovCoeff>(FilterType::kBandPass, this->c_order_,
-                                                                  next_freq, this->sample_rate_,
-                                                                  next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = FilterDesign::updateCoeffs<IvantsovCoeff>(
+                    FilterType::kBandPass, this->c_order_,
+                    next_freq, this->sample_rate_,
+                    next_gain, next_q, this->coeffs_);
                 parallel_multiplier_ = static_cast<FloatType>(dbToGain(this->c_gain_.getCurrent()) - 1.0);
             } else if (this->c_filter_type_ == kLowShelf && this->c_order_ <= 2) {
                 should_be_parallel_ = true;
-                this->current_filter_num_ = FilterDesign::updateCoeffs<IvantsovCoeff>(FilterType::kLowPass, this->c_order_,
-                                                                              next_freq, this->sample_rate_,
-                                                                              next_gain, next_q, this->coeffs_);
+                this->current_filter_num_ = FilterDesign::updateCoeffs<IvantsovCoeff>(
+                    FilterType::kLowPass, this->c_order_,
+                    next_freq, this->sample_rate_,
+                    next_gain, next_q, this->coeffs_);
                 parallel_multiplier_ = static_cast<FloatType>(dbToGain(this->c_gain_.getCurrent()) - 1.0);
             } else if (this->c_filter_type_ == kHighShelf && this->c_order_ <= 2) {
                 should_be_parallel_ = true;
                 this->current_filter_num_ = FilterDesign::updateCoeffs<IvantsovCoeff>(kHighPass, this->c_order_,
-                                                                              next_freq, this->sample_rate_,
-                                                                              next_gain, next_q, this->coeffs_);
+                    next_freq, this->sample_rate_,
+                    next_gain, next_q, this->coeffs_);
                 parallel_multiplier_ = static_cast<FloatType>(dbToGain(this->c_gain_.getCurrent()) - 1.0);
             } else {
                 should_be_parallel_ = false;
@@ -243,6 +265,22 @@ namespace zldsp::filter {
 
         [[nodiscard]] bool getShouldBeParallel() const {
             return should_be_parallel_;
+        }
+
+        /**
+         * process complete SIMD chunks with dynamic gain for serial filters
+         * keep the dispatch arguments out of the native Parallel loop's call frame
+         * @param buffer
+         * @param gains the linear square-root gain values
+         * @param num_samples
+         * @return the number of processed samples; zero for native Parallel processing
+         */
+        HWY_NOINLINE size_t processGainLinearChunks(std::span<FloatType*> buffer, const FloatType* gains,
+                                                    const size_t num_samples) {
+            if (should_be_parallel_) { return 0; }
+            return IIRProcessor<kFilterSize, IvantsovCoeff>::processGainLinearChunks(
+                this->c_filter_type_, this->c_order_, this->current_filter_num_, this->cache_.data(), this->coeffs_,
+                s1s_.data(), s2s_.data(), buffer, gains, num_samples);
         }
 
         std::span<FloatType*> getParallelBuffer() {

@@ -123,8 +123,12 @@ namespace zldsp::filter {
         void internalProcess(std::span<FloatType*> main_buffer, std::span<FloatType*> side_buffer,
                              const size_t num_samples) {
             const auto side_p = side_buffer[0];
+            size_t processed = 0;
+            if constexpr (!bypass && !dynamic_bypass && order != 1) {
+                processed = filter_.processGainLinearChunks(main_buffer, side_p, num_samples);
+            }
             // dynamic processing
-            for (size_t i = 0; i < num_samples; ++i) {
+            for (size_t i = processed; i < num_samples; ++i) {
                 if constexpr (!dynamic_bypass) {
                     filter_.updateGainLinear(side_p[i]);
                 }
