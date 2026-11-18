@@ -366,8 +366,12 @@ namespace zlpanel {
         if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kMaximumNumBand, property)) {
             const auto max_num_band = static_cast<double>(
                 base_.getPanelProperty(zlgui::PanelSettingIdx::kMaximumNumBand));
-            num_band_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
-                0.0, max_num_band, 1.0));
+            auto& slider = num_band_slider_.getSlider();
+            num_band_slider_.setEnabled(max_num_band > 0.0);
+            slider.setNormalisableRange({0.0, std::max(1.0, max_num_band), 1.0});
+            if (max_num_band <= 0.0) {
+                slider.setValue(0.0, juce::dontSendNotification);
+            }
         } else if (base_.isPanelIdentifier(zlgui::PanelSettingIdx::kSuggestedNumBand, property)) {
             const auto suggested_num_band = std::round(static_cast<double>(
                 base_.getPanelProperty(zlgui::PanelSettingIdx::kSuggestedNumBand)));

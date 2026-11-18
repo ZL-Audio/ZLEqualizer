@@ -353,20 +353,11 @@ namespace zlpanel {
         zldsp::vector::multiply(diffs.data(), dbs_[0].data(), -1.f, dbs_[0].size());
         const auto match_limit = match_limit_.load(std::memory_order::relaxed);
         zldsp::vector::clamp(diffs.data(), -match_limit, match_limit, diffs.size());
-        zlchore::eq_match::EqMatchOptimizer optimizer{
-            p_ref_.getAtomicSampleRate(),
-            freqs_,
-            diffs
-        };
-        auto& match_result{match_result_.getWriter()};
-        const auto num_band = optimizer.fit(
-            match_result.filter_paras_, zlp::kBandNum, [&thread]() {
-                return thread.threadShouldExit();
-            });
+        match_result_.getWriter() = zlchore::eq_match::fit(
+            c_sample_rate_, freqs_, diffs, zlp::kBandNum, [&thread] { return thread.threadShouldExit(); });
         if (thread.threadShouldExit()) {
             return;
         }
-        match_result.num_band_ = num_band;
         match_result_.publish();
         triggerAsyncUpdate();
     }
@@ -653,20 +644,18 @@ namespace zlpanel {
 
     void MatchFFTPanel::handleAsyncUpdate() {
         match_result_.pull();
-        const auto match_result = match_result_.getReader();
+        const auto maximum = match_result_.getReader().by_band_count.size() - 1;
+        const auto suggested = match_result_.getReader().suggested_num_bands;
         base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 3.0);
-        base_.setPanelProperty(zlgui::PanelSettingIdx::kMaximumNumBand,
-                               static_cast<float>(match_result.filter_paras_.size()));
-        base_.setPanelProperty(zlgui::PanelSettingIdx::kSuggestedNumBand,
-                               static_cast<float>(match_result.num_band_));
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kMaximumNumBand, static_cast<float>(maximum));
+        base_.setPanelProperty(zlgui::PanelSettingIdx::kSuggestedNumBand, static_cast<float>(suggested));
     }
 
     void MatchFFTPanel::updateMatchNumBand(const size_t num_band) {
         p_ref_.getController().setMatchBypassON(true);
         match_result_.pull();
-        auto match_result = match_result_.getReader();
-        match_result.num_band_ = num_band;
-        updateMatchFilters(match_result);
+        const auto& fits = match_result_.getReader().by_band_count;
+        updateMatchFilters(fits[std::min(num_band, fits.size() - 1)]);
         stopTimer();
         startTimer(1000);
     }
@@ -675,14 +664,13 @@ namespace zlpanel {
         to_reset_analyzer_.signal();
     }
 
-    void MatchFFTPanel::updateMatchFilters(const MatchResult& match_result) {
-        const auto num_band = std::min(match_result.num_band_, match_result.filter_paras_.size());
-        for (size_t band = num_band; band < zlp::kBandNum; ++band) {
+    void MatchFFTPanel::updateMatchFilters(const std::span<const zldsp::filter::FilterParameters> bands) {
+        for (size_t band = bands.size(); band < zlp::kBandNum; ++band) {
             band_helper::turnOffBand(p_ref_, band);
         }
-        for (size_t band = 0; band < num_band; ++band) {
+        for (size_t band = 0; band < bands.size(); ++band) {
             const auto band_s = std::to_string(band);
-            const auto& paras{match_result.filter_paras_[band]};
+            const auto& paras{bands[band]};
             std::array IDs{
                 zlp::PFilterType::kID, zlp::POrder::kID,
                 zlp::PFreq::kID, zlp::PGain::kID, zlp::PQ::kID,

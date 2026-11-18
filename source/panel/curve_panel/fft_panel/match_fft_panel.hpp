@@ -148,13 +148,8 @@ namespace zlpanel {
         std::atomic<float> diff_slope_{0.f};
         zlchore::thread::Notifier to_update_diff_slope_{};
 
-        struct MatchResult {
-            std::vector<zldsp::filter::FilterParameters> filter_paras_;
-            size_t num_band_{0};
-        };
-
         std::atomic<MatchPhase> match_phase_{MatchPhase::kAnalyze};
-        TriBuffer<MatchResult> match_result_;
+        TriBuffer<zlchore::eq_match::FitResult> match_result_;
 
         std::atomic<float> match_limit_{12.f};
 
@@ -186,7 +181,7 @@ namespace zlpanel {
 
         void mouseDoubleClick(const juce::MouseEvent& event) override;
 
-        void updateMatchFilters(const MatchResult& match_result);
+        void updateMatchFilters(std::span<const zldsp::filter::FilterParameters> bands);
 
         void handleAsyncUpdate() override;
 

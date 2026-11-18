@@ -65,8 +65,6 @@ JUCE framework from [JUCE](https://github.com/juce-framework/JUCE)
 
 JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)
 
-[nlopt](https://github.com/stevengj/nlopt) by [Steven G. Johnson](https://github.com/stevengj)
-
 [Highway](https://github.com/google/highway) by [Google](https://github.com/google)
 
 [Material Symbols](https://github.com/google/material-design-icons) by [Google](https://github.com/google)

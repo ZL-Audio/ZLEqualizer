@@ -134,19 +134,19 @@ namespace zldsp::filter {
                 return;
             }
 #endif
-            if (current_filter_num_ == 0) {
-                std::fill(gains.begin(), gains.end(), static_cast<FloatType>(1.0));
-                return;
-            }
-            std::ranges::fill(gains, static_cast<FloatType>(1.0));
-            for (size_t i = 0; i < current_filter_num_; ++i) {
-                if (usesFirstOrderSections()) {
+            if (current_filter_num_ == 0 || usesFirstOrderSections()) {
+                std::ranges::fill(gains, FloatType{1});
+                for (size_t i = 0; i < current_filter_num_; ++i) {
                     const auto& c = coeffs_[i];
                     IdealBase<FloatType>::template updateMagnitudeSquare<false>(
                         std::array<double, 3>{c[0], c[2], c[3]}, ws, gains);
-                } else {
-                    IdealBase<FloatType>::template updateMagnitudeSquare<false>(coeffs_[i], ws, gains);
                 }
+                return;
+            }
+            std::ranges::fill(gains.subspan(ws.size()), FloatType{1});
+            IdealBase<FloatType>::updateMagnitudeSquare(coeffs_.front(), ws, gains);
+            for (size_t i = 1; i < current_filter_num_; ++i) {
+                IdealBase<FloatType>::template updateMagnitudeSquare<false>(coeffs_[i], ws, gains);
             }
         }
 

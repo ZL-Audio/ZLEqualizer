@@ -217,12 +217,6 @@ target_link_libraries(SharedCode
         juce::juce_recommended_warning_flags
 )
 
-# add nlopt
-set(BUILD_SHARED_LIBS OFF)
-set(DISABLE_FP_CONTRACT OFF)
-add_subdirectory(nlopt)
-target_link_libraries(SharedCode INTERFACE nlopt)
-
 # add highway
 set(ZL_HWY_STATIC_TARGET "NONE" CACHE STRING "Target architecture for static dispatch")
 if (ZL_HWY_STATIC_TARGET STREQUAL "NONE")

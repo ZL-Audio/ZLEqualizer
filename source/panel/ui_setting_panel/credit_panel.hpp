@@ -31,7 +31,6 @@ namespace zlpanel {
             "Copyright (c) 2023-2026 [zsliu98](https://github.com/zsliu98)\n\n"
             "JUCE framework from [JUCE](https://github.com/juce-framework/JUCE)\n\n"
             "JUCE template from [pamplejuce](https://github.com/sudara/pamplejuce)\n\n"
-            "[nlopt](https://github.com/stevengj/nlopt) by [Steven G. Johnson](https://github.com/stevengj)\n\n"
             "[Highway](https://github.com/google/highway) by [Google](https://github.com/google)\n\n"
             "[Material Symbols](https://github.com/google/material-design-icons) by [Google](https://github.com/google)\n\n"
             "[inter](https://github.com/rsms/inter) by [The Inter Project Authors](https://github.com/rsms/inter)\n\n"
