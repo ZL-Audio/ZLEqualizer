@@ -83,8 +83,13 @@ runs:
         BUILD_VCVARS_SCRIPT: ${{ inputs.vcvars-script }}
       run: |
         set "VS_PATH="
-        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set "VS_PATH=%%i"
-        if not defined VS_PATH exit /b 1
+        for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath`) do set "VS_PATH=%%i"
+        if not defined VS_PATH (
+          echo Could not find Visual Studio with the C++ Clang tools installed.
+          exit /b 1
+        )
         call "%VS_PATH%\VC\Auxiliary\Build\%BUILD_VCVARS_SCRIPT%"
         if errorlevel 1 exit /b 1
+        set "ZL_VS_LLVM_BIN=%VS_PATH%\VC\Tools\Llvm\%VSCMD_ARG_HOST_ARCH%\bin"
+        set "PATH=%ZL_VS_LLVM_BIN%;%PATH%"
         python "%BUILD_ACTION_PATH%\build.py"

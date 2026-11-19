@@ -26,7 +26,8 @@ def configure_command(settings: dict[str, str], runner_os: str) -> list[str]:
         version = settings["clang-version"]
         command += [f"-DCMAKE_C_COMPILER=clang-{version}", f"-DCMAKE_CXX_COMPILER=clang++-{version}"]
     elif runner_os == "Windows":
-        command += ["-DCMAKE_C_COMPILER=clang-cl", "-DCMAKE_CXX_COMPILER=clang-cl"]
+        compiler = (Path(os.environ["ZL_VS_LLVM_BIN"]) / "clang-cl.exe").as_posix()
+        command += [f"-DCMAKE_C_COMPILER={compiler}", f"-DCMAKE_CXX_COMPILER={compiler}"]
     elif runner_os == "macOS":
         target = settings["macos-deployment-target"]
         if not target:
