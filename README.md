@@ -51,6 +51,36 @@ cmake --build Builds --config Release
 
 After building, the plugins should have been copied to the corresponding folders. If you want to disable the copy process, you can pass `-DZL_JUCE_COPY_PLUGIN=FALSE`, find the binary folders under `Builds/ZLEqualizer_artefacts/Release` and copy them manually.
 
+### macOS Apple Silicon local build
+
+To build native `arm64` Audio Unit and VST3 bundles without copying them into a plug-in folder, configure and build with:
+
+```console
+cmake -B Builds -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_OSX_ARCHITECTURES=arm64 \
+  -DZL_JUCE_FORMATS="AU;VST3" \
+  -DZL_HWY_STATIC_TARGET=NEON \
+  -DZL_JUCE_COPY_PLUGIN=FALSE .
+cmake --build Builds --config Release
+```
+
+The bundles are written to:
+
+- `Builds/ZLEqualizer_artefacts/Release/AU/ZL Equalizer 2.component`
+- `Builds/ZLEqualizer_artefacts/Release/VST3/ZL Equalizer 2.vst3`
+
+If strict bundle signature verification fails after a successful build, sign the completed bundles ad hoc after all post-build resources, including the VST3 manifest, have been generated:
+
+```console
+codesign --force --sign - --timestamp=none "Builds/ZLEqualizer_artefacts/Release/AU/ZL Equalizer 2.component"
+codesign --force --sign - --timestamp=none "Builds/ZLEqualizer_artefacts/Release/VST3/ZL Equalizer 2.vst3"
+codesign --verify --deep --strict --verbose=2 "Builds/ZLEqualizer_artefacts/Release/AU/ZL Equalizer 2.component"
+codesign --verify --deep --strict --verbose=2 "Builds/ZLEqualizer_artefacts/Release/VST3/ZL Equalizer 2.vst3"
+```
+
+An ad hoc signature is suitable for local validation. It is not a Developer ID signature and does not notarize the bundles.
+
 ## AI Transparency
 
 Since October 2026, LLMs have assisted across various stages of this project's development. All code, documentation, and design choices are either authored or reviewed by the maintainer, who takes full responsibility for the quality, safety, and licensing of the final output.
