@@ -38,7 +38,9 @@ namespace zlpanel {
         std::atomic<float>* dynamic_learn_on_{};
         float loudness_{0.f};
 
+        juce::Rectangle<float> meter_bound_;
         juce::ColourGradient gradient_;
+        juce::Path meter_mask_;
 
         void lookAndFeelChanged() override;
     };

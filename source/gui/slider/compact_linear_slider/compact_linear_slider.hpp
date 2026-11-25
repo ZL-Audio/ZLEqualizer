@@ -72,6 +72,10 @@ namespace zlgui::slider {
                 setSliderValue(value_);
             }
 
+            void lookAndFeelChanged() override {
+                setSliderValue(value_);
+            }
+
             void setSliderValue(const float x) {
                 value_ = x;
                 mask_.clear();
@@ -154,26 +158,30 @@ namespace zlgui::slider {
             const auto bound = getLocalBounds();
             slider_.setBounds(bound);
             auto text_bound = bound;
-            auto bar_bound = bound;
+            auto track_bound = bound;
             if constexpr (kUseName) {
                 if (base_.getUIStyle() == UIStyle::kFlat) {
-                    const auto font_size = base_.getFontSize();
-                    const auto bar_thickness = std::max(juce::roundToInt(font_size * kFlatBarThickness), 2);
-                    const auto bar_padding = juce::roundToInt(font_size * kFlatBarPadding);
-                    text_bound.removeFromBottom(bar_padding);
-                    bar_bound = text_bound.removeFromBottom(bar_thickness);
+                    track_bound = getFlatTrackBounds(bound, base_.getFontSize());
+                    text_bound = bound.withBottom(track_bound.getY());
                 }
             }
             if constexpr (kUseBackground) {
-                background_.setBounds(bar_bound);
+                background_.setBounds(track_bound);
             }
             if constexpr (kUseDisplay) {
-                display_.setBounds(bar_bound);
+                display_.setBounds(track_bound);
             }
             text_.setBounds(text_bound);
             if constexpr (kUseName) {
                 label_.setBounds(text_bound);
             }
+        }
+
+        static juce::Rectangle<int> getFlatTrackBounds(juce::Rectangle<int> bound, const float font_size) {
+            const auto bar_thickness = std::max(juce::roundToInt(font_size * kFlatBarThickness), 2);
+            const auto bar_padding = juce::roundToInt(font_size * kFlatBarPadding);
+            bound.removeFromBottom(bar_padding);
+            return bound.removeFromBottom(bar_thickness);
         }
 
         void mouseUp(const juce::MouseEvent& event) override {
@@ -276,6 +284,10 @@ namespace zlgui::slider {
         int precision_{4};
 
         int drag_distance_{10};
+
+        void lookAndFeelChanged() override {
+            resized();
+        }
 
         juce::String getDisplayValue(const juce::Slider& s) const {
             const auto value = s.getValue();

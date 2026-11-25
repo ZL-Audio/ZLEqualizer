@@ -76,7 +76,7 @@ namespace zlpanel {
         const auto h_padding = (bound.getHeight() - 2 * slider_height) / 4;
         bound = bound.removeFromLeft(slider_width);
         bound.removeFromBottom(3 * h_padding + slider_height);
-        side_loudness_display_panel_.setBounds(bound.removeFromBottom(slider_height / 4));
+        side_loudness_display_panel_.setBounds(bound.removeFromBottom(slider_height));
 
         if (dynamic_on_ptr_ != nullptr) {
             changeLeftRightBound(c_dynamic_on_);

@@ -16,10 +16,12 @@ namespace zlpanel {
     }
 
     void SideLoudnessDisplayPanel::paint(juce::Graphics& g) {
-        const auto bound = getLocalBounds().toFloat();
         const auto loudness_p = std::clamp(loudness_ * .0125f + 1.f, 0.f, 1.f);
+        if (!meter_mask_.isEmpty()) {
+            g.reduceClipRegion(meter_mask_);
+        }
         g.setGradientFill(gradient_);
-        g.fillRect(bound.withWidth(bound.getWidth() * loudness_p));
+        g.fillRect(meter_bound_.withWidth(meter_bound_.getWidth() * loudness_p));
     }
 
     void SideLoudnessDisplayPanel::resized() {
@@ -57,10 +59,20 @@ namespace zlpanel {
     }
 
     void SideLoudnessDisplayPanel::lookAndFeelChanged() {
-        const auto bound = getLocalBounds().toFloat();
+        auto bound = getLocalBounds();
+        meter_mask_.clear();
+        if (base_.gui.getUIStyle() == zlgui::UIStyle::kFlat) {
+            const auto track = zlgui::slider::CompactLinearSlider<>::getFlatTrackBounds(
+                bound, base_.gui.getFontSize());
+            meter_bound_ = track.translated(0, -track.getHeight()).toFloat();
+            meter_mask_.addRoundedRectangle(meter_bound_, meter_bound_.getHeight() * .5f);
+        } else {
+            meter_bound_ = bound.removeFromBottom(bound.getHeight() / 4).toFloat();
+        }
+
         gradient_.clearColours();
-        gradient_.point1 = {0.f, 0.f};
-        gradient_.point2 = {bound.getWidth(), 0.f};
+        gradient_.point1 = {meter_bound_.getX(), 0.f};
+        gradient_.point2 = {meter_bound_.getRight(), 0.f};
         const auto colour = base_.gui.getColourBlendedWithBackground(base_.gui.getTextColour(), .5f);
         gradient_.addColour(0.f, colour.withAlpha(0.f));
         gradient_.addColour(.1f, colour);
