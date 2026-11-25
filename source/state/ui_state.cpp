@@ -21,6 +21,7 @@ namespace zlgui {
         gui.setFontMode(static_cast<size_t>(std::round(loadPara(zlstate::PFontMode::kID))));
         gui.setFontScale(loadPara(zlstate::PFontScale::kID));
         gui.setStaticFontSize(loadPara(zlstate::PStaticFontSize::kID));
+        gui.setUIStyle(static_cast<UIStyle>(std::round(loadPara(zlstate::PUIStyle::kID))));
         window_size_fix_ = loadPara(zlstate::PWindowSizeFix::kID) > .5f;
         gui.setSensitivity(loadPara(zlstate::PWheelSensitivity::kID), kMouseWheel);
         gui.setSensitivity(loadPara(zlstate::PWheelFineSensitivity::kID), kMouseWheelFine);
@@ -83,6 +84,7 @@ namespace zlgui {
         savePara(zlstate::PFontMode::kID, static_cast<float>(gui.getFontMode()));
         savePara(zlstate::PFontScale::kID, gui.getFontScale());
         savePara(zlstate::PStaticFontSize::kID, gui.getStaticFontSize());
+        savePara(zlstate::PUIStyle::kID, static_cast<float>(gui.getUIStyle()));
         savePara(zlstate::PWindowSizeFix::kID, window_size_fix_);
         savePara(zlstate::PWheelSensitivity::kID, gui.getSensitivity(kMouseWheel));
         savePara(zlstate::PWheelFineSensitivity::kID, gui.getSensitivity(kMouseWheelFine));

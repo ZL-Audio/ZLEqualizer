@@ -24,6 +24,11 @@ namespace zlgui::slider {
         std::function<std::optional<double>(const std::string&)> string_formatter_;
 
     private:
+        static constexpr float kFlatTrackAlpha = 0.1f;
+        static constexpr float kFlatBarThickness = 0.4f;
+        static constexpr float kFlatBarPadding = 0.15f;
+        static constexpr float kFlatCornerSize = kFlatBarThickness * .5f;
+
         class Background final : public juce::Component {
         public:
             explicit Background(UIBase& base) :
@@ -33,8 +38,13 @@ namespace zlgui::slider {
             }
 
             void paint(juce::Graphics& g) override {
-                base_.fillRoundedInnerShadowRectangle(g, getLocalBounds().toFloat(),
-                                                      base_.getFontSize() * 0.5f, {.blur_radius = 0.66f});
+                const auto bound = getLocalBounds().toFloat();
+                if (base_.getUIStyle() == UIStyle::kFlat) {
+                    g.setColour(base_.getColourBlendedWithBackground(base_.getTextColour(), kFlatTrackAlpha));
+                    g.fillRoundedRectangle(bound, base_.getFontSize() * kFlatCornerSize);
+                } else {
+                    base_.fillRoundedInnerShadowRectangle(g, bound, base_.getFontSize() * .5f, {.blur_radius = 0.66f});
+                }
             }
 
         private:
@@ -65,7 +75,11 @@ namespace zlgui::slider {
             void setSliderValue(const float x) {
                 value_ = x;
                 mask_.clear();
-                mask_.addRoundedRectangle(getLocalBounds().toFloat(), base_.getFontSize() * 0.5f);
+                if (base_.getUIStyle() == UIStyle::kFlat) {
+                    mask_.addRoundedRectangle(getLocalBounds().toFloat(), base_.getFontSize() * kFlatCornerSize);
+                } else {
+                    mask_.addRoundedRectangle(getLocalBounds().toFloat(), base_.getFontSize() * .5f);
+                }
                 repaint();
             }
 
@@ -138,16 +152,27 @@ namespace zlgui::slider {
 
         void resized() override {
             const auto bound = getLocalBounds();
+            slider_.setBounds(bound);
+            auto text_bound = bound;
+            auto bar_bound = bound;
+            if constexpr (kUseName) {
+                if (base_.getUIStyle() == UIStyle::kFlat) {
+                    const auto font_size = base_.getFontSize();
+                    const auto bar_thickness = std::max(juce::roundToInt(font_size * kFlatBarThickness), 2);
+                    const auto bar_padding = juce::roundToInt(font_size * kFlatBarPadding);
+                    text_bound.removeFromBottom(bar_padding);
+                    bar_bound = text_bound.removeFromBottom(bar_thickness);
+                }
+            }
             if constexpr (kUseBackground) {
-                background_.setBounds(bound);
+                background_.setBounds(bar_bound);
             }
             if constexpr (kUseDisplay) {
-                display_.setBounds(bound);
+                display_.setBounds(bar_bound);
             }
-            slider_.setBounds(bound);
-            text_.setBounds(bound);
+            text_.setBounds(text_bound);
             if constexpr (kUseName) {
-                label_.setBounds(bound);
+                label_.setBounds(text_bound);
             }
         }
 

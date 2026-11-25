@@ -69,6 +69,11 @@ namespace zlgui {
         }
     }
 
+    enum class UIStyle {
+        kSoft,
+        kFlat
+    };
+
     enum SensitivityIdx {
         kMouseWheel,
         kMouseWheelFine,
@@ -143,6 +148,14 @@ namespace zlgui {
 
         float getFontSize() const {
             return font_size_;
+        }
+
+        void setUIStyle(const UIStyle style) {
+            ui_style_ = style;
+        }
+
+        UIStyle getUIStyle() const {
+            return ui_style_;
         }
 
         juce::Colour getTextColour() const {
@@ -267,6 +280,7 @@ namespace zlgui {
         size_t font_mode_{0};
         float font_scale_{9.f};
         float static_font_size_{0.f};
+        UIStyle ui_style_{UIStyle::kSoft};
         std::array<juce::Colour, static_cast<size_t>(ThemeColour::kCount)> theme_colours_;
         std::array<float, kSensitivityNum> wheel_sensitivity_{1.f, .12f, 1.f, .25f, 1.f, .25f, .5f};
         size_t rotary_style_id_{0};

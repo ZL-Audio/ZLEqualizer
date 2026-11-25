@@ -307,6 +307,16 @@ namespace zlstate {
         inline static const auto kRange = juce::NormalisableRange<float>(kMinV, kMaxV, 1.f);
     };
 
+    class PUIStyle : public ChoiceParameters<PUIStyle> {
+    public:
+        static constexpr auto kID = "ui_scale";
+        static constexpr auto kName = "";
+        inline static const auto kChoices = juce::StringArray{
+            "Soft", "Flat"
+        };
+        static constexpr int kDefaultI = 0;
+    };
+
     class PWindowSizeFix : public ChoiceParameters<PWindowSizeFix> {
     public:
         static constexpr auto kID = "window_size_fix";
@@ -739,7 +749,7 @@ namespace zlstate {
 
     inline juce::AudioProcessorValueTreeState::ParameterLayout getStateParameterLayout() {
         juce::AudioProcessorValueTreeState::ParameterLayout layout;
-        layout.add(PWindowW::get(), PWindowH::get(), PWindowSizeFix::get(),
+        layout.add(PWindowW::get(), PWindowH::get(), PUIStyle::get(), PWindowSizeFix::get(),
                    PFontMode::get(), PFontScale::get(), PStaticFontSize::get(),
                    PWheelSensitivity::get(), PWheelFineSensitivity::get(), PWheelShiftReverse::get(),
                    PSliderSensitivity::get(), PSliderFineSensitivity::get(),

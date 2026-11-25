@@ -28,6 +28,23 @@ namespace zlgui::slider {
         std::function<std::optional<double>(const std::string&)> string_formatter_;
 
     private:
+        static constexpr float kFlatTrackAlpha = 0.1f;
+        static constexpr float kFlatRingThickness = 0.4f;
+
+        /**
+         * get the inner bound of the value ring
+         * the area between the outer bound and this inner bound is the ring where values are displayed
+         */
+        static juce::Rectangle<float> getRingInnerBound(const UIBase& base, const juce::Rectangle<float> bound,
+                                                        const float thick_scale) {
+            if (base.getUIStyle() == UIStyle::kFlat) {
+                return bound.reduced(base.getFontSize() * kFlatRingThickness * thick_scale);
+            }
+            const auto corner_size = base.getFontSize() * 0.5f * thick_scale;
+            const auto old_bound = UIBase::getInnerShadowEllipseArea(bound, corner_size, {});
+            return UIBase::getShadowEllipseArea(old_bound, corner_size, {});
+        }
+
         class Background final : public juce::Component {
         public:
             explicit Background(UIBase& base, const float thick_scale) :
@@ -53,18 +70,36 @@ namespace zlgui::slider {
                                    0);
                 g.saveState();
                 g.reduceClipRegion(mask);
-                // draw knob background
-                const auto old_bounds = base_.drawInnerShadowEllipse(
-                    g, bounds, base_.getFontSize() * 0.5f * thick_scale_, {});
-                const auto new_bounds = base_.drawShadowEllipse(g, old_bounds,
-                                                                base_.getFontSize() * 0.5f * thick_scale_, {});
-                base_.drawInnerShadowEllipse(g, new_bounds, base_.getFontSize() * 0.15f, {.flip = true});
+                if (base_.getUIStyle() == UIStyle::kFlat) {
+                    paintFlat(g, bounds);
+                } else {
+                    paintSoft(g, bounds);
+                }
                 g.restoreState();
             }
 
         private:
             UIBase& base_;
             float thick_scale_{1.f};
+
+            void paintSoft(juce::Graphics& g, const juce::Rectangle<float> bounds) const {
+                // draw knob background
+                const auto old_bounds = base_.drawInnerShadowEllipse(
+                    g, bounds, base_.getFontSize() * 0.5f * thick_scale_, {});
+                const auto new_bounds = base_.drawShadowEllipse(g, old_bounds,
+                                                                base_.getFontSize() * 0.5f * thick_scale_, {});
+                base_.drawInnerShadowEllipse(g, new_bounds, base_.getFontSize() * 0.15f, {.flip = true});
+            }
+
+            void paintFlat(juce::Graphics& g, const juce::Rectangle<float> bounds) const {
+                // draw a plain ring track (same area as the value display) without any shadow
+                juce::Path track;
+                track.addEllipse(bounds);
+                track.setUsingNonZeroWinding(false);
+                track.addEllipse(getRingInnerBound(base_, bounds, thick_scale_));
+                g.setColour(base_.getColourBlendedWithBackground(base_.getTextColour(), kFlatTrackAlpha));
+                g.fillPath(track);
+            }
         };
 
         class Display final : public juce::Component {
@@ -97,8 +132,7 @@ namespace zlgui::slider {
                 bound_ = getLocalBounds().toFloat();
                 const auto diameter = juce::jmin(bound_.getWidth(), bound_.getHeight());
                 bound_ = bound_.withSizeKeepingCentre(diameter, diameter);
-                old_bound_ = UIBase::getInnerShadowEllipseArea(bound_, base_.getFontSize() * 0.5f * thick_scale_, {});
-                new_bound_ = UIBase::getShadowEllipseArea(old_bound_, base_.getFontSize() * 0.5f * thick_scale_, {});
+                new_bound_ = getRingInnerBound(base_, bound_, thick_scale_);
                 arrow_unit_ = (diameter - new_bound_.getWidth()) * 0.5f;
 
                 mask_.clear();
@@ -150,7 +184,7 @@ namespace zlgui::slider {
         private:
             UIBase& base_;
             float thick_scale_{1.f};
-            juce::Rectangle<float> bound_, old_bound_, new_bound_;
+            juce::Rectangle<float> bound_, new_bound_;
             float value1_{0.f}, value2_{0.f};
             float arrow_unit_{0.f}, angle1_{0.f};
             bool show_slider2_{false};
