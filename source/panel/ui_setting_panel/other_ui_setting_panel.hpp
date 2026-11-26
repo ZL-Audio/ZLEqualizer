@@ -38,6 +38,8 @@ namespace zlpanel {
         zlgui::UIState& base_;
         zlgui::label::NameLookAndFeel name_laf_;
 
+        juce::Label ui_style_label_;
+        zlgui::combobox::CompactCombobox ui_style_box_;
         juce::Label refresh_rate_label_;
         zlgui::combobox::CompactCombobox refresh_rate_box_;
         juce::Label fft_quality_label_;

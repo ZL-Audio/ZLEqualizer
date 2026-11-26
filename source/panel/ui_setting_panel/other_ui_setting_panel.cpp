@@ -13,6 +13,7 @@ namespace zlpanel {
     OtherUISettingPanel::OtherUISettingPanel(PluginProcessor& p, zlgui::UIState& base) :
         p_ref_(p),
         base_(base), name_laf_(base.gui),
+        ui_style_box_(zlstate::PUIStyle::kChoices, base.gui),
         refresh_rate_box_(zlstate::PTargetRefreshSpeed::kChoices, base.gui),
         fft_quality_box_(zlstate::PFFTQuality::kChoices, base.gui),
         fft_tilt_slider_("Tilt", base.gui),
@@ -30,6 +31,12 @@ namespace zlpanel {
         window_size_fix_box_(zlstate::PWindowSizeFix::kChoices, base.gui) {
         juce::ignoreUnused(p_ref_);
         name_laf_.setFontScale(zlgui::kFontHuge);
+
+        ui_style_label_.setText("UI Style", juce::dontSendNotification);
+        ui_style_label_.setJustificationType(juce::Justification::centredRight);
+        ui_style_label_.setLookAndFeel(&name_laf_);
+        addAndMakeVisible(ui_style_label_);
+        addAndMakeVisible(ui_style_box_);
 
         refresh_rate_label_.setText("Refresh Rate", juce::dontSendNotification);
         refresh_rate_label_.setJustificationType(juce::Justification::centredRight);
@@ -111,6 +118,7 @@ namespace zlpanel {
     }
 
     void OtherUISettingPanel::loadSetting() {
+        ui_style_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.gui.getUIStyle()));
         refresh_rate_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getRefreshRateID()));
         fft_quality_box_.getBox().setSelectedItemIndex(static_cast<int>(base_.getFFTQuality()));
         fft_tilt_slider_.getSlider().setValue(static_cast<double>(base_.getFFTExtraTilt()));
@@ -130,6 +138,7 @@ namespace zlpanel {
     }
 
     void OtherUISettingPanel::saveSetting() {
+        base_.gui.setUIStyle(static_cast<zlgui::UIStyle>(ui_style_box_.getBox().getSelectedItemIndex()));
         base_.setRefreshRateID(static_cast<size_t>(refresh_rate_box_.getBox().getSelectedItemIndex()));
         base_.setFFTQuality(static_cast<size_t>(fft_quality_box_.getBox().getSelectedItemIndex()));
         base_.setFFTExtraTilt(static_cast<float>(fft_tilt_slider_.getSlider().getValue()));
@@ -149,6 +158,7 @@ namespace zlpanel {
     }
 
     void OtherUISettingPanel::resetSetting() {
+        base_.gui.setUIStyle(static_cast<zlgui::UIStyle>(zlstate::PUIStyle::kDefaultI));
         base_.setRefreshRateID(zlstate::PTargetRefreshSpeed::kDefaultI);
         base_.setFFTQuality(zlstate::PFFTQuality::kDefaultI);
         base_.setFFTExtraTilt(zlstate::PFFTExtraTilt::kDefaultV);
@@ -173,7 +183,7 @@ namespace zlpanel {
         const auto padding = juce::roundToInt(base_.gui.getFontSize() * kPaddingScale * 3.f);
         const auto slider_height = juce::roundToInt(base_.gui.getFontSize() * kSliderHeightScale);
 
-        return 10 * padding + 9 * slider_height;
+        return 11 * padding + 10 * slider_height;
     }
 
     void OtherUISettingPanel::resized() {
@@ -182,6 +192,13 @@ namespace zlpanel {
         const auto slider_height = juce::roundToInt(base_.gui.getFontSize() * kSliderHeightScale);
 
         auto bound = getLocalBounds();
+        {
+            bound.removeFromTop(padding);
+            auto local_bound = bound.removeFromTop(slider_height);
+            ui_style_label_.setBounds(local_bound.removeFromLeft(slider_width * 2));
+            local_bound.removeFromLeft(padding);
+            ui_style_box_.setBounds(local_bound.removeFromLeft(slider_width).reduced(0, padding / 3));
+        }
         {
             bound.removeFromTop(padding);
             auto local_bound = bound.removeFromTop(slider_height);
