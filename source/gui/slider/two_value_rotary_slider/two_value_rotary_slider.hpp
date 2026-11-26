@@ -54,6 +54,73 @@ namespace zlgui::slider {
             return {soft_outer, soft_inner};
         }
 
+        static void addAnnulusArc(juce::Path& path,
+                                  const juce::Point<float> centre,
+                                  const float outer_radius,
+                                  const float inner_radius,
+                                  const float from_angle,
+                                  const float to_angle) {
+            if (outer_radius <= 0.f) {
+                return;
+            }
+            const auto clamped_inner = std::clamp(inner_radius, 0.f, outer_radius);
+            if (outer_radius - clamped_inner <= 1e-5f) {
+                return;
+            }
+            const auto sweep = std::clamp(to_angle - from_angle,
+                                          -juce::MathConstants<float>::twoPi,
+                                          juce::MathConstants<float>::twoPi);
+            if (std::abs(sweep) <= 1e-5f) {
+                return;
+            }
+
+            const auto num_segments = static_cast<size_t>(std::clamp(
+                static_cast<int>(std::ceil(std::abs(sweep) / juce::MathConstants<float>::halfPi)), 1, 4));
+            const auto step = sweep / static_cast<float>(num_segments);
+            const auto k = (4.f / 3.f) * std::tan(step * 0.25f);
+
+            std::array<float, 5> sin_v{};
+            std::array<float, 5> cos_v{};
+            for (size_t i = 0; i <= num_segments; ++i) {
+                const auto angle = (i == num_segments)
+                                       ? (from_angle + sweep)
+                                       : (from_angle + step * static_cast<float>(i));
+                sin_v[i] = std::sin(angle);
+                cos_v[i] = std::cos(angle);
+            }
+
+            const auto outer_d = outer_radius * k;
+            path.startNewSubPath(centre.x + outer_radius * sin_v[0],
+                                 centre.y - outer_radius * cos_v[0]);
+            for (size_t i = 0; i < num_segments; ++i) {
+                const auto p0x = centre.x + outer_radius * sin_v[i];
+                const auto p0y = centre.y - outer_radius * cos_v[i];
+                const auto p3x = centre.x + outer_radius * sin_v[i + 1];
+                const auto p3y = centre.y - outer_radius * cos_v[i + 1];
+                path.cubicTo(p0x + outer_d * cos_v[i], p0y + outer_d * sin_v[i],
+                             p3x - outer_d * cos_v[i + 1], p3y - outer_d * sin_v[i + 1],
+                             p3x, p3y);
+            }
+
+            if (clamped_inner > 0.f) {
+                const auto inner_d = clamped_inner * k;
+                path.lineTo(centre.x + clamped_inner * sin_v[num_segments],
+                            centre.y - clamped_inner * cos_v[num_segments]);
+                for (size_t i = num_segments; i > 0; --i) {
+                    const auto p0x = centre.x + clamped_inner * sin_v[i];
+                    const auto p0y = centre.y - clamped_inner * cos_v[i];
+                    const auto p3x = centre.x + clamped_inner * sin_v[i - 1];
+                    const auto p3y = centre.y - clamped_inner * cos_v[i - 1];
+                    path.cubicTo(p0x - inner_d * cos_v[i], p0y - inner_d * sin_v[i],
+                                 p3x + inner_d * cos_v[i - 1], p3y + inner_d * sin_v[i - 1],
+                                 p3x, p3y);
+                }
+            } else {
+                path.lineTo(centre);
+            }
+            path.closeSubPath();
+        }
+
         class Background final : public juce::Component {
         public:
             explicit Background(UIBase& base, const float thick_scale) :
@@ -71,18 +138,18 @@ namespace zlgui::slider {
                     g.fillEllipse(getLocalBounds().toFloat());
                 }
                 const auto ring = getRingBounds(base_, getLocalBounds().toFloat(), thick_scale_);
-                juce::Path mask;
-                mask.addPieSegment(ring.outer, kStartAngle - juce::MathConstants<float>::pi * 1.5f,
-                                   kEndAngle - juce::MathConstants<float>::pi * 1.5f,
-                                   0);
-                g.saveState();
-                g.reduceClipRegion(mask);
                 if (base_.getUIStyle() == UIStyle::kFlat) {
                     paintFlat(g, ring);
                 } else {
+                    juce::Path mask;
+                    mask.addPieSegment(ring.outer, kStartAngle - juce::MathConstants<float>::pi * 1.5f,
+                                       kEndAngle - juce::MathConstants<float>::pi * 1.5f,
+                                       0);
+                    g.saveState();
+                    g.reduceClipRegion(mask);
                     paintSoft(g, ring.outer);
+                    g.restoreState();
                 }
-                g.restoreState();
             }
 
         private:
@@ -101,11 +168,14 @@ namespace zlgui::slider {
             void paintFlat(juce::Graphics& g, const RingBounds& ring) const {
                 // draw a plain ring track (same area as the value display) without any shadow
                 juce::Path track;
-                track.addEllipse(ring.outer);
-                track.setUsingNonZeroWinding(false);
-                track.addEllipse(ring.inner);
-                g.setColour(base_.getColourBlendedWithBackground(base_.getTextColour(), kFlatTrackAlpha));
-                g.fillPath(track);
+                addAnnulusArc(track, ring.outer.getCentre(),
+                              ring.outer.getWidth() * 0.5f, ring.inner.getWidth() * 0.5f,
+                              kStartAngle + juce::MathConstants<float>::halfPi,
+                              kEndAngle + juce::MathConstants<float>::halfPi);
+                if (!track.isEmpty()) {
+                    g.setColour(base_.getColourBlendedWithBackground(base_.getTextColour(), kFlatTrackAlpha));
+                    g.fillPath(track);
+                }
             }
         };
 
@@ -117,16 +187,16 @@ namespace zlgui::slider {
             }
 
             void paint(juce::Graphics& g) override {
-                g.saveState();
-                g.reduceClipRegion(mask_);
                 const auto text_colour = base_.getTextColour();
                 const auto flat = base_.getUIStyle() == UIStyle::kFlat;
                 const auto highlighted = hovered_ && flat;
-                g.setColour(text_colour.withAlpha(highlighted ? .5f : .25f));
-                g.fillPath(filling1_);
-                // fill the pie segment between two values
+                if (!filling1_.isEmpty()) {
+                    g.setColour(text_colour.withAlpha(highlighted ? .5f : .25f));
+                    g.fillPath(filling1_);
+                }
+                // fill the ring segment between two values
                 if constexpr (kUseSecondSlider) {
-                    if (show_slider2_) {
+                    if (show_slider2_ && !filling2_.isEmpty()) {
                         if (value1_ > value2_) {
                             g.setColour(base_.getColourMap2(0).withAlpha(highlighted ? 1.f : .75f));
                         } else {
@@ -135,13 +205,11 @@ namespace zlgui::slider {
                         g.fillPath(filling2_);
                     }
                 }
-                g.restoreState();
 
-                if (flat && !outer_bound_.isEmpty()) {
-                    const auto centre = outer_bound_.getCentre();
+                if (flat && outer_radius_ > 0.f) {
                     const auto angle = angle1_ + juce::MathConstants<float>::halfPi;
                     const juce::Graphics::ScopedSaveState state{g};
-                    g.addTransform(juce::AffineTransform::rotation(angle, centre.x, centre.y));
+                    g.addTransform(juce::AffineTransform::rotation(angle, centre_.x, centre_.y));
                     g.setColour(text_colour);
                     g.fillRect(marker_bound_);
                 }
@@ -149,19 +217,16 @@ namespace zlgui::slider {
 
             void resized() override {
                 const auto ring = getRingBounds(base_, getLocalBounds().toFloat(), thick_scale_);
-                outer_bound_ = ring.outer;
-
-                mask_.clear();
-                mask_.addEllipse(outer_bound_);
-                mask_.setUsingNonZeroWinding(false);
-                mask_.addEllipse(ring.inner);
+                centre_ = ring.outer.getCentre();
+                outer_radius_ = std::max(0.f, ring.outer.getWidth() * 0.5f);
+                inner_radius_ = std::max(0.f, ring.inner.getWidth() * 0.5f);
 
                 const auto font_size = base_.getFontSize();
                 const auto width = static_cast<float>(juce::roundToInt(font_size * kFlatMarkerWidth));
                 const auto extension = static_cast<float>(juce::roundToInt(font_size * kFlatMarkerExtension));
 
-                marker_bound_ = {outer_bound_.getCentreX() - width * .5f, outer_bound_.getY() - extension,
-                                 width, ring.inner.getY() - outer_bound_.getY() + 2.f * extension};
+                marker_bound_ = {centre_.x - width * .5f, ring.outer.getY() - extension,
+                                 width, ring.inner.getY() - ring.outer.getY() + 2.f * extension};
 
                 setSlider1Value(value1_);
                 if constexpr (kUseSecondSlider) {
@@ -188,10 +253,9 @@ namespace zlgui::slider {
                 const auto rotationAngle = kStartAngle + x * (kEndAngle - kStartAngle);
                 angle1_ = rotationAngle;
                 filling1_.clear();
-                filling1_.addPieSegment(outer_bound_,
-                                        kStartAngle + juce::MathConstants<float>::pi * .5f,
-                                        rotationAngle + juce::MathConstants<float>::pi * .5f,
-                                        0);
+                addAnnulusArc(filling1_, centre_, outer_radius_, inner_radius_,
+                              kStartAngle + juce::MathConstants<float>::halfPi,
+                              rotationAngle + juce::MathConstants<float>::halfPi);
                 if (kUseSecondSlider && show_slider2_) {
                     setSlider2Value(value2_);
                 } else {
@@ -204,10 +268,9 @@ namespace zlgui::slider {
                     value2_ = x;
                     const auto rotationAngle = kStartAngle + x * (kEndAngle - kStartAngle);
                     filling2_.clear();
-                    filling2_.addPieSegment(outer_bound_,
-                                            angle1_ + juce::MathConstants<float>::pi * .5f,
-                                            rotationAngle + juce::MathConstants<float>::pi * .5f,
-                                            0);
+                    addAnnulusArc(filling2_, centre_, outer_radius_, inner_radius_,
+                                  angle1_ + juce::MathConstants<float>::halfPi,
+                                  rotationAngle + juce::MathConstants<float>::halfPi);
                     repaint();
                 }
             }
@@ -221,11 +284,12 @@ namespace zlgui::slider {
         private:
             UIBase& base_;
             float thick_scale_{1.f};
-            juce::Rectangle<float> outer_bound_, marker_bound_;
+            juce::Point<float> centre_;
+            float outer_radius_{0.f}, inner_radius_{0.f};
+            juce::Rectangle<float> marker_bound_;
             float value1_{0.f}, value2_{0.f};
             float angle1_{0.f};
             bool show_slider2_{false}, hovered_{false};
-            juce::Path mask_;
             juce::Path filling1_, filling2_;
         };
 

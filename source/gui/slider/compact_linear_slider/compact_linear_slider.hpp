@@ -64,20 +64,31 @@ namespace zlgui::slider {
             }
 
             void paint(juce::Graphics& g) override {
-                const auto fill_bound = track_bound_.withWidth(value_ * track_bound_.getWidth());
                 const auto flat = base_.getUIStyle() == UIStyle::kFlat;
                 const auto highlighted = hovered_ && flat;
                 const auto text_colour = base_.getTextColour();
-                g.saveState();
-                g.reduceClipRegion(mask_);
-                g.setColour(text_colour.withAlpha(highlighted ? .5f : .25f));
-                g.fillRect(fill_bound);
-                g.restoreState();
+
+                if (fill_mode_ != FillMode::kEmpty) {
+                    g.setColour(text_colour.withAlpha(highlighted ? .5f : .25f));
+                    switch (fill_mode_) {
+                        case FillMode::kFull:
+                            g.fillRoundedRectangle(track_bound_, corner_size_);
+                            break;
+                        case FillMode::kRect:
+                            g.fillRect(fill_bound_);
+                            break;
+                        case FillMode::kPath:
+                            g.fillPath(fill_path_);
+                            break;
+                        case FillMode::kEmpty:
+                            break;
+                    }
+                }
 
                 if (flat && !track_bound_.isEmpty()) {
                     const auto extension = static_cast<float>(getFlatMarkerExtension(base_.getFontSize()));
                     const auto marker = track_bound_.withWidth(marker_width_)
-                                            .withX(fill_bound.getRight() - marker_width_ * .5f);
+                                            .withX(fill_bound_.getRight() - marker_width_ * .5f);
                     g.setColour(text_colour);
                     g.fillRect(marker.expanded(0.f, extension));
                 }
@@ -87,8 +98,10 @@ namespace zlgui::slider {
                 track_bound_ = bound.toFloat();
                 marker_width_ = static_cast<float>(marker_width);
                 const auto corner_scale = base_.getUIStyle() == UIStyle::kFlat ? kFlatCornerSize : .5f;
-                mask_.clear();
-                mask_.addRoundedRectangle(track_bound_, base_.getFontSize() * corner_scale);
+                corner_size_ = std::max(0.f, base_.getFontSize() * corner_scale);
+                corner_x_ = std::min(corner_size_, track_bound_.getWidth() * .5f);
+                corner_y_ = std::min(corner_size_, track_bound_.getHeight() * .5f);
+                updateFillGeometry();
                 repaint();
             }
 
@@ -104,15 +117,119 @@ namespace zlgui::slider {
 
             void setSliderValue(const float x) {
                 value_ = x;
+                updateFillGeometry();
                 repaint();
             }
 
         private:
+            static constexpr float kQuarterCircleK = 0.5522847498f; // (4/3) * (sqrt(2) - 1)
+
+            enum class FillMode {
+                kEmpty,
+                kFull,
+                kRect,
+                kPath
+            };
+
+            static void addClippedRoundedRect(juce::Path& path,
+                                              const juce::Rectangle<float> track,
+                                              const float fill_width,
+                                              const float csx, const float csy) {
+                const auto x0 = track.getX();
+                const auto y0 = track.getY();
+                const auto x1 = track.getRight();
+                const auto y1 = track.getBottom();
+                const auto x_cut = x0 + fill_width;
+
+                if (fill_width < csx) {
+                    const auto cos_a = std::clamp(1.f - fill_width / csx, 0.f, 1.f);
+                    const auto alpha = std::acos(cos_a);
+                    const auto sin_a = std::sqrt(std::max(0.f, 1.f - cos_a * cos_a));
+                    const auto k = (4.f / 3.f) * std::tan(alpha * 0.25f);
+                    const auto y_top = y0 + csy * (1.f - sin_a);
+                    const auto y_bot = y1 - csy * (1.f - sin_a);
+
+                    path.startNewSubPath(x0, y0 + csy);
+                    path.cubicTo(x0, y0 + csy * (1.f - k),
+                                 x_cut - k * csx * sin_a, y_top + k * csy * cos_a,
+                                 x_cut, y_top);
+                    path.lineTo(x_cut, y_bot);
+                    path.cubicTo(x_cut - k * csx * sin_a, y_bot - k * csy * cos_a,
+                                 x0, y1 - csy * (1.f - k),
+                                 x0, y1 - csy);
+                    path.closeSubPath();
+                    return;
+                }
+
+                const auto one_minus_k90 = 1.f - kQuarterCircleK;
+                path.startNewSubPath(x0, y0 + csy);
+                path.cubicTo(x0, y0 + csy * one_minus_k90,
+                             x0 + csx * one_minus_k90, y0,
+                             x0 + csx, y0);
+
+                if (fill_width <= track.getWidth() - csx) {
+                    if (x_cut > x0 + csx) {
+                        path.lineTo(x_cut, y0);
+                    }
+                    path.lineTo(x_cut, y1);
+                    if (x_cut > x0 + csx) {
+                        path.lineTo(x0 + csx, y1);
+                    }
+                } else {
+                    const auto right_arc_x = x1 - csx;
+                    if (right_arc_x > x0 + csx) {
+                        path.lineTo(right_arc_x, y0);
+                    }
+                    const auto sin_b = std::clamp((x_cut - right_arc_x) / csx, 0.f, 1.f);
+                    const auto beta = std::asin(sin_b);
+                    const auto cos_b = std::sqrt(std::max(0.f, 1.f - sin_b * sin_b));
+                    const auto k = (4.f / 3.f) * std::tan(beta * 0.25f);
+                    const auto y_top = y0 + csy * (1.f - cos_b);
+                    const auto y_bot = y1 - csy * (1.f - cos_b);
+
+                    path.cubicTo(right_arc_x + k * csx, y0,
+                                 x_cut - k * csx * cos_b, y_top - k * csy * sin_b,
+                                 x_cut, y_top);
+                    path.lineTo(x_cut, y_bot);
+                    path.cubicTo(x_cut - k * csx * cos_b, y_bot + k * csy * sin_b,
+                                 right_arc_x + k * csx, y1,
+                                 right_arc_x, y1);
+                    if (right_arc_x > x0 + csx) {
+                        path.lineTo(x0 + csx, y1);
+                    }
+                }
+
+                path.cubicTo(x0 + csx * one_minus_k90, y1,
+                             x0, y1 - csy * one_minus_k90,
+                             x0, y1 - csy);
+                path.closeSubPath();
+            }
+
+            void updateFillGeometry() {
+                const auto track_width = track_bound_.getWidth();
+                const auto fill_width = std::clamp(value_, 0.f, 1.f) * track_width;
+                fill_bound_ = track_bound_.withWidth(fill_width);
+
+                if (track_bound_.isEmpty() || fill_width <= 0.f) {
+                    fill_mode_ = FillMode::kEmpty;
+                } else if (corner_x_ <= 0.f || corner_y_ <= 0.f) {
+                    fill_mode_ = FillMode::kRect;
+                } else if (fill_width >= track_width) {
+                    fill_mode_ = FillMode::kFull;
+                } else {
+                    fill_mode_ = FillMode::kPath;
+                    fill_path_.clear();
+                    addClippedRoundedRect(fill_path_, track_bound_, fill_width, corner_x_, corner_y_);
+                }
+            }
+
             UIBase& base_;
             float value_{0.f}, marker_width_{0.f};
+            float corner_size_{0.f}, corner_x_{0.f}, corner_y_{0.f};
             bool hovered_{false};
-            juce::Rectangle<float> track_bound_;
-            juce::Path mask_;
+            FillMode fill_mode_{FillMode::kEmpty};
+            juce::Rectangle<float> track_bound_, fill_bound_;
+            juce::Path fill_path_;
         };
 
     public:
