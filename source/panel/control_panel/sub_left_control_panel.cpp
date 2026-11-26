@@ -47,7 +47,7 @@ namespace zlpanel {
         stereo_box_(zlp::PLRMode::kChoices, base.gui,
                     tooltip_helper.getToolTipText(multilingual::kBandStereoMode)),
         q_slider_("", base.gui,
-                  tooltip_helper.getToolTipText(multilingual::kBandQ), 1.25f),
+                  tooltip_helper.getToolTipText(multilingual::kBandQ), 1.f),
         dynamic_button_(base.gui,
                         juce::Drawable::createFromImageData(BinaryData::dynamic_svg, BinaryData::dynamic_svgSize),
                         true, tooltip_helper.getToolTipText(multilingual::kBandDynamic)) {

@@ -31,18 +31,25 @@ namespace zlgui::slider {
         static constexpr float kFlatTrackAlpha = 0.1f;
         static constexpr float kFlatRingThickness = 0.4f;
 
-        /**
-         * get the inner bound of the value ring
-         * the area between the outer bound and this inner bound is the ring where values are displayed
-         */
-        static juce::Rectangle<float> getRingInnerBound(const UIBase& base, const juce::Rectangle<float> bound,
-                                                        const float thick_scale) {
-            if (base.getUIStyle() == UIStyle::kFlat) {
-                return bound.reduced(base.getFontSize() * kFlatRingThickness * thick_scale);
-            }
+        struct RingBounds {
+            juce::Rectangle<float> outer, inner;
+        };
+
+        static RingBounds getRingBounds(const UIBase& base, const juce::Rectangle<float> bounds,
+                                        const float thick_scale) {
+            const auto diameter = juce::jmin(bounds.getWidth(), bounds.getHeight());
+            const auto soft_outer = bounds.withSizeKeepingCentre(diameter, diameter);
             const auto corner_size = base.getFontSize() * 0.5f * thick_scale;
-            const auto old_bound = UIBase::getInnerShadowEllipseArea(bound, corner_size, {});
-            return UIBase::getShadowEllipseArea(old_bound, corner_size, {});
+            const auto old_bound = UIBase::getInnerShadowEllipseArea(soft_outer, corner_size, {});
+            const auto soft_inner = UIBase::getShadowEllipseArea(old_bound, corner_size, {});
+            if (base.getUIStyle() == UIStyle::kFlat) {
+                const auto soft_thickness = (diameter - juce::jmax(0.f, soft_inner.getWidth())) * 0.5f;
+                const auto flat_thickness = juce::jmin(base.getFontSize() * kFlatRingThickness * thick_scale,
+                                                       soft_thickness);
+                const auto flat_outer = soft_outer.reduced((soft_thickness - flat_thickness) * 0.5f);
+                return {flat_outer, flat_outer.reduced(flat_thickness)};
+            }
+            return {soft_outer, soft_inner};
         }
 
         class Background final : public juce::Component {
@@ -61,19 +68,17 @@ namespace zlgui::slider {
                     g.setColour(base_.getBackgroundColour());
                     g.fillEllipse(getLocalBounds().toFloat());
                 }
-                auto bounds = getLocalBounds().toFloat();
-                const auto diameter = juce::jmin(bounds.getWidth(), bounds.getHeight());
-                bounds = bounds.withSizeKeepingCentre(diameter, diameter);
+                const auto ring = getRingBounds(base_, getLocalBounds().toFloat(), thick_scale_);
                 juce::Path mask;
-                mask.addPieSegment(bounds, kStartAngle - juce::MathConstants<float>::pi * 1.5f,
+                mask.addPieSegment(ring.outer, kStartAngle - juce::MathConstants<float>::pi * 1.5f,
                                    kEndAngle - juce::MathConstants<float>::pi * 1.5f,
                                    0);
                 g.saveState();
                 g.reduceClipRegion(mask);
                 if (base_.getUIStyle() == UIStyle::kFlat) {
-                    paintFlat(g, bounds);
+                    paintFlat(g, ring);
                 } else {
-                    paintSoft(g, bounds);
+                    paintSoft(g, ring.outer);
                 }
                 g.restoreState();
             }
@@ -91,12 +96,12 @@ namespace zlgui::slider {
                 base_.drawInnerShadowEllipse(g, new_bounds, base_.getFontSize() * 0.15f, {.flip = true});
             }
 
-            void paintFlat(juce::Graphics& g, const juce::Rectangle<float> bounds) const {
+            void paintFlat(juce::Graphics& g, const RingBounds& ring) const {
                 // draw a plain ring track (same area as the value display) without any shadow
                 juce::Path track;
-                track.addEllipse(bounds);
+                track.addEllipse(ring.outer);
                 track.setUsingNonZeroWinding(false);
-                track.addEllipse(getRingInnerBound(base_, bounds, thick_scale_));
+                track.addEllipse(ring.inner);
                 g.setColour(base_.getColourBlendedWithBackground(base_.getTextColour(), kFlatTrackAlpha));
                 g.fillPath(track);
             }
@@ -129,16 +134,13 @@ namespace zlgui::slider {
             }
 
             void resized() override {
-                bound_ = getLocalBounds().toFloat();
-                const auto diameter = juce::jmin(bound_.getWidth(), bound_.getHeight());
-                bound_ = bound_.withSizeKeepingCentre(diameter, diameter);
-                new_bound_ = getRingInnerBound(base_, bound_, thick_scale_);
-                arrow_unit_ = (diameter - new_bound_.getWidth()) * 0.5f;
+                const auto ring = getRingBounds(base_, getLocalBounds().toFloat(), thick_scale_);
+                outer_bound_ = ring.outer;
 
                 mask_.clear();
-                mask_.addEllipse(bound_);
+                mask_.addEllipse(outer_bound_);
                 mask_.setUsingNonZeroWinding(false);
-                mask_.addEllipse(new_bound_);
+                mask_.addEllipse(ring.inner);
 
                 setSlider1Value(value1_);
                 if constexpr (kUseSecondSlider) {
@@ -151,7 +153,7 @@ namespace zlgui::slider {
                 const auto rotationAngle = kStartAngle + x * (kEndAngle - kStartAngle);
                 angle1_ = rotationAngle;
                 filling1_.clear();
-                filling1_.addPieSegment(bound_,
+                filling1_.addPieSegment(outer_bound_,
                                         kStartAngle + juce::MathConstants<float>::pi * .5f,
                                         rotationAngle + juce::MathConstants<float>::pi * .5f,
                                         0);
@@ -167,7 +169,7 @@ namespace zlgui::slider {
                     value2_ = x;
                     const auto rotationAngle = kStartAngle + x * (kEndAngle - kStartAngle);
                     filling2_.clear();
-                    filling2_.addPieSegment(bound_,
+                    filling2_.addPieSegment(outer_bound_,
                                             angle1_ + juce::MathConstants<float>::pi * .5f,
                                             rotationAngle + juce::MathConstants<float>::pi * .5f,
                                             0);
@@ -184,9 +186,9 @@ namespace zlgui::slider {
         private:
             UIBase& base_;
             float thick_scale_{1.f};
-            juce::Rectangle<float> bound_, new_bound_;
+            juce::Rectangle<float> outer_bound_;
             float value1_{0.f}, value2_{0.f};
-            float arrow_unit_{0.f}, angle1_{0.f};
+            float angle1_{0.f};
             bool show_slider2_{false};
             juce::Path mask_;
             juce::Rectangle<float> arrow1_, arrow2_;

@@ -17,11 +17,11 @@ namespace zlpanel {
         sub_left_control_panel_(p, base, tooltip_helper),
         max_db_idx_ref_(*p.parameters_NA_.getRawParameterValue(zlstate::PEQMaxDB::kID)),
         freq_slider_("", base.gui,
-                     tooltip_helper.getToolTipText(multilingual::kBandFreq), 1.25f),
+                     tooltip_helper.getToolTipText(multilingual::kBandFreq), 1.f),
         gain_slider_("", base.gui,
-                     tooltip_helper.getToolTipText(multilingual::kBandGain), 1.25f),
+                     tooltip_helper.getToolTipText(multilingual::kBandGain), 1.f),
         pass_scale_slider_("", base.gui,
-                           tooltip_helper.getToolTipText(multilingual::kBandPassScale), 1.25f) {
+                           tooltip_helper.getToolTipText(multilingual::kBandPassScale), 1.f) {
         sub_left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(sub_left_control_panel_);
 
