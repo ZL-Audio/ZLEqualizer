@@ -30,6 +30,8 @@ namespace zlgui::slider {
     private:
         static constexpr float kFlatTrackAlpha = 0.1f;
         static constexpr float kFlatRingThickness = 0.4f;
+        static constexpr float kFlatMarkerExtension = 0.15f;
+        static constexpr float kFlatMarkerWidth = 0.30f;
 
         struct RingBounds {
             juce::Rectangle<float> outer, inner;
@@ -118,7 +120,8 @@ namespace zlgui::slider {
                 g.saveState();
                 g.reduceClipRegion(mask_);
                 const auto text_colour = base_.getTextColour();
-                const auto highlighted = hovered_ && base_.getUIStyle() == UIStyle::kFlat;
+                const auto flat = base_.getUIStyle() == UIStyle::kFlat;
+                const auto highlighted = hovered_ && flat;
                 g.setColour(text_colour.withAlpha(highlighted ? .5f : .25f));
                 g.fillPath(filling1_);
                 // fill the pie segment between two values
@@ -133,6 +136,16 @@ namespace zlgui::slider {
                     }
                 }
                 g.restoreState();
+
+                if (flat && !outer_bound_.isEmpty()) {
+                    const auto centre = outer_bound_.getCentre();
+                    const auto angle = angle1_ + juce::MathConstants<float>::halfPi;
+                    const juce::Graphics::ScopedSaveState state{g};
+                    g.reduceClipRegion(marker_clip_);
+                    g.addTransform(juce::AffineTransform::rotation(angle, centre.x, centre.y));
+                    g.setColour(text_colour);
+                    g.fillRect(marker_bound_);
+                }
             }
 
             void resized() override {
@@ -144,10 +157,25 @@ namespace zlgui::slider {
                 mask_.setUsingNonZeroWinding(false);
                 mask_.addEllipse(ring.inner);
 
+                const auto font_size = base_.getFontSize();
+                const auto width = static_cast<float>(juce::roundToInt(font_size * kFlatMarkerWidth));
+                const auto extension = static_cast<float>(juce::roundToInt(font_size * kFlatMarkerExtension));
+
+                marker_bound_ = {outer_bound_.getCentreX() - width * .5f, outer_bound_.getY() - extension,
+                                 width, ring.inner.getY() - outer_bound_.getY() + 2.f * extension};
+                marker_clip_.clear();
+                marker_clip_.addPieSegment(outer_bound_.expanded(extension + width),
+                                           kStartAngle + juce::MathConstants<float>::halfPi,
+                                           kEndAngle + juce::MathConstants<float>::halfPi, 0.f);
+
                 setSlider1Value(value1_);
                 if constexpr (kUseSecondSlider) {
                     setSlider2Value(value2_);
                 }
+            }
+
+            void lookAndFeelChanged() override {
+                resized();
             }
 
             void setHovered(const bool hovered) {
@@ -198,12 +226,11 @@ namespace zlgui::slider {
         private:
             UIBase& base_;
             float thick_scale_{1.f};
-            juce::Rectangle<float> outer_bound_;
+            juce::Rectangle<float> outer_bound_, marker_bound_;
             float value1_{0.f}, value2_{0.f};
             float angle1_{0.f};
             bool show_slider2_{false}, hovered_{false};
-            juce::Path mask_;
-            juce::Rectangle<float> arrow1_, arrow2_;
+            juce::Path mask_, marker_clip_;
             juce::Path filling1_, filling2_;
         };
 

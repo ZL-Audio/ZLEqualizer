@@ -26,8 +26,9 @@ namespace zlgui::slider {
     private:
         static constexpr float kFlatTrackAlpha = 0.1f;
         static constexpr float kFlatBarThickness = 0.4f;
-        static constexpr float kFlatBarPadding = 0.15f;
         static constexpr float kFlatCornerSize = kFlatBarThickness * .5f;
+        static constexpr float kFlatMarkerExtension = 0.15f;
+        static constexpr float kFlatMarkerWidth = 0.30f;
 
         class Background final : public juce::Component {
         public:
@@ -59,23 +60,32 @@ namespace zlgui::slider {
             }
 
             void paint(juce::Graphics& g) override {
-                auto bound = getLocalBounds().toFloat();
-                bound = bound.withWidth(value_ * bound.getWidth());
+                const auto fill_bound = track_bound_.withWidth(value_ * track_bound_.getWidth());
+                const auto flat = base_.getUIStyle() == UIStyle::kFlat;
+                const auto highlighted = hovered_ && flat;
+                const auto text_colour = base_.getTextColour();
                 g.saveState();
                 g.reduceClipRegion(mask_);
-                const auto text_colour = base_.getTextColour();
-                const auto highlighted = hovered_ && base_.getUIStyle() == UIStyle::kFlat;
                 g.setColour(text_colour.withAlpha(highlighted ? .5f : .25f));
-                g.fillRect(bound);
+                g.fillRect(fill_bound);
                 g.restoreState();
+
+                if (flat && !track_bound_.isEmpty()) {
+                    const auto font_size = base_.getFontSize();
+                    const auto width = static_cast<float>(juce::roundToInt(font_size * kFlatMarkerWidth));
+                    const auto extension = static_cast<float>(getFlatMarkerExtension(font_size));
+                    const auto marker = track_bound_.withWidth(width).withX(fill_bound.getRight() - width * .5f);
+                    g.setColour(text_colour);
+                    g.fillRect(marker.getIntersection(track_bound_).expanded(0.f, extension));
+                }
             }
 
-            void resized() override {
-                setSliderValue(value_);
-            }
-
-            void lookAndFeelChanged() override {
-                setSliderValue(value_);
+            void setTrackBounds(const juce::Rectangle<int> bound) {
+                track_bound_ = bound.toFloat();
+                const auto corner_scale = base_.getUIStyle() == UIStyle::kFlat ? kFlatCornerSize : .5f;
+                mask_.clear();
+                mask_.addRoundedRectangle(track_bound_, base_.getFontSize() * corner_scale);
+                repaint();
             }
 
             void setHovered(const bool hovered) {
@@ -90,12 +100,6 @@ namespace zlgui::slider {
 
             void setSliderValue(const float x) {
                 value_ = x;
-                mask_.clear();
-                if (base_.getUIStyle() == UIStyle::kFlat) {
-                    mask_.addRoundedRectangle(getLocalBounds().toFloat(), base_.getFontSize() * kFlatCornerSize);
-                } else {
-                    mask_.addRoundedRectangle(getLocalBounds().toFloat(), base_.getFontSize() * .5f);
-                }
                 repaint();
             }
 
@@ -103,6 +107,7 @@ namespace zlgui::slider {
             UIBase& base_;
             float value_{0.f};
             bool hovered_{false};
+            juce::Rectangle<float> track_bound_;
             juce::Path mask_;
         };
 
@@ -172,17 +177,20 @@ namespace zlgui::slider {
             slider_.setBounds(bound);
             auto text_bound = bound;
             auto track_bound = bound;
-            if constexpr (kUseName) {
+            if constexpr (kUseName || kUseDisplay) {
                 if (base_.getUIStyle() == UIStyle::kFlat) {
                     track_bound = getFlatTrackBounds(bound, base_.getFontSize());
-                    text_bound = bound.withBottom(track_bound.getY());
+                    if constexpr (kUseName) {
+                        text_bound = bound.withBottom(track_bound.getY());
+                    }
                 }
             }
             if constexpr (kUseBackground) {
                 background_.setBounds(track_bound);
             }
             if constexpr (kUseDisplay) {
-                display_.setBounds(track_bound);
+                display_.setBounds(bound);
+                display_.setTrackBounds(track_bound);
             }
             text_.setBounds(text_bound);
             if constexpr (kUseName) {
@@ -190,10 +198,13 @@ namespace zlgui::slider {
             }
         }
 
+        static int getFlatMarkerExtension(const float font_size) {
+            return juce::roundToInt(font_size * kFlatMarkerExtension);
+        }
+
         static juce::Rectangle<int> getFlatTrackBounds(juce::Rectangle<int> bound, const float font_size) {
             const auto bar_thickness = std::max(juce::roundToInt(font_size * kFlatBarThickness), 2);
-            const auto bar_padding = juce::roundToInt(font_size * kFlatBarPadding);
-            bound.removeFromBottom(bar_padding);
+            bound.removeFromBottom(getFlatMarkerExtension(font_size));
             return bound.removeFromBottom(bar_thickness);
         }
 
