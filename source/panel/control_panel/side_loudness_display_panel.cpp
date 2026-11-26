@@ -16,7 +16,8 @@ namespace zlpanel {
     }
 
     void SideLoudnessDisplayPanel::paint(juce::Graphics& g) {
-        const auto loudness_p = std::clamp(loudness_ * .0125f + 1.f, 0.f, 1.f);
+        const auto clipped_loudness = zlp::PThreshold::kRange.getRange().clipValue(loudness_);
+        const auto loudness_p = zlp::PThreshold::convertTo01(clipped_loudness);
         if (!meter_mask_.isEmpty()) {
             g.reduceClipRegion(meter_mask_);
         }

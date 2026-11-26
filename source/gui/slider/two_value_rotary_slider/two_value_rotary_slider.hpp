@@ -141,7 +141,6 @@ namespace zlgui::slider {
                     const auto centre = outer_bound_.getCentre();
                     const auto angle = angle1_ + juce::MathConstants<float>::halfPi;
                     const juce::Graphics::ScopedSaveState state{g};
-                    g.reduceClipRegion(marker_clip_);
                     g.addTransform(juce::AffineTransform::rotation(angle, centre.x, centre.y));
                     g.setColour(text_colour);
                     g.fillRect(marker_bound_);
@@ -163,10 +162,6 @@ namespace zlgui::slider {
 
                 marker_bound_ = {outer_bound_.getCentreX() - width * .5f, outer_bound_.getY() - extension,
                                  width, ring.inner.getY() - outer_bound_.getY() + 2.f * extension};
-                marker_clip_.clear();
-                marker_clip_.addPieSegment(outer_bound_.expanded(extension + width),
-                                           kStartAngle + juce::MathConstants<float>::halfPi,
-                                           kEndAngle + juce::MathConstants<float>::halfPi, 0.f);
 
                 setSlider1Value(value1_);
                 if constexpr (kUseSecondSlider) {
@@ -230,7 +225,7 @@ namespace zlgui::slider {
             float value1_{0.f}, value2_{0.f};
             float angle1_{0.f};
             bool show_slider2_{false}, hovered_{false};
-            juce::Path mask_, marker_clip_;
+            juce::Path mask_;
             juce::Path filling1_, filling2_;
         };
 

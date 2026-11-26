@@ -30,6 +30,10 @@ namespace zlgui::slider {
         static constexpr float kFlatMarkerExtension = 0.15f;
         static constexpr float kFlatMarkerWidth = 0.30f;
 
+        static int getFlatMarkerWidth(const float font_size, const int slider_width) {
+            return std::min(juce::roundToInt(font_size * kFlatMarkerWidth), std::max(0, slider_width - 2));
+        }
+
         class Background final : public juce::Component {
         public:
             explicit Background(UIBase& base) :
@@ -71,17 +75,17 @@ namespace zlgui::slider {
                 g.restoreState();
 
                 if (flat && !track_bound_.isEmpty()) {
-                    const auto font_size = base_.getFontSize();
-                    const auto width = static_cast<float>(juce::roundToInt(font_size * kFlatMarkerWidth));
-                    const auto extension = static_cast<float>(getFlatMarkerExtension(font_size));
-                    const auto marker = track_bound_.withWidth(width).withX(fill_bound.getRight() - width * .5f);
+                    const auto extension = static_cast<float>(getFlatMarkerExtension(base_.getFontSize()));
+                    const auto marker = track_bound_.withWidth(marker_width_)
+                                            .withX(fill_bound.getRight() - marker_width_ * .5f);
                     g.setColour(text_colour);
-                    g.fillRect(marker.getIntersection(track_bound_).expanded(0.f, extension));
+                    g.fillRect(marker.expanded(0.f, extension));
                 }
             }
 
-            void setTrackBounds(const juce::Rectangle<int> bound) {
+            void setTrackBounds(const juce::Rectangle<int> bound, const int marker_width) {
                 track_bound_ = bound.toFloat();
+                marker_width_ = static_cast<float>(marker_width);
                 const auto corner_scale = base_.getUIStyle() == UIStyle::kFlat ? kFlatCornerSize : .5f;
                 mask_.clear();
                 mask_.addRoundedRectangle(track_bound_, base_.getFontSize() * corner_scale);
@@ -105,7 +109,7 @@ namespace zlgui::slider {
 
         private:
             UIBase& base_;
-            float value_{0.f};
+            float value_{0.f}, marker_width_{0.f};
             bool hovered_{false};
             juce::Rectangle<float> track_bound_;
             juce::Path mask_;
@@ -177,9 +181,14 @@ namespace zlgui::slider {
             slider_.setBounds(bound);
             auto text_bound = bound;
             auto track_bound = bound;
+            auto marker_width = 0;
             if constexpr (kUseName || kUseDisplay) {
                 if (base_.getUIStyle() == UIStyle::kFlat) {
-                    track_bound = getFlatTrackBounds(bound, base_.getFontSize());
+                    const auto font_size = base_.getFontSize();
+                    track_bound = getFlatTrackBounds(bound, font_size);
+                    if constexpr (kUseDisplay) {
+                        marker_width = getFlatMarkerWidth(font_size, bound.getWidth());
+                    }
                     if constexpr (kUseName) {
                         text_bound = bound.withBottom(track_bound.getY());
                     }
@@ -190,7 +199,7 @@ namespace zlgui::slider {
             }
             if constexpr (kUseDisplay) {
                 display_.setBounds(bound);
-                display_.setTrackBounds(track_bound);
+                display_.setTrackBounds(track_bound, marker_width);
             }
             text_.setBounds(text_bound);
             if constexpr (kUseName) {
@@ -204,6 +213,9 @@ namespace zlgui::slider {
 
         static juce::Rectangle<int> getFlatTrackBounds(juce::Rectangle<int> bound, const float font_size) {
             const auto bar_thickness = std::max(juce::roundToInt(font_size * kFlatBarThickness), 2);
+            if constexpr (kUseDisplay) {
+                bound.reduce((getFlatMarkerWidth(font_size, bound.getWidth()) + 1) / 2, 0);
+            }
             bound.removeFromBottom(getFlatMarkerExtension(font_size));
             return bound.removeFromBottom(bar_thickness);
         }
