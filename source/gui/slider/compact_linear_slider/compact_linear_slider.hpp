@@ -86,17 +86,17 @@ namespace zlgui::slider {
                 }
 
                 if (flat && !track_bound_.isEmpty()) {
-                    const auto extension = static_cast<float>(getFlatMarkerExtension(base_.getFontSize()));
                     const auto marker = track_bound_.withWidth(marker_width_)
                                             .withX(fill_bound_.getRight() - marker_width_ * .5f);
                     g.setColour(text_colour);
-                    g.fillRect(marker.expanded(0.f, extension));
+                    g.fillRect(marker.expanded(0.f, marker_extension_));
                 }
             }
 
-            void setTrackBounds(const juce::Rectangle<int> bound, const int marker_width) {
+            void setTrackBounds(const juce::Rectangle<int> bound, const int marker_width, const int marker_extension) {
                 track_bound_ = bound.toFloat();
                 marker_width_ = static_cast<float>(marker_width);
+                marker_extension_ = static_cast<float>(marker_extension);
                 const auto corner_scale = base_.getUIStyle() == UIStyle::kFlat ? kFlatCornerSize : .5f;
                 corner_size_ = std::max(0.f, base_.getFontSize() * corner_scale);
                 corner_x_ = std::min(corner_size_, track_bound_.getWidth() * .5f);
@@ -110,15 +110,34 @@ namespace zlgui::slider {
                     return;
                 }
                 hovered_ = hovered;
-                if (base_.getUIStyle() == UIStyle::kFlat) {
-                    repaint();
+                if (base_.getUIStyle() == UIStyle::kFlat && !track_bound_.isEmpty()) {
+                    repaint(track_bound_.getSmallestIntegerContainer());
                 }
             }
 
             void setSliderValue(const float x) {
+                if (std::abs(value_ - x) <= 1e-6f) {
+                    return;
+                }
+                const auto old_right = fill_bound_.getRight();
                 value_ = x;
                 updateFillGeometry();
-                repaint();
+                if (track_bound_.isEmpty()) {
+                    return;
+                }
+                const auto new_right = fill_bound_.getRight();
+                const auto flat = base_.getUIStyle() == UIStyle::kFlat;
+                const auto half_marker = flat ? marker_width_ * .5f : 0.f;
+                const auto ext = flat ? marker_extension_ : 0.f;
+                const auto left = static_cast<int>(std::floor(std::min(old_right, new_right) - half_marker)) - 1;
+                const auto right = static_cast<int>(std::ceil(std::max(old_right, new_right) + half_marker)) + 1;
+                const auto top = static_cast<int>(std::floor(track_bound_.getY() - ext)) - 1;
+                const auto bottom = static_cast<int>(std::ceil(track_bound_.getBottom() + ext)) + 1;
+                const auto dirty = juce::Rectangle<int>::leftTopRightBottom(left, top, right, bottom)
+                                       .getIntersection(getLocalBounds());
+                if (!dirty.isEmpty()) {
+                    repaint(dirty);
+                }
             }
 
         private:
@@ -224,7 +243,7 @@ namespace zlgui::slider {
             }
 
             UIBase& base_;
-            float value_{0.f}, marker_width_{0.f};
+            float value_{0.f}, marker_width_{0.f}, marker_extension_{0.f};
             float corner_size_{0.f}, corner_x_{0.f}, corner_y_{0.f};
             bool hovered_{false};
             FillMode fill_mode_{FillMode::kEmpty};
@@ -298,13 +317,18 @@ namespace zlgui::slider {
             slider_.setBounds(bound);
             auto text_bound = bound;
             auto track_bound = bound;
+            auto display_bound = bound;
             auto marker_width = 0;
+            auto marker_extension = 0;
             if constexpr (kUseName || kUseDisplay) {
                 if (base_.getUIStyle() == UIStyle::kFlat) {
                     const auto font_size = base_.getFontSize();
                     track_bound = getFlatTrackBounds(bound, font_size);
                     if constexpr (kUseDisplay) {
                         marker_width = getFlatMarkerWidth(font_size, bound.getWidth());
+                        marker_extension = getFlatMarkerExtension(font_size);
+                        display_bound = bound.getIntersection(
+                            track_bound.expanded((marker_width + 1) / 2, marker_extension));
                     }
                     if constexpr (kUseName) {
                         text_bound = bound.withBottom(track_bound.getY());
@@ -315,8 +339,8 @@ namespace zlgui::slider {
                 background_.setBounds(track_bound);
             }
             if constexpr (kUseDisplay) {
-                display_.setBounds(bound);
-                display_.setTrackBounds(track_bound, marker_width);
+                display_.setBounds(display_bound);
+                display_.setTrackBounds(track_bound - display_bound.getPosition(), marker_width, marker_extension);
             }
             text_.setBounds(text_bound);
             if constexpr (kUseName) {
