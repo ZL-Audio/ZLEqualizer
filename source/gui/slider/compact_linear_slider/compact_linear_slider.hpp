@@ -63,7 +63,9 @@ namespace zlgui::slider {
                 bound = bound.withWidth(value_ * bound.getWidth());
                 g.saveState();
                 g.reduceClipRegion(mask_);
-                g.setColour(base_.getTextColour().withAlpha(0.25f));
+                const auto text_colour = base_.getTextColour();
+                const auto highlighted = hovered_ && base_.getUIStyle() == UIStyle::kFlat;
+                g.setColour(text_colour.withAlpha(highlighted ? .5f : .25f));
                 g.fillRect(bound);
                 g.restoreState();
             }
@@ -74,6 +76,16 @@ namespace zlgui::slider {
 
             void lookAndFeelChanged() override {
                 setSliderValue(value_);
+            }
+
+            void setHovered(const bool hovered) {
+                if (hovered_ == hovered) {
+                    return;
+                }
+                hovered_ = hovered;
+                if (base_.getUIStyle() == UIStyle::kFlat) {
+                    repaint();
+                }
             }
 
             void setSliderValue(const float x) {
@@ -90,6 +102,7 @@ namespace zlgui::slider {
         private:
             UIBase& base_;
             float value_{0.f};
+            bool hovered_{false};
             juce::Path mask_;
         };
 
@@ -205,6 +218,9 @@ namespace zlgui::slider {
 
         void mouseEnter(const juce::MouseEvent& event) override {
             slider_.mouseEnter(event);
+            if constexpr (kUseDisplay) {
+                display_.setHovered(true);
+            }
             if constexpr (kUseName) {
                 text_.setVisible(true);
                 label_.setVisible(false);
@@ -213,6 +229,9 @@ namespace zlgui::slider {
 
         void mouseExit(const juce::MouseEvent& event) override {
             slider_.mouseExit(event);
+            if constexpr (kUseDisplay) {
+                display_.setHovered(false);
+            }
             if (text_.getCurrentTextEditor() != nullptr) {
                 return;
             }

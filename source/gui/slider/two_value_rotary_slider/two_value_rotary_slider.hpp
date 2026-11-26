@@ -117,15 +117,17 @@ namespace zlgui::slider {
             void paint(juce::Graphics& g) override {
                 g.saveState();
                 g.reduceClipRegion(mask_);
-                g.setColour(base_.getTextColour().withAlpha(0.25f));
+                const auto text_colour = base_.getTextColour();
+                const auto highlighted = hovered_ && base_.getUIStyle() == UIStyle::kFlat;
+                g.setColour(text_colour.withAlpha(highlighted ? .5f : .25f));
                 g.fillPath(filling1_);
                 // fill the pie segment between two values
                 if constexpr (kUseSecondSlider) {
                     if (show_slider2_) {
                         if (value1_ > value2_) {
-                            g.setColour(base_.getColourMap2(0).withAlpha(.75f));
+                            g.setColour(base_.getColourMap2(0).withAlpha(highlighted ? 1.f : .75f));
                         } else {
-                            g.setColour(base_.getColourMap2(2).withAlpha(.75f));
+                            g.setColour(base_.getColourMap2(2).withAlpha(highlighted ? 1.f : .75f));
                         }
                         g.fillPath(filling2_);
                     }
@@ -145,6 +147,16 @@ namespace zlgui::slider {
                 setSlider1Value(value1_);
                 if constexpr (kUseSecondSlider) {
                     setSlider2Value(value2_);
+                }
+            }
+
+            void setHovered(const bool hovered) {
+                if (hovered_ == hovered) {
+                    return;
+                }
+                hovered_ = hovered;
+                if (base_.getUIStyle() == UIStyle::kFlat) {
+                    repaint();
                 }
             }
 
@@ -189,7 +201,7 @@ namespace zlgui::slider {
             juce::Rectangle<float> outer_bound_;
             float value1_{0.f}, value2_{0.f};
             float angle1_{0.f};
-            bool show_slider2_{false};
+            bool show_slider2_{false}, hovered_{false};
             juce::Path mask_;
             juce::Rectangle<float> arrow1_, arrow2_;
             juce::Path filling1_, filling2_;
@@ -321,6 +333,7 @@ namespace zlgui::slider {
         void mouseEnter(const juce::MouseEvent& event) override {
             slider1_.mouseEnter(event);
             slider2_.mouseEnter(event);
+            display_.setHovered(true);
             if constexpr (kUseName) {
                 label_.setVisible(false);
                 label1_.setVisible(true);
@@ -337,6 +350,7 @@ namespace zlgui::slider {
         void mouseExit(const juce::MouseEvent& event) override {
             slider1_.mouseExit(event);
             slider2_.mouseExit(event);
+            display_.setHovered(false);
             if constexpr (kUseName) {
                 if (label1_.getCurrentTextEditor() != nullptr || label2_.getCurrentTextEditor() != nullptr) {
                     return;
