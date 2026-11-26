@@ -10,6 +10,61 @@
 #include "interface_definitions.hpp"
 
 namespace zlgui {
+    namespace {
+        void drawShadowPairForPath(juce::Graphics& g,
+                                   const juce::Path& path,
+                                   const int radius,
+                                   const bool draw_first,
+                                   const juce::Colour colour_first,
+                                   const juce::Point<int> offset_first,
+                                   const bool draw_second,
+                                   const juce::Colour colour_second,
+                                   const juce::Point<int> offset_second) {
+            if ((!draw_first && !draw_second) || radius <= 0) {
+                return;
+            }
+
+            const auto clip = g.getClipBounds().expanded(radius + 1);
+            juce::Rectangle<int> needed_clip;
+            if (draw_first && draw_second) {
+                needed_clip = (clip - offset_first).getUnion(clip - offset_second);
+            } else if (draw_first) {
+                needed_clip = clip - offset_first;
+            } else {
+                needed_clip = clip - offset_second;
+            }
+
+            const auto area = path.getBounds().getSmallestIntegerContainer()
+                                  .expanded(radius + 1)
+                                  .getIntersection(needed_clip);
+            if (area.getWidth() <= 2 || area.getHeight() <= 2) {
+                return;
+            }
+
+            const auto temp_image_type = g.getInternalContext().getPreferredImageTypeForTemporaryImages();
+            juce::Image path_image{juce::Image::SingleChannel, area.getWidth(), area.getHeight(), true, *temp_image_type};
+            path_image.setBackupEnabled(false);
+
+            {
+                juce::Graphics g2{path_image};
+                g2.setColour(juce::Colours::white);
+                g2.fillPath(path, juce::AffineTransform::translation(static_cast<float>(-area.getX()),
+                                                                     static_cast<float>(-area.getY())));
+            }
+
+            path_image.getPixelData()->applySingleChannelBoxBlurEffect(radius);
+
+            if (draw_first) {
+                g.setColour(colour_first);
+                g.drawImageAt(path_image, area.getX() + offset_first.x, area.getY() + offset_first.y, true);
+            }
+            if (draw_second) {
+                g.setColour(colour_second);
+                g.drawImageAt(path_image, area.getX() + offset_second.x, area.getY() + offset_second.y, true);
+            }
+        }
+    }
+
     juce::Rectangle<float> UIBase::getRoundedShadowRectangleArea(juce::Rectangle<float> box_bounds, float corner_size,
                                                                  const FillRoundedShadowRectangleArgs& margs) {
         const auto radius = juce::jmax(juce::roundToInt(corner_size * margs.blur_radius * 1.5f), 1);
@@ -43,23 +98,18 @@ namespace zlgui {
                                  args.curve_top_left, args.curve_top_right,
                                  args.curve_bottom_left, args.curve_bottom_right);
         auto offset = static_cast<int>(corner_size * args.blur_radius);
-        juce::Path mask(path);
-        mask.setUsingNonZeroWinding(false);
-        mask.addRectangle(box_bounds.withSizeKeepingCentre(box_bounds.getWidth() + corner_size * 3,
-                                                           box_bounds.getHeight() + corner_size * 3));
-        g.saveState();
-        g.reduceClipRegion(mask);
-        if (args.draw_bright) {
-            juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
-                                           {-offset, -offset});
-            bright_shadow.drawForPath(g, path);
+        if (args.draw_bright || args.draw_dark) {
+            juce::Path mask(path);
+            mask.setUsingNonZeroWinding(false);
+            mask.addRectangle(box_bounds.withSizeKeepingCentre(box_bounds.getWidth() + corner_size * 3,
+                                                               box_bounds.getHeight() + corner_size * 3));
+            g.saveState();
+            g.reduceClipRegion(mask);
+            drawShadowPairForPath(g, path, radius,
+                                  args.draw_bright, args.bright_shadow_color, {-offset, -offset},
+                                  args.draw_dark, args.dark_shadow_color, {offset, offset});
+            g.restoreState();
         }
-        if (args.draw_dark) {
-            juce::DropShadow dark_shadow(args.dark_shadow_color, radius,
-                                         {offset, offset});
-            dark_shadow.drawForPath(g, path);
-        }
-        g.restoreState();
         if (args.draw_main) {
             g.setColour(args.main_colour);
             g.fillPath(path);
@@ -93,19 +143,13 @@ namespace zlgui {
         auto offset = static_cast<int>(corner_size * args.blur_radius);
         auto radius = juce::jmax(juce::roundToInt(corner_size * args.blur_radius * 1.5f), 1);
         if (!args.flip) {
-            juce::DropShadow dark_shadow(args.dark_shadow_color.withMultipliedAlpha(0.75f), radius,
-                                         {-offset, -offset});
-            dark_shadow.drawForPath(g, mask);
-            juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
-                                           {offset, offset});
-            bright_shadow.drawForPath(g, mask);
+            drawShadowPairForPath(g, mask, radius,
+                                  true, args.dark_shadow_color.withMultipliedAlpha(0.75f), {-offset, -offset},
+                                  true, args.bright_shadow_color, {offset, offset});
         } else {
-            juce::DropShadow bright_shadow(args.dark_shadow_color, radius,
-                                           {offset, offset});
-            bright_shadow.drawForPath(g, mask);
-            juce::DropShadow dark_shadow(args.bright_shadow_color.withMultipliedAlpha(0.75f), radius,
-                                         {-offset, -offset});
-            dark_shadow.drawForPath(g, mask);
+            drawShadowPairForPath(g, mask, radius,
+                                  true, args.dark_shadow_color, {offset, offset},
+                                  true, args.bright_shadow_color.withMultipliedAlpha(0.75f), {-offset, -offset});
         }
         box_bounds = box_bounds.withSizeKeepingCentre(
             box_bounds.getWidth() - 0.75f * static_cast<float>(radius),
@@ -148,43 +192,31 @@ namespace zlgui {
         if (!args.change_bright)
             args.bright_shadow_color = getBrightShadowColour();
 
-        juce::Path path;
-        auto radius = juce::jmax(juce::roundToInt(corner_size * 0.75f), 1);
+        const auto radius = juce::jmax(juce::roundToInt(corner_size * 0.75f), 1);
         if (args.fit) {
             box_bounds = box_bounds.reduced((static_cast<float>(radius) + 1.5f * corner_size) * .5f);
         }
-        path.addEllipse(box_bounds);
-        auto offset = static_cast<int>(corner_size * args.blur_radius);
-        juce::Path mask;
-        mask.addEllipse(box_bounds.withSizeKeepingCentre(box_bounds.getWidth() * 3, box_bounds.getHeight() * 3));
-        mask.setUsingNonZeroWinding(false);
-        mask.addEllipse(box_bounds);
-        g.saveState();
-        g.reduceClipRegion(mask);
-        if (!args.flip) {
-            if (args.draw_dark) {
-                juce::DropShadow dark_shadow(args.dark_shadow_color, radius,
-                                             {offset, offset});
-                dark_shadow.drawForPath(g, path);
+        if (args.draw_dark || args.draw_bright) {
+            juce::Path path;
+            path.addEllipse(box_bounds);
+            auto offset = static_cast<int>(corner_size * args.blur_radius);
+            juce::Path mask;
+            mask.addEllipse(box_bounds.withSizeKeepingCentre(box_bounds.getWidth() * 3, box_bounds.getHeight() * 3));
+            mask.setUsingNonZeroWinding(false);
+            mask.addEllipse(box_bounds);
+            g.saveState();
+            g.reduceClipRegion(mask);
+            if (!args.flip) {
+                drawShadowPairForPath(g, path, radius,
+                                      args.draw_dark, args.dark_shadow_color, {offset, offset},
+                                      args.draw_bright, args.bright_shadow_color, {-offset, -offset});
+            } else {
+                drawShadowPairForPath(g, path, radius,
+                                      args.draw_dark, args.dark_shadow_color, {-offset, -offset},
+                                      args.draw_bright, args.bright_shadow_color, {offset, offset});
             }
-            if (args.draw_bright) {
-                juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
-                                               {-offset, -offset});
-                bright_shadow.drawForPath(g, path);
-            }
-        } else {
-            if (args.draw_dark) {
-                juce::DropShadow dark_shadow(args.dark_shadow_color, radius,
-                                             {-offset, -offset});
-                dark_shadow.drawForPath(g, path);
-            }
-            if (args.draw_bright) {
-                juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
-                                               {offset, offset});
-                bright_shadow.drawForPath(g, path);
-            }
+            g.restoreState();
         }
-        g.restoreState();
         return box_bounds;
     }
 
@@ -220,19 +252,13 @@ namespace zlgui {
         g.reduceClipRegion(mask);
 
         if (!args.flip) {
-            juce::DropShadow dark_shadow(args.dark_shadow_color.withMultipliedAlpha(0.75f), radius,
-                                         {-offset, -offset});
-            dark_shadow.drawForPath(g, mask);
-            juce::DropShadow bright_shadow(args.bright_shadow_color, radius,
-                                           {offset, offset});
-            bright_shadow.drawForPath(g, mask);
+            drawShadowPairForPath(g, mask, radius,
+                                  true, args.dark_shadow_color.withMultipliedAlpha(0.75f), {-offset, -offset},
+                                  true, args.bright_shadow_color, {offset, offset});
         } else {
-            juce::DropShadow bright_shadow(args.dark_shadow_color, radius,
-                                           {offset, offset});
-            bright_shadow.drawForPath(g, mask);
-            juce::DropShadow dark_shadow(args.bright_shadow_color.withMultipliedAlpha(0.75f), radius,
-                                         {-offset, -offset});
-            dark_shadow.drawForPath(g, mask);
+            drawShadowPairForPath(g, mask, radius,
+                                  true, args.dark_shadow_color, {offset, offset},
+                                  true, args.bright_shadow_color.withMultipliedAlpha(0.75f), {-offset, -offset});
         }
         box_bounds = box_bounds.reduced(0.375f * static_cast<float>(radius));
         juce::Path path;
