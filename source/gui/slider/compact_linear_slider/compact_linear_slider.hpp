@@ -39,7 +39,7 @@ namespace zlgui::slider {
             explicit Background(UIBase& base) :
                 base_(base) {
                 setInterceptsMouseClicks(false, false);
-                setBufferedToImage(true);
+                updateBuffering();
             }
 
             void paint(juce::Graphics& g) override {
@@ -52,8 +52,19 @@ namespace zlgui::slider {
                 }
             }
 
+            void lookAndFeelChanged() override {
+                updateBuffering();
+            }
+
         private:
             UIBase& base_;
+
+            void updateBuffering() {
+                const auto should_buffer = base_.getUIStyle() != UIStyle::kFlat;
+                if (should_buffer != (getCachedComponentImage() != nullptr)) {
+                    setBufferedToImage(should_buffer);
+                }
+            }
         };
 
         class Display final : public juce::Component {

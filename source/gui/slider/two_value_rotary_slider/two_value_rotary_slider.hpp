@@ -127,7 +127,7 @@ namespace zlgui::slider {
                 base_(base), thick_scale_(thick_scale) {
                 setOpaque(kOpaque);
                 setInterceptsMouseClicks(false, false);
-                setBufferedToImage(true);
+                updateBuffering();
             }
 
             void paint(juce::Graphics& g) override {
@@ -137,10 +137,13 @@ namespace zlgui::slider {
                     g.setColour(base_.getBackgroundColour());
                     g.fillEllipse(getLocalBounds().toFloat());
                 }
-                const auto ring = getRingBounds(base_, getLocalBounds().toFloat(), thick_scale_);
                 if (base_.getUIStyle() == UIStyle::kFlat) {
-                    paintFlat(g, ring);
+                    if (!flat_track_.isEmpty()) {
+                        g.setColour(base_.getColourBlendedWithBackground(base_.getTextColour(), kFlatTrackAlpha));
+                        g.fillPath(flat_track_);
+                    }
                 } else {
+                    const auto ring = getRingBounds(base_, getLocalBounds().toFloat(), thick_scale_);
                     juce::Path mask;
                     mask.addPieSegment(ring.outer, kStartAngle - juce::MathConstants<float>::pi * 1.5f,
                                        kEndAngle - juce::MathConstants<float>::pi * 1.5f,
@@ -152,9 +155,38 @@ namespace zlgui::slider {
                 }
             }
 
+            void resized() override {
+                updateFlatTrack();
+            }
+
+            void lookAndFeelChanged() override {
+                updateBuffering();
+                updateFlatTrack();
+            }
+
         private:
             UIBase& base_;
             float thick_scale_{1.f};
+            juce::Path flat_track_;
+
+            void updateBuffering() {
+                const auto should_buffer = base_.getUIStyle() != UIStyle::kFlat;
+                if (should_buffer != (getCachedComponentImage() != nullptr)) {
+                    setBufferedToImage(should_buffer);
+                }
+            }
+
+            void updateFlatTrack() {
+                flat_track_.clear();
+                if (base_.getUIStyle() != UIStyle::kFlat || getLocalBounds().isEmpty()) {
+                    return;
+                }
+                const auto ring = getRingBounds(base_, getLocalBounds().toFloat(), thick_scale_);
+                addAnnulusArc(flat_track_, ring.outer.getCentre(),
+                              ring.outer.getWidth() * 0.5f, ring.inner.getWidth() * 0.5f,
+                              kStartAngle + juce::MathConstants<float>::halfPi,
+                              kEndAngle + juce::MathConstants<float>::halfPi);
+            }
 
             void paintSoft(juce::Graphics& g, const juce::Rectangle<float> bounds) const {
                 // draw knob background
@@ -163,19 +195,6 @@ namespace zlgui::slider {
                 const auto new_bounds = base_.drawShadowEllipse(g, old_bounds,
                                                                 base_.getFontSize() * 0.5f * thick_scale_, {});
                 base_.drawInnerShadowEllipse(g, new_bounds, base_.getFontSize() * 0.15f, {.flip = true});
-            }
-
-            void paintFlat(juce::Graphics& g, const RingBounds& ring) const {
-                // draw a plain ring track (same area as the value display) without any shadow
-                juce::Path track;
-                addAnnulusArc(track, ring.outer.getCentre(),
-                              ring.outer.getWidth() * 0.5f, ring.inner.getWidth() * 0.5f,
-                              kStartAngle + juce::MathConstants<float>::halfPi,
-                              kEndAngle + juce::MathConstants<float>::halfPi);
-                if (!track.isEmpty()) {
-                    g.setColour(base_.getColourBlendedWithBackground(base_.getTextColour(), kFlatTrackAlpha));
-                    g.fillPath(track);
-                }
             }
         };
 
