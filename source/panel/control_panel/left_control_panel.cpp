@@ -22,7 +22,6 @@ namespace zlpanel {
                      tooltip_helper.getToolTipText(multilingual::kBandGain), 1.f),
         pass_scale_slider_("", base.gui,
                            tooltip_helper.getToolTipText(multilingual::kBandPassScale), 1.f) {
-        sub_left_control_panel_.setBufferedToImage(true);
         addAndMakeVisible(sub_left_control_panel_);
 
         freq_slider_.permitted_characters_ = "-0123456789.kK#ABCDEFGabcdefg";

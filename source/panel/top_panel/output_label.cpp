@@ -36,7 +36,6 @@ namespace zlpanel {
         for (auto& l : {&gain_label_, &scale_label_}) {
             l->setInterceptsMouseClicks(false, false);
             l->setLookAndFeel(&label_laf_);
-            l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
 

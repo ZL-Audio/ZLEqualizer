@@ -68,7 +68,6 @@ namespace zlpanel {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
 
-        close_button_.setBufferedToImage(true);
         addAndMakeVisible(close_button_);
         close_button_.getButton().onClick = [this]() {
             if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
@@ -86,7 +85,6 @@ namespace zlpanel {
         };
 
         solo_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        solo_button_.setBufferedToImage(true);
         addAndMakeVisible(solo_button_);
         solo_button_.getButton().onClick = [this]() {
             if (solo_button_.getButton().getToggleState()) {
@@ -99,7 +97,6 @@ namespace zlpanel {
         };
 
         bypass_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
         bypass_button_.getButton().onClick = [this]() {
             if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
@@ -111,14 +108,12 @@ namespace zlpanel {
         const auto popup_option1 = juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::upwards).withMinimumNumColumns(9);
         ftype_box_.getLAF().setOption(popup_option1);
-        ftype_box_.setBufferedToImage(true);
         addAndMakeVisible(ftype_box_);
 
         const auto popup_option2 = juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::upwards).withMinimumNumColumns(5);
         lr_box_.setScrollEnabled(true);
         lr_box_.getLAF().setOption(popup_option2);
-        lr_box_.setBufferedToImage(true);
         addAndMakeVisible(lr_box_);
 
         freq_slider_.setFontScale(1.25f);
@@ -128,7 +123,6 @@ namespace zlpanel {
         freq_slider_.permitted_characters_ = "-0123456789.kK#ABCDEFGabcdefg";
         freq_slider_.value_formatter_ = freq_note::getNoteFromFrequency;
         freq_slider_.string_formatter_ = freq_note::getFrequencyFromNote;
-        freq_slider_.setBufferedToImage(true);
         addAndMakeVisible(freq_slider_);
 
         base_.getSoloWholeIdxTree().addListener(this);

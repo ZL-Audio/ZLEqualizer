@@ -34,13 +34,11 @@ namespace zlpanel {
             l->setJustificationType(juce::Justification::centredRight);
             l->setLookAndFeel(&label_laf_);
             l->setInterceptsMouseClicks(false, false);
-            l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
 
         for (auto& s : {&rms_length_slider_, &rms_mix_slider_, &dyn_smooth_slider_}) {
             s->getSlider().setSliderSnapsToMousePosition(false);
-            s->setBufferedToImage(true);
             addAndMakeVisible(s);
         }
 

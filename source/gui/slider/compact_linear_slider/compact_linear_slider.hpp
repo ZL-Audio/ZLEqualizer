@@ -572,8 +572,10 @@ namespace zlgui::slider {
 
         void sliderValueChanged(juce::Slider*) override {
             text_.setText(getDisplayValue(slider_), juce::dontSendNotification);
-            display_.setSliderValue(
-                static_cast<float>(slider_.getNormalisableRange().convertTo0to1(slider_.getValue())));
+            if constexpr (kUseDisplay) {
+                display_.setSliderValue(
+                    static_cast<float>(slider_.getNormalisableRange().convertTo0to1(slider_.getValue())));
+            }
         }
 
         void updateDragDistance(const bool is_shift_pressed) {

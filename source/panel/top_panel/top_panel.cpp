@@ -42,20 +42,16 @@ namespace zlpanel {
         match_button_(base.gui,
                       juce::Drawable::createFromImageData(BinaryData::match_svg, BinaryData::match_svgSize),
                       true, tooltip_helper.getToolTipText(multilingual::kEQMatch)) {
-        logo_panel_.setBufferedToImage(true);
         addAndMakeVisible(logo_panel_);
 
-        output_label_.setBufferedToImage(true);
         addAndMakeVisible(output_label_);
 
-        analyzer_label_.setBufferedToImage(true);
         addAndMakeVisible(analyzer_label_);
 
         const auto box_alignment = combobox_helper::getAlignment(base_.gui.getComboboxAlignment());
         fstruct_box_.getLAF().setItemAlignment(box_alignment);
         fstruct_box_.setScrollEnabled(true);
         fstruct_box_.setAlpha(.5f);
-        fstruct_box_.setBufferedToImage(true);
         addAndMakeVisible(fstruct_box_);
 
         preset_button_.getButton().onClick = [this]() {
@@ -64,11 +60,9 @@ namespace zlpanel {
             base_.setPanelProperty(zlgui::PanelSettingIdx::kPresetBrowser, panel_open < .5f ? 1.f : 0.f);
         };
         preset_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        preset_button_.setBufferedToImage(true);
         addAndMakeVisible(preset_button_);
 
         bypass_button_.setImageAlpha(1.f, 1.f, .5f, .75f);
-        bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
 
         ext_button_.getButton().onClick = [this]() {
@@ -78,14 +72,12 @@ namespace zlpanel {
             }
         };
         ext_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        ext_button_.setBufferedToImage(true);
         addAndMakeVisible(ext_button_);
 
         match_button_.getButton().onClick = [this]() {
             base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, static_cast<double>(match_button_.getToggleState()));
         };
         match_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        match_button_.setBufferedToImage(true);
         addAndMakeVisible(match_button_);
 
         setInterceptsMouseClicks(false, true);

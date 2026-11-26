@@ -45,14 +45,12 @@ namespace zlpanel {
         version_text_.setLookAndFeel(&version_text_laf_);
         version_text_.setAlpha(.5f);
         version_text_.setInterceptsMouseClicks(false, false);
-        version_text_.setBufferedToImage(true);
         addAndMakeVisible(version_text_);
         addAndMakeVisible(tab_bar_);
         addAndMakeVisible(view_port_);
 
         for (auto* button : {&save_button_, &reset_button_, &close_button_, &folder_open_button_}) {
             button->setImageAlpha(.55f, 1.f);
-            button->setBufferedToImage(true);
             addAndMakeVisible(button);
         }
         save_button_.getButton().onClick = [this]() {

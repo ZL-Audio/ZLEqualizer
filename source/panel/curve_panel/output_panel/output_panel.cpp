@@ -75,20 +75,16 @@ namespace zlpanel {
 
         gain_label_.setLookAndFeel(&name_laf_);
         gain_label_.setJustificationType(juce::Justification::centred);
-        gain_label_.setBufferedToImage(true);
         addAndMakeVisible(gain_label_);
 
         scale_label_.setLookAndFeel(&name_laf_);
         scale_label_.setJustificationType(juce::Justification::centred);
-        scale_label_.setBufferedToImage(true);
         addAndMakeVisible(scale_label_);
 
         gain_slider_.setComponentID(zlp::POutputGain::kID);
-        gain_slider_.setBufferedToImage(true);
         addAndMakeVisible(gain_slider_);
 
         scale_slider_.setComponentID(zlp::PGainScale::kID);
-        scale_slider_.setBufferedToImage(true);
         addAndMakeVisible(scale_slider_);
 
         lm_button_.getButton().onClick = [this]() {
@@ -106,24 +102,20 @@ namespace zlpanel {
 
         for (auto& b : {&sgc_button_, &lm_button_, &agc_button_, &phase_button_}) {
             b->setImageAlpha(.5f, .75f, 1.f, 1.f);
-            b->setBufferedToImage(true);
             addAndMakeVisible(b);
         }
 
         stereo_box_.setComponentID(zlp::POutputStereo::kID);
         stereo_box_.getLAF().setOption(juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::downwards));
-        stereo_box_.setBufferedToImage(true);
         addAndMakeVisible(stereo_box_);
 
         lookahead_label_.setLookAndFeel(&name_laf_);
         lookahead_label_.setJustificationType(juce::Justification::centredRight);
-        lookahead_label_.setBufferedToImage(true);
         addAndMakeVisible(lookahead_label_);
 
         lookahead_slider_.setComponentID(zlp::PLookahead::kID);
         lookahead_slider_.getSlider().setSliderSnapsToMousePosition(false);
-        lookahead_slider_.setBufferedToImage(true);
         addAndMakeVisible(lookahead_slider_);
 
         base_.setPanelProperty(zlgui::PanelSettingIdx::kOutputPanel, 0.);

@@ -26,7 +26,6 @@ namespace zlpanel {
             l->setInterceptsMouseClicks(false, false);
             l->setLookAndFeel(&label_laf_);
             l->setJustificationType(juce::Justification::centred);
-            l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
 

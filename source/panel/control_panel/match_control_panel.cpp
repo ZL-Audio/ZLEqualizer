@@ -109,13 +109,11 @@ namespace zlpanel {
         save_button_.getButton().onClick = [this]() {
             saveToPreset();
         };
-        save_button_.setBufferedToImage(true);
         addAndMakeVisible(save_button_);
 
         draw_button_.getButton().onClick = [this]() {
             match_fft_panel_.setDiffDrawOn(draw_button_.getToggleState());
         };
-        draw_button_.setBufferedToImage(true);
         addAndMakeVisible(draw_button_);
 
         target_box_.getBox().onChange = [this]() {
@@ -127,7 +125,6 @@ namespace zlpanel {
                 match_fft_panel_.setSideMode(mode);
             }
         };
-        target_box_.setBufferedToImage(true);
         addAndMakeVisible(target_box_);
 
         shift_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
@@ -155,12 +152,10 @@ namespace zlpanel {
         for (auto& l : {&shift_label_, &scale_label_, &slope_label_}) {
             l->setLookAndFeel(&label_laf_);
             l->setJustificationType(juce::Justification::centred);
-            l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
 
         for (auto& s : {&shift_slider_, &scale_slider_, &slope_slider_}) {
-            s->setBufferedToImage(true);
             addAndMakeVisible(s);
         }
 
@@ -170,7 +165,6 @@ namespace zlpanel {
                 std::max(limit_combobox_.getBox().getSelectedItemIndex(), 0));
             match_fft_panel_.setMatchLimit(kLimits[selected_index]);
         };
-        limit_combobox_.setBufferedToImage(true);
         addAndMakeVisible(limit_combobox_);
 
         fit_start_button_.getButton().onClick = [this]() {
@@ -193,7 +187,6 @@ namespace zlpanel {
             base_.setPanelProperty(zlgui::PanelSettingIdx::kMatchPanel, 2.0);
             match_fft_panel_.setMatchPhase(MatchFFTPanel::MatchPhase::kMatch);
         };
-        fit_start_button_.setBufferedToImage(true);
         addAndMakeVisible(fit_start_button_);
 
         num_band_slider_.getSlider().setNormalisableRange(juce::NormalisableRange<double>(
@@ -202,7 +195,6 @@ namespace zlpanel {
             match_fft_panel_.updateMatchNumBand(static_cast<size_t>(
                 std::round(num_band_slider_.getSlider().getValue())));
         };
-        num_band_slider_.setBufferedToImage(true);
         addChildComponent(num_band_slider_);
 
         base_.getPanelValueTree().addListener(this);

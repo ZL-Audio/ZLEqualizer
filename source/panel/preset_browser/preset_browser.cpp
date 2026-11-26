@@ -121,7 +121,6 @@ namespace zlpanel {
 
         for (auto* label : {&group_label_, &preset_label_}) {
             label->setJustificationType(juce::Justification::centredLeft);
-            label->setBufferedToImage(true);
             addAndMakeVisible(label);
         }
         configureEditor(search_editor_, "Search Presets");
@@ -145,7 +144,6 @@ namespace zlpanel {
 
         for (auto* button : {&delete_group_button_, &delete_preset_button_, &close_button_, &folder_open_button_}) {
             button->setImageAlpha(.55f, 1.f);
-            button->setBufferedToImage(true);
             addAndMakeVisible(button);
         }
         delete_group_button_.getButton().onClick = [this]() {
@@ -162,7 +160,6 @@ namespace zlpanel {
         };
 
         addChildComponent(warning_overlay_);
-        warning_overlay_.setBufferedToImage(true);
 
         base_.getPanelValueTree().addListener(this);
         base_.setPanelProperty(zlgui::PanelSettingIdx::kPresetBrowser, 0.f);

@@ -30,6 +30,7 @@ namespace zlpanel {
         addAndMakeVisible(control_panel_);
         extra_dynamic_panel_.setBufferedToImage(true);
         addChildComponent(extra_dynamic_panel_);
+        ui_setting_panel_.setBufferedToImage(true);
         addChildComponent(ui_setting_panel_);
         preset_browser_.setBufferedToImage(true);
         addChildComponent(preset_browser_);

@@ -61,11 +61,9 @@ namespace zlpanel {
         addAndMakeVisible(control_background_);
 
         bypass_button_.setImageAlpha(1.f, 1.f, .5f, .75f);
-        bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
 
         auto_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        auto_button_.setBufferedToImage(true);
         addAndMakeVisible(auto_button_);
         auto_button_.getButton().onClick = [this]() {
             if (base_.getSelectedBand() < zlp::kBandNum) {
@@ -74,15 +72,12 @@ namespace zlpanel {
         };
 
         relative_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        relative_button_.setBufferedToImage(true);
         addAndMakeVisible(relative_button_);
 
         swap_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        swap_button_.setBufferedToImage(true);
         addAndMakeVisible(swap_button_);
 
         extra_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        extra_button_.setBufferedToImage(true);
         addAndMakeVisible(extra_button_);
         extra_button_.getButton().onClick = [this]() {
             const auto extra_visible =
@@ -93,7 +88,6 @@ namespace zlpanel {
         };
 
         link_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        link_button_.setBufferedToImage(true);
         addAndMakeVisible(link_button_);
 
         const auto popup_option =
@@ -103,20 +97,12 @@ namespace zlpanel {
         slope_box_.getLAF().setAlignment(zlgui::combobox::Alignment::kRight);
         for (auto& box : {&ftype_box_, &slope_box_}) {
             box->getLAF().setOption(popup_option);
-            box->setBufferedToImage(true);
             addAndMakeVisible(box);
         }
 
-        th_slider_.setBufferedToImage(true);
         addAndMakeVisible(th_slider_);
-
-        knee_slider_.setBufferedToImage(true);
         addAndMakeVisible(knee_slider_);
-
-        attack_slider_.setBufferedToImage(true);
         addAndMakeVisible(attack_slider_);
-
-        release_slider_.setBufferedToImage(true);
         addAndMakeVisible(release_slider_);
 
         label_laf_.setFontScale(1.5f);
@@ -124,18 +110,15 @@ namespace zlpanel {
             l->setLookAndFeel(&label_laf_);
             l->setJustificationType(juce::Justification::centred);
             l->setInterceptsMouseClicks(false, false);
-            l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
 
         freq_slider_.setPrecision(3);
         freq_slider_.permitted_characters_ = "-0123456789.kK#ABCDEFG";
         freq_slider_.string_formatter_ = freq_note::getFrequencyFromNote;
-        freq_slider_.setBufferedToImage(true);
         addAndMakeVisible(freq_slider_);
 
         q_slider_.setPrecision(3);
-        q_slider_.setBufferedToImage(true);
         addAndMakeVisible(q_slider_);
 
         ftype_box_.addMouseListener(this, false);

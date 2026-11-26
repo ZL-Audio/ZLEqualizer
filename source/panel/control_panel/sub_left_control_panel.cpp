@@ -54,7 +54,6 @@ namespace zlpanel {
         control_background_.setBufferedToImage(true);
         addAndMakeVisible(control_background_);
 
-        close_button_.setBufferedToImage(true);
         addAndMakeVisible(close_button_);
         close_button_.getButton().onClick = [this]() {
             if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
@@ -72,7 +71,6 @@ namespace zlpanel {
         };
 
         bypass_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        bypass_button_.setBufferedToImage(true);
         addAndMakeVisible(bypass_button_);
         bypass_button_.getButton().onClick = [this]() {
             if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {
@@ -86,17 +84,14 @@ namespace zlpanel {
             l->setLookAndFeel(&label_laf_);
             l->setJustificationType(juce::Justification::centred);
             l->setInterceptsMouseClicks(false, false);
-            l->setBufferedToImage(true);
             addAndMakeVisible(l);
         }
 
         pass_scale_button_.getButton().setClickingTogglesState(true);
         pass_scale_button_.getLAF().setFontScale(1.5f);
         pass_scale_button_.getLAF().setJustification(juce::Justification::centred);
-        pass_scale_button_.setBufferedToImage(true);
         addChildComponent(pass_scale_button_);
 
-        left_button_.setBufferedToImage(true);
         addAndMakeVisible(left_button_);
         left_button_.getButton().onClick = [this]() {
             const auto c_band = base_.getSelectedBand();
@@ -109,10 +104,8 @@ namespace zlpanel {
         band_label_.setLookAndFeel(&label_laf_);
         band_label_.setJustificationType(juce::Justification::centred);
         band_label_.setInterceptsMouseClicks(false, false);
-        band_label_.setBufferedToImage(true);
         addAndMakeVisible(band_label_);
 
-        right_button_.setBufferedToImage(true);
         addAndMakeVisible(right_button_);
         right_button_.getButton().onClick = [this]() {
             const auto c_band = base_.getSelectedBand();
@@ -131,15 +124,12 @@ namespace zlpanel {
         for (auto& box : {&ftype_box_, &slope_box_, &stereo_box_}) {
             box->setScrollEnabled(true);
             box->getLAF().setOption(popup_option);
-            box->setBufferedToImage(true);
             addAndMakeVisible(box);
         }
 
-        q_slider_.setBufferedToImage(true);
         addAndMakeVisible(q_slider_);
 
         dynamic_button_.setImageAlpha(.5f, .75f, 1.f, 1.f);
-        dynamic_button_.setBufferedToImage(true);
         addAndMakeVisible(dynamic_button_);
         dynamic_button_.getButton().onClick = [this]() {
             if (const auto c_band = base_.getSelectedBand(); c_band < zlp::kBandNum) {

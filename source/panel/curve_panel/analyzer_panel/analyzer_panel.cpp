@@ -99,7 +99,6 @@ namespace zlpanel {
             b->getLAF().setJustification(juce::Justification::centred);
             b->getButton().setToggleable(true);
             b->getButton().setClickingTogglesState(true);
-            b->setBufferedToImage(true);
             addAndMakeVisible(b);
         }
 
@@ -108,14 +107,11 @@ namespace zlpanel {
         slope_box_.getLAF().setAlignment(zlgui::combobox::Alignment::kRight);
         smooth_type_box_.getLAF().setItemAlignment(box_alignment);
         for (auto& c : {&speed_box_, &slope_box_, &smooth_type_box_}) {
-            c->setBufferedToImage(true);
             addAndMakeVisible(c);
         }
 
-        smooth_oct_value_box_.setBufferedToImage(true);
         addChildComponent(smooth_oct_value_box_);
 
-        smooth_erb_value_box_.setBufferedToImage(true);
         addAndMakeVisible(smooth_erb_value_box_);
 
         smooth_type_box_.getBox().onChange = [this]() {
@@ -127,23 +123,19 @@ namespace zlpanel {
         const auto popup_option = juce::PopupMenu::Options().withPreferredPopupDirection(
             juce::PopupMenu::Options::PopupDirection::downwards);
         lr_box_.getLAF().setOption(popup_option);
-        lr_box_.setBufferedToImage(true);
         addAndMakeVisible(lr_box_);
 
         for (auto& b : {&freeze_button_, &collision_button_, &value_button_, &meter_button_}) {
             b->setImageAlpha(.5f, .75f, 1.f, 1.f);
-            b->setBufferedToImage(true);
             addAndMakeVisible(b);
         }
 
         label_laf_.setFontScale(1.5f);
         strength_label_.setJustificationType(juce::Justification::centredRight);
         strength_label_.setLookAndFeel(&label_laf_);
-        strength_label_.setBufferedToImage(true);
         addAndMakeVisible(strength_label_);
 
         strength_slider_.getSlider().setSliderSnapsToMousePosition(false);
-        strength_slider_.setBufferedToImage(true);
         addAndMakeVisible(strength_slider_);
 
         base_.setPanelProperty(zlgui::PanelSettingIdx::kAnalyzerPanel, 0.);

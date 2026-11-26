@@ -40,7 +40,9 @@ namespace zlpanel {
         addChildComponent(scale_panel_);
         top_panel_.setBufferedToImage(true);
         addAndMakeVisible(top_panel_);
+        output_panel_.setBufferedToImage(true);
         addChildComponent(output_panel_);
+        analyzer_panel_.setBufferedToImage(true);
         addChildComponent(analyzer_panel_);
         addAndMakeVisible(piano_roll_panel_);
         piano_roll_panel_.addMouseListener(this, true);
